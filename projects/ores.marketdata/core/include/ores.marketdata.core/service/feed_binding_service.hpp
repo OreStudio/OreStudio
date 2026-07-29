@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -74,10 +75,20 @@ public:
      */
     std::uint32_t count_feed_bindings();
 
+
     /**
-     * @brief Retrieves a single feed binding by its id.
+     * @brief Retrieves a single feed binding as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the feed binding.
+     * @param version The version to fetch.
+     * @return The feed binding at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::feed_binding> get_feed_binding_at_version(const std::string& id,
+                                                                    std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single feed binding by its primary key.
+     *
      * @return The feed binding if found, std::nullopt otherwise.
      */
     std::optional<domain::feed_binding> get_feed_binding(const std::string& id);
@@ -99,15 +110,14 @@ public:
     void save_feed_bindings(const std::vector<domain::feed_binding>& feed_bindings);
 
     /**
-     * @brief Deletes a feed binding by its id.
+     * @brief Deletes a feed binding by its primary key.
      *
-     * @param id The id of the feed binding to delete.
      * @throws std::exception on failure.
      */
     void delete_feed_binding(const std::string& id);
 
     /**
-     * @brief Deletes feed bindings by their ids.
+     * @brief Deletes feed bindings by their primary keys.
      */
     void delete_feed_bindings(const std::vector<std::string>& ids);
 

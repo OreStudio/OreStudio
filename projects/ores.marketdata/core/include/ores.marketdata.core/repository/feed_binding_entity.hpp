@@ -48,6 +48,7 @@ struct feed_binding_entity {
 
     std::string source_name;
 
+    std::string asset_class;
     bool enabled = true;
     std::string modified_by;
     std::string performed_by;

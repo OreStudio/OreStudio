@@ -25,6 +25,7 @@
 #include "ores.qt/FeedBindingController.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RateCurvesMdiWindow.hpp"
+#include "ores.qt/SyntheticBindingDialog.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -74,6 +75,28 @@ void MarketdataPlugin::on_login(const plugin_context& ctx) {
             &FeedBindingController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
+
+    // Manual, checklist-driven bulk-create of feed bindings from available synthetic FX/IR
+    // configs -- not a generic codegen CRUD concern, so it's constructed here (the plugin
+    // composition root) rather than in FeedBindingMdiWindow/FeedBindingController, which are
+    // fully codegen-generated. See ores.marketdata.feed_binding.org's "Bind synthetic seam".
+    connect(feedBindingController_.get(),
+            &FeedBindingController::bindSyntheticRequested,
+            this,
+            [this]() {
+                auto* dlg = new SyntheticBindingDialog(
+                    ctx_.client_manager, ctx_.username.toStdString(), ctx_.main_window);
+                dlg->setAttribute(Qt::WA_DeleteOnClose);
+                connect(dlg, &QDialog::accepted, this, [this, dlg]() {
+                    const int n = dlg->bindingsCreated();
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Created " << n << " binding(s) from synthetic dialog";
+                    emit statusMessage(tr("Created %1 binding(s) from synthetic feeds.").arg(n));
+                    if (feedBindingController_)
+                        feedBindingController_->reloadListWindow();
+                });
+                dlg->open();
+            });
 
     crmCrossRatesMatrixController_ = std::make_unique<CrmCrossRatesMatrixController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache);

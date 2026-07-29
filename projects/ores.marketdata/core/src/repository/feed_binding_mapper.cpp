@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/domain/feed_binding_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/enums.hpp>
 
 namespace ores::marketdata::repository {
 
@@ -43,6 +44,7 @@ domain::feed_binding feed_binding_mapper::map(const feed_binding_entity& v) {
 
     r.source_name = v.source_name;
 
+    r.asset_class = rfl::string_to_enum<domain::asset_class>(v.asset_class).value();
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -69,6 +71,7 @@ feed_binding_entity feed_binding_mapper::map(const domain::feed_binding& v) {
 
     r.source_name = v.source_name;
 
+    r.asset_class = rfl::enum_to_string(v.asset_class);
     r.enabled = v.enabled;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

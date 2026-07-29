@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/filter-feed-bindings-by-product-kind
+#+pr: 1740
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -51,11 +51,11 @@ FX-only flow" failed):
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -74,6 +74,67 @@ FX-only flow" failed):
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Investigated whether an asset-class taxonomy already exists before
+inventing a new one for =feed_binding= -- it does:
+=ores::marketdata::domain::asset_class= (=fx, rates, credit, equity,
+commodity, inflation, bond, cross_asset=), already used on
+=market_series.asset_class= (DB-validated via
+=ores_refdata_validate_asset_class_fn= against the persisted
+=refdata.asset_class_code= lookup table). Reusing this exact enum for
+=feed_binding= rather than introducing a separate fx_spot/ir_curve
+value set, so the codebase has one way of modeling asset class, not
+two competing ones.
+
+Consumers of =get_feed_bindings_request= audited:
+- =FxSpotGridWindow= -- needs FX-only filtering (the actual bug).
+- =ClientFeedBindingModel=/=FeedBindingMdiWindow= -- generic admin
+  list/history window; fine to keep showing all kinds, picks up the
+  new column automatically once it exists.
+- =CrmCrossRatesMatrixMdiWindow= -- checked, doesn't touch
+  =feed_bindings= at all, not affected.
+
+Steps:
+1. Add an =asset_class= column to
+   =projects/ores.marketdata/modeling/ores.marketdata.feed_binding.org=
+   (=domain::asset_class=, =is_enum: true=, validated via
+   =ores_refdata_validate_asset_class_fn=, mirroring =market_series='s
+   own column exactly).
+2. Regenerate SQL + all C++ layers for the =feed_binding= entity via
+   =compass codegen entity generate=.
+3. =SyntheticBindingDialog::createBindings()= populates =asset_class=
+   from =BindableConfig= at bind time (FX -> =asset_class::fx=, IR ->
+   =asset_class::rates=, matching the enum's own naming).
+4. =FxSpotGridWindow::reload()=/=buildRows()= filters to
+   =asset_class == fx= only.
+5. No migration/backfill needed: ores.sql has no incremental migration
+   runner -- schema changes apply via a full =compass db recreate=,
+   so the new column exists from the next fresh DB build onward, no
+   ALTER TABLE required.
+6. Manual QA: re-run the bind-and-verify scenario, this time also
+   confirming the FX Spot grid stays clean after an IR bind.
+
+Ran into two blockers while executing this plan, both filed
+separately rather than worked around silently:
+- =org_loader.py= rejects the legacy =Primary key=/=Natural keys=
+  split on =domain_entity= models (contrary to the unify-entity-key-
+  modeling story's own stated scope) -- worked around by migrating
+  =feed_binding.org= to the unified =Columns= format first (own
+  commit, verified 0 PK/natural-key-semantic changes via build+test),
+  filed as [[id:B7FE7D34-82B3-4166-8936-94997182CF80][its own task]].
+- =default_value= on an =is_enum= column generates invalid C++ (a
+  char literal assigned to a scoped enum) -- worked around by
+  dropping =default_value= entirely, matching
+  =market_series.asset_class='s own no-default precedent (value-
+  initializes to the first enumerator, =fx=, which is what we want
+  anyway). Filed as a capture.
+- Also noted, not filed separately: the =Validations= table entry
+  (=ores_refdata_validate_asset_class_fn=) does not actually get wired
+  into the generated insert trigger -- =market_series.asset_class= has
+  the identical gap already, so this is pre-existing/shared, not
+  introduced here. Left the Validations entry in the model anyway
+  (documents intent, costs nothing); value is still constrained by the
+  C++ enum type and the SQL =CHECK (asset_class <> '')=.
+
 * Notes
 
 * Test Scenarios
@@ -85,18 +146,59 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:FFD4111E-3C40-44D3-8F18-DAA2357D65E8][Bind an IR curve feed and confirm the FX Spot grid stays clean]] | PASSED | All 5 steps PASS after fixing two bugs manual QA caught along the way: uninitialized asset_class from the generic Feed Bindings dialog, and IR ore_key missing its RATES/YIELD prefix. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1740][#1740]] | [marketdata,qt,codegen] Filter FX Spot grid by product kind (feed_binding.asset_class) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SyntheticBindingDialog unreachable: codegen regeneration silently deleted the hand-maintained "Bind synthetic" toolbar action | FeedBindingMdiWindow.hpp/.cpp | Accepted, then corrected | First pass re-added it as a hand-edit to the generated files -- caught during a second look: this project never hand-edits generated files, since it has a real extension mechanism (paste blocks, =:implements <UUID>=) for exactly this. Redone properly: =ores.marketdata.feed_binding.org= gains a "Bind synthetic seam" -- signal declared/emitted via paste blocks in the MDI window and relayed through the controller (mirroring =ores.refdata.party='s own cross-navigation seam), consumed in =MarketdataPlugin.cpp= (hand-written, not generated) where =SyntheticBindingDialog= is actually constructed. Also simplified =SyntheticBindingDialog= to fetch its own already-bound source names via =get_feed_bindings_request= instead of requiring the caller to pass a model snapshot in -- the plugin composition root has no access to =FeedBindingMdiWindow='s private model, and self-fetching is both simpler and fresher than threading a snapshot through the signal chain. |
+| 2 | Dead files: FeedBindingHistoryDialog.{hpp,cpp,ui} unreferenced anywhere (not even in CMakeLists) since FeedBindingController switched to the generic HistoryDialog | FeedBindingHistoryDialog.* | Accepted | Removed. |
+| 3 | No-op ToolTipRole branch in ClientFeedBindingModel::headerData | ClientFeedBindingModel.cpp | Declined | Codegen-generated file; the branch comes from the shared Qt list template, not specific to this PR. Fixing it belongs in the template, out of scope here. |
+| 4 | Unused lambda captures in FeedBindingDetailDialog::onSaveClicked | FeedBindingDetailDialog.cpp | Declined | Same as #3 -- codegen-generated, template-level issue, not hand-edited by this PR. |
+| 5 | Unused #include <unordered_set> in feed_binding_generator.cpp | feed_binding_generator.cpp | Declined | Reviewer's own note: comes from the shared generator template unconditionally, not specific to this entity or PR. |
+| 6 | No unit test for the org_loader.py is_enum default_value fix | test_org_loader_keys.py | Accepted | Added two tests: is_enum default_value -> scoped enum expression, and confirmed non-enum text defaults are still SQL-quoted (no regression to the existing behaviour). |
 
 * Result
+
+=feed_binding= now carries =asset_class= (reusing
+=ores::marketdata::domain::asset_class=, the same enum
+=market_series= already uses -- one canonical way of modeling asset
+class, not a second one). =SyntheticBindingDialog= sets it at bind
+time; =FxSpotGridWindow= filters to =asset_class == fx=, so an IR
+curve binding no longer produces a row in the FX Spot grid.
+=ClientFeedBindingModel=/=FeedBindingMdiWindow= (generic admin list)
+and =CrmCrossRatesMatrixMdiWindow= were audited -- the former is
+unaffected (still shows all kinds, by design), the latter doesn't
+touch =feed_bindings= at all.
+
+Manual QA caught two further real bugs beyond the original scope,
+both fixed in the same branch:
+- The generic Feed Bindings admin dialog has no field for
+  =asset_class=, so a binding created through it left the column
+  uninitialized, corrupting the row (serialized as garbage). Root
+  cause: a codegen bug where =default_value= on an =is_enum= column
+  was SQL-string-quoted for the C++ template too, producing invalid
+  C++ (fixed in =org_loader.py=, confirmed no other entity affected).
+  =feed_binding.asset_class= now safely defaults to =fx=.
+- =IrCurveEditor= had no way to see a curve's =ore_key= before
+  binding it, and the IR =ore_key= computation itself (in both
+  =SyntheticBindingDialog= and =IrCurveEditor=) was missing its
+  =RATES/YIELD/= prefix -- just the bare qualifier (e.g.
+  ="AUD/AONIA"=) instead of the real market-data key shape
+  (="RATES/YIELD/AUD/AONIA"=, matching =ir_curve_feed.cpp='s own
+  =find_series("RATES", "YIELD", qualifier)= call and FX's equivalent
+  ="FX/RATE/EUR/USD"= shape, checked against real ORE key conventions
+  in =external/ore/examples=). Both fixed; =IrCurveEditor= now shows a
+  selectable ORE key label mirroring =FxSpotRateEditor='s.
+
+Verified end-to-end via the linked test scenario: bind FX + IR feeds,
+start both, confirm the FX Spot grid shows only the FX row, confirm
+the IR tick still persists to =market_observations= despite being
+filtered from the display. All 5 steps PASS.

@@ -189,6 +189,68 @@ No field flagged primary_key.
         load_org_model(doc_path)
 
 
+def test_is_enum_default_value_becomes_scoped_enum_expression():
+    # Regression test: default_value on an is_enum column used to be SQL-string-quoted
+    # (the same handling as any other text-typed column), which the C++ domain template
+    # emits unescaped as the struct member's initializer -- producing invalid C++ (a char
+    # literal assigned to a scoped enum) instead of the correct domain::asset_class::fx.
+    de = _model(
+        """
+* Columns
+
+** id
+:PROPERTIES:
+:type: uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate id.
+
+** asset_class
+:PROPERTIES:
+:type: text
+:cpp_type: domain::asset_class
+:is_enum: true
+:nullable: false
+:default_value: fx
+:END:
+
+Coarse asset class taxonomy.
+"""
+    )
+    [asset_class_col] = [c for c in de["columns"] if c["name"] == "asset_class"]
+    assert asset_class_col["default_value"] == "domain::asset_class::fx"
+
+
+def test_non_enum_text_default_value_is_still_sql_quoted():
+    de = _model(
+        """
+* Columns
+
+** id
+:PROPERTIES:
+:type: uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate id.
+
+** day_count
+:PROPERTIES:
+:type: text
+:cpp_type: std::string
+:default_value: ACT/360
+:END:
+
+Day count convention.
+"""
+    )
+    [day_count_col] = [c for c in de["columns"] if c["name"] == "day_count"]
+    assert day_count_col["default_value"] == "'ACT/360'"
+
+
 def test_domain_entity_to_table_context_unaffected_by_compound_key_shape():
     de = _model(
         """

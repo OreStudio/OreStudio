@@ -21,6 +21,7 @@
 #define ORES_QT_SYNTHETIC_BINDING_DIALOG_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <QDialog>
 #include <QPushButton>
@@ -55,7 +56,6 @@ private:
 public:
     explicit SyntheticBindingDialog(ClientManager* clientManager,
                                     const std::string& username,
-                                    const std::vector<std::string>& existingSourceNames,
                                     QWidget* parent = nullptr);
 
     ~SyntheticBindingDialog() override = default;
@@ -79,6 +79,7 @@ private:
         std::string kind; // "FX" or "IR", shown in the table's Type column
         std::string ore_key;
         std::string source_name;
+        marketdata::domain::asset_class asset_class;
     };
 
     void loadConfigs();

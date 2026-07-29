@@ -41,6 +41,16 @@ FeedBindingDetailDialog::FeedBindingDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 FeedBindingDetailDialog::~FeedBindingDetailDialog() {
@@ -57,6 +67,10 @@ QWidget* FeedBindingDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* FeedBindingDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString FeedBindingDetailDialog::code() const {
+    return QString::fromStdString(feed_binding_.ore_key);
 }
 
 void FeedBindingDetailDialog::setupUi() {
@@ -82,6 +96,7 @@ void FeedBindingDetailDialog::setupConnections() {
         ui_->oreKeyEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onCodeChanged);
     connect(
         ui_->sourceEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onFieldChanged);
+    connect(ui_->enabledEdit, &QCheckBox::toggled, this, &FeedBindingDetailDialog::onFieldChanged);
 }
 
 void FeedBindingDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -100,10 +115,13 @@ void FeedBindingDetailDialog::setBinding(
 
 void FeedBindingDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->oreKeyEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
         feed_binding_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            feed_binding_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -118,6 +136,7 @@ void FeedBindingDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->oreKeyEdit->setReadOnly(true);
     ui_->sourceEdit->setReadOnly(readOnly);
+    ui_->enabledEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -181,6 +200,7 @@ void FeedBindingDetailDialog::onSaveClicked() {
         return;
     }
 
+
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
@@ -218,24 +238,27 @@ void FeedBindingDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Feed Binding saved successfully";
-            QString code = QString::fromStdString(self->feed_binding_.ore_key);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->feed_bindingSaved(code);
-            self->notifySaveSuccess(tr("Feed Binding '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Feed Binding saved successfully";
+                    QString code = QString::fromStdString(self->feed_binding_.ore_key);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->feed_bindingSaved(code);
+                    self->notifySaveSuccess(tr("Feed Binding '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -259,7 +282,8 @@ void FeedBindingDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -310,5 +334,6 @@ void FeedBindingDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

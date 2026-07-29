@@ -249,6 +249,13 @@ void IrCurveEditor::buildInstrumentTab() {
     indexNameCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Index name"), indexNameCombo_);
 
+    // Mirrors FxSpotRateEditor::buildInstrumentTab()'s ORE key label -- shows the exact key
+    // SyntheticBindingDialog will bind this config under (currency_code + "/" + stripped index
+    // name), so the tester doesn't have to work it out by hand.
+    oreKeyLabel_ = new QLabel(identityBox);
+    oreKeyLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    form->addRow(tr("ORE key"), oreKeyLabel_);
+
     fixedLegFrequencyCombo_ = new QComboBox(identityBox);
     fixedLegFrequencyCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Fixed leg frequency"), fixedLegFrequencyCombo_);
@@ -352,9 +359,11 @@ void IrCurveEditor::buildInstrumentTab() {
 
     connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
         populateIndexNameCombo();
+        recomputeOreKey();
         recomputeDefaultSourceName();
     });
     connect(indexNameCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
+        recomputeOreKey();
         recomputeDefaultSourceName();
     });
     connect(sourceNameEdit_, &QLineEdit::textEdited, this, [this](const QString&) {
@@ -366,6 +375,7 @@ void IrCurveEditor::buildInstrumentTab() {
     populateCurrencyCombo();
     populateIndexNameCombo();
     populatePaymentFrequencyCombo();
+    recomputeOreKey();
     recomputeDefaultSourceName();
 }
 
@@ -767,6 +777,7 @@ void IrCurveEditor::populateIndexNameCombo() {
         if (!wanted.isEmpty())
             self->indexNameCombo_->setCurrentText(wanted);
 
+        self->recomputeOreKey();
         self->recomputeDefaultSourceName();
     });
     watcher->setFuture(QtConcurrent::run(task));
@@ -890,6 +901,23 @@ QString IrCurveEditor::defaultSourceName() const {
     std::string collection = lower(feedName_.toStdString());
     collection.erase(std::remove(collection.begin(), collection.end(), ' '), collection.end());
     return QString::fromStdString("synthetic." + collection + "." + lower(ccy) + lower(idx));
+}
+
+void IrCurveEditor::recomputeOreKey() {
+    const auto ccy = currencyCombo_->currentText().toStdString();
+    const auto idx = indexNameCombo_->currentText().toStdString();
+    if (ccy.empty() || idx.empty()) {
+        oreKeyLabel_->setText({});
+        return;
+    }
+    // indexNameCombo_ already stores the "<CCY>-" prefix stripped off (see
+    // populateIndexNameCombo()), so ccy + "/" + idx is already the same qualifier
+    // SyntheticBindingDialog::loadConfigs() and ir_curve_feed.cpp compute -- no stripping needed
+    // here, unlike SyntheticBindingDialog's own copy which starts from the full stored
+    // index_name. "RATES/YIELD/" matches ir_curve_feed.cpp's own find_series("RATES", "YIELD",
+    // qualifier) call and FX's equivalent full SERIES_TYPE/METRIC/QUALIFIER shape (e.g.
+    // "FX/RATE/EUR/USD").
+    oreKeyLabel_->setText(QString::fromStdString("RATES/YIELD/" + ccy + "/" + idx));
 }
 
 void IrCurveEditor::recomputeDefaultSourceName() {

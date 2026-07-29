@@ -413,10 +413,22 @@ def _column_node_to_dict(node: OrgNode) -> dict[str, Any]:
             out[key] = v
         else:
             out[key] = _parse_typed(v)
+    # is_enum columns: default/default_value feeds the C++ struct's member
+    # initializer directly (cpp_domain_type_class.hpp.mustache emits it
+    # unescaped), so it must be the scoped-enum expression (e.g.
+    # domain::asset_class::fx), never SQL-quoted -- SQL-quoting a bare word
+    # produces a single-quoted string/char literal, which does not compile
+    # against an enum class member. Checked and confirmed: domain_entity's
+    # SQL template does not currently emit a DEFAULT clause from this field
+    # at all, so there is no competing SQL-side consumer to keep quoted.
+    if out.get("is_enum") and out.get("cpp_type"):
+        for key in ("default", "default_value"):
+            if key in out and isinstance(out[key], str) and "::" not in out[key]:
+                out[key] = f"{out['cpp_type']}::{out[key].strip()}"
     # SQL-quote string-typed defaults here so field authors write the plain
     # value (e.g. :default: ACT/360, not :default: 'ACT/360') — SQL quoting
     # syntax is the template's concern, not the model's.
-    if out.get("type") in _SQL_STRING_TYPES:
+    elif out.get("type") in _SQL_STRING_TYPES:
         for key in ("default", "default_value"):
             if key in out and isinstance(out[key], str):
                 out[key] = _sql_quote_default(out[key])

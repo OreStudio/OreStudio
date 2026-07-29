@@ -42,6 +42,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "party_id" uuid not null,
     "ore_key" text not null,
     "source_name" text not null,
+    "asset_class" text not null,
     "enabled" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -58,7 +59,8 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("ore_key" <> ''),
-    check ("source_name" <> '')
+    check ("source_name" <> ''),
+    check ("asset_class" <> '')
 );
 
 -- Composite natural key: unique combination for active records
@@ -106,17 +108,22 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_marketdata_feed_bindings_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -130,9 +137,10 @@ before insert on "ores_marketdata_feed_bindings_tbl"
 for each row execute function ores_marketdata_feed_bindings_insert_fn();
 
 create or replace rule ores_marketdata_feed_bindings_delete_rule as
-on delete to "ores_marketdata_feed_bindings_tbl" do instead
+on delete to "ores_marketdata_feed_bindings_tbl" do instead (
     update "ores_marketdata_feed_bindings_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

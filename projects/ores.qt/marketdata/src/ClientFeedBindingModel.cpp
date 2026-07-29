@@ -86,6 +86,7 @@ QVariant ClientFeedBindingModel::data(const QModelIndex& index, int role) const 
             case SourceName:
                 return QString::fromStdString(feed_binding.source_name);
             case Enabled:
+                return feed_binding.enabled ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(feed_binding.version);
             case ModifiedBy:
@@ -104,8 +105,15 @@ QVariant ClientFeedBindingModel::data(const QModelIndex& index, int role) const 
 
 QVariant
 ClientFeedBindingModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case OreKey:
@@ -204,6 +212,22 @@ void ClientFeedBindingModel::fetch_feed_bindings(std::uint32_t offset, std::uint
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .feed_bindings = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->feed_bindings.size() << " feed bindings";
                 const std::uint32_t count =
@@ -272,6 +296,7 @@ const ores::marketdata::domain::feed_binding* ClientFeedBindingModel::getBinding
         return nullptr;
     return &feed_bindings_[idx];
 }
+
 
 QVariant ClientFeedBindingModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

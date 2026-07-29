@@ -20,9 +20,11 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 #define ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 
+#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::marketdata::domain {
 
@@ -76,6 +78,18 @@ struct feed_binding final {
     std::string source_name;
 
     /**
+     * @brief Coarse asset class taxonomy of the series being bound (FX, RATES, CREDIT, EQUITY,
+     * COMMODITY, INFLATION, BOND, CROSS_ASSET), so FX-only and IR-only consumers of the binding
+     * list (e.g. the FX Spot grid) can filter to the kind they actually expect. Set client-side at
+     * bind time from the config being bound; soft FK to refdata.asset_class_code (same taxonomy
+     * already used by market_series.asset_class), not a hard FK. Defaults to fx (all pre-existing
+     * bindings are FX today) so any write path that doesn't set it explicitly -- e.g. the generic
+     * Feed Bindings admin dialog, which has no field for it -- gets a safe value instead of an
+     * uninitialized one.
+     */
+    domain::asset_class asset_class = domain::asset_class::fx;
+
+    /**
      * @brief When true the marketdata service maintains an active NATS subscription for this
      * binding. Setting to false suspends ingestion without removing the binding record.
      */
@@ -108,6 +122,16 @@ struct feed_binding final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for feed_binding, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const feed_binding&) {
+    return "ores.marketdata.feed_binding";
+}
 
 }
 

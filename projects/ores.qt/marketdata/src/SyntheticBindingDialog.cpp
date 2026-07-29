@@ -55,12 +55,10 @@ std::string strip_currency_prefix(const std::string& currency_code, const std::s
 
 SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
                                                const std::string& username,
-                                               const std::vector<std::string>& existingSourceNames,
                                                QWidget* parent)
     : QDialog(parent)
     , clientManager_(clientManager)
     , username_(username)
-    , existingSourceNames_(existingSourceNames)
     , table_(new QTableWidget(this))
     , createButton_(new QPushButton(tr("Create bindings"), this)) {
 
@@ -114,16 +112,32 @@ void SyntheticBindingDialog::loadConfigs() {
     auto* cm = clientManager_;
     QPointer<SyntheticBindingDialog> self = this;
 
-    using Result = std::pair<bool, std::vector<BindableConfig>>;
+    struct Result {
+        bool ok = false;
+        std::vector<BindableConfig> configs;
+        std::vector<std::string> existing_source_names;
+    };
     auto task = [cm]() -> Result {
         std::vector<BindableConfig> configs;
+
+        // Fetch already-bound source names first so the table can pre-tick rows the caller
+        // doesn't need to know about -- keeps this dialog self-contained (no dependency on
+        // whatever list window/model happens to be open) rather than requiring the caller to
+        // pass a possibly-stale snapshot in.
+        std::vector<std::string> existing_source_names;
+        marketdata::messaging::get_feed_bindings_request fb_req{.offset = 0, .limit = 1000};
+        auto fb_resp = cm->process_authenticated_request(fb_req);
+        if (fb_resp && fb_resp->success)
+            for (const auto& b : fb_resp->feed_bindings)
+                existing_source_names.push_back(b.source_name);
 
         synthetic::messaging::get_fx_spot_generation_configs_request fx_req;
         auto fx_resp = cm->process_authenticated_request(fx_req);
         if (!fx_resp)
-            return {false, {}};
+            return {.ok = false};
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
-            configs.push_back({"FX", cfg.ore_key, cfg.source_name});
+            configs.push_back(
+                {"FX", cfg.ore_key, cfg.source_name, marketdata::domain::asset_class::fx});
 
         // IR is additive to the pre-existing FX-only flow: if the IR service is
         // unavailable, log and keep going with the FX rows already fetched rather than
@@ -136,24 +150,28 @@ void SyntheticBindingDialog::loadConfigs() {
                                          "showing FX rows only.";
         } else {
             for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
-                // Deliberately just the qualifier (e.g. "USD/LIBOR-3M"), not FX's full
-                // SERIES_TYPE/METRIC/QUALIFIER shape (e.g. "FX/RATE/EUR/USD") -- harmless
-                // today since curve_feed_ingest_loop ingests IR ticks via its own wildcard
-                // subscription and never reads feed_binding.ore_key. See
-                // task_filter-feed-bindings-by-product-kind.org for giving feed_binding a
-                // real product-kind field, which should also settle this shape mismatch.
-                const auto ore_key = cfg.currency_code + "/" +
+                // Full SERIES_TYPE/METRIC/QUALIFIER shape, matching FX's own (e.g.
+                // "FX/RATE/EUR/USD") and real ORE market data key conventions (checked against
+                // external/ore/examples/*/Input/marketdata.txt's own FX/RATE/EUR/USD lines).
+                // "RATES/YIELD/" is exactly what ir_curve_feed.cpp's own
+                // find_series("RATES", "YIELD", qualifier) call looks the series up under --
+                // this must match that exactly, not just the bare qualifier.
+                const auto qualifier = cfg.currency_code + "/" +
                     strip_currency_prefix(cfg.currency_code, cfg.index_name);
-                configs.push_back({"IR", ore_key, cfg.source_name});
+                const auto ore_key = "RATES/YIELD/" + qualifier;
+                configs.push_back(
+                    {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});
             }
         }
 
-        return {true, std::move(configs)};
+        return Result{.ok = true,
+                     .configs = std::move(configs),
+                     .existing_source_names = std::move(existing_source_names)};
     };
 
     auto* watcher = new QFutureWatcher<Result>(this);
     connect(watcher, &QFutureWatcher<Result>::finished, this, [self, watcher]() {
-        auto [ok, configs] = watcher->result();
+        auto [ok, configs, existing_source_names] = watcher->result();
         watcher->deleteLater();
         if (!self)
             return;
@@ -165,6 +183,7 @@ void SyntheticBindingDialog::loadConfigs() {
             return;
         }
         self->configs_ = std::move(configs);
+        self->existingSourceNames_ = std::move(existing_source_names);
         self->populateTable(self->configs_);
         self->table_->setEnabled(true);
         self->createButton_->setEnabled(true);
@@ -246,6 +265,7 @@ void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& s
             b.id = boost::uuids::random_generator()();
             b.ore_key = cfg.ore_key;
             b.source_name = cfg.source_name;
+            b.asset_class = cfg.asset_class;
             b.enabled = true;
             b.performed_by = username;
             b.change_reason_code = "system.new_record";

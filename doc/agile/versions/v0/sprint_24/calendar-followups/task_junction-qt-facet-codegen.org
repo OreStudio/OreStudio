@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/junction-qt-facet-codegen
-#+pr:
+#+pr: 1742
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1742][#1742]] | [ores.codegen] Junction-Qt-facet render path: generate calendar_date |
 
 * Review
 

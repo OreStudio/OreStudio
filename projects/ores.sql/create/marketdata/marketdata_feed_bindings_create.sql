@@ -42,6 +42,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "party_id" uuid not null,
     "ore_key" text not null,
     "source_name" text not null,
+    "asset_class" text not null,
     "enabled" boolean not null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -58,7 +59,8 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("ore_key" <> ''),
-    check ("source_name" <> '')
+    check ("source_name" <> ''),
+    check ("asset_class" <> '')
 );
 
 -- Composite natural key: unique combination for active records

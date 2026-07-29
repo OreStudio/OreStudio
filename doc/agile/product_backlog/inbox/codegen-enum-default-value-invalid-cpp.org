@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7CC4F1ED-3ADE-46E8-AA1C-EBDA50ACCE61
+:END:
+#+title: Codegen default_value on an is_enum column generates invalid C++ (char literal assigned to enum class)
+#+description: Setting default_value to a bare word on an is_enum true column (e.g. default_value: fx on a domain::asset_class field) generates domain::asset_class asset_class = fx wrapped in single quotes -- a single-quoted char literal assigned to a scoped enum, which does not compile. Correct output should be the scoped enum syntax (e.g. domain::asset_class::fx) or equivalent. Also noted separately: default_value does not appear to generate a SQL DEFAULT clause for domain_entity columns either (checked against a boolean column with default_value: true -- the generated CREATE TABLE has no DEFAULT), so its effect may currently be C++-struct-only regardless of type. Surfaced while adding feed_binding.asset_class (IR Rates synthetic data story); worked around by dropping default_value entirely and handling backfill via a separate SQL migration script, matching market_series.asset_class's own no-default precedent.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:bug:enum:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

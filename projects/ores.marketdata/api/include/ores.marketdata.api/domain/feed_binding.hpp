@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 #define ORES_MARKETDATA_API_DOMAIN_FEED_BINDING_HPP
 
+#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
@@ -75,6 +76,17 @@ struct feed_binding final {
      * start_market_feed_config_request.
      */
     std::string source_name;
+
+    /**
+     * @brief Coarse asset class taxonomy of the series being bound (FX, RATES, CREDIT, EQUITY,
+     * COMMODITY, INFLATION, BOND, CROSS_ASSET), so FX-only and IR-only consumers of the binding
+     * list (e.g. the FX Spot grid) can filter to the kind they actually expect. Set client-side at
+     * bind time from the config being bound; soft FK to refdata.asset_class_code (same taxonomy
+     * already used by market_series.asset_class), not a hard FK. No default -- always set
+     * explicitly at bind time (mirrors market_series.asset_class, which has no default either); a
+     * migration script backfills pre-existing rows (all FX today) to fx.
+     */
+    domain::asset_class asset_class;
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

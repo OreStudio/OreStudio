@@ -123,7 +123,8 @@ void SyntheticBindingDialog::loadConfigs() {
         if (!fx_resp)
             return {false, {}};
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
-            configs.push_back({"FX", cfg.ore_key, cfg.source_name});
+            configs.push_back(
+                {"FX", cfg.ore_key, cfg.source_name, marketdata::domain::asset_class::fx});
 
         // IR is additive to the pre-existing FX-only flow: if the IR service is
         // unavailable, log and keep going with the FX rows already fetched rather than
@@ -139,12 +140,11 @@ void SyntheticBindingDialog::loadConfigs() {
                 // Deliberately just the qualifier (e.g. "USD/LIBOR-3M"), not FX's full
                 // SERIES_TYPE/METRIC/QUALIFIER shape (e.g. "FX/RATE/EUR/USD") -- harmless
                 // today since curve_feed_ingest_loop ingests IR ticks via its own wildcard
-                // subscription and never reads feed_binding.ore_key. See
-                // task_filter-feed-bindings-by-product-kind.org for giving feed_binding a
-                // real product-kind field, which should also settle this shape mismatch.
+                // subscription and never reads feed_binding.ore_key.
                 const auto ore_key = cfg.currency_code + "/" +
                     strip_currency_prefix(cfg.currency_code, cfg.index_name);
-                configs.push_back({"IR", ore_key, cfg.source_name});
+                configs.push_back(
+                    {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});
             }
         }
 
@@ -246,6 +246,7 @@ void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& s
             b.id = boost::uuids::random_generator()();
             b.ore_key = cfg.ore_key;
             b.source_name = cfg.source_name;
+            b.asset_class = cfg.asset_class;
             b.enabled = true;
             b.performed_by = username;
             b.change_reason_code = "system.new_record";

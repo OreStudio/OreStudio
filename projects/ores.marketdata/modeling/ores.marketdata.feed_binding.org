@@ -77,6 +77,25 @@ Unique producer identity; the ingest loop subscribes to
 =synthetic.v1.tick.<source_name>=. Matches the =source_name= field in
 =start_market_feed_config_request=.
 
+** asset_class
+:PROPERTIES:
+:type:     text
+:cpp_type: domain::asset_class
+:is_enum:  true
+:nullable: false
+:END:
+
+Coarse asset class taxonomy of the series being bound (=FX=, =RATES=,
+=CREDIT=, =EQUITY=, =COMMODITY=, =INFLATION=, =BOND=, =CROSS_ASSET=),
+so FX-only and IR-only consumers of the binding list (e.g. the FX Spot
+grid) can filter to the kind they actually expect. Set client-side at
+bind time from the config being bound; soft FK to
+=refdata.asset_class_code= (same taxonomy already used by
+=market_series.asset_class=), not a hard FK. No default -- always set
+explicitly at bind time (mirrors =market_series.asset_class=, which
+has no default either); a migration script backfills pre-existing
+rows (all FX today) to =fx=.
+
 ** enabled
 :PROPERTIES:
 :type:          boolean
@@ -101,6 +120,13 @@ binding. Setting to false suspends ingestion without removing the binding record
 |------------------|
 | "ore_key" <> ''  |
 | "source_name" <> '' |
+| "asset_class" <> '' |
+
+** Validations
+
+| column      | validation_function                  | nullable |
+|-------------+---------------------------------------+----------|
+| asset_class | ores_refdata_validate_asset_class_fn | false    |
 
 * C++
 
@@ -150,6 +176,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include "ores.marketdata.api/domain/asset_class.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
 #+end_src

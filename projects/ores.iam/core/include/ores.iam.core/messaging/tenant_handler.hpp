@@ -24,6 +24,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -416,6 +417,29 @@ public:
                 finish_party(client, *ctx_expected, tenant_id_str, account_id, username, *party,
                             /*set_default=*/false);
                 add_step(office.code + ".onboarding", "completed");
+
+                // Market data: the same synthetic FX/IR feed and driver-rate
+                // vintage every generic "provision party" flow publishes
+                // (party_provisioning_bundle_plan()) -- skipping only
+                // risk_management, since Acme's business units/portfolios/
+                // books already came from office.bundle_code above. Without
+                // this, an Acme party has no CRM (cross-rates matrix) or IR
+                // curve data at all: nothing populates ores_marketdata_*
+                // for a party unless something explicitly publishes it.
+                for (const auto& mkt : dq::messaging::party_provisioning_bundle_plan()) {
+                    if (mkt.bundle_code == "risk_management")
+                        continue;
+                    const auto mkt_label = office.code + "." + mkt.bundle_code;
+                    add_step(mkt_label, "starting", 0);
+                    dq::messaging::publish_bundle_params mkt_params;
+                    mkt_params.party_id = boost::uuids::to_string(party->id);
+                    publish_bundle(client,
+                                   mkt.bundle_code,
+                                   username,
+                                   dq::messaging::build_params_json(mkt_params),
+                                   add_step,
+                                   progress(mkt_label));
+                }
             }
 
             // Attaching the Barclays demo logo needs the GLEIF counterparty

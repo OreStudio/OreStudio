@@ -92,8 +92,9 @@ struct complete_tenant_provisioning_response {
 // Bank LEI hierarchy, publishes real GLEIF counterparties (small), then
 // for each operating company publishes its business units, portfolios,
 // books, accounts, and account contact informations. No repeated
-// per-party logins, no orchestration logic client-side -- see
-// ores_iam_provision_acme_tenant_fn.
+// per-party logins, no orchestration logic client-side -- driven by
+// internal actor impersonation through the real handler pipeline, see
+// ores.iam.core/messaging/tenant_handler.hpp's provision_acme.
 struct provision_acme_tenant_command {
     using response_type = struct provision_acme_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";

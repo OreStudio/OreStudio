@@ -36,7 +36,7 @@
 -- ores_dq_images_artefact_tbl staging pipeline (see the "Generalise account
 -- images" task) -- it is inserted directly into ores_assets_images_tbl
 -- under the system tenant, then copied per-tenant and attached by
--- ores_iam_provision_acme_tenant_fn (see iam_acme_provisioner_create.sql).
+-- tenant_handler::provision_acme (ores.iam.core/messaging/tenant_handler.hpp).
 -- Idempotent: skips if a system-tenant row with this key already exists.
 -- =============================================================================
 

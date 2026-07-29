@@ -1876,23 +1876,40 @@ void MarketSimulatorWindow::updateToolbarState() {
     const bool isEditableNode =
         hasSelection && (type == NodeType::Collection || type == NodeType::Feed);
     const bool anySelected = !selectedFxPairs().empty() || !selectedIrCurves().empty();
+    // No selection at all *is* the root case (currentNodeType() returns Root
+    // when the tree's current index is invalid) -- onStartFeedClicked()
+    // routes it to promptThemeAndStart() rather than starting any feeds
+    // directly, so Start must stay enabled here or that path is unreachable
+    // from the toolbar/menu action.
+    const bool canStart = anySelected || !hasSelection;
 
     newFxRateAction_->setEnabled(hasFeedContext);
     newIrCurveAction_->setEnabled(hasFeedContext);
     editAction_->setEnabled(isEditableNode);
     deleteAction_->setEnabled(isEditableNode);
-    startFeedAction_->setEnabled(anySelected);
+    startFeedAction_->setEnabled(canStart);
     stopFeedAction_->setEnabled(anySelected);
 }
 
 std::vector<QStandardItem*> MarketSimulatorWindow::rootCollections() const {
+    // Collections are not direct children of the model's invisible root --
+    // buildTree() nests everything under one real "Synthetic" folder item
+    // (kind == "root", NodeType::Root), so this must recurse through the
+    // whole tree rather than only looking one level down. Folder-less
+    // fallback collections (see buildTree()'s "no backing folder row yet"
+    // branch) do sit directly under the invisible root, so a flat scan
+    // would find those but silently miss every real, folder-backed theme.
     std::vector<QStandardItem*> result;
-    auto* root = treeModel_->invisibleRootItem();
-    for (int i = 0; i < root->rowCount(); ++i) {
-        auto* child = root->child(i, 0);
-        if (static_cast<NodeType>(child->data(NodeTypeRole).toInt()) == NodeType::Collection)
-            result.push_back(child);
-    }
+    std::function<void(QStandardItem*)> visit = [&](QStandardItem* item) {
+        for (int i = 0; i < item->rowCount(); ++i) {
+            auto* child = item->child(i, 0);
+            if (static_cast<NodeType>(child->data(NodeTypeRole).toInt()) == NodeType::Collection)
+                result.push_back(child);
+            else
+                visit(child);
+        }
+    };
+    visit(treeModel_->invisibleRootItem());
     return result;
 }
 
@@ -1910,36 +1927,46 @@ void MarketSimulatorWindow::promptThemeAndStart() {
     if (names.isEmpty())
         return;
 
-    bool ok = false;
-    const QString chosen = QInputDialog::getItem(
-        this,
-        tr("Start"),
-        tr("Starting everything at once would run mutually-exclusive vintages "
-           "side by side. Which dataset would you like to start?"),
-        names,
-        0,
-        false,
-        &ok);
-    if (!ok || chosen.isEmpty())
-        return;
+    // Window-modal (not the QInputDialog::getItem default of
+    // application-modal) so this dialog only blocks this window -- other
+    // windows (e.g. the Scenario Runner a tester is taking notes in) stay
+    // usable while it's open. That means driving it via open()/a signal
+    // instead of the blocking exec() the static getItem() helper uses.
+    auto* dlg = new QInputDialog(this);
+    // Qt::WindowModal still blocks sibling MDI subwindows (Scenario Runner
+    // included) -- they're all descendants of the single top-level
+    // QMainWindow, so WindowModal's "block this window and its ancestors"
+    // scope covers the lot. NonModal is the only option that leaves other
+    // subwindows usable while this is open.
+    dlg->setWindowModality(Qt::NonModal);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setWindowTitle(tr("Start"));
+    dlg->setLabelText(tr("Which dataset would you like to start?"));
+    dlg->setComboBoxItems(names);
+    dlg->setOption(QInputDialog::UseListViewForComboBoxItems, false);
 
-    for (auto* item : collections) {
-        if (item->text() != chosen)
-            continue;
-        const auto folderId = item->data(FolderIdRole).toString().toStdString();
-        if (!folderId.empty()) {
-            startFolderAsync(folderId);
-            auto curves = irCurvesUnderIndex(item->index());
-            curves.erase(std::remove_if(curves.begin(),
-                                        curves.end(),
-                                        [](const auto& ir) { return !ir.auto_start; }),
-                         curves.end());
-            startIrCurvesAsync(std::move(curves));
-        } else {
-            startPairsAsync(pairsUnderIndex(item->index()));
-            startIrCurvesAsync(irCurvesUnderIndex(item->index()));
+    connect(dlg, &QInputDialog::accepted, this, [this, dlg]() {
+        const QString chosen = dlg->textValue();
+        const auto collections = rootCollections();
+        for (auto* item : collections) {
+            if (item->text() != chosen)
+                continue;
+            const auto folderId = item->data(FolderIdRole).toString().toStdString();
+            if (!folderId.empty()) {
+                startFolderAsync(folderId);
+                auto curves = irCurvesUnderIndex(item->index());
+                curves.erase(std::remove_if(curves.begin(),
+                                            curves.end(),
+                                            [](const auto& ir) { return !ir.auto_start; }),
+                             curves.end());
+                startIrCurvesAsync(std::move(curves));
+            } else {
+                startPairsAsync(pairsUnderIndex(item->index()));
+                startIrCurvesAsync(irCurvesUnderIndex(item->index()));
+            }
         }
-    }
+    });
+    dlg->open();
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {

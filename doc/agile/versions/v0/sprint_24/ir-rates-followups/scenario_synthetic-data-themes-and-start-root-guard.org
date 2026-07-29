@@ -82,8 +82,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | i do not want it to be once per asset class, I want it to be once. this duplicates are confusing. also why are FX rates red, is it missing vintage?; ; ; [[file:scenario_synthetic-data-themes-and-start-root-guard_step2_20260723_223946.png]] |
+| Status | PASS |
 
 ** Expand the Uniform Volatility Demo theme
 
@@ -97,7 +96,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Expand the 2016 ORE Samples theme
 
@@ -111,7 +110,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Expand the 2026 Realistic theme
 
@@ -125,7 +124,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Start at the tree root and confirm the theme picker appears
 
@@ -143,7 +142,8 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | when i press the start button with the synthetic root folder selected nothing happens.; ; ; [[file:scenario_synthetic-data-themes-and-start-root-guard_step6_20260729_121303.png]] |
 
 ** Pick a theme from the Start-at-Root dialog and confirm only it starts
 
@@ -159,7 +159,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Cancel the Start-at-Root dialog and confirm nothing starts
 
@@ -174,7 +174,7 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Stop the started theme
 
@@ -187,16 +187,16 @@ Then open the Market Simulator window (System > Market Simulator).
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-23T21:39:50Z |
-| Branch        | main |
-| Commit        | d91514d8b |
-| Worktree      | bright_faraday |
+| Status        | PASSED |
+| Completed at  | 2026-07-29T11:25:02Z |
+| Branch        | feature/qa-market-simulator-tree-theme-atomicity |
+| Commit        | bfc2de04c |
+| Worktree      | merry_newton |
 
 * Notes

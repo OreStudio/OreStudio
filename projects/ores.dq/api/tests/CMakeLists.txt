@@ -19,26 +19,7 @@ set(name "ores.dq.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "domain_badge_definition_tests.cpp"
-    "domain_catalog_tests.cpp"
-    "domain_change_reason_category_tests.cpp"
-    "domain_change_reason_tests.cpp"
-    "domain_coding_scheme_authority_type_tests.cpp"
-    "domain_coding_scheme_tests.cpp"
-    "domain_data_domain_tests.cpp"
-    "domain_dataset_bundle_member_tests.cpp"
-    "domain_dataset_bundle_tests.cpp"
-    "domain_dataset_dependency_tests.cpp"
-    "domain_dataset_tests.cpp"
-    "domain_methodology_tests.cpp"
-    "domain_nature_dimension_tests.cpp"
-    "domain_origin_dimension_tests.cpp"
-    "domain_publication_mode_tests.cpp"
-    "domain_subject_area_tests.cpp"
-    "domain_treatment_dimension_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

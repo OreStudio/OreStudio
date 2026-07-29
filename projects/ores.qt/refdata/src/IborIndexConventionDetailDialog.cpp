@@ -157,6 +157,7 @@ void IborIndexConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->fixingCalendarEdit->setReadOnly(readOnly);
     ui_->dayCountFractionEdit->setReadOnly(readOnly);
     ui_->businessDayConventionEdit->setReadOnly(readOnly);
+    ui_->endOfMonthEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -335,7 +336,7 @@ void IborIndexConventionDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_ibor_index_convention_request request;
-        request.codes = {code};
+        request.ids = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

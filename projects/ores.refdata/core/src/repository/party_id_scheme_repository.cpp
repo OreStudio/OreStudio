@@ -37,7 +37,7 @@ std::string party_id_scheme_repository::sql() {
 }
 
 void party_id_scheme_repository::write(context ctx, const domain::party_id_scheme& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party ID scheme: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party ID scheme. " << "code: " << v.code;
     execute_write_query(
         ctx, party_id_scheme_mapper::map(v), lg(), "Writing party ID scheme to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_latest(con
 
 std::vector<domain::party_id_scheme>
 party_id_scheme_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID scheme. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID scheme. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ party_id_scheme_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest party ID scheme by code.");
 }
 
+
 std::vector<domain::party_id_scheme> party_id_scheme_repository::read_all(context ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party ID scheme versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party ID scheme versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_all(contex
 
 std::optional<domain::party_id_scheme> party_id_scheme_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party ID scheme at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading party ID scheme at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_id_scheme_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::party_id_scheme> party_id_scheme_repository::read_at_versi
 }
 
 void party_id_scheme_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

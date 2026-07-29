@@ -63,15 +63,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest currency pairs, possibly filtered by pair_code.
+     * @brief Reads latest currency pairs, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::currency_pair> read_latest(context ctx);
     std::vector<domain::currency_pair> read_latest(context ctx, const std::string& pair_code);
     /**@}*/
 
+
     /**
-     * @brief Reads all currency pairs, possibly filtered by pair_code.
+     * @brief Reads all currency pairs, possibly filtered by primary key.
      */
     std::vector<domain::currency_pair> read_all(context ctx, const std::string& pair_code);
 
@@ -82,12 +83,10 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param pair_code The pair_code to look up
      * @param version The version to fetch
      */
     std::optional<domain::currency_pair>
     read_at_version(context ctx, const std::string& pair_code, std::uint32_t version);
-
 
     /**
      * @brief Reads latest currency pairs with pagination support.

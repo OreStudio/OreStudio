@@ -37,7 +37,7 @@ std::string rounding_type_repository::sql() {
 }
 
 void rounding_type_repository::write(context ctx, const domain::rounding_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing rounding type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing rounding type. " << "code: " << v.code;
     execute_write_query(
         ctx, rounding_type_mapper::map(v), lg(), "Writing rounding type to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::rounding_type> rounding_type_repository::read_latest(context
 
 std::vector<domain::rounding_type> rounding_type_repository::read_latest(context ctx,
                                                                          const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest rounding type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest rounding type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ std::vector<domain::rounding_type> rounding_type_repository::read_latest(context
         "Reading latest rounding type by code.");
 }
 
+
 std::vector<domain::rounding_type> rounding_type_repository::read_all(context ctx,
                                                                       const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all rounding type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all rounding type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::rounding_type> rounding_type_repository::read_all(context ct
 
 std::optional<domain::rounding_type> rounding_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading rounding type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading rounding type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::rounding_type> rounding_type_repository::read_at_version(
 }
 
 void rounding_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing rounding type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing rounding type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

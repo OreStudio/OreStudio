@@ -37,7 +37,7 @@ std::string currency_market_tier_repository::sql() {
 }
 
 void currency_market_tier_repository::write(context ctx, const domain::currency_market_tier& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency market tier: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency market tier. " << "code: " << v.code;
     execute_write_query(ctx,
                         currency_market_tier_mapper::map(v),
                         lg(),
@@ -71,7 +71,7 @@ currency_market_tier_repository::read_latest(context ctx) {
 
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency market tier. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency market tier. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -86,9 +86,10 @@ currency_market_tier_repository::read_latest(context ctx, const std::string& cod
         "Reading latest currency market tier by code.");
 }
 
+
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency market tier versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency market tier versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -104,7 +105,7 @@ currency_market_tier_repository::read_all(context ctx, const std::string& code) 
 
 std::optional<domain::currency_market_tier> currency_market_tier_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency market tier at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency market tier at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
@@ -125,7 +126,7 @@ std::optional<domain::currency_market_tier> currency_market_tier_repository::rea
 }
 
 void currency_market_tier_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

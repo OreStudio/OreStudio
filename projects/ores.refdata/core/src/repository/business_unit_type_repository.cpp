@@ -37,7 +37,7 @@ std::string business_unit_type_repository::sql() {
 }
 
 void business_unit_type_repository::write(context ctx, const domain::business_unit_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing business unit type: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing business unit type. " << "id: " << v.id;
     execute_write_query(
         ctx, business_unit_type_mapper::map(v), lg(), "Writing business unit type to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::business_unit_type> business_unit_type_repository::read_late
 
 std::vector<domain::business_unit_type>
 business_unit_type_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
@@ -80,9 +80,10 @@ business_unit_type_repository::read_latest(context ctx, const std::string& id) {
         "Reading latest business unit type by id.");
 }
 
+
 std::vector<domain::business_unit_type>
 business_unit_type_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all business unit type versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all business unit type versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -98,7 +99,7 @@ business_unit_type_repository::read_all(context ctx, const std::string& id) {
 
 std::optional<domain::business_unit_type> business_unit_type_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading business unit type at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading business unit type at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::business_unit_type> business_unit_type_repository::read_at
 }
 
 void business_unit_type_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business unit type: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing business unit type. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<business_unit_type_entity> |

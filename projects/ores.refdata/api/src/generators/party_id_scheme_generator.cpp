@@ -44,7 +44,23 @@ generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx)
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Scheme" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.coding_scheme_code = std::string("LEI");
+    r.coding_scheme_code = // Rotate through the codes ores_dq_coding_schemes_tbl is guaranteed to
+        // have seeded (see refdata_party_id_schemes_populate.sql) -- a random
+        // faker word never matches a real coding scheme and fails the soft-FK
+        // validation trigger.
+        [idx] {
+            static constexpr const char* schemes[] = {"LEI",
+                                                      "BIC",
+                                                      "MIC",
+                                                      "NATIONAL_ID",
+                                                      "CEDB",
+                                                      "NATURAL_PERSON",
+                                                      "ACER",
+                                                      "DTCC_PARTICIPANT_ID",
+                                                      "MPID",
+                                                      "INTERNAL"};
+            return std::string(schemes[idx % 10]);
+        }();
     r.display_order = faker::number::integer(1, 100);
     r.max_cardinality = faker::number::integer(1, 100);
     r.modified_by = modified_by;

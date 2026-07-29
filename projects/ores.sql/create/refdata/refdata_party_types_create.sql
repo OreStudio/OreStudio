@@ -99,17 +99,22 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_refdata_party_types_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -123,17 +128,19 @@ before insert on "ores_refdata_party_types_tbl"
 for each row execute function ores_refdata_party_types_insert_fn();
 
 create or replace rule ores_refdata_party_types_delete_rule as
-on delete to "ores_refdata_party_types_tbl" do instead
+on delete to "ores_refdata_party_types_tbl" do instead (
     update "ores_refdata_party_types_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Validation function for party_type
 -- Validates that a code exists in the party_types table.
 -- Returns the validated value, or default if null/empty.
+-- Uses system tenant data (shared reference data).
 -- =============================================================================
 create or replace function ores_refdata_validate_party_type_fn(
     p_tenant_id uuid,
@@ -146,6 +153,29 @@ begin
             using errcode = '23502';
     end if;
 
+    -- Allow pass-through during bootstrap (no active rows for system tenant).
+    if not exists (
+        select 1 from ores_refdata_party_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return p_value;
+    end if;
+
+    -- Validate against reference data
+    if not exists (
+        select 1 from ores_refdata_party_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = p_value
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_type: %. Must be one of: %', p_value, (
+            select string_agg(code::text, ', ' order by display_order)
+            from ores_refdata_party_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) using errcode = '23503';
+    end if;
 
     return p_value;
 end;

@@ -79,10 +79,21 @@ public:
     std::uint32_t count_currencies();
 
     /**
+     * @brief Lists currencies as they stood at a specific
+     * timepoint (valid_from <= as_of < valid_to), possibly filtered by
+     * iso_code.
+     *
+     * @param as_of The timepoint to resolve against.
+     * @param iso_code Optional iso_code filter; empty for all.
+     * @return Vector of matching currencies as of that timepoint.
+     */
+    std::vector<domain::currency> list_currencies_at_timepoint(const std::string& as_of,
+                                                               const std::string& iso_code = "");
+
+    /**
      * @brief Retrieves a single currency as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param iso_code The iso_code of the currency.
      * @param version The version to fetch.
      * @return The currency at that version if found, std::nullopt otherwise.
      */
@@ -90,9 +101,8 @@ public:
                                                             std::uint32_t version);
 
     /**
-     * @brief Retrieves a single currency by its iso_code.
+     * @brief Retrieves a single currency by its primary key.
      *
-     * @param iso_code The iso_code of the currency.
      * @return The currency if found, std::nullopt otherwise.
      */
     std::optional<domain::currency> get_currency(const std::string& iso_code);
@@ -114,15 +124,14 @@ public:
     void save_currencies(const std::vector<domain::currency>& currencies);
 
     /**
-     * @brief Deletes a currency by its iso_code.
+     * @brief Deletes a currency by its primary key.
      *
-     * @param iso_code The iso_code of the currency to delete.
      * @throws std::exception on failure.
      */
     void delete_currency(const std::string& iso_code);
 
     /**
-     * @brief Deletes currencies by their iso_codes.
+     * @brief Deletes currencies by their primary keys.
      */
     void delete_currencies(const std::vector<std::string>& iso_codes);
 

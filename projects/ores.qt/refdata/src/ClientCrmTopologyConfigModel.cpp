@@ -114,8 +114,15 @@ QVariant ClientCrmTopologyConfigModel::data(const QModelIndex& index, int role) 
 
 QVariant
 ClientCrmTopologyConfigModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case Name:

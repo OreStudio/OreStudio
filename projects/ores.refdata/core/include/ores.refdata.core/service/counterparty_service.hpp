@@ -83,7 +83,6 @@ public:
      * @brief Retrieves a single counterparty as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the counterparty.
      * @param version The version to fetch.
      * @return The counterparty at that version if found, std::nullopt otherwise.
      */
@@ -91,9 +90,8 @@ public:
                                                                     std::uint32_t version);
 
     /**
-     * @brief Retrieves a single counterparty by its id.
+     * @brief Retrieves a single counterparty by its primary key.
      *
-     * @param id The id of the counterparty.
      * @return The counterparty if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty> get_counterparty(const std::string& id);
@@ -115,15 +113,14 @@ public:
     void save_counterparties(const std::vector<domain::counterparty>& counterparties);
 
     /**
-     * @brief Deletes a counterparty by its id.
+     * @brief Deletes a counterparty by its primary key.
      *
-     * @param id The id of the counterparty to delete.
      * @throws std::exception on failure.
      */
     void delete_counterparty(const std::string& id);
 
     /**
-     * @brief Deletes counterparties by their ids.
+     * @brief Deletes counterparties by their primary keys.
      */
     void delete_counterparties(const std::vector<std::string>& ids);
 

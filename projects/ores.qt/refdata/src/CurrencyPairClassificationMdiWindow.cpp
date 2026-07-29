@@ -167,6 +167,7 @@ void CurrencyPairClassificationMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -184,7 +185,7 @@ void CurrencyPairClassificationMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading currency pair classifications";
     clearStaleIndicator();
     emit statusChanged(tr("Loading currency pair classifications..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void CurrencyPairClassificationMdiWindow::onDataLoaded() {
@@ -364,7 +365,8 @@ void CurrencyPairClassificationMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?

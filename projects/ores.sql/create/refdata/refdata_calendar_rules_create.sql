@@ -93,7 +93,7 @@ begin
     if not exists (
         select 1 from ores_refdata_calendars_tbl
         where tenant_id = NEW.tenant_id
-          and code = NEW.calendar_code
+          and id = NEW.calendar_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid calendar_code: %. No active calendar found with this code.', NEW.calendar_code

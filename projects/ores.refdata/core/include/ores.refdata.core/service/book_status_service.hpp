@@ -91,7 +91,6 @@ public:
      * @brief Retrieves a single book status as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the book status.
      * @param version The version to fetch.
      * @return The book status at that version if found, std::nullopt otherwise.
      */
@@ -99,9 +98,8 @@ public:
                                                              std::uint32_t version);
 
     /**
-     * @brief Retrieves a single book status by its code.
+     * @brief Retrieves a single book status by its primary key.
      *
-     * @param code The code of the book status.
      * @return The book status if found, std::nullopt otherwise.
      */
     std::optional<domain::book_status> get_status(const std::string& code);
@@ -123,15 +121,14 @@ public:
     void save_statuses(const std::vector<domain::book_status>& statuses);
 
     /**
-     * @brief Deletes a book status by its code.
+     * @brief Deletes a book status by its primary key.
      *
-     * @param code The code of the book status to delete.
      * @throws std::exception on failure.
      */
     void delete_status(const std::string& code);
 
     /**
-     * @brief Deletes book statuses by their codes.
+     * @brief Deletes book statuses by their primary keys.
      */
     void delete_statuses(const std::vector<std::string>& codes);
 

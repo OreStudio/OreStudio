@@ -42,17 +42,18 @@ std::uint32_t tenor_convention_service::count_conventions() {
     return repo_.get_total_convention_count(ctx_);
 }
 
+
 std::optional<domain::tenor_convention>
 tenor_convention_service::get_convention_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor convention at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor convention at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_convention>
 tenor_convention_service::get_convention(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor convention: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor convention. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -62,18 +63,19 @@ tenor_convention_service::get_convention(const std::string& code) {
 void tenor_convention_service::save_convention(const domain::tenor_convention& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Convention code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor convention: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor convention. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor convention: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor convention. " << "code: " << v.code;
 }
 
 void tenor_convention_service::save_conventions(
     const std::vector<domain::tenor_convention>& conventions) {
-    for (const auto& e : conventions)
+    for (const auto& e : conventions) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor Convention code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << conventions.size() << " tenor conventions";
     auto ts = conventions;
     for (auto& e : ts)
@@ -82,9 +84,9 @@ void tenor_convention_service::save_conventions(
 }
 
 void tenor_convention_service::delete_convention(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor convention: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed tenor convention. " << "code: " << code;
 }
 
 void tenor_convention_service::delete_conventions(const std::vector<std::string>& codes) {
@@ -93,7 +95,7 @@ void tenor_convention_service::delete_conventions(const std::vector<std::string>
 
 std::vector<domain::tenor_convention>
 tenor_convention_service::get_convention_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor convention: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor convention. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

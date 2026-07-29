@@ -37,7 +37,7 @@ std::string tenor_convention_repository::sql() {
 }
 
 void tenor_convention_repository::write(context ctx, const domain::tenor_convention& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor convention. " << "code: " << v.code;
     execute_write_query(
         ctx, tenor_convention_mapper::map(v), lg(), "Writing tenor convention to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::tenor_convention> tenor_convention_repository::read_latest(c
 
 std::vector<domain::tenor_convention>
 tenor_convention_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor convention. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -81,13 +81,14 @@ tenor_convention_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest tenor convention by code.");
 }
 
+
 std::vector<domain::tenor_convention>
 tenor_convention_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor convention versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor convention versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_convention_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_convention_entity, domain::tenor_convention>(
         ctx,
@@ -99,7 +100,7 @@ tenor_convention_repository::read_all(context ctx, const std::string& code) {
 
 std::optional<domain::tenor_convention> tenor_convention_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor convention at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenor convention at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_convention_entity>> |
@@ -119,7 +120,7 @@ std::optional<domain::tenor_convention> tenor_convention_repository::read_at_ver
 }
 
 void tenor_convention_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor convention. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

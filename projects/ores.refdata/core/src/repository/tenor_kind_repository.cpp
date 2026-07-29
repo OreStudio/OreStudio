@@ -37,7 +37,7 @@ std::string tenor_kind_repository::sql() {
 }
 
 void tenor_kind_repository::write(context ctx, const domain::tenor_kind& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor kind: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor kind. " << "code: " << v.code;
     execute_write_query(ctx, tenor_kind_mapper::map(v), lg(), "Writing tenor kind to database.");
 }
 
@@ -63,7 +63,7 @@ std::vector<domain::tenor_kind> tenor_kind_repository::read_latest(context ctx) 
 
 std::vector<domain::tenor_kind> tenor_kind_repository::read_latest(context ctx,
                                                                    const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor kind. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor kind. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -78,13 +78,14 @@ std::vector<domain::tenor_kind> tenor_kind_repository::read_latest(context ctx,
         "Reading latest tenor kind by code.");
 }
 
+
 std::vector<domain::tenor_kind> tenor_kind_repository::read_all(context ctx,
                                                                 const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor kind versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_kind_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_kind_entity, domain::tenor_kind>(
         ctx,
@@ -97,7 +98,7 @@ std::vector<domain::tenor_kind> tenor_kind_repository::read_all(context ctx,
 std::optional<domain::tenor_kind> tenor_kind_repository::read_at_version(context ctx,
                                                                          const std::string& code,
                                                                          std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor kind at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenor kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_kind_entity>> |
@@ -117,7 +118,7 @@ std::optional<domain::tenor_kind> tenor_kind_repository::read_at_version(context
 }
 
 void tenor_kind_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor kind: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor kind. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -38,7 +38,7 @@ std::string currency_pair_classification_repository::sql() {
 
 void currency_pair_classification_repository::write(context ctx,
                                                     const domain::currency_pair_classification& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classification: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classification. " << "code: " << v.code;
     execute_write_query(ctx,
                         currency_pair_classification_mapper::map(v),
                         lg(),
@@ -73,7 +73,8 @@ currency_pair_classification_repository::read_latest(context ctx) {
 
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classification. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classification. "
+                               << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -89,14 +90,15 @@ currency_pair_classification_repository::read_latest(context ctx, const std::str
         "Reading latest currency pair classification by code.");
 }
 
+
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair classification versions. code: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair classification versions. "
+                               << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_classification_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<currency_pair_classification_entity,
                               domain::currency_pair_classification>(
@@ -107,9 +109,32 @@ currency_pair_classification_repository::read_all(context ctx, const std::string
         "Reading all currency pair classification versions by code.");
 }
 
+std::optional<domain::currency_pair_classification>
+currency_pair_classification_repository::read_at_version(context ctx,
+                                                         const std::string& code,
+                                                         std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair classification at version. "
+                               << "code: " << code << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_pair_classification_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<currency_pair_classification_entity,
+                                             domain::currency_pair_classification>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_pair_classification_mapper::map(entities); },
+        lg(),
+        "Reading currency pair classification at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 void currency_pair_classification_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

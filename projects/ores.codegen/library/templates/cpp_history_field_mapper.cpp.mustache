@@ -7,6 +7,9 @@
 #include <boost/uuid/uuid_io.hpp>
 {{/has_render_uuid_columns}}
 #include "ores.platform/time/datetime.hpp"
+{{#has_date_natural_keys}}
+#include <format>
+{{/has_date_natural_keys}}
 
 namespace ores::{{component}}::presentation {
 
@@ -27,7 +30,18 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{column}})});
 {{/is_uuid}}
 {{^is_uuid}}
+{{#is_date}}
+    fields.push_back({.name = "{{render_label}}", .value = std::format("{:%Y-%m-%d}", v.{{column}})});
+{{/is_date}}
+{{^is_date}}
+{{#is_timestamp}}
+    fields.push_back(
+        {.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_utc(v.{{column}})});
+{{/is_timestamp}}
+{{^is_timestamp}}
     fields.push_back({.name = "{{render_label}}", .value = v.{{column}}});
+{{/is_timestamp}}
+{{/is_date}}
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}

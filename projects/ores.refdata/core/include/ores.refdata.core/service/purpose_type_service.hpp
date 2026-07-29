@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/purpose_type_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -76,9 +77,18 @@ public:
 
 
     /**
-     * @brief Retrieves a single purpose type by its code.
+     * @brief Retrieves a single purpose type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the purpose type.
+     * @param version The version to fetch.
+     * @return The purpose type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::purpose_type> get_type_at_version(const std::string& code,
+                                                            std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single purpose type by its primary key.
+     *
      * @return The purpose type if found, std::nullopt otherwise.
      */
     std::optional<domain::purpose_type> get_type(const std::string& code);
@@ -100,15 +110,14 @@ public:
     void save_types(const std::vector<domain::purpose_type>& types);
 
     /**
-     * @brief Deletes a purpose type by its code.
+     * @brief Deletes a purpose type by its primary key.
      *
-     * @param code The code of the purpose type to delete.
      * @throws std::exception on failure.
      */
     void delete_type(const std::string& code);
 
     /**
-     * @brief Deletes purpose types by their codes.
+     * @brief Deletes purpose types by their primary keys.
      */
     void delete_types(const std::vector<std::string>& codes);
 

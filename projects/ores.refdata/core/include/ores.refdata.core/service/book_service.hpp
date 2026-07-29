@@ -75,6 +75,7 @@ public:
      */
     std::uint32_t count_books();
 
+
     /**
      * @brief Lists books filtered by parent_portfolio_id, with pagination.
      *
@@ -114,16 +115,14 @@ public:
      * @brief Retrieves a single book as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the book.
      * @param version The version to fetch.
      * @return The book at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::book> get_book_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single book by its id.
+     * @brief Retrieves a single book by its primary key.
      *
-     * @param id The id of the book.
      * @return The book if found, std::nullopt otherwise.
      */
     std::optional<domain::book> get_book(const std::string& id);
@@ -145,15 +144,14 @@ public:
     void save_books(const std::vector<domain::book>& books);
 
     /**
-     * @brief Deletes a book by its id.
+     * @brief Deletes a book by its primary key.
      *
-     * @param id The id of the book to delete.
      * @throws std::exception on failure.
      */
     void delete_book(const std::string& id);
 
     /**
-     * @brief Deletes books by their ids.
+     * @brief Deletes books by their primary keys.
      */
     void delete_books(const std::vector<std::string>& ids);
 

@@ -176,6 +176,7 @@ void OisConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->fixedPaymentConventionEdit->setReadOnly(readOnly);
     ui_->ruleEdit->setReadOnly(readOnly);
     ui_->paymentCalendarEdit->setReadOnly(readOnly);
+    ui_->endOfMonthEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -416,7 +417,7 @@ void OisConventionDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_ois_convention_request request;
-        request.codes = {code};
+        request.ids = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

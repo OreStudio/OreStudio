@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_schemes();
 
+
     /**
      * @brief Retrieves a single party ID scheme as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the party ID scheme.
      * @param version The version to fetch.
      * @return The party ID scheme at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                  std::uint32_t version);
 
     /**
-     * @brief Retrieves a single party ID scheme by its code.
+     * @brief Retrieves a single party ID scheme by its primary key.
      *
-     * @param code The code of the party ID scheme.
      * @return The party ID scheme if found, std::nullopt otherwise.
      */
     std::optional<domain::party_id_scheme> get_scheme(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_schemes(const std::vector<domain::party_id_scheme>& schemes);
 
     /**
-     * @brief Deletes a party ID scheme by its code.
+     * @brief Deletes a party ID scheme by its primary key.
      *
-     * @param code The code of the party ID scheme to delete.
      * @throws std::exception on failure.
      */
     void delete_scheme(const std::string& code);
 
     /**
-     * @brief Deletes party ID schemes by their codes.
+     * @brief Deletes party ID schemes by their primary keys.
      */
     void delete_schemes(const std::vector<std::string>& codes);
 

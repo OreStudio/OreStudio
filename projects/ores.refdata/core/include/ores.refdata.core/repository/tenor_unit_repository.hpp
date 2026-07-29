@@ -63,15 +63,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest tenor units, possibly filtered by code.
+     * @brief Reads latest tenor units, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::tenor_unit> read_latest(context ctx);
     std::vector<domain::tenor_unit> read_latest(context ctx, const std::string& code);
     /**@}*/
 
+
     /**
-     * @brief Reads all tenor units, possibly filtered by code.
+     * @brief Reads all tenor units, possibly filtered by primary key.
      */
     std::vector<domain::tenor_unit> read_all(context ctx, const std::string& code);
 
@@ -82,7 +83,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param code The code to look up
      * @param version The version to fetch
      */
     std::optional<domain::tenor_unit>

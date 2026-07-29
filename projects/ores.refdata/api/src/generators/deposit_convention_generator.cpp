@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -36,12 +37,12 @@ generate_synthetic_deposit_convention(utility::generation::generation_context& c
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::deposit_convention r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
-    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-" +
-           std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-" + std::to_string(idx);
     r.index_based = true;
     r.index = std::string("USD-LIBOR");
     r.calendar = std::nullopt;

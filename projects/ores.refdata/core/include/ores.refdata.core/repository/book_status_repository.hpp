@@ -63,7 +63,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest book statuses, possibly filtered by code.
+     * @brief Reads latest book statuses, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::book_status> read_latest(context ctx);
@@ -85,7 +85,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads all book statuses, possibly filtered by code.
+     * @brief Reads all book statuses, possibly filtered by primary key.
      */
     std::vector<domain::book_status> read_all(context ctx, const std::string& code);
 
@@ -96,7 +96,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param code The code to look up
      * @param version The version to fetch
      */
     std::optional<domain::book_status>

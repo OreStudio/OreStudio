@@ -29,6 +29,7 @@ render_tenor_anchor_fields(const domain::tenor_anchor& v) {
 
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

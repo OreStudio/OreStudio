@@ -37,7 +37,7 @@ std::string party_type_repository::sql() {
 }
 
 void party_type_repository::write(context ctx, const domain::party_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party type. " << "code: " << v.code;
     execute_write_query(ctx, party_type_mapper::map(v), lg(), "Writing party type to database.");
 }
 
@@ -63,7 +63,7 @@ std::vector<domain::party_type> party_type_repository::read_latest(context ctx) 
 
 std::vector<domain::party_type> party_type_repository::read_latest(context ctx,
                                                                    const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -78,13 +78,14 @@ std::vector<domain::party_type> party_type_repository::read_latest(context ctx,
         "Reading latest party type by code.");
 }
 
+
 std::vector<domain::party_type> party_type_repository::read_all(context ctx,
                                                                 const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<party_type_entity, domain::party_type>(
         ctx,
@@ -94,8 +95,30 @@ std::vector<domain::party_type> party_type_repository::read_all(context ctx,
         "Reading all party type versions by code.");
 }
 
+std::optional<domain::party_type> party_type_repository::read_at_version(context ctx,
+                                                                         const std::string& code,
+                                                                         std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party type at version. " << "code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<party_type_entity, domain::party_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_type_mapper::map(entities); },
+        lg(),
+        "Reading party type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void party_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

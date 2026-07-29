@@ -44,7 +44,7 @@ struct tenor_entity {
     std::optional<std::string> description;
     int sort_order = 0;
     std::string kind;
-    std::optional<std::string> unit;
+    std::string unit;
     std::optional<int> multiplier;
     std::string modified_by;
     std::string performed_by;

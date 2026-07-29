@@ -84,7 +84,8 @@ struct tenor final {
     std::string kind;
 
     /**
-     * @brief Period unit for PERIOD tenors: DAY, WEEK, MONTH, or YEAR. Null for SPECIAL tenors.
+     * @brief Period unit for PERIOD tenors: DAY, WEEK, MONTH, or YEAR. NONE for SPECIAL tenors,
+     * which have no fixed unit/multiplier of their own.
      */
     std::string unit;
 

@@ -45,13 +45,13 @@ std::uint32_t counterparty_service::count_counterparties() {
 
 std::optional<domain::counterparty>
 counterparty_service::get_counterparty_at_version(const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::counterparty> counterparty_service::get_counterparty(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -61,11 +61,11 @@ std::optional<domain::counterparty> counterparty_service::get_counterparty(const
 void counterparty_service::save_counterparty(const domain::counterparty& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved counterparty: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved counterparty. " << "id: " << v.id;
 }
 
 void counterparty_service::save_counterparties(
@@ -81,9 +81,9 @@ void counterparty_service::save_counterparties(
 }
 
 void counterparty_service::delete_counterparty(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed counterparty: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
 void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
@@ -92,7 +92,7 @@ void counterparty_service::delete_counterparties(const std::vector<std::string>&
 
 std::vector<domain::counterparty>
 counterparty_service::get_counterparty_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

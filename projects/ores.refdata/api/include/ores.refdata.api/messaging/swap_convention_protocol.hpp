@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
-#define ORES_REFDATA_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
+#ifndef ORES_REFDATA_API_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
+#define ORES_REFDATA_API_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/swap_convention.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -29,12 +30,14 @@ namespace ores::refdata::messaging {
 struct get_swap_conventions_request {
     using response_type = struct get_swap_conventions_response;
     static constexpr std::string_view nats_subject = "refdata.v1.swap_conventions.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_swap_conventions_response {
     std::vector<ores::refdata::domain::swap_convention> swap_conventions;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -42,6 +45,10 @@ struct save_swap_convention_request {
     using response_type = struct save_swap_convention_response;
     static constexpr std::string_view nats_subject = "refdata.v1.swap_conventions.save";
     ores::refdata::domain::swap_convention data;
+
+    static save_swap_convention_request from(ores::refdata::domain::swap_convention v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_swap_convention_response {
@@ -52,7 +59,7 @@ struct save_swap_convention_response {
 struct delete_swap_convention_request {
     using response_type = struct delete_swap_convention_response;
     static constexpr std::string_view nats_subject = "refdata.v1.swap_conventions.delete";
-    std::vector<std::string> codes;
+    std::vector<std::string> ids;
 };
 
 struct delete_swap_convention_response {
@@ -67,7 +74,7 @@ struct get_swap_convention_history_request {
 };
 
 struct get_swap_convention_history_response {
-    std::vector<ores::refdata::domain::swap_convention> swap_conventions;
+    std::vector<ores::refdata::domain::swap_convention> history;
     bool success = false;
     std::string message;
 };

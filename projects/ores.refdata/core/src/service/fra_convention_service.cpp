@@ -18,7 +18,11 @@
  *
  */
 #include "ores.refdata.core/service/fra_convention_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -27,14 +31,29 @@ using namespace ores::logging;
 fra_convention_service::fra_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::fra_convention> fra_convention_service::list_fra_conventions() {
+std::vector<domain::fra_convention>
+fra_convention_service::list_fra_conventions(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all FRA conventions";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t fra_convention_service::count_fra_conventions() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total FRA conventions count";
+    return repo_.get_total_fra_convention_count(ctx_);
+}
+
+
+std::optional<domain::fra_convention>
+fra_convention_service::get_fra_convention_at_version(const std::string& id,
+                                                      std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting FRA convention at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::fra_convention>
 fra_convention_service::get_fra_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FRA convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting FRA convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -44,20 +63,39 @@ fra_convention_service::get_fra_convention(const std::string& id) {
 void fra_convention_service::save_fra_convention(const domain::fra_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("FRA Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FRA convention: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved FRA convention: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving FRA convention. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved FRA convention. " << "id: " << v.id;
 }
 
-void fra_convention_service::remove_fra_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FRA convention: " << id;
+void fra_convention_service::save_fra_conventions(
+    const std::vector<domain::fra_convention>& fra_conventions) {
+    for (const auto& e : fra_conventions) {
+        if (e.id.empty())
+            throw std::invalid_argument("FRA Convention id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << fra_conventions.size() << " FRA conventions";
+    auto ts = fra_conventions;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void fra_convention_service::delete_fra_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing FRA convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed FRA convention: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed FRA convention. " << "id: " << id;
+}
+
+void fra_convention_service::delete_fra_conventions(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::fra_convention>
 fra_convention_service::get_fra_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FRA convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for FRA convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

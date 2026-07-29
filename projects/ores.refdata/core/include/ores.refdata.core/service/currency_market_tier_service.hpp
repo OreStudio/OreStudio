@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_types();
 
+
     /**
      * @brief Retrieves a single currency market tier as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the currency market tier.
      * @param version The version to fetch.
      * @return The currency market tier at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                     std::uint32_t version);
 
     /**
-     * @brief Retrieves a single currency market tier by its code.
+     * @brief Retrieves a single currency market tier by its primary key.
      *
-     * @param code The code of the currency market tier.
      * @return The currency market tier if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_market_tier> get_type(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_types(const std::vector<domain::currency_market_tier>& types);
 
     /**
-     * @brief Deletes a currency market tier by its code.
+     * @brief Deletes a currency market tier by its primary key.
      *
-     * @param code The code of the currency market tier to delete.
      * @throws std::exception on failure.
      */
     void delete_type(const std::string& code);
 
     /**
-     * @brief Deletes currency market tiers by their codes.
+     * @brief Deletes currency market tiers by their primary keys.
      */
     void delete_types(const std::vector<std::string>& codes);
 

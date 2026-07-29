@@ -42,17 +42,18 @@ std::uint32_t tenor_resolution_algorithm_service::count_algorithms() {
     return repo_.get_total_algorithm_count(ctx_);
 }
 
+
 std::optional<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm_at_version(const std::string& code,
                                                              std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm at version: " << code
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm at version. "
+                               << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor resolution algorithm. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -63,18 +64,19 @@ void tenor_resolution_algorithm_service::save_algorithm(
     const domain::tenor_resolution_algorithm& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Resolution Algorithm code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor resolution algorithm: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor resolution algorithm. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor resolution algorithm: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor resolution algorithm. " << "code: " << v.code;
 }
 
 void tenor_resolution_algorithm_service::save_algorithms(
     const std::vector<domain::tenor_resolution_algorithm>& algorithms) {
-    for (const auto& e : algorithms)
+    for (const auto& e : algorithms) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor Resolution Algorithm code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << algorithms.size() << " tenor resolution algorithms";
     auto ts = algorithms;
     for (auto& e : ts)
@@ -83,9 +85,9 @@ void tenor_resolution_algorithm_service::save_algorithms(
 }
 
 void tenor_resolution_algorithm_service::delete_algorithm(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor resolution algorithm: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed tenor resolution algorithm. " << "code: " << code;
 }
 
 void tenor_resolution_algorithm_service::delete_algorithms(const std::vector<std::string>& codes) {
@@ -94,7 +96,8 @@ void tenor_resolution_algorithm_service::delete_algorithms(const std::vector<std
 
 std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_service::get_algorithm_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor resolution algorithm: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor resolution algorithm. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

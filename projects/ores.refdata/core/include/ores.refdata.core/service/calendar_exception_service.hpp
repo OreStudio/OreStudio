@@ -76,6 +76,7 @@ public:
      */
     std::uint32_t count_calendar_exceptions();
 
+
     /**
      * @brief Lists calendar exceptions filtered by calendar_code, with pagination.
      *
@@ -113,7 +114,6 @@ public:
      * @brief Retrieves a single calendar exception as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the calendar exception.
      * @param version The version to fetch.
      * @return The calendar exception at that version if found, std::nullopt otherwise.
      */
@@ -121,9 +121,8 @@ public:
     get_calendar_exception_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single calendar exception by its id.
+     * @brief Retrieves a single calendar exception by its primary key.
      *
-     * @param id The id of the calendar exception.
      * @return The calendar exception if found, std::nullopt otherwise.
      */
     std::optional<domain::calendar_exception> get_calendar_exception(const std::string& id);
@@ -146,15 +145,14 @@ public:
     save_calendar_exceptions(const std::vector<domain::calendar_exception>& calendar_exceptions);
 
     /**
-     * @brief Deletes a calendar exception by its id.
+     * @brief Deletes a calendar exception by its primary key.
      *
-     * @param id The id of the calendar exception to delete.
      * @throws std::exception on failure.
      */
     void delete_calendar_exception(const std::string& id);
 
     /**
-     * @brief Deletes calendar exceptions by their ids.
+     * @brief Deletes calendar exceptions by their primary keys.
      */
     void delete_calendar_exceptions(const std::vector<std::string>& ids);
 

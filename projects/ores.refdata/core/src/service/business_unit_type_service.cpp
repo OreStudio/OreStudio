@@ -42,16 +42,17 @@ std::uint32_t business_unit_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+
 std::optional<domain::business_unit_type>
 business_unit_type_service::get_type_at_version(const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit type at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit type at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::business_unit_type>
 business_unit_type_service::get_type(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit type: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit type. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -61,11 +62,11 @@ business_unit_type_service::get_type(const std::string& id) {
 void business_unit_type_service::save_type(const domain::business_unit_type& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Business Unit Type id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business unit type: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving business unit type. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business unit type: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved business unit type. " << "id: " << v.id;
 }
 
 void business_unit_type_service::save_types(const std::vector<domain::business_unit_type>& types) {
@@ -80,9 +81,9 @@ void business_unit_type_service::save_types(const std::vector<domain::business_u
 }
 
 void business_unit_type_service::delete_type(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business unit type: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing business unit type. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed business unit type: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed business unit type. " << "id: " << id;
 }
 
 void business_unit_type_service::delete_types(const std::vector<std::string>& ids) {
@@ -91,7 +92,7 @@ void business_unit_type_service::delete_types(const std::vector<std::string>& id
 
 std::vector<domain::business_unit_type>
 business_unit_type_service::get_type_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit type: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit type. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

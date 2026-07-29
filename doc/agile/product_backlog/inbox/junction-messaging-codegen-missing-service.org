@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F1755BAA-3E7D-4273-9EE7-C7F8847CBCFD
+:END:
+#+title: Junction messaging-layer codegen generates a handler with no…
+#+description: Junction messaging-layer codegen generates a handler with no matching service: regenerating currency_calendar/currency_country/currency_currency_group/currency_pair_convention_calendar (plain junctions, no extra_list_requests) via compass codegen entity generate creates a new messaging/*_handler.hpp + registrar that #includes a service.hpp the same run never generates, breaking the build (fatal error: file not found). calendar_date (a junction with a deliberately-added messaging layer, commit 27ae48fc2) has a matching service.hpp/cpp; these four don't and shouldn't yet -- the messaging facet appears to now trigger unconditionally for junctions regardless of whether the matching service layer exists. Found and reverted (commit 2c4293dab) during the fix-refdata-model-drift task (A2EDDEDC-D5D3-469D-88C9-7CE00951CC72) after a full ores.refdata.core.lib build caught it. These 4 junctions are excluded from that task's regeneration until this is fixed.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

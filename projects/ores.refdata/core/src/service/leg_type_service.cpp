@@ -42,15 +42,16 @@ std::uint32_t leg_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+
 std::optional<domain::leg_type> leg_type_service::get_type_at_version(const std::string& code,
                                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting leg type at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting leg type at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::leg_type> leg_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting leg type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting leg type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::leg_type> leg_type_service::get_type(const std::string& co
 void leg_type_service::save_type(const domain::leg_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Leg Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving leg type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving leg type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved leg type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved leg type. " << "code: " << v.code;
 }
 
 void leg_type_service::save_types(const std::vector<domain::leg_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.code.empty())
             throw std::invalid_argument("Leg Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " leg types";
     auto ts = types;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void leg_type_service::save_types(const std::vector<domain::leg_type>& types) {
 }
 
 void leg_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing leg type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing leg type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed leg type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed leg type. " << "code: " << code;
 }
 
 void leg_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -89,7 +91,7 @@ void leg_type_service::delete_types(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::leg_type> leg_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for leg type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for leg type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

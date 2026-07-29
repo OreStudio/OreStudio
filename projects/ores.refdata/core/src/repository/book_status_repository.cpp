@@ -37,7 +37,7 @@ std::string book_status_repository::sql() {
 }
 
 void book_status_repository::write(context ctx, const domain::book_status& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing book status: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing book status. " << "code: " << v.code;
     execute_write_query(ctx, book_status_mapper::map(v), lg(), "Writing book status to database.");
 }
 
@@ -64,7 +64,7 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
 
 std::vector<domain::book_status> book_status_repository::read_latest(context ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book status. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book status. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -116,7 +116,7 @@ std::vector<domain::book_status> book_status_repository::read_at_timepoint(
 
 std::vector<domain::book_status> book_status_repository::read_all(context ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all book status versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all book status versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_status_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -133,7 +133,7 @@ std::vector<domain::book_status> book_status_repository::read_all(context ctx,
 std::optional<domain::book_status> book_status_repository::read_at_version(context ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading book status at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading book status at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_status_entity>> |
@@ -153,7 +153,7 @@ std::optional<domain::book_status> book_status_repository::read_at_version(conte
 }
 
 void book_status_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book status: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

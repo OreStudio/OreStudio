@@ -42,6 +42,7 @@ std::uint32_t calendar_rule_service::count_calendar_rules() {
     return repo_.get_total_calendar_rule_count(ctx_);
 }
 
+
 std::vector<domain::calendar_rule> calendar_rule_service::list_calendar_rules_by_calendar_code(
     const std::string& calendar_code, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing calendar rules by calendar_code: " << calendar_code;
@@ -66,14 +67,14 @@ calendar_rule_service::list_calendar_rules_by_calendar_code_as_of(
 }
 std::optional<domain::calendar_rule>
 calendar_rule_service::get_calendar_rule_at_version(const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar rule at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar rule at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::calendar_rule>
 calendar_rule_service::get_calendar_rule(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar rule: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar rule. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -83,11 +84,11 @@ calendar_rule_service::get_calendar_rule(const std::string& id) {
 void calendar_rule_service::save_calendar_rule(const domain::calendar_rule& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Calendar Rule id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar rule: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving calendar rule. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar rule: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved calendar rule. " << "id: " << v.id;
 }
 
 void calendar_rule_service::save_calendar_rules(
@@ -103,9 +104,9 @@ void calendar_rule_service::save_calendar_rules(
 }
 
 void calendar_rule_service::delete_calendar_rule(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar rule: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing calendar rule. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar rule: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed calendar rule. " << "id: " << id;
 }
 
 void calendar_rule_service::delete_calendar_rules(const std::vector<std::string>& ids) {
@@ -114,7 +115,7 @@ void calendar_rule_service::delete_calendar_rules(const std::vector<std::string>
 
 std::vector<domain::calendar_rule>
 calendar_rule_service::get_calendar_rule_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar rule: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar rule. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

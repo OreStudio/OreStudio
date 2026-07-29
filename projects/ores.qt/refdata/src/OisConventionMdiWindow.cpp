@@ -295,7 +295,7 @@ void OisConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " OIS conventions";
 
         refdata::messaging::delete_ois_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

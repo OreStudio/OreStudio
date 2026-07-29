@@ -18,7 +18,11 @@
  *
  */
 #include "ores.refdata.core/service/swap_convention_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -27,14 +31,29 @@ using namespace ores::logging;
 swap_convention_service::swap_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::swap_convention> swap_convention_service::list_swap_conventions() {
+std::vector<domain::swap_convention>
+swap_convention_service::list_swap_conventions(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all swap conventions";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t swap_convention_service::count_swap_conventions() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total swap conventions count";
+    return repo_.get_total_swap_convention_count(ctx_);
+}
+
+
+std::optional<domain::swap_convention>
+swap_convention_service::get_swap_convention_at_version(const std::string& id,
+                                                        std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting swap convention at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::swap_convention>
 swap_convention_service::get_swap_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting swap convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting swap convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -44,20 +63,39 @@ swap_convention_service::get_swap_convention(const std::string& id) {
 void swap_convention_service::save_swap_convention(const domain::swap_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Swap Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swap convention: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved swap convention: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving swap convention. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved swap convention. " << "id: " << v.id;
 }
 
-void swap_convention_service::remove_swap_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing swap convention: " << id;
+void swap_convention_service::save_swap_conventions(
+    const std::vector<domain::swap_convention>& swap_conventions) {
+    for (const auto& e : swap_conventions) {
+        if (e.id.empty())
+            throw std::invalid_argument("Swap Convention id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << swap_conventions.size() << " swap conventions";
+    auto ts = swap_conventions;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void swap_convention_service::delete_swap_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing swap convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed swap convention: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed swap convention. " << "id: " << id;
+}
+
+void swap_convention_service::delete_swap_conventions(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::swap_convention>
 swap_convention_service::get_swap_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for swap convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

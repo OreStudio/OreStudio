@@ -43,6 +43,7 @@ std::uint32_t counterparty_identifier_service::count_counterparty_identifiers() 
     return repo_.get_total_counterparty_identifier_count(ctx_);
 }
 
+
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_id(
     const std::string& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
@@ -71,14 +72,14 @@ counterparty_identifier_service::list_counterparty_identifiers_by_counterparty_i
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_at_version(const std::string& id,
                                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting counterparty identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -89,11 +90,11 @@ void counterparty_identifier_service::save_counterparty_identifier(
     const domain::counterparty_identifier& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty Identifier id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving counterparty identifier. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved counterparty identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved counterparty identifier. " << "id: " << v.id;
 }
 
 void counterparty_identifier_service::save_counterparty_identifiers(
@@ -110,9 +111,9 @@ void counterparty_identifier_service::save_counterparty_identifiers(
 }
 
 void counterparty_identifier_service::delete_counterparty_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed counterparty identifier: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty identifier. " << "id: " << id;
 }
 
 void counterparty_identifier_service::delete_counterparty_identifiers(
@@ -122,7 +123,7 @@ void counterparty_identifier_service::delete_counterparty_identifiers(
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_service::get_counterparty_identifier_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty identifier. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

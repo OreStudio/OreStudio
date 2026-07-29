@@ -47,14 +47,14 @@ std::uint32_t crm_enabled_derived_pair_service::count_crm_enabled_derived_pairs(
 std::optional<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_service::get_crm_enabled_derived_pair_at_version(const std::string& id,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_service::get_crm_enabled_derived_pair(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM enabled derived pair. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -65,11 +65,11 @@ void crm_enabled_derived_pair_service::save_crm_enabled_derived_pair(
     const domain::crm_enabled_derived_pair& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CRM Enabled Derived Pair id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CRM enabled derived pair: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving CRM enabled derived pair. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CRM enabled derived pair: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved CRM enabled derived pair. " << "id: " << v.id;
 }
 
 void crm_enabled_derived_pair_service::save_crm_enabled_derived_pairs(
@@ -86,9 +86,9 @@ void crm_enabled_derived_pair_service::save_crm_enabled_derived_pairs(
 }
 
 void crm_enabled_derived_pair_service::delete_crm_enabled_derived_pair(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed CRM enabled derived pair: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed CRM enabled derived pair. " << "id: " << id;
 }
 
 void crm_enabled_derived_pair_service::delete_crm_enabled_derived_pairs(
@@ -98,7 +98,7 @@ void crm_enabled_derived_pair_service::delete_crm_enabled_derived_pairs(
 
 std::vector<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_service::get_crm_enabled_derived_pair_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM enabled derived pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM enabled derived pair. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

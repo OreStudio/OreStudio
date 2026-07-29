@@ -52,13 +52,13 @@ book_status_service::list_statuses_at_timepoint(const std::string& as_of, const 
 
 std::optional<domain::book_status>
 book_status_service::get_status_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book status at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting book status at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::book_status> book_status_service::get_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book status: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting book status. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -68,17 +68,18 @@ std::optional<domain::book_status> book_status_service::get_status(const std::st
 void book_status_service::save_status(const domain::book_status& v) {
     if (v.code.empty())
         throw std::invalid_argument("Book Status code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving book status: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving book status. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved book status: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved book status. " << "code: " << v.code;
 }
 
 void book_status_service::save_statuses(const std::vector<domain::book_status>& statuses) {
-    for (const auto& e : statuses)
+    for (const auto& e : statuses) {
         if (e.code.empty())
             throw std::invalid_argument("Book Status code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
     auto ts = statuses;
     for (auto& e : ts)
@@ -87,9 +88,9 @@ void book_status_service::save_statuses(const std::vector<domain::book_status>& 
 }
 
 void book_status_service::delete_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book status: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed book status: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed book status. " << "code: " << code;
 }
 
 void book_status_service::delete_statuses(const std::vector<std::string>& codes) {
@@ -97,7 +98,7 @@ void book_status_service::delete_statuses(const std::vector<std::string>& codes)
 }
 
 std::vector<domain::book_status> book_status_service::get_status_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for book status: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for book status. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

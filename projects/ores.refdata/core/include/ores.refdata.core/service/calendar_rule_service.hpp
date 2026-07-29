@@ -76,6 +76,7 @@ public:
      */
     std::uint32_t count_calendar_rules();
 
+
     /**
      * @brief Lists calendar rules filtered by calendar_code, with pagination.
      *
@@ -113,7 +114,6 @@ public:
      * @brief Retrieves a single calendar rule as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the calendar rule.
      * @param version The version to fetch.
      * @return The calendar rule at that version if found, std::nullopt otherwise.
      */
@@ -121,9 +121,8 @@ public:
                                                                       std::uint32_t version);
 
     /**
-     * @brief Retrieves a single calendar rule by its id.
+     * @brief Retrieves a single calendar rule by its primary key.
      *
-     * @param id The id of the calendar rule.
      * @return The calendar rule if found, std::nullopt otherwise.
      */
     std::optional<domain::calendar_rule> get_calendar_rule(const std::string& id);
@@ -145,15 +144,14 @@ public:
     void save_calendar_rules(const std::vector<domain::calendar_rule>& calendar_rules);
 
     /**
-     * @brief Deletes a calendar rule by its id.
+     * @brief Deletes a calendar rule by its primary key.
      *
-     * @param id The id of the calendar rule to delete.
      * @throws std::exception on failure.
      */
     void delete_calendar_rule(const std::string& id);
 
     /**
-     * @brief Deletes calendar rules by their ids.
+     * @brief Deletes calendar rules by their primary keys.
      */
     void delete_calendar_rules(const std::vector<std::string>& ids);
 

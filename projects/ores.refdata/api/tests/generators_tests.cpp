@@ -149,7 +149,7 @@ TEST_CASE("party_type_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_party_type(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());

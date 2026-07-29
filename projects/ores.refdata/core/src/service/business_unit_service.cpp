@@ -45,14 +45,14 @@ std::uint32_t business_unit_service::count_business_units() {
 
 std::optional<domain::business_unit>
 business_unit_service::get_business_unit_at_version(const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::business_unit>
 business_unit_service::get_business_unit(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business unit: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting business unit. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -62,11 +62,11 @@ business_unit_service::get_business_unit(const std::string& id) {
 void business_unit_service::save_business_unit(const domain::business_unit& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Business Unit id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business unit: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving business unit. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business unit: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved business unit. " << "id: " << v.id;
 }
 
 void business_unit_service::save_business_units(
@@ -82,9 +82,9 @@ void business_unit_service::save_business_units(
 }
 
 void business_unit_service::delete_business_unit(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business unit: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed business unit: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed business unit. " << "id: " << id;
 }
 
 void business_unit_service::delete_business_units(const std::vector<std::string>& ids) {
@@ -93,7 +93,7 @@ void business_unit_service::delete_business_units(const std::vector<std::string>
 
 std::vector<domain::business_unit>
 business_unit_service::get_business_unit_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for business unit. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

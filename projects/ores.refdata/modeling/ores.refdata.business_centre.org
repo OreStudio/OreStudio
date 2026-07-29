@@ -114,7 +114,11 @@ ISDA). Soft FK to =ores_dq_coding_schemes_tbl=, validated by
 =ores_refdata_validate_business_centre_coding_scheme_fn=.
 
 #+begin_src cpp :name generator
-std::string("FPML_BUSINESS_CENTER")
+// "FPML_BUSINESS_CENTER" is only seeded by the optional FpML coding-
+// scheme dataset. "NONE" is the one guaranteed seeded by the base
+// bootstrap (see dq_coding_scheme_populate.sql -- the same code the
+// system-tenant WRLD business centre row itself uses).
+std::string("NONE")
 #+end_src
 
 * SQL

@@ -162,7 +162,7 @@ void PartyMdiWindow::setupTable() {
     using cs = column_style;
     auto* delegate = new EntityItemDelegate(
         {
-            cs::text_left,
+            cs::icon_text_left,
             cs::text_left,
             cs::badge_centered,
             cs::badge_centered,

@@ -63,7 +63,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest calendars, possibly filtered by code.
+     * @brief Reads latest calendars, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::calendar> read_latest(context ctx);
@@ -72,7 +72,7 @@ public:
 
 
     /**
-     * @brief Reads all calendars, possibly filtered by code.
+     * @brief Reads all calendars, possibly filtered by primary key.
      */
     std::vector<domain::calendar> read_all(context ctx, const std::string& code);
 
@@ -83,7 +83,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param code The code to look up
      * @param version The version to fetch
      */
     std::optional<domain::calendar>

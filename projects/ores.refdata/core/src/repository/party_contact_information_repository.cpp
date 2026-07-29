@@ -39,7 +39,7 @@ std::string party_contact_information_repository::sql() {
 
 void party_contact_information_repository::write(context ctx,
                                                  const domain::party_contact_information& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party contact information: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing party contact information. " << "id: " << v.id;
     execute_write_query(ctx,
                         party_contact_information_mapper::map(v),
                         lg(),
@@ -73,7 +73,7 @@ party_contact_information_repository::read_latest(context ctx) {
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
@@ -87,9 +87,11 @@ party_contact_information_repository::read_latest(context ctx, const std::string
         "Reading latest party contact information by id.");
 }
 
+
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all party contact information versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all party contact information versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -107,7 +109,7 @@ std::optional<domain::party_contact_information>
 party_contact_information_repository::read_at_version(context ctx,
                                                       const std::string& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading party contact information at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading party contact information at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
@@ -202,7 +204,7 @@ party_contact_information_repository::read_by_party_id_as_of(
         "Reading party contact informations as of window by party_id.");
 }
 void party_contact_information_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party contact information: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party contact information. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_contact_information_entity> |

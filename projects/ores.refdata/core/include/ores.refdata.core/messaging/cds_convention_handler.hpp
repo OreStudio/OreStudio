@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_CDS_CONVENTION_HANDLER_HPP
-#define ORES_REFDATA_MESSAGING_CDS_CONVENTION_HANDLER_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_CDS_CONVENTION_HANDLER_HPP
+#define ORES_REFDATA_CORE_MESSAGING_CDS_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -69,14 +69,21 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::cds_convention_service svc(req_ctx);
         get_cds_conventions_response resp;
-        try {
-            resp.cds_conventions = svc.list_cds_conventions();
-            resp.total_available_count = static_cast<int>(resp.cds_conventions.size());
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(cds_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+        if (auto req = decode<get_cds_conventions_request>(msg)) {
+            try {
+                resp.cds_conventions = svc.list_cds_conventions(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_cds_conventions());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(cds_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(cds_convention_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(cds_convention_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -128,7 +135,7 @@ public:
                 BOOST_LOG_SEV(cds_convention_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_cds_convention_history_response{.cds_conventions = std::move(hist),
+                      get_cds_convention_history_response{.history = std::move(hist),
                                                           .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(cds_convention_handler_lg(), error)
@@ -151,15 +158,14 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::cds_conventions:write")) {
+        if (!has_permission(req_ctx, "refdata::cds_conventions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::cds_convention_service svc(req_ctx);
         if (auto req = decode<delete_cds_convention_request>(msg)) {
             try {
-                for (const auto& code : req->codes)
-                    svc.remove_cds_convention(code);
+                svc.delete_cds_conventions(req->ids);
                 BOOST_LOG_SEV(cds_convention_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, delete_cds_convention_response{.success = true});
             } catch (const std::exception& e) {

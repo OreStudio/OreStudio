@@ -37,7 +37,7 @@ std::string monetary_nature_repository::sql() {
 }
 
 void monetary_nature_repository::write(context ctx, const domain::monetary_nature& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing monetary nature: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing monetary nature. " << "code: " << v.code;
     execute_write_query(
         ctx, monetary_nature_mapper::map(v), lg(), "Writing monetary nature to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::monetary_nature> monetary_nature_repository::read_latest(con
 
 std::vector<domain::monetary_nature>
 monetary_nature_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest monetary nature. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest monetary nature. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ monetary_nature_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest monetary nature by code.");
 }
 
+
 std::vector<domain::monetary_nature> monetary_nature_repository::read_all(context ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all monetary nature versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all monetary nature versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::monetary_nature> monetary_nature_repository::read_all(contex
 
 std::optional<domain::monetary_nature> monetary_nature_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading monetary nature at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading monetary nature at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::monetary_nature> monetary_nature_repository::read_at_versi
 }
 
 void monetary_nature_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing monetary nature: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing monetary nature. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -440,7 +440,7 @@ void IborIndexConventionController::fetchIborIndexConventionHistory(
             return std::unexpected(QString::fromStdString(result.error()));
         if (!result->success)
             return std::unexpected(QString::fromStdString(result->message));
-        return std::move(result->ibor_index_conventions);
+        return std::move(result->history);
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);

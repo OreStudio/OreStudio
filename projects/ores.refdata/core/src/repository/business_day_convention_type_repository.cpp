@@ -38,7 +38,7 @@ std::string business_day_convention_type_repository::sql() {
 
 void business_day_convention_type_repository::write(context ctx,
                                                     const domain::business_day_convention_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing business day convention type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing business day convention type. " << "code: " << v.code;
     execute_write_query(ctx,
                         business_day_convention_type_mapper::map(v),
                         lg(),
@@ -73,7 +73,8 @@ business_day_convention_type_repository::read_latest(context ctx) {
 
 std::vector<domain::business_day_convention_type>
 business_day_convention_type_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest business day convention type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business day convention type. "
+                               << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -89,14 +90,15 @@ business_day_convention_type_repository::read_latest(context ctx, const std::str
         "Reading latest business day convention type by code.");
 }
 
+
 std::vector<domain::business_day_convention_type>
 business_day_convention_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all business day convention type versions. code: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all business day convention type versions. "
+                               << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_day_convention_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<business_day_convention_type_entity,
                               domain::business_day_convention_type>(
@@ -107,9 +109,32 @@ business_day_convention_type_repository::read_all(context ctx, const std::string
         "Reading all business day convention type versions by code.");
 }
 
+std::optional<domain::business_day_convention_type>
+business_day_convention_type_repository::read_at_version(context ctx,
+                                                         const std::string& code,
+                                                         std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading business day convention type at version. "
+                               << "code: " << code << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_day_convention_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<business_day_convention_type_entity,
+                                             domain::business_day_convention_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_day_convention_type_mapper::map(entities); },
+        lg(),
+        "Reading business day convention type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 void business_day_convention_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business day convention type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing business day convention type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

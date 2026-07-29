@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_SWAP_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_SWAP_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_CORE_SERVICE_SWAP_CONVENTION_SERVICE_HPP
+#define ORES_REFDATA_CORE_SERVICE_SWAP_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing swap conventions.
+ *
+ * Provides a higher-level interface for swap convention operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT swap_convention_service {
 private:
@@ -47,16 +52,79 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a swap_convention_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit swap_convention_service(context ctx);
 
-    std::vector<domain::swap_convention> list_swap_conventions();
+    /**
+     * @brief Lists swap conventions with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of swap conventions for the requested page.
+     */
+    std::vector<domain::swap_convention> list_swap_conventions(std::uint32_t offset,
+                                                               std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active swap conventions.
+     *
+     * @return Total number of active swap conventions.
+     */
+    std::uint32_t count_swap_conventions();
+
+
+    /**
+     * @brief Retrieves a single swap convention as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The swap convention at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::swap_convention> get_swap_convention_at_version(const std::string& id,
+                                                                          std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single swap convention by its primary key.
+     *
+     * @return The swap convention if found, std::nullopt otherwise.
+     */
     std::optional<domain::swap_convention> get_swap_convention(const std::string& id);
 
-    void save_swap_convention(const domain::swap_convention& v);
+    /**
+     * @brief Saves a swap convention (creates or updates).
+     *
+     * @param swap_convention The swap convention to save.
+     * @throws std::exception on failure.
+     */
+    void save_swap_convention(const domain::swap_convention& swap_convention);
 
-    void remove_swap_convention(const std::string& id);
+    /**
+     * @brief Saves a batch of swap conventions.
+     *
+     * @param swap_conventions The swap conventions to save.
+     * @throws std::exception on failure.
+     */
+    void save_swap_conventions(const std::vector<domain::swap_convention>& swap_conventions);
 
+    /**
+     * @brief Deletes a swap convention by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_swap_convention(const std::string& id);
+
+    /**
+     * @brief Deletes swap conventions by their primary keys.
+     */
+    void delete_swap_conventions(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a swap convention.
+     */
     std::vector<domain::swap_convention> get_swap_convention_history(const std::string& id);
 
 private:

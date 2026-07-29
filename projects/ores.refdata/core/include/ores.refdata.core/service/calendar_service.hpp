@@ -80,7 +80,6 @@ public:
      * @brief Retrieves a single calendar as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the calendar.
      * @param version The version to fetch.
      * @return The calendar at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +87,8 @@ public:
                                                             std::uint32_t version);
 
     /**
-     * @brief Retrieves a single calendar by its code.
+     * @brief Retrieves a single calendar by its primary key.
      *
-     * @param code The code of the calendar.
      * @return The calendar if found, std::nullopt otherwise.
      */
     std::optional<domain::calendar> get_calendar(const std::string& code);
@@ -112,15 +110,14 @@ public:
     void save_calendars(const std::vector<domain::calendar>& calendars);
 
     /**
-     * @brief Deletes a calendar by its code.
+     * @brief Deletes a calendar by its primary key.
      *
-     * @param code The code of the calendar to delete.
      * @throws std::exception on failure.
      */
     void delete_calendar(const std::string& code);
 
     /**
-     * @brief Deletes calendars by their codes.
+     * @brief Deletes calendars by their primary keys.
      */
     void delete_calendars(const std::vector<std::string>& codes);
 

@@ -37,7 +37,7 @@ std::string tenor_anchor_repository::sql() {
 }
 
 void tenor_anchor_repository::write(context ctx, const domain::tenor_anchor& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor anchor: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor anchor. " << "code: " << v.code;
     execute_write_query(
         ctx, tenor_anchor_mapper::map(v), lg(), "Writing tenor anchor to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::tenor_anchor> tenor_anchor_repository::read_latest(context c
 
 std::vector<domain::tenor_anchor> tenor_anchor_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor anchor. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor anchor. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,13 +80,14 @@ std::vector<domain::tenor_anchor> tenor_anchor_repository::read_latest(context c
         "Reading latest tenor anchor by code.");
 }
 
+
 std::vector<domain::tenor_anchor> tenor_anchor_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor anchor versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor anchor versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_anchor_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_anchor_entity, domain::tenor_anchor>(
         ctx,
@@ -98,7 +99,7 @@ std::vector<domain::tenor_anchor> tenor_anchor_repository::read_all(context ctx,
 
 std::optional<domain::tenor_anchor> tenor_anchor_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor anchor at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenor anchor at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_anchor_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::tenor_anchor> tenor_anchor_repository::read_at_version(
 }
 
 void tenor_anchor_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor anchor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor anchor. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

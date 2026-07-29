@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 31CD5001-069D-4E29-8CDC-7CDB13E85318
+:END:
+#+title: History field mapper codegen emits a raw date value where a …
+#+description: History field mapper codegen emits a raw date value where a string is expected: regenerating calendar_exception (which has an exception_date column of type date) produces presentation/calendar_exception_history_field_mapper.cpp with fields.push_back({.name = ..., .value = v.exception_date}), but domain::calendar_exception::exception_date is a std::chrono::year_month_day (per the entity/mapper templates' recent date-handling migration -- see calendar_exception_mapper.cpp's std::format/istringstream parsing) while field_value::value is a std::string -- a hard compile error (no matching push_back overload). The ores.cpp.presentation history_field_mapper template's is_date handling needs to render the value through a string conversion (e.g. std::format) like the mapper templates now do. Found while regenerating refdata entities for the fix-refdata-model-drift task (A2EDDEDC-D5D3-469D-88C9-7CE00951CC72); calendar_exception is excluded from that task's regeneration until this is fixed. Any other domain_entity with a date-typed column would hit the same break on regen.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

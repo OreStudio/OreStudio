@@ -64,15 +64,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest CRM driver pairs, possibly filtered by id.
+     * @brief Reads latest CRM driver pairs, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::crm_driver_pair> read_latest(context ctx);
     std::vector<domain::crm_driver_pair> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all CRM driver pairs, possibly filtered by id.
+     * @brief Reads all CRM driver pairs, possibly filtered by primary key.
      */
     std::vector<domain::crm_driver_pair> read_all(context ctx, const std::string& id);
 
@@ -83,7 +84,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::crm_driver_pair>

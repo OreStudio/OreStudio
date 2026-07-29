@@ -227,6 +227,8 @@ void CurrencyPairConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->pipFactorEdit->setReadOnly(readOnly);
     ui_->tickSizeEdit->setReadOnly(readOnly);
     ui_->businessDayConventionCombo->setEnabled(!readOnly);
+    ui_->spotRelativeCheckBox->setEnabled(!readOnly);
+    ui_->endOfMonthCheckBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
     WidgetUtils::set_combo_locked(ui_->pairCodeCombo, true);

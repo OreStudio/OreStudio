@@ -38,7 +38,7 @@ std::string day_count_fraction_type_repository::sql() {
 
 void day_count_fraction_type_repository::write(context ctx,
                                                const domain::day_count_fraction_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing day count fraction type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing day count fraction type. " << "code: " << v.code;
     execute_write_query(ctx,
                         day_count_fraction_type_mapper::map(v),
                         lg(),
@@ -72,7 +72,7 @@ day_count_fraction_type_repository::read_latest(context ctx) {
 
 std::vector<domain::day_count_fraction_type>
 day_count_fraction_type_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest day count fraction type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest day count fraction type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -87,13 +87,15 @@ day_count_fraction_type_repository::read_latest(context ctx, const std::string& 
         "Reading latest day count fraction type by code.");
 }
 
+
 std::vector<domain::day_count_fraction_type>
 day_count_fraction_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all day count fraction type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all day count fraction type versions. "
+                               << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<day_count_fraction_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<day_count_fraction_type_entity, domain::day_count_fraction_type>(
         ctx,
@@ -105,7 +107,7 @@ day_count_fraction_type_repository::read_all(context ctx, const std::string& cod
 
 std::optional<domain::day_count_fraction_type> day_count_fraction_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading day count fraction type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading day count fraction type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<day_count_fraction_type_entity>> |
@@ -125,9 +127,8 @@ std::optional<domain::day_count_fraction_type> day_count_fraction_type_repositor
     return entities.front();
 }
 
-
 void day_count_fraction_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

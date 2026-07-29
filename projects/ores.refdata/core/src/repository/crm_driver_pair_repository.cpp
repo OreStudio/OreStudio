@@ -37,7 +37,7 @@ std::string crm_driver_pair_repository::sql() {
 }
 
 void crm_driver_pair_repository::write(context ctx, const domain::crm_driver_pair& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CRM driver pair: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing CRM driver pair. " << "id: " << v.id;
     execute_write_query(
         ctx, crm_driver_pair_mapper::map(v), lg(), "Writing CRM driver pair to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_latest(con
 
 std::vector<domain::crm_driver_pair>
 crm_driver_pair_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM driver pair. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM driver pair. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_driver_pair_entity>> |
@@ -79,12 +79,14 @@ crm_driver_pair_repository::read_latest(context ctx, const std::string& id) {
         "Reading latest CRM driver pair by id.");
 }
 
+
 std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_all(context ctx,
                                                                           const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM driver pair versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM driver pair versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_driver_pair_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<crm_driver_pair_entity, domain::crm_driver_pair>(
         ctx,
@@ -96,7 +98,7 @@ std::vector<domain::crm_driver_pair> crm_driver_pair_repository::read_all(contex
 
 std::optional<domain::crm_driver_pair> crm_driver_pair_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CRM driver pair at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading CRM driver pair at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_driver_pair_entity>> |
@@ -117,7 +119,7 @@ std::optional<domain::crm_driver_pair> crm_driver_pair_repository::read_at_versi
 
 
 void crm_driver_pair_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<crm_driver_pair_entity> |

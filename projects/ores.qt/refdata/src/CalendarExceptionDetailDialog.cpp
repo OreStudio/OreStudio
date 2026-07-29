@@ -167,6 +167,7 @@ void CalendarExceptionDetailDialog::setReadOnly(bool readOnly) {
     ui_->idEdit->setReadOnly(true);
     ui_->calendarCombo->setEnabled(false);
     ui_->exceptionDateEdit->setReadOnly(true);
+    ui_->isBusinessDayCheckBox->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);

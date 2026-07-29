@@ -37,7 +37,7 @@ std::string portfolio_repository::sql() {
 }
 
 void portfolio_repository::write(context ctx, const domain::portfolio& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing portfolio. " << "id: " << v.id;
     execute_write_query(ctx, portfolio_mapper::map(v), lg(), "Writing portfolio to database.");
 }
 
@@ -65,7 +65,7 @@ std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx) {
 
 std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx,
                                                                  const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
@@ -81,8 +81,9 @@ std::vector<domain::portfolio> portfolio_repository::read_latest(context ctx,
         "Reading latest portfolio by id.");
 }
 
+
 std::vector<domain::portfolio> portfolio_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
@@ -99,7 +100,7 @@ std::vector<domain::portfolio> portfolio_repository::read_all(context ctx, const
 
 std::optional<domain::portfolio>
 portfolio_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading portfolio at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading portfolio at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<portfolio_entity>> |
@@ -120,7 +121,7 @@ portfolio_repository::read_at_version(context ctx, const std::string& id, std::u
 
 
 void portfolio_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();

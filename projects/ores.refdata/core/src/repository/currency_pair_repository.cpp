@@ -37,7 +37,7 @@ std::string currency_pair_repository::sql() {
 }
 
 void currency_pair_repository::write(context ctx, const domain::currency_pair& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair: " << v.pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair. " << "pair_code: " << v.pair_code;
     execute_write_query(
         ctx, currency_pair_mapper::map(v), lg(), "Writing currency pair to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::currency_pair> currency_pair_repository::read_latest(context
 
 std::vector<domain::currency_pair>
 currency_pair_repository::read_latest(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair. pair_code: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair. " << "pair_code: " << pair_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,13 +80,15 @@ currency_pair_repository::read_latest(context ctx, const std::string& pair_code)
         "Reading latest currency pair by pair_code.");
 }
 
+
 std::vector<domain::currency_pair>
 currency_pair_repository::read_all(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair versions. pair_code: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair versions. "
+                               << "pair_code: " << pair_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_entity>> |
                        where("tenant_id"_c == tid && "pair_code"_c == pair_code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<currency_pair_entity, domain::currency_pair>(
         ctx,
@@ -98,7 +100,7 @@ currency_pair_repository::read_all(context ctx, const std::string& pair_code) {
 
 std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
     context ctx, const std::string& pair_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair at version. pair_code: " << pair_code
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair at version. " << "pair_code: " << pair_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -118,9 +120,8 @@ std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
     return entities.front();
 }
 
-
 void currency_pair_repository::remove(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -43,8 +43,15 @@ std::uint32_t currency_group_service::count_groups() {
 }
 
 
+std::optional<domain::currency_group>
+currency_group_service::get_group_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency group at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
 std::optional<domain::currency_group> currency_group_service::get_group(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency group: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency group. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -54,17 +61,18 @@ std::optional<domain::currency_group> currency_group_service::get_group(const st
 void currency_group_service::save_group(const domain::currency_group& v) {
     if (v.code.empty())
         throw std::invalid_argument("Currency Group code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency group: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving currency group. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency group: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved currency group. " << "code: " << v.code;
 }
 
 void currency_group_service::save_groups(const std::vector<domain::currency_group>& groups) {
-    for (const auto& e : groups)
+    for (const auto& e : groups) {
         if (e.code.empty())
             throw std::invalid_argument("Currency Group code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << groups.size() << " currency groups";
     auto ts = groups;
     for (auto& e : ts)
@@ -73,9 +81,9 @@ void currency_group_service::save_groups(const std::vector<domain::currency_grou
 }
 
 void currency_group_service::delete_group(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency group: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency group. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency group: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed currency group. " << "code: " << code;
 }
 
 void currency_group_service::delete_groups(const std::vector<std::string>& codes) {
@@ -84,7 +92,7 @@ void currency_group_service::delete_groups(const std::vector<std::string>& codes
 
 std::vector<domain::currency_group>
 currency_group_service::get_group_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency group: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency group. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

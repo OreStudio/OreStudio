@@ -38,7 +38,7 @@ std::string tenor_resolution_algorithm_repository::sql() {
 
 void tenor_resolution_algorithm_repository::write(context ctx,
                                                   const domain::tenor_resolution_algorithm& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor resolution algorithm: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor resolution algorithm. " << "code: " << v.code;
     execute_write_query(ctx,
                         tenor_resolution_algorithm_mapper::map(v),
                         lg(),
@@ -73,7 +73,7 @@ tenor_resolution_algorithm_repository::read_latest(context ctx) {
 
 std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor resolution algorithm. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor resolution algorithm. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -89,13 +89,15 @@ tenor_resolution_algorithm_repository::read_latest(context ctx, const std::strin
         "Reading latest tenor resolution algorithm by code.");
 }
 
+
 std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor resolution algorithm versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor resolution algorithm versions. "
+                               << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_resolution_algorithm_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_resolution_algorithm_entity,
                               domain::tenor_resolution_algorithm>(
@@ -110,8 +112,8 @@ std::optional<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_repository::read_at_version(context ctx,
                                                        const std::string& code,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor resolution algorithm at version. code: " << code
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenor resolution algorithm at version. "
+                               << "code: " << code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_resolution_algorithm_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
@@ -131,7 +133,7 @@ tenor_resolution_algorithm_repository::read_at_version(context ctx,
 }
 
 void tenor_resolution_algorithm_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

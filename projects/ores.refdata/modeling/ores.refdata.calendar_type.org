@@ -160,7 +160,7 @@ drop function if exists ores_refdata_validate_calendar_type_fn;
 :PROPERTIES:
 :domain_include:         ores.refdata.api/domain/calendar_type.hpp
 :domain_class:           refdata::domain::calendar_type
-:protocol_include:       ores.refdata.api/messaging/protocol.hpp
+:protocol_include:       ores.refdata.api/messaging/calendar_type_protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
@@ -175,11 +175,11 @@ drop function if exists ores_refdata_validate_calendar_type_fn;
 :delete_request_class:    refdata::messaging::delete_calendar_type_request
 :delete_response_class:   refdata::messaging::delete_calendar_type_response
 :delete_message_type:     delete_calendar_type_request
-:delete_request_id_field: type
+:delete_request_id_field: codes
 :history_request_class:       refdata::messaging::get_calendar_type_history_request
 :history_response_class:      refdata::messaging::get_calendar_type_history_response
 :history_message_type:        get_calendar_type_history_request
-:history_request_id_field:    type
+:history_request_id_field:    code
 :history_response_data_field: history
 :settings_group:         CalendarTypeListWindow
 :window_title:           Calendar Types

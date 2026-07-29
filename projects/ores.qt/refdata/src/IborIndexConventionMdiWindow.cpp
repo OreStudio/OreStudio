@@ -307,7 +307,7 @@ void IborIndexConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " IBOR index conventions";
 
         refdata::messaging::delete_ibor_index_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

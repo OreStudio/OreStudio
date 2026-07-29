@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_tenors();
 
+
     /**
      * @brief Retrieves a single tenor as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the tenor.
      * @param version The version to fetch.
      * @return The tenor at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                       std::uint32_t version);
 
     /**
-     * @brief Retrieves a single tenor by its code.
+     * @brief Retrieves a single tenor by its primary key.
      *
-     * @param code The code of the tenor.
      * @return The tenor if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor> get_tenor(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_tenors(const std::vector<domain::tenor>& tenors);
 
     /**
-     * @brief Deletes a tenor by its code.
+     * @brief Deletes a tenor by its primary key.
      *
-     * @param code The code of the tenor to delete.
      * @throws std::exception on failure.
      */
     void delete_tenor(const std::string& code);
 
     /**
-     * @brief Deletes tenors by their codes.
+     * @brief Deletes tenors by their primary keys.
      */
     void delete_tenors(const std::vector<std::string>& codes);
 

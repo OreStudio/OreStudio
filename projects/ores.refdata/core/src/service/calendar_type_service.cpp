@@ -42,15 +42,16 @@ std::uint32_t calendar_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+
 std::optional<domain::calendar_type>
 calendar_type_service::get_type_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar type at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar type at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::calendar_type> calendar_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::calendar_type> calendar_type_service::get_type(const std::
 void calendar_type_service::save_type(const domain::calendar_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Calendar Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving calendar type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved calendar type. " << "code: " << v.code;
 }
 
 void calendar_type_service::save_types(const std::vector<domain::calendar_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.code.empty())
             throw std::invalid_argument("Calendar Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " calendar types";
     auto ts = types;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void calendar_type_service::save_types(const std::vector<domain::calendar_type>&
 }
 
 void calendar_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing calendar type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed calendar type. " << "code: " << code;
 }
 
 void calendar_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -90,7 +92,7 @@ void calendar_type_service::delete_types(const std::vector<std::string>& codes) 
 
 std::vector<domain::calendar_type>
 calendar_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

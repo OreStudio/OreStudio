@@ -76,6 +76,7 @@ public:
      */
     std::uint32_t count_party_identifiers();
 
+
     /**
      * @brief Lists party identifiers filtered by party_id, with pagination.
      *
@@ -113,7 +114,6 @@ public:
      * @brief Retrieves a single party identifier as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the party identifier.
      * @param version The version to fetch.
      * @return The party identifier at that version if found, std::nullopt otherwise.
      */
@@ -121,9 +121,8 @@ public:
                                                                             std::uint32_t version);
 
     /**
-     * @brief Retrieves a single party identifier by its id.
+     * @brief Retrieves a single party identifier by its primary key.
      *
-     * @param id The id of the party identifier.
      * @return The party identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::party_identifier> get_party_identifier(const std::string& id);
@@ -145,15 +144,14 @@ public:
     void save_party_identifiers(const std::vector<domain::party_identifier>& party_identifiers);
 
     /**
-     * @brief Deletes a party identifier by its id.
+     * @brief Deletes a party identifier by its primary key.
      *
-     * @param id The id of the party identifier to delete.
      * @throws std::exception on failure.
      */
     void delete_party_identifier(const std::string& id);
 
     /**
-     * @brief Deletes party identifiers by their ids.
+     * @brief Deletes party identifiers by their primary keys.
      */
     void delete_party_identifiers(const std::vector<std::string>& ids);
 

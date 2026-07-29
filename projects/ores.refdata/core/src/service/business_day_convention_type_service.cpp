@@ -44,8 +44,16 @@ std::uint32_t business_day_convention_type_service::count_types() {
 
 
 std::optional<domain::business_day_convention_type>
+business_day_convention_type_service::get_type_at_version(const std::string& code,
+                                                          std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting business day convention type at version. "
+                               << "code: " << code << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::business_day_convention_type>
 business_day_convention_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting business day convention type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting business day convention type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -56,18 +64,19 @@ void business_day_convention_type_service::save_type(
     const domain::business_day_convention_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Business Day Convention Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving business day convention type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving business day convention type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved business day convention type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved business day convention type. " << "code: " << v.code;
 }
 
 void business_day_convention_type_service::save_types(
     const std::vector<domain::business_day_convention_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.code.empty())
             throw std::invalid_argument("Business Day Convention Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " business day convention types";
     auto ts = types;
     for (auto& e : ts)
@@ -76,9 +85,9 @@ void business_day_convention_type_service::save_types(
 }
 
 void business_day_convention_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing business day convention type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing business day convention type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed business day convention type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed business day convention type. " << "code: " << code;
 }
 
 void business_day_convention_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -87,7 +96,8 @@ void business_day_convention_type_service::delete_types(const std::vector<std::s
 
 std::vector<domain::business_day_convention_type>
 business_day_convention_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for business day convention type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for business day convention type. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

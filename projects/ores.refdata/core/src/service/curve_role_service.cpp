@@ -42,15 +42,16 @@ std::uint32_t curve_role_service::count_roles() {
     return repo_.get_total_role_count(ctx_);
 }
 
+
 std::optional<domain::curve_role> curve_role_service::get_role_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve role at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting curve role at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::curve_role> curve_role_service::get_role(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting curve role: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting curve role. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::curve_role> curve_role_service::get_role(const std::string
 void curve_role_service::save_role(const domain::curve_role& v) {
     if (v.code.empty())
         throw std::invalid_argument("Curve Role code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving curve role: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving curve role. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved curve role: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved curve role. " << "code: " << v.code;
 }
 
 void curve_role_service::save_roles(const std::vector<domain::curve_role>& roles) {
-    for (const auto& e : roles)
+    for (const auto& e : roles) {
         if (e.code.empty())
             throw std::invalid_argument("Curve Role code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " curve roles";
     auto ts = roles;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void curve_role_service::save_roles(const std::vector<domain::curve_role>& roles
 }
 
 void curve_role_service::delete_role(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing curve role: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing curve role. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed curve role: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed curve role. " << "code: " << code;
 }
 
 void curve_role_service::delete_roles(const std::vector<std::string>& codes) {
@@ -89,7 +91,7 @@ void curve_role_service::delete_roles(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::curve_role> curve_role_service::get_role_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve role: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for curve role. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

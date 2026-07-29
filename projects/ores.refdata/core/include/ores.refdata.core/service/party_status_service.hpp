@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_statuses();
 
+
     /**
      * @brief Retrieves a single party status as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the party status.
      * @param version The version to fetch.
      * @return The party status at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                               std::uint32_t version);
 
     /**
-     * @brief Retrieves a single party status by its code.
+     * @brief Retrieves a single party status by its primary key.
      *
-     * @param code The code of the party status.
      * @return The party status if found, std::nullopt otherwise.
      */
     std::optional<domain::party_status> get_status(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_statuses(const std::vector<domain::party_status>& statuses);
 
     /**
-     * @brief Deletes a party status by its code.
+     * @brief Deletes a party status by its primary key.
      *
-     * @param code The code of the party status to delete.
      * @throws std::exception on failure.
      */
     void delete_status(const std::string& code);
 
     /**
-     * @brief Deletes party statuses by their codes.
+     * @brief Deletes party statuses by their primary keys.
      */
     void delete_statuses(const std::vector<std::string>& codes);
 

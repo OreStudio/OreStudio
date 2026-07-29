@@ -37,7 +37,7 @@ std::string leg_type_repository::sql() {
 }
 
 void leg_type_repository::write(context ctx, const domain::leg_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing leg type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing leg type. " << "code: " << v.code;
     execute_write_query(ctx, leg_type_mapper::map(v), lg(), "Writing leg type to database.");
 }
 
@@ -63,7 +63,7 @@ std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx) {
 
 std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx,
                                                                const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest leg type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest leg type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -78,8 +78,9 @@ std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx,
         "Reading latest leg type by code.");
 }
 
+
 std::vector<domain::leg_type> leg_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all leg type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all leg type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<leg_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -95,7 +96,7 @@ std::vector<domain::leg_type> leg_type_repository::read_all(context ctx, const s
 
 std::optional<domain::leg_type>
 leg_type_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading leg type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading leg type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<leg_type_entity>> |
@@ -115,7 +116,7 @@ leg_type_repository::read_at_version(context ctx, const std::string& code, std::
 }
 
 void leg_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing leg type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing leg type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

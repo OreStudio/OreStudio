@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_MESSAGING_DEPOSIT_CONVENTION_HANDLER_HPP
-#define ORES_REFDATA_MESSAGING_DEPOSIT_CONVENTION_HANDLER_HPP
+#ifndef ORES_REFDATA_CORE_MESSAGING_DEPOSIT_CONVENTION_HANDLER_HPP
+#define ORES_REFDATA_CORE_MESSAGING_DEPOSIT_CONVENTION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -69,14 +69,22 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::deposit_convention_service svc(req_ctx);
         get_deposit_conventions_response resp;
-        try {
-            resp.deposit_conventions = svc.list_deposit_conventions();
-            resp.total_available_count = static_cast<int>(resp.deposit_conventions.size());
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(deposit_convention_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+        if (auto req = decode<get_deposit_conventions_request>(msg)) {
+            try {
+                resp.deposit_conventions = svc.list_deposit_conventions(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_deposit_conventions());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(deposit_convention_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(deposit_convention_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(deposit_convention_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -131,8 +139,8 @@ public:
                     << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_deposit_convention_history_response{
-                          .deposit_conventions = std::move(hist), .success = true});
+                      get_deposit_convention_history_response{.history = std::move(hist),
+                                                              .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(deposit_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
@@ -156,15 +164,14 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "refdata::deposit_conventions:write")) {
+        if (!has_permission(req_ctx, "refdata::deposit_conventions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::deposit_convention_service svc(req_ctx);
         if (auto req = decode<delete_deposit_convention_request>(msg)) {
             try {
-                for (const auto& code : req->codes)
-                    svc.remove_deposit_convention(code);
+                svc.delete_deposit_conventions(req->ids);
                 BOOST_LOG_SEV(deposit_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, delete_deposit_convention_response{.success = true});

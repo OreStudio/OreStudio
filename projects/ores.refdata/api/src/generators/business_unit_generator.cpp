@@ -46,7 +46,11 @@ generate_synthetic_business_unit(utility::generation::generation_context& ctx) {
     r.unit_name = faker::company::companyName() + " Desk" + "-" + std::to_string(idx);
     r.parent_business_unit_id = std::nullopt;
     r.unit_code = std::string("DESK") + std::to_string(idx);
-    r.business_centre_code = std::string("WRLD");
+    r.business_centre_code = // WRLD is the only business centre guaranteed seeded by the base
+        // bootstrap (a real FpML city code like GBLO only exists once the
+        // large, optional FpML business-centre reference dataset is loaded --
+        // see the same reasoning in ores.refdata.party.org).
+        std::string("WRLD");
     r.unit_type_id = std::nullopt;
     r.status = std::string("Active");
     r.modified_by = modified_by;

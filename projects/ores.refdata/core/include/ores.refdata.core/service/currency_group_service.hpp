@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/currency_group.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_group_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -76,9 +77,18 @@ public:
 
 
     /**
-     * @brief Retrieves a single currency group by its code.
+     * @brief Retrieves a single currency group as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the currency group.
+     * @param version The version to fetch.
+     * @return The currency group at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency_group> get_group_at_version(const std::string& code,
+                                                               std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single currency group by its primary key.
+     *
      * @return The currency group if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_group> get_group(const std::string& code);
@@ -100,15 +110,14 @@ public:
     void save_groups(const std::vector<domain::currency_group>& groups);
 
     /**
-     * @brief Deletes a currency group by its code.
+     * @brief Deletes a currency group by its primary key.
      *
-     * @param code The code of the currency group to delete.
      * @throws std::exception on failure.
      */
     void delete_group(const std::string& code);
 
     /**
-     * @brief Deletes currency groups by their codes.
+     * @brief Deletes currency groups by their primary keys.
      */
     void delete_groups(const std::vector<std::string>& codes);
 

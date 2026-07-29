@@ -42,17 +42,18 @@ std::uint32_t payment_frequency_service::count_payment_frequencies() {
     return repo_.get_total_payment_frequency_count(ctx_);
 }
 
+
 std::optional<domain::payment_frequency>
 payment_frequency_service::get_payment_frequency_at_version(const std::string& code,
                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting payment frequency at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting payment frequency at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::payment_frequency>
 payment_frequency_service::get_payment_frequency(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting payment frequency: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting payment frequency. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -62,18 +63,19 @@ payment_frequency_service::get_payment_frequency(const std::string& code) {
 void payment_frequency_service::save_payment_frequency(const domain::payment_frequency& v) {
     if (v.code.empty())
         throw std::invalid_argument("Payment Frequency code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving payment frequency: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving payment frequency. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved payment frequency: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved payment frequency. " << "code: " << v.code;
 }
 
 void payment_frequency_service::save_payment_frequencies(
     const std::vector<domain::payment_frequency>& payment_frequencies) {
-    for (const auto& e : payment_frequencies)
+    for (const auto& e : payment_frequencies) {
         if (e.code.empty())
             throw std::invalid_argument("Payment Frequency code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << payment_frequencies.size() << " payment frequencies";
     auto ts = payment_frequencies;
     for (auto& e : ts)
@@ -82,9 +84,9 @@ void payment_frequency_service::save_payment_frequencies(
 }
 
 void payment_frequency_service::delete_payment_frequency(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing payment frequency: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing payment frequency. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed payment frequency: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed payment frequency. " << "code: " << code;
 }
 
 void payment_frequency_service::delete_payment_frequencies(const std::vector<std::string>& codes) {
@@ -93,7 +95,7 @@ void payment_frequency_service::delete_payment_frequencies(const std::vector<std
 
 std::vector<domain::payment_frequency>
 payment_frequency_service::get_payment_frequency_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for payment frequency: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for payment frequency. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -63,7 +63,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest countries, possibly filtered by alpha2_code.
+     * @brief Reads latest countries, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::country> read_latest(context ctx);
@@ -85,7 +85,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads all countries, possibly filtered by alpha2_code.
+     * @brief Reads all countries, possibly filtered by primary key.
      */
     std::vector<domain::country> read_all(context ctx, const std::string& alpha2_code);
 
@@ -96,7 +96,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param alpha2_code The alpha2_code to look up
      * @param version The version to fetch
      */
     std::optional<domain::country>

@@ -38,7 +38,7 @@ std::string country_repository::sql() {
 }
 
 void country_repository::write(context ctx, const domain::country& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing country: " << v.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing country. " << "alpha2_code: " << v.alpha2_code;
     execute_write_query(ctx, country_mapper::map(v), lg(), "Writing country to database.");
 }
 
@@ -64,7 +64,7 @@ std::vector<domain::country> country_repository::read_latest(context ctx) {
 
 std::vector<domain::country> country_repository::read_latest(context ctx,
                                                              const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest country. alpha2_code: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest country. " << "alpha2_code: " << alpha2_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> |
@@ -117,7 +117,8 @@ std::vector<domain::country> country_repository::read_at_timepoint(context ctx,
 
 std::vector<domain::country> country_repository::read_all(context ctx,
                                                           const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. alpha2_code: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. "
+                               << "alpha2_code: " << alpha2_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<country_entity>> |
                        where("tenant_id"_c == tid && "alpha2_code"_c == alpha2_code) |
@@ -134,7 +135,7 @@ std::vector<domain::country> country_repository::read_all(context ctx,
 std::optional<domain::country> country_repository::read_at_version(context ctx,
                                                                    const std::string& alpha2_code,
                                                                    std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading country at version. alpha2_code: " << alpha2_code
+    BOOST_LOG_SEV(lg(), debug) << "Reading country at version. " << "alpha2_code: " << alpha2_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -155,7 +156,7 @@ std::optional<domain::country> country_repository::read_at_version(context ctx,
 }
 
 void country_repository::remove(context ctx, const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing country: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<country_entity> |

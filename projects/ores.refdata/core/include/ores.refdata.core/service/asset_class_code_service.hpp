@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_asset_classes();
 
+
     /**
      * @brief Retrieves a single asset class code as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the asset class code.
      * @param version The version to fetch.
      * @return The asset class code at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                        std::uint32_t version);
 
     /**
-     * @brief Retrieves a single asset class code by its code.
+     * @brief Retrieves a single asset class code by its primary key.
      *
-     * @param code The code of the asset class code.
      * @return The asset class code if found, std::nullopt otherwise.
      */
     std::optional<domain::asset_class_code> get_asset_class(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_asset_classes(const std::vector<domain::asset_class_code>& asset_classes);
 
     /**
-     * @brief Deletes a asset class code by its code.
+     * @brief Deletes a asset class code by its primary key.
      *
-     * @param code The code of the asset class code to delete.
      * @throws std::exception on failure.
      */
     void delete_asset_class(const std::string& code);
 
     /**
-     * @brief Deletes asset class codes by their codes.
+     * @brief Deletes asset class codes by their primary keys.
      */
     void delete_asset_classes(const std::vector<std::string>& codes);
 

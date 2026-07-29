@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/currency_pair_classification.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -78,9 +79,18 @@ public:
 
 
     /**
-     * @brief Retrieves a single currency pair classification by its code.
+     * @brief Retrieves a single currency pair classification as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the currency pair classification.
+     * @param version The version to fetch.
+     * @return The currency pair classification at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency_pair_classification>
+    get_classification_at_version(const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single currency pair classification by its primary key.
+     *
      * @return The currency pair classification if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_pair_classification> get_classification(const std::string& code);
@@ -103,15 +113,14 @@ public:
     save_classifications(const std::vector<domain::currency_pair_classification>& classifications);
 
     /**
-     * @brief Deletes a currency pair classification by its code.
+     * @brief Deletes a currency pair classification by its primary key.
      *
-     * @param code The code of the currency pair classification to delete.
      * @throws std::exception on failure.
      */
     void delete_classification(const std::string& code);
 
     /**
-     * @brief Deletes currency pair classifications by their codes.
+     * @brief Deletes currency pair classifications by their primary keys.
      */
     void delete_classifications(const std::vector<std::string>& codes);
 

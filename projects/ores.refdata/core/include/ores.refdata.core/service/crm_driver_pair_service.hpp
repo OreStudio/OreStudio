@@ -81,7 +81,6 @@ public:
      * @brief Retrieves a single CRM driver pair as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the CRM driver pair.
      * @param version The version to fetch.
      * @return The CRM driver pair at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +88,8 @@ public:
                                                                           std::uint32_t version);
 
     /**
-     * @brief Retrieves a single CRM driver pair by its id.
+     * @brief Retrieves a single CRM driver pair by its primary key.
      *
-     * @param id The id of the CRM driver pair.
      * @return The CRM driver pair if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_driver_pair> get_crm_driver_pair(const std::string& id);
@@ -113,15 +111,14 @@ public:
     void save_crm_driver_pairs(const std::vector<domain::crm_driver_pair>& crm_driver_pairs);
 
     /**
-     * @brief Deletes a CRM driver pair by its id.
+     * @brief Deletes a CRM driver pair by its primary key.
      *
-     * @param id The id of the CRM driver pair to delete.
      * @throws std::exception on failure.
      */
     void delete_crm_driver_pair(const std::string& id);
 
     /**
-     * @brief Deletes CRM driver pairs by their ids.
+     * @brief Deletes CRM driver pairs by their primary keys.
      */
     void delete_crm_driver_pairs(const std::vector<std::string>& ids);
 

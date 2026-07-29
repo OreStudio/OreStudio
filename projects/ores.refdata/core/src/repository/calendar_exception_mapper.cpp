@@ -24,6 +24,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::refdata::repository {
 
@@ -39,7 +41,15 @@ domain::calendar_exception calendar_exception_mapper::map(const calendar_excepti
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
     r.calendar_code = v.calendar_code;
-    r.exception_date = ores::platform::time::datetime::from_iso8601_date(v.exception_date);
+
+    {
+        int yy{}, mm{}, dd{};
+        char s1{}, s2{};
+        std::istringstream ss(v.exception_date);
+        ss >> yy >> s1 >> mm >> s2 >> dd;
+        r.exception_date = std::chrono::year{yy} / std::chrono::month{static_cast<unsigned>(mm)} /
+                           std::chrono::day{static_cast<unsigned>(dd)};
+    }
 
     r.is_business_day = v.is_business_day;
     r.description = v.description;
@@ -62,7 +72,8 @@ calendar_exception_entity calendar_exception_mapper::map(const domain::calendar_
     r.version = v.version;
 
     r.calendar_code = v.calendar_code;
-    r.exception_date = ores::platform::time::datetime::to_iso8601_date(v.exception_date);
+
+    r.exception_date = std::format("{:%Y-%m-%d}", v.exception_date);
 
     r.is_business_day = v.is_business_day;
     r.description = v.description;

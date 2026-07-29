@@ -159,10 +159,12 @@ void DepositConventionDetailDialog::markDirty() {
 void DepositConventionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
+    ui_->indexBasedEdit->setEnabled(!readOnly);
     ui_->indexEdit->setReadOnly(readOnly);
     ui_->calendarEdit->setReadOnly(readOnly);
     ui_->conventionEdit->setReadOnly(readOnly);
     ui_->dayCountFractionEdit->setReadOnly(readOnly);
+    ui_->endOfMonthEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -374,7 +376,7 @@ void DepositConventionDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_deposit_convention_request request;
-        request.codes = {code};
+        request.ids = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

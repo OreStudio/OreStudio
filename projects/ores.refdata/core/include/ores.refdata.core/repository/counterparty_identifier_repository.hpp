@@ -64,15 +64,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest counterparty identifiers, possibly filtered by id.
+     * @brief Reads latest counterparty identifiers, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::counterparty_identifier> read_latest(context ctx);
     std::vector<domain::counterparty_identifier> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all counterparty identifiers, possibly filtered by id.
+     * @brief Reads all counterparty identifiers, possibly filtered by primary key.
      */
     std::vector<domain::counterparty_identifier> read_all(context ctx, const std::string& id);
 
@@ -83,7 +84,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::counterparty_identifier>

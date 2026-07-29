@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -76,9 +77,18 @@ public:
 
 
     /**
-     * @brief Retrieves a single currency pair by its pair_code.
+     * @brief Retrieves a single currency pair as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param pair_code The pair_code of the currency pair.
+     * @param version The version to fetch.
+     * @return The currency pair at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency_pair> get_pair_at_version(const std::string& pair_code,
+                                                             std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single currency pair by its primary key.
+     *
      * @return The currency pair if found, std::nullopt otherwise.
      */
     std::optional<domain::currency_pair> get_pair(const std::string& pair_code);
@@ -100,15 +110,14 @@ public:
     void save_pairs(const std::vector<domain::currency_pair>& pairs);
 
     /**
-     * @brief Deletes a currency pair by its pair_code.
+     * @brief Deletes a currency pair by its primary key.
      *
-     * @param pair_code The pair_code of the currency pair to delete.
      * @throws std::exception on failure.
      */
     void delete_pair(const std::string& pair_code);
 
     /**
-     * @brief Deletes currency pairs by their pair_codes.
+     * @brief Deletes currency pairs by their primary keys.
      */
     void delete_pairs(const std::vector<std::string>& pair_codes);
 

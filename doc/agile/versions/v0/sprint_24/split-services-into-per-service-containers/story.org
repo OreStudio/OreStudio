@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :docker:architecture:deployment:sprint_24:v0:
 #+created: 2026-07-27
-#+updated: 2026-07-27
+#+updated: 2026-07-29
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -42,7 +42,7 @@ other binaries.
 | Now           | Design done, IAM pilot partially proven (connects to NATS standalone); a distinct JWT-signing bug and the HEALTHCHECK probe remain. |
 | Waiting on    | Nothing.                               |
 | Next          | Finish the IAM pilot (JWT bug + healthcheck), then the dependency generator and events watcher. |
-| Last touched  | 2026-07-27                               |
+| Last touched  | 2026-07-29                               |
 
 * Acceptance
 

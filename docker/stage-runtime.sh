@@ -11,7 +11,7 @@ set -euo pipefail
 
 service=""
 if [[ "${1:-}" == "--service" ]]; then
-    service="$2"
+    service="${2:?--service requires a binary name}"
 fi
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

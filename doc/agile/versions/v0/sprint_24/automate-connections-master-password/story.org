@@ -8,7 +8,7 @@
 #+filetags: :qt:connections:dx:automation:sprint_24:v0:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -44,35 +44,52 @@ whenever no env/CLI value is supplied.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                                |
 | Last touched  | 2026-07-29                               |
 
 * Acceptance
 
-- A CLI arg and an equivalent =.env=-sourced environment variable can
+- [X] A CLI arg and an equivalent =.env=-sourced environment variable can
   both supply the connections.db master password at =ores.qt=
   startup.
-- When supplied, =initializeConnectionManager()= attempts unlock with
+- [X] When supplied, =initializeConnectionManager()= attempts unlock with
   it before falling back to =MasterPasswordDialog= -- no dialog shown
   if it succeeds.
-- A failed auto-unlock attempt (wrong password) shows a clear message
+- [X] A failed auto-unlock attempt (wrong password) shows a clear message
   box stating unlock was attempted automatically from the
   environment/CLI and failed, rather than silently falling back to
   the dialog or proceeding unlocked.
-- The manual =MasterPasswordDialog= (=Unlock=/=Create=/=Change=)
+- [X] The manual =MasterPasswordDialog= (=Unlock=/=Create=/=Change=)
   path is unaffected when no env/CLI value is supplied.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:5564585B-31E1-4081-9ACC-FF1995BFC9E3][Supply connections.db master password via CLI arg or .env]] | DONE | 2026-07-29 | 2026-07-29 | Add a CLI arg and .env-sourced environment variable for the connections.db master password; wire initializeConnectionManager() to attempt verification with it before falling back to MasterPasswordDialog, and show a clear failure message on a bad supplied value. |
 
 * Decisions
+
+** CLI/env password threaded through MainWindow's constructor, not a setter
+
+Decided in the [[id:5564585B-31E1-4081-9ACC-FF1995BFC9E3][implementation task]]. Followed the
+existing =openScenarioPath= precedent: passed as a new constructor
+parameter rather than a post-construction setter, since
+=initializeConnectionManager()= can run before any caller-supplied
+setter would fire.
+
+** Failed auto-unlock falls through to the existing interactive dialog
+
+Rather than aborting startup on a bad supplied password,
+=initializeConnectionManager()= shows a distinct "Auto-Unlock Failed"
+message box and then falls through into the same =Unlock= dialog
+flow already used when no password was supplied at all -- one code
+path handles both cases past that point, and the manual fallback the
+story's acceptance criteria require comes for free.
 
 * Out of scope
 

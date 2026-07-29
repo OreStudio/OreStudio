@@ -104,6 +104,16 @@ public:
      */
     [[nodiscard]] QString openScenario() const;
 
+    /**
+     * @brief Get the connections.db master password for non-interactive
+     * unlock, via --master-password.
+     *
+     * Returns empty string if not specified; caller falls back to the
+     * ORES_CONNECTIONS_MASTER_PASSWORD environment variable, then to the
+     * interactive MasterPasswordDialog if neither is set.
+     */
+    [[nodiscard]] QString masterPassword() const;
+
 private:
     void setupOptions();
     void saveToSettings();

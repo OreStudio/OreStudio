@@ -75,6 +75,13 @@ void CommandLineParser::setupOptions() {
                        "Path to a test_scenario .org doc to open in the Scenario Runner "
                        "on startup (System > Testing).",
                        "path"});
+
+    // Non-interactive connections.db master-password unlock
+    parser_.addOption({"master-password",
+                       "Master password to auto-unlock connections.db instead of prompting "
+                       "via MasterPasswordDialog. Falls back to "
+                       "ORES_CONNECTIONS_MASTER_PASSWORD if not set.",
+                       "password"});
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -152,6 +159,10 @@ std::string CommandLineParser::httpBaseUrl() const {
 
 QString CommandLineParser::openScenario() const {
     return parser_.value("open-scenario");
+}
+
+QString CommandLineParser::masterPassword() const {
+    return parser_.value("master-password");
 }
 
 QColor CommandLineParser::instanceColor() const {

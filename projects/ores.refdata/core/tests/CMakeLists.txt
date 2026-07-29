@@ -20,10 +20,36 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "main.cpp"
+    "party_rls_isolation_tests.cpp"
+    "presentation_currency_history_field_mapper_tests.cpp"
+    "repository_book_status_repository_tests.cpp"
+    "repository_business_unit_repository_tests.cpp"
+    "repository_business_unit_type_repository_tests.cpp"
+    "repository_contact_type_repository_tests.cpp"
+    "repository_counterparty_contact_information_repository_tests.cpp"
+    "repository_counterparty_identifier_repository_tests.cpp"
+    "repository_counterparty_repository_tests.cpp"
+    "repository_country_repository_tests.cpp"
+    "repository_currency_calendar_repository_tests.cpp"
+    "repository_currency_country_repository_tests.cpp"
+    "repository_currency_market_tier_repository_tests.cpp"
+    "repository_currency_pair_convention_calendar_repository_tests.cpp"
+    "repository_currency_repository_tests.cpp"
+    "repository_monetary_nature_repository_tests.cpp"
+    "repository_party_contact_information_repository_tests.cpp"
+    "repository_party_counterparty_repository_tests.cpp"
+    "repository_party_country_repository_tests.cpp"
+    "repository_party_currency_repository_tests.cpp"
+    "repository_party_id_scheme_repository_tests.cpp"
+    "repository_party_identifier_repository_tests.cpp"
+    "repository_party_repository_tests.cpp"
+    "repository_party_status_repository_tests.cpp"
+    "repository_party_type_repository_tests.cpp"
+    "repository_regulatory_book_type_repository_tests.cpp"
+    "repository_rounding_type_repository_tests.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

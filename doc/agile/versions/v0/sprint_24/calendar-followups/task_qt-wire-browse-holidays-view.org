@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/qt-wire-browse-holidays-view
 #+pr: 1737
-#+blocked_on: [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]]
-#+blocked_since: 2026-07-29
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-29
 #+environment: clever_dijkstra
@@ -33,11 +33,11 @@ open calendar. Closes the deferred acceptance item from
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Blocked on codegen groundwork.         |
-| Waiting on   | [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]] |
-| Next         | Resume once the junction-Qt codegen path exists; regenerate =calendar_date --address ores.cpp.qt=, wire =CalendarDetailDialog=. |
+| Now          | Unblocked -- [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][the junction-Qt codegen task]] is DONE and merged (calendar_date's Qt drawer and generated facet files are on main). |
+| Waiting on   | Nothing.                               |
+| Next         | Construct =CalendarDateController= in =RefdataPlugin=, wire =CalendarDetailDialog='s "Browse Holidays" toolbar action. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance

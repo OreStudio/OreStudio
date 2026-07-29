@@ -20,7 +20,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace =ir_curve_generation_config.index_name= (a free-text full
+=floating_index_type.code=, e.g. "USD-SOFR") with two oresmd-shaped
+fields -- =index_family= (=libor=/=euribor=/=sofr=/=estr=/=sonia=/=tona=)
+and =tenor= (populated only for term families) -- add the missing
+=role= field (=discount=/=projection=/=self_discounting=, oresmd's
+=curve_role=), and rebuild =curve_feed_controller='s collision check on
+the full =(currency_code, index_family, tenor, role)= tuple instead of a
+flat qualifier string, so a discount curve and a projection curve for
+the same currency+index can legitimately run side by side. Close
+[[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate
+index reference data]] as superseded once this lands (per the parent
+story's =* Decisions=).
 
 * Status
 
@@ -28,20 +39,183 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Now          | Plan written, pending review before touching schema/codegen. |
+| Waiting on   | Plan sign-off.                        |
+| Next         | Regenerate the codegen entity per the plan below. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
--
+- [ ] =ir_curve_generation_config= has =index_family= (enum-shaped
+  text: =libor=/=euribor=/=sofr=/=estr=/=sonia=/=tona=), =tenor=
+  (text, required iff =index_family= is a term family, empty
+  otherwise -- mirrors the =price_source=/=vintage_source= empty-string
+  nullable pattern already used on this table), and =role= (text:
+  =discount=/=projection=/=self_discounting=) columns; =index_name= is
+  deleted (hard cutover, no coexistence).
+- [ ] The Insert-trigger validator for the new fields checks
+  =(currency_code, index_family)= resolves to a real
+  =overnight_index_convention= or =ibor_index_convention= row (id =
+  =currency_code + "-" + upper(index_family)=), replacing the old
+  single-column =floating_index_type= FK validator.
+- [ ] Every consumer of =index_name= (feed qualifier construction,
+  vintage lookup, Qt list/detail/history, generator, event registrar)
+  is migrated onto =index_family=/=tenor=; grep for =index_name= across
+  =ores.synthetic=/=ores.qt= returns nothing once done.
+- [ ] =curve_feed_controller='s collision check
+  (=find_qualifier_conflict=) keys on the new
+  =(currency_code, index_family, tenor, role)= tuple, not the current
+  flat =qualifier= string -- two feeds with the same
+  =(currency_code, index_family, tenor)= but different =role= (one
+  =discount=, one =projection=) no longer conflict.
+- [ ] Full =compass build= clean; =ctest= full suite green; existing
+  =curve_feed_controller=/=ir_curve_feed= tests updated/extended to
+  cover the discount-vs-projection non-conflict case.
+- [ ] [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize
+  floating-rate index reference data]] closed as superseded, per the
+  parent story's =* Decisions=.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Current shape (as found)
+
+- =ir_curve_generation_config.index_name= is free text holding the
+  *full* =floating_index_type.code= (e.g. "USD-SOFR"), validated by
+  the generated single-argument FK validator
+  =ores_refdata_validate_floating_index_type_fn(tenant_id, value)=
+  wired via the model's =* Insert trigger / Validations= table
+  (=doc= at
+  =projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org=).
+- No =role= field exists at all today -- =curve_feed_controller=
+  (=projects/ores.synthetic/service/src/curve_feed_controller.hpp=)
+  treats *any* two feeds with the same
+  =qualifier = currency_code + "/" + strip_currency_prefix(index_name)=
+  as an unconditional conflict (=find_qualifier_conflict=), so a
+  discount curve and a projection curve for the same currency+index
+  can never coexist -- exactly the gap this task closes.
+- =ir_curve_feed.cpp='s =strip_currency_prefix()= and
+  =resolve_vintage_initial_rate()='s qualifier construction
+  (=currency_code + "/" + strip_currency_prefix(...)=) are the two real
+  consumers building a market-data qualifier string out of
+  =index_name= today; both need to build it from =index_family=/=tenor=
+  instead once =index_name= is gone.
+- =overnight_index_convention=/=ibor_index_convention= both store their
+  =id= as the full "CCY-FAMILY" code too (e.g. "USD-SOFR",
+  "EUR-EURIBOR") -- *no* tenor in their own id; term-index tenor
+  variants (e.g. 3M EURIBOR vs. 6M EURIBOR) live at the
+  =ir_curve_template_entry= grain already, which is exactly why oresmd
+  models =tenor= as a query key separate from =index=.
+
+** Step 1 -- Model changes (codegen source of truth)
+
+Edit
+=projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org=:
+
+1. Delete the =index_name= natural-key column and its
+   =ores_refdata_validate_floating_index_type_fn= trigger validation.
+2. Add =index_family= (text, not nullable) -- validated by a *new*
+   composite validator (see Step 2), not a bare enum CHECK, since it
+   must resolve against real convention rows, not just a fixed string
+   set.
+3. Add =tenor= (text, not nullable, empty-string-when-absent -- same
+   pattern as =vintage_source=/=vintage_date=) with a SQL check:
+   required (non-empty) iff =index_family in ('libor','euribor')=,
+   empty otherwise (overnight families have no tenor dimension, mirrors
+   oresmd's own =index_family=-conditional grammar).
+4. Add =role= (text, not nullable, default =self_discounting= for
+   backward-compatible seed data) with a SQL check: one of
+   =discount=/=projection=/=self_discounting=.
+5. Update the generator block, Qt Detail fields table, and Qt model
+   Columns table to replace =index_name= with =index_family=/=tenor=/=role=.
+
+** Step 2 -- Composite validator for (currency_code, index_family)
+
+The codegen Insert-trigger =Validations= mechanism only supports
+=fn(tenant_id, NEW.column)= (one column in, one value out) -- it cannot
+express "look up =currency_code + '-' + upper(index_family)= against
+two possible tables." This needs a hand-written PL/pgSQL trigger
+function (following the same pattern
+=ores_synthetic_ir_curve_generation_configs_notify_trigger_create.sql=
+already uses for hand-written trigger logic beyond what codegen
+generates), added as a second trigger alongside the codegen-generated
+one: raise if neither
+=overnight_index_convention= nor =ibor_index_convention= has a row
+whose =id = NEW.currency_code || '-' || upper(NEW.index_family)=.
+
+** Step 3 -- Regenerate the codegen entity
+
+Run the =codegen-add-entity= (or narrower =codegen-add-sql-schema= +
+=codegen-add-cli-entity=/etc. as needed) skill/profile against the
+edited model, or the underlying =compass= codegen invocation directly,
+to regenerate: SQL create/drop scripts, domain struct, table/json_io,
+repository entity/mapper, Qt detail dialog/list model/history dialog,
+generator. Diff the regenerated files against a scratch copy of the
+current ones to confirm only the intended fields moved.
+
+** Step 4 -- Migrate consumers off index_name
+
+- =ir_curve_feed.cpp=: replace =strip_currency_prefix()= + string
+  concatenation with a construction from =cfg.currency_code=,
+  =cfg.index_family=, =cfg.tenor= (both call sites: the tick
+  =qualifier_= passed into the feed, and
+  =resolve_vintage_initial_rate='s lookup qualifier). Confirm against
+  =ores.ore/core='s =market_series_key_registry= what shape the
+  =RATES/YIELD= qualifier is actually expected to have post-migration --
+  this is the one point where "what string do we publish" needs to
+  agree with whatever already-published/consumed vintage data expects,
+  so check compatibility before assuming a 1:1 rename.
+- =curve_feed_controller.hpp=: change =running_feed= to carry the four
+  fields (or a small tuple/struct) instead of a single =qualifier=
+  string; =find_qualifier_conflict=/=running_source_name_for_qualifier=
+  compare on =(currency_code, index_family, tenor)= while explicitly
+  *excluding* =role= from the conflict key comparison itself (i.e. two
+  running feeds only conflict when everything *except* role matches
+  and role does NOT differ) -- ADD a positive test asserting a
+  same-tuple-different-role pair does *not* conflict, and the existing
+  same-tuple-same-role pair still does.
+- Qt: =ClientIrCurveGenerationConfigModel=, list/detail/history dialogs,
+  =IrCurveEditor.cpp=, =IrCurveGenerationConfigController.cpp=,
+  =SyntheticBindingDialog.cpp=, =MarketSimulatorWindow.cpp= -- all read
+  =index_name= today (list column, detail-dialog field, window
+  titles/labels); each becomes =index_family=/=tenor= (possibly
+  recombined for display, e.g. "SOFR" or "EURIBOR 3M").
+- Generator (=ir_curve_generation_config_generator.cpp=): replace the
+  hardcoded index_name fixture with =index_family=/=tenor=/=role=
+  fixtures consistent with whatever seed conventions rows exist.
+
+** Step 5 -- Close the superseded task
+
+Close [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize
+floating-rate index reference data]] with a =* Result= pointing back
+here, per the parent story's existing =* Decisions= entry.
+
+** Step 6 -- Verification
+
+Full =compass build= + =ctest= (same bar as the previous task in this
+story); specifically extend/add
+=curve_feed_controller=/=ir_curve_feed= unit tests for the
+discount-vs-projection non-conflict case and the
+=(currency_code, index_family)= composite-validator rejection case.
+No DB rows exist in this environment to migrate/backfill against (per
+the previous task's experience), so there is no live-data migration
+script to write here -- this is a schema-shape change on an
+as-yet-unpopulated table in this environment.
+
+** Open questions before implementing
+
+- Does =ores.ore/core='s real =market_series_key_registry=/ORE XML
+  round-trip (a *later* task on this story) already assume a specific
+  =RATES/YIELD= qualifier shape that constrains how
+  =index_family=/=tenor= must combine into that lookup string? Worth a
+  quick check before Step 4 so the qualifier construction isn't
+  reworked twice.
+- Confirm =role='s default (=self_discounting=) is the right
+  backward-compatible choice for the (currently empty) table, vs.
+  requiring it be explicit with no default.
 
 * Notes
 

@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: C2F23164-99A2-4640-8DA2-8BFB017ACB12
+:END:
+#+title: Task: Feed bindings have no product-kind filter: FX Spot grid renders IR bindings as garbage currency-pair rows
+#+description: SyntheticBindingDialog can now bind IR curve configs (this story's own change), but ores_marketdata_feed_bindings_tbl / feed_binding has no kind/product-type discriminator at all -- just ore_key and source_name. FxSpotGridWindow::reload() fetches ALL enabled feed_bindings via get_feed_bindings_request unfiltered and renders every row as a currency pair via pair_from_ore_key(), so an IR curve binding (e.g. USD/LIBOR-3M) now shows up in the FX Spot screen misparsed as an FX pair. Surfaced during manual QA of the SyntheticBindingDialog IR-curve task (scenario step 'Confirm no regression to the FX-only flow' failed) -- separately, CRM topology (majors/minors/exotics) is also missing after Barclays Plc provisioning because the realistic_2026/base bundle used by 'provision system'/'provision party' never publishes refdata.crm_topology_bundles (only the older marketdata.reference_vintage_2016_02_05 bundle does); that's a provisioning-bundle gap, not a code filtering bug, and may warrant its own task if not already tracked. Root cause for the FX Spot issue: no product-kind field on feed_binding, and no consumer-side filtering by kind.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give =feed_binding= a product-kind discriminator (or equivalent), and
+make every consumer of =get_feed_bindings_request= filter by the kind
+it actually cares about, so binding an IR curve feed never contaminates
+FX-only screens (and vice versa).
+
+Root-caused while manually testing [[id:48D6933D-05F4-4B34-B796-FE1B4A2A6444][Extend SyntheticBindingDialog to
+cover IR curve configs]] (scenario step "Confirm no regression to the
+FX-only flow" failed):
+
+- =ores_marketdata_feed_bindings_tbl= / =feed_binding=
+  (=projects/ores.marketdata/api/include/ores.marketdata.api/domain/
+  feed_binding.hpp=) carries only =ore_key= and =source_name= -- no
+  field distinguishing FX from IR (or anything else).
+- =FxSpotGridWindow::reload()=
+  (=projects/ores.qt/mktdata/src/FxSpotGridWindow.cpp=) fetches *all*
+  enabled bindings via =get_feed_bindings_request{offset=0,
+  limit=1000}= with no kind filter, and =buildRows()= renders every
+  one as a currency-pair row via =pair_from_ore_key()=.
+- Before this story, only FX spot configs could ever be bound, so this
+  happened to work. Now that =SyntheticBindingDialog= can bind IR
+  curve configs too, an IR binding (e.g. ore_key ="USD/LIBOR-3M"=)
+  shows up in the FX Spot grid, misparsed as if it were a currency
+  pair.
+- =CrmCrossRatesMatrixMdiWindow= and any other consumer of the same
+  request are likely exposed to the same issue -- worth auditing all
+  callers of =get_feed_bindings_request=, not just FxSpotGridWindow.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- =feed_binding= carries a way to identify what kind of series it
+  binds (FX spot / IR curve / ...), populated at bind time.
+- =FxSpotGridWindow= only ever lists FX bindings; binding an IR curve
+  feed no longer produces a row in the FX Spot grid.
+- Every other consumer of =get_feed_bindings_request= (CRM matrix,
+  etc.) is audited and filters by the kind it expects.
+- No regression to the existing FX-only binding/display flow.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

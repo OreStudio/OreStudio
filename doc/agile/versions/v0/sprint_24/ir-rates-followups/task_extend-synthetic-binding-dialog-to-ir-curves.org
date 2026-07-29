@@ -41,11 +41,11 @@ to FX's existing quality bar -- this is one more gap in that parity.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-27                               |
 
 * Acceptance
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E7249ACB-D839-43D9-BF38-864C5A7AB93F][Bind and verify an IR curve feed via SyntheticBindingDialog]] | PARTIAL PASS | Steps 1-5 (this task's own acceptance) PASS. Step 6 ("no regression to FX-only flow") failed for a pre-existing gap unrelated to this task's changes -- feed_binding has no product-kind filter at all, so FxSpotGridWindow already rendered every binding as FX; IR bindings simply exposed it. Spun out as [[id:C2F23164-99A2-4640-8DA2-8BFB017ACB12][Task: Feed bindings have no product-kind filter]]. |
 
 * PRs
 
@@ -120,3 +120,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=SyntheticBindingDialog= now lists =ir_curve_generation_config= records
+alongside FX ones via a local =BindableConfig= merge, adds a Type
+(FX/IR) column, and binds IR curve feeds through the same
+=createBindings()= pipeline FX already used. Manually verified:
+binding and starting an IR curve feed persists its ticks into
+=ores_marketdata_market_observations_tbl=, matching FX's existing
+behaviour; pre-ticking for already-bound rows works for both kinds.
+
+Testing surfaced a pre-existing gap this task's own acceptance didn't
+anticipate: =feed_binding= carries no product-kind discriminator, so
+FX-only screens (=FxSpotGridWindow= confirmed, others likely) treat
+every binding as FX regardless of what it actually binds. IR bindings
+simply exposed a filtering gap that was always there. Tracked
+separately as [[id:C2F23164-99A2-4640-8DA2-8BFB017ACB12][Task: Feed bindings have no product-kind filter]] rather
+than blocking this task on it.
+
+Also surfaced, unrelated to this task's code: Barclays Plc provisioning
+via the 2026-realistic bundle never seeds CRM topology (majors/
+minors/exotics) -- captured separately in the product backlog.

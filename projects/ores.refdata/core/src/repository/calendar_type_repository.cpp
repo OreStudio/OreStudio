@@ -37,7 +37,7 @@ std::string calendar_type_repository::sql() {
 }
 
 void calendar_type_repository::write(context ctx, const domain::calendar_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing calendar type. " << "code: " << v.code;
     execute_write_query(
         ctx, calendar_type_mapper::map(v), lg(), "Writing calendar type to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::calendar_type> calendar_type_repository::read_latest(context
 
 std::vector<domain::calendar_type> calendar_type_repository::read_latest(context ctx,
                                                                          const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,13 +80,14 @@ std::vector<domain::calendar_type> calendar_type_repository::read_latest(context
         "Reading latest calendar type by code.");
 }
 
+
 std::vector<domain::calendar_type> calendar_type_repository::read_all(context ctx,
                                                                       const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<calendar_type_entity, domain::calendar_type>(
         ctx,
@@ -98,7 +99,7 @@ std::vector<domain::calendar_type> calendar_type_repository::read_all(context ct
 
 std::optional<domain::calendar_type> calendar_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading calendar type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_type_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::calendar_type> calendar_type_repository::read_at_version(
 }
 
 void calendar_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing calendar type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

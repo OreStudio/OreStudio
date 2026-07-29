@@ -38,7 +38,7 @@ std::string calendar_rule_repository::sql() {
 }
 
 void calendar_rule_repository::write(context ctx, const domain::calendar_rule& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing calendar rule: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing calendar rule. " << "id: " << v.id;
     execute_write_query(
         ctx, calendar_rule_mapper::map(v), lg(), "Writing calendar rule to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(context
 
 std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(context ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rule. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar rule. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_rule_entity>> |
@@ -80,9 +80,10 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_latest(context
         "Reading latest calendar rule by id.");
 }
 
+
 std::vector<domain::calendar_rule> calendar_rule_repository::read_all(context ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar rule versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all calendar rule versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_rule_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -98,7 +99,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_all(context ct
 
 std::optional<domain::calendar_rule> calendar_rule_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading calendar rule at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading calendar rule at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<calendar_rule_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::calendar_rule> calendar_rule_repository::read_by_calendar_co
         "Reading calendar rules as of window by calendar_code.");
 }
 void calendar_rule_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar rule: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing calendar rule. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<calendar_rule_entity> |

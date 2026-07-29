@@ -17,18 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_REFDATA_CORE_PRESENTATION_CALENDAR_TYPE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_REFDATA_CORE_PRESENTATION_CALENDAR_TYPE_HISTORY_FIELD_MAPPER_HPP
 
-#include "ores.refdata.core/repository/calendar_date_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.refdata.api/domain/calendar_type.hpp"
+#include "ores.refdata.core/export.hpp"
+#include <vector>
 
-namespace ores::refdata::repository {
+namespace ores::refdata::presentation {
 
-std::ostream& operator<<(std::ostream& s, const calendar_date_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+/**
+ * @brief Renders a calendar_type to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_calendar_type_fields(const domain::calendar_type& v);
+
 }
 
-}
+#endif

@@ -37,7 +37,7 @@ std::string contact_type_repository::sql() {
 }
 
 void contact_type_repository::write(context ctx, const domain::contact_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing contact type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing contact type. " << "code: " << v.code;
     execute_write_query(
         ctx, contact_type_mapper::map(v), lg(), "Writing contact type to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::contact_type> contact_type_repository::read_latest(context c
 
 std::vector<domain::contact_type> contact_type_repository::read_latest(context ctx,
                                                                        const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest contact type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest contact type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,13 +80,14 @@ std::vector<domain::contact_type> contact_type_repository::read_latest(context c
         "Reading latest contact type by code.");
 }
 
+
 std::vector<domain::contact_type> contact_type_repository::read_all(context ctx,
                                                                     const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all contact type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all contact type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<contact_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<contact_type_entity, domain::contact_type>(
         ctx,
@@ -98,7 +99,7 @@ std::vector<domain::contact_type> contact_type_repository::read_all(context ctx,
 
 std::optional<domain::contact_type> contact_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading contact type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading contact type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<contact_type_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::contact_type> contact_type_repository::read_at_version(
 }
 
 void contact_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing contact type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing contact type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

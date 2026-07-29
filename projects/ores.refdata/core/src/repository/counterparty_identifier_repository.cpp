@@ -39,7 +39,7 @@ std::string counterparty_identifier_repository::sql() {
 
 void counterparty_identifier_repository::write(context ctx,
                                                const domain::counterparty_identifier& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifier. " << "id: " << v.id;
     execute_write_query(ctx,
                         counterparty_identifier_mapper::map(v),
                         lg(),
@@ -73,7 +73,7 @@ counterparty_identifier_repository::read_latest(context ctx) {
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
@@ -87,9 +87,10 @@ counterparty_identifier_repository::read_latest(context ctx, const std::string& 
         "Reading latest counterparty identifier by id.");
 }
 
+
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -105,7 +106,7 @@ counterparty_identifier_repository::read_all(context ctx, const std::string& id)
 
 std::optional<domain::counterparty_identifier> counterparty_identifier_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
@@ -200,7 +201,7 @@ counterparty_identifier_repository::read_by_counterparty_id_as_of(
         "Reading counterparty identifiers as of window by counterparty_id.");
 }
 void counterparty_identifier_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<counterparty_identifier_entity> |

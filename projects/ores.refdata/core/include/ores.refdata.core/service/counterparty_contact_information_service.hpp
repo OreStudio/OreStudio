@@ -77,6 +77,7 @@ public:
      */
     std::uint32_t count_counterparty_contact_informations();
 
+
     /**
      * @brief Lists counterparty contact informations filtered by counterparty_id, with pagination.
      *
@@ -119,7 +120,6 @@ public:
      * @brief Retrieves a single counterparty contact information as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the counterparty contact information.
      * @param version The version to fetch.
      * @return The counterparty contact information at that version if found, std::nullopt
      * otherwise.
@@ -128,9 +128,8 @@ public:
     get_counterparty_contact_information_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single counterparty contact information by its id.
+     * @brief Retrieves a single counterparty contact information by its primary key.
      *
-     * @param id The id of the counterparty contact information.
      * @return The counterparty contact information if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty_contact_information>
@@ -156,15 +155,14 @@ public:
             counterparty_contact_informations);
 
     /**
-     * @brief Deletes a counterparty contact information by its id.
+     * @brief Deletes a counterparty contact information by its primary key.
      *
-     * @param id The id of the counterparty contact information to delete.
      * @throws std::exception on failure.
      */
     void delete_counterparty_contact_information(const std::string& id);
 
     /**
-     * @brief Deletes counterparty contact informations by their ids.
+     * @brief Deletes counterparty contact informations by their primary keys.
      */
     void delete_counterparty_contact_informations(const std::vector<std::string>& ids);
 

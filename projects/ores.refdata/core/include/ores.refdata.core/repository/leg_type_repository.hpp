@@ -63,15 +63,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest leg types, possibly filtered by code.
+     * @brief Reads latest leg types, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::leg_type> read_latest(context ctx);
     std::vector<domain::leg_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
+
     /**
-     * @brief Reads all leg types, possibly filtered by code.
+     * @brief Reads all leg types, possibly filtered by primary key.
      */
     std::vector<domain::leg_type> read_all(context ctx, const std::string& code);
 
@@ -82,7 +83,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param code The code to look up
      * @param version The version to fetch
      */
     std::optional<domain::leg_type>

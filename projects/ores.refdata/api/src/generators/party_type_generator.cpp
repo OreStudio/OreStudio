@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::refdata::generators {
 
@@ -35,7 +36,7 @@ domain::party_type generate_synthetic_party_type(utility::generation::generation
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::party_type r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);

@@ -77,6 +77,7 @@ public:
      */
     std::uint32_t count_counterparty_identifiers();
 
+
     /**
      * @brief Lists counterparty identifiers filtered by counterparty_id, with pagination.
      *
@@ -116,7 +117,6 @@ public:
      * @brief Retrieves a single counterparty identifier as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the counterparty identifier.
      * @param version The version to fetch.
      * @return The counterparty identifier at that version if found, std::nullopt otherwise.
      */
@@ -124,9 +124,8 @@ public:
     get_counterparty_identifier_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single counterparty identifier by its id.
+     * @brief Retrieves a single counterparty identifier by its primary key.
      *
-     * @param id The id of the counterparty identifier.
      * @return The counterparty identifier if found, std::nullopt otherwise.
      */
     std::optional<domain::counterparty_identifier>
@@ -151,15 +150,14 @@ public:
         const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
 
     /**
-     * @brief Deletes a counterparty identifier by its id.
+     * @brief Deletes a counterparty identifier by its primary key.
      *
-     * @param id The id of the counterparty identifier to delete.
      * @throws std::exception on failure.
      */
     void delete_counterparty_identifier(const std::string& id);
 
     /**
-     * @brief Deletes counterparty identifiers by their ids.
+     * @brief Deletes counterparty identifiers by their primary keys.
      */
     void delete_counterparty_identifiers(const std::vector<std::string>& ids);
 

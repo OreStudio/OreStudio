@@ -52,20 +52,26 @@ explicit lists rather than regressing back to GLOB.
 
 - Zero =file(GLOB_RECURSE ...)= calls remain under =projects/= (verified
   by =grep -rl GLOB_RECURSE projects --include=CMakeLists.txt= being empty).
-- =projects/ores.codegen/scripts/regenerate_cmake_sources.py= exists,
-  handles both shapes in use (plain =.cpp= lists and Qt AUTOMOC =.hpp=
-  header lists), supports =--check= for CI drift detection, and is
-  idempotent (running it twice produces no further diff).
+- A codegen archetype pair (=ores.cmake.component.files_src=/
+  =files_tests=) generates each component's explicit source list as
+  its own file (=component_files.cmake=), =include()=d from
+  =CMakeLists.txt= -- not spliced into a hand-maintained file.
+  =projects/ores.codegen/scripts/regenerate_cmake_component_files.py=
+  renders it (=--component=/=--all=, =--check= for CI drift detection)
+  and is idempotent (running it twice produces no further diff).
+- Every C++ component in the codebase goes through this mechanism,
+  no exceptions -- including the 10 that had no
+  =modeling/component_overview.org= at task start, which got one
+  scaffolded as part of this task.
 - Every migrated component builds and its tests pass; a full
   =compass build= (default preset) and =ctest= run is clean at the end.
-- The codegen archetype =.org= templates that scaffold
-  =src/CMakeLists.txt=/=tests/CMakeLists.txt= are updated to emit
-  explicit lists (or a clear placeholder plus the regenerate-script
-  instruction) instead of GLOB, so newly scaffolded components don't
-  reintroduce the pattern.
-- A recipe or short doc note explains the new convention: adding a
-  source file requires either editing the target's CMakeLists.txt
-  directly or re-running the regenerate script, no auto-discovery.
+- The =ores.cmake.component.files_src=/=files_tests= archetypes are
+  registered in the facet like every other CMake archetype, so a
+  newly scaffolded component gets them for free via the same
+  regenerate script -- no separate wiring step.
+- A recipe explains the new convention: adding a source file means
+  adding it to disk, then re-running the regenerate script; no
+  auto-discovery, and =component_files.cmake= is never hand-edited.
 - One commit per component in this task's own PR, so each conversion
   is independently reviewable/revertable.
 
@@ -94,6 +100,48 @@ plan itself stays — it is the historical record of what we did.)
    (=ores.cmake.component.*.org=) to stop emitting GLOB.
 5. Add a recipe documenting the new convention.
 6. Full =compass build= + =ctest= at the end; fix any straggler.
+
+** Design pivot: codegen-driven generated file, not in-place regex
+
+Steps 1-3 above were implemented and landed a first batch (96
+components, one commit each) using a regex-based script that
+rewrote the =file(GLOB_RECURSE ...)= block in place inside each
+=CMakeLists.txt=. Splicing generated content into an otherwise
+hand-maintained file via regex is fragile long-term (parsing an
+evolving hand-edited file to find the "generated" region), so the
+approach was replaced before closing the task:
+
+- A new =ores.cmake.component.files_{src,tests}= archetype pair,
+  registered in the =ores.cmake.component= facet like every other
+  CMake archetype, renders =src/component_files.cmake= /
+  =tests/component_files.cmake= -- a small, wholly-generated file
+  =CMakeLists.txt= =include()=s, rather than an inline block.
+- The file list (and, for Qt AUTOMOC components, the header list) is
+  injected into the render context as a directory scan at generation
+  time (=core.py='s =_COMPONENT_FILES_TEMPLATES= branch) -- the one
+  piece of context a source-file archetype can't get from the model
+  itself.
+- =regenerate_cmake_component_files.py= renders only these two
+  archetypes via the same =generate_from_model()= the rest of codegen
+  uses -- deliberately not =compass codegen regenerate=, which would
+  regenerate every archetype in the facet (=CMakeLists.txt= included)
+  and clobber hand-added =target_link_libraries=.
+- =wire_component_files_include.py= was the one-off helper that
+  replaced the first batch's inline blocks with the =include()= line;
+  not meant to be re-run.
+- Per "codegen the file list for every component, no exceptions" (a
+  mid-task instruction), the 10 remaining components that had no
+  =modeling/component_overview.org= (=ores.eventing/{api,core}=,
+  =ores.marketdata/client=, =ores.qt/{dq,marketdata,synthetic}=,
+  =ores.refdata/client=, =ores.workspace/{api,core,service}=) got one
+  scaffolded via =compass add component=, bringing every C++ component
+  onto the same codegen-driven mechanism -- zero components left on
+  the earlier regex-script's inline-block approach.
+- That scaffold surfaced (and this task fixed) a pre-existing
+  =#+type: component= bug in both the scaffold template
+  (=ores.doc.knowledge.component.org=) and =ores.qt.headless='s own
+  model -- should be =ores.codegen.component=; both silently failed
+  =load_model()=.
 
 * Notes
 

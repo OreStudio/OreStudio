@@ -20,31 +20,7 @@ set(name "ores.reporting.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "messaging/publish_from_dq_handler.cpp"
-    "messaging/registrar.cpp"
-    "messaging/report_execution_handler.cpp"
-    "repository/concurrency_policy_entity.cpp"
-    "repository/concurrency_policy_mapper.cpp"
-    "repository/concurrency_policy_repository.cpp"
-    "repository/report_definition_entity.cpp"
-    "repository/report_definition_mapper.cpp"
-    "repository/report_definition_repository.cpp"
-    "repository/report_input_bundle_repository.cpp"
-    "repository/report_instance_entity.cpp"
-    "repository/report_instance_mapper.cpp"
-    "repository/report_instance_repository.cpp"
-    "repository/report_type_entity.cpp"
-    "repository/report_type_mapper.cpp"
-    "repository/report_type_repository.cpp"
-    "repository/risk_report_config_mapper.cpp"
-    "repository/risk_report_config_repository.cpp"
-    "service/concurrency_policy_service.cpp"
-    "service/report_definition_service.cpp"
-    "service/report_instance_service.cpp"
-    "service/report_scheduling_service.cpp"
-    "service/report_type_service.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

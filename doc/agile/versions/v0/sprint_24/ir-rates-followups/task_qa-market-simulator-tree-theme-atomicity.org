@@ -34,11 +34,11 @@ model introduced.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:90B1018E-C019-4C75-B0EE-91284A1E1A75][Synthetic data themes ... Start-at-Root theme picker]] | PASSED | Re-run twice against fresh code; failed both first passes, fixed, passed clean on the third. |
 
 * PRs
 
@@ -85,3 +85,68 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Ran the "Synthetic data themes" scenario end to end against a fresh
+=db recreate= + re-provisioned Barclays tenant on a rebased-onto-main
+build (picking up the =start_all()= coroutine fix that was otherwise
+blocking every service in this environment). Confirmed structurally
+via SQL first: exactly three collection folders (2016 ORE Samples,
+2026 Realistic, Uniform Volatility Demo), each with one FX and one
+Rates asset-class sub-folder -- no duplicates, matching this story's
+=Make a synthetic theme one atomic dataset= acceptance.
+
+The scenario surfaced three real bugs in
+=MarketSimulatorWindow= (=projects/ores.qt/synthetic/src/MarketSimulatorWindow.cpp=),
+all fixed in this task:
+
+1. =rootCollections()= only scanned direct children of the tree
+   model's true invisible root. =buildTree()= nests every theme
+   under one real "Synthetic" root folder item instead, so
+   =rootCollections()= always returned empty and
+   =promptThemeAndStart()= silently no-opped -- the Start-at-Root
+   theme picker was completely unreachable. Fixed by recursing the
+   whole tree instead of scanning one level down.
+2. The Start toolbar action was disabled whenever nothing was
+   selected -- exactly the root case that should trigger the theme
+   picker. Fixed by enabling Start when either something is selected
+   or nothing is (the root case).
+3. The theme picker used a floating =QInputDialog=. Even set
+   =Qt::NonModal=, it still fought this single-top-level-window MDI
+   app for keyboard focus against sibling subwindows (the Scenario
+   Runner a tester takes notes in). Replaced with an MDI-subwindow-
+   embedded picker (=QComboBox= + =QDialogButtonBox= in a
+   =DetachableMdiSubWindow=), matching the pattern this window
+   already uses for its FX/IR editors.
+
+Also trimmed the picker's prose to a direct question per review
+feedback ("just ask what to start"), dropping the mutually-exclusive-
+vintages rationale from the dialog body.
+
+Investigated a fourth report -- Uniform Volatility Demo's IR curves
+not bulk-starting from the theme picker -- and confirmed via seed
+data comments (=synthetic_ir_curve_configs_uniform_demo_populate.sql=)
+and service logs that this is by design, not a bug:
+=auto_start = false= on that dataset deliberately guards against a
+real =curve_feed_controller= tenor-collision with 2026 Realistic
+(both seed the same currency/index pairs). Left as-is; not folded
+into this task's fix.
+
+Also investigated a report that 2026 Realistic's PLN-POLONIA curve
+"did not start" -- backend logs confirmed it started cleanly and
+published curve ticks throughout, so this was not a start failure.
+Filed as a follow-up ([[id:27A81240-4458-4D33-9EE6-C623FE64D320][Improve Market Simulator status icons]]) since the
+tree's running/stopped iconography is not visually unambiguous
+enough to tell at a glance, and there is no indicator at all for
+=auto_start = false= feeds.
+
+Acceptance met:
+- "Synthetic data themes" scenario passed end to end (Start-at-Root
+  picker appears, starts only the chosen theme, Cancel is a no-op,
+  Stop cleans up).
+- Verified Start/Stop-at-Root starts/stops every asset class under a
+  theme for all three themes (subject to the pre-existing, by-design
+  auto_start=false exception noted above).
+- Two regressions found and fixed in this task's own commit; two
+  further gaps (icon clarity, a broader synthetic-config-topology
+  design question) filed as separate follow-up tasks in this story
+  rather than folded in here.

@@ -42,6 +42,8 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
+#include <QComboBox>
+#include <QDialogButtonBox>
 #include <QEvent>
 #include <QFont>
 #include <QFontDatabase>
@@ -49,7 +51,7 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QIcon>
-#include <QInputDialog>
+#include <QLabel>
 #include <QMdiArea>
 #include <QMessageBox>
 #include <QPainter>
@@ -1927,26 +1929,29 @@ void MarketSimulatorWindow::promptThemeAndStart() {
     if (names.isEmpty())
         return;
 
-    // Window-modal (not the QInputDialog::getItem default of
-    // application-modal) so this dialog only blocks this window -- other
-    // windows (e.g. the Scenario Runner a tester is taking notes in) stay
-    // usable while it's open. That means driving it via open()/a signal
-    // instead of the blocking exec() the static getItem() helper uses.
-    auto* dlg = new QInputDialog(this);
-    // Qt::WindowModal still blocks sibling MDI subwindows (Scenario Runner
-    // included) -- they're all descendants of the single top-level
-    // QMainWindow, so WindowModal's "block this window and its ancestors"
-    // scope covers the lot. NonModal is the only option that leaves other
-    // subwindows usable while this is open.
-    dlg->setWindowModality(Qt::NonModal);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle(tr("Start"));
-    dlg->setLabelText(tr("Which dataset would you like to start?"));
-    dlg->setComboBoxItems(names);
-    dlg->setOption(QInputDialog::UseListViewForComboBoxItems, false);
+    // A floating QDialog -- even Qt::NonModal -- still fights this app's
+    // single-top-level-window MDI shell for keyboard focus against sibling
+    // subwindows (e.g. the Scenario Runner a tester is taking notes in).
+    // Every other picker/editor in this window (openFxEditorForNew et al.)
+    // already sidesteps that by embedding as its own MDI subwindow instead
+    // of a floating dialog, so this follows the same pattern.
+    auto* picker = new QWidget(this);
+    auto* layout = new QVBoxLayout(picker);
+    layout->addWidget(new QLabel(tr("Which dataset would you like to start?"), picker));
+    auto* combo = new QComboBox(picker);
+    combo->addItems(names);
+    layout->addWidget(combo);
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, picker);
+    layout->addWidget(buttons);
 
-    connect(dlg, &QInputDialog::accepted, this, [this, dlg]() {
-        const QString chosen = dlg->textValue();
+    auto* sub = new DetachableMdiSubWindow(window());
+    sub->setWidget(picker);
+    sub->setWindowTitle(tr("Start"));
+    sub->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(buttons, &QDialogButtonBox::accepted, this, [this, combo, sub]() {
+        const QString chosen = combo->currentText();
+        sub->close();
         const auto collections = rootCollections();
         for (auto* item : collections) {
             if (item->text() != chosen)
@@ -1966,7 +1971,12 @@ void MarketSimulatorWindow::promptThemeAndStart() {
             }
         }
     });
-    dlg->open();
+    connect(buttons, &QDialogButtonBox::rejected, sub, &QWidget::close);
+
+    if (auto* mdi = window()->findChild<QMdiArea*>())
+        mdi->addSubWindow(sub);
+    sub->resize(picker->sizeHint());
+    sub->show();
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {

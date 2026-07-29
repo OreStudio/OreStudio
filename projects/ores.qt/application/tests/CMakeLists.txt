@@ -22,10 +22,7 @@ set(tests_target_name ${name}.tests)
 # Required for Q_OBJECT signal/slot generation in test sources.
 set(CMAKE_AUTOMOC ON)
 
-set(files
-    "badge_cache_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

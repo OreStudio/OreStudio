@@ -20,10 +20,35 @@ set(name "ores.marketdata.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "messaging/feed_binding_registrar.cpp"
+    "messaging/market_observation_registrar.cpp"
+    "messaging/publish_from_dq_handler.cpp"
+    "messaging/registrar.cpp"
+    "oresmd/oresmd_parser.cpp"
+    "oresmd/oresmd_projections.cpp"
+    "oresmd/oresmd_resolver.cpp"
+    "presentation/feed_binding_history_field_mapper.cpp"
+    "repository/feed_binding_entity.cpp"
+    "repository/feed_binding_mapper.cpp"
+    "repository/feed_binding_repository.cpp"
+    "repository/market_fixing_entity.cpp"
+    "repository/market_fixing_mapper.cpp"
+    "repository/market_fixing_repository.cpp"
+    "repository/market_fixings_repository.cpp"
+    "repository/market_observation_entity.cpp"
+    "repository/market_observation_mapper.cpp"
+    "repository/market_observation_repository.cpp"
+    "repository/market_observations_repository.cpp"
+    "repository/market_series_entity.cpp"
+    "repository/market_series_mapper.cpp"
+    "repository/market_series_repository.cpp"
+    "service/feed_binding_service.cpp"
+    "service/import_service.cpp"
+    "service/market_fixing_service.cpp"
+    "service/market_observation_service.cpp"
+    "service/market_series_service.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

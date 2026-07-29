@@ -55,7 +55,7 @@ begin
         book_status, regulatory_book_type, is_sweepable, rates_centre_code
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c7ae93ca-f8b0-52b7-aecd-77fd75f6bc67', 0, 'IR Swaps Hong Kong Book', 'fc3eedfe-5176-5a81-8ee0-d78d502a12bd', 'HKD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5cf716d2-1fa0-5680-9116-302be2e8cede', 0, 'Credit Trading Hong Kong Book', '695b6f3f-350e-571f-b16f-faedddefbfd4', 'HKD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '741085ae-71e9-51af-86c6-d4d199e432b5', 0, 'FX Rates Hong Kong Book', '94115253-8f1d-5d49-8912-3657b14a3530', 'HKD', null, null, 'Active', 'Trading', false, null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '10da1d97-1e96-53db-a3cc-6f6bf96b1cda', 0, 'JPY Rates Book', '9baf7c4a-7745-5271-8893-86db933a393c', 'HKD', null, null, 'Active', 'Trading', false, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3ee05afa-0fb2-5d9a-9bce-88a8b46777e7', 0, 'IG Credit APAC Book', '23a0b5ee-ee06-59aa-9bc6-e081187248aa', 'HKD', null, null, 'Active', 'Trading', false, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '92fb437d-12f9-5112-8d48-dd0c6a6ccfa5', 0, 'G10 FX APAC Book', '62ef27bf-b2a1-5802-98c8-d1d867087a56', 'HKD', null, null, 'Active', 'Trading', false, null);
 end $$;

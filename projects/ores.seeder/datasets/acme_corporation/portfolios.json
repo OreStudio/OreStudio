@@ -2,37 +2,201 @@
   {
     "company_code": "acme_uk",
     "id": "93925bc5-1800-5c69-a18b-f683dae17f2e",
-    "name": "ACME Corporation UK plc Global Markets",
+    "name": "Global Portfolio",
     "parent_portfolio_code": null,
     "portfolio_code": "acme_uk.global_markets",
     "owner_unit_code": "acme_uk.global_markets",
+    "aggregation_ccy": "USD",
     "is_virtual": true
   },
   {
     "company_code": "acme_uk",
-    "id": "2e99eb72-bab9-5a7f-9b57-a194cc2e164b",
-    "name": "IR Swaps London Portfolio",
+    "id": "bb237ee5-0d90-502a-b12f-2819bdb7a42f",
+    "name": "EMEA Portfolio",
     "parent_portfolio_code": "acme_uk.global_markets",
-    "portfolio_code": "acme_uk.ir_swaps.portfolio",
-    "owner_unit_code": "acme_uk.ir_swaps",
+    "portfolio_code": "acme_uk.emea_portfolio",
+    "owner_unit_code": "acme_uk.emea_trading",
+    "aggregation_ccy": "EUR",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ff26194b-2d3f-5f11-bfe9-035fe8a25784",
+    "name": "Rates EMEA",
+    "parent_portfolio_code": "acme_uk.emea_portfolio",
+    "portfolio_code": "acme_uk.rates_emea",
+    "owner_unit_code": "acme_uk.rates_trading_emea",
+    "aggregation_ccy": "EUR",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "421f5d6a-bdf1-529a-a686-11b3b414a34e",
+    "name": "GBP Rates",
+    "parent_portfolio_code": "acme_uk.rates_emea",
+    "portfolio_code": "acme_uk.gbp_rates",
+    "owner_unit_code": "acme_uk.rates_trading_emea",
+    "aggregation_ccy": "GBP",
     "is_virtual": false
   },
   {
     "company_code": "acme_uk",
-    "id": "e7f6b28c-f0b3-5c66-a9f9-bcc057369e3f",
-    "name": "Credit Trading London Portfolio",
-    "parent_portfolio_code": "acme_uk.global_markets",
-    "portfolio_code": "acme_uk.credit_trading.portfolio",
-    "owner_unit_code": "acme_uk.credit_trading",
+    "id": "07a2e6f7-3f5e-5156-a151-a994fb301ffb",
+    "name": "EUR Rates",
+    "parent_portfolio_code": "acme_uk.rates_emea",
+    "portfolio_code": "acme_uk.eur_rates",
+    "owner_unit_code": "acme_uk.rates_trading_emea",
+    "aggregation_ccy": "EUR",
     "is_virtual": false
   },
   {
     "company_code": "acme_uk",
-    "id": "4ae8aa86-e0f2-56fc-9cf5-5a631ec54120",
-    "name": "FX Rates London Portfolio",
+    "id": "b5f8c232-b948-56b4-b4ac-3d8bd5b80c86",
+    "name": "Credit EMEA",
+    "parent_portfolio_code": "acme_uk.emea_portfolio",
+    "portfolio_code": "acme_uk.credit_emea",
+    "owner_unit_code": "acme_uk.credit_trading_emea",
+    "aggregation_ccy": "EUR",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "4a188fa2-8a12-5dc7-9e0c-b638f7eb334d",
+    "name": "IG Credit EMEA",
+    "parent_portfolio_code": "acme_uk.credit_emea",
+    "portfolio_code": "acme_uk.ig_credit_emea",
+    "owner_unit_code": "acme_uk.credit_trading_emea",
+    "aggregation_ccy": "EUR",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ef4cdb83-5b6f-5c87-b1df-fd9788334460",
+    "name": "FX EMEA",
+    "parent_portfolio_code": "acme_uk.emea_portfolio",
+    "portfolio_code": "acme_uk.fx_emea",
+    "owner_unit_code": "acme_uk.fx_trading_emea",
+    "aggregation_ccy": "EUR",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "fc30df52-0d2f-531e-b53f-77819db78b5a",
+    "name": "G10 FX EMEA",
+    "parent_portfolio_code": "acme_uk.fx_emea",
+    "portfolio_code": "acme_uk.g10_fx_emea",
+    "owner_unit_code": "acme_uk.fx_trading_emea",
+    "aggregation_ccy": "EUR",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "cb40d446-de28-5390-adbd-ae10aa2af8ad",
+    "name": "Americas Portfolio",
     "parent_portfolio_code": "acme_uk.global_markets",
-    "portfolio_code": "acme_uk.fx_rates.portfolio",
-    "owner_unit_code": "acme_uk.fx_rates",
+    "portfolio_code": "acme_uk.americas_portfolio",
+    "owner_unit_code": "acme_uk.americas_trading",
+    "aggregation_ccy": "USD",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "18e780b6-43a5-5f57-814b-a03c3f403b7d",
+    "name": "Rates Americas",
+    "parent_portfolio_code": "acme_uk.americas_portfolio",
+    "portfolio_code": "acme_uk.rates_americas",
+    "owner_unit_code": "acme_uk.rates_trading_americas",
+    "aggregation_ccy": "USD",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "b1c0b37a-3745-53dd-849f-288dbeac9b00",
+    "name": "USD Rates",
+    "parent_portfolio_code": "acme_uk.rates_americas",
+    "portfolio_code": "acme_uk.usd_rates",
+    "owner_unit_code": "acme_uk.rates_trading_americas",
+    "aggregation_ccy": "USD",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "13fdfe0b-69b2-50af-bdc2-095060012170",
+    "name": "CAD Rates",
+    "parent_portfolio_code": "acme_uk.rates_americas",
+    "portfolio_code": "acme_uk.cad_rates",
+    "owner_unit_code": "acme_uk.rates_trading_americas",
+    "aggregation_ccy": "CAD",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "b27307c8-f333-584a-8f54-588b155e4a1a",
+    "name": "Credit Americas",
+    "parent_portfolio_code": "acme_uk.americas_portfolio",
+    "portfolio_code": "acme_uk.credit_americas",
+    "owner_unit_code": "acme_uk.credit_trading_americas",
+    "aggregation_ccy": "USD",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "31fe7c73-fd4b-5b4a-ab6d-ad19264a9f14",
+    "name": "IG Credit Americas",
+    "parent_portfolio_code": "acme_uk.credit_americas",
+    "portfolio_code": "acme_uk.ig_credit_americas",
+    "owner_unit_code": "acme_uk.credit_trading_americas",
+    "aggregation_ccy": "USD",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "6a9ea555-2810-5d05-bb1e-faa00e2cef24",
+    "name": "APAC Portfolio",
+    "parent_portfolio_code": "acme_uk.global_markets",
+    "portfolio_code": "acme_uk.apac_portfolio",
+    "owner_unit_code": "acme_uk.apac_trading",
+    "aggregation_ccy": "JPY",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "f31e1462-d37c-5a2b-8c4a-53f1e98af0dd",
+    "name": "Rates APAC",
+    "parent_portfolio_code": "acme_uk.apac_portfolio",
+    "portfolio_code": "acme_uk.rates_apac",
+    "owner_unit_code": "acme_uk.rates_trading_apac",
+    "aggregation_ccy": "JPY",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "382e9f13-0613-5ac1-84a2-447b14c894dd",
+    "name": "JPY Rates",
+    "parent_portfolio_code": "acme_uk.rates_apac",
+    "portfolio_code": "acme_uk.jpy_rates",
+    "owner_unit_code": "acme_uk.rates_trading_apac",
+    "aggregation_ccy": "JPY",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ccaa774f-83c5-58fe-971b-144577697bb6",
+    "name": "FX APAC",
+    "parent_portfolio_code": "acme_uk.apac_portfolio",
+    "portfolio_code": "acme_uk.fx_apac",
+    "owner_unit_code": "acme_uk.fx_trading_apac",
+    "aggregation_ccy": "JPY",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "bf123dce-5374-575c-9a6f-f671fcbbbf2f",
+    "name": "Regulatory Capital",
+    "parent_portfolio_code": null,
+    "portfolio_code": "acme_uk.regulatory_capital",
+    "owner_unit_code": "acme_uk.risk_management",
+    "aggregation_ccy": "USD",
     "is_virtual": false
   },
   {
@@ -42,6 +206,7 @@
     "parent_portfolio_code": null,
     "portfolio_code": "acme_us.global_markets",
     "owner_unit_code": "acme_us.global_markets",
+    "aggregation_ccy": null,
     "is_virtual": true
   },
   {
@@ -50,6 +215,24 @@
     "name": "IR Swaps New York Portfolio",
     "parent_portfolio_code": "acme_us.global_markets",
     "portfolio_code": "acme_us.ir_swaps.portfolio",
+    "owner_unit_code": "acme_us.ir_swaps",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_us",
+    "id": "f2463388-54ed-599a-989c-68771cb69657",
+    "name": "USD Rates Portfolio",
+    "parent_portfolio_code": "acme_us.ir_swaps.portfolio",
+    "portfolio_code": "acme_us.ir_swaps.portfolio.usd_rates",
+    "owner_unit_code": "acme_us.ir_swaps",
+    "is_virtual": false
+  },
+  {
+    "company_code": "acme_us",
+    "id": "35341151-b72b-521f-b317-d52f7d6af62b",
+    "name": "CAD Rates Portfolio",
+    "parent_portfolio_code": "acme_us.ir_swaps.portfolio",
+    "portfolio_code": "acme_us.ir_swaps.portfolio.cad_rates",
     "owner_unit_code": "acme_us.ir_swaps",
     "is_virtual": false
   },
@@ -60,6 +243,15 @@
     "parent_portfolio_code": "acme_us.global_markets",
     "portfolio_code": "acme_us.credit_trading.portfolio",
     "owner_unit_code": "acme_us.credit_trading",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_us",
+    "id": "51f0bcc5-2491-5218-80eb-3ceda562f5f7",
+    "name": "IG Credit Americas Portfolio",
+    "parent_portfolio_code": "acme_us.credit_trading.portfolio",
+    "portfolio_code": "acme_us.credit_trading.portfolio.ig_credit_americas",
+    "owner_unit_code": "acme_us.credit_trading",
     "is_virtual": false
   },
   {
@@ -68,6 +260,15 @@
     "name": "FX Rates New York Portfolio",
     "parent_portfolio_code": "acme_us.global_markets",
     "portfolio_code": "acme_us.fx_rates.portfolio",
+    "owner_unit_code": "acme_us.fx_rates",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_us",
+    "id": "0a89e240-4d74-5275-b74b-bef6776e712c",
+    "name": "G10 FX Americas Portfolio",
+    "parent_portfolio_code": "acme_us.fx_rates.portfolio",
+    "portfolio_code": "acme_us.fx_rates.portfolio.g10_fx_americas",
     "owner_unit_code": "acme_us.fx_rates",
     "is_virtual": false
   },
@@ -78,6 +279,7 @@
     "parent_portfolio_code": null,
     "portfolio_code": "acme_hk.global_markets",
     "owner_unit_code": "acme_hk.global_markets",
+    "aggregation_ccy": null,
     "is_virtual": true
   },
   {
@@ -86,6 +288,15 @@
     "name": "IR Swaps Hong Kong Portfolio",
     "parent_portfolio_code": "acme_hk.global_markets",
     "portfolio_code": "acme_hk.ir_swaps.portfolio",
+    "owner_unit_code": "acme_hk.ir_swaps",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "9baf7c4a-7745-5271-8893-86db933a393c",
+    "name": "JPY Rates Portfolio",
+    "parent_portfolio_code": "acme_hk.ir_swaps.portfolio",
+    "portfolio_code": "acme_hk.ir_swaps.portfolio.jpy_rates",
     "owner_unit_code": "acme_hk.ir_swaps",
     "is_virtual": false
   },
@@ -96,6 +307,15 @@
     "parent_portfolio_code": "acme_hk.global_markets",
     "portfolio_code": "acme_hk.credit_trading.portfolio",
     "owner_unit_code": "acme_hk.credit_trading",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "23a0b5ee-ee06-59aa-9bc6-e081187248aa",
+    "name": "IG Credit APAC Portfolio",
+    "parent_portfolio_code": "acme_hk.credit_trading.portfolio",
+    "portfolio_code": "acme_hk.credit_trading.portfolio.ig_credit_apac",
+    "owner_unit_code": "acme_hk.credit_trading",
     "is_virtual": false
   },
   {
@@ -104,6 +324,15 @@
     "name": "FX Rates Hong Kong Portfolio",
     "parent_portfolio_code": "acme_hk.global_markets",
     "portfolio_code": "acme_hk.fx_rates.portfolio",
+    "owner_unit_code": "acme_hk.fx_rates",
+    "is_virtual": true
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "62ef27bf-b2a1-5802-98c8-d1d867087a56",
+    "name": "G10 FX APAC Portfolio",
+    "parent_portfolio_code": "acme_hk.fx_rates.portfolio",
+    "portfolio_code": "acme_hk.fx_rates.portfolio.g10_fx_apac",
     "owner_unit_code": "acme_hk.fx_rates",
     "is_virtual": false
   }

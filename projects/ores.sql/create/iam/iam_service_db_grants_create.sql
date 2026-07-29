@@ -149,6 +149,12 @@ select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 -- (see ores_assets_get_template_image_fn).
 select _ores_grant_select_fn('ores_assets_', :'iam_service_user');
 grant execute on function ores_assets_get_template_image_fn(text) to :iam_service_user;
+-- grant_cross_entity_access (tenant_handler.hpp) reads role/
+-- business_unit_code straight from the DQ accounts artefact tables
+-- already published by the office loop, to identify which staff get
+-- cross-entity party membership -- ores_iam_accounts_tbl itself carries
+-- no business-unit reference to query this from post-publish.
+select _ores_grant_select_fn('ores_dq_', :'iam_service_user');
 
 -- ---------------------------------------------------------------------------
 -- refdata_service: Reference Data domain service

@@ -24,6 +24,7 @@
 ** Select prefixes
 
 - ores_assets_
+- ores_dq_
 
 * refdata
 :PROPERTIES:

@@ -56,9 +56,18 @@ begin
     )
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '57e8e604-dcb6-515a-a6bd-38f0be805480', 0, 'Global Markets', null, 'acme_uk.global_markets', 'GBLO', 'DIVISION'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e719eee-612e-5927-8e71-4107008a1590', 0, 'IR Swaps London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.ir_swaps', 'GBLO', 'DESK'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'aeb8a9e6-86a6-5382-b5eb-54c1b9577c32', 0, 'Credit Trading London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.credit_trading', 'GBLO', 'DESK'),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c3264d1e-2c3a-538c-b598-915a8b354dec', 0, 'FX Rates London', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.fx_rates', 'GBLO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '477f84a7-7edf-50a7-a96f-559dc2778b8b', 0, 'EMEA Trading', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.emea_trading', 'GBLO', 'BUSINESS_AREA'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '087d2259-9228-57a4-b0d4-5e5c6b4a687d', 0, 'Rates Trading EMEA', '477f84a7-7edf-50a7-a96f-559dc2778b8b', 'acme_uk.rates_trading_emea', 'GBLO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '40966335-f572-55ea-8df4-6734d990b94c', 0, 'Credit Trading EMEA', '477f84a7-7edf-50a7-a96f-559dc2778b8b', 'acme_uk.credit_trading_emea', 'GBLO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '89fef41b-1c7d-54db-843b-bf06df71a15b', 0, 'FX Trading EMEA', '477f84a7-7edf-50a7-a96f-559dc2778b8b', 'acme_uk.fx_trading_emea', 'GBLO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a5d09e78-0f28-5528-b041-f153061b63fb', 0, 'Americas Trading', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.americas_trading', 'USNY', 'BUSINESS_AREA'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9532cb35-6a65-5992-a787-00b8c95555fd', 0, 'Rates Trading Americas', 'a5d09e78-0f28-5528-b041-f153061b63fb', 'acme_uk.rates_trading_americas', 'USNY', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cab78299-7de2-5213-b534-5d1f4556cc95', 0, 'Credit Trading Americas', 'a5d09e78-0f28-5528-b041-f153061b63fb', 'acme_uk.credit_trading_americas', 'USNY', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '0ba311e9-77e6-5f6d-9f7b-40e431865917', 0, 'APAC Trading', '57e8e604-dcb6-515a-a6bd-38f0be805480', 'acme_uk.apac_trading', 'JPTO', 'BUSINESS_AREA'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'aca9bec4-2b34-5093-8505-9e34830cd0c7', 0, 'Rates Trading APAC', '0ba311e9-77e6-5f6d-9f7b-40e431865917', 'acme_uk.rates_trading_apac', 'JPTO', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7078caf2-d53a-5066-9bb7-2a7fcec74d13', 0, 'FX Trading APAC', '0ba311e9-77e6-5f6d-9f7b-40e431865917', 'acme_uk.fx_trading_apac', 'HKHK', 'DESK'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ee639085-d4a7-5855-bb58-c94d9a6b21f1', 0, 'Risk Management', null, 'acme_uk.risk_management', 'GBLO', 'DIVISION'),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2fcd2ca5-15b5-52f5-8a2c-a808faf3a381', 0, 'Counterparty Risk', 'ee639085-d4a7-5855-bb58-c94d9a6b21f1', 'acme_uk.counterparty_risk', 'GBLO', 'BUSINESS_AREA'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a3c5e2ae-d25f-5f39-b334-e59d76ceff31', 0, 'Middle Office London', null, 'acme_uk.middle_office', 'GBLO', 'COST_CENTRE'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '648136b1-4548-59e8-80c7-2eb7639c4a89', 0, 'Market Risk London', null, 'acme_uk.market_risk', 'GBLO', 'COST_CENTRE');
 end $$;

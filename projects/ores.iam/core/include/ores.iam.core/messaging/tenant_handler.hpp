@@ -49,8 +49,11 @@
 #include <rfl/json.hpp>
 #include <algorithm>
 #include <chrono>
+#include <optional>
 #include <stdexcept>
 #include <thread>
+#include <utility>
+#include <vector>
 
 namespace ores::iam::messaging {
 
@@ -390,6 +393,10 @@ public:
 
             // Step 4+: per-office business units/portfolios/books/accounts,
             // then activation/logo/onboarding/membership for that party.
+            // office_parties accumulates (code, party_id) as each office is
+            // resolved, so Step 7 below can reuse these NATS-resolved IDs
+            // rather than re-querying ores_refdata_parties_tbl directly.
+            std::vector<std::pair<std::string, boost::uuids::uuid>> office_parties;
             int step_num = 4;
             for (const auto& office : acme_offices()) {
                 internal_request_client discover = make_client(caller_party_id);
@@ -398,6 +405,7 @@ public:
                     add_step(office.code + ".skipped", "party_not_found", 0);
                     continue;
                 }
+                office_parties.emplace_back(office.code, party->id);
 
                 internal_request_client client = make_client(party->id);
                 const auto label =
@@ -441,6 +449,29 @@ public:
                                    progress(mkt_label));
                 }
             }
+
+            // Step 7: cross-entity access for the "follow the sun" global-
+            // book / risk-oversight roles -- deliberately narrow: only Desk
+            // Heads on the two genuinely 24h-traded desks (IR Swaps, FX
+            // Rates) get remote-booking membership on the London ("global
+            // book") party, and only Market Risk staff get group-wide
+            // risk-oversight membership across every operating company.
+            // Credit Trading and Middle Office stay local-only, matching
+            // how real multi-entity banks restrict cross-border booking
+            // access to a narrow, individually-registered subset of staff
+            // while granting risk oversight much more broadly. See
+            // doc/knowledge/domains/acme_corporation_setup.org.
+            {
+                add_step("Step 7: Granting cross-entity access", "starting", 0);
+                grant_cross_entity_access(*ctx_expected, tenant_id_str, office_parties);
+                add_step("Step 7: Granting cross-entity access", "completed");
+            }
+
+            // Step 8 (starting live market data feeds so CRM/IR actually
+            // tick) deliberately deferred -- PR #1741 (merry_newton) is
+            // independently adding a way to start feeds as part of the
+            // synthetic-theme-as-one-atomic-dataset work. Reassess once
+            // that lands rather than building a second path now.
 
             // Attaching the Barclays demo logo needs the GLEIF counterparty
             // import (Step 2) to have actually landed rows -- that bundle
@@ -705,6 +736,109 @@ private:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
                 << "attach_demo_counterparty_logo: failed (non-fatal): " << e.what();
+        }
+    }
+
+    // Grants the narrow set of cross-entity ores_iam_account_parties_tbl
+    // associations that simulate a real multi-entity bank's follow-the-sun
+    // model: Desk Heads on the two genuinely global 24h books (IR Swaps,
+    // FX Rates) get remote-booking membership on London (the "global
+    // book" entity) if they aren't already there, and every office's
+    // Market Risk staff get risk-oversight membership on every other
+    // office's party. Reads role/business_unit_code straight from the DQ
+    // accounts artefact tables already published by the office loop above
+    // (a read has no versioning/validation behaviour to duplicate
+    // incorrectly, same rationale as copy_template_image's direct read) --
+    // ores_iam_accounts_tbl itself carries no business-unit reference to
+    // query this from post-publish.
+    void grant_cross_entity_access(
+        ores::database::context& ctx,
+        const std::string& tenant_id,
+        const std::vector<std::pair<std::string, boost::uuids::uuid>>& office_parties) {
+        struct office_info {
+            std::string code;
+            std::string party_id;
+        };
+        std::vector<office_info> offices;
+        offices.reserve(office_parties.size());
+        for (const auto& [code, party_id] : office_parties)
+            offices.push_back({code, boost::uuids::to_string(party_id)});
+
+        const auto london = std::ranges::find(offices, "acme_uk", &office_info::code);
+        if (london == offices.end())
+            return;
+
+        auto account_ids_for = [&](const std::string& office_code,
+                                   const std::string& business_unit_code,
+                                   const std::optional<std::string>& role) {
+            auto dataset = execute_parameterized_string_query(
+                ctx,
+                "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
+                "AND valid_to = ores_utility_infinity_timestamp_fn()",
+                {"acme." + office_code + ".accounts"}, tenant_handler_lg(),
+                "grant_cross_entity_access");
+            if (dataset.empty())
+                return std::vector<std::string>{};
+            auto usernames = role
+                ? execute_parameterized_string_query(
+                      ctx,
+                      "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
+                      "$1::uuid AND business_unit_code = $2 AND role = $3",
+                      {dataset.front(), business_unit_code, *role}, tenant_handler_lg(),
+                      "grant_cross_entity_access")
+                : execute_parameterized_string_query(
+                      ctx,
+                      "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
+                      "$1::uuid AND business_unit_code = $2",
+                      {dataset.front(), business_unit_code}, tenant_handler_lg(),
+                      "grant_cross_entity_access");
+            std::vector<std::string> account_ids;
+            for (const auto& u : usernames) {
+                auto acct = execute_parameterized_string_query(
+                    ctx,
+                    "SELECT id::text FROM ores_iam_accounts_tbl WHERE tenant_id = $1::uuid "
+                    "AND username = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
+                    {tenant_id, u}, tenant_handler_lg(), "grant_cross_entity_access");
+                if (!acct.empty())
+                    account_ids.push_back(acct.front());
+            }
+            return account_ids;
+        };
+
+        auto grant = [&](const std::string& account_id, const std::string& party_id) {
+            execute_parameterized_command(
+                ctx,
+                "INSERT INTO ores_iam_account_parties_tbl (account_id, tenant_id, party_id, "
+                "version, modified_by, performed_by, change_reason_code, change_commentary) "
+                "SELECT $1::uuid, $2::uuid, $3::uuid, 0, "
+                "coalesce(ores_iam_current_service_fn(), current_user), current_user, "
+                "'system.external_data_import', "
+                "'Cross-entity access granted during Acme provisioning' "
+                "WHERE NOT EXISTS (SELECT 1 FROM ores_iam_account_parties_tbl WHERE "
+                "tenant_id = $2::uuid AND account_id = $1::uuid AND party_id = $3::uuid AND "
+                "valid_to = ores_utility_infinity_timestamp_fn())",
+                {account_id, tenant_id, party_id}, tenant_handler_lg(),
+                "grant_cross_entity_access");
+        };
+
+        for (const auto& office : offices) {
+            if (office.code == "acme_uk")
+                continue;
+            for (const auto* desk : {"ir_swaps", "fx_rates"})
+                for (const auto& account_id :
+                    account_ids_for(office.code, office.code + "." + desk, "Desk Head"))
+                    grant(account_id, london->party_id);
+        }
+
+        for (const auto& office : offices) {
+            const auto risk_staff =
+                account_ids_for(office.code, office.code + ".market_risk", std::nullopt);
+            for (const auto& other : offices) {
+                if (other.code == office.code)
+                    continue;
+                for (const auto& account_id : risk_staff)
+                    grant(account_id, other.party_id);
+            }
         }
     }
 

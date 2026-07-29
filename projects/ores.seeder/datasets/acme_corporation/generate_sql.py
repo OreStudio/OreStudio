@@ -383,12 +383,17 @@ def generate_portfolios_populate(company, portfolios, units):
         parent_id = portfolio_id_by_code.get(p.get("parent_portfolio_code"))
         owner_id = unit_id_by_code.get(p.get("owner_unit_code"))
         is_virtual = 1 if p["is_virtual"] else 0
+        # aggregation_ccy defaults to the company's own currency, but a
+        # portfolio replicating a specific real-world desk (e.g. London's
+        # exact Barclays-fixture replica, spanning GBP/EUR/USD/CAD/JPY) may
+        # override it per-row.
         rows.append(
             "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
             f"{sql_str(p['id'])}, 0, {sql_str(p['name'])}, "
             f"{sql_str(parent_id)}, "
             f"{sql_str(owner_id)}, "
-            f"'Risk', {sql_str(ccy)}, {is_virtual})"
+            f"{sql_str(p.get('purpose_type') or 'Risk')}, "
+            f"{sql_str(p.get('aggregation_ccy') or ccy)}, {is_virtual})"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.portfolios"
@@ -436,12 +441,23 @@ def generate_books_populate(company, books, portfolios):
     rows = []
     for b in books:
         portfolio_id = portfolio_id_by_code.get(b["portfolio_code"])
+        # Every field beyond name/portfolio/regulatory_book_type defaults
+        # to the same values every other Acme book used before (company
+        # currency, no GL/cost-centre detail, Active, not sweepable, no
+        # fixed rates centre) -- a book replicating a specific real-world
+        # book (e.g. London's exact Barclays-fixture replica) may override
+        # any of them per-row.
         rows.append(
             "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
             f"{sql_str(b['id'])}, 0, {sql_str(b['name'])}, "
             f"{sql_str(portfolio_id)}, "
-            f"{sql_str(ccy)}, null, null, 'Active', "
-            f"{sql_str(b.get('regulatory_book_type'))}, false, null)"
+            f"{sql_str(b.get('functional_currency', ccy))}, "
+            f"{sql_str(b.get('gl_account_ref'))}, "
+            f"{sql_str(b.get('cost_center'))}, "
+            f"{sql_str(b.get('book_status', 'Active'))}, "
+            f"{sql_str(b.get('regulatory_book_type'))}, "
+            f"{sql_bool(b.get('is_sweepable', False))}, "
+            f"{sql_str(b.get('rates_centre_code'))})"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.books"

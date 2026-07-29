@@ -112,10 +112,159 @@ DESKS = [
     {"code": "fx_rates", "name": "FX Rates", "head_count": 1, "trader_count": 2},
 ]
 
+# Currency/product leaf books per desk, per office -- deliberately tiered
+# by office role rather than uniform: London is the head office, so it
+# gets the full multi-currency tree (matching the depth of the generic
+# "risk_management" fixture other tenants get); New York is a full
+# regional desk with a couple of books each; Hong Kong is deliberately
+# the shallowest (single book per desk) -- not every office needs to be
+# equally deep for the dataset to be realistic, a smaller regional
+# office with a leaner book structure is itself realistic. Each entry
+# is (code_suffix, label); the leaf portfolio/book name is built from
+# the label, parented under the desk's own virtual portfolio.
+DESK_BOOKS_BY_OFFICE = {
+    "acme_uk": {
+        "ir_swaps": [
+            ("gbp_rates", "GBP Rates"),
+            ("eur_rates", "EUR Rates"),
+            ("usd_rates", "USD Rates"),
+        ],
+        "credit_trading": [
+            ("ig_credit", "IG Credit EMEA"),
+            ("hy_credit", "HY Credit EMEA"),
+        ],
+        "fx_rates": [
+            ("g10_fx", "G10 FX"),
+            ("em_fx", "EM FX"),
+        ],
+    },
+    "acme_us": {
+        "ir_swaps": [
+            ("usd_rates", "USD Rates"),
+            ("cad_rates", "CAD Rates"),
+        ],
+        "credit_trading": [
+            ("ig_credit_americas", "IG Credit Americas"),
+        ],
+        "fx_rates": [
+            ("g10_fx_americas", "G10 FX Americas"),
+        ],
+    },
+    "acme_hk": {
+        "ir_swaps": [
+            ("jpy_rates", "JPY Rates"),
+        ],
+        "credit_trading": [
+            ("ig_credit_apac", "IG Credit APAC"),
+        ],
+        "fx_rates": [
+            ("g10_fx_apac", "G10 FX APAC"),
+        ],
+    },
+}
+
 SUPPORT_FUNCTIONS = [
     {"code": "middle_office", "name": "Middle Office", "manager_count": 1, "analyst_count": 2},
     {"code": "market_risk", "name": "Market Risk", "manager_count": 1, "analyst_count": 2},
 ]
+
+# London is deliberately built as an exact replica of the shared
+# "risk_management"/testdata Barclays fixture (see
+# projects/ores.sql/populate/testdata/testdata_{business_units,
+# portfolios,books}_artefact_populate.sql) -- same business units, same
+# portfolios, same books, verbatim -- rather than the flatter
+# office-generic tree US/HK use. Only the 3 EMEA desks (the ones that
+# already had staff before this replica) are staffed; the Americas/APAC
+# business units this pulls in (mirroring Barclays' own tree, which
+# spans regions within one party) are structural only, since Acme
+# already has separate US/HK legal entities with their own staff --
+# duplicating headcount under London for desks it doesn't actually run
+# would be unrealistic, not more complete.
+#
+# Each tuple: (code, name, parent_code, unit_type, business_centre_code).
+# parent_code is always an explicit code here -- "global_markets" (added
+# generically by build_office below) or another row's own code -- except
+# risk_management, which (like global_markets itself) is a genuine
+# top-level DIVISION with no parent at all, exactly mirroring the
+# fixture's own two-root-DIVISION shape.
+BARCLAYS_UK_BUSINESS_UNITS = [
+    ("emea_trading", "EMEA Trading", "global_markets", "BUSINESS_AREA", "GBLO"),
+    ("rates_trading_emea", "Rates Trading EMEA", "emea_trading", "DESK", "GBLO"),
+    ("credit_trading_emea", "Credit Trading EMEA", "emea_trading", "DESK", "GBLO"),
+    ("fx_trading_emea", "FX Trading EMEA", "emea_trading", "DESK", "GBLO"),
+    ("americas_trading", "Americas Trading", "global_markets", "BUSINESS_AREA", "USNY"),
+    ("rates_trading_americas", "Rates Trading Americas", "americas_trading", "DESK", "USNY"),
+    ("credit_trading_americas", "Credit Trading Americas", "americas_trading", "DESK", "USNY"),
+    ("apac_trading", "APAC Trading", "global_markets", "BUSINESS_AREA", "JPTO"),
+    ("rates_trading_apac", "Rates Trading APAC", "apac_trading", "DESK", "JPTO"),
+    ("fx_trading_apac", "FX Trading APAC", "apac_trading", "DESK", "HKHK"),
+    ("risk_management", "Risk Management", None, "DIVISION", "GBLO"),
+    ("counterparty_risk", "Counterparty Risk", "risk_management", "BUSINESS_AREA", "GBLO"),
+]
+
+# Each tuple: (code, name, parent_code_or_None, owner_unit_code, currency, is_virtual).
+# parent_code is always explicit -- "global_markets" (the root portfolio
+# added generically by build_office below, reusing that business unit's
+# code as its own) or another row's own code -- except Regulatory
+# Capital, which (like Global Portfolio itself) is a genuine standalone
+# root portfolio with no parent, matching the fixture exactly.
+BARCLAYS_UK_PORTFOLIOS = [
+    ("emea_portfolio", "EMEA Portfolio", "global_markets", "emea_trading", "EUR", True),
+    ("rates_emea", "Rates EMEA", "emea_portfolio", "rates_trading_emea", "EUR", True),
+    ("gbp_rates", "GBP Rates", "rates_emea", "rates_trading_emea", "GBP", False),
+    ("eur_rates", "EUR Rates", "rates_emea", "rates_trading_emea", "EUR", False),
+    ("credit_emea", "Credit EMEA", "emea_portfolio", "credit_trading_emea", "EUR", True),
+    ("ig_credit_emea", "IG Credit EMEA", "credit_emea", "credit_trading_emea", "EUR", False),
+    ("fx_emea", "FX EMEA", "emea_portfolio", "fx_trading_emea", "EUR", True),
+    ("g10_fx_emea", "G10 FX EMEA", "fx_emea", "fx_trading_emea", "EUR", False),
+    ("americas_portfolio", "Americas Portfolio", "global_markets", "americas_trading", "USD", True),
+    ("rates_americas", "Rates Americas", "americas_portfolio", "rates_trading_americas", "USD", True),
+    ("usd_rates", "USD Rates", "rates_americas", "rates_trading_americas", "USD", False),
+    ("cad_rates", "CAD Rates", "rates_americas", "rates_trading_americas", "CAD", False),
+    ("credit_americas", "Credit Americas", "americas_portfolio", "credit_trading_americas", "USD", True),
+    ("ig_credit_americas", "IG Credit Americas", "credit_americas", "credit_trading_americas", "USD", False),
+    ("apac_portfolio", "APAC Portfolio", "global_markets", "apac_trading", "JPY", True),
+    ("rates_apac", "Rates APAC", "apac_portfolio", "rates_trading_apac", "JPY", True),
+    ("jpy_rates", "JPY Rates", "rates_apac", "rates_trading_apac", "JPY", False),
+    ("fx_apac", "FX APAC", "apac_portfolio", "fx_trading_apac", "JPY", False),
+    ("regulatory_capital", "Regulatory Capital", None, "risk_management", "USD", False),
+]
+
+# Each tuple: (name, portfolio_code, currency, gl_account_ref, cost_center,
+# book_status, regulatory_book_type, is_sweepable, rates_centre_code).
+BARCLAYS_UK_BOOKS = [
+    ("GBP Nostro Sweep", "gbp_rates", "GBP", "GL-TREAS-001", "CC-EMEA-TREASURY", "Active", "Trading", True, "GBLO"),
+    ("GBP Vanilla Swaps", "gbp_rates", "GBP", "GL-RATES-001", "CC-EMEA-RATES", "Active", "Trading", False, "GBLO"),
+    ("GBP Rates Options", "gbp_rates", "GBP", "GL-RATES-002", "CC-EMEA-RATES", "Active", "Trading", False, "GBLO"),
+    ("EUR Vanilla Swaps", "eur_rates", "EUR", "GL-RATES-003", "CC-EMEA-RATES", "Active", "Trading", False, "FRPA"),
+    ("EUR Exotic Rates", "eur_rates", "EUR", "GL-RATES-004", "CC-EMEA-RATES", "Active", "Trading", False, "FRPA"),
+    ("IG CDS EMEA", "ig_credit_emea", "EUR", "GL-CREDIT-001", "CC-EMEA-CREDIT", "Active", "Trading", False, "GBLO"),
+    ("IG Bonds EMEA", "ig_credit_emea", "EUR", "GL-CREDIT-002", "CC-EMEA-CREDIT", "Active", "Banking", False, "GBLO"),
+    ("G10 FX Spot Forward", "g10_fx_emea", "EUR", "GL-FX-001", "CC-EMEA-FX", "Active", "Trading", False, "GBLO"),
+    ("G10 FX Options", "g10_fx_emea", "EUR", "GL-FX-002", "CC-EMEA-FX", "Active", "Trading", False, "GBLO"),
+    ("USD Cash Management Sweep", "usd_rates", "USD", "GL-TREAS-002", "CC-AMER-TREASURY", "Active", "Trading", True, "USNY"),
+    ("USD Vanilla Swaps", "usd_rates", "USD", "GL-RATES-005", "CC-AMER-RATES", "Active", "Trading", False, "USNY"),
+    ("USD Rates Options", "usd_rates", "USD", "GL-RATES-006", "CC-AMER-RATES", "Active", "Trading", False, "USNY"),
+    ("CAD Swaps", "cad_rates", "CAD", "GL-RATES-007", "CC-AMER-RATES", "Active", "Trading", False, "CATO"),
+    ("IG CDS Americas", "ig_credit_americas", "USD", "GL-CREDIT-003", "CC-AMER-CREDIT", "Active", "Trading", False, "USNY"),
+    ("IG Bonds Americas", "ig_credit_americas", "USD", "GL-CREDIT-004", "CC-AMER-CREDIT", "Active", "Banking", False, "USNY"),
+    ("JPY Vanilla Swaps", "jpy_rates", "JPY", "GL-RATES-008", "CC-APAC-RATES", "Active", "Trading", False, "JPTO"),
+    ("JPY Rates Options", "jpy_rates", "JPY", "GL-RATES-009", "CC-APAC-RATES", "Active", "Trading", False, "JPTO"),
+    ("APAC FX Spot Forward", "fx_apac", "JPY", "GL-FX-003", "CC-APAC-FX", "Active", "Trading", False, "SGSI"),
+    ("APAC FX NDF", "fx_apac", "JPY", "GL-FX-004", "CC-APAC-FX", "Active", "Trading", False, "SGSI"),
+    ("Regulatory Banking Book", "regulatory_capital", "USD", "GL-REG-001", "CC-RISK", "Active", "Banking", False, None),
+    ("Regulatory Trading Book", "regulatory_capital", "USD", "GL-REG-002", "CC-RISK", "Active", "Trading", False, None),
+    ("Regulatory CVA Book", "regulatory_capital", "USD", "GL-REG-003", "CC-RISK", "Closed", "Trading", False, None),
+]
+
+# Maps the 3 staffed Barclays-replica desks back onto the original head/
+# trader counts every Acme desk uses, so London keeps the same headcount
+# it had before -- just attached to the Barclays-named desk codes.
+BARCLAYS_UK_STAFFED_DESKS = {
+    "rates_trading_emea": next(d for d in DESKS if d["code"] == "ir_swaps"),
+    "credit_trading_emea": next(d for d in DESKS if d["code"] == "credit_trading"),
+    "fx_trading_emea": next(d for d in DESKS if d["code"] == "fx_rates"),
+}
 
 HOLDING = {
     "code": "acme_group",
@@ -237,49 +386,25 @@ def build_office(office, faker):
     portfolios.append({
         "company_code": company_code,
         "id": global_virtual_portfolio_id,
-        "name": f"{office['name']} Global Markets",
+        "name": "Global Portfolio" if company_code == "acme_uk" else f"{office['name']} Global Markets",
         "parent_portfolio_code": None,
         "portfolio_code": f"{company_code}.global_markets",
         "owner_unit_code": f"{company_code}.global_markets",
+        "aggregation_ccy": "USD" if company_code == "acme_uk" else None,
         "is_virtual": True,
     })
 
-    for desk in DESKS:
-        desk_code = f"{company_code}.{desk['code']}"
-        business_units.append({
-            "company_code": company_code,
-            "id": new_uuid(f"business_unit:{desk_code}"),
-            "unit_name": f"{desk['name']} {office['city']}",
-            "unit_code": desk_code,
-            "parent_business_unit_code": f"{company_code}.global_markets",
-            "business_centre_code": office["business_centre_code"],
-            "unit_type_code": "DESK",
-        })
-
-        physical_portfolio_code = f"{desk_code}.portfolio"
-        portfolios.append({
-            "company_code": company_code,
-            "id": new_uuid(f"portfolio:{physical_portfolio_code}"),
-            "name": f"{desk['name']} {office['city']} Portfolio",
-            "parent_portfolio_code": f"{company_code}.global_markets",
-            "portfolio_code": physical_portfolio_code,
-            "owner_unit_code": desk_code,
-            "is_virtual": False,
-        })
-
-        books.append({
-            "company_code": company_code,
-            "id": new_uuid(f"book:{physical_portfolio_code}"),
-            "name": f"{desk['name']} {office['city']} Book",
-            "portfolio_code": physical_portfolio_code,
-            "owner_unit_code": desk_code,
-            "regulatory_book_type": "Trading",
-        })
-
-        for _ in range(desk["head_count"]):
-            add_account(desk_code, "Desk Head")
-        for _ in range(desk["trader_count"]):
-            add_account(desk_code, "Trader")
+    if company_code == "acme_uk":
+        build_barclays_replica_org(office, business_units, portfolios, books, global_markets_code)
+        for desk_code, desk in BARCLAYS_UK_STAFFED_DESKS.items():
+            full_desk_code = f"{company_code}.{desk_code}"
+            for _ in range(desk["head_count"]):
+                add_account(full_desk_code, "Desk Head")
+            for _ in range(desk["trader_count"]):
+                add_account(full_desk_code, "Trader")
+    else:
+        desk_books = DESK_BOOKS_BY_OFFICE[company_code]
+        build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books)
 
     for func in SUPPORT_FUNCTIONS:
         func_code = f"{company_code}.{func['code']}"
@@ -299,6 +424,117 @@ def build_office(office, faker):
             add_account(func_code, "Analyst")
 
     return lei, lei_entity, business_units, portfolios, books, accounts
+
+
+def build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books):
+    company_code = office["code"]
+    for desk in DESKS:
+        desk_code = f"{company_code}.{desk['code']}"
+        business_units.append({
+            "company_code": company_code,
+            "id": new_uuid(f"business_unit:{desk_code}"),
+            "unit_name": f"{desk['name']} {office['city']}",
+            "unit_code": desk_code,
+            "parent_business_unit_code": f"{company_code}.global_markets",
+            "business_centre_code": office["business_centre_code"],
+            "unit_type_code": "DESK",
+        })
+
+        # Desk-level virtual portfolio -- the aggregation node its
+        # currency/product leaf books roll up into, mirroring the
+        # Rates EMEA/Credit EMEA/FX EMEA layer in the generic
+        # risk_management fixture rather than one flat book per desk.
+        desk_portfolio_code = f"{desk_code}.portfolio"
+        portfolios.append({
+            "company_code": company_code,
+            "id": new_uuid(f"portfolio:{desk_portfolio_code}"),
+            "name": f"{desk['name']} {office['city']} Portfolio",
+            "parent_portfolio_code": f"{company_code}.global_markets",
+            "portfolio_code": desk_portfolio_code,
+            "owner_unit_code": desk_code,
+            "is_virtual": True,
+        })
+
+        for book_suffix, book_label in desk_books[desk["code"]]:
+            leaf_portfolio_code = f"{desk_portfolio_code}.{book_suffix}"
+            portfolios.append({
+                "company_code": company_code,
+                "id": new_uuid(f"portfolio:{leaf_portfolio_code}"),
+                "name": f"{book_label} Portfolio",
+                "parent_portfolio_code": desk_portfolio_code,
+                "portfolio_code": leaf_portfolio_code,
+                "owner_unit_code": desk_code,
+                "is_virtual": False,
+            })
+
+            books.append({
+                "company_code": company_code,
+                "id": new_uuid(f"book:{leaf_portfolio_code}"),
+                "name": f"{book_label} Book",
+                "portfolio_code": leaf_portfolio_code,
+                "owner_unit_code": desk_code,
+                "regulatory_book_type": "Trading",
+            })
+
+        for _ in range(desk["head_count"]):
+            add_account(desk_code, "Desk Head")
+        for _ in range(desk["trader_count"]):
+            add_account(desk_code, "Trader")
+
+
+def build_barclays_replica_org(office, business_units, portfolios, books, global_markets_code):
+    """Appends London's exact Barclays-fixture replica (business units,
+    portfolios, books) onto the caller's lists. See BARCLAYS_UK_* above
+    for the source of truth this mirrors."""
+    company_code = office["code"]
+
+    for code, name, parent_code, unit_type, business_centre_code in BARCLAYS_UK_BUSINESS_UNITS:
+        # None means a genuine top-level unit (only risk_management, a
+        # second root DIVISION alongside global_markets) -- every other
+        # row names its parent explicitly, including "global_markets".
+        parent = None if parent_code is None else f"{company_code}.{parent_code}"
+        business_units.append({
+            "company_code": company_code,
+            "id": new_uuid(f"business_unit:{company_code}.{code}"),
+            "unit_name": name,
+            "unit_code": f"{company_code}.{code}",
+            "parent_business_unit_code": parent,
+            "business_centre_code": business_centre_code,
+            "unit_type_code": unit_type,
+        })
+
+    for code, name, parent_code, owner_unit_code, ccy, is_virtual in BARCLAYS_UK_PORTFOLIOS:
+        # None means a genuine standalone root (only regulatory_capital,
+        # alongside Global Portfolio itself) -- every other row names its
+        # parent explicitly, including "global_markets".
+        parent = None if parent_code is None else f"{company_code}.{parent_code}"
+        portfolios.append({
+            "company_code": company_code,
+            "id": new_uuid(f"portfolio:{company_code}.{code}"),
+            "name": name,
+            "parent_portfolio_code": parent,
+            "portfolio_code": f"{company_code}.{code}",
+            "owner_unit_code": f"{company_code}.{owner_unit_code}",
+            "aggregation_ccy": ccy,
+            "is_virtual": is_virtual,
+        })
+
+    for (name, portfolio_code, ccy, gl_ref, cost_center, status, reg_type, sweepable,
+         rates_centre) in BARCLAYS_UK_BOOKS:
+        full_portfolio_code = f"{company_code}.{portfolio_code}"
+        books.append({
+            "company_code": company_code,
+            "id": new_uuid(f"book:{company_code}.{portfolio_code}.{name}"),
+            "name": name,
+            "portfolio_code": full_portfolio_code,
+            "functional_currency": ccy,
+            "gl_account_ref": gl_ref,
+            "cost_center": cost_center,
+            "book_status": status,
+            "regulatory_book_type": reg_type,
+            "is_sweepable": sweepable,
+            "rates_centre_code": rates_centre,
+        })
 
 
 def main():

@@ -8,7 +8,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Desk Head",
-    "business_unit_code": "acme_uk.ir_swaps"
+    "business_unit_code": "acme_uk.rates_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -19,7 +19,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.ir_swaps"
+    "business_unit_code": "acme_uk.rates_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -30,7 +30,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.ir_swaps"
+    "business_unit_code": "acme_uk.rates_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -41,7 +41,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Desk Head",
-    "business_unit_code": "acme_uk.credit_trading"
+    "business_unit_code": "acme_uk.credit_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -52,7 +52,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.credit_trading"
+    "business_unit_code": "acme_uk.credit_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -63,7 +63,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.credit_trading"
+    "business_unit_code": "acme_uk.credit_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -74,7 +74,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Desk Head",
-    "business_unit_code": "acme_uk.fx_rates"
+    "business_unit_code": "acme_uk.fx_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -85,7 +85,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.fx_rates"
+    "business_unit_code": "acme_uk.fx_trading_emea"
   },
   {
     "company_code": "acme_uk",
@@ -96,7 +96,7 @@
     "password_hash": "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==",
     "account_type": "user",
     "role": "Trader",
-    "business_unit_code": "acme_uk.fx_rates"
+    "business_unit_code": "acme_uk.fx_trading_emea"
   },
   {
     "company_code": "acme_uk",

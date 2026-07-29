@@ -20,15 +20,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "generators_image_generator_tests.cpp"
-    "generators_image_tag_generator_tests.cpp"
-    "generators_tag_generator_tests.cpp"
-    "main.cpp"
-    "repository_image_repository_tests.cpp"
-    "repository_image_tag_repository_tests.cpp"
-    "repository_tag_repository_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

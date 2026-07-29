@@ -19,23 +19,7 @@ set(name "ores.assets.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "generators/image_generator.cpp"
-    "generators/image_tag_generator.cpp"
-    "generators/tag_generator.cpp"
-    "messaging/publish_from_dq_handler.cpp"
-    "messaging/registrar.cpp"
-    "repository/image_entity.cpp"
-    "repository/image_mapper.cpp"
-    "repository/image_repository.cpp"
-    "repository/image_tag_entity.cpp"
-    "repository/image_tag_mapper.cpp"
-    "repository/image_tag_repository.cpp"
-    "repository/tag_entity.cpp"
-    "repository/tag_mapper.cpp"
-    "repository/tag_repository.cpp"
-    "service/assets_service.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

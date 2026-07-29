@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/qt-wire-browse-holidays-view
-#+pr:
+#+pr: 1737
 #+blocked_on: [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]]
 #+blocked_since: 2026-07-29
 #+created: 2026-07-27
@@ -224,7 +224,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1737][#1737]] | [ores.codegen,agile] Prep calendar_date Qt facet, block browse-holidays on render-path gap |
 
 * Review
 

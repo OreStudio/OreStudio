@@ -21,10 +21,26 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "arithmetic_gaussian_mixture_model_process_tests.cpp"
+    "business_day_calendar_set_tests.cpp"
+    "calendar_rule_engine_tests.cpp"
+    "cox_ingersoll_ross_process_tests.cpp"
+    "curve_instrument_pricer_tests.cpp"
+    "gaussian_mixture_model_process_tests.cpp"
+    "hull_white_process_tests.cpp"
+    "main.cpp"
+    "ornstein_uhlenbeck_process_tests.cpp"
+    "process_factory_tests.cpp"
+    "process_parameter_validation_tests.cpp"
+    "quantlib_calendar_rulesets_tests.cpp"
+    "rate_delta_tracker_tests.cpp"
+    "rate_engine_tests.cpp"
+    "rate_reciprocator_tests.cpp"
+    "risk_recentering_tests.cpp"
+    "topology_builder_tests.cpp"
+    "vasicek_process_tests.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

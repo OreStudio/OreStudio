@@ -82,7 +82,6 @@ public:
      * @brief Retrieves a single CRM enabled derived pair as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the CRM enabled derived pair.
      * @param version The version to fetch.
      * @return The CRM enabled derived pair at that version if found, std::nullopt otherwise.
      */
@@ -90,9 +89,8 @@ public:
     get_crm_enabled_derived_pair_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single CRM enabled derived pair by its id.
+     * @brief Retrieves a single CRM enabled derived pair by its primary key.
      *
-     * @param id The id of the CRM enabled derived pair.
      * @return The CRM enabled derived pair if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_enabled_derived_pair>
@@ -117,15 +115,14 @@ public:
         const std::vector<domain::crm_enabled_derived_pair>& crm_enabled_derived_pairs);
 
     /**
-     * @brief Deletes a CRM enabled derived pair by its id.
+     * @brief Deletes a CRM enabled derived pair by its primary key.
      *
-     * @param id The id of the CRM enabled derived pair to delete.
      * @throws std::exception on failure.
      */
     void delete_crm_enabled_derived_pair(const std::string& id);
 
     /**
-     * @brief Deletes CRM enabled derived pairs by their ids.
+     * @brief Deletes CRM enabled derived pairs by their primary keys.
      */
     void delete_crm_enabled_derived_pairs(const std::vector<std::string>& ids);
 

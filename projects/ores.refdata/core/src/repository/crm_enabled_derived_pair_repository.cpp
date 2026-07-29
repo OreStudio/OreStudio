@@ -38,7 +38,7 @@ std::string crm_enabled_derived_pair_repository::sql() {
 
 void crm_enabled_derived_pair_repository::write(context ctx,
                                                 const domain::crm_enabled_derived_pair& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pair: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing CRM enabled derived pair. " << "id: " << v.id;
     execute_write_query(ctx,
                         crm_enabled_derived_pair_mapper::map(v),
                         lg(),
@@ -72,7 +72,7 @@ crm_enabled_derived_pair_repository::read_latest(context ctx) {
 
 std::vector<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pair. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM enabled derived pair. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_enabled_derived_pair_entity>> |
@@ -86,12 +86,14 @@ crm_enabled_derived_pair_repository::read_latest(context ctx, const std::string&
         "Reading latest CRM enabled derived pair by id.");
 }
 
+
 std::vector<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM enabled derived pair versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM enabled derived pair versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_enabled_derived_pair_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<crm_enabled_derived_pair_entity, domain::crm_enabled_derived_pair>(
         ctx,
@@ -105,7 +107,7 @@ std::optional<domain::crm_enabled_derived_pair>
 crm_enabled_derived_pair_repository::read_at_version(context ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CRM enabled derived pair at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading CRM enabled derived pair at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_enabled_derived_pair_entity>> |
@@ -127,7 +129,7 @@ crm_enabled_derived_pair_repository::read_at_version(context ctx,
 
 
 void crm_enabled_derived_pair_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM enabled derived pair. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<crm_enabled_derived_pair_entity> |

@@ -42,17 +42,18 @@ std::uint32_t crm_topology_config_service::count_crm_topology_configs() {
     return repo_.get_total_crm_topology_config_count(ctx_);
 }
 
+
 std::optional<domain::crm_topology_config>
 crm_topology_config_service::get_crm_topology_config_at_version(const std::string& id,
                                                                 std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM topology config at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM topology config at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::crm_topology_config>
 crm_topology_config_service::get_crm_topology_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM topology config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM topology config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -62,11 +63,11 @@ crm_topology_config_service::get_crm_topology_config(const std::string& id) {
 void crm_topology_config_service::save_crm_topology_config(const domain::crm_topology_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CRM Topology Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CRM topology config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving CRM topology config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CRM topology config: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved CRM topology config. " << "id: " << v.id;
 }
 
 void crm_topology_config_service::save_crm_topology_configs(
@@ -83,9 +84,9 @@ void crm_topology_config_service::save_crm_topology_configs(
 }
 
 void crm_topology_config_service::delete_crm_topology_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM topology config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM topology config. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed CRM topology config: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed CRM topology config. " << "id: " << id;
 }
 
 void crm_topology_config_service::delete_crm_topology_configs(const std::vector<std::string>& ids) {
@@ -94,7 +95,7 @@ void crm_topology_config_service::delete_crm_topology_configs(const std::vector<
 
 std::vector<domain::crm_topology_config>
 crm_topology_config_service::get_crm_topology_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM topology config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM topology config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

@@ -179,6 +179,7 @@ void CrmDriverPairDetailDialog::setReadOnly(bool readOnly) {
     ui_->configCombo->setEnabled(false);
     ui_->baseCcyCombo->setEnabled(!readOnly);
     ui_->quoteCcyCombo->setEnabled(!readOnly);
+    ui_->enabledCheckBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -330,24 +331,27 @@ void CrmDriverPairDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "CRM Driver Pair saved successfully";
-            QString code = QString::fromStdString(boost::uuids::to_string(self->pair_.id));
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->pairSaved(code);
-            self->notifySaveSuccess(tr("CRM Driver Pair '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "CRM Driver Pair saved successfully";
+                    QString code = QString::fromStdString(boost::uuids::to_string(self->pair_.id));
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->pairSaved(code);
+                    self->notifySaveSuccess(tr("CRM Driver Pair '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

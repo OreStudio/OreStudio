@@ -45,13 +45,13 @@ std::uint32_t calendar_service::count_calendars() {
 
 std::optional<domain::calendar> calendar_service::get_calendar_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::calendar> calendar_service::get_calendar(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting calendar: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting calendar. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -61,17 +61,18 @@ std::optional<domain::calendar> calendar_service::get_calendar(const std::string
 void calendar_service::save_calendar(const domain::calendar& v) {
     if (v.code.empty())
         throw std::invalid_argument("Calendar code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving calendar: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving calendar. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved calendar: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved calendar. " << "code: " << v.code;
 }
 
 void calendar_service::save_calendars(const std::vector<domain::calendar>& calendars) {
-    for (const auto& e : calendars)
+    for (const auto& e : calendars) {
         if (e.code.empty())
             throw std::invalid_argument("Calendar code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendars.size() << " calendars";
     auto ts = calendars;
     for (auto& e : ts)
@@ -80,9 +81,9 @@ void calendar_service::save_calendars(const std::vector<domain::calendar>& calen
 }
 
 void calendar_service::delete_calendar(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing calendar: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing calendar. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed calendar: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed calendar. " << "code: " << code;
 }
 
 void calendar_service::delete_calendars(const std::vector<std::string>& codes) {
@@ -90,7 +91,7 @@ void calendar_service::delete_calendars(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::calendar> calendar_service::get_calendar_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for calendar. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

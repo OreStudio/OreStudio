@@ -37,7 +37,7 @@ std::string crm_topology_config_repository::sql() {
 }
 
 void crm_topology_config_repository::write(context ctx, const domain::crm_topology_config& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing CRM topology config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing CRM topology config. " << "id: " << v.id;
     execute_write_query(
         ctx, crm_topology_config_mapper::map(v), lg(), "Writing CRM topology config to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::crm_topology_config> crm_topology_config_repository::read_la
 
 std::vector<domain::crm_topology_config>
 crm_topology_config_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM topology config. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest CRM topology config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
@@ -80,12 +80,14 @@ crm_topology_config_repository::read_latest(context ctx, const std::string& id) 
         "Reading latest CRM topology config by id.");
 }
 
+
 std::vector<domain::crm_topology_config>
 crm_topology_config_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM topology config versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all CRM topology config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<crm_topology_config_entity, domain::crm_topology_config>(
         ctx,
@@ -97,7 +99,7 @@ crm_topology_config_repository::read_all(context ctx, const std::string& id) {
 
 std::optional<domain::crm_topology_config> crm_topology_config_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading CRM topology config at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading CRM topology config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<crm_topology_config_entity>> |
@@ -118,7 +120,7 @@ std::optional<domain::crm_topology_config> crm_topology_config_repository::read_
 }
 
 void crm_topology_config_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM topology config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM topology config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<crm_topology_config_entity> |

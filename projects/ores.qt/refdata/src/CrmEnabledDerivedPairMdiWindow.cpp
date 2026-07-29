@@ -214,6 +214,7 @@ void CrmEnabledDerivedPairMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -231,7 +232,7 @@ void CrmEnabledDerivedPairMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading CRM enabled derived pairs";
     clearStaleIndicator();
     emit statusChanged(tr("Loading CRM enabled derived pairs..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void CrmEnabledDerivedPairMdiWindow::onDataLoaded() {
@@ -410,7 +411,8 @@ void CrmEnabledDerivedPairMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg =

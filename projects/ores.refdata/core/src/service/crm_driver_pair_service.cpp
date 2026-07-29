@@ -46,14 +46,14 @@ std::uint32_t crm_driver_pair_service::count_crm_driver_pairs() {
 std::optional<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair_at_version(const std::string& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting CRM driver pair. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -63,11 +63,11 @@ crm_driver_pair_service::get_crm_driver_pair(const std::string& id) {
 void crm_driver_pair_service::save_crm_driver_pair(const domain::crm_driver_pair& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("CRM Driver Pair id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving CRM driver pair: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving CRM driver pair. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved CRM driver pair: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved CRM driver pair. " << "id: " << v.id;
 }
 
 void crm_driver_pair_service::save_crm_driver_pairs(
@@ -83,9 +83,9 @@ void crm_driver_pair_service::save_crm_driver_pairs(
 }
 
 void crm_driver_pair_service::delete_crm_driver_pair(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing CRM driver pair. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed CRM driver pair: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed CRM driver pair. " << "id: " << id;
 }
 
 void crm_driver_pair_service::delete_crm_driver_pairs(const std::vector<std::string>& ids) {
@@ -94,7 +94,7 @@ void crm_driver_pair_service::delete_crm_driver_pairs(const std::vector<std::str
 
 std::vector<domain::crm_driver_pair>
 crm_driver_pair_service::get_crm_driver_pair_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM driver pair: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for CRM driver pair. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

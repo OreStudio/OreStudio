@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_crm_topology_configs();
 
+
     /**
      * @brief Retrieves a single CRM topology config as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the CRM topology config.
      * @param version The version to fetch.
      * @return The CRM topology config at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
     get_crm_topology_config_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single CRM topology config by its id.
+     * @brief Retrieves a single CRM topology config by its primary key.
      *
-     * @param id The id of the CRM topology config.
      * @return The CRM topology config if found, std::nullopt otherwise.
      */
     std::optional<domain::crm_topology_config> get_crm_topology_config(const std::string& id);
@@ -113,15 +112,14 @@ public:
     save_crm_topology_configs(const std::vector<domain::crm_topology_config>& crm_topology_configs);
 
     /**
-     * @brief Deletes a CRM topology config by its id.
+     * @brief Deletes a CRM topology config by its primary key.
      *
-     * @param id The id of the CRM topology config to delete.
      * @throws std::exception on failure.
      */
     void delete_crm_topology_config(const std::string& id);
 
     /**
-     * @brief Deletes CRM topology configs by their ids.
+     * @brief Deletes CRM topology configs by their primary keys.
      */
     void delete_crm_topology_configs(const std::vector<std::string>& ids);
 

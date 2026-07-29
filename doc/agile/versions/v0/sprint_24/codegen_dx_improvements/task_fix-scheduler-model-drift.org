@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 6C8E2943-2B2C-4BA6-B510-FDB2C6AA4D88
+:END:
+#+title: Task: Fix scheduler entity model drift: update to latest format and regenerate
+#+description: Following the same pattern as the refdata sweep (task fix-refdata-model-drift): regenerate every ores.scheduler domain_entity and junction model against current codegen templates, updating any model found using an outdated format/convention before regenerating, and commit the resulting drift-free tree. compass build and rat must pass after.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Mirror [[id:A2EDDEDC-D5D3-469D-88C9-7CE00951CC72][Fix refdata entity model drift]] for ores.scheduler: regenerate every
+ores.scheduler =domain_entity= and =junction= model (=compass codegen entity
+list=) against current codegen templates. Where a model uses an
+outdated format/convention rather than the templates having simply
+moved on, update the model to the current convention before
+regenerating. Commit the resulting clean tree.
+
+Along the way, apply the same lessons learned fixing refdata's
+drift: check whether any entity's SQL/domain/messaging layer is
+explicitly hand-maintained (a doc comment flagging missing
+paste-block coverage) before doing a full regen -- prefer
+=--address=-scoped regen for anything so flagged; grep synthetic
+generators for hardcoded/fabricated soft-FK values (coding scheme
+codes, lookup-table codes) that don't match what a freshly-recreated
+default database actually seeds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- Every ores.scheduler =domain_entity= and =junction= model is regenerated via
+  =compass codegen entity generate= and shows zero diff on a second
+  regen (idempotent).
+- Any model found using an outdated format/convention is updated to
+  the current one before regenerating.
+- Any entity whose SQL/domain/messaging layer is hand-maintained
+  (flagged in its own model doc, mirroring =party='s) is excluded
+  from a full regen and only its safe facets (e.g. Qt) are
+  regenerated, same as =party='s treatment in the refdata task.
+- Synthetic generators for FK-referencing fields are checked against
+  actual seed SQL (the default =db recreate= chain, not optional
+  artefact/dataset scripts) and fixed if they fabricate values that
+  don't exist there.
+- =compass build= and full =rat= pass after the regenerated files are
+  committed.
+- No entity outside scheduler is touched.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -19,10 +19,21 @@ set(name "ores.scheduler.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "builder/job_definition_builder.cpp"
+    "messaging/registrar.cpp"
+    "repository/job_definition_entity.cpp"
+    "repository/job_definition_mapper.cpp"
+    "repository/job_definition_repository.cpp"
+    "repository/job_instance_mapper.cpp"
+    "repository/job_instance_repository.cpp"
+    "service/cron_scheduler.cpp"
+    "service/job_definition_service.cpp"
+    "service/mq_action_handler.cpp"
+    "service/nats_publish_action_handler.cpp"
+    "service/scheduler_loop.cpp"
+    "service/sql_action_handler.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

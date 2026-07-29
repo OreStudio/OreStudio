@@ -66,7 +66,8 @@ target_link_libraries(${lib_target_name}
         Qt6::Charts
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt.
-        ores.qt.lib)
+        ores.qt.lib
+        ores.marketdata.core.lib)
 
 install(TARGETS ${lib_target_name}
     LIBRARY DESTINATION bin

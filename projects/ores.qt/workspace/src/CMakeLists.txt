@@ -24,12 +24,24 @@ set(ORES_QT_WORKSPACE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "ClientWorkspaceModel.cpp"
+    "WorkspaceController.cpp"
+    "WorkspaceDetailDialog.cpp"
+    "WorkspaceHistoryDialog.cpp"
+    "WorkspaceMdiWindow.cpp"
+    "WorkspacePlugin.cpp"
+)
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_WORKSPACE_DIR}/include/*.hpp")
+set(HEADERS
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/ClientWorkspaceModel.hpp"
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/WorkspaceController.hpp"
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/WorkspaceDetailDialog.hpp"
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/WorkspaceHistoryDialog.hpp"
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/WorkspaceMdiWindow.hpp"
+    "${ORES_QT_WORKSPACE_DIR}/include/ores.qt/WorkspacePlugin.hpp"
+)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_WORKSPACE_DIR}/ui/*.ui")
 

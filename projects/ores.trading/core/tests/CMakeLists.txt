@@ -21,27 +21,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "main.cpp"
-    "repository_activity_type_repository_tests.cpp"
-    "repository_equity_accumulator_instrument_repository_tests.cpp"
-    "repository_equity_asian_option_instrument_repository_tests.cpp"
-    "repository_equity_barrier_option_instrument_repository_tests.cpp"
-    "repository_equity_digital_option_instrument_repository_tests.cpp"
-    "repository_equity_forward_instrument_repository_tests.cpp"
-    "repository_equity_option_instrument_repository_tests.cpp"
-    "repository_equity_position_instrument_repository_tests.cpp"
-    "repository_equity_swap_instrument_repository_tests.cpp"
-    "repository_equity_variance_swap_instrument_repository_tests.cpp"
-    "repository_fx_accumulator_instrument_repository_tests.cpp"
-    "repository_fx_asian_forward_instrument_repository_tests.cpp"
-    "repository_fx_barrier_option_instrument_repository_tests.cpp"
-    "repository_fx_digital_option_instrument_repository_tests.cpp"
-    "repository_fx_forward_instrument_repository_tests.cpp"
-    "repository_fx_vanilla_option_instrument_repository_tests.cpp"
-    "repository_fx_variance_swap_instrument_repository_tests.cpp"
-    "repository_trade_type_repository_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

@@ -19,43 +19,7 @@ set(name "ores.shell")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/command_args.cpp"
-    "app/command_feedback.cpp"
-    "app/commands/account_parties_commands.cpp"
-    "app/commands/accounts_commands.cpp"
-    "app/commands/bundles_commands.cpp"
-    "app/commands/change_reason_categories_commands.cpp"
-    "app/commands/change_reasons_commands.cpp"
-    "app/commands/connection_commands.cpp"
-    "app/commands/countries_commands.cpp"
-    "app/commands/crm_commands.cpp"
-    "app/commands/currencies_commands.cpp"
-    "app/commands/history_diff_renderer.cpp"
-    "app/commands/lei_commands.cpp"
-    "app/commands/marketdata_commands.cpp"
-    "app/commands/navigation_commands.cpp"
-    "app/commands/orgmode_commands.cpp"
-    "app/commands/parties_commands.cpp"
-    "app/commands/provision_commands.cpp"
-    "app/commands/rbac_commands.cpp"
-    "app/commands/reports_commands.cpp"
-    "app/commands/script_commands.cpp"
-    "app/commands/subscription_commands.cpp"
-    "app/commands/synthetic_commands.cpp"
-    "app/commands/tenants_commands.cpp"
-    "app/commands/variability_commands.cpp"
-    "app/commands/workflow_commands.cpp"
-    "app/host.cpp"
-    "app/pagination_context.cpp"
-    "app/repl.cpp"
-    "app/script_runner.cpp"
-    "config/login_options.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

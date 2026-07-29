@@ -8,7 +8,7 @@
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
 #+branch: feature/wire-codec-and-startup-config
-#+pr:
+#+pr: 1745
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -124,7 +124,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1745][#1745]] | [ores.nats] Build wire_codec abstraction and startup config |
 
 * Review
 

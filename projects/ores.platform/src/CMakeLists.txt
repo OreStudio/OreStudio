@@ -19,10 +19,15 @@ set(name "ores.platform")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "environment/environment.cpp"
+    "filesystem/file.cpp"
+    "net/network_info.cpp"
+    "process/executable.cpp"
+    "time/datetime.cpp"
+    "time/relative_time_formatter.cpp"
+    "time/time_utils.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

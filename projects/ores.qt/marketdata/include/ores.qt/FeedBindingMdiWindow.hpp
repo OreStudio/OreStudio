@@ -76,6 +76,9 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    // Hand-maintained (not codegen-generated -- see setupToolbar()/bindFromSynthetic()'s own
+    // comment): re-add after every `compass codegen entity generate feed_binding` regeneration.
+    void bindFromSynthetic();
 
 protected:
     void doReload() override;
@@ -110,6 +113,7 @@ private:
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
+    QAction* bindSyntheticAction_; // hand-maintained, see bindFromSynthetic()
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;

@@ -602,17 +602,22 @@ LoginResult ClientManager::testConnection(const std::string& host,
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
+        // Preserve whatever format the process is already using -- otherwise
+        // this throwaway connection (default json) would construct another
+        // ores::nats::service::client and silently reset the process-wide
+        // default_wire_codec() out from under the main session_.
+        opts.format = ores::nats::default_wire_codec().format();
         temp_session.connect(std::move(opts));
 
         // Attempt login
         iam::messaging::login_request request{.principal = username, .password = password};
-        const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(iam::messaging::login_request::nats_subject, json_body);
+        auto msg = temp_session.request(iam::messaging::login_request::nats_subject,
+                                        encode_request(request));
         temp_session.disconnect();
 
         const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
                                     msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::login_response>(data);
+        auto resp = decode_response<iam::messaging::login_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->error_message : "Invalid response";
             return {.success = false, .error_message = QString::fromStdString(err)};
@@ -638,17 +643,20 @@ SignupResult ClientManager::signup(const std::string& host,
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
+        // See testConnection() -- preserve the process-wide default so this
+        // throwaway connection doesn't clobber it.
+        opts.format = ores::nats::default_wire_codec().format();
         temp_session.connect(std::move(opts));
 
         iam::messaging::signup_request request{
             .principal = username, .password = password, .email = email};
-        const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(iam::messaging::signup_request::nats_subject, json_body);
+        auto msg = temp_session.request(iam::messaging::signup_request::nats_subject,
+                                        encode_request(request));
         temp_session.disconnect();
 
         const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
                                     msg.data.size());
-        auto resp = rfl::json::read<iam::messaging::signup_response>(data);
+        auto resp = decode_response<iam::messaging::signup_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->message : "Invalid response";
             return {.success = false, .error_message = QString::fromStdString(err)};
@@ -676,9 +684,9 @@ void ClientManager::subscribeToEvent(const std::string& subject) {
     try {
         auto sub = cl->subscribe(subject, [this, subject](nats::message msg) {
             try {
-                const std::string_view json(reinterpret_cast<const char*>(msg.data.data()),
-                                            msg.data.size());
-                auto result = rfl::json::read<eventing::domain::entity_change_event>(json);
+                auto result =
+                    ores::nats::default_wire_codec().decode<eventing::domain::entity_change_event>(
+                        msg.data);
                 if (!result) {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to parse event on '" << subject
                                               << "': " << result.error().what();

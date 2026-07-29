@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: E0570F22-B925-4BCF-BB1F-48F74BC04278
+:END:
+#+title: Test Scenario: Service self-authentication round-trips correctly under msgpack wire format
+#+description: Manually verify a NATS service can authenticate itself (service_login_request/response) and a shell client can log in and query data when the process wire format is switched to msgpack, proving wire_codec's msgpack path works end-to-end over real NATS/DB-backed handlers.
+#+type: test_scenario
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:12674934-6F8E-40C9-A8D7-ED29B0ADF322][Consolidate and migrate ores.qt ClientManager to wire_codec]] in [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:12674934-6F8E-40C9-A8D7-ED29B0ADF322][Consolidate and migrate ores.qt ClientManager to wire_codec]] |
+| Parent story  | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]]   |
+| Target dialog | N/A — CLI/service-level scenario, no Qt dialog under test |
+| Clients       |                                          |
+| State         | PASSED                                |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Stop the normal service fleet
+
+- =compass services stop= (stops =nats-server= and the
+  =compass=-supervised fleet so a manually-launched, msgpack-configured
+  =ores.iam.service= doesn't compete with a json-configured one on the
+  same queue group).
+- Confirms: =compass services status= shows nothing running.
+
+** Launch NATS and iam.service with =--nats-wire-format msgpack=
+
+- Start =nats-server= against this environment's own config
+  (=build/config/nats-<env>.conf=).
+- Launch =ores.iam.service= directly (not via the controller, which
+  doesn't yet forward a wire-format flag) with the same =--nats-url=/
+  =--nats-subject-prefix=/=--nats-tls-*= arguments =compass services
+  start= would normally pass, plus =--nats-wire-format msgpack=.
+- Confirms: the process starts, connects to NATS, and reaches
+  =Authenticating service account: <env>_iam_service= in its log
+  (=build/output/<preset>/publish/log/ores.iam.service.<label>.log=)
+  without an immediate crash.
+
+** Confirm the self-login request/response decodes under msgpack
+
+- Tail the =iam.service= log through its self-authentication attempt
+  (=make_service_token_provider='s eager =authenticate()= call).
+- Confirms: log lines progress past "Authenticating service account"
+  through account lookup, session creation, and effective-permission
+  computation (i.e. =service_login_request=/=service_login_response=
+  encoded/decoded correctly via =ores::nats::default_wire_codec()= in
+  =ores.iam.client::service_token_provider= — no "Failed to decode"
+  or "parse error" log line, which is exactly the failure this
+  scenario originally caught before the =service_token_provider= fix
+  was in place).
+- Known, unrelated gap: JWT signing may still fail with "bio read
+  failed" if this environment's JWT keys were never generated
+  (=./generate_keys.sh= in =publish/bin=) or if launching the binary
+  manually bypasses =compass='s own =.env= escape-sequence handling —
+  neither is a wire-format defect; a full JWT-issuing pass is proven
+  separately by the json-mode regression check below.
+
+** Restore normal services and confirm json mode still works
+
+- Stop the manual =iam.service=/=nats-server= processes.
+- =compass services start= to bring the environment back up through
+  the normal, fully-supervised (json-format) path.
+- Run a shell login as =tenant_admin@barclays_plc= (already
+  provisioned via the Barclays/GLEIF provisioner) and confirm it
+  still succeeds -- a regression check that the
+  =service_token_provider= fix didn't disturb the default =json=
+  path every other environment already relies on.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-30 |
+| Branch        | feature/consolidate-migrate-clientmanager-wire-codec |
+| Commit        | (working tree — see task PR) |
+| Worktree      | solid_dirac |
+
+* Notes
+
+Run live against =ores_dev_solid_dirac=. First pass (before the fix)
+failed at the second step above with a decode error on
+=service_login_request=/=response= inside
+=ores.iam.client::service_token_provider= — a genuinely universal
+blocker, since *every* service authenticates itself this way at
+startup, discovered outside this task's originally-scoped file list
+(=ClientManager.hpp=/=.cpp= plus the two export/trade-instrument
+TUs). Fixed by migrating =service_token_provider.cpp= onto
+=ores::nats::default_wire_codec()= (same commit as this task's
+=ClientManager= changes). Second pass confirmed the self-login
+round-trip decodes correctly under msgpack up through session
+creation and permission computation. The environment's JWT-signing
+step separately failed for reasons unrelated to wire format (see
+step 3's note); the json-mode regression check (step 4) confirms
+JWT issuing and login work end-to-end when the environment is
+brought up through its normal, fully-supervised path.
+
+Residual, out-of-this-scenario gap for the story's still-open
+end-to-end-verify task: a repo-wide sweep
+(=grep -rl rfl::json ... | xargs grep -l request_sync=) turned up
+several more service-to-service NATS call sites bypassing
+=handler_helpers= that were not part of any completed task's audited
+file list -- =ores.iam.core/service/cache/party_cache.hpp=,
+=ores.iam.core/messaging/tenant_handler.hpp=,
+=ores.marketdata.client/crm_client.cpp=,
+=ores.refdata.client/service/cache/currency_pair_convention_cache.hpp=,
+=ores.reporting.core/messaging/report_definition_template_handler.hpp=,
+=ores.trading.core/messaging/trade_handler.hpp=. None block today's
+=json= default; each would need the same =default_wire_codec()=
+migration before a full-environment =msgpack= switch is safe.

@@ -43,13 +43,8 @@ ClientManager::exportPortfolio(trading::messaging::export_portfolio_request requ
     using namespace trading::messaging;
     try {
         const auto raw = send_authenticated_request(
-            export_portfolio_request::nats_subject, rfl::json::write(request), timeout);
-        auto result = rfl::json::read<ResponseType>(raw);
-        if (!result) {
-            return std::unexpected(std::string("Failed to deserialize response: ") +
-                                   result.error().what());
-        }
-        return std::move(*result);
+            export_portfolio_request::nats_subject, encode_request(request), timeout);
+        return decode_response<ResponseType>(raw);
     } catch (const ores::nats::service::nats_connect_error&) {
         throw;
     } catch (const ores::nats::service::session_expired_error& e) {

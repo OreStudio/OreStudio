@@ -20,13 +20,13 @@
 #include "ores.qt/ShellMdiWindow.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include <QLabel>
 #include <QSplitter>
 #include <QTextCharFormat>
-#include <rfl/json.hpp>
 
 namespace ores::qt {
 
@@ -257,12 +257,12 @@ void ShellMdiWindow::start_shell() {
             try {
                 iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
                                                   .password = client_manager_->storedPassword()};
-                const auto json_body = rfl::json::write(req);
-                auto msg =
-                    shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
-                const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                            msg.data.size());
-                auto resp = rfl::json::read<iam::messaging::login_response>(data);
+                const auto& codec = ores::nats::default_wire_codec();
+                const auto body = codec.encode(req);
+                auto msg = shell_session_.request(
+                    iam::messaging::login_request::nats_subject,
+                    std::string_view(reinterpret_cast<const char*>(body.data()), body.size()));
+                auto resp = codec.decode<iam::messaging::login_response>(msg.data);
                 if (!resp || !resp->success) {
                     const std::string err = resp ? resp->error_message : "Invalid response";
                     auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));

@@ -24,6 +24,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
@@ -46,7 +47,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
-#include <rfl/json.hpp>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -428,8 +429,8 @@ public:
     /**
      * @brief Process a request that does not require authentication.
      *
-     * Serializes the request to JSON, sends it via NATS, and deserializes
-     * the response.
+     * Serializes the request via the process-wide default wire_codec, sends
+     * it via NATS, and deserializes the response the same way.
      *
      * @tparam RequestType Request type (must satisfy nats_request concept)
      * @param request The request to send
@@ -440,16 +441,10 @@ public:
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto json_body = rfl::json::write(request);
-            auto msg = session_.request(RequestType::nats_subject, json_body);
+            auto msg = session_.request(RequestType::nats_subject, encode_request(request));
             const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
                                         msg.data.size());
-            auto result = rfl::json::read<ResponseType>(data);
-            if (!result) {
-                return std::unexpected(std::string("Failed to deserialize response: ") +
-                                       result.error().what());
-            }
-            return std::move(*result);
+            return decode_response<ResponseType>(data);
         } catch (const ores::nats::service::nats_connect_error&) {
             throw; // Propagate so connect() can map to a user-visible message
         } catch (const std::exception& e) {
@@ -492,14 +487,8 @@ public:
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto raw =
-                send_authenticated_request(subject, rfl::json::write(request), timeout);
-            auto result = rfl::json::read<ResponseType>(raw);
-            if (!result) {
-                return std::unexpected(std::string("Failed to deserialize response: ") +
-                                       result.error().what());
-            }
-            return std::move(*result);
+            const auto raw = send_authenticated_request(subject, encode_request(request), timeout);
+            return decode_response<ResponseType>(raw);
         } catch (const ores::nats::service::nats_connect_error&) {
             throw; // Propagate so connect() can map to a user-visible message
         } catch (const ores::nats::service::session_expired_error& e) {
@@ -517,10 +506,12 @@ public:
      *
      * Concrete (non-template) wrapper around process_authenticated_request for
      * export_portfolio_request. Implemented in ClientManagerExportPortfolio.cpp
-     * so that rfl::json::read<export_portfolio_response> is instantiated in a
-     * dedicated translation unit — avoiding MSVC C1202 in large callers such as
-     * BookMdiWindow.cpp whose accumulated template context would otherwise be
-     * pushed over the limit by trade_instrument's rfl field-name Literals.
+     * so that decode_response<export_portfolio_response>() -- and the
+     * rfl::json/rfl::msgpack reflect-cpp instantiations it pulls in -- happens
+     * in a dedicated translation unit, avoiding MSVC C1202 in large callers
+     * such as BookMdiWindow.cpp whose accumulated template context would
+     * otherwise be pushed over the limit by trade_instrument's rfl
+     * field-name Literals.
      */
     std::expected<trading::messaging::export_portfolio_response, std::string>
     exportPortfolio(trading::messaging::export_portfolio_request request,
@@ -648,16 +639,9 @@ public:
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto raw = send_authenticated_request_with_workspace(RequestType::nats_subject,
-                                                                       rfl::json::write(request),
-                                                                       workspace_id_override,
-                                                                       timeout);
-            auto result = rfl::json::read<ResponseType>(raw);
-            if (!result) {
-                return std::unexpected(std::string("Failed to deserialize response: ") +
-                                       result.error().what());
-            }
-            return std::move(*result);
+            const auto raw = send_authenticated_request_with_workspace(
+                RequestType::nats_subject, encode_request(request), workspace_id_override, timeout);
+            return decode_response<ResponseType>(raw);
         } catch (const ores::nats::service::nats_connect_error&) {
             throw;
         } catch (const ores::nats::service::session_expired_error& e) {
@@ -689,16 +673,11 @@ public:
                 chain.push_back(wid.toStdString());
             const auto raw =
                 send_authenticated_request_with_workspace_ctx(RequestType::nats_subject,
-                                                              rfl::json::write(request),
+                                                              encode_request(request),
                                                               workspace_ctx.id.toStdString(),
                                                               std::move(chain),
                                                               timeout);
-            auto result = rfl::json::read<ResponseType>(raw);
-            if (!result) {
-                return std::unexpected(std::string("Failed to deserialize response: ") +
-                                       result.error().what());
-            }
-            return std::move(*result);
+            return decode_response<ResponseType>(raw);
         } catch (const ores::nats::service::nats_connect_error&) {
             throw;
         } catch (const ores::nats::service::session_expired_error& e) {
@@ -762,7 +741,36 @@ private:
     void onRefreshTimer();
 
     /**
-     * @brief Send an authenticated NATS request and return the raw JSON response.
+     * @brief Serializes @p request using the process-wide default wire_codec
+     * (see ores::nats::default_wire_codec()), returned as a std::string for
+     * interop with session_.request()/send_authenticated_request*'s existing
+     * std::string_view-based signatures -- std::string preserves embedded
+     * nulls, so this is safe for msgpack's binary output too, not just JSON.
+     */
+    template <typename T>
+    static std::string encode_request(const T& request) {
+        const auto bytes = ores::nats::default_wire_codec().encode(request);
+        return std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    }
+
+    /**
+     * @brief Deserializes @p raw (a raw NATS response payload) into T using
+     * the process-wide default wire_codec, returning std::unexpected with a
+     * formatted message on parse failure.
+     */
+    template <typename T>
+    static std::expected<T, std::string> decode_response(std::string_view raw) {
+        const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(raw.data()),
+                                               raw.size());
+        auto result = ores::nats::default_wire_codec().decode<T>(bytes);
+        if (!result)
+            return std::unexpected(std::string("Failed to deserialize response: ") +
+                                   result.error().what());
+        return std::move(*result);
+    }
+
+    /**
+     * @brief Send an authenticated NATS request and return the raw response.
      *
      * Handles auth check, correlation ID, and session scoping. Throws on any
      * error; does not deserialize — that is the caller's responsibility.

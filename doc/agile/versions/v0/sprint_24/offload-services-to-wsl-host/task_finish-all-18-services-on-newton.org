@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 82F1F41E-3BA4-45EA-AABE-30CA969E2A1A
+:END:
+#+title: Task: Get all 18 services running end-to-end on Newton
+#+description: The earlier Newton deploy task (PR #1747) closed with a partial-success caveat: only 2-6 of 18 services reached running phase, blocked by an apparent memory-corruption issue in process_supervisor. A subsequent investigation (PR #1752, on the split-per-service pilot) found and fixed a real, unrelated bug: rootless podman without --userns=keep-id silently fails to load NATS client certificates (EACCES from uid remapping), previously surfacing only as a generic Connection Closed. Redeploy to Newton with that fix plus --userns=keep-id and determine whether it resolves the remaining service failures there, or whether a distinct corruption bug still needs chasing.
+#+type: task
+#+level: s1
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
+#+owner: marco
+#+branch: feature/finish-all-18-services-on-newton
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Redeploy the containerized service runtime to Newton with everything
+learned since PR #1747 closed with a partial-success caveat: the
+~ores.nats/service/client.cpp~ cert-load-error fix, and
+~--userns=keep-id~ (already used by ~docker/run-pod.sh~ locally, but
+*not* used in the manual ~podman run --network=host~ commands used on
+Newton in that earlier session). Determine whether this resolves the
+remaining service failures there, or whether a genuinely distinct
+~process_supervisor~ corruption bug still needs chasing -- important
+caveat carried over from that session: on Newton the controller itself
+demonstrably succeeded at NATS connect and launched children, unlike
+the uid-remap failure reproduced locally, so this fix may not fully
+explain Newton's failures and this needs verifying empirically, not
+assumed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- All 18 supervised services reach phase ~running~ in
+  ~public.ores_controller_service_instances_tbl~ on Newton's Postgres,
+  reproducibly across at least 3 consecutive restarts (the earlier
+  session's results were unstable across runs).
+- The local Qt client connects to the services/DB running on Newton
+  over the network and is usable end-to-end.
+- If a distinct corruption bug remains after the uid-remap fix,
+  documented with a precise repro (not just "unstable"), and filed as
+  its own task rather than left as a vague caveat.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

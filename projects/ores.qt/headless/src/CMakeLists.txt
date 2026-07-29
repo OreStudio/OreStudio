@@ -20,9 +20,15 @@ set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 set(ORES_QT_HEADLESS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "EnvironmentMetadata.cpp"
+    "HierarchyModelBuilder.cpp"
+    "OrgDocRenderer.cpp"
+    "RepoFileFinder.cpp"
+    "TestScenarioResultsWriter.cpp"
+    "parse_swap_instruments.cpp"
+    "parse_trade_instrument.cpp"
+)
 
 add_library(${lib_target_name} SHARED ${files})
 

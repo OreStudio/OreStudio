@@ -19,26 +19,7 @@ set(name "ores.marketdata.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/feed_binding_json_io.cpp"
-    "domain/feed_binding_table.cpp"
-    "domain/feed_binding_table_io.cpp"
-    "domain/fx_spot_tick_json_io.cpp"
-    "domain/ir_curve_tick_json_io.cpp"
-    "domain/market_fixing_json_io.cpp"
-    "domain/market_fixing_table.cpp"
-    "domain/market_fixing_table_io.cpp"
-    "domain/market_observation_json_io.cpp"
-    "domain/market_observation_table.cpp"
-    "domain/market_observation_table_io.cpp"
-    "domain/market_series_json_io.cpp"
-    "domain/market_series_table.cpp"
-    "domain/market_series_table_io.cpp"
-    "generators/feed_binding_generator.cpp"
-    "generators/market_fixing_generator.cpp"
-    "generators/market_observation_generator.cpp"
-    "generators/market_series_generator.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

@@ -19,12 +19,7 @@ set(name "ores.marketdata.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "domain_market_fixing_tests.cpp"
-    "domain_market_observation_tests.cpp"
-    "domain_market_series_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

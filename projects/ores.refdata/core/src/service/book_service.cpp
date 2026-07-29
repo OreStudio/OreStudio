@@ -41,6 +41,7 @@ std::uint32_t book_service::count_books() {
     return repo_.get_total_book_count(ctx_);
 }
 
+
 std::vector<domain::book> book_service::list_books_by_parent_portfolio_id(
     const std::string& parent_portfolio_id, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing books by parent_portfolio_id: " << parent_portfolio_id;
@@ -67,12 +68,13 @@ std::vector<domain::book> book_service::list_books_by_parent_portfolio_id_as_of(
 
 std::optional<domain::book> book_service::get_book_at_version(const std::string& id,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book at version: " << id << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting book at version. " << "id: " << id
+                               << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::book> book_service::get_book(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting book: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting book. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -82,11 +84,11 @@ std::optional<domain::book> book_service::get_book(const std::string& id) {
 void book_service::save_book(const domain::book& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Book id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving book: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving book. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved book: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved book. " << "id: " << v.id;
 }
 
 void book_service::save_books(const std::vector<domain::book>& books) {
@@ -101,9 +103,9 @@ void book_service::save_books(const std::vector<domain::book>& books) {
 }
 
 void book_service::delete_book(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed book: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed book. " << "id: " << id;
 }
 
 void book_service::delete_books(const std::vector<std::string>& ids) {
@@ -111,7 +113,7 @@ void book_service::delete_books(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::book> book_service::get_book_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for book: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for book. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

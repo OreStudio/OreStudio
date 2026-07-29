@@ -38,7 +38,7 @@ std::string book_repository::sql() {
 }
 
 void book_repository::write(context ctx, const domain::book& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing book: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing book. " << "id: " << v.id;
     execute_write_query(ctx, book_mapper::map(v), lg(), "Writing book to database.");
 }
 
@@ -65,7 +65,7 @@ std::vector<domain::book> book_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::book> book_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest book. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest book. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
@@ -81,8 +81,9 @@ std::vector<domain::book> book_repository::read_latest(context ctx, const std::s
         "Reading latest book by id.");
 }
 
+
 std::vector<domain::book> book_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all book versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all book versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
@@ -99,7 +100,8 @@ std::vector<domain::book> book_repository::read_all(context ctx, const std::stri
 
 std::optional<domain::book>
 book_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading book at version. id: " << id << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading book at version. " << "id: " << id
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<book_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
@@ -197,7 +199,7 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
 
 
 void book_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();

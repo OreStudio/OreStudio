@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_types();
 
+
     /**
      * @brief Retrieves a single business unit type as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the business unit type.
      * @param version The version to fetch.
      * @return The business unit type at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                   std::uint32_t version);
 
     /**
-     * @brief Retrieves a single business unit type by its id.
+     * @brief Retrieves a single business unit type by its primary key.
      *
-     * @param id The id of the business unit type.
      * @return The business unit type if found, std::nullopt otherwise.
      */
     std::optional<domain::business_unit_type> get_type(const std::string& id);
@@ -111,15 +110,14 @@ public:
     void save_types(const std::vector<domain::business_unit_type>& types);
 
     /**
-     * @brief Deletes a business unit type by its id.
+     * @brief Deletes a business unit type by its primary key.
      *
-     * @param id The id of the business unit type to delete.
      * @throws std::exception on failure.
      */
     void delete_type(const std::string& id);
 
     /**
-     * @brief Deletes business unit types by their ids.
+     * @brief Deletes business unit types by their primary keys.
      */
     void delete_types(const std::vector<std::string>& ids);
 

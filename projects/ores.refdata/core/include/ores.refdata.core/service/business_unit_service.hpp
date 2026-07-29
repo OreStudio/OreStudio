@@ -81,7 +81,6 @@ public:
      * @brief Retrieves a single business unit as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the business unit.
      * @param version The version to fetch.
      * @return The business unit at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +88,8 @@ public:
                                                                       std::uint32_t version);
 
     /**
-     * @brief Retrieves a single business unit by its id.
+     * @brief Retrieves a single business unit by its primary key.
      *
-     * @param id The id of the business unit.
      * @return The business unit if found, std::nullopt otherwise.
      */
     std::optional<domain::business_unit> get_business_unit(const std::string& id);
@@ -113,15 +111,14 @@ public:
     void save_business_units(const std::vector<domain::business_unit>& business_units);
 
     /**
-     * @brief Deletes a business unit by its id.
+     * @brief Deletes a business unit by its primary key.
      *
-     * @param id The id of the business unit to delete.
      * @throws std::exception on failure.
      */
     void delete_business_unit(const std::string& id);
 
     /**
-     * @brief Deletes business units by their ids.
+     * @brief Deletes business units by their primary keys.
      */
     void delete_business_units(const std::vector<std::string>& ids);
 

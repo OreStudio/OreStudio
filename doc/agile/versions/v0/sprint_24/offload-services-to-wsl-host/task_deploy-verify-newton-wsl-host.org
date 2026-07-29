@@ -59,6 +59,39 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** Newton environment setup (root, one-time)
+
+Newton had no podman at all (Debian 11 bullseye ships podman 3.0.1 in
+its main repo, no extra apt sources needed). As root:
+
+#+begin_src sh
+apt update
+apt install -y podman
+loginctl enable-linger marco
+#+end_src
+
+Rootless remapping was already fine (~/etc/subuid~/~/etc/subgid~
+already had a ~marco:100000:65536~ entry from base provisioning).
+
+After enabling lingering, ~podman info~ still reported
+~cgroupManager: cgroupfs~ (fallback) instead of ~systemd~ -- rootless
+podman on this bullseye build needs a D-Bus session bus
+(~/run/user/<uid>/bus~) to talk to the user's ~systemd --user~ instance
+for transient-scope cgroup delegation. ~dbus-user-session~ was already
+installed, but its ~dbus.socket~ user unit hadn't been activated yet
+(first boot after enabling lingering). Fixed once, as marco:
+
+#+begin_src sh
+export XDG_RUNTIME_DIR=/run/user/1000
+systemctl --user start dbus.socket
+#+end_src
+
+~systemctl --user is-enabled dbus.socket~ reports ~static~ -- it is
+socket-activated as part of ~sockets.target~, which the user manager
+pulls in by default, so this should self-heal on future reboots without
+needing this manual start again. Worth re-checking after Newton's next
+reboot to confirm that assumption.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

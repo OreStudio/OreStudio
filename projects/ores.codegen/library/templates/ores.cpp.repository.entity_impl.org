@@ -22,6 +22,22 @@ The full template source. Edit here and re-tangle with
 =compass build --direct tangle_codegen_templates= to regenerate
 =library/templates/cpp_domain_type_entity.cpp.mustache=.
 
+The generated file's only job is to give the sqlgen entity struct a
+=std::ostream= =operator<<= — the entity itself is a plain aggregate
+with no out-of-class members, so this is the entire =.cpp=. It's a
+thin wrapper over =rfl::json::write=: printing an entity as JSON is
+more useful for debugging (logs, test failure output) than a
+hand-rolled field dump would be, and it comes for free once the
+struct is =rfl=-reflectable.
+
+The model has exactly two shapes that reach this template —
+=domain_entity= (a regular entity, keyed by =entity_singular=) and
+=junction= (a many-to-many link table, keyed by =name_singular=) —
+and they never co-occur for the same generated file, so the two
+=mustache= sections below are alternatives, not a sequence: exactly
+one of the two blocks below is emitted per generation run,
+distinguished only by the field name the operator is written against.
+
 #+begin_src mustache :tangle cpp_domain_type_entity.cpp.mustache
 {{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_repository.org. Edit the org source. }}
 {{{cpp_license}}}
@@ -42,6 +58,14 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v) {
 
 }
 {{/domain_entity}}
+#+end_src
+
+The junction case is the same operator, generated against the
+junction's own entity struct (=name_singular=) instead of a regular
+entity's (=entity_singular=) — the only difference between the two
+branches.
+
+#+begin_src mustache :tangle cpp_domain_type_entity.cpp.mustache
 {{#junction}}
 #include "ores.{{component_core}}/repository/{{name_singular}}_entity.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

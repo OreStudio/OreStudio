@@ -23,12 +23,27 @@ set(ORES_QT_WORKFLOW_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 # Qt code generation (MOC for Q_OBJECT)
 set(CMAKE_AUTOMOC ON)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "WorkflowController.cpp"
+    "WorkflowDefinitionMdiWindow.cpp"
+    "WorkflowInstanceDetailDialog.cpp"
+    "WorkflowMdiWindow.cpp"
+    "WorkflowPlugin.cpp"
+    "WorkflowStepLogWidget.cpp"
+    "WorkflowStepsWidget.cpp"
+)
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_WORKFLOW_DIR}/include/*.hpp")
+set(HEADERS
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowController.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowDefinitionMdiWindow.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowExport.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowInstanceDetailDialog.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowMdiWindow.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowPlugin.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowStepLogWidget.hpp"
+    "${ORES_QT_WORKFLOW_DIR}/include/ores.qt/WorkflowStepsWidget.hpp"
+)
 
 add_library(${lib_target_name} SHARED ${files} ${HEADERS})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_QT_WORKFLOW_LIBRARY)

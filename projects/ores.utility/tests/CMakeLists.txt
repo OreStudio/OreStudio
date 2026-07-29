@@ -20,20 +20,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "convert_base32_converter_tests.cpp"
-    "convert_base64_converter_tests.cpp"
-    "domain_hierarchy_tests.cpp"
-    "faker_internet_tests.cpp"
-    "faker_totp_tests.cpp"
-    "main.cpp"
-    "program_options_common_configuration_tests.cpp"
-    "string_converter_tests.cpp"
-    "string_short_code_generator_tests.cpp"
-    "tree_builder_tests.cpp"
-    "uuid_tenant_id_tests.cpp"
-    "uuid_uuid_v7_generator_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

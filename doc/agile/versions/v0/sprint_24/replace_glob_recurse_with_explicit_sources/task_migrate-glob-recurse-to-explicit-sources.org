@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: E1143C4A-5B25-4401-89D3-037AFE3102F3
+:END:
+#+title: Task: Migrate all CMakeLists.txt off GLOB_RECURSE to explicit, script-maintained source lists
+#+description: Write a regenerate_cmake_sources.py script that rewrites file(GLOB_RECURSE ...) blocks (plain .cpp lists and Qt AUTOMOC .hpp lists) into explicit, checked-in set() lists, matching the idiomatic CMake community pattern (explicit lists in the real build, external generator script to regenerate them, --check mode for CI drift detection). Run it across every component, one commit per component, updating the codegen archetype templates so newly scaffolded components start with explicit lists too.
+#+type: task
+#+level: s1
+#+filetags: :replace_glob_recurse_with_explicit_sources:sprint_24:v0:
+#+owner: marco
+#+branch: feature/migrate-glob-recurse-to-explicit-sources
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Eliminate every =file(GLOB_RECURSE ...)= source-discovery call from the
+build (165 CMakeLists.txt files across ~96 components at task start),
+replacing it with an explicit, checked-in list of files -- the
+idiomatic CMake approach per Kitware's own guidance, rather than
+mitigating the stale-configure problem with =CONFIGURE_DEPENDS= (already
+landed separately, and explicitly out of scope for this story to redo).
+
+Since these CMakeLists.txt files are themselves codegen-templated
+boilerplate rather than hand-maintained one-offs, hand-editing 165
+files is both impractical and error-prone. Instead: write a small,
+idempotent generator script that computes the explicit list from the
+filesystem and rewrites the =file(GLOB_RECURSE ...)= block in place,
+run it across every component (one commit per component so each is
+independently reviewable and revertable), and update the codegen
+archetype templates so newly scaffolded components start with
+explicit lists rather than regressing back to GLOB.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- Zero =file(GLOB_RECURSE ...)= calls remain under =projects/= (verified
+  by =grep -rl GLOB_RECURSE projects --include=CMakeLists.txt= being empty).
+- =projects/ores.codegen/scripts/regenerate_cmake_sources.py= exists,
+  handles both shapes in use (plain =.cpp= lists and Qt AUTOMOC =.hpp=
+  header lists), supports =--check= for CI drift detection, and is
+  idempotent (running it twice produces no further diff).
+- Every migrated component builds and its tests pass; a full
+  =compass build= (default preset) and =ctest= run is clean at the end.
+- The codegen archetype =.org= templates that scaffold
+  =src/CMakeLists.txt=/=tests/CMakeLists.txt= are updated to emit
+  explicit lists (or a clear placeholder plus the regenerate-script
+  instruction) instead of GLOB, so newly scaffolded components don't
+  reintroduce the pattern.
+- A recipe or short doc note explains the new convention: adding a
+  source file requires either editing the target's CMakeLists.txt
+  directly or re-running the regenerate script, no auto-discovery.
+- One commit per component in this task's own PR, so each conversion
+  is independently reviewable/revertable.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Write =regenerate_cmake_sources.py=: regex-match each
+   =file(GLOB_RECURSE ...)= call (with its optional seeding
+   =set(<var> "")=), resolve its base directory (either
+   =${CMAKE_CURRENT_SOURCE_DIR}= itself, or a component-root variable
+   of the form =set(VAR ${CMAKE_CURRENT_SOURCE_DIR}/..)= found earlier
+   in the same file -- the only two shapes this codebase uses), walk
+   the filesystem for matching files, and replace the call with an
+   explicit, sorted =set(<var> ...)= block. =--check= mode reports drift
+   without writing, for CI.
+2. Validate on two representative components first (a plain library,
+   =ores.diff=, and a Qt AUTOMOC component with both =.cpp= and =.hpp=
+   globs, =ores.qt/synthetic=) -- build both targets to confirm the
+   explicit lists behave identically to the GLOB they replace.
+3. Run the script across every remaining component, one component
+   (=src= + =tests= CMakeLists.txt together) per commit.
+4. Update the codegen archetype =.org= templates
+   (=ores.cmake.component.*.org=) to stop emitting GLOB.
+5. Add a recipe documenting the new convention.
+6. Full =compass build= + =ctest= at the end; fix any straggler.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

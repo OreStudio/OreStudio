@@ -8,7 +8,7 @@
 #+filetags: :cmake:build:tech-debt:sprint_24:v0:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Eliminate GLOB-based source discovery across the codebase so that a target's sou
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -38,6 +38,7 @@ Eliminate GLOB-based source discovery across the codebase so that a target's sou
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:E1143C4A-5B25-4401-89D3-037AFE3102F3][Migrate all CMakeLists.txt off GLOB_RECURSE to explicit, script-maintained source lists]] | STARTED | 2026-07-29 | | Write a regenerate_cmake_sources.py script that rewrites file(GLOB_RECURSE ...) blocks (plain .cpp lists and Qt AUTOMOC .hpp lists) into explicit, checked-in set() lists, matching the idiomatic CMake community pattern (explicit lists in the real build, external generator script to regenerate them, --check mode for CI drift detection). Run it across every component, one commit per component, updating the codegen archetype templates so newly scaffolded components start with explicit lists too. |
 
 * Decisions
 

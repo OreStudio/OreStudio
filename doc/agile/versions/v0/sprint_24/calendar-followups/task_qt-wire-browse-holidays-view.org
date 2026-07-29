@@ -20,7 +20,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give =calendar_date= (the =calendar_dates= junction) an
+=ores.cpp.qt= facet -- client model, read-only paginated list dialog,
+controller -- scoped to a =calendar_code= parent key via the
+=has_readonly_paginated_list=/=has_parent_scoped_list= knobs landed
+in [[id:1C673C53-9ED0-4C02-B856-EF031A1CC95F][the parent-scoping task]], and wire a "Browse Holidays" toolbar
+action on =CalendarDetailDialog= that opens it for the currently
+open calendar. Closes the deferred acceptance item from
+[[id:B2888D7D-9D16-48DE-AE4C-48FF610841AA][B2888D7D]].
 
 * Status
 
@@ -28,20 +35,134 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Investigation complete; ready to implement. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-27                               |
+| Next         | Add =** Qt= drawer to =ores.refdata.calendar_date.org=, regenerate, wire =CalendarDetailDialog=. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
--
+- [ ] =ores.refdata.calendar_date.org= gains a =** Qt= drawer (under
+  =* C++=, mirroring =ores.refdata.book.org='s =** Qt= drawer shape)
+  setting =:has_readonly_paginated_list: true=,
+  =:has_parent_scoped_list: true=, =:parent_key_field: calendar_code=,
+  =:parent_key_param: calendarCode= (or equivalent camelCase), plus
+  the required domain/protocol pointers
+  (=:get_request_class: refdata::messaging::get_calendar_dates_by_calendar_request=,
+  =:get_response_class: refdata::messaging::get_calendar_dates_by_calendar_response=,
+  =:get_message_type:=, =:collection_name: calendar_dates=,
+  =:item_var: calendar_date=, =:key_field:=, MDI chrome
+  (=:settings_group:=, =:window_title: Browse Holidays=, =:icon:=).
+- [ ] Generating =calendar_date='s =ores.cpp.qt= facet produces a
+  working =ClientCalendarDateModel=, =CalendarDateMdiWindow=, and
+  =CalendarDateController= -- read-only (no add/edit/delete/history,
+  per =has_readonly_paginated_list=), paginated, and scoped to the
+  parent =calendar_code= on every fetch (per
+  =has_parent_scoped_list=), per the design in =1C673C53=.
+- [ ] =RefdataPlugin= constructs a =CalendarDateController= alongside
+  the other refdata controllers (same constructor-injection pattern
+  as =calendarController_=/=businessCentreController_=).
+- [ ] =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
+  (same shape as the existing =regenerateAction_=/=onRegenerateClicked=
+  pair added in #1707), emitting a new
+  =browseHolidaysRequested(QString calendarCode)= signal instead of
+  reaching for a sibling controller directly (dialogs don't hold
+  controller references today -- see =calendarSaved=/=calendarDeleted=
+  for the existing signal-out pattern).
+- [ ] =CalendarController= relays that signal outward (mirroring
+  =BookController::showBookStatusesRequested='s cross-domain relay
+  shape), and =RefdataPlugin= connects it to
+  =calendarDateController_->openForParent(calendarCode)=.
+- [ ] Each row of the opened "Browse Holidays" list shows date,
+  is-business-day, and source, per =B2888D7D='s original acceptance
+  wording and the =calendar_date.org= "Table display" table.
+- [ ] Verified via =--diff= against an existing entity with the new
+  knobs left unset showing zero unrelated drift (same approach as
+  =1C673C53='s verification), plus a real, working generation for
+  =calendar_date= itself (first entity to actually exercise these
+  knobs end to end).
+- [ ] Full local build green; manual QA scenario opening "Browse
+  Holidays" for a seeded QuantLib calendar (e.g. TARGET) and
+  confirming paginated, read-only holiday rows.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation findings
+
+- =calendar_date='s service/protocol/nats-handler layers already
+  exist (landed in [[id:3E688A38-757A-4DE6-A7D2-9CA9B1EC2255][the extra_list_requests task]]):
+  =refdata::messaging::get_calendar_dates_by_calendar_request/response=
+  in =ores.refdata.api/messaging/calendar_date_protocol.hpp=, NATS
+  subject =refdata.v1.calendar_dates.list_by_calendar_code=, fields
+  =calendar_code=/=offset=/=limit= on the request,
+  =calendar_dates=/=total_available_count=/=success=/=message= on the
+  response -- this is the =get_request_class=/=get_response_class=
+  pair the new Qt facet points at.
+- =ores.refdata.calendar_date.org= (the junction model,
+  =projects/ores.refdata/modeling/ores.refdata.calendar_date.org=)
+  has =* Left= (=calendar_code=, already =:list_by: true=), =* Right=
+  (=date=), =* Columns= (=is_business_day=, =source=), =* SQL=,
+  =* Repository=, =* C++= (flags/includes/conventions/table
+  display) -- but *no* =** Qt= drawer yet. =calendar_date= will be
+  the first junction model to get one; no existing junction has a Qt
+  facet to copy verbatim, but =core.py= builds the =qt= dict
+  identically regardless of domain_entity vs. junction source, so the
+  domain_entity shape (=ores.refdata.book.org='s =** Qt= drawer,
+  under its own =* C++=) is the right template to follow.
+- =book.org='s =** Qt= drawer is the closest worked example of
+  =:parent_entity_singular:= (the *other*, unrelated parent-scoping
+  mechanism) -- useful for drawer *shape* (property syntax, table
+  layout for =*** Detail fields=), not for the new knobs themselves,
+  which have no existing worked example anywhere yet.
+- Cross-controller wiring in this codebase is centralised in
+  =RefdataPlugin.cpp=: every controller is constructed there and
+  handed =ctx_.main_window=/=ctx_.mdi_area=/=ctx_.client_manager=/etc,
+  then =connectControllerSignals()='d generically, plus bespoke
+  =connect()= calls for cross-domain relays (see
+  =bookController_->showBookStatusesRequested= being relayed to a
+  lookup-list open, right after construction). =CalendarDateController=
+  should be constructed the same way, right after
+  =calendarController_=.
+- Detail dialogs never hold sibling-controller pointers directly --
+  they emit signals and the owning controller (or, for cross-domain
+  cases, the plugin) does the connecting. Confirmed via
+  =CalendarDetailDialog='s existing =calendarSaved=/=calendarDeleted=
+  signals, wired up in =CalendarController.cpp='s =connect(detailDialog,
+  ...)= calls. The existing =regenerateAction_=/=onRegenerateClicked=
+  pair (added in PR #1707, =CalendarDetailDialog.cpp:96-133,500-565=)
+  is the exact toolbar-action shape to copy for "Browse Holidays": a
+  =QToolBar= action constructed in the dialog's setup, enabled state
+  tied to =!createMode_=, triggering a handler that (here) just emits
+  =browseHolidaysRequested(code())= rather than doing NATS work
+  itself (unlike =onRegenerateClicked=, which does call NATS directly
+  -- browsing needs no request of its own here since the whole point
+  is delegating to the generated =CalendarDateController=).
+- =EntityController::showListWindow()= remains the required zero-arg
+  pure-virtual override; =CalendarDateController::openForParent(const
+  QString& calendarCode)= (generated) is the real entry point,
+  exactly as designed in =1C673C53=.
+
+** Direction
+
+- Model first: add the =** Qt= drawer to =calendar_date.org=, then
+  =compass codegen entity generate calendar_date --address
+  ores.cpp.qt= to produce the six new files
+  (=ClientCalendarDateModel= header/impl, =CalendarDateMdiWindow=
+  header/impl, =CalendarDateController= header/impl).
+- Plug the generated controller into =RefdataPlugin= (construction +
+  =connectControllerSignals=), no special wiring needed there beyond
+  what every other controller gets.
+- Hand-write the =CalendarDetailDialog= toolbar action + signal +
+  =CalendarController= relay + =RefdataPlugin= connect, following the
+  =regenerateAction_= precedent exactly for the toolbar/action half,
+  and the =showBookStatusesRequested= precedent for the relay half.
+- =--diff= an unrelated existing entity (e.g. =currency= or =book=)
+  first to confirm the new knobs, left unset, produce zero drift --
+  same regression-guard pattern every prior task in this chain used.
 
 * Notes
 

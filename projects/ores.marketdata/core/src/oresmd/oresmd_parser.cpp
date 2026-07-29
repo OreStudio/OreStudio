@@ -117,7 +117,7 @@ void validate_fx(const query_params& qp) {
 
 void validate_ir(const query_params& qp) {
     reject_if_present("ir", "ccy", qp.ccy);
-    if (qp.metric && (!qp.type || *qp.type != "quote"))
+    if (qp.metric && parse_type(qp) != instrument_type::quote)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://ir/... 'metric' is only meaningful when type=quote."));
 }

@@ -219,6 +219,14 @@ TEST_CASE("reject_ir_metric_present_when_type_is_not_quote", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=libor&tenor=3m&metric=par_rate"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.type == instrument_type::quote);
+    REQUIRE(ir.metric == metric::par_rate);
+}
+
 TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&tenor=3m")),
                       oresmd_exception);

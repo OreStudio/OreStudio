@@ -82,11 +82,12 @@ struct feed_binding final {
      * COMMODITY, INFLATION, BOND, CROSS_ASSET), so FX-only and IR-only consumers of the binding
      * list (e.g. the FX Spot grid) can filter to the kind they actually expect. Set client-side at
      * bind time from the config being bound; soft FK to refdata.asset_class_code (same taxonomy
-     * already used by market_series.asset_class), not a hard FK. No default -- always set
-     * explicitly at bind time (mirrors market_series.asset_class, which has no default either); a
-     * migration script backfills pre-existing rows (all FX today) to fx.
+     * already used by market_series.asset_class), not a hard FK. Defaults to fx (all pre-existing
+     * bindings are FX today) so any write path that doesn't set it explicitly -- e.g. the generic
+     * Feed Bindings admin dialog, which has no field for it -- gets a safe value instead of an
+     * uninitialized one.
      */
-    domain::asset_class asset_class;
+    domain::asset_class asset_class = domain::asset_class::fx;
 
     /**
      * @brief When true the marketdata service maintains an active NATS subscription for this

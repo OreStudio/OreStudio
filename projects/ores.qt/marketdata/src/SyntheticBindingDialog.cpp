@@ -125,14 +125,27 @@ void SyntheticBindingDialog::loadConfigs() {
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
             configs.push_back({"FX", cfg.ore_key, cfg.source_name});
 
+        // IR is additive to the pre-existing FX-only flow: if the IR service is
+        // unavailable, log and keep going with the FX rows already fetched rather than
+        // failing the whole dialog closed (FX binding must keep working regardless of IR's
+        // availability).
         synthetic::messaging::get_ir_curve_generation_configs_request ir_req;
         auto ir_resp = cm->process_authenticated_request(ir_req);
-        if (!ir_resp)
-            return {false, {}};
-        for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
-            const auto ore_key =
-                cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name);
-            configs.push_back({"IR", ore_key, cfg.source_name});
+        if (!ir_resp) {
+            BOOST_LOG_SEV(lg(), warn) << "Could not load IR curve generation configs; "
+                                         "showing FX rows only.";
+        } else {
+            for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
+                // Deliberately just the qualifier (e.g. "USD/LIBOR-3M"), not FX's full
+                // SERIES_TYPE/METRIC/QUALIFIER shape (e.g. "FX/RATE/EUR/USD") -- harmless
+                // today since curve_feed_ingest_loop ingests IR ticks via its own wildcard
+                // subscription and never reads feed_binding.ore_key. See
+                // task_filter-feed-bindings-by-product-kind.org for giving feed_binding a
+                // real product-kind field, which should also settle this shape mismatch.
+                const auto ore_key = cfg.currency_code + "/" +
+                    strip_currency_prefix(cfg.currency_code, cfg.index_name);
+                configs.push_back({"IR", ore_key, cfg.source_name});
+            }
         }
 
         return {true, std::move(configs)};

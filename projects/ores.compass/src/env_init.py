@@ -101,7 +101,20 @@ def _read_env(env_file: Path) -> dict:
 # that range; existing environments keep their old ports via ORES_BASE_PORT
 # in .env until migrated by hand.
 BASE_PORT_START = 20000
-BASE_PORT_STEP = 1000
+# 200, not 1000. Only 7 offsets are actually used (0..6, see below), so a
+# 1000-wide slot spent 993 ports per environment on nothing and capped the
+# machine at 13 environments between BASE_PORT_START and
+# EPHEMERAL_PORT_FLOOR -- a real ceiling once the btrfs migration (story
+# 03831B51) dropped the disk cost of a built worktree to ~4G and made disk
+# stop being the limiting factor. 200 still leaves ~28x headroom over the 7
+# ports an environment claims, so a new offset can be added without
+# revisiting this, and yields 64 slots.
+#
+# Existing environments are unaffected: they keep their allocated base via
+# ORES_BASE_PORT in .env, and _scan_ports only picks a step-aligned base for
+# *new* ones. Bases already handed out on the old 1000 spacing (20000, 21000,
+# ...) simply remain claimed; the next allocation fills 20200.
+BASE_PORT_STEP = 200
 # Conservative floor for the kernel's ephemeral port range: the default is
 # usually 32768 (see /proc/sys/net/ipv4/ip_local_port_range), but some
 # systems start lower, so _scan_ports refuses to hand out a base_port whose

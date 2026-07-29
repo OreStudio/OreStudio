@@ -11,10 +11,55 @@ set(name "ores.iam.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain/account_contact_information_json_io.cpp"
+    "domain/account_contact_information_table.cpp"
+    "domain/account_contact_information_table_io.cpp"
+    "domain/account_json.cpp"
+    "domain/account_json_io.cpp"
+    "domain/account_party_json_io.cpp"
+    "domain/account_party_table.cpp"
+    "domain/account_party_table_io.cpp"
+    "domain/account_table.cpp"
+    "domain/account_table_io.cpp"
+    "domain/account_type_json_io.cpp"
+    "domain/account_version_table.cpp"
+    "domain/account_version_table_io.cpp"
+    "domain/login_info_json.cpp"
+    "domain/login_info_json_io.cpp"
+    "domain/login_info_table.cpp"
+    "domain/login_info_table_io.cpp"
+    "domain/permission_json.cpp"
+    "domain/permission_json_io.cpp"
+    "domain/permission_table.cpp"
+    "domain/permission_table_io.cpp"
+    "domain/role_json.cpp"
+    "domain/role_json_io.cpp"
+    "domain/role_table.cpp"
+    "domain/role_table_io.cpp"
+    "domain/session_json_io.cpp"
+    "domain/tenant_json_io.cpp"
+    "domain/tenant_status_json_io.cpp"
+    "domain/tenant_status_table.cpp"
+    "domain/tenant_status_table_io.cpp"
+    "domain/tenant_table.cpp"
+    "domain/tenant_table_io.cpp"
+    "domain/tenant_type_json_io.cpp"
+    "domain/tenant_type_table.cpp"
+    "domain/tenant_type_table_io.cpp"
+    "generators/account_contact_information_generator.cpp"
+    "generators/account_generator.cpp"
+    "generators/account_party_generator.cpp"
+    "generators/account_role_generator.cpp"
+    "generators/login_info_generator.cpp"
+    "generators/permission_generator.cpp"
+    "generators/role_generator.cpp"
+    "generators/session_generator.cpp"
+    "generators/tenant_generator.cpp"
+    "generators/tenant_status_generator.cpp"
+    "generators/tenant_type_generator.cpp"
+    "service/auth_session_service.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

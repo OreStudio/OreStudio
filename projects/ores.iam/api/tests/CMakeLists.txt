@@ -19,10 +19,20 @@ set(name "ores.iam.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain_account_role_tests.cpp"
+    "domain_account_tests.cpp"
+    "domain_logins_tests.cpp"
+    "domain_permission_tests.cpp"
+    "domain_role_permission_tests.cpp"
+    "domain_role_tests.cpp"
+    "domain_session_tests.cpp"
+    "eventing_role_events_tests.cpp"
+    "generators_account_generator_tests.cpp"
+    "generators_account_party_generator_tests.cpp"
+    "generators_tests.cpp"
+    "main.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

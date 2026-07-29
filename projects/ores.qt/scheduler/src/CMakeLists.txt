@@ -24,12 +24,36 @@ set(ORES_QT_SCHEDULER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "ClientJobDefinitionModel.cpp"
+    "ClientJobInstanceModel.cpp"
+    "JobDefinitionAuditDialog.cpp"
+    "JobDefinitionController.cpp"
+    "JobDefinitionDetailDialog.cpp"
+    "JobDefinitionMdiWindow.cpp"
+    "JobInstanceController.cpp"
+    "JobInstanceDetailDialog.cpp"
+    "JobInstanceMdiWindow.cpp"
+    "SchedulerMonitorController.cpp"
+    "SchedulerMonitorMdiWindow.cpp"
+    "SchedulerPlugin.cpp"
+)
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_SCHEDULER_DIR}/include/*.hpp")
+set(HEADERS
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/ClientJobDefinitionModel.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/ClientJobInstanceModel.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobDefinitionAuditDialog.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobDefinitionController.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobDefinitionDetailDialog.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobDefinitionMdiWindow.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobInstanceController.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobInstanceDetailDialog.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/JobInstanceMdiWindow.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/SchedulerMonitorController.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/SchedulerMonitorMdiWindow.hpp"
+    "${ORES_QT_SCHEDULER_DIR}/include/ores.qt/SchedulerPlugin.hpp"
+)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_SCHEDULER_DIR}/ui/*.ui")
 

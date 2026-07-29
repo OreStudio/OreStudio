@@ -40,7 +40,7 @@ then running data through =decompress_if_flagged()= before returning
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start the decompress task.              |
 | Last touched  | 2026-07-29                               |
 
 * Acceptance

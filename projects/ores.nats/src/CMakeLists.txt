@@ -22,15 +22,7 @@ set(name "ores.nats")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "config/nats_configuration.cpp"
-    "domain/compression.cpp"
-    "domain/correlation.cpp"
-    "service/client.cpp"
-    "service/jetstream_admin.cpp"
-    "service/jwks.cpp"
-    "service/nats_client.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

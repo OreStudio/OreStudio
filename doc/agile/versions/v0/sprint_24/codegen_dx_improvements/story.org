@@ -107,7 +107,7 @@ deliverable.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:22055006-D8BE-4E85-8E04-3D9D1B77A6ED][Downgrade address/model-type incompatibility to skip in --component mode]] | DONE | 2026-07-26 | 2026-07-27 | In generator.py, detect model-type/address incompatibility in --component mode and skip silently (DEBUG log) rather than emitting ERROR and incrementing the error counter. Keep ERROR for explicit single-entity invocations. |
-| [[id:BC628EAD-27D1-464E-9E51-33FB48AD2D75][Add --entity filter flag to codegen.sh regenerate]] | BACKLOG | | | Implement an --entity (or --entities) flag that restricts a --component run to the named entities only. No other entity files are generated or written to disk. |
+| [[id:BC628EAD-27D1-464E-9E51-33FB48AD2D75][Add --entity filter flag to codegen.sh regenerate]] | DONE | 2026-07-27 | 2026-07-29 | Implement an --entity (or --entities) flag that restricts a --component run to the named entities only. No other entity files are generated or written to disk. |
 | Task: Add entity group / tag system to model and codegen CLI | BACKLOG | | | Design and implement a group annotation (e.g. :group: in entity org files or a groups section in the component manifest). Expose --group flag on codegen.sh regenerate. Define the initial currency group in ores.refdata. |
 | [[id:15D464C7-3C99-4512-8A65-621EE3839DAA][Split every codegen template org into commented literate blocks]] | BACKLOG | | | For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free. |
 

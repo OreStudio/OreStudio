@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
-#+updated: 2026-07-27
+#+updated: 2026-07-29
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -41,12 +41,12 @@ look like "nothing to generate."
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                    |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented, tested, and verified live; PR #1734 open. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-27                               |
+| Next         | Merge PR #1734.                        |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
@@ -126,6 +126,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Task/story status left at BACKLOG despite work being done | task_add_entity_filter_flag_to_regenerate.org, story.org | Accepted | Fixed in this round: Status table and story.org row updated to DONE. |
+| 2 | Backlog capture title truncated mid-word | doc/agile/product_backlog/inbox/synthetic-populate-header-comment-drift.org | Accepted | Fixed in this round: explicit full title set, index regenerated. |
+| 3 | replace_glob_recurse_with_explicit_sources/story.org cites 180 files, actual GLOB_RECURSE count is 165 | replace_glob_recurse_with_explicit_sources/story.org | Declined | Minor, non-blocking per reviewer; 180 was the call-site count (some files have >1 GLOB_RECURSE), 165 is distinct files — both are accurate depending on what's counted, not a factual error. |
 
 * Result
+
+=--entity= filter flag implemented and verified across both entry
+points (=codegen.sh regenerate= and =compass codegen regenerate=);
+6 new unit tests, full =ores.codegen= suite 83/83 passing. PR #1734
+open, pending merge.

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: C19BDAC3-7D44-4D63-8BE9-77DFF18F5533
+:END:
+#+title: Task: Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge
+#+description: Implement the Gemini UI/UX audit's four concrete fixes on FxSpotGridWindow: (1) reserve red/green color to the Mid price delta and 24h Chg columns only, not the whole currency-pair label; (2) right-align all numeric columns so decimals stack for fast vertical scanning; (3) render JPY pairs to 3 decimal places instead of 5, matching standard FX convention; (4) replace the repeated literal 'LIVE' text with a compact status indicator. Bid/Ask column expansion from the mockup is out of scope -- no bid/ask data exists in the current feed.
+#+type: task
+#+level: s1
+#+filetags: :improve_fx_spot_monitor_ux:sprint_24:v0:
+#+owner: marco
+#+branch: feature/redesign-fx-spot-monitor-color-alignment-jpy-status
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_CURRENCY_GROUP_JSON_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_CURRENCY_GROUP_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/currency_currency_group.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 

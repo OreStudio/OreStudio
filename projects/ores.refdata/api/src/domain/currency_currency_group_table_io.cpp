@@ -18,15 +18,15 @@
  *
  */
 #include "ores.refdata.api/domain/currency_currency_group_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/currency_currency_group_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 
 namespace {
 
-void print_currency_currency_group_table(std::ostream& s, const std::vector<currency_currency_group>& v) {
+void print_currency_currency_group_table(std::ostream& s,
+                                         const std::vector<currency_currency_group>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

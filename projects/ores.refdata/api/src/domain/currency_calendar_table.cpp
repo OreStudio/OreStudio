@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/currency_calendar_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {
@@ -31,7 +30,8 @@ std::string convert_to_table(const std::vector<currency_calendar>& v) {
     table << fort::header << "Currency" << "Calendar" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& cc : v) {
-        table << cc.currency_iso_code << cc.calendar_code << cc.modified_by << cc.version << fort::endr;
+        table << cc.currency_iso_code << cc.calendar_code << cc.modified_by << cc.version
+              << fort::endr;
     }
     return table.to_string();
 }

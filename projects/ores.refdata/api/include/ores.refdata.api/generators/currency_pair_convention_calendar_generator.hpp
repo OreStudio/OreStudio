@@ -20,25 +20,25 @@
 #ifndef ORES_REFDATA_API_GENERATORS_CURRENCY_PAIR_CONVENTION_CALENDAR_GENERATOR_HPP
 #define ORES_REFDATA_API_GENERATORS_CURRENCY_PAIR_CONVENTION_CALENDAR_GENERATOR_HPP
 
-#include <vector>
-#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic currency_pair_convention_calendar.
  */
-ORES_REFDATA_API_EXPORT domain::currency_pair_convention_calendar generate_synthetic_currency_pair_convention_calendar(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::currency_pair_convention_calendar
+generate_synthetic_currency_pair_convention_calendar(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic currency_pair_convention_calendars.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency_pair_convention_calendar>
 generate_synthetic_currency_pair_convention_calendars(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                                      utility::generation::generation_context& ctx);
 
 }
 

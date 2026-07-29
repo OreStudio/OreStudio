@@ -33,8 +33,8 @@ namespace ores::refdata::domain {
  * the existing party_currencies pattern. A currency can belong to any
  * number of groups simultaneously (e.g. NOK: G11 *and* SCANDIES *and*
  * COMMODITY) — see
- * [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the design rationale
- * (replacing the original boolean is_g11 flag).
+ * [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]] for the
+ * design rationale (replacing the original boolean is_g11 flag).
  */
 struct currency_currency_group final {
     /**

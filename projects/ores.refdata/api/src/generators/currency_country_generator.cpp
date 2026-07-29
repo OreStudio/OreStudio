@@ -18,20 +18,16 @@
  *
  */
 #include "ores.refdata.api/generators/currency_country_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::currency_country generate_synthetic_currency_country(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::currency_country
+generate_synthetic_currency_country(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::currency_country r;
     r.version = 0;
@@ -47,8 +43,7 @@ domain::currency_country generate_synthetic_currency_country(
 }
 
 std::vector<domain::currency_country>
-generate_synthetic_currency_countries(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_currency_countries(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::currency_country> r;
     r.reserve(n);
     while (r.size() < n)

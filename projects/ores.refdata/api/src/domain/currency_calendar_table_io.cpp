@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.api/domain/currency_calendar_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/currency_calendar_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 

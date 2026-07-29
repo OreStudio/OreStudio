@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_PAIR_CONVENTION_CALENDAR_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_PAIR_CONVENTION_CALENDAR_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the currency_pair_convention_calendar objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<currency_pair_convention_calendar>& v);
+ORES_REFDATA_API_EXPORT std::ostream&
+operator<<(std::ostream& s, const std::vector<currency_pair_convention_calendar>& v);
 
 }
 

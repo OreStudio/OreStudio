@@ -38,8 +38,7 @@ std::string currency_pair_convention_repository::sql() {
 
 void currency_pair_convention_repository::write(context ctx,
                                                 const domain::currency_pair_convention& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention. "
-                               << "pair_code: " << v.pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency pair convention: " << v.pair_code;
     execute_write_query(ctx,
                         currency_pair_convention_mapper::map(v),
                         lg(),
@@ -73,8 +72,8 @@ currency_pair_convention_repository::read_latest(context ctx) {
 
 std::vector<domain::currency_pair_convention>
 currency_pair_convention_repository::read_latest(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair convention. "
-                               << "pair_code: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair convention. pair_code: "
+                               << pair_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -89,11 +88,10 @@ currency_pair_convention_repository::read_latest(context ctx, const std::string&
         "Reading latest currency pair convention by pair_code.");
 }
 
-
 std::vector<domain::currency_pair_convention>
 currency_pair_convention_repository::read_all(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair convention versions. "
-                               << "pair_code: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair convention versions. pair_code: "
+                               << pair_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_pair_convention_entity>> |
                        where("tenant_id"_c == tid && "pair_code"_c == pair_code) |
@@ -111,8 +109,8 @@ std::optional<domain::currency_pair_convention>
 currency_pair_convention_repository::read_at_version(context ctx,
                                                      const std::string& pair_code,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair convention at version. "
-                               << "pair_code: " << pair_code << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency pair convention at version. pair_code: "
+                               << pair_code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<currency_pair_convention_entity>> |
@@ -133,8 +131,7 @@ currency_pair_convention_repository::read_at_version(context ctx,
 }
 
 void currency_pair_convention_repository::remove(context ctx, const std::string& pair_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention. "
-                               << "pair_code: " << pair_code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention: " << pair_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

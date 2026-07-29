@@ -157,6 +157,7 @@ void IborIndexConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->fixingCalendarEdit->setReadOnly(readOnly);
     ui_->dayCountFractionEdit->setReadOnly(readOnly);
     ui_->businessDayConventionEdit->setReadOnly(readOnly);
+    ui_->endOfMonthEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }

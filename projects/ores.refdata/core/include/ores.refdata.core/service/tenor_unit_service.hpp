@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_units();
 
+
     /**
      * @brief Retrieves a single tenor unit as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the tenor unit.
      * @param version The version to fetch.
      * @return The tenor unit at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                           std::uint32_t version);
 
     /**
-     * @brief Retrieves a single tenor unit by its code.
+     * @brief Retrieves a single tenor unit by its primary key.
      *
-     * @param code The code of the tenor unit.
      * @return The tenor unit if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_unit> get_unit(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_units(const std::vector<domain::tenor_unit>& units);
 
     /**
-     * @brief Deletes a tenor unit by its code.
+     * @brief Deletes a tenor unit by its primary key.
      *
-     * @param code The code of the tenor unit to delete.
      * @throws std::exception on failure.
      */
     void delete_unit(const std::string& code);
 
     /**
-     * @brief Deletes tenor units by their codes.
+     * @brief Deletes tenor units by their primary keys.
      */
     void delete_units(const std::vector<std::string>& codes);
 

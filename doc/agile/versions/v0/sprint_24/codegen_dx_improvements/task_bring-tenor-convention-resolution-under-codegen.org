@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 5924E401-DFF6-4A81-8C2C-9FE98426BC17
+:END:
+#+title: Task: Bring tenor_convention_resolution's messaging layer under codegen
+#+description: tenor_convention_resolution (junction) has a hand-authored messaging layer (protocol/handler, read-only list) wired inline in registrar.cpp with the comment 'codegen doesn't generate a service/protocol/handler/sub-registrar for it'. Regenerating it via compass codegen entity generate produces a codegen-shaped handler with a different API (no .list(), different request-type naming) that breaks the hand-wired call site in registrar.cpp -- a real compile error, not a diff nit. Excluded from the fix-refdata-model-drift task until junction messaging codegen (see the junction-messaging-codegen-missing-service capture) covers this shape.
+#+type: task
+#+level: s1
+#+filetags: :codegen_dx_improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- tenor_convention_resolution regenerates cleanly (or the model documents why it stays hand-authored) without breaking registrar.cpp.
+- If brought under codegen, the hand-wired inline block in registrar.cpp is replaced by the generated sub-registrar, not left duplicated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

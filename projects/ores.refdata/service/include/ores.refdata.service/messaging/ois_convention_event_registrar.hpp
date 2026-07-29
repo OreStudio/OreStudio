@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_TABLE_HPP
-#define ORES_REFDATA_API_DOMAIN_OIS_CONVENTION_TABLE_HPP
+#ifndef ORES_REFDATA_SERVICE_MESSAGING_OIS_CONVENTION_EVENT_REGISTRAR_HPP
+#define ORES_REFDATA_SERVICE_MESSAGING_OIS_CONVENTION_EVENT_REGISTRAR_HPP
 
-#include "ores.refdata.api/domain/ois_convention.hpp"
-#include "ores.refdata.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::refdata::domain {
+namespace ores::refdata::service::messaging {
 
-/**
- * @brief Converts ois_conventions to the table format.
- */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<ois_convention>& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_ois_convention_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                      ores::eventing::service::event_bus& event_bus,
+                                      ores::nats::service::client& nats);
 
-}
+} // namespace ores::refdata::service::messaging
 
 #endif

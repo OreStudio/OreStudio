@@ -176,6 +176,7 @@ void OisConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->fixedPaymentConventionEdit->setReadOnly(readOnly);
     ui_->ruleEdit->setReadOnly(readOnly);
     ui_->paymentCalendarEdit->setReadOnly(readOnly);
+    ui_->endOfMonthEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }

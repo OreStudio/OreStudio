@@ -19,12 +19,7 @@ set(name "ores.workspace.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/workspace_json_io.cpp"
-    "domain/workspace_table.cpp"
-    "domain/workspace_table_io.cpp"
-    "generators/workspace_generator.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

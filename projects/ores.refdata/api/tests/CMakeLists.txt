@@ -19,16 +19,7 @@ set(name "ores.refdata.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "csv_exporter_tests.cpp"
-    "domain_currency_tests.cpp"
-    "domain_entity_type_tests.cpp"
-    "domain_tenor_resolution_tests.cpp"
-    "generators_country_generator_tests.cpp"
-    "generators_currency_generator_tests.cpp"
-    "generators_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

@@ -8,7 +8,7 @@
 #+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
 #+owner: marco
 #+branch: feature/add-compass-claude-systemd-scope
-#+pr:
+#+pr: 1730
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1730][#1730]] | [compass] Add compass claude, a systemd-scoped Claude Code launcher |
 
 * Review
 

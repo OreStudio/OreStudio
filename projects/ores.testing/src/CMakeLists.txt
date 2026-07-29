@@ -19,15 +19,7 @@ set(name "ores.testing")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "database_helper.cpp"
-    "database_lifecycle_listener.cpp"
-    "logging_listener.cpp"
-    "make_generation_context.cpp"
-    "project_root.cpp"
-    "test_database_manager.cpp"
-    "test_timeout_listener.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

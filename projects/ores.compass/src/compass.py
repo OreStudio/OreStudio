@@ -6422,6 +6422,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "client":
         import compass_services
         sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "claude":
+        import compass_claude
+        sys.exit(compass_claude.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "site":
@@ -6459,7 +6462,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "db", "sql", "services", "client", "test", "build",
+            "env", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen",
             "inbox", "next", "deferred", "discarded", "backlog",
@@ -6486,7 +6489,7 @@ def main():
         "  Build:     build\n"
         "  Codegen:   codegen generate | codegen regenerate | codegen entity\n"
         "  Site:      site\n"
-        "  Operate:   services, client\n"
+        "  Operate:   services, client, claude\n"
         "  Shell:     shell\n"
         "  Review:    review\n"
         "  PR:        pr\n"
@@ -6590,6 +6593,10 @@ def main():
     subparsers.add_parser("client",
                           help="Operate: Qt client lifecycle — start (detached; "
                                "--colour for parallel runs), stop")
+    subparsers.add_parser("claude",
+                          help="Launch Claude Code inside its own systemd "
+                               "--user scope, so oomd can kill it without "
+                               "taking Emacs down with it")
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")

@@ -1,0 +1,18 @@
+# Deployed by `compass claude` to ~/.config/systemd/user/app-claude.slice.
+# Source of truth: projects/ores.compass/src/systemd/app-claude.slice.
+#
+# Groups every Claude Code session as a sibling of e.g. emacs.service under
+# app.slice, instead of nesting inside whichever unit spawned it. That keeps
+# systemd-oomd's kill decisions scoped to the actual offender rather than the
+# whole parent unit (see compass_claude.py for the full rationale).
+#
+# No MemoryHigh/MemoryMax here — this is isolation only, not a resource cap;
+# accounting is left on so `systemd-cgtop --user` reports usage per session.
+
+[Unit]
+Description=Claude Code sessions (app-claude slice)
+Before=slices.target
+
+[Slice]
+MemoryAccounting=yes
+CPUAccounting=yes

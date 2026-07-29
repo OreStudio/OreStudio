@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 3FED1AAE-009B-4307-866C-E1C092EA17BE
+:END:
+#+title: How do I launch Claude Code inside a systemd scope?
+#+description: Use compass claude to launch Claude Code as a transient systemd --user scope under app-claude.slice, isolating it from systemd-oomd kills of the parent (e.g. Emacs).
+#+type: recipe
+#+level: cross
+#+filetags: :compass:recipe:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+=compass claude= wraps the =claude= binary so an interactive session
+never inherits its parent's cgroup — no manual =systemd-run= flags,
+no per-machine install step, since every checkout already carries
+compass.sh and the slice unit source.
+
+* Question
+
+How do I launch Claude Code so systemd-oomd can kill a runaway
+session without taking down the process that spawned it (e.g.
+Emacs)?
+
+* Answer
+
+#+begin_src sh :results verbatim
+./compass.sh claude
+#+end_src
+
+All arguments are forwarded verbatim, so this is a drop-in
+replacement for the =claude= binary:
+
+#+begin_src sh :results verbatim
+./compass.sh claude -p "some prompt"
+#+end_src
+
+On first use it deploys =app-claude.slice= to
+=~/.config/systemd/user/= (re-syncing it if the checked-in source
+changes) and runs a daemon-reload, then launches Claude as a
+transient =systemd-run --user --scope= under that slice. Every
+session gets its own scope (=claude-<pid>=), so it is a sibling of
+=emacs.service= under =app.slice= rather than a child — oomd
+evaluates it as its own kill candidate instead of taking out the
+whole parent unit. No =MemoryHigh=/=MemoryMax= is set: this is
+isolation only, the OOM killer still does its job at the finer
+per-scope granularity.
+
+When there is no usable user systemd manager (e.g. over ssh without
+lingering, some cron/container setups), it falls back to an
+unscoped =exec= rather than failing outright.
+
+This is opt-in and changes nothing for anyone invoking the regular
+=claude= binary directly.
+
+Inspect live accounting with:
+
+#+begin_src sh :results verbatim
+systemd-cgtop --user
+#+end_src
+
+* Script
+
+=compass claude= in
+[[proj:projects/ores.compass/src/compass_claude.py][=projects/ores.compass/src/compass_claude.py=]],
+dispatched from
+[[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]].
+The slice unit source is
+[[proj:projects/ores.compass/src/systemd/app-claude.slice][=projects/ores.compass/src/systemd/app-claude.slice=]].
+
+* Tested by
+
+Manual: =compass claude --version= deploys/refreshes the slice unit
+and execs =claude --version= inside a =claude-<pid>.scope= confirmed
+active via =systemctl --user list-units=; re-running is a no-op on
+the slice file (content compared, no redundant daemon-reload).
+
+* See also
+
+-

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 8780F2D4-E135-448B-995C-8C36302B74E4
+:END:
+#+title: Task: Add compass claude, a systemd-scoped Claude Code launcher
+#+description: New compass claude subcommand launches Claude Code as a transient systemd --user scope under a checked-in app-claude.slice, so systemd-oomd can kill a runaway session without taking its parent (e.g. Emacs) down with it. Deploys the slice unit on first use, no separate machine bootstrap needed.
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
+#+owner: marco
+#+branch: feature/add-compass-claude-systemd-scope
+#+pr: 1730
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a `compass claude` subcommand that launches Claude Code inside a
+transient systemd --user scope, so systemd-oomd evaluates a runaway
+session as its own kill candidate instead of taking down whatever
+process spawned it (e.g. Emacs, whose child processes otherwise
+inherit its cgroup).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
+| Now          | Implemented, verified locally, PR pending. |
+| Waiting on   | Nothing.                       |
+| Next         | Raise PR, trigger review.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- `compass claude` forwards all arguments to the real `claude` binary
+  unchanged.
+- On a host with a user systemd manager, the session runs as a
+  transient scope under `app-claude.slice`; the slice unit is
+  deployed to `~/.config/systemd/user/` automatically on first use
+  or when the checked-in source changes.
+- On a host without a usable user systemd manager, falls back to an
+  unscoped exec rather than failing.
+- Regular `claude` invocations are unaffected — this is opt-in.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1730][#1730]] | [compass] Add compass claude, a systemd-scoped Claude Code launcher |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 5115067494 | Add "claude" to `_KNOWN_COMMANDS` typo-suggestion list | compass.py | Fixed | Added; `compass cladue` now suggests `compass claude` |
+| 5115067758 | Stray leading backslash in slice unit | app-claude.slice | Fixed | Removed |
+| 5115068768 | Unused `project_root` parameter in `run()` | compass_claude.py | Declined | Matches the existing `run_client(argv, project_root)` call-site convention across compass_*.py modules |
+
+* Result
+
+Added `projects/ores.compass/src/compass_claude.py` (dispatched from
+`compass.py`) and the checked-in slice unit
+`projects/ores.compass/src/systemd/app-claude.slice`. Verified
+manually: `compass claude --version` deploys/refreshes the slice and
+runs inside an active `claude-<pid>.scope` (confirmed via `systemctl
+--user list-units`); re-running is a no-op on the slice file; `compass
+lint` passes. Documented in
+`doc/recipes/compass/how_do_i_launch_claude_in_a_systemd_scope.org`.
+Python-only change — no C++ build/ctest required.

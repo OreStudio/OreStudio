@@ -21,10 +21,7 @@ set(name "ores.eventing.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "service/entity_event_publisher.cpp"
-    "service/postgres_event_source.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

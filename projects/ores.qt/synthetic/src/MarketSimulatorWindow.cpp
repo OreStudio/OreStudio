@@ -42,6 +42,8 @@
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
+#include <QComboBox>
+#include <QDialogButtonBox>
 #include <QEvent>
 #include <QFont>
 #include <QFontDatabase>
@@ -49,7 +51,7 @@
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QIcon>
-#include <QInputDialog>
+#include <QLabel>
 #include <QMdiArea>
 #include <QMessageBox>
 #include <QPainter>
@@ -1876,23 +1878,40 @@ void MarketSimulatorWindow::updateToolbarState() {
     const bool isEditableNode =
         hasSelection && (type == NodeType::Collection || type == NodeType::Feed);
     const bool anySelected = !selectedFxPairs().empty() || !selectedIrCurves().empty();
+    // No selection at all *is* the root case (currentNodeType() returns Root
+    // when the tree's current index is invalid) -- onStartFeedClicked()
+    // routes it to promptThemeAndStart() rather than starting any feeds
+    // directly, so Start must stay enabled here or that path is unreachable
+    // from the toolbar/menu action.
+    const bool canStart = anySelected || !hasSelection;
 
     newFxRateAction_->setEnabled(hasFeedContext);
     newIrCurveAction_->setEnabled(hasFeedContext);
     editAction_->setEnabled(isEditableNode);
     deleteAction_->setEnabled(isEditableNode);
-    startFeedAction_->setEnabled(anySelected);
+    startFeedAction_->setEnabled(canStart);
     stopFeedAction_->setEnabled(anySelected);
 }
 
 std::vector<QStandardItem*> MarketSimulatorWindow::rootCollections() const {
+    // Collections are not direct children of the model's invisible root --
+    // buildTree() nests everything under one real "Synthetic" folder item
+    // (kind == "root", NodeType::Root), so this must recurse through the
+    // whole tree rather than only looking one level down. Folder-less
+    // fallback collections (see buildTree()'s "no backing folder row yet"
+    // branch) do sit directly under the invisible root, so a flat scan
+    // would find those but silently miss every real, folder-backed theme.
     std::vector<QStandardItem*> result;
-    auto* root = treeModel_->invisibleRootItem();
-    for (int i = 0; i < root->rowCount(); ++i) {
-        auto* child = root->child(i, 0);
-        if (static_cast<NodeType>(child->data(NodeTypeRole).toInt()) == NodeType::Collection)
-            result.push_back(child);
-    }
+    std::function<void(QStandardItem*)> visit = [&](QStandardItem* item) {
+        for (int i = 0; i < item->rowCount(); ++i) {
+            auto* child = item->child(i, 0);
+            if (static_cast<NodeType>(child->data(NodeTypeRole).toInt()) == NodeType::Collection)
+                result.push_back(child);
+            else
+                visit(child);
+        }
+    };
+    visit(treeModel_->invisibleRootItem());
     return result;
 }
 
@@ -1910,36 +1929,59 @@ void MarketSimulatorWindow::promptThemeAndStart() {
     if (names.isEmpty())
         return;
 
-    bool ok = false;
-    const QString chosen = QInputDialog::getItem(
-        this,
-        tr("Start"),
-        tr("Starting everything at once would run mutually-exclusive vintages "
-           "side by side. Which dataset would you like to start?"),
-        names,
-        0,
-        false,
-        &ok);
-    if (!ok || chosen.isEmpty())
-        return;
+    // A floating QDialog -- even Qt::NonModal -- still fights this app's
+    // single-top-level-window MDI shell for keyboard focus against sibling
+    // subwindows (e.g. the Scenario Runner a tester is taking notes in).
+    // Every other picker/editor in this window (openFxEditorForNew et al.)
+    // already sidesteps that by embedding as its own MDI subwindow instead
+    // of a floating dialog, so this follows the same pattern.
+    auto* picker = new QWidget(this);
+    auto* layout = new QVBoxLayout(picker);
+    layout->addWidget(new QLabel(tr("Which dataset would you like to start?"), picker));
+    auto* combo = new QComboBox(picker);
+    combo->addItems(names);
+    layout->addWidget(combo);
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, picker);
+    layout->addWidget(buttons);
 
-    for (auto* item : collections) {
-        if (item->text() != chosen)
-            continue;
-        const auto folderId = item->data(FolderIdRole).toString().toStdString();
-        if (!folderId.empty()) {
-            startFolderAsync(folderId);
-            auto curves = irCurvesUnderIndex(item->index());
-            curves.erase(std::remove_if(curves.begin(),
-                                        curves.end(),
-                                        [](const auto& ir) { return !ir.auto_start; }),
-                         curves.end());
-            startIrCurvesAsync(std::move(curves));
-        } else {
-            startPairsAsync(pairsUnderIndex(item->index()));
-            startIrCurvesAsync(irCurvesUnderIndex(item->index()));
+    auto* sub = new DetachableMdiSubWindow(window());
+    sub->setWidget(picker);
+    sub->setWindowTitle(tr("Start"));
+    sub->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(buttons, &QDialogButtonBox::accepted, this, [this, combo, sub]() {
+        const QString chosen = combo->currentText();
+        sub->close();
+        // Re-fetched rather than reusing the outer `collections` -- this
+        // picker is non-modal, so the tree can rebuild (e.g. via reload())
+        // while it's open, which would leave outer's QStandardItem*
+        // pointers dangling. Re-querying here is deliberate, not an
+        // oversight.
+        const auto collections = rootCollections();
+        for (auto* item : collections) {
+            if (item->text() != chosen)
+                continue;
+            const auto folderId = item->data(FolderIdRole).toString().toStdString();
+            if (!folderId.empty()) {
+                startFolderAsync(folderId);
+                auto curves = irCurvesUnderIndex(item->index());
+                curves.erase(std::remove_if(curves.begin(),
+                                            curves.end(),
+                                            [](const auto& ir) { return !ir.auto_start; }),
+                             curves.end());
+                startIrCurvesAsync(std::move(curves));
+            } else {
+                startPairsAsync(pairsUnderIndex(item->index()));
+                startIrCurvesAsync(irCurvesUnderIndex(item->index()));
+            }
         }
-    }
+    });
+    connect(buttons, &QDialogButtonBox::rejected, sub, &QWidget::close);
+
+    if (auto* mdi = window()->findChild<QMdiArea*>())
+        mdi->addSubWindow(sub);
+    sub->resize(picker->sizeHint());
+    sub->show();
 }
 
 void MarketSimulatorWindow::onStartFeedClicked() {

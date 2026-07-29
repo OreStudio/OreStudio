@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 27A81240-4458-4D33-9EE6-C623FE64D320
+:END:
+#+title: Task: Improve Market Simulator status icons: clearer running/stopped and an auto_start=false indicator
+#+description: The Market Simulator tree's blue/yellow icons for feed running/stopped state are not visually distinct enough -- surfaced during manual QA of the merged-theme Start-at-Root flow, where a curve (2026 Realistic PLN-POLONIA) that backend logs confirm started and is publishing ticks fine looked, at a glance, like it hadn't started. There is also no visual indicator at all for auto_start=false feeds (e.g. Uniform Volatility Demo's IR curves, which deliberately don't bulk-start due to tenor collisions with 2026 Realistic) -- a tester has no way to tell, without checking the config, why a feed didn't start along with its theme. Design and implement clearer status iconography for both dimensions.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Market Simulator tree currently conveys feed running/stopped
+state via blue and yellow icons that are not visually distinct
+enough at a glance -- surfaced during manual QA of the merged-theme
+Start-at-Root flow (see [[id:EE248D0B-5B61-409D-9966-DECC3B499D36][QA Market Simulator tree Start/Stop-at-Root
+for merged theme datasets]]), where 2026 Realistic's PLN-POLONIA curve
+looked, in the tree, like it had not started, even though backend
+logs confirmed it started cleanly and was publishing curve ticks
+throughout.
+
+Separately, there is no visual indicator at all for =auto_start =
+false= feeds (e.g. Uniform Volatility Demo's IR curves, which
+deliberately don't bulk-start with their theme because they share
+(currency_code, index_name) pairs with 2026 Realistic and would trip
+=curve_feed_controller='s tenor-collision check). A tester watching a
+theme start has no way to tell, from the tree alone, why one of its
+feeds didn't come up alongside the rest.
+
+Design and implement clearer status iconography covering both: an
+unambiguous running/stopped state, and a distinct marker for
+auto_start=false feeds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- A feed's running vs. stopped state is distinguishable at a glance
+  in the Market Simulator tree, without relying on colour alone
+  (colour-blind-safe: shape/icon difference, not just hue).
+- A feed with =auto_start = false= carries a distinct marker in the
+  tree, visible whether or not its theme is currently running.
+- Regression check: re-run the "Synthetic data themes" test scenario
+  ([[id:90B1018E-C019-4C75-B0EE-91284A1E1A75][Test Scenario: Synthetic data themes (2016 ORE Samples / 2026
+  Realistic / Uniform Volatility Demo) and the Start-at-Root theme
+  picker]]) and confirm every started feed's status is unambiguous
+  from the tree alone, with no need to cross-check service logs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

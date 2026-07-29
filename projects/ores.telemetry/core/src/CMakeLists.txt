@@ -19,10 +19,24 @@ set(name "ores.telemetry.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain/resource.cpp"
+    "domain/span.cpp"
+    "domain/span_context.cpp"
+    "domain/span_id.cpp"
+    "domain/telemetry_context.cpp"
+    "domain/trace_id.cpp"
+    "exporting/file_log_exporter.cpp"
+    "exporting/hybrid_log_exporter.cpp"
+    "exporting/telemetry_configuration.cpp"
+    "exporting/telemetry_options.cpp"
+    "exporting/upload_position_tracker.cpp"
+    "generators/span_id_generator.cpp"
+    "generators/trace_id_generator.cpp"
+    "log/database_sink_backend.cpp"
+    "log/lifecycle_manager.cpp"
+    "log/telemetry_sink_backend.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

@@ -8,7 +8,7 @@
 #+filetags: :replace_glob_recurse_with_explicit_sources:sprint_24:v0:
 #+owner: marco
 #+branch: feature/migrate-glob-recurse-to-explicit-sources
-#+pr:
+#+pr: 1751
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -160,7 +160,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1751][#1751]] | [cmake] Replace GLOB_RECURSE with explicit, codegen-generated source lists |
 
 * Review
 

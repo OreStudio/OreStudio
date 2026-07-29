@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_ZERO_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_CORE_SERVICE_ZERO_CONVENTION_SERVICE_HPP
+#define ORES_REFDATA_CORE_SERVICE_ZERO_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing zero conventions.
+ *
+ * Provides a higher-level interface for zero convention operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT zero_convention_service {
 private:
@@ -47,16 +52,79 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a zero_convention_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit zero_convention_service(context ctx);
 
-    std::vector<domain::zero_convention> list_zero_conventions();
+    /**
+     * @brief Lists zero conventions with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of zero conventions for the requested page.
+     */
+    std::vector<domain::zero_convention> list_zero_conventions(std::uint32_t offset,
+                                                               std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active zero conventions.
+     *
+     * @return Total number of active zero conventions.
+     */
+    std::uint32_t count_zero_conventions();
+
+
+    /**
+     * @brief Retrieves a single zero convention as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The zero convention at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::zero_convention> get_zero_convention_at_version(const std::string& id,
+                                                                          std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single zero convention by its primary key.
+     *
+     * @return The zero convention if found, std::nullopt otherwise.
+     */
     std::optional<domain::zero_convention> get_zero_convention(const std::string& id);
 
-    void save_zero_convention(const domain::zero_convention& v);
+    /**
+     * @brief Saves a zero convention (creates or updates).
+     *
+     * @param zero_convention The zero convention to save.
+     * @throws std::exception on failure.
+     */
+    void save_zero_convention(const domain::zero_convention& zero_convention);
 
-    void remove_zero_convention(const std::string& id);
+    /**
+     * @brief Saves a batch of zero conventions.
+     *
+     * @param zero_conventions The zero conventions to save.
+     * @throws std::exception on failure.
+     */
+    void save_zero_conventions(const std::vector<domain::zero_convention>& zero_conventions);
 
+    /**
+     * @brief Deletes a zero convention by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_zero_convention(const std::string& id);
+
+    /**
+     * @brief Deletes zero conventions by their primary keys.
+     */
+    void delete_zero_conventions(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a zero convention.
+     */
     std::vector<domain::zero_convention> get_zero_convention_history(const std::string& id);
 
 private:

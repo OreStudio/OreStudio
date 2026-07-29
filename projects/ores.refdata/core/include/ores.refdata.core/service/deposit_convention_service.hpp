@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_CORE_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
+#define ORES_REFDATA_CORE_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing deposit conventions.
+ *
+ * Provides a higher-level interface for deposit convention operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT deposit_convention_service {
 private:
@@ -47,16 +52,80 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a deposit_convention_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit deposit_convention_service(context ctx);
 
-    std::vector<domain::deposit_convention> list_deposit_conventions();
+    /**
+     * @brief Lists deposit conventions with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of deposit conventions for the requested page.
+     */
+    std::vector<domain::deposit_convention> list_deposit_conventions(std::uint32_t offset,
+                                                                     std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active deposit conventions.
+     *
+     * @return Total number of active deposit conventions.
+     */
+    std::uint32_t count_deposit_conventions();
+
+
+    /**
+     * @brief Retrieves a single deposit convention as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The deposit convention at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::deposit_convention>
+    get_deposit_convention_at_version(const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single deposit convention by its primary key.
+     *
+     * @return The deposit convention if found, std::nullopt otherwise.
+     */
     std::optional<domain::deposit_convention> get_deposit_convention(const std::string& id);
 
-    void save_deposit_convention(const domain::deposit_convention& v);
+    /**
+     * @brief Saves a deposit convention (creates or updates).
+     *
+     * @param deposit_convention The deposit convention to save.
+     * @throws std::exception on failure.
+     */
+    void save_deposit_convention(const domain::deposit_convention& deposit_convention);
 
-    void remove_deposit_convention(const std::string& id);
+    /**
+     * @brief Saves a batch of deposit conventions.
+     *
+     * @param deposit_conventions The deposit conventions to save.
+     * @throws std::exception on failure.
+     */
+    void
+    save_deposit_conventions(const std::vector<domain::deposit_convention>& deposit_conventions);
 
+    /**
+     * @brief Deletes a deposit convention by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_deposit_convention(const std::string& id);
+
+    /**
+     * @brief Deletes deposit conventions by their primary keys.
+     */
+    void delete_deposit_conventions(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a deposit convention.
+     */
     std::vector<domain::deposit_convention> get_deposit_convention_history(const std::string& id);
 
 private:

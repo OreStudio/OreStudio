@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_DOMAIN_SWAP_CONVENTION_JSON_IO_HPP
-#define ORES_REFDATA_DOMAIN_SWAP_CONVENTION_JSON_IO_HPP
+#ifndef ORES_REFDATA_API_DOMAIN_SWAP_CONVENTION_JSON_IO_HPP
+#define ORES_REFDATA_API_DOMAIN_SWAP_CONVENTION_JSON_IO_HPP
 
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/export.hpp"

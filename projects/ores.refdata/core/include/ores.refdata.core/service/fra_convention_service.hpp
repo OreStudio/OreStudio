@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_SERVICE_FRA_CONVENTION_SERVICE_HPP
-#define ORES_REFDATA_SERVICE_FRA_CONVENTION_SERVICE_HPP
+#ifndef ORES_REFDATA_CORE_SERVICE_FRA_CONVENTION_SERVICE_HPP
+#define ORES_REFDATA_CORE_SERVICE_FRA_CONVENTION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/fra_convention_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::refdata::service {
 
 /**
  * @brief Service for managing FRA conventions.
+ *
+ * Provides a higher-level interface for FRA convention operations,
+ * wrapping the underlying repository.
  */
 class ORES_REFDATA_CORE_EXPORT fra_convention_service {
 private:
@@ -47,16 +52,79 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a fra_convention_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit fra_convention_service(context ctx);
 
-    std::vector<domain::fra_convention> list_fra_conventions();
+    /**
+     * @brief Lists FRA conventions with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of FRA conventions for the requested page.
+     */
+    std::vector<domain::fra_convention> list_fra_conventions(std::uint32_t offset,
+                                                             std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active FRA conventions.
+     *
+     * @return Total number of active FRA conventions.
+     */
+    std::uint32_t count_fra_conventions();
+
+
+    /**
+     * @brief Retrieves a single FRA convention as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The FRA convention at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::fra_convention> get_fra_convention_at_version(const std::string& id,
+                                                                        std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single FRA convention by its primary key.
+     *
+     * @return The FRA convention if found, std::nullopt otherwise.
+     */
     std::optional<domain::fra_convention> get_fra_convention(const std::string& id);
 
-    void save_fra_convention(const domain::fra_convention& v);
+    /**
+     * @brief Saves a FRA convention (creates or updates).
+     *
+     * @param fra_convention The FRA convention to save.
+     * @throws std::exception on failure.
+     */
+    void save_fra_convention(const domain::fra_convention& fra_convention);
 
-    void remove_fra_convention(const std::string& id);
+    /**
+     * @brief Saves a batch of FRA conventions.
+     *
+     * @param fra_conventions The FRA conventions to save.
+     * @throws std::exception on failure.
+     */
+    void save_fra_conventions(const std::vector<domain::fra_convention>& fra_conventions);
 
+    /**
+     * @brief Deletes a FRA convention by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_fra_convention(const std::string& id);
+
+    /**
+     * @brief Deletes FRA conventions by their primary keys.
+     */
+    void delete_fra_conventions(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a FRA convention.
+     */
     std::vector<domain::fra_convention> get_fra_convention_history(const std::string& id);
 
 private:

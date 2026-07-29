@@ -170,6 +170,8 @@ void CdsConventionDetailDialog::setReadOnly(bool readOnly) {
     ui_->ruleEdit->setReadOnly(readOnly);
     ui_->dayCountFractionEdit->setReadOnly(readOnly);
     ui_->lastPeriodDayCountFractionEdit->setReadOnly(readOnly);
+    ui_->settlesAccrualEdit->setEnabled(!readOnly);
+    ui_->paysAtDefaultTimeEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }

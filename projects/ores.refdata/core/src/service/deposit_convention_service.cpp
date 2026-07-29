@@ -18,7 +18,11 @@
  *
  */
 #include "ores.refdata.core/service/deposit_convention_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -27,14 +31,29 @@ using namespace ores::logging;
 deposit_convention_service::deposit_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::deposit_convention> deposit_convention_service::list_deposit_conventions() {
+std::vector<domain::deposit_convention>
+deposit_convention_service::list_deposit_conventions(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all deposit conventions";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t deposit_convention_service::count_deposit_conventions() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total deposit conventions count";
+    return repo_.get_total_deposit_convention_count(ctx_);
+}
+
+
+std::optional<domain::deposit_convention>
+deposit_convention_service::get_deposit_convention_at_version(const std::string& id,
+                                                              std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting deposit convention at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::deposit_convention>
 deposit_convention_service::get_deposit_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting deposit convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting deposit convention. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -44,20 +63,39 @@ deposit_convention_service::get_deposit_convention(const std::string& id) {
 void deposit_convention_service::save_deposit_convention(const domain::deposit_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("Deposit Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving deposit convention: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved deposit convention: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving deposit convention. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved deposit convention. " << "id: " << v.id;
 }
 
-void deposit_convention_service::remove_deposit_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing deposit convention: " << id;
+void deposit_convention_service::save_deposit_conventions(
+    const std::vector<domain::deposit_convention>& deposit_conventions) {
+    for (const auto& e : deposit_conventions) {
+        if (e.id.empty())
+            throw std::invalid_argument("Deposit Convention id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << deposit_conventions.size() << " deposit conventions";
+    auto ts = deposit_conventions;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void deposit_convention_service::delete_deposit_convention(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing deposit convention. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed deposit convention: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed deposit convention. " << "id: " << id;
+}
+
+void deposit_convention_service::delete_deposit_conventions(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::deposit_convention>
 deposit_convention_service::get_deposit_convention_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for deposit convention: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for deposit convention. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

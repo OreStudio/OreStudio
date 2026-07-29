@@ -22,7 +22,6 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include <QDialog>
 #include <QPushButton>
 #include <QTableWidget>
@@ -32,11 +31,12 @@
 namespace ores::qt {
 
 /**
- * @brief Dialog that lists available synthetic FX configs and creates
- *        feed bindings for the ones the user selects.
+ * @brief Dialog that lists available synthetic FX and IR curve configs and
+ *        creates feed bindings for the ones the user selects.
  *
- * Queries the synthetic service for all fx_spot_generation_config records,
- * presents them in a checklist (ORE key + source name), and on confirmation
+ * Queries the synthetic service for all fx_spot_generation_config and
+ * ir_curve_generation_config records, presents them together in one
+ * checklist (Type + ORE key + source name), and on confirmation
  * bulk-creates save_feed_binding_request messages for each checked row.
  * Rows that already have a binding are pre-ticked and shown as such.
  */
@@ -70,9 +70,20 @@ private slots:
     void onSelectNoneClicked();
 
 private:
+    // FX's ore_key is a stored field, used as-is; an IR curve config has none -- its ore_key is
+    // computed the same way ir_curve_feed.cpp computes its own market_series qualifier
+    // (currency_code + "/" + stripped index_name). This struct is what lets the rest of the
+    // dialog (populateTable/createBindings) stay kind-agnostic instead of duplicating the whole
+    // pipeline per config type.
+    struct BindableConfig {
+        std::string kind; // "FX" or "IR", shown in the table's Type column
+        std::string ore_key;
+        std::string source_name;
+    };
+
     void loadConfigs();
-    void populateTable(const std::vector<synthetic::domain::fx_spot_generation_config>& configs);
-    void createBindings(const std::vector<synthetic::domain::fx_spot_generation_config>& selected);
+    void populateTable(const std::vector<BindableConfig>& configs);
+    void createBindings(const std::vector<BindableConfig>& selected);
 
     ClientManager* clientManager_;
     std::string username_;
@@ -81,7 +92,7 @@ private:
     QTableWidget* table_;
     QPushButton* createButton_;
 
-    std::vector<synthetic::domain::fx_spot_generation_config> configs_;
+    std::vector<BindableConfig> configs_;
     int bindingsCreated_{0};
 };
 

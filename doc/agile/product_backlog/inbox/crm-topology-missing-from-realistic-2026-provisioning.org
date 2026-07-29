@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8FE6EB3E-9220-4CB3-A707-2E4A4E43F691
+:END:
+#+title: Barclays Plc provisioning never seeds CRM topology (majors/minors/exotics) — Cross-Rates Matrix screen shows nothing
+#+description: After provisioning Barclays Plc via barclays_system_provision.ores (system bundle 'base' + party bundle 'synthetic_realistic_2026', which dispatches marketdata.fx_driver_rates_2026 and synthetic.themes.realistic_2026), the CRM Cross-Rates Matrix screen has no named CRMs to choose from except 'all', which opens blank. Root cause: refdata.crm_topology_bundles (the dataset that seeds the majors/exotics/scandies named CRMs, per projects/ores.sql/populate/refdata/refdata_crm_topology_bundles_populate.sql) is registered only as a member of the marketdata.reference_vintage_2016_02_05 bundle, not of the base/synthetic_realistic_2026 bundles used by current-day tenant/party provisioning. So any tenant provisioned against the 2026 realistic vintage (the now-default/recommended path) never gets CRM topology at all. Surfaced during manual QA of Task: Extend SyntheticBindingDialog to cover IR curve configs (IR Rates synthetic data story).
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:crm:marketdata:gap:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

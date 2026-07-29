@@ -26,27 +26,105 @@ Make calendar_date (and future read-only, parent-scoped junction datasets) gener
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Investigating the junction-vs-domain_entity context shape. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Extend org_loader.py/core.py so a junction's ** Qt drawer renders like a domain_entity's. |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- load_org_junction_model (org_loader.py) parses a junction model's ** Qt drawer the same way load_org_model does for domain_entity (properties, Detail fields / Columns (Qt model) sub-tables), producing a qt sub-dict.
-- The junction model gains entity_singular/entity_plural/entity_pascal-equivalent derived fields (from name_singular/name) so the ores.cpp.qt mustache templates render identically whether fed a domain_entity or a junction -- either by aliasing junction fields onto the same keys the domain_entity enrichment block in core.py expects, or by extending that enrichment block (core.py ~line 1706 onward) to also run for is_junction models with 'junction' in data.
-- core.py's generate_qt dispatch/enrichment (currently gated on is_domain_entity and 'domain_entity' in data) is extended to also handle is_junction and 'junction' in data with a 'qt' section present.
-- Regenerating calendar_date --address ores.cpp.qt produces correct, compilable output: real class names (ClientCalendarDateModel, CalendarDateController, CalendarDateMdiWindow), correct includes, correct macro guards -- matching the has_readonly_paginated_list/has_parent_scoped_list design from 1C673C53-8D... (Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list).
-- --diff against an existing domain_entity (e.g. currency, book) with ores.cpp.qt shows zero drift -- the domain_entity path must be byte-identical before and after this change.
-- Full local build green with the newly generated calendar_date Qt files compiling and linking.
+- [X] load_org_junction_model (org_loader.py) parses a junction model's ** Qt drawer the same way load_org_model does for domain_entity (properties, Detail fields / Columns (Qt model) sub-tables), producing a qt sub-dict.
+- [X] The junction model gains entity_singular/entity_plural/entity_pascal-equivalent derived fields (from name_singular/name) so the ores.cpp.qt mustache templates render identically whether fed a domain_entity or a junction -- either by aliasing junction fields onto the same keys the domain_entity enrichment block in core.py expects, or by extending that enrichment block (core.py ~line 1706 onward) to also run for is_junction models with 'junction' in data.
+- [X] core.py's generate_qt dispatch/enrichment (currently gated on is_domain_entity and 'domain_entity' in data) is extended to also handle is_junction and 'junction' in data with a 'qt' section present.
+- [X] Regenerating calendar_date --address ores.cpp.qt produces correct, compilable output: real class names (ClientCalendarDateModel, CalendarDateController, CalendarDateMdiWindow), correct includes, correct macro guards -- matching the has_readonly_paginated_list/has_parent_scoped_list design from 1C673C53 (Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list).
+- [X] --diff against an existing domain_entity (e.g. currency, book) with ores.cpp.qt shows zero drift -- the domain_entity path must be byte-identical before and after this change.
+- [X] Full local build green with the newly generated calendar_date Qt files compiling and linking.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation
+
+Read the =ores.cpp.qt= mustache templates directly to inventory every
+=domain_entity.*= (non-=.qt.=) field they reference:
+=component=, =component_include=, =entity_pascal=,
+=entity_pascal_short=, =entity_pascal_short_plural=, =entity_plural=,
+=entity_plural_words=, =entity_singular=, =entity_singular_words=,
+=entity_snake=, =entity_title=, =entity_upper=,
+=generator_facet_name=, =primary_key=, =repository= -- a much
+smaller surface than the full domain_entity enrichment block in
+=core.py= (~1700-2900) computes. =primary_key=/=generator_facet_name=
+turned out to only be referenced inside sections already gated
+behind =has_readonly_paginated_list= being false, or inside the
+detail-dialog archetypes (disabled for =calendar_date= via the
+=:ores.cpp.qt.detail_dialog_*.enabled: false= overrides from the
+prior task) -- so neither needed aliasing.
+
+** Direction taken
+
+- Extracted the existing =** Qt= drawer parser (properties + Detail
+  fields / Columns (Qt model) / Icon columns / Setting-gated actions
+  / Related entity shortcuts) out of =org_document_to_model= into a
+  standalone =_parse_qt_drawer()= function in =org_loader.py=, then
+  called it from both the domain_entity path (unchanged behaviour)
+  and a new =** Qt=-drawer branch in =load_org_junction_model()=.
+- In that same junction branch, derived the =entity_singular=/
+  =entity_plural=/=entity_pascal=/... family directly onto the
+  junction dict from =name_singular=/=name=/=name_title=, and
+  aliased =repository.entity_plural_short=/etc. from the junction's
+  own =repository.name_short=/=name_singular_short=/... naming --
+  only when a =** Qt= drawer is actually present, so a junction with
+  no Qt facet is untouched.
+- In =core.py=, right after the existing =is_junction= enrichment
+  block finishes (component_include derivation etc.), added: if
+  =generate_qt= and the junction has a =qt= key, alias
+  =data['domain_entity'] = junction= -- the *same* dict object, now
+  carrying every field the templates need. No separate enrichment
+  pass was needed; the domain_entity-only block (SQL table
+  projection, csv/xml, version-nav, ...) never runs for a junction,
+  since =is_domain_entity= stays false throughout.
+- Iteratively regenerated =calendar_date --address ores.cpp.qt= and
+  fixed what broke, each time re-verifying =--diff= against
+  =currency=/=book= showed zero drift:
+  1. Empty =enum Column { , , , ColumnCount }= -- my =calendar_date.org=
+     Qt drawer's =*** Columns (Qt model)= table used the wrong column
+     headers (=field=/=label=/=type= instead of the required
+     =enum_name=/=field=/=header=/=type=/=width=, discovered by
+     comparing against =book.org='s worked example). Fixed the model,
+     not the loader.
+  2. =RecencyTracker= key extractor tried
+     =return e.date;= where =e.date= is a
+     =std::chrono::year_month_day=, not a =std::string= -- the
+     generic =key_field= mechanism assumes a string-like key. Set the
+     existing but previously-unused =:key_to_string_prefix:=/
+     =:key_to_string_suffix:= Qt-drawer properties to
+     =ores::platform::time::datetime::to_iso8601_date(...)=.
+  3. Unconditional =#include "{{Entity}}DetailDialog.hpp"= /
+     ="ores.qt/HistoryDialog.hpp"= in =cpp_qt_controller.cpp.mustache=
+     -- a real template bug, not a junction-specific one: any
+     =has_readonly_paginated_list= entity (including a hypothetical
+     domain_entity one) would hit this, it just never compiled
+     end-to-end before now since no entity had actually exercised the
+     knob with a real build. Wrapped both includes in
+     =domain_entity.qt.has_readonly_paginated_list= guard.
+  4. =BOOST_LOG_SEV(...) << calendarCode= (a =QString=) in
+     =showListWindow(const QString&)= -- boost::log's ostream has no
+     =operator<<= for =QString=. Same root cause as #3: a real
+     template bug from the parent-scoping task
+     ([[id:1C673C53-9ED0-4C02-B856-EF031A1CC95F][1C673C53]]), only reachable once something actually compiled
+     against =has_parent_scoped_list=. Added =.toStdString()=.
+- Both template fixes (#3, #4) were made in the =.org= source and
+  re-tangled via =compass build --direct tangle_codegen_templates=,
+  never hand-edited the =.mustache= output directly.
+- Final verification: =--diff= against =currency=/=book= (zero
+  drift, confirming the domain_entity path is untouched), full local
+  build (=compass build --preset linux-clang-debug-make=, exit 0),
+  full =ctest --preset linux-clang-debug-make= (74/74 passed).
 
 * Notes
 
@@ -74,3 +152,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Junction models can now render through the =ores.cpp.qt= facet.
+=org_loader.py= gained a shared =_parse_qt_drawer()= (factored out of
+the domain_entity path, unchanged behaviour there) and a new
+=** Qt=-drawer branch in =load_org_junction_model()= that derives the
+=entity_singular=/=entity_plural=/=entity_pascal=/... family and
+aliases =repository.entity_plural_short=/etc. from the junction's own
+naming -- only when a Qt drawer is present. =core.py= aliases the
+fully-enriched junction dict as =data['domain_entity']= for
+Qt-targeted generation, reusing the existing render path with no
+separate enrichment pass.
+
+Along the way, actually compiling =calendar_date='s generated Qt
+facet (the first entity ever to exercise
+=has_readonly_paginated_list=/=has_parent_scoped_list= end to end)
+surfaced two real, pre-existing template bugs from the parent-scoping
+task, unrelated to junction support itself: an unconditional
+=#include= of the (correctly absent, for a read-only list)
+=DetailDialog=/=HistoryDialog= headers, and a =QString= streamed
+straight into =BOOST_LOG_SEV= with no =operator<<=. Both fixed in the
+=.org= template source and re-tangled.
+
+=calendar_date --address ores.cpp.qt= now generates working
+=ClientCalendarDateModel=, =CalendarDateController=,
+=CalendarDateMdiWindow= (header+impl each) -- correct class names,
+includes, macro guards, a working =RecencyTracker= key extractor
+(dates converted via =to_iso8601_date=), read-only/no-CRUD wiring,
+and parent-scoped pagination.
+
+*Verification*: =--diff= against =currency=/=book= (=ores.cpp.qt=)
+shows zero drift throughout every iteration. Full local build
+(=compass build --preset linux-clang-debug-make=) exits 0, including
+the newly generated =calendar_date= Qt files compiling and linking
+into =ores.qt.refdata.lib=. Full =ctest --preset
+linux-clang-debug-make= run: 74/74 tests passed.
+
+The generated =calendar_date= Qt files themselves are not yet wired
+into any controller/plugin or UI action -- that's
+[[id:F081079A-312E-46C5-91AB-2C83310DA8F0][the browse-holidays task]], now unblocked.

@@ -2994,6 +2994,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for key, value in junction['repository'].items():
                 junction[key] = value
         data['junction'] = junction
+        # A junction with a ** Qt drawer renders through the ores.cpp.qt
+        # facet exactly like a domain_entity: org_loader.py's
+        # load_org_junction_model already aliased the entity_singular/
+        # entity_plural/entity_pascal/... family (and repository.
+        # entity_plural_short) onto this same dict when it parsed the
+        # drawer, so the (already fully-enriched, component_include and
+        # all) junction dict can stand in for 'domain_entity' as-is --
+        # no separate enrichment pass needed, the domain_entity-only
+        # block above never runs for a junction model.
+        if generate_qt and 'qt' in junction:
+            data['domain_entity'] = junction
 
     # Special processing for field-group models
     if is_field_group and isinstance(model, dict) and 'field_group' in model:

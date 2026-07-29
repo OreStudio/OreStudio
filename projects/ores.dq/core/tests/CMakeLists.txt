@@ -20,10 +20,24 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "generators_tests.cpp"
+    "main.cpp"
+    "repository_catalog_repository_tests.cpp"
+    "repository_change_reason_category_repository_tests.cpp"
+    "repository_change_reason_repository_tests.cpp"
+    "repository_coding_scheme_authority_type_repository_tests.cpp"
+    "repository_coding_scheme_repository_tests.cpp"
+    "repository_data_domain_repository_tests.cpp"
+    "repository_dataset_bundle_member_repository_tests.cpp"
+    "repository_dataset_bundle_repository_tests.cpp"
+    "repository_dataset_repository_tests.cpp"
+    "repository_methodology_repository_tests.cpp"
+    "repository_nature_dimension_repository_tests.cpp"
+    "repository_origin_dimension_repository_tests.cpp"
+    "repository_subject_area_repository_tests.cpp"
+    "repository_treatment_dimension_repository_tests.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

@@ -20,6 +20,17 @@ RUN strip --strip-debug /src/bin/ores.*.service /src/lib/libores.*.so*
 # time.
 RUN mkdir -p /src/log /src/run && chmod 777 /src/log /src/run
 
+# Chainguard glibc-dynamic has no shell to `ln -s` with, so the entrypoint
+# symlink is created here instead, where the real binary already exists --
+# relative, so it resolves identically once COPY'd into /app/bin/ below.
+ARG SERVICE_NAME=ores.controller.service
+# Fail the build loudly if SERVICE_NAME and stage-runtime.sh's --service
+# disagree (or --service wasn't used), rather than shipping a dangling
+# symlink that only fails once the container actually starts.
+RUN test -f "/src/bin/${SERVICE_NAME}" || \
+    (echo "SERVICE_NAME=${SERVICE_NAME} was not staged -- check stage-runtime.sh --service" >&2; exit 1)
+RUN ln -s "./${SERVICE_NAME}" /src/bin/entrypoint
+
 FROM cgr.dev/chainguard/glibc-dynamic:latest
 
 WORKDIR /app
@@ -32,4 +43,4 @@ COPY --from=strip /src/run/ /app/run/
 ENV LD_LIBRARY_PATH=/app/lib
 WORKDIR /app/bin
 
-ENTRYPOINT ["./ores.controller.service"]
+ENTRYPOINT ["./entrypoint"]

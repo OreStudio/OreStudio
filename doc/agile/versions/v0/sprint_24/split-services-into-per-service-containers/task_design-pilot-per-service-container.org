@@ -1,0 +1,359 @@
+:PROPERTIES:
+:ID: 9E08056D-DEC1-43E3-803E-03E5F9808AD5
+:END:
+#+title: Task: Design the per-service container architecture and pilot it with one service
+#+description: Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17.
+#+type: task
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch: feature/design-pilot-per-service-container
+#+pr: 1752
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Design how the control-plane responsibilities ~process_supervisor~
+currently owns -- dependency-ordered startup, readiness gating
+(~wait_for_log_ready~), and DB-backed ~service_instance~/phase tracking
+-- move to the orchestration layer (podman pod/compose init containers
+and dependency ordering in the pod spec) once each service is its own
+container's PID 1, rather than a process the controller ~exec~'s and
+babysits directly. Prove the design end-to-end on one real service
+before rolling out to the remaining 17: IAM is the natural pilot, since
+it's the one dependency every other service already waits on.
+
+This design should also account for the apparent memory-corruption
+issue found while deploying to Newton in the sibling WSL-offload story
+(PR #1747): if that corruption is specific to the single-container
+process-supervisor's in-process child bookkeeping, splitting into one
+container per service may sidestep it entirely; if it reproduces here
+too, it's a separate, real bug worth its own task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- A written design covering: how dependency order and readiness
+  gating are expressed at the orchestration layer instead of in
+  ~process_supervisor~; whether/how the DB-backed
+  ~service_instance~/phase tracking is kept, moved, or dropped; and
+  what a per-service container image looks like (one shared image
+  parameterised by entrypoint args, vs. 18 separate images).
+- IAM runs as its own container, as PID 1, supervised by the
+  orchestrator (not exec'd by the controller), reaching a healthy
+  state end-to-end.
+- ~podman logs iam~ (or equivalent) shows IAM's own log output
+  directly, without ~--log-to-console~/~--log-enabled~ plumbing.
+- A explicit note on whether the Newton memory-corruption finding
+  (PR #1747) reproduces in this architecture or not.
+
+Scope narrowed at close -- see Result. What's delivered and verified:
+
+- Per-service image build (parameterised Dockerfile + ~stage-runtime.sh
+  --service~) -- done, working, 410MB vs. 2.1GB for the all-18 image.
+- IAM connects to NATS and progresses into real application logic
+  standalone in that per-service container -- done, once
+  ~--userns=keep-id~ is used.
+- Explicit confirmation the Newton corruption finding does *not*
+  reproduce here (single-container, no in-process multi-child
+  bookkeeping to race) -- done. What *did* initially look like
+  corruption was a distinct, now root-caused and fixed, rootless-uid-
+  remapping issue -- not related to PR #1747's finding at all.
+
+Deferred, not claimed here:
+- IAM reaching a fully healthy end-to-end state -- blocked on a
+  second, distinct file-loading-style failure (JWT token signing,
+  "bio read failed") surfaced only after the uid-remap fix, not yet
+  root-caused.
+- The ~HEALTHCHECK~ probe itself -- not yet added, blocked on the above.
+- The dependency-graph-to-orchestration-spec generator, the ~podman
+  events~ DB-mirroring watcher, and rollout to the remaining 17
+  services -- as scoped from the start, explicit follow-up work.
+
+* Plan
+
+** Current responsibilities of ~process_supervisor~ (what has to move somewhere)
+
+Read from source (~process_supervisor.hpp~/~.cpp~):
+
+1. *Desired-state data*: ~service_definition~ (binary, replicas, restart
+   policy, max restarts, args template, enabled) and
+   ~service_dependency~ (edges: A must start before B) -- both DB
+   tables, bitemporal, changeable without a redeploy.
+2. *Startup ordering*: topological sort over the dependency graph
+   (~boost::graph~), launched in dependency-first order.
+3. *Readiness gating*: for any service with dependents, block launching
+   those dependents until the string "Service ready." appears in the
+   service's own log file (~wait_for_log_ready~, polling every 500ms,
+   60s timeout). This string is logged by every service via the shared
+   ~ores.service~ runner (~domain_service_runner_impl.hpp~,
+   ~signing_service_runner_impl.hpp~, ~wt_service_runner.hpp~) right
+   after it registers its NATS handlers -- i.e. "ready" already means
+   "connected to NATS and serving", not just "process started".
+4. *Process spawn/monitor*: ~boost::process::v2~ execs the binary
+   in-process, builds its CLI args from the template, monitors exit via
+   ~async_wait~, and applies restart policy (~always~/~on-failure~/
+   ~never~, capped by ~max_restart_count~).
+5. *DB-backed audit trail*: ~service_instance~ (current phase/pid) and
+   ~service_event~ (started/stopped/exited history) written by the
+   controller itself on every launch/exit -- this is what
+   ~ores_controller_service_instances_tbl~ (checked in the Newton task)
+   reflects.
+6. *Dynamic control*: ~request_launch~/~request_stop~/~request_restart~
+   triggered by NATS requests, so a service can be added/scaled/
+   restarted at runtime without restarting the controller.
+
+** What moves to the orchestration layer, and what doesn't
+
+- *Process spawn/monitor/restart-policy (#4)*: moves fully to podman.
+  ~podman generate systemd~ (or a compose/pod spec's own
+  ~restart:~ policy) replaces ~boost::process::v2~ + the restart-policy
+  branch in ~monitor_process~ entirely -- this is exactly the class of
+  bug that has caused two debugging sessions so far (the
+  ~co_spawn~/executor-hop race in PR #1724, and the Newton corruption
+  finding in PR #1747), both inside this in-process child-bookkeeping
+  code. Deleting it, not fixing it again, is the actual point of this
+  story.
+- *Startup ordering (#2)*: moves to the orchestration layer's own
+  dependency expression -- systemd unit ~After=~/~Requires=~ (if
+  ~podman generate systemd~), or ~depends_on~ (compose/podman-compose).
+  The DB-driven dependency graph (#1) doesn't disappear: a small
+  generator step reads ~service_dependency~ and emits the ordering
+  directives, so the graph stays data-driven rather than hand-maintained
+  in a static file. This generator is new work, not yet built.
+- *Readiness gating (#3)*: moves to a podman ~HEALTHCHECK~ per service
+  image. Since there is no HTTP/NATS health-probe surface today (checked
+  -- no ~/health~ endpoint, no ping subject), the pragmatic first cut is
+  a healthcheck script that greps the container's own stdout (via
+  ~podman logs~ or, if using the log-file convention, the mounted log
+  file) for "Service ready.", i.e. automate today's ~wait_for_log_ready~
+  polling loop as a container-native probe instead of inventing a new
+  readiness protocol in this task. A real health-probe endpoint (NATS
+  ping/pong, since every service is already a NATS client) is a better
+  long-term answer and worth its own follow-up, not blocking this pilot.
+- *DB-backed audit trail (#5)*: does not have a natural orchestrator
+  equivalent (podman doesn't know about our schema). Two options:
+  (a) each service self-reports its own phase via a NATS event on
+  startup/shutdown instead of being reported on its behalf, or (b) a
+  thin process watches ~podman events --format json~ and mirrors state
+  transitions into the DB, keeping today's schema and audit trail
+  intact without any per-service code change. (b) is less invasive and
+  is the pilot's choice -- see below.
+- *Dynamic control (#6)*: ~request_launch~/~stop~/~restart~ become
+  ~podman start/stop <container>~ (or systemd ~systemctl --user
+  start/stop <unit>~) calls instead of ~boost::process~ spawns. Still
+  triggered by the same NATS requests; the controller keeps this
+  responsibility, it just shells out instead of forking directly.
+
+** Pilot scope: IAM only
+
+IAM is the one dependency every other service already waits on
+(~has_dependents~ in ~start_all()~), so it exercises readiness gating
+(#3) even alone, and is the natural first real container:
+
+1. Build a per-service image parameterised by entrypoint args (reusing
+   ~docker/service-runtime.Dockerfile~'s binary/lib layout, just
+   ~ENTRYPOINT ["./ores.iam.service"]~ instead of the controller) --
+   *not* 18 separate Dockerfiles; one shared image, selected at
+   ~podman run~ time.
+2. Add a ~HEALTHCHECK~ that tails IAM's own log for "Service ready."
+3. Run IAM standalone under podman (no controller exec'ing it), talking
+   to the same NATS/Postgres this environment already uses.
+4. Verify: IAM reaches ~healthy~ per ~podman ps~, ~podman logs iam~
+   shows its own output directly (no ~--log-to-console~ plumbing needed
+   -- podman's own log driver captures container stdout regardless),
+   and a dependent service can be pointed at it successfully.
+5. Explicitly check whether the Newton corruption finding (PR #1747)
+   reproduces here -- it shouldn't, since there is no in-process
+   multi-child bookkeeping left to race, but this needs confirming, not
+   assuming.
+
+Not attempted in this task: the dependency-graph-to-orchestration-spec
+generator (#2), the ~podman events~ DB-mirroring watcher (#5), or
+rolling out to the remaining 17 services -- those are follow-up tasks
+once the pilot proves the model on IAM.
+
+* Notes
+
+** Per-service image: one parameterised Dockerfile, not 18
+
+First cut of this task tried reusing the existing "kitchen sink"
+~docker/service-runtime.Dockerfile~ (all 18 binaries, ~ENTRYPOINT~
+fixed to the controller) with ~--entrypoint~ overridden at ~podman
+run~ time. Correctly rejected in review as not idiomatic: every
+service's container would ship all 17 other services' dead code and a
+larger attack surface, defeating the point of "one container, one
+service".
+
+Fixed properly:
+- ~docker/stage-runtime.sh~ gained ~--service <binary-name>~: stages
+  just that one binary plus its own ~ldd~-computed dependency closure
+  (a single ~ldd~ call already resolves the *full* transitive closure,
+  not just direct links, so no recursion is needed even though our
+  libraries depend on one another). Default behaviour (all 18) is
+  unchanged and still used for the combined controller image.
+- ~docker/service-runtime.Dockerfile~ gained ~ARG SERVICE_NAME~ and now
+  builds an ~entrypoint~ symlink (~ln -s "./${SERVICE_NAME}"
+  /app/bin/entrypoint~) in the debian ~strip~ stage rather than hard-
+  coding ~ENTRYPOINT ["./ores.controller.service"]~. Tried creating that
+  symlink in its own separate minimal debian stage first, pointing at
+  an absolute path (~/app/bin/${SERVICE_NAME}~) that only exists in the
+  *final* stage: buildah's ~COPY --from=~ validates/dereferences
+  symlinks against the *source* stage's own filesystem and fails on a
+  target that doesn't exist there yet. Fixed by creating the symlink
+  in the ~strip~ stage (where the real binary already exists) with a
+  *relative* target (~./${SERVICE_NAME}~), which resolves correctly in
+  both stages since binary and symlink always end up siblings in the
+  same directory.
+- Result: an IAM-only image is 410MB (40 libs) vs. 2.1GB (130 libs) for
+  the all-18 image -- real, working, and independent of the corruption/
+  cert-loading findings below.
+
+** Root-caused: apparent cert-loading corruption was rootless-podman uid remapping, not a real bug
+
+The alarming symptom from the first pilot attempt (IAM's NATS mTLS
+connect closing with the server logging "client didn't provide a
+certificate", despite the client log claiming "mTLS enabled") is *not*
+a bug in our code, and *not* related to the Newton memory-corruption
+finding (PR #1747) -- it reproduced with a single container (no
+in-process multi-child bookkeeping at all to race), which itself was
+the first sign these are different issues.
+
+Root cause, found by instrumenting ~client.cpp::connect()~ to actually
+check ~natsOptions_LoadCATrustedCertificates~/
+~natsOptions_LoadCertificatesChain~'s return status (previously
+ignored -- a real bug in its own right, fixed alongside this finding):
+~chain_status=SSL Error~. Rootless podman, without ~--userns=keep-id~,
+maps container UID 1000 to an *unrelated* host subuid (from
+~/etc/subuid~), not to the real host account that owns the NATS client
+private key files (~chmod 600~, owner-read-only). ~--user 1000:1000~
+therefore does not mean "the same UID 1000 as the host" -- the
+container process's real, kernel-visible UID differs, so reading a
+600-permission file it doesn't own fails with a plain ~EACCES~ that
+OpenSSL surfaces as a generic SSL error, previously silently ignored.
+The world-readable CA cert (~664~) never showed this, since any UID can
+read it regardless of ownership -- only the owner-only private key
+depended on UID identity matching.
+
+This is the *exact same* root cause as the Newton cert-permission
+finding in PR #1747 (which is why ~docker/run-pod.sh~ already uses
+~--userns=keep-id~) -- it just hadn't been connected to this pilot
+until reproducing and diagnosing it directly here. First confirmed on
+IAM; on retesting the controller with the same instrumented build, it
+turned out the earlier "successful" controller run in this session was
+never real success -- ~head -N~ truncated the log before it reached the
+NATS connect call at all (the controller's own log order has
+~start_all()~'s "Starting all services..." line appear *before*
+~nats.connect()~ is even attempted), so every container run this
+session, controller and IAM alike, has consistently needed
+~--userns=keep-id~.
+
+Fixed permanently in ~ores.nats/service/client.cpp~: both
+~LoadCATrustedCertificates~ and ~LoadCertificatesChain~ now check their
+return status and throw a ~nats_connect_error~ with an actionable
+message (naming the exact file and pointing at the ~--userns=keep-id~
+cause) instead of silently continuing to a connection attempt that
+fails much later with an opaque "Connection Closed".
+
+** IAM pilot: reached past NATS connect once uid mapping was fixed
+
+With ~--userns=keep-id~, IAM connects to NATS successfully standalone
+(no controller exec'ing it) and progresses into real application logic
+(reading effective permissions, attempting its own service-account JWT
+signing) -- direct evidence the per-service container model is viable
+for a real domain service, not just the controller. Ran out of time in
+this session to chase the next error surfaced there (~JWT token
+creation failed: failed to load key: bio read failed~ -- looks like a
+similar file-loading issue, quite possibly the *same* uid-remap class
+of bug applied to a different file, i.e. the IAM JWT private key rather
+than the NATS client key) and to build/verify the ~HEALTHCHECK~ and
+full end-to-end acceptance criteria.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1752][#1752]] | [docker] Per-service container images: design + IAM pilot, fix silent NATS cert-load errors |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | --service with no value fails with bash's raw "unbound variable" instead of a clear message | stage-runtime.sh | Accepted | Now uses ~"${2:?--service requires a binary name}"~ |
+| 2 | SERVICE_NAME/staged-binary mismatch only fails at container run time (dangling symlink), not build time | service-runtime.Dockerfile | Accepted | Added a ~RUN test -f~ guard before creating the entrypoint symlink -- verified it fails the build loudly on a deliberate mismatch |
+| 3 | Pre-existing opts leak if check_file() throws before natsOptions_Destroy | client.cpp | Declined (for now) | Correct, but pre-existing and out of scope for this PR's stated fix; noted for a future tidy-up |
+| 4 | No automated test coverage for the new cert-load error paths | client.cpp | Declined (for now) | Needs a live NATS server or fake TLS setup to exercise meaningfully; existing 26/51 suite still passes. Worth a follow-up, not a blocker for a pilot |
+| 5 | story.org's #+updated/Last touched dates weren't bumped despite content changes | story.org | Accepted | Bumped to 2026-07-29 |
+
+* Result
+
+Design written (see Plan) covering what moves to the orchestration
+layer (process spawn/monitor/restart, startup ordering, readiness
+gating) vs. what stays application-level (the DB-backed
+service_instance/phase audit trail, via a podman-events watcher rather
+than in-process bookkeeping) vs. what's genuinely new work (a
+dependency-graph-to-orchestration-spec generator, so the DB-driven
+service_dependency graph stays data-driven rather than hand-maintained
+in a static compose/systemd file).
+
+Piloted on IAM. Along the way:
+
+- Rejected the "one shared 775MB image + --entrypoint override"
+  approach after review pushback (not idiomatic, ships dead code per
+  service); replaced with a proper parameterised Dockerfile + per-
+  service ~ldd~-scoped staging, shipped in this PR.
+- Root-caused what initially looked like a second instance of the
+  Newton memory-corruption bug: IAM's (and, it turns out, the
+  controller's too, once tested properly) NATS mTLS connect silently
+  failing to present its client certificate under rootless podman
+  without ~--userns=keep-id~ -- the exact same uid-remapping root cause
+  already fixed in ~docker/run-pod.sh~ for Newton (PR #1747), just not
+  previously connected to this pilot. Confirmed this is *not* related
+  to the actual Newton corruption finding, which remains open and
+  un-reproduced here (as expected, given no in-process multi-child
+  bookkeeping exists in a single-container pilot to race in the first
+  place).
+- Fixed a real, previously-silent bug found via this investigation:
+  ~ores.nats/service/client.cpp~ never checked
+  ~natsOptions_LoadCATrustedCertificates~/~LoadCertificatesChain~'s
+  return status, so a failed cert load surfaced only as a much later,
+  generic "Connection Closed" rather than a clear diagnostic. Now
+  throws immediately with the specific file and the ~--userns=keep-id~
+  cause named.
+
+Not reached: IAM's full healthy end-to-end state (a second, distinct
+"JWT token creation failed: bio read failed" error surfaced once past
+the uid-remap fix -- an in-memory PEM signing failure, not another
+file/uid issue, not yet root-caused), the ~HEALTHCHECK~ probe, and all
+work explicitly out of scope for this pilot from the start (the
+dependency generator, the events watcher, rollout to the other 17
+services). Carrying these forward as follow-up tasks rather than
+continuing to iterate in this same task, per explicit direction.

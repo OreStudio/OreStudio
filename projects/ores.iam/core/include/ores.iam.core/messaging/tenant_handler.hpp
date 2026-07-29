@@ -324,6 +324,15 @@ public:
                 return impersonation_.mint_token(*ctx_expected, tenant_id_str, account_id, party_id,
                                                  username);
             };
+            // Impersonation tokens are deliberately short-lived (see
+            // internal_impersonation_service::mint_token()); every client
+            // built here drives polling loops that routinely outlive that
+            // TTL, so each is wired to re-mint for the same party on
+            // expiry rather than fail once the token goes stale mid-wait.
+            auto make_client = [&](const boost::uuids::uuid& party_id) {
+                return internal_request_client(nats_, mint(party_id),
+                                               [&mint, party_id] { return mint(party_id); });
+            };
             auto progress = [&](const std::string& step) {
                 return [&, step](const std::string& line) { add_step(step, line, 0); };
             };
@@ -332,7 +341,7 @@ public:
             // one bundle -- tenant-wide, so scoped to the caller's own
             // (already-active) party rather than a not-yet-created one.
             {
-                internal_request_client client(nats_, mint(caller_party_id));
+                internal_request_client client = make_client(caller_party_id);
                 add_step("Step 1: Importing Acme Corporation LEI hierarchy", "starting", 0);
                 if (!publish_bundle(client,
                                     "acme_lei_import",
@@ -350,7 +359,7 @@ public:
             // within the wait window, so a slow/failed import here is
             // logged and does not abort the rest of provisioning.
             {
-                internal_request_client client(nats_, mint(caller_party_id));
+                internal_request_client client = make_client(caller_party_id);
                 add_step("Step 2: Importing GLEIF counterparties", "starting", 0);
                 publish_bundle(client,
                               "acme_gleif_counterparties",
@@ -365,12 +374,12 @@ public:
             // just activation, logo, onboarding, and the tenant admin's
             // default party.
             {
-                internal_request_client discover(nats_, mint(caller_party_id));
+                internal_request_client discover = make_client(caller_party_id);
                 auto holding = find_party(discover, "Acme Corporation Plc");
                 if (!holding) {
                     add_step("acme_group.skipped", "party_not_found", 0);
                 } else {
-                    internal_request_client client(nats_, mint(holding->id));
+                    internal_request_client client = make_client(holding->id);
                     add_step("Step 3: Activating Acme Corporation Plc", "starting", 0);
                     finish_party(client, *ctx_expected, tenant_id_str, account_id, username,
                                 *holding, /*set_default=*/true);
@@ -382,14 +391,14 @@ public:
             // then activation/logo/onboarding/membership for that party.
             int step_num = 4;
             for (const auto& office : acme_offices()) {
-                internal_request_client discover(nats_, mint(caller_party_id));
+                internal_request_client discover = make_client(caller_party_id);
                 auto party = find_party(discover, office.full_name);
                 if (!party) {
                     add_step(office.code + ".skipped", "party_not_found", 0);
                     continue;
                 }
 
-                internal_request_client client(nats_, mint(party->id));
+                internal_request_client client = make_client(party->id);
                 const auto label =
                     "Step " + std::to_string(step_num++) + ": Publishing " + office.full_name;
                 add_step(label, "starting", 0);
@@ -416,7 +425,7 @@ public:
             // deliberately last, after every other step has given it more
             // time to finish.
             {
-                internal_request_client client(nats_, mint(caller_party_id));
+                internal_request_client client = make_client(caller_party_id);
                 attach_demo_counterparty_logo(client, *ctx_expected, tenant_id_str, username);
             }
 

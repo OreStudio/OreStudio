@@ -21,6 +21,7 @@
 #define ORES_IAM_SERVICE_INTERNAL_REQUEST_CLIENT_HPP
 
 #include "ores.iam.core/export.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/service/client.hpp"
 #include <chrono>
 #include <cstddef>
@@ -49,31 +50,87 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT internal_request_client {
 public:
-    internal_request_client(ores::nats::service::client& nats, std::string token);
+    /**
+     * @param refresh_token Optional. Mints a fresh, short-lived token for
+     *        the same impersonated identity. Impersonation tokens are
+     *        deliberately short-lived (internal_impersonation_service::
+     *        mint_token()'s default TTL) -- fine for a single request, but
+     *        this client is also used to drive multi-minute polling loops
+     *        (wait_for_workflow_instance(), attach_demo_counterparty_logo()'s
+     *        manual poll), which will outlive that TTL. Without a refresh
+     *        callback, request() throws service_error("token_expired") the
+     *        first time that happens; with one, it re-mints and retries
+     *        transparently.
+     */
+    internal_request_client(ores::nats::service::client& nats,
+                            std::string token,
+                            std::function<std::string()> refresh_token = {});
+
+    /**
+     * @brief Thrown when the server rejected the request at the protocol
+     * level (an @c X-Error reply header, e.g. an expired/invalid
+     * impersonation token) rather than failing to parse or transport the
+     * request. Distinct from the generic @c std::runtime_error thrown by
+     * request() on transport/parse failure so callers can tell "the server
+     * told us why, and retrying with the same token will not help" apart
+     * from a transient hiccup worth retrying.
+     */
+    class service_error : public std::runtime_error {
+    public:
+        service_error(std::string error_code, std::string_view subject)
+            : std::runtime_error("Request to " + std::string(subject) +
+                                 " rejected by server: " + error_code),
+              error_code_(std::move(error_code)) {}
+
+        [[nodiscard]] const std::string& error_code() const noexcept { return error_code_; }
+
+    private:
+        std::string error_code_;
+    };
 
     /**
      * @brief Issues @p req and returns the parsed response.
      *
+     * On a @c token_expired rejection, re-mints the token via
+     * @c refresh_token (if one was supplied) and retries once -- expected,
+     * routine behaviour for any call outliving the impersonation token's
+     * short TTL, not an error worth surfacing to the caller.
+     *
+     * @throws service_error if the server rejected the request (an
+     *         @c X-Error reply header) and either no @c refresh_token was
+     *         supplied, the rejection wasn't @c token_expired, or it was
+     *         still rejected after one refreshed retry.
      * @throws std::runtime_error on transport failure or response parse
      *         failure.
      */
     template <typename Request>
     typename Request::response_type
     request(const Request& req, std::chrono::seconds timeout = std::chrono::seconds{30}) {
-        const auto json = rfl::json::write(req);
-        const auto* data = reinterpret_cast<const std::byte*>(json.data());
-        const auto reply = nats_.request_sync(Request::nats_subject,
-                                              std::span<const std::byte>(data, json.size()),
-                                              headers(),
-                                              timeout);
-        const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
-                                  reply.data.size());
-        auto result = rfl::json::read<typename Request::response_type>(sv);
-        if (!result)
-            throw std::runtime_error("Failed to parse response to " +
-                                     std::string(Request::nats_subject) +
-                                     ": " + result.error().what());
-        return *result;
+        for (int attempt = 0; ; ++attempt) {
+            const auto json = rfl::json::write(req);
+            const auto* data = reinterpret_cast<const std::byte*>(json.data());
+            const auto reply = nats_.request_sync(Request::nats_subject,
+                                                  std::span<const std::byte>(data, json.size()),
+                                                  headers(),
+                                                  timeout);
+            if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+                it != reply.headers.end()) {
+                if (attempt == 0 && refresh_token_ && it->second == "token_expired") {
+                    token_ = refresh_token_();
+                    continue;
+                }
+                throw service_error(it->second, Request::nats_subject);
+            }
+
+            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
+                                      reply.data.size());
+            auto result = rfl::json::read<typename Request::response_type>(sv);
+            if (!result)
+                throw std::runtime_error("Failed to parse response to " +
+                                         std::string(Request::nats_subject) +
+                                         ": " + result.error().what());
+            return *result;
+        }
     }
 
     /**
@@ -100,6 +157,7 @@ private:
 
     ores::nats::service::client& nats_;
     std::string token_;
+    std::function<std::string()> refresh_token_;
 };
 
 }

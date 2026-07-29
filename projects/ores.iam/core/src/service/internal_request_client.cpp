@@ -39,8 +39,9 @@ constexpr auto poll_interval = std::chrono::milliseconds(500);
 } // namespace
 
 internal_request_client::internal_request_client(ores::nats::service::client& nats,
-                                                  std::string token)
-    : nats_(nats), token_(std::move(token)) {}
+                                                  std::string token,
+                                                  std::function<std::string()> refresh_token)
+    : nats_(nats), token_(std::move(token)), refresh_token_(std::move(refresh_token)) {}
 
 std::unordered_map<std::string, std::string> internal_request_client::headers() const {
     return {{std::string(ores::nats::headers::authorization),
@@ -68,6 +69,14 @@ bool internal_request_client::wait_for_workflow_instance(
         try {
             result = request(req);
             ok = result.success;
+        } catch (const service_error& e) {
+            // The server told us exactly why it rejected the request (e.g.
+            // an expired internal impersonation token). That will not
+            // change on retry -- unlike a transient transport hiccup, so
+            // fail fast instead of burning the rest of the timeout.
+            BOOST_LOG_SEV(lg(), error) << "Aborting wait for workflow instance " << instance_id
+                                       << ": " << e.what();
+            return false;
         } catch (const std::exception& e) {
             ok = false;
             result.message = e.what();

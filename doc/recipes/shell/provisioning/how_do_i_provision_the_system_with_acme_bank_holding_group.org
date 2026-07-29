@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C
+:END:
+#+title: How do I provision the system with Acme Bank (holding group)?
+#+description: End-to-end system provisioning from the shell with an Acme Bank tenant, driven server-side via internal actor impersonation (--source acme).
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:acme:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+The real-data counterpart to the [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][Acme Corp (synthetic) provision]]: same
+three-stage shell flow, but =provision tenant= is called with
+=--source acme=, which drives the actual request/handler pipeline
+(LEI import, per-party dataset-bundle publish, activation, onboarding)
+server-side via internal actor impersonation — see the [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme
+provisioning]] task in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]. The =ores-shell= block is
+tangled into the runnable script library as =acme_bank_system_provision.ores=.
+
+* Question
+
+How do I provision a fresh system from the shell with the Acme Bank
+holding-group data?
+
+* Answer
+
+Bootstrap =super_admin=, install an =Acme Bank= tenant, then provision
+it with =--source acme=, which server-side orchestrates importing the
+Acme LEI hierarchy (all four legal entities) and publishing each
+party's business units/portfolios/books plus the group-wide accounts
+dataset — no repeated per-party logins, no client-side orchestration.
+
+Expectations: the services are up (=compass services start=) and the
+database is fresh (=compass db recreate -y -k= → bootstrap mode).
+=connect= takes the endpoint from =$ORES_NATS_URL= and inherits the
+subject prefix and TLS context the shell was started with.
+
+#+name: acme-bank-system-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acmebank --tenant-name "Acme Bank" --tenant-hostname acmebank
+logout
+
+login tenant_admin@acmebank Secure-Password-123
+provision tenant --source acme
+logout
+
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<acme-bank-system-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/provisioning/acme_bank_system_provision.ores=
+— generated from this recipe by =compass build --direct
+tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f acme_bank_system_provision.ores= against a
+freshly recreated database.
+
+* See also
+
+- [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][How do I provision the system with Acme (synthetic)?]] — the
+  =--source synthetic= variant, unrelated data despite the similar
+  tenant name.
+- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the GLEIF
+  variant.

@@ -35,9 +35,9 @@ approach.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Deploying and verifying the service runtime on the actual Newton WSL host. |
+| Now           | Newton deploy closed with a partial-success caveat (PR #1747); the process_supervisor corruption finding is flagged on the split-per-service story instead of chased here. |
 | Waiting on    | Nothing.                               |
-| Next          | Deploy and verify on Newton.            |
+| Next          | Add compass tooling for remote deploys and multi-env-file support (open follow-up tasks). |
 | Last touched  | 2026-07-29                               |
 
 * Acceptance

@@ -137,12 +137,15 @@ void SyntheticBindingDialog::loadConfigs() {
                                          "showing FX rows only.";
         } else {
             for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
-                // Deliberately just the qualifier (e.g. "USD/LIBOR-3M"), not FX's full
-                // SERIES_TYPE/METRIC/QUALIFIER shape (e.g. "FX/RATE/EUR/USD") -- harmless
-                // today since curve_feed_ingest_loop ingests IR ticks via its own wildcard
-                // subscription and never reads feed_binding.ore_key.
-                const auto ore_key = cfg.currency_code + "/" +
+                // Full SERIES_TYPE/METRIC/QUALIFIER shape, matching FX's own (e.g.
+                // "FX/RATE/EUR/USD") and real ORE market data key conventions (checked against
+                // external/ore/examples/*/Input/marketdata.txt's own FX/RATE/EUR/USD lines).
+                // "RATES/YIELD/" is exactly what ir_curve_feed.cpp's own
+                // find_series("RATES", "YIELD", qualifier) call looks the series up under --
+                // this must match that exactly, not just the bare qualifier.
+                const auto qualifier = cfg.currency_code + "/" +
                     strip_currency_prefix(cfg.currency_code, cfg.index_name);
+                const auto ore_key = "RATES/YIELD/" + qualifier;
                 configs.push_back(
                     {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});
             }

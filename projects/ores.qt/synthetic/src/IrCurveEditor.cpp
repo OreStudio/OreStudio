@@ -914,8 +914,10 @@ void IrCurveEditor::recomputeOreKey() {
     // populateIndexNameCombo()), so ccy + "/" + idx is already the same qualifier
     // SyntheticBindingDialog::loadConfigs() and ir_curve_feed.cpp compute -- no stripping needed
     // here, unlike SyntheticBindingDialog's own copy which starts from the full stored
-    // index_name.
-    oreKeyLabel_->setText(QString::fromStdString(ccy + "/" + idx));
+    // index_name. "RATES/YIELD/" matches ir_curve_feed.cpp's own find_series("RATES", "YIELD",
+    // qualifier) call and FX's equivalent full SERIES_TYPE/METRIC/QUALIFIER shape (e.g.
+    // "FX/RATE/EUR/USD").
+    oreKeyLabel_->setText(QString::fromStdString("RATES/YIELD/" + ccy + "/" + idx));
 }
 
 void IrCurveEditor::recomputeDefaultSourceName() {

@@ -20,21 +20,7 @@ set(name "ores.workflow.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/workflow_instance_json_io.cpp"
-    "domain/workflow_step_json_io.cpp"
-    "messaging/registrar.cpp"
-    "messaging/workflow_handler.cpp"
-    "messaging/workflow_query_handler.cpp"
-    "repository/workflow_instance_entity.cpp"
-    "repository/workflow_instance_mapper.cpp"
-    "repository/workflow_instance_repository.cpp"
-    "repository/workflow_step_entity.cpp"
-    "repository/workflow_step_mapper.cpp"
-    "repository/workflow_step_repository.cpp"
-    "service/fsm_state_map.cpp"
-    "service/workflow_engine.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

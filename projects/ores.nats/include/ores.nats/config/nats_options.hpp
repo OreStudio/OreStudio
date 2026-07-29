@@ -20,6 +20,7 @@
 #ifndef ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 #define ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 
+#include "ores.nats/domain/wire_format.hpp"
 #include <string>
 
 namespace ores::nats::config {
@@ -59,6 +60,14 @@ struct nats_options final {
     std::string tls_ca_cert;
     std::string tls_client_cert;
     std::string tls_client_key;
+
+    /**
+     * @brief Wire format used to serialize every NATS message body this
+     * process sends and decode every one it receives, decided once at
+     * startup (env: ORES_NATS_WIRE_FORMAT). Defaults to json, preserving
+     * pre-existing behaviour for any process that doesn't set it.
+     */
+    ores::nats::wire_format format = ores::nats::wire_format::json;
 };
 
 }

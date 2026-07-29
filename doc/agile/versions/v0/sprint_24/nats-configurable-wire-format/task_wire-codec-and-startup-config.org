@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/wire-codec-and-startup-config
+#+pr: 1745
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -44,29 +44,68 @@ Build the shared foundation the rest of the story depends on:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- [ ] =wire_codec= compiles and round-trips a representative
+- [X] =wire_codec= compiles and round-trips a representative
   reflectable struct (including a byte-vector field) under both
   =json= and =msgpack=.
-- [ ] Config value is read once at startup from =.env=, with a
+- [X] Config value is read once at startup from =.env=, with a
   documented default that preserves today's behaviour if unset.
-- [ ] No per-call branching cost beyond the single format check
+- [X] No per-call branching cost beyond the single format check
   already implied by having two supported formats -- no header
   parsing, no per-message format inspection.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Built the shared foundation exactly as scoped in =* Goal=, mirroring
+=ores.nats::compression='s existing module layout:
+
+- =domain/wire_format.hpp=/=.cpp=: the =wire_format= enum (=json=,
+  =msgpack=) plus =parse_wire_format=/=to_string= free functions for
+  the =.env=/CLI string spelling, case-insensitive on parse.
+- =domain/wire_codec.hpp=: the non-polymorphic =wire_codec= value
+  type (header-only -- =encode=/=decode= are templates, so there is
+  no non-template code to put in a =.cpp=). =encode<T>= dispatches to
+  =rfl::json::write=/=rfl::msgpack::write=; =decode<T>= dispatches to
+  =rfl::json::read=/=rfl::msgpack::read=, both taking the fixed
+  =format_= as a single branch, not a per-message inspection.
+  =rfl::msgpack::read<T>= accepts a =std::span<const std::byte>=
+  directly (it satisfies reflect-cpp's =ContiguousByteContainer=
+  concept for =std::byte=); =rfl::json::read<T>= needs a
+  =std::string_view=, built via a =reinterpret_cast= over the same
+  span.
+- =config/nats_options.hpp=: added a =wire_format= field, defaulting
+  to =wire_format::json= (preserves pre-existing behaviour for any
+  process that doesn't set it).
+- =config/nats_configuration.cpp=: added the =--nats-wire-format=
+  option (default =\"json\"=, env =ORES_NATS_WIRE_FORMAT= via the
+  per-service =environment_mapper_factory= prefix, same convention as
+  the existing TLS options), parsed via =parse_wire_format= with a
+  thrown =std::invalid_argument= on an unrecognised value -- fails
+  fast at startup rather than silently falling back.
+- =src/CMakeLists.txt=: added =reflectcpp::reflectcpp= as a *public*
+  link dependency (previously =ores.nats.lib= only pulled it in
+  transitively and privately through =ores.utility.lib=), since
+  =wire_codec.hpp= is a public header that every consumer including
+  it needs =rfl/json.hpp=/=rfl/msgpack.hpp= for.
+
+Round-trip unit tests (new =tests/domain_wire_codec_tests.cpp=,
+=tests/domain_wire_format_tests.cpp=, plus additions to
+=tests/config_nats_configuration_tests.cpp=) cover: json round-trip,
+msgpack round-trip, a msgpack-vs-json size comparison confirming the
+byte-vector field is carried as native binary (smaller than its json/
+base64-equivalent, not larger), =format()= accessor, a malformed-input
+decode error case, =parse_wire_format=/=to_string= spelling and
+case-insensitivity, and the new CLI option's default/override/
+rejection paths. Full =ores.nats.tests= suite: 47 assertions, 24 test
+cases, all green -- no regressions.
 
 * Notes
 
@@ -85,12 +124,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1745][#1745]] | [ores.nats] Build wire_codec abstraction and startup config |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Symmetric malformed-msgpack decode test missing (only json path covered) | domain_wire_codec_tests.cpp | Fixed | Added "wire_codec decode surfaces a parse error for malformed msgpack input" |
+| 2 | =nats_options::wire_format= member shadows the =ores::nats::wire_format= enum type name | nats_options.hpp | Fixed | Renamed field to =format= (call sites: =nats_configuration.cpp=, tests) |
+| 3 | Error message built via =+= concatenation instead of =std::format=, inconsistent with =ores.logging='s equivalent | nats_configuration.cpp | Fixed | Switched to =std::format= |
+|   | Only the CLI flag path is tested for wire format, not the =ORES_NATS_WIRE_FORMAT= env var directly | nats_configuration.cpp | Declined | Consistent with how the pre-existing TLS options are tested (CLI only); not a regression this task introduces |
 
 * Result
+
+Shared foundation complete: =ores::nats::wire_format= (=json=/
+=msgpack=, with =parse_wire_format=/=to_string=), =ores::nats::wire_codec=
+(non-polymorphic, template =encode=/=decode=), a new
+=--nats-wire-format=/=ORES_NATS_WIRE_FORMAT= config value (default
+=json=) on =nats_options=/=nats_configuration=, and round-trip unit
+tests for both formats including the byte-vector-as-native-binary
+property. =ores.nats.lib= now links =reflectcpp::reflectcpp= publicly
+so downstream consumers of =wire_codec.hpp= get the reflect-cpp
+headers transitively. This is the shared foundation the remaining
+implementation tasks (service handler_helpers, =ClientManager=,
+=ores.shell= request helpers, end-to-end verification) build on.

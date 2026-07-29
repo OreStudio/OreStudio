@@ -20,18 +20,7 @@ set(name "ores.dq.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/host.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "main.cpp"
-    "messaging/badge_definition_event_registrar.cpp"
-    "messaging/badge_severity_event_registrar.cpp"
-    "messaging/code_domain_event_registrar.cpp"
-    "messaging/event_registrar.cpp"
-    "messaging/subject_area_event_registrar.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

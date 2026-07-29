@@ -53,7 +53,16 @@ echo "  Staged $(find "$volume_mountpoint" -maxdepth 1 -type f | wc -l) files"
 
 echo "=== Recreating pod '$pod_name' ==="
 podman pod rm -f "$pod_name" >/dev/null 2>&1 || true
+# --userns=keep-id: rootless podman remaps container uids through a user
+# namespace by default, so "--user $(id -u):$(id -g)" on the services
+# container alone does NOT mean it sees the same uid that staged/chmod'd
+# the certs volume above -- without keep-id, owner-only permissions on that
+# volume produce a permission-denied reading the certs. keep-id makes every
+# container's uid/gid genuinely match the host's. Must be set on the pod
+# itself (via its infra container) -- podman rejects --userns on a
+# container joining an existing pod.
 podman pod create --name "$pod_name" \
+    --userns=keep-id \
     -p "${ORES_HTTP_PORT}:${ORES_HTTP_PORT}" \
     -p "${ORES_CONTROLLER_SERVICE_WT_PORT}:${ORES_CONTROLLER_SERVICE_WT_PORT}" \
     -p "${ORES_NATS_PORT}:${ORES_NATS_PORT}" \

@@ -112,6 +112,11 @@ lifecycle_manager::make_console_sink(const boost_severity severity, std::string 
     boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
+    // Without this, records sit in std::cout's buffer until it fills or the
+    // process exits/flushes explicitly -- under `podman logs` (or any
+    // non-interactive capture) this makes console logging look like it has
+    // stalled for a long time before a burst of output finally appears.
+    backend->auto_flush(true);
 
     using sink_type = sinks::synchronous_sink<sinks::text_ostream_backend>;
     auto sink(boost::make_shared<sink_type>(backend));

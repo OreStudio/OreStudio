@@ -256,9 +256,11 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
 
     repository::service_definition_repository def_repo;
     const auto defs = def_repo.read_latest(db_ctx_);
+    BOOST_LOG_SEV(lg(), trace) << "Read " << defs.size() << " service definition(s).";
 
     repository::service_dependency_repository dep_repo;
     const auto deps = dep_repo.read_all(db_ctx_);
+    BOOST_LOG_SEV(lg(), trace) << "Read " << deps.size() << " service dependency edge(s).";
 
     // Build vertex index for enabled services.
     std::vector<std::string> names;
@@ -297,9 +299,11 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
             order.push_back(i);
     }
 
+    BOOST_LOG_SEV(lg(), trace) << "Launch order resolved: " << order.size() << " service(s).";
     // Iterate in reverse (topological order: dependencies first).
     for (auto it = order.rbegin(); it != order.rend(); ++it) {
         const auto& svc_name = names[*it];
+        BOOST_LOG_SEV(lg(), trace) << "Launch loop: " << svc_name;
 
         // Find the definition.
         const api::domain::service_definition* def_ptr = nullptr;
@@ -359,7 +363,6 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
 
 boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_name,
                                                            int replica_index) {
-
     const auto key = std::make_pair(service_name, replica_index);
 
     repository::service_definition_repository def_repo;
@@ -463,8 +466,21 @@ boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_n
 
     // Switch to the DB thread pool for the post-launch DB writes so the
     // io_context is not blocked while the connection pool rebuilds or writes.
+    //
+    // NOTE: this is a co_await'd boost::asio::post(bind_executor(...)) --
+    // structurally similar to the co_spawn(..., use_awaitable) pattern found
+    // (in application::run(), see its comment) to never get its first resume
+    // scheduled when the returned awaitable isn't awaited immediately. This
+    // one *is* awaited immediately, which makes it safe from that hazard.
+    // We hop back onto ioc_ before returning (see below) since start_all()
+    // co_await's this coroutine directly and would otherwise keep running
+    // on db_pool_'s thread past this point.
+    BOOST_LOG_SEV(lg(), trace) << "Switching to db_pool_ for post-launch writes: " << service_name
+                               << "[" << replica_index << "]";
     co_await boost::asio::post(
         boost::asio::bind_executor(db_pool_.get_executor(), boost::asio::use_awaitable));
+    BOOST_LOG_SEV(lg(), trace) << "Back on db_pool_ for: " << service_name << "[" << replica_index
+                               << "]";
 
     try {
         const auto now = std::chrono::system_clock::now();
@@ -503,8 +519,14 @@ boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_n
         BOOST_LOG_SEV(lg(), warn) << "DB update failed after launch of " << service_name << "["
                                   << replica_index << "]: " << e.what();
     }
-    // do_launch ends here on the db_pool thread — that is fine since the
-    // coroutine is detached and no shared state is accessed after this point.
+    // Switch back to ioc_ before returning: start_all() co_await's this
+    // coroutine directly (not detached), so whatever thread we return on is
+    // the thread the caller resumes on -- including, transitively, the
+    // completion signal in application::run() and further processes_ writes
+    // in start_all()'s own loop. Mirrors monitor_process()'s existing hop
+    // back onto ioc_ below.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(ioc_.get_executor(), boost::asio::use_awaitable));
 }
 
 boost::asio::awaitable<void> process_supervisor::do_stop(std::string service_name,

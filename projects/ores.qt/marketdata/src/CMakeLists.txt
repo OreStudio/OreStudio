@@ -24,12 +24,37 @@ set(ORES_QT_MARKETDATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "ClientFeedBindingModel.cpp"
+    "CrmCrossRatesMatrixController.cpp"
+    "CrmCrossRatesMatrixMdiWindow.cpp"
+    "CrmRateCellWidget.cpp"
+    "CrmRateSparklineWidget.cpp"
+    "CurveSnapshotMdiWindow.cpp"
+    "FeedBindingController.cpp"
+    "FeedBindingDetailDialog.cpp"
+    "FeedBindingMdiWindow.cpp"
+    "MarketdataPlugin.cpp"
+    "RateCurvesMdiWindow.cpp"
+    "SyntheticBindingDialog.cpp"
+)
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${ORES_QT_MARKETDATA_DIR}/include/*.hpp")
+set(HEADERS
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/ClientFeedBindingModel.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/CrmCrossRatesMatrixController.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/CrmRateCellWidget.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/CrmRateSparklineWidget.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/CurveSnapshotMdiWindow.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/FeedBindingController.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/FeedBindingDetailDialog.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/FeedBindingMdiWindow.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/MarketdataExport.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/MarketdataPlugin.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/RateCurvesMdiWindow.hpp"
+    "${ORES_QT_MARKETDATA_DIR}/include/ores.qt/SyntheticBindingDialog.hpp"
+)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_MARKETDATA_DIR}/ui/*.ui")
 

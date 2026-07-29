@@ -54,10 +54,10 @@ Reference exemplar: the =** Reverting to a historical version= section added to
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis done, approach and batch plan confirmed (see * Plan). |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-29                               |
+| Next         | Pilot batch: cpp_repository facet (6 archetypes). |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
@@ -80,6 +80,167 @@ Reference exemplar: the =** Reverting to a historical version= section added to
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Analysis (2026-07-29)
+
+*** Where this sits relative to sprint 20's literate-templates story
+
+[[id:1B686436-FBF6-47EB-87D5-5E13A509F7D1][Convert codegen mustache templates to literate org-mode documents]]
+(sprint 20, DONE) already built the hierarchy this task extends:
+=overview.org= → group doc (=ores.cpp.org=, =ores.sql.org=, ...) →
+facet doc (=ores.cpp.qt.org=, ...) → *archetype doc* — one org file
+per output artefact, =#+type: archetype=, holding the
+=#+begin_src mustache :tangle <name>.mustache= block(s) that actually
+tangle to the =.mustache= codegen reads. That story deliberately
+scoped out template /content/ changes — it was a format migration, one
+block per archetype, prose only at the top. This task goes one level
+finer: split each archetype's single block into multiple
+same-target blocks interleaved with prose, at the *seam* level
+(per function / section / variability region) rather than per
+artefact. The tangle tooling (=tangle_codegen_templates= CMake
+target, =ores-build-codegen-templates.el=), the generated-file
+header, and the =template-drift= CI drift check are already in place
+and need no changes — this task only touches archetype-doc *content*.
+
+*** Inventory
+
+149 archetype docs under
+[[proj:projects/ores.codegen/library/templates][=projects/ores.codegen/library/templates/=]]
+(excluding the group/facet/overview docs, which hold no tangle
+blocks), ~21k lines total, currently 147 single-block and 2 already
+multi-block:
+
+| Size (lines) | Count | Notes |
+|---------------+-------+-------|
+| < 50 (small)  |    21 | Mostly boilerplate; acceptance already allows leaving these as one block with a leading paragraph. |
+| 50–149 (medium) | 97  | The bulk. Some are one cohesive function (little to gain from splitting); others pack several independent seams (real candidates). |
+| 150+ (large)  |    31 | Where a reader most needs literate structure to navigate; includes the two current exemplars. |
+
+The two existing multi-block docs are useful, but only partially:
+=ores.cpp.qt.controller_impl.org= (828 lines) splits out *two* seams
+(=onRevertVersion=, "remaining controller methods") out of what is
+still an ~600-line first block — i.e. even the reference exemplar
+this task's own Goal cites did not fully atomize per-function. That
+sets a realistic bar: full per-function decomposition of all 149
+archetypes (some 900–1600 lines) is a much larger effort than
+"add prose to the existing single block," and blindly splitting every
+seam in every archetype — including one-function medium files where a
+split would just repeat the top-of-file prose — cuts against the
+project's own no-premature-abstraction convention.
+
+*** Coordination / blast-radius check (2026-07-29)
+
+Checked every other worktree's branch (=git diff origin/main...HEAD --
+projects/ores.codegen/library/templates=) and open PRs
+(=gh pr list --json files=) for current touches to this directory:
+
+- Only =clever_dijkstra= (branch =feature/junction-qt-facet-codegen=)
+  and open PR #1737 touch anything here right now, both only
+  =ores.cpp.qt.org= (the facet doc, not an archetype impl file) — low
+  overlap risk today.
+- However =cpp_qt= is structurally the highest-churn family: badge
+  work, calendar follow-ups, junction eventing, and parent-scoped
+  lists have all landed edits to =cpp_qt= archetypes in the last few
+  sprints (confirmed: PR #1719 alone touched
+  =cpp_qt_{controller,client_model,mdi_window}.{cpp,hpp}.mustache=).
+  A literate split touches the *entire* archetype body (reflowing
+  content into new block boundaries), so any concurrent content PR
+  against the same archetype is a near-guaranteed conflict, even
+  though the tangled /output/ doesn't change. =cpp_qt= should be
+  scheduled *last*, once other in-flight cpp_qt work has landed, not
+  first despite having the richest exemplar already.
+- No other worktree currently touches =ores.sql.*=, =ores.cpp.repository.*=,
+  =ores.cpp.domain.*=, or =ores.cpp.nats-*= — these are safe to start
+  on immediately.
+
+*** Proposed approach
+
+1. /Scope interpretation (needs a decision, see questions below):/
+   apply full seam-splitting only to the 31 "large" archetypes, where
+   the payoff (navigability of an 800–1600 line file) is real. For the
+   97 "medium" archetypes, split only where there's a genuine
+   independent seam (a variability-gated block, an extension point, a
+   distinct helper); leave single-function or boilerplate-heavy ones
+   as one block with a clear leading paragraph, same as the 21
+   "small" ones — and say so explicitly per file, so the choice reads
+   as a decision, not an oversight.
+2. /Pilot (small, cross-family, before batching):/ one file each from
+   three different families not currently touched by anyone —
+   suggest =ores.cpp.repository.mapper_impl.org= (478 lines,
+   =cpp_repository=), =ores.sql.schema.domain_entity_create.org= (915
+   lines, =sql_schema=), and extending the existing
+   =ores.cpp.qt.client_model_impl.org= exemplar further (already
+   started, low new-conflict risk since it's already multi-block).
+   Validates the split pattern across C++/SQL/Qt before committing to
+   the full sweep, and gives reviewers a small, concrete diff to
+   calibrate "how much prose is enough" against.
+3. /Batch by facet family, one PR per family:/ keeps each PR's diff
+   and review size manageable and keeps the window any one archetype
+   is "in flight" short, which matters given the coordination risk
+   above. Suggested order (safest/least-contended first):
+   =cpp_repository= → =sql_schema= / =sql_service= / =sql_populate= →
+   =cpp_domain= / =cpp_table= → =cpp_nats_*= → =cpp_service_app= →
+   =cpp_component= → =doc_*= → =cpp_qt= last.
+4. /Per-file verification (every file, every batch):/ re-tangle
+   (=compass build --direct tangle_codegen_templates=) must produce a
+   byte-identical =.mustache=; =template-drift= CI stays green; one
+   representative entity regen (e.g. =compass codegen entity generate
+   country --address ores=) shows no diff.
+5. /Coordination protocol while other environments may be active:/
+   before starting a family's batch, re-run the blast-radius check
+   above (diff every worktree branch + open PRs against that family's
+   archetype files); post a note in the current sprint's Captures
+   section naming the family about to be touched so other
+   environments can avoid it mid-flight; keep each family's PR small
+   enough to land same-day rather than sitting open across sessions.
+
+*** Decisions (confirmed with user, 2026-07-29)
+
+- /Scope:/ all 149 archetypes get full seam-splitting, not just the
+  31 "large" ones — the literal reading of the acceptance criteria.
+  Every archetype ends with prose preceding each same-target block;
+  a template that is genuinely one cohesive seam still gets a clear
+  leading paragraph (per the acceptance criteria's own allowance),
+  but the *decision* to leave it as one block is made per file, not
+  skipped by size bucket.
+- /cpp_qt timing:/ scheduled *last*, once other in-flight cpp_qt work
+  (badge, calendar follow-ups, junction eventing, parent-scoped
+  lists) has landed — highest churn family, highest conflict risk.
+- /Batching:/ one PR per facet family (~8-10 PRs total), not grouped
+  — keeps each PR's diff small, review fast, and the window any one
+  archetype is "in flight" short.
+
+*** Batch plan (facet families, in order)
+
+Counts are archetype docs (tangle-block-bearing files) per facet,
+via filename prefix under =ores.cpp.<facet>.*.org= /
+=ores.sql.<facet>.*.org= etc.:
+
+| Order | Family | Archetypes | Notes |
+|-------+-----------------------+------------+-------|
+|     1 | cpp_repository        |          6 | No current cross-worktree touches; start here. |
+|     2 | cpp_domain            |          7 | Includes the base domain type layer other facets build on. |
+|     3 | cpp_table (domain-adjacent) | (counted in domain/table split, confirm exact split when starting) | |
+|     4 | sql_schema / sql_service / sql_populate | 19 (=ores.sql.*=) | No current touches; group's own sub-families (schema/service/populate) may split into 2-3 PRs if any single one is large. |
+|     5 | cpp_nats_* (eventing, event-cache, event-registrar, sub-registrar, handler) | 8 | Small facets; may combine into one PR given size. |
+|     6 | cpp_service_app       |         12 | Largest non-qt cpp facet. |
+|     7 | cpp_component         |          6 | |
+|     8 | cpp_service           |          2 | |
+|     9 | cpp_presentation, cpp_protocol, cpp_generator, cpp_enum, cpp_field-group | 7 combined | Small facets, batch together. |
+|    10 | doc_*                 |         22 | Lower priority — these document agile/knowledge artefacts, not runtime code; less variability-switch complexity to narrate. |
+|    11 | cmake_*                |          7 | Already fairly mechanical/uniform; low prose payoff. |
+|    12 | cpp_qt                |          9 | *Last*, once other in-flight cpp_qt work lands. Includes the two already-partially-split exemplars to finish. |
+
+Re-check the coordination/blast-radius section immediately before
+starting each batch — the snapshot above is 2026-07-29 and will drift
+as other environments land work.
+
+*** Next step
+
+Pilot batch: =cpp_repository= (6 archetypes, no current conflicts,
+moderate size — 190 to 1127 lines). Confirms the split pattern and
+prose density on real files before committing to the full 12-batch
+sweep.
 
 * Notes
 

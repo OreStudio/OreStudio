@@ -22,6 +22,8 @@
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.core/repository/system_settings_repository.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
@@ -177,6 +179,39 @@ TEST_CASE("remove_system_setting", tags) {
     auto after = repo.read_latest(h.context(), s.name);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.empty());
+}
+
+TEST_CASE("remove_party_scoped_setting_does_not_clobber_sibling_party", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    const auto tenant_id = h.tenant_id().to_string();
+    const auto party_a = boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto party_b = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto setting_a = make_system_setting("onboarding.party_test", tenant_id);
+    setting_a.party_id = party_a;
+    auto setting_b = make_system_setting("onboarding.party_test", tenant_id);
+    setting_b.party_id = party_b;
+
+    system_settings_repository repo;
+    repo.write(h.context(), setting_a);
+    repo.write(h.context(), setting_b);
+
+    auto before = repo.read_latest(h.context(), setting_a.name);
+    REQUIRE(before.size() == 2);
+
+    // Closing party_a's row (the party_id-qualified overload) must leave
+    // party_b's row -- sharing the same name and tenant -- untouched.
+    // Regression test for the bug where remove(name) alone (relying on
+    // RLS, which isolates by tenant_id only) closed every party's row
+    // sharing the name.
+    CHECK_NOTHROW(repo.remove(h.context(), setting_a.name, party_a));
+
+    auto after = repo.read_latest(h.context(), setting_a.name);
+    BOOST_LOG_SEV(lg, debug) << "Open rows after party-scoped remove: " << after.size();
+    REQUIRE(after.size() == 1);
+    CHECK(after.front().party_id == party_b);
 }
 
 TEST_CASE("read_nonexistent_system_setting", tags) {

@@ -203,4 +203,20 @@ void system_settings_repository::remove(context ctx, const std::string& name) {
     execute_delete_query(ctx, query, lg(), "Removing system setting from database");
 }
 
+void system_settings_repository::remove(context ctx,
+                                        const std::string& name,
+                                        const std::string& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing system setting from database: " << name
+                               << " (party: " << party_id << ")";
+
+    // The database trigger closes the temporal record rather than deleting it.
+    // party_id filter is required here: RLS on this table isolates by
+    // tenant_id only, so name-only deletion would close every party's row
+    // sharing this name in the tenant, not just this one.
+    const auto query = sqlgen::delete_from<system_setting_entity> |
+                       where("name"_c == name && "party_id"_c == party_id);
+
+    execute_delete_query(ctx, query, lg(), "Removing system setting from database (party-scoped)");
+}
+
 }

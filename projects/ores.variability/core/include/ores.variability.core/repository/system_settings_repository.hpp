@@ -110,9 +110,26 @@ public:
     read_for_party(context ctx, const std::string& tenant_id, const std::string& party_id);
 
     /**
-     * @brief Logically deletes a setting by closing its temporal validity.
+     * @brief Logically deletes a tenant-/system-wide setting (no party_id)
+     * by closing its temporal validity.
+     *
+     * Only safe for settings whose party_id is unset -- RLS on this table
+     * isolates by tenant_id alone, so this affects every row with this
+     * name across every party in the tenant. Party-scoped settings (e.g.
+     * onboarding.party) must use the party_id-qualified overload below.
      */
     void remove(context ctx, const std::string& name);
+
+    /**
+     * @brief Logically deletes one party's setting by name, closing only
+     * that (name, party_id) row's temporal validity.
+     *
+     * Required for party-scoped settings: without the party_id filter,
+     * remove(name) would close every party's row sharing that name in
+     * the tenant (RLS isolates by tenant_id only), not just the target
+     * party's.
+     */
+    void remove(context ctx, const std::string& name, const std::string& party_id);
 };
 
 }

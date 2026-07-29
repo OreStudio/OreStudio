@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/analyse-calendar-followups-implementation
-#+pr:
+#+pr: 1750
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
@@ -127,7 +127,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1750][#1750]] | [agile] Close calendar-followups analysis task: superseded by organic planning |
 
 * Review
 

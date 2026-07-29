@@ -99,6 +99,38 @@ private:
     wire_format format_;
 };
 
+/**
+ * @brief Sets the process-wide default wire_codec.
+ *
+ * Every server process constructs exactly one ores::nats::service::client
+ * at startup from its resolved config, and that constructor calls this to
+ * publish the codec matching its ORES_NATS_WIRE_FORMAT setting. Generic
+ * message-handling code that has no client reference in scope --
+ * ores.service::messaging's reply()/decode() choke point, called from
+ * hundreds of handler call sites that were never threaded a client or a
+ * codec -- reads it back via default_wire_codec() instead of requiring a
+ * signature change at every one of those call sites.
+ *
+ * This is a deliberate, narrow exception to per-instance dependency
+ * injection, not a general-purpose global: it is safe precisely because
+ * the wire format is a single, process-wide, decided-once-at-startup
+ * value (see the write-up task's rejected-alternatives rationale), not a
+ * per-instance or per-message choice. Not thread-safe against concurrent
+ * set_default_wire_codec() calls from multiple clients disagreeing on
+ * format -- no service constructs more than one client with conflicting
+ * config, so this does not arise in practice.
+ */
+ORES_NATS_EXPORT void set_default_wire_codec(wire_codec codec);
+
+/**
+ * @brief Returns the process-wide default wire_codec (see
+ * set_default_wire_codec()). Defaults to wire_format::json before any
+ * client is constructed, matching the pre-existing behaviour for any
+ * caller that runs before startup config is applied (e.g. free-standing
+ * unit tests).
+ */
+[[nodiscard]] ORES_NATS_EXPORT const wire_codec& default_wire_codec();
+
 }
 
 #endif

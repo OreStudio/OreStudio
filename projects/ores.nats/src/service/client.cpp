@@ -20,6 +20,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/compression.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
@@ -341,6 +342,7 @@ std::size_t buffered_subscription::size() const {
 client::client(config::nats_options opts)
     : impl_(std::make_unique<impl>()) {
     impl_->opts = std::move(opts);
+    set_default_wire_codec(wire_codec(impl_->opts.format));
 }
 
 client::~client() {

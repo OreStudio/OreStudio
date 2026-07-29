@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-handler-helpers-to-wire-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,30 +38,81 @@ scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- [ ] =reply()=/=decode()= use the injected =wire_codec=; no direct
+- [X] =reply()=/=decode()= use the injected =wire_codec=; no direct
   =rfl::json= call remains in =handler_helpers.hpp=.
-- [ ] Every existing service test suite still passes unmodified
+- [X] Every existing service test suite still passes unmodified
   (proves the migration is behaviour-preserving when the codec is
   configured for =json=, today's default).
-- [ ] Audit result for bypassing call sites recorded in Notes, with
+- [X] Audit result for bypassing call sites recorded in Notes, with
   each one either migrated or explicitly deferred with a reason.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=reply()=/=decode()= in =handler_helpers.hpp= now call
+=ores::nats::default_wire_codec().encode(resp)=/=.decode<Req>(msg.data)=
+instead of hard-coded =rfl::json::write=/=read=.
+
+The blocker: =decode<Req>(msg)= is called from ~250+ handler call
+sites across every service (=ores.dq=, =ores.iam=, =ores.compute=,
+=ores.trading=, ...), none of which have a =wire_codec= or a
+=nats::service::client= reference in scope at the call site --
+threading one through would mean editing every one of those call
+sites, which is exactly what this task's "single change, no
+per-handler edits" framing rules out. Solution: a process-wide
+default =wire_codec= (=ores::nats::default_wire_codec()=/
+=set_default_wire_codec()=, added to =wire_codec.hpp=/=.cpp= in
+=ores.nats=), set automatically by =nats::service::client='s
+constructor -- every server process constructs exactly one =client=
+at startup from its resolved =nats_options=, so this requires zero
+edits at any of the ~250 call sites or any service's =host.cpp=. This
+is a deliberate, narrow exception to per-instance DI, justified
+because wire format is a single process-wide decided-once-at-startup
+value (per the write-up task's rejected-alternatives rationale), not
+a per-instance or per-message choice; documented as such directly on
+=default_wire_codec()='s doc comment.
+
+Stragglers migrated onto the same default codec:
+- =heartbeat_publisher.hpp='s =publish_once()=: replaced the manual
+  =rfl::json::write= + byte-copy with =default_wire_codec().encode(hb)=.
+- =workflow_helpers.hpp=: both the =step_completed_event= publish
+  (=workflow_step_context::publish()=) and the
+  =get_step_result_request=/=response= round-trip
+  (=check_step_idempotency()=) now go through the default codec. Left
+  untouched: the doc-comment example's =rfl::json::write(result)= and
+  the =result_json=/=error_message= string fields on
+  =step_completed_event= -- these are an embedded JSON domain field
+  (the step's own result payload, itself carried inside the wire
+  message), not the NATS wire-format serialization, matching the
+  write-up task's =OreImportWizard.cpp= false-positive precedent.
+
+Verification: full-repo =compass build --preset linux-clang-debug-make=
+clean (100%, no errors, including all ~40 service handler headers
+that transitively include =handler_helpers.hpp=); full
+=ctest --preset linux-clang-debug-make= 74/74 suites passed,
+confirming the migration is behaviour-preserving with the =json=
+default.
 
 * Notes
+
+Audit for call sites bypassing =handler_helpers.hpp='s =reply()=/
+=decode()= (per the write-up task's blast-radius audit,
+=doc/agile/versions/v0/sprint_24/nats-configurable-wire-format/task_write-up-wire-format-architecture.org=):
+
+- =heartbeat_publisher.hpp= and =workflow_helpers.hpp= -- migrated,
+  see =* Plan= above.
+- No further bypassing =rfl::json::write=/=read= call sites found in
+  =ores.service= beyond those two files and the doc-comment mention
+  in =workflow_helpers.hpp= (an embedded-JSON-field example, not a
+  wire-format call site).
 
 * Test Scenarios
 
@@ -87,3 +138,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=handler_helpers.hpp='s =reply()=/=decode()= choke point, plus the two
+straggler call sites identified by the write-up task
+(=heartbeat_publisher.hpp=, =workflow_helpers.hpp=), all now route
+through =ores::nats::default_wire_codec()= instead of hard-coded
+=rfl::json=. Because =decode<Req>(msg)= is called from ~250+ handler
+sites across every service with no client/codec reference in scope,
+the codec is a process-wide default set automatically by
+=nats::service::client='s constructor (one client per process,
+constructed from the resolved =nats_options.format=) rather than
+threaded through every call site -- zero edits needed at any handler
+call site or any service's =host.cpp=. Full-repo build and the
+complete 74-suite =ctest= run both pass, confirming the migration is
+behaviour-preserving under today's =json= default.

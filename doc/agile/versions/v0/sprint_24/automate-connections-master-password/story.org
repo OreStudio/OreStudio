@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 5B1B987E-A564-4F3F-B518-186A7F9DEFFF
+:END:
+#+title: Story: Automate connections.db master-password unlock via CLI/env
+#+description: Let ores.qt supply the connections.db master password via CLI arg or .env instead of requiring a click through MasterPasswordDialog every launch, so QA/automation scenarios and multi-client dev workflows aren't blocked on a manual unlock dialog.
+#+type: story
+#+level: s2
+#+filetags: :qt:connections:dx:automation:sprint_24:v0:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=ores.qt='s connection-bookmark store (=connections.db=, managed by
+=ores.connections=) is protected by a master password that gates
+decryption of stored server-login credentials. Today the only way to
+supply it is =MasterPasswordDialog= (=MainWindow::initializeConnectionManager()=,
+=projects/ores.qt/application/src/MainWindow.cpp:948-1049=) --
+=Unlock= mode when encrypted passwords already exist and the current
+in-memory =masterPassword_= doesn't verify, =Create= mode on first run.
+Every dev/test workflow that spins up one or more =ores.qt= instances
+(=compass client start=, the =--open-scenario= QA workflow, multi-
+client eventing scenarios) currently blocks on this dialog every
+single launch, with no way to script around it.
+
+Let the master password be supplied via a CLI arg and/or an
+=.env=-sourced environment variable (mirroring the pattern the sibling
+[[id:5E4F9A4D-A7C3-4917-8F5F-1DB1B1B1321F][server-login auto-unlock capture]]
+uses for the separate =LoginDialog= flow), so
+=initializeConnectionManager()= can attempt verification with the
+supplied value before falling back to the interactive dialog. As with
+that sibling capture: if an auto-unlock attempt is made (the env
+var/CLI arg is present) and fails -- wrong password, no encrypted
+passwords yet configured with that value, etc. -- surface a clear,
+loud message rather than silently falling through to the dialog or
+proceeding unlocked. The manual dialog path must remain available for
+whenever no env/CLI value is supplied.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-29                               |
+
+* Acceptance
+
+- A CLI arg and an equivalent =.env=-sourced environment variable can
+  both supply the connections.db master password at =ores.qt=
+  startup.
+- When supplied, =initializeConnectionManager()= attempts unlock with
+  it before falling back to =MasterPasswordDialog= -- no dialog shown
+  if it succeeds.
+- A failed auto-unlock attempt (wrong password) shows a clear message
+  box stating unlock was attempted automatically from the
+  environment/CLI and failed, rather than silently falling back to
+  the dialog or proceeding unlocked.
+- The manual =MasterPasswordDialog= (=Unlock=/=Create=/=Change=)
+  path is unaffected when no env/CLI value is supplied.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Auto-unlocking the separate server-login dialog (=LoginDialog=) --
+  that's the sibling capture
+  [[id:5E4F9A4D-A7C3-4917-8F5F-1DB1B1B1321F][Auto-unlock login from an env/CLI password]],
+  a distinct credential/flow from the local connections.db master
+  password this story covers.
+- =Create=/=Change= master-password flows via CLI/env -- this story
+  only covers unlocking an already-configured master password
+  non-interactively; first-time creation and password changes stay
+  interactive.

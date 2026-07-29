@@ -19,5 +19,7 @@
 set(files
     "config_nats_configuration_tests.cpp"
     "domain_compression_tests.cpp"
+    "domain_wire_codec_tests.cpp"
+    "domain_wire_format_tests.cpp"
     "main.cpp"
 )

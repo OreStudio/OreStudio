@@ -20,22 +20,39 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Switch =fx_spot_generation_config.ore_key='s generation source from the
+hand-written =oresmd://fx/<pair>?type=quote= currency-pair derivation
+(=FX/RATE/{base}/{quote}=) to =oresmd_projections::to_quote_key=, so the
+FX quote-key string is produced by the shared oresmd projection rule
+instead of being duplicated inline.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
--
+- [X] The only production =ore_key= derivation site
+  (=FxSpotRateEditor::onSaveClicked=) generates =ore_key= via
+  =oresmd_projections::to_quote_key= instead of hand-formatting
+  =FX/RATE/{base}/{quote}=.
+- [X] Output is unchanged for well-formed pairs: =to_quote_key= on
+  =fx_market_data_identifier{pair=base+quote, type=quote}= produces
+  exactly the same string the old inline derivation did (verified by
+  reading =oresmd_projections.cpp='s =quote_key_fx= and by the existing
+  81-case =ores.marketdata.core.tests= suite, which already covers this
+  projection rule).
+- [X] Full local build (=compass build=) is clean.
+- [ ] Delete of "old derivation code": nothing to delete beyond the
+  inline string concat replaced above -- there was no separate
+  standalone derivation function.
 
 * Plan
 
@@ -43,7 +60,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. Enumerate every write site of =fx_spot_generation_config.ore_key= --
+   found exactly one real derivation
+   (=FxSpotRateEditor.cpp:onSaveClicked=, ="FX/RATE/" + base + "/" +
+   quote=); every other assignment is either a mapper round-trip
+   (repository <-> domain), a synthetic-data generator fixture
+   (hardcoded =EUR/USD= for test rows, unrelated to real currency
+   codes), or a plain read.
+2. Replace the inline derivation with a
+   =marketdata::domain::fx_market_data_identifier= built from
+   =base+quote= and =instrument_type::quote=, projected via
+   =marketdata::core::oresmd_projections::to_quote_key=.
+3. Link =ores.marketdata.core.lib= (previously only
+   =ores.marketdata.api.lib= was linked) as a =PRIVATE= dependency of
+   =ores.qt.synthetic.lib=, since =oresmd_projections= lives in
+   =ores.marketdata.core=.
+4. Full =compass build= to confirm no regressions across the tree.
+5. Could not verify against existing DB rows: this environment's
+   database was freshly recreated with no synthetic data provisioned
+   (=fx_spot_generation_config= table exists but is empty) -- equivalence
+   was instead confirmed by inspecting =quote_key_fx='s implementation
+   (=FX/RATE/{pair[0:3]}/{pair[3:6]}=, byte-identical to the old inline
+   format) and by the projection's existing test coverage.
+
 * Notes
+
+- =ores.synthetic.api/generators/fx_spot_generation_config_generator.cpp='s
+  hardcoded =r.ore_key = "FX/RATE/EUR/USD"= was deliberately left
+  unmigrated: it's synthetic test-fixture data whose
+  =base_currency_code=/=quote_currency_code= are suffixed with a
+  disambiguating index (e.g. =EUR-3=) to guarantee uniqueness across
+  generated rows, not real 3-letter ISO codes -- feeding that through
+  =oresmd_projections::to_quote_key= would fail the pair-length
+  validation (=pair.size() != 6=) and return =std::nullopt=. Migrating
+  it isn't in scope: it's fixture generation, not the production
+  derivation this task targets.
 
 * Test Scenarios
 
@@ -69,3 +120,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=FxSpotRateEditor::onSaveClicked= (the only production write site for
+=fx_spot_generation_config.ore_key=) now derives =ore_key= via
+=marketdata::core::oresmd_projections::to_quote_key= on a
+=fx_market_data_identifier{pair=base+quote, type=quote}=, instead of the
+hand-written =FX/RATE/{base}/{quote}= string concatenation -- byte-identical
+output for well-formed pairs, now sourced from the shared oresmd projection
+rule instead of a duplicated local formula. =ores.marketdata.core.lib= added
+as a =PRIVATE= link dependency of =ores.qt.synthetic.lib= to reach
+=oresmd_projections=. Full =compass build= is clean; no separate legacy
+derivation function existed to delete -- the acceptance's "delete the old
+derivation code" is satisfied by the inline replacement itself. Couldn't
+verify against existing DB rows (this environment's database has no
+synthetic data provisioned), so equivalence rests on reading
+=quote_key_fx='s implementation plus the existing 81-case
+=ores.marketdata.core.tests= coverage of that projection rule.

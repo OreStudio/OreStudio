@@ -22,6 +22,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -1800,7 +1801,10 @@ void FxSpotRateEditor::onSaveClicked() {
     auto fx = fx_;
     fx.base_currency_code = base;
     fx.quote_currency_code = quote;
-    fx.ore_key = "FX/RATE/" + base + "/" + quote;
+    const marketdata::domain::fx_market_data_identifier oresmdFxId{
+        .pair = base + quote, .type = marketdata::domain::instrument_type::quote};
+    fx.ore_key =
+        marketdata::core::oresmd_projections::to_quote_key(oresmdFxId).value_or(std::string());
     fx.source_name = sourceNameEdit_->text().trimmed().toStdString();
     if (fx.source_name.empty())
         fx.source_name = defaultSourceName().toStdString();

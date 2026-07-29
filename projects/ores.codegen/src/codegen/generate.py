@@ -246,7 +246,7 @@ def _generate_single(
                 target_output=output_path.name,
             )
         else:
-            generate_from_model(
+            result = generate_from_model(
                 str(model_path),
                 data_dir,
                 templates_dir,
@@ -255,6 +255,13 @@ def _generate_single(
                 target_template=template_name,
                 target_output=output_path.name,
             )
+            if result:
+                # generate_from_model already logged why (e.g. a junction
+                # missing the ** Qt drawer its address requires) -- abort
+                # rather than hand a nonexistent path to clang_format_files
+                # below, which would crash on a file-not-found instead of
+                # surfacing the real cause.
+                return result
         log.info("Wrote %s", output_path)
         written.append(output_path)
 

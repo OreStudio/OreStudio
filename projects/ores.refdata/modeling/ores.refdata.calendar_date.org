@@ -167,33 +167,35 @@ std::string("quantlib_computed")
 
 ** Qt
 :PROPERTIES:
-:domain_include:            ores.refdata.api/domain/calendar_date.hpp
-:domain_class:               refdata::domain::calendar_date
-:protocol_include:           ores.refdata.api/messaging/calendar_date_protocol.hpp
-:collection_name:            calendar_dates
-:item_var:                   calendar_date
-:key_field:                  date
-:get_request_class:          refdata::messaging::get_calendar_dates_by_calendar_request
-:get_response_class:         refdata::messaging::get_calendar_dates_by_calendar_response
-:get_message_type:           get_calendar_dates_by_calendar_request
-:has_pagination:             true
+:domain_include:              ores.refdata.api/domain/calendar_date.hpp
+:domain_class:                refdata::domain::calendar_date
+:protocol_include:            ores.refdata.api/messaging/calendar_date_protocol.hpp
+:collection_name:             calendar_dates
+:item_var:                    calendar_date
+:key_field:                   date
+:key_to_string_prefix:        ores::platform::time::datetime::to_iso8601_date(
+:key_to_string_suffix:        )
+:get_request_class:           refdata::messaging::get_calendar_dates_by_calendar_request
+:get_response_class:          refdata::messaging::get_calendar_dates_by_calendar_response
+:get_message_type:            get_calendar_dates_by_calendar_request
+:has_pagination:              true
 :has_readonly_paginated_list: true
-:has_parent_scoped_list:     true
-:parent_key_field:           calendar_code
-:parent_key_param:           calendarCode
-:settings_group:             CalendarDateListWindow
-:qt_settings_version:        1
+:has_parent_scoped_list:      true
+:parent_key_field:            calendar_code
+:parent_key_param:            calendarCode
+:settings_group:              CalendarDateListWindow
+:qt_settings_version:         1
 :window_title:                Browse Holidays
 :icon:                        Table
 :END:
 
 *** Columns (Qt model)
 
-| field           | label        | type    |
-|-----------------+--------------+---------|
-| date             | Date         | date    |
-| is_business_day  | Business Day | boolean |
-| source           | Source       | text    |
+| enum_name    | field           | header       | type    | width |
+|--------------+-----------------+--------------+---------+-------|
+| Date         | date            | Date         | date    |   120 |
+| IsBusinessDay | is_business_day | Business Day | bool    |   100 |
+| Source       | source          | Source       | string  |   140 |
 
 * See also
 

@@ -230,6 +230,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | model_types widening on ores.cpp.qt.org is facet-wide -- every existing junction (not just calendar_date) becomes a latent candidate for broken Qt generation, not just calendar_date | ores.cpp.qt.org | Accepted | Fixed in follow-up PR #1742: core.py fails fast with a clear error when a junction lacking a ** Qt drawer is targeted at ores.cpp.qt, instead of silently emitting broken output. Verified currency_calendar (an existing Qt-drawer-less junction) now errors cleanly with no files written. |
+| 2 | story.org's F081079A row says STARTED but the task's own Status table says BLOCKED; truncated/unlinked ID reference; doubled leading-dash bullets in two new task files | story.org, task_junction-qt-facet-codegen.org, task_prune-merged-branches.org | Accepted | Fixed in follow-up PR #1742: story.org row synced to BLOCKED, ID reference is now a proper org link, both doubled bullets fixed. |
+| 3 | calendar_date.org's Columns (Qt model) table missing enum_name column; source's type "text" isn't a recognised type keyword | ores.refdata.calendar_date.org | Accepted | Fixed in follow-up PR #1742: table now has enum_name (Date/IsBusinessDay/Source) and source's type is string. Verified via a real (not just --diff) generation that now compiles and links. |
 
 * Result

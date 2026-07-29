@@ -884,151 +884,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         # Qt UI bindings.
         qt = _section(cpp_section, "Qt")
         if qt:
-            qt_out: dict[str, Any] = {}
-            for k, v in qt.properties.items():
-                qt_out[k.lower()] = _parse_typed(v)
-            df = _section(qt, "Detail fields")
-            if df:
-                qt_out["detail_fields"] = _detail_fields(df)
-                # static_combo fields declare their fixed option set as a
-                # comma-separated :combo_values: string (e.g. "Active,
-                # Inactive,Closed") — parsed here into the {label, value}
-                # dicts the template iterates. label == value; if a field
-                # ever needs them to differ, extend this to accept
-                # "label:value" pairs.
-                for f in qt_out["detail_fields"]:
-                    raw = f.get('combo_values')
-                    if f.get('type') == 'static_combo' and isinstance(raw, str) and raw:
-                        f['combo_values'] = [
-                            {'label': v.strip(), 'value': v.strip()}
-                            for v in raw.split(',') if v.strip()
-                        ]
-                # combo_widget_customs/has_combo_badge_source are computed in
-                # core.py, not here: they depend on combo_widget_class /
-                # badge_key values that core.py's is_flagged_combo /
-                # is_static_combo handling defaults in, which runs after
-                # this module.
-            qc = _section(qt, "Columns (Qt model)")
-            if qc:
-                qt_out["columns"] = _qt_columns(qc)
-                # Preview columns for the generic import dialog (has_csv_xml_io):
-                # excludes audit/system fields that are meaningless before a
-                # record is imported (its own version/modified_by/recorded_at
-                # belong to the never-yet-saved row, not the source file).
-                #
-                # Opt-in, not opt-out: a column only appears in the import
-                # preview if its row in "Columns (Qt model)" sets
-                # :import_preview: true explicitly. An exclude-list keyed on
-                # generic properties (is_timestamp, audit field names) was
-                # tried first and silently over-included fields the entity
-                # author never intended to preview (caught in PR #1445
-                # review — currency's hand-migrated dialog only shows 5 of
-                # its 14 columns, not the ~11 an opt-out list would keep).
-                qt_out["import_preview_columns"] = [
-                    c for c in qt_out["columns"] if c.get("import_preview")
-                ]
-            ic = _section(qt, "Icon columns (Qt model)")
-            if ic:
-                qt_out["icon_columns"] = _qt_icon_columns(ic)
-                qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
-                # Any pair (roughly 2:1) composited icon needs the view's
-                # iconSize widened past Qt's default square box — see
-                # currency_pair_icon_size() in FlagIconHelper.hpp — or it
-                # renders squished.
-                qt_out["has_pair_icon_column"] = any(
-                    entry.get("is_pair") for entry in qt_out["icon_columns"]
-                )
-            sga = _section(qt, "Setting-gated actions")
-            if sga:
-                qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
-                qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
-            # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
-            # facet) — a detail dialog opts into a "Generate" toolbar button that fills
-            # its fields from it by naming the QAction member "generateAction" in the
-            # Setting-gated actions table above (member declaration + visibility gating
-            # both come from that table already; this only decides whether the click
-            # handler and its generator call get generated).
-            qt_out["has_generate_action"] = any(
-                a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
-            )
-            # A detail dialog needs a QToolBar iff it hosts version-nav
-            # actions, the Generate action (both add QAction rows to it),
-            # or the author explicitly asked for one (e.g. to host a
-            # hand-written paste-block action with no dedicated knob of
-            # its own, like calendar's "Regenerate up to <year>") --
-            # an explicit :has_toolbar: true in the drawer must survive
-            # this derivation, not be silently overwritten by it.
-            qt_out["has_toolbar"] = bool(
-                qt_out.get("has_toolbar")
-                or qt_out.get("has_version_navigation")
-                or qt_out["has_generate_action"]
-            )
-            res = _section(qt, "Related entity shortcuts")
-            if res:
-                qt_out["related_entity_shortcuts"] = _qt_related_entity_shortcuts(res)
-                qt_out["has_related_entity_shortcuts"] = bool(qt_out["related_entity_shortcuts"])
-            # has_flag_icon is derived, not a separately-authored property:
-            # an entity has the single-column image_id-keyed flag mechanism
-            # iff it declared which column shows it. Any manually-set
-            # :has_flag_icon: in the .org file is ignored/overwritten here —
-            # it was always redundant with :flag_icon_column: being present.
-            qt_out["has_flag_icon"] = bool(qt_out.get("flag_icon_column"))
-            # has_key_flag_icon gates ONLY the detail dialog's inline
-            # leading-icon-on-a-line-edit display (keyFlagField()/
-            # keyFlagIcon(), via set_line_edit_flag_icon() —
-            # FlagIconHelper.hpp) — a purely derived, read-only decoration
-            # requiring no image_id field of its own. Deliberately split
-            # from has_flag_icon (the entity's own uploadable flag image:
-            # entityImageId(), initFlagButton(), image_id save-back) since
-            # an entity can want one without the other — e.g.
-            # currency_pair_convention shows a flag derived from its
-            # pair_code text field but owns no image_id at all. Defaults
-            # key_flag_field/key_flag_accessor from flag_inline_widget/
-            # flag_accessor when has_flag_icon is set and neither was given
-            # explicitly, so existing has_flag_icon entities (Country,
-            # Currency) are unaffected.
-            if not qt_out.get("key_flag_field") and qt_out.get("flag_inline_widget"):
-                qt_out["key_flag_field"] = qt_out["flag_inline_widget"]
-            if not qt_out.get("key_flag_accessor") and qt_out.get("flag_accessor"):
-                qt_out["key_flag_accessor"] = qt_out["flag_accessor"]
-            qt_out["has_key_flag_icon"] = bool(qt_out.get("key_flag_field"))
-            # Any list view showing a flag at all (own image_id-backed
-            # column, or a derived icon_columns entry) must set an explicit
-            # iconSize rather than rely on Qt's implicit per-style default —
-            # see single_flag_icon_size()/currency_pair_icon_size() in
-            # FlagIconHelper.hpp: two views relying on the implicit default
-            # aren't guaranteed to render the same flag at the same size.
-            qt_out["has_any_flag_icon"] = (
-                qt_out["has_flag_icon"] or qt_out.get("has_icon_columns", False)
-            )
-            # Whether an ImageCache reference needs threading through the
-            # controller/window/detail-dialog layers at all — true for either
-            # icon mechanism. Kept distinct from has_flag_icon (which also
-            # still gates the single-column iconColumn()/flagDecoration()
-            # code in the client model itself) so that a model using only
-            # the newer multi-column mechanism still gets ImageCache wired
-            # through everywhere it's needed.
-            # Whether any dynamic-combo detail field decorates its items with
-            # flag icons (e.g. a currency combo) via FlagIconHelper —
-            # gates the include and the ImageCache wiring below.
-            qt_out["has_combo_flag_source"] = any(
-                f.get("flag_source") for f in qt_out.get("detail_fields", [])
-            )
-            # Whether any dynamic-combo detail field uses the
-            # populateDynamicCombo<Entity> helper (fetch/sort/tooltip/
-            # placeholder/restore-selection, piloted on currency's
-            # rounding_type/monetary_nature/market_tier combos) — gates
-            # the DynamicComboSetup.hpp/LookupFetcher.hpp includes.
-            qt_out["has_dynamic_combo_helper_fields"] = any(
-                f.get("combo_domain_type") for f in qt_out.get("detail_fields", [])
-            )
-            qt_out["needs_image_cache"] = (
-                qt_out["has_flag_icon"]
-                or qt_out["has_key_flag_icon"]
-                or qt_out.get("has_icon_columns", False)
-                or qt_out["has_combo_flag_source"]
-            )
-            de["qt"] = qt_out
+            de["qt"] = _parse_qt_drawer(qt)
 
         # Custom repository methods (the literate fragment mechanism).
         cm = _section(cpp_section, "Custom repository methods")
@@ -1042,6 +898,160 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         de["implementations"] = impls
 
     return {"domain_entity": de}
+
+
+def _parse_qt_drawer(qt: OrgNode) -> dict[str, Any]:
+    """Parse a ``** Qt`` drawer (properties + Detail fields / Columns (Qt
+    model) / Icon columns / Setting-gated actions / Related entity
+    shortcuts sub-sections) into the ``qt`` sub-dict the ``ores.cpp.qt``
+    mustache templates consume. Shared by :func:`org_document_to_model`
+    (domain_entity) and :func:`load_org_junction_model` (junction) — the
+    drawer shape and every derived flag below is identical for both."""
+    qt_out: dict[str, Any] = {}
+    for k, v in qt.properties.items():
+        qt_out[k.lower()] = _parse_typed(v)
+    df = _section(qt, "Detail fields")
+    if df:
+        qt_out["detail_fields"] = _detail_fields(df)
+        # static_combo fields declare their fixed option set as a
+        # comma-separated :combo_values: string (e.g. "Active,
+        # Inactive,Closed") — parsed here into the {label, value}
+        # dicts the template iterates. label == value; if a field
+        # ever needs them to differ, extend this to accept
+        # "label:value" pairs.
+        for f in qt_out["detail_fields"]:
+            raw = f.get('combo_values')
+            if f.get('type') == 'static_combo' and isinstance(raw, str) and raw:
+                f['combo_values'] = [
+                    {'label': v.strip(), 'value': v.strip()}
+                    for v in raw.split(',') if v.strip()
+                ]
+        # combo_widget_customs/has_combo_badge_source are computed in
+        # core.py, not here: they depend on combo_widget_class /
+        # badge_key values that core.py's is_flagged_combo /
+        # is_static_combo handling defaults in, which runs after
+        # this module.
+    qc = _section(qt, "Columns (Qt model)")
+    if qc:
+        qt_out["columns"] = _qt_columns(qc)
+        # Preview columns for the generic import dialog (has_csv_xml_io):
+        # excludes audit/system fields that are meaningless before a
+        # record is imported (its own version/modified_by/recorded_at
+        # belong to the never-yet-saved row, not the source file).
+        #
+        # Opt-in, not opt-out: a column only appears in the import
+        # preview if its row in "Columns (Qt model)" sets
+        # :import_preview: true explicitly. An exclude-list keyed on
+        # generic properties (is_timestamp, audit field names) was
+        # tried first and silently over-included fields the entity
+        # author never intended to preview (caught in PR #1445
+        # review — currency's hand-migrated dialog only shows 5 of
+        # its 14 columns, not the ~11 an opt-out list would keep).
+        qt_out["import_preview_columns"] = [
+            c for c in qt_out["columns"] if c.get("import_preview")
+        ]
+    ic = _section(qt, "Icon columns (Qt model)")
+    if ic:
+        qt_out["icon_columns"] = _qt_icon_columns(ic)
+        qt_out["has_icon_columns"] = bool(qt_out["icon_columns"])
+        # Any pair (roughly 2:1) composited icon needs the view's
+        # iconSize widened past Qt's default square box — see
+        # currency_pair_icon_size() in FlagIconHelper.hpp — or it
+        # renders squished.
+        qt_out["has_pair_icon_column"] = any(
+            entry.get("is_pair") for entry in qt_out["icon_columns"]
+        )
+    sga = _section(qt, "Setting-gated actions")
+    if sga:
+        qt_out["setting_gated_actions"] = _qt_setting_gated_actions(sga)
+        qt_out["has_setting_gated_actions"] = bool(qt_out["setting_gated_actions"])
+    # Every entity gets a generate_synthetic_<entity> generator (ores.cpp.generator
+    # facet) — a detail dialog opts into a "Generate" toolbar button that fills
+    # its fields from it by naming the QAction member "generateAction" in the
+    # Setting-gated actions table above (member declaration + visibility gating
+    # both come from that table already; this only decides whether the click
+    # handler and its generator call get generated).
+    qt_out["has_generate_action"] = any(
+        a.get("action") == "generateAction" for a in qt_out.get("setting_gated_actions", [])
+    )
+    # A detail dialog needs a QToolBar iff it hosts version-nav
+    # actions, the Generate action (both add QAction rows to it),
+    # or the author explicitly asked for one (e.g. to host a
+    # hand-written paste-block action with no dedicated knob of
+    # its own, like calendar's "Regenerate up to <year>") --
+    # an explicit :has_toolbar: true in the drawer must survive
+    # this derivation, not be silently overwritten by it.
+    qt_out["has_toolbar"] = bool(
+        qt_out.get("has_toolbar")
+        or qt_out.get("has_version_navigation")
+        or qt_out["has_generate_action"]
+    )
+    res = _section(qt, "Related entity shortcuts")
+    if res:
+        qt_out["related_entity_shortcuts"] = _qt_related_entity_shortcuts(res)
+        qt_out["has_related_entity_shortcuts"] = bool(qt_out["related_entity_shortcuts"])
+    # has_flag_icon is derived, not a separately-authored property:
+    # an entity has the single-column image_id-keyed flag mechanism
+    # iff it declared which column shows it. Any manually-set
+    # :has_flag_icon: in the .org file is ignored/overwritten here —
+    # it was always redundant with :flag_icon_column: being present.
+    qt_out["has_flag_icon"] = bool(qt_out.get("flag_icon_column"))
+    # has_key_flag_icon gates ONLY the detail dialog's inline
+    # leading-icon-on-a-line-edit display (keyFlagField()/
+    # keyFlagIcon(), via set_line_edit_flag_icon() —
+    # FlagIconHelper.hpp) — a purely derived, read-only decoration
+    # requiring no image_id field of its own. Deliberately split
+    # from has_flag_icon (the entity's own uploadable flag image:
+    # entityImageId(), initFlagButton(), image_id save-back) since
+    # an entity can want one without the other — e.g.
+    # currency_pair_convention shows a flag derived from its
+    # pair_code text field but owns no image_id at all. Defaults
+    # key_flag_field/key_flag_accessor from flag_inline_widget/
+    # flag_accessor when has_flag_icon is set and neither was given
+    # explicitly, so existing has_flag_icon entities (Country,
+    # Currency) are unaffected.
+    if not qt_out.get("key_flag_field") and qt_out.get("flag_inline_widget"):
+        qt_out["key_flag_field"] = qt_out["flag_inline_widget"]
+    if not qt_out.get("key_flag_accessor") and qt_out.get("flag_accessor"):
+        qt_out["key_flag_accessor"] = qt_out["flag_accessor"]
+    qt_out["has_key_flag_icon"] = bool(qt_out.get("key_flag_field"))
+    # Any list view showing a flag at all (own image_id-backed
+    # column, or a derived icon_columns entry) must set an explicit
+    # iconSize rather than rely on Qt's implicit per-style default —
+    # see single_flag_icon_size()/currency_pair_icon_size() in
+    # FlagIconHelper.hpp: two views relying on the implicit default
+    # aren't guaranteed to render the same flag at the same size.
+    qt_out["has_any_flag_icon"] = (
+        qt_out["has_flag_icon"] or qt_out.get("has_icon_columns", False)
+    )
+    # Whether an ImageCache reference needs threading through the
+    # controller/window/detail-dialog layers at all — true for either
+    # icon mechanism. Kept distinct from has_flag_icon (which also
+    # still gates the single-column iconColumn()/flagDecoration()
+    # code in the client model itself) so that a model using only
+    # the newer multi-column mechanism still gets ImageCache wired
+    # through everywhere it's needed.
+    # Whether any dynamic-combo detail field decorates its items with
+    # flag icons (e.g. a currency combo) via FlagIconHelper —
+    # gates the include and the ImageCache wiring below.
+    qt_out["has_combo_flag_source"] = any(
+        f.get("flag_source") for f in qt_out.get("detail_fields", [])
+    )
+    # Whether any dynamic-combo detail field uses the
+    # populateDynamicCombo<Entity> helper (fetch/sort/tooltip/
+    # placeholder/restore-selection, piloted on currency's
+    # rounding_type/monetary_nature/market_tier combos) — gates
+    # the DynamicComboSetup.hpp/LookupFetcher.hpp includes.
+    qt_out["has_dynamic_combo_helper_fields"] = any(
+        f.get("combo_domain_type") for f in qt_out.get("detail_fields", [])
+    )
+    qt_out["needs_image_cache"] = (
+        qt_out["has_flag_icon"]
+        or qt_out["has_key_flag_icon"]
+        or qt_out.get("has_icon_columns", False)
+        or qt_out["has_combo_flag_source"]
+    )
+    return qt_out
 
 
 # --------------------------------------------------------------------------
@@ -1192,6 +1202,58 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         td = _section(cpp_section, "Table display")
         if td:
             cpp_out["table_display"] = _table_display(td)
+
+        # Qt UI bindings, parsed identically to a domain_entity's ** Qt
+        # drawer (see _parse_qt_drawer) -- but a junction's own fields
+        # (name_singular/name/... , repository.name_short/...) use
+        # different key names than domain_entity's (entity_singular/
+        # entity_plural/..., repository.entity_plural_short/...), so the
+        # ores.cpp.qt templates (written once, against the domain_entity
+        # shape only) need those keys aliased onto j directly. Only done
+        # when a Qt drawer is actually present -- a junction with no Qt
+        # facet stays exactly as before.
+        qt_section = _section(cpp_section, "Qt")
+        if qt_section:
+            j["qt"] = _parse_qt_drawer(qt_section)
+            name_singular = j.get("name_singular", "unknown")
+            words = name_singular.split("_")
+            j["entity_singular"] = name_singular
+            j["entity_plural"] = j.get("name", name_singular + "s")
+            j["entity_title"] = j.get("name_title")
+            j["entity_singular_words"] = j.get("name_singular_words") or (
+                words[-1] if words else name_singular)
+            j["entity_snake"] = name_singular
+            j["entity_upper"] = name_singular.upper()
+            j["entity_pascal"] = "".join(w.capitalize() for w in words)
+            j["entity_pascal_short"] = (
+                words[-1].capitalize() if words else name_singular.capitalize())
+            plural_words = j["entity_plural"].split("_")
+            j["entity_pascal_short_plural"] = (
+                plural_words[-1].capitalize() if plural_words
+                else j["entity_plural"].capitalize())
+            j["entity_plural_words"] = plural_words[-1] if plural_words else j["entity_plural"]
+            # repository.entity_plural_short is what client_model_impl's
+            # generated get-response field access uses (result->{{...}}) --
+            # aliased from the junction Repository drawer's own
+            # name_short/name_singular_short naming.
+            repo = j.get("repository") or {}
+            if repo:
+                # Merge, not replace -- repo also carries name_short/
+                # name_singular_short/name_words/order_column, which
+                # core.py's repository-field hoist (below) copies onto
+                # the junction's top level for the non-Qt repository/
+                # service/nats-handler templates to consume directly
+                # (e.g. order_by("{{order_column}}"_c)). Replacing the
+                # dict wholesale would silently corrupt those facets the
+                # next time they're regenerated.
+                repo.update({
+                    "entity_singular_short": repo.get("name_singular_short", name_singular),
+                    "entity_plural_short": repo.get("name_short", j["entity_plural"]),
+                    "entity_singular_words": repo.get(
+                        "name_singular_words", j["entity_singular_words"]),
+                    "entity_plural_words": repo.get(
+                        "name_words", j["entity_plural_words"]),
+                })
     if cpp_out:
         j["cpp"] = cpp_out
 

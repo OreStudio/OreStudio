@@ -1435,6 +1435,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Check for Qt generation flag (qt_ or cpp_qt_ prefix in target_template)
     generate_qt = target_template and (target_template.startswith('qt_') or target_template.startswith('cpp_qt_'))
 
+    # A junction is only ever eligible for ores.cpp.qt generation via its
+    # own ** Qt drawer (see the domain_entity aliasing below) -- the
+    # facet's #+model_types: admits every junction at the routing layer
+    # (physical_space.py has no visibility into a junction's body, only
+    # its frontmatter), so a junction with no Qt drawer must fail fast
+    # here rather than silently emit a domain_entity-less render (empty
+    # class names, mangled macro guards -- the exact failure this facet
+    # exhibited before junction support existed at all).
+    if is_junction and generate_qt and not model.get('junction', {}).get('qt'):
+        print(f"{model_filename}: junction has no ** Qt drawer -- "
+              f"{target_template} needs one (see ores.refdata.calendar_date.org "
+              f"for a worked example)")
+        return 1
+
     # Determine which templates to process
     if target_template:
         templates_to_process = [target_template]
@@ -2994,6 +3008,17 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for key, value in junction['repository'].items():
                 junction[key] = value
         data['junction'] = junction
+        # A junction with a ** Qt drawer renders through the ores.cpp.qt
+        # facet exactly like a domain_entity: org_loader.py's
+        # load_org_junction_model already aliased the entity_singular/
+        # entity_plural/entity_pascal/... family (and repository.
+        # entity_plural_short) onto this same dict when it parsed the
+        # drawer, so the (already fully-enriched, component_include and
+        # all) junction dict can stand in for 'domain_entity' as-is --
+        # no separate enrichment pass needed, the domain_entity-only
+        # block above never runs for a junction model.
+        if generate_qt and 'qt' in junction:
+            data['domain_entity'] = junction
 
     # Special processing for field-group models
     if is_field_group and isinstance(model, dict) and 'field_group' in model:

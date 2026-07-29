@@ -20,14 +20,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "catalog_generator_service_tests.cpp"
-    "generation_context_tests.cpp"
-    "generators_tests.cpp"
-    "main.cpp"
-    "organisation_generator_service_tests.cpp"
-    "organisation_publisher_integration_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

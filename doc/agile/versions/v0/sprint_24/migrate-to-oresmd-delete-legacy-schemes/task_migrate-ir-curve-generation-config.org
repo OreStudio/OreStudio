@@ -37,11 +37,11 @@ story's =* Decisions=).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Plan written, pending review before touching schema/codegen. |
+| Now          | Nothing. |
 | Waiting on   | Plan sign-off.                        |
-| Next         | Regenerate the codegen entity per the plan below. |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -328,3 +328,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Replaced =ir_curve_generation_config.index_name= with =index_family=
+(=static_combo=: libor/euribor/sofr/estr/sonia/tona), =tenor=
+(=dynamic_combo= over =refdata::domain::tenor= via a new
+=fetch_tenors=), and =role= (=static_combo=:
+discount/projection/self_discounting). The model needed converting
+from the legacy =* Primary key=/=* Natural keys= heading format to the
+unified =Columns= + =:primary_key:=/=:natural_key:= flag format this
+codegen version now requires -- discovered mid-task, not anticipated
+in the plan; migrated only this one entity, not the rest of
+=ores.synthetic=, which stays on the legacy format for now.
+
+=(currency_code, index_family)= is validated by a C++ service-layer
+composite check (=ir_curve_generation_config_service::validate_index_family=)
+against =overnight_index_convention=/=ibor_index_convention=, since the
+codegen Insert-trigger Validations mechanism can't express a two-column
+lookup -- matching the precedent this entity's own =tenor= field
+already set (also app-layer-only).
+
+=curve_feed_controller='s collision check now keys on =(qualifier,
+role)= via a new, pure =ir_curve_feeds_conflict= predicate (extracted
+for testability, since neither =ir_curve_feed= nor
+=curve_feed_controller= can be constructed without a live NATS client):
+two feeds with the same =(currency_code, index_family, tenor)= but
+different =role= no longer conflict, closing the discount-vs-projection
+coexistence gap this task exists for. New
+=curve_feed_controller_tests.cpp= covers that case directly, plus
+same-role conflict and different-qualifier non-conflict.
+
+Every remaining =index_name= consumer migrated onto
+=index_family=/=tenor=: =ir_curve_feed.cpp='s qualifier construction,
+=IrCurveEditor.cpp= (split/rejoin at the family/tenor boundary, reusing
+its existing floating_index_type-backed combo rather than restructuring
+the widget), =IrCurveGenerationConfigHistoryDialog.cpp= (hand-maintained,
+predates the generic HistoryDialog rollout), =MarketSimulatorWindow.cpp='s
+binding-collision preflight check and tree sort (also rebuilt to key on
+=(currency_code, index_family, tenor, role)=, matching the server-side
+fix), =SyntheticBindingDialog.cpp=, and =application.cpp='s auto-start
+logging.
+
+Two unrelated fixes surfaced and were folded in rather than deferred,
+per direct instruction:
+- A pre-existing codegen bug (=core.py=): required =static_combo=
+  fields were misclassified into the =.text()=-based =QLineEdit=
+  validation bucket instead of the =currentIndex() >= 0=-based
+  =QComboBox= bucket -- no prior entity had a *required* =static_combo=
+  field to expose it.
+- A macOS-only CI regression from the already-merged oresmd PRs:
+  =oresmd_exception= was a header-only class with no export/visibility
+  macro, causing an RTTI mismatch across the =ores.marketdata.core=
+  shared-library boundary on Mach-O (every =REQUIRE_THROWS_AS= in
+  =oresmd_oresmd_parser_tests.cpp=/=oresmd_oresmd_resolver_tests.cpp=
+  failing with "unexpected exception" despite the correct message).
+  Fixed by adding =ORES_MARKETDATA_CORE_EXPORT=.
+
+Full =compass build= clean; =ctest= 74/74 test suites (78 test cases)
+green throughout.

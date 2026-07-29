@@ -21,12 +21,12 @@
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -175,8 +175,7 @@ private:
                                                               .error_message = error_msg,
                                                               .log = log};
 
-        const auto json = rfl::json::write(event);
-        const auto data = std::as_bytes(std::span{json.data(), json.size()});
+        const auto data = ores::nats::default_wire_codec().encode(event);
         nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject, data);
     }
 };
@@ -248,16 +247,14 @@ inline std::optional<cached_step_result> check_step_idempotency(ores::nats::serv
     using namespace ores::workflow::messaging;
 
     const get_step_result_request req{.step_id = step_id};
-    const auto json = rfl::json::write(req);
-    const auto data = std::as_bytes(std::span{json.data(), json.size()});
+    const auto data = ores::nats::default_wire_codec().encode(req);
 
     try {
         const auto reply_msg = nats.request_sync(
             get_step_result_request::nats_subject, data, {}, std::chrono::seconds(5));
 
-        const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
-                                  reply_msg.data.size());
-        const auto resp = rfl::json::read<get_step_result_response>(sv);
+        const auto resp =
+            ores::nats::default_wire_codec().decode<get_step_result_response>(reply_msg.data);
         if (!resp || !resp->found)
             return std::nullopt;
 

@@ -21,6 +21,7 @@
 #define ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -31,7 +32,6 @@
 #include <boost/system/system_error.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::service::service {
@@ -110,10 +110,7 @@ private:
             hb.instance_id = instance_id_;
             hb.version = version_;
 
-            const auto json = rfl::json::write(hb);
-            std::vector<std::byte> data(
-                reinterpret_cast<const std::byte*>(json.data()),
-                reinterpret_cast<const std::byte*>(json.data() + json.size()));
+            auto data = ores::nats::default_wire_codec().encode(hb);
             nats_.publish(telemetry::messaging::service_heartbeat_message::nats_subject,
                           std::move(data));
             BOOST_LOG_SEV(lg(), ores::logging::trace) << "Heartbeat published: " << service_name_;

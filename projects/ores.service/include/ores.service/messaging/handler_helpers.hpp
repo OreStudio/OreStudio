@@ -25,12 +25,12 @@
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
-#include <rfl/json.hpp>
 #include <span>
 #include <string_view>
 
@@ -172,9 +172,8 @@ template <typename Resp>
 void reply(ores::nats::service::client& nats, const ores::nats::message& msg, const Resp& resp) {
     if (msg.reply_subject.empty())
         return;
-    const auto json = rfl::json::write(resp);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
-    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
+    const auto bytes = ores::nats::default_wire_codec().encode(resp);
+    nats.publish(msg.reply_subject, std::span<const std::byte>(bytes));
 }
 
 /**
@@ -243,12 +242,11 @@ inline void error_reply(ores::nats::service::client& nats,
                  {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
 }
 
-// Deserialise the message payload from JSON into Req.
-// Returns nullopt on parse failure.
+// Deserialise the message payload into Req using the process-wide default
+// wire_codec. Returns nullopt on parse failure.
 template <typename Req>
 std::optional<Req> decode(const ores::nats::message& msg) {
-    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto r = rfl::json::read<Req>(sv);
+    auto r = ores::nats::default_wire_codec().decode<Req>(msg.data);
     if (!r)
         return std::nullopt;
     return *r;

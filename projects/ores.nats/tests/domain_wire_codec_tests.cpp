@@ -112,3 +112,18 @@ TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input"
 
     CHECK_FALSE(decoded.has_value());
 }
+
+TEST_CASE("default_wire_codec defaults to json and reflects set_default_wire_codec", tags) {
+    // No ores::nats::service::client has been constructed in this test
+    // binary, so the process-wide default is still whatever it was left
+    // at by construction (json) -- verify that, then verify
+    // set_default_wire_codec() actually changes it, restoring json
+    // afterwards so this test doesn't leak state into others.
+    CHECK(ores::nats::default_wire_codec().format() == ores::nats::wire_format::json);
+
+    ores::nats::set_default_wire_codec(ores::nats::wire_codec(ores::nats::wire_format::msgpack));
+    CHECK(ores::nats::default_wire_codec().format() == ores::nats::wire_format::msgpack);
+
+    ores::nats::set_default_wire_codec(ores::nats::wire_codec(ores::nats::wire_format::json));
+    CHECK(ores::nats::default_wire_codec().format() == ores::nats::wire_format::json);
+}

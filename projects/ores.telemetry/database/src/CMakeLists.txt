@@ -19,10 +19,11 @@ set(name "ores.telemetry.database")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "repository/telemetry_entity.cpp"
+    "repository/telemetry_mapper.cpp"
+    "repository/telemetry_repository.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

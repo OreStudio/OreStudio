@@ -22,25 +22,7 @@ set(name "ores.analytics.quant")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/business_day_calendar_set.cpp"
-    "domain/process_parameter_validation.cpp"
-    "service/calendar_rule_engine.cpp"
-    "service/curve_instrument_pricer.cpp"
-    "service/process_factory.cpp"
-    "service/processes/arithmetic_gaussian_mixture_model_process.cpp"
-    "service/processes/cox_ingersoll_ross_process.cpp"
-    "service/processes/gaussian_mixture_model_process.cpp"
-    "service/processes/hull_white_process.cpp"
-    "service/processes/ornstein_uhlenbeck_process.cpp"
-    "service/processes/vasicek_process.cpp"
-    "service/quantlib_calendar_rulesets.cpp"
-    "service/rate_delta_tracker.cpp"
-    "service/rate_engine.cpp"
-    "service/rate_reciprocator.cpp"
-    "service/risk_recentering.cpp"
-    "service/topology_builder.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

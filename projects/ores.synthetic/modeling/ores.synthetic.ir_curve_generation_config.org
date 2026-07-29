@@ -104,8 +104,9 @@ std::string("sofr")
 
 ** tenor
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Tenor of this curve's floating-rate index (references =tenor.code=,
@@ -131,6 +132,7 @@ std::string("")
 :cpp_type:      std::string
 :nullable:      false
 :default_value: "self_discounting"
+:natural_key:   true
 :END:
 
 Whether this curve discounts cashflows, projects a floating index's

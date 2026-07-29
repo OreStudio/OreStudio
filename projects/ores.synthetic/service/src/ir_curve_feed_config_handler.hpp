@@ -134,6 +134,7 @@ public:
             auto feed = make_ir_curve_feed(nats_, auth_nats_, cfg, entries, *refctx, bearer);
             const auto source_name = feed->source_name();
             const auto qualifier = feed->qualifier();
+            const auto role = feed->role();
             const auto result = ctrl_->start(std::move(feed));
 
             switch (result) {
@@ -146,7 +147,8 @@ public:
                     resp.message = "Feed already running: " + source_name;
                     break;
                 case curve_feed_controller::start_result::qualifier_conflict: {
-                    const auto conflicting = ctrl_->running_source_name_for_qualifier(qualifier);
+                    const auto conflicting =
+                        ctrl_->running_source_name_for_qualifier(qualifier, role);
                     resp.success = false;
                     resp.message = "Already running as '" + conflicting.value_or("<unknown>") +
                                    "' — stop it first before starting '" + source_name + "'.";

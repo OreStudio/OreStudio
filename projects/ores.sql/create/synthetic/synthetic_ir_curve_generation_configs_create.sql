@@ -41,7 +41,9 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "party_id" uuid not null,
     "config_id" uuid not null,
     "currency_code" text not null,
-    "index_name" text not null,
+    "index_family" text not null,
+    "tenor" text not null,
+    "role" text not null,
     "process_type" text not null,
     "kappa" double precision not null,
     "theta" double precision not null,
@@ -72,7 +74,9 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
-    check ("index_name" <> ''),
+    check ("index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona')),
+    check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona') and "tenor" = '')),
+    check ("role" in ('discount', 'projection', 'self_discounting')),
     check ("source_name" <> ''),
     check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
@@ -82,8 +86,8 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists ir_curve_generation_configs_party_id_config_id_currency_code_index_name_uniq_idx
-on "ores_synthetic_ir_curve_generation_configs_tbl" (tenant_id, party_id, config_id, currency_code, index_name)
+create unique index if not exists ir_curve_generation_configs_party_id_config_id_currency_code_index_family_tenor_role_uniq_idx
+on "ores_synthetic_ir_curve_generation_configs_tbl" (tenant_id, party_id, config_id, currency_code, index_family, tenor, role)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -136,9 +140,6 @@ begin
 
     -- Validate fixed_leg_payment_frequency_code
     NEW.fixed_leg_payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.fixed_leg_payment_frequency_code);
-
-    -- Validate index_name
-    NEW.index_name := ores_refdata_validate_floating_index_type_fn(NEW.tenant_id, NEW.index_name);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

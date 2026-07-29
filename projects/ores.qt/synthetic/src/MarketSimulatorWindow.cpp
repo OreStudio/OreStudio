@@ -802,15 +802,17 @@ MarketSimulatorWindow::buildFeedItem(const synthetic::domain::fx_spot_generation
 }
 
 namespace {
-// index_name is stored as the full floating_index_type code (e.g. "USD-SOFR"), which already
-// bakes in currency_code -- strip that redundant "<CCY>-" prefix back off for display/subject
-// purposes. Mirrors ores::synthetic::service's own strip_currency_prefix() (server-side, not
-// reachable from Qt).
+// index_family/tenor display suffix (e.g. "SOFR" or "LIBOR-3M"), the shape
+// ir_index_display_suffix's callers show in tree labels/subjects -- mirrors
+// IrCurveEditor's joinIndexFamilyAndTenor() (same shape, separate translation
+// unit).
 std::string ir_index_display_suffix(const synthetic::domain::ir_curve_generation_config& ir) {
-    const auto prefix = ir.currency_code + "-";
-    if (ir.index_name.starts_with(prefix))
-        return ir.index_name.substr(prefix.size());
-    return ir.index_name;
+    auto family = ir.index_family;
+    std::transform(family.begin(), family.end(), family.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+    if (ir.tenor.empty())
+        return family;
+    return family + "-" + ir.tenor;
 }
 
 // composeBadgedIcon() (below) always draws the base icon into a fixed 44x22 canvas via
@@ -945,7 +947,8 @@ void MarketSimulatorWindow::buildTree() {
                 if (iit != irCurvesByFolder.end()) {
                     auto curves = iit->second;
                     std::sort(curves.begin(), curves.end(), [](const auto* a, const auto* b) {
-                        return a->currency_code + a->index_name < b->currency_code + b->index_name;
+                        return a->currency_code + a->index_family + a->tenor <
+                               b->currency_code + b->index_family + b->tenor;
                     });
                     for (const auto* ir : curves)
                         item->appendRow(buildIrCurveFeedItem(*ir, imageCache_));
@@ -2395,31 +2398,36 @@ void MarketSimulatorWindow::stopIrCurvesAsync(
 }
 
 // Local, synchronous check -- no NATS round-trip needed. Two enabled+auto_start IR curve
-// configs in the same folder targeting the same (currency_code, index_name) qualifier would
-// both be eligible for auto-start, but curve_feed_controller only ever lets one actually run
-// (see its own doc comment) -- the other silently never starts at boot, which reads as "broken"
-// rather than "misconfigured" unless flagged here. Scoped per folder deliberately: basic vs.
-// realistic living in different folders and sharing a qualifier is accepted (manual "press play
-// at the right node" is how that's resolved, see this story's Decisions), only a collision
-// *within* one folder is a real error.
+// configs in the same folder targeting the same (currency_code, index_family, tenor, role)
+// tuple would both be eligible for auto-start, but curve_feed_controller only ever lets one
+// actually run (see its own doc comment) -- the other silently never starts at boot, which
+// reads as "broken" rather than "misconfigured" unless flagged here. role is part of the group
+// key deliberately (not excluded, unlike the collision key's own doc elsewhere): a discount
+// config and a projection config for the same currency+index+tenor are expected to coexist and
+// both auto-start, so grouping them together would produce a false-positive warning. Scoped per
+// folder deliberately: basic vs. realistic living in different folders and sharing a tuple is
+// accepted (manual "press play at the right node" is how that's resolved, see this story's
+// Decisions), only a collision *within* one folder is a real error.
 MarketSimulatorWindow::Results MarketSimulatorWindow::computeIrCurveBindingCollisions() const {
     MarketSimulatorWindow::Results results;
 
-    // Group by (folder_id, currency_code, index_name); folder_id absent (not yet
+    // Group by (folder_id, currency_code, index_family, tenor, role); folder_id absent (not yet
     // folder-resolved) is its own group via a nil-uuid stand-in, not skipped.
-    std::map<std::tuple<boost::uuids::uuid, std::string, std::string>, std::vector<std::string>>
+    std::map<std::tuple<boost::uuids::uuid, std::string, std::string, std::string, std::string>,
+             std::vector<std::string>>
         by_binding;
     for (const auto& [id, ir] : irCurves_) {
         if (!ir.enabled || !ir.auto_start)
             continue;
         const auto folder = ir.folder_id.value_or(boost::uuids::uuid{});
-        const auto label =
-            ir.source_name.empty() ? (ir.currency_code + "/" + ir.index_name) : ir.source_name;
-        by_binding[{folder, ir.currency_code, ir.index_name}].push_back(label);
+        const auto label = ir.source_name.empty() ?
+            (ir.currency_code + "/" + ir_index_display_suffix(ir)) :
+            ir.source_name;
+        by_binding[{folder, ir.currency_code, ir.index_family, ir.tenor, ir.role}].push_back(label);
     }
 
     for (const auto& [binding, labels] : by_binding) {
-        const auto& [folder, currency_code, index_name] = binding;
+        const auto& [folder, currency_code, index_family, tenor, role] = binding;
         if (labels.size() <= 1)
             continue;
         for (const auto& label : labels) {
@@ -2427,13 +2435,16 @@ MarketSimulatorWindow::Results MarketSimulatorWindow::computeIrCurveBindingColli
             for (const auto& other : labels)
                 if (other != label)
                     others << QString::fromStdString(other);
+            const auto index_display =
+                tenor.empty() ? index_family : index_family + "-" + tenor;
             results.push_back(
                 {label,
                  false,
-                 tr("binding conflict: %1/%2 also auto-starts as %3 in the same folder — only "
-                    "one may be auto_start at a time")
+                 tr("binding conflict: %1/%2 (%3) also auto-starts as %4 in the same folder — "
+                    "only one may be auto_start at a time")
                      .arg(QString::fromStdString(currency_code),
-                          QString::fromStdString(index_name),
+                          QString::fromStdString(index_display),
+                          QString::fromStdString(role),
                           others.join(", "))});
         }
     }

@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include <vector>
 
@@ -93,10 +94,13 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromConfig();
     void updateConfigFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateTenor();
 
 
     Ui::IrCurveGenerationConfigDetailDialog* ui_;

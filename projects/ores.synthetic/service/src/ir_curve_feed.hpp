@@ -77,6 +77,7 @@ public:
                   std::string series_type,
                   std::string metric,
                   std::string qualifier,
+                  std::string role,
                   std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
                   double ticks_per_hour,
                   std::vector<ir_curve_resolved_entry> entries);
@@ -91,12 +92,22 @@ public:
     }
     /**
      * @brief The published market-data key (series_type/metric implied, currency_code +
-     * strip_currency_prefix(currency_code, index_name)) -- the value curve_feed_controller checks
-     * for cross-config collisions, since it is what every consumer actually looks up by, unlike
-     * source_name (unique per config, not per market-data identity).
+     * index_display_suffix(cfg)) -- the value curve_feed_controller checks for cross-config
+     * collisions (together with role()), since it is what every consumer actually looks up by,
+     * unlike source_name (unique per config, not per market-data identity).
      */
     const std::string& qualifier() const {
         return qualifier_;
+    }
+
+    /**
+     * @brief Whether this curve discounts, projects, or both (oresmd's curve_role) --
+     * curve_feed_controller only treats two feeds as conflicting when both qualifier() AND
+     * role() match, so a discount curve and a projection curve for the same
+     * (currency_code, index_family, tenor) can run side by side.
+     */
+    const std::string& role() const {
+        return role_;
     }
 
 private:
@@ -108,6 +119,7 @@ private:
     std::string series_type_;
     std::string metric_;
     std::string qualifier_;
+    std::string role_;
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process_;
     double ticks_per_hour_;
     std::vector<ir_curve_resolved_entry> entries_;

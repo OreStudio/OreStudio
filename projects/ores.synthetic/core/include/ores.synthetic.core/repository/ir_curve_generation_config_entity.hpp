@@ -48,7 +48,13 @@ struct ir_curve_generation_config_entity {
     std::string currency_code;
 
 
-    std::string index_name;
+    std::string index_family;
+
+
+    std::string tenor;
+
+
+    std::string role = "self_discounting";
 
     std::string process_type = "VASICEK";
     double kappa = 0.0;

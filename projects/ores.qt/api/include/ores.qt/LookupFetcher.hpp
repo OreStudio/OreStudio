@@ -43,6 +43,7 @@
 #include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type.hpp"
 #include "ores.refdata.api/domain/rounding_type.hpp"
+#include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_anchor.hpp"
 #include "ores.refdata.api/domain/tenor_kind.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
@@ -455,6 +456,16 @@ fetch_regulatory_book_types_at_timepoint(ClientManager* cm, const QString& as_of
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::tenor_kind>, QString>
 fetch_tenor_kinds(ClientManager* cm);
+
+/**
+ * @brief Fetches all tenors from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run. Used
+ * by ir_curve_generation_config's tenor combo. Returns an error message on
+ * failure, distinguishing it from a legitimately-empty result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::tenor>, QString>
+fetch_tenors(ClientManager* cm);
 
 /**
  * @brief Fetches all tenor units from the server.

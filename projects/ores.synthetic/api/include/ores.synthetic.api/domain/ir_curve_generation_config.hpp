@@ -72,18 +72,41 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index this curve represents, stored as the full ISDA/ORE code
-     * (references ores.refdata.floating_index_type.code, e.g. "USD-SOFR", "EUR-ESTR", "GBP-SONIA")
-     * rather than a bare suffix ("SOFR") -- floating_index_type.code already bakes in currency, and
-     * storing the full code lets this FK reuse the entity's own generated single-argument validator
-     * directly (ores_refdata_validate_floating_index_type_fn(tenant_id, value)) instead of a
-     * bespoke composite validator the codegen Insert-trigger Validations mechanism can't express
-     * (it always calls fn(tenant_id, NEW.column), one column in, one value out).
-     * ir_curve_feed_source_name() and display code strip the redundant <currency_code>- prefix back
-     * off for the "ir_curve.<ccy>.<idx>" subject and UI labels, so the wire subject/tree text are
-     * unaffected by this storage change.
+     * @brief Floating-rate index family this curve represents (oresmd's index_family:
+     * libor/euribor/sofr/estr/sonia/tona), stored as a fixed lower-case token rather than the full
+     * ISDA/ORE code the predecessor index_name column held ("USD-SOFR") -- currency_code already
+     * carries the currency half of that pair. The (currency_code, index_family) pair is validated
+     * as a whole by a hand-written composite trigger (not the codegen single-argument Validations
+     * mechanism, which cannot express a two-column lookup) against
+     * overnight_index_convention/ibor_index_convention, whose own id is currency_code + "-" +
+     * upper(index_family).
      */
-    std::string index_name;
+    std::string index_family;
+
+    /**
+     * @brief Tenor of this curve's floating-rate index (references tenor.code, e.g. "3M", "6M"),
+     * required when index_family is a term family (libor/euribor), empty for overnight families
+     * (sofr/estr/sonia/tona, which have no tenor dimension) -- mirrors oresmd's own
+     * index_family-conditional grammar. Empty string, not SQL NULL: the codegen used here has no
+     * true-nullable text support, same pattern as vintage_source/vintage_date. Not DB-FK-validated
+     * against tenor, matching the precedent set by ir_curve_template_entry's own
+     * start_tenor_code/end_tenor_code (also soft FKs to tenor.code, resolved only at the
+     * application layer via ores.refdata.api/domain/tenor_resolution.hpp, not a DB trigger --
+     * tenor.org itself emits no single-argument validator function to reuse).
+     */
+    std::string tenor;
+
+    /**
+     * @brief Whether this curve discounts cashflows, projects a floating index's forward rate, or
+     * both (oresmd's curve_role: discount/projection/self_discounting). Defaults to
+     * self_discounting for backward-compatible seed data (the shape every existing synthetic IR
+     * curve config already assumes: one curve serving both purposes). Fixed 3-value vocabulary
+     * intrinsic to this record, not a reference to another entity -- no soft FK, validated by a
+     * plain SQL check rather than a lookup-table trigger. curve_feed_controller's collision check
+     * deliberately excludes role from its conflict key, so a discount config and a projection
+     * config for the same (currency_code, index_family, tenor) can run side by side.
+     */
+    std::string role = "self_discounting";
 
     /**
      * @brief Short-rate process engine driving this curve (references
@@ -137,8 +160,8 @@ struct ir_curve_generation_config final {
      * living alongside a currency's primary config so the two never silently fight over the same
      * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start
      * -- is rejected outright if another feed is already running for the same (currency_code,
-     * index_name) qualifier; nothing auto-disables the running one, so switching requires an
-     * explicit Stop then Start.
+     * index_family, tenor) tuple *and the same role=; nothing auto-disables the running one, so
+     * switching requires an explicit Stop then Start.
      */
     bool auto_start = false;
 
@@ -197,8 +220,8 @@ struct ir_curve_generation_config final {
      * (synthetic.v1.curve_family.<source_name>) -- mirrors fx_spot_generation_config.source_name
      * exactly: namespaced by collection only (so two collections' same currency+index never
      * collide), editable, defaulting to a derived value at publish/save time rather than parsed
-     * back out of currency_code/index_name at every consumer (the earlier approach, replaced by
-     * this column).
+     * back out of currency_code/index_family/tenor at every consumer (the earlier approach,
+     * replaced by this column).
      */
     std::string source_name;
 

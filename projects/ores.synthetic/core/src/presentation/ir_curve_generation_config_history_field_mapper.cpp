@@ -32,7 +32,9 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Config ID", .value = boost::uuids::to_string(v.config_id)});
     fields.push_back({.name = "Currency Code", .value = v.currency_code});
-    fields.push_back({.name = "Index Name", .value = v.index_name});
+    fields.push_back({.name = "Index Family", .value = v.index_family});
+    fields.push_back({.name = "Tenor", .value = v.tenor});
+    fields.push_back({.name = "Role", .value = v.role});
     fields.push_back({.name = "Process Type", .value = v.process_type});
     fields.push_back({.name = "Kappa", .value = std::to_string(v.kappa)});
     fields.push_back({.name = "Theta", .value = std::to_string(v.theta)});

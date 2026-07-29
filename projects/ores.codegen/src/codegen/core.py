@@ -2677,13 +2677,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['label_widget'] = 'label' + snake_to_pascal(f.get('field', ''))
                 # Derive field_pascal for generated method names (e.g. base_currency -> BaseCurrency)
                 f['field_pascal'] = snake_to_pascal(f.get('field', ''))
-                if f.get('is_required') and (f.get('is_line_edit') or f.get('is_static_combo')):
+                if f.get('is_required') and f.get('is_line_edit'):
                     required_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],
                         '_is_last': False,
                     })
-                if f.get('is_required') and (f.get('is_dynamic_combo') or f.get('is_flagged_combo')):
+                # static_combo/dynamic_combo/flagged_combo are all QComboBox-backed
+                # (currentIndex() >= 0), not QLineEdit-backed (.text()) -- a
+                # required static_combo field misclassified here would generate a
+                # ui_->{{widget}}->text() call that doesn't compile against QComboBox.
+                if f.get('is_required') and (f.get('is_dynamic_combo') or
+                                              f.get('is_flagged_combo') or
+                                              f.get('is_static_combo')):
                     required_dynamic_combo_fields.append({
                         'field': f['field'],
                         'widget': f['widget'],

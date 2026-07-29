@@ -31,25 +31,36 @@ reach the services/DB running on Newton over the network.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- The podman pod (services container + NATS sidecar) runs on Newton
-  itself, staged and started over SSH, not just on this dev box.
-- All 18 supervised services reach phase ~running~ in
-  ~public.ores_controller_service_instances_tbl~ on Newton's Postgres.
-- The local Qt client, run on this dev box, connects to the
-  services/DB running on Newton over the network and is usable
-  end-to-end (login, list a reference-data entity).
-- Documented, repeatable steps (or scripts) exist for staging,
-  starting, and tearing down the pod on Newton specifically (SSH
-  target, any host-specific env differences from this dev box).
+Scope narrowed at close -- see Result. What's delivered and verified:
+
+- The pod (services container + NATS sidecar) runs on Newton itself,
+  staged and started over SSH, not just on this dev box -- done.
+- Newton's own Postgres (5433) is reachable and provisioned with a
+  schema/role set identical to this environment's -- done
+  (~compass db recreate~ run against it).
+- Several real deploy-time bugs found and fixed (image missing
+  writable log/run dirs, cert permission/uid mismatch, stale role
+  passwords) -- done.
+
+Deferred / not claimed here:
+- All 18 supervised services reaching phase ~running~ -- only reached
+  a partial, unstable subset (2-6 of 18) across repeated runs; see
+  Result for the corruption finding blocking further progress here.
+- The local Qt client connecting to Newton's services/DB -- not
+  reached, blocked on the above.
+- Documented, repeatable steps for staging/starting/tearing down on
+  Newton specifically -- captured as ad-hoc session notes below, not
+  yet turned into a script/recipe (that's the sibling compass-tooling
+  task).
 
 * Plan
 
@@ -92,6 +103,104 @@ pulls in by default, so this should self-heal on future reboots without
 needing this manual start again. Worth re-checking after Newton's next
 reboot to confirm that assumption.
 
+** Networking: --network=host, not the pod/sidecar pattern
+
+The existing ~docker/run-pod.sh~ pattern (services + NATS sidecar
+sharing a pod network namespace, Postgres reached over the real
+network) assumes Postgres is remote from *both* containers. On Newton,
+Postgres is a *native* install on the same host the pod runs on, so
+the services container needs to reach the host's own ~localhost:5433~
+-- unreachable through the pod's isolated netns/slirp4netns (tried the
+slirp4netns gateway IP, got "Network unreachable"; WSL2's mirrored
+networking mode does not extend into slirp4netns's own separate
+virtual network). Ran both containers with ~--network=host~ instead
+(bypassing the pod object entirely -- no ~-p~ port mappings needed
+either, host ports are used directly): confirmed via a throwaway
+container that ~psql -h localhost -p 5433~ then reaches Newton's own
+Postgres correctly.
+
+** DB role passwords out of sync
+
+Newton's Postgres already had the ~ores_dev_swift_curie~ database,
+schema (270 tables) and all ~ores_swift_curie_*~ roles provisioned from
+earlier work, but with different (stale) passwords than this
+environment's current ~.env~ -- services failed with
+~db_connection_failed~ (exit code 3). Fixed by running
+~compass db recreate -y -k~ *against Newton*: since the command reads
+~ORES_DB_HOST~/~PGPORT~ only from the repo's own ~.env~ with no
+override flag, this required temporarily editing ~ORES_DB_HOST~ to
+Newton's IP and adding ~PGPORT=5433~ to this environment's ~.env~,
+running the recreate, then restoring the original ~.env~ from a backup
+copy. Filed as its own follow-up (~compass~ should support named env
+files instead of this).
+
+** A per-host env file, not committed
+
+Derived ~docker/.env.newton~ from ~docker/.env~ (the ~compass
+env configure~-managed local one) via sed: all ~_DB_PORT=5432~ ->
+~5433~ (host stays ~localhost~, correct under ~--network=host~), and
+every absolute path (NATS certs, JetStream store dir) rewritten from
+this checkout's ~/mnt/development/...~ prefix to ~/home/marco/ores-deploy~
+(Newton has no permission to write under ~/mnt~, and no checkout of
+this repo). Certs, the rendered ~build/config/nats-swift_curie.conf~
+(also needed the same path rewrite, plus ~compass nats init~ re-run
+first since its port had drifted from a mid-session ~.env~ port
+reassignment), and this env file were all ~scp~'d to
+~/home/marco/ores-deploy/~ on Newton. Added ~docker/.env.*~ to
+~.gitignore~ since this file carries the same secrets as ~docker/.env~.
+
+** Image needed writable /app/log and /app/run baked in
+
+~process_supervisor~ always launches every child service with
+~--log-enabled~ and a relative ~--log-directory ../log~ (see
+~default_args_template~), and writes each child's PID file under
+~../run~ -- both resolve to ~/app/log~/~/app/run~ given ~WORKDIR
+/app/bin~. Neither directory existed in the chainguard
+~glibc-dynamic~ final image at all, so the controller's writes there
+failed outright (permission denied / no such directory) regardless of
+which uid it ran as. Fixed in ~docker/service-runtime.Dockerfile~: the
+directories are created (world-writable, since the runtime uid is only
+known at ~podman run --user~ time) in the debian ~strip~ build stage
+(which has a shell) and ~COPY~'d into the final stage (which doesn't).
+
+** Cert permission / uid mismatch
+
+Running the services container without an explicit ~--user~ runs it as
+whatever uid the image defaults to (chainguard's ~65532~), which does
+not match the host uid (marco, 1000) that owns the staged NATS certs
+(chmod'd owner-only, mirroring ~run-pod.sh~'s existing rationale for
+~--userns=keep-id~ + ~--user "$(id -u):$(id -g)"~ locally). Fixed by
+passing ~--user 1000:1000~ explicitly (no pod object here to carry
+~--userns=keep-id~, so the container's own ~--user~ has to match the
+host uid directly instead).
+
+** Open finding, not resolved here: apparent data corruption under load
+
+After all the above fixes, ~start_all()~ progressed noticeably further
+(from 0 services ever reaching ~running~ to a handful reaching it) but
+never all 18, and was unstable across runs (different subsets
+succeeded each time). One run produced a genuinely alarming symptom: a
+DB query for ~ores.assets.service~'s exit-cleanup contained corrupted
+binary bytes where the service name string should have been (~SELECT
+set_config('app.current_service', '<garbage bytes>'...)~), immediately
+followed by a permission-denied re-reading ~ca.crt~ that had already
+been read successfully earlier in the same run. This looks like a
+genuine memory-safety issue (a std::string or similar getting
+corrupted/reused across threads) in ~process_supervisor~'s real
+18-child-process orchestration under load on real hardware --
+qualitatively the same class of cross-thread hazard already flagged
+(and partially fixed) in PR #1724's review, just not fully chased down
+here.
+
+Deliberately not investigated further in this task: the corruption
+lives specifically in the single-container process-supervisor's
+in-process child-process bookkeeping (spawning, monitoring, and
+DB-recording 18 children from one controller process), which is
+exactly the architecture the sibling follow-on story ([[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio
+services into one container per service]]) replaces. Revisit there
+first; if the corruption reproduces in the split architecture too, it
+is a separate, real bug worth its own task.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -116,3 +225,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Newton went from having no podman at all to running the actual
+service-runtime pod, with the DB schema/roles resynced to match this
+environment and several real deploy-blocking bugs found and fixed along
+the way (see Notes): missing writable ~/app/log~/~/app/run~ in the
+service-runtime image, a cert-permission/uid mismatch needing explicit
+~--user~, stale DB role passwords, and a networking-model change
+(~--network=host~ instead of the pod/sidecar pattern, since Postgres is
+native on Newton itself rather than remote from both containers).
+
+Not reached: all 18 services running end-to-end, and the Qt client
+connecting to Newton over the network. Progress stalled on an
+apparent memory-safety/corruption issue in ~process_supervisor~'s
+child-process bookkeeping surfacing under Newton's real load (garbled
+bytes in a DB query string, a cert re-read failing after succeeding
+earlier in the same run) -- see the dedicated Notes subsection.
+Deliberately not chased down further here: it lives in the
+single-container process-supervisor architecture that the sibling
+follow-on story is about to replace, so revisit there first rather
+than debug code on its way out.
+
+Closing this task now per explicit direction rather than continuing to
+iterate on the current architecture; the corruption finding is carried
+forward as a flag for the split-per-service story, not silently
+dropped.

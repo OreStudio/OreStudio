@@ -62,7 +62,7 @@ approach.
 | [[id:04EE8D76-9F8E-47FF-AB3A-D6E6C3308385][Analyse approach for offloading services/DB to a WSL host]] | DONE | 2026-07-23 | 2026-07-24 | Outline the approach for provisioning a WSL host, running services/DB there (directly and/or via Docker), and connecting a local client over SSH/network. |
 | [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] | DONE | 2026-07-24 | 2026-07-27 | Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out. |
 | [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][Debug: start_all() coroutine never resumes inside podman container]] | DONE | 2026-07-27 | 2026-07-29 | process_supervisor::start_all()'s coroutine, spawned via co_spawn(io_ctx, ..., use_awaitable) in application.cpp, never begins executing inside the podman container -- its unconditional first log line never appears despite the same io_ctx demonstrably running other coroutines concurrently (NATS connect succeeds, JWKS-fetch retries fire on schedule). Natively, the identical code reaches that line and does its DB reads within ~200ms. Consequence: no supervised services (IAM etc.) ever launch in-container, so the controller's own JWKS fetch from IAM loops forever. |
-| [[id:3627D272-CC9F-4A45-B5F4-0B5A5B1E71AE][Deploy and verify service runtime on the Newton WSL host]] | STARTED | 2026-07-29 | | Deploy the containerized service runtime (docker/run-pod.sh) to the actual Newton WSL host (192.168.1.22, WSL2 Debian 11 bullseye) over SSH, and verify end-to-end: all 18 services reach running phase, and a local Qt client can connect to the remote services/DB. Prior work (PRs #1709, #1724) only validated the pod on this dev box's own podman -- Newton itself has never been exercised. |
+| [[id:3627D272-CC9F-4A45-B5F4-0B5A5B1E71AE][Deploy and verify service runtime on the Newton WSL host]] | DONE | 2026-07-29 | 2026-07-29 | Deploy the containerized service runtime (docker/run-pod.sh) to the actual Newton WSL host (192.168.1.22, WSL2 Debian 11 bullseye) over SSH. Reached partial success (image/uid/log/DB-password fixes, --network=host model); all-18-running and Qt-client-connects deferred, blocked on an apparent memory-corruption issue in process_supervisor under real load, carried to the split-per-service follow-on story rather than fixed here. |
 | [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
 
 * Decisions
@@ -89,6 +89,21 @@ approach.
   dependency) — it's specific to binaries we compile. Docker is now
   the plan for those, via the new
   [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] task.
+- Newton reaches its own native Postgres from inside a podman
+  container via ~--network=host~, not the pod/sidecar pattern used
+  locally -- ~run-pod.sh~'s pod netns assumes Postgres is remote from
+  *both* containers, which isn't true when Postgres is native on the
+  same host the pod runs on (confirmed slirp4netns can't route to it;
+  WSL2's mirrored networking doesn't extend into podman's own virtual
+  network).
+- Deploying to Newton surfaced an apparent memory-safety/corruption
+  issue in ~process_supervisor~'s child-process bookkeeping under
+  real load (18 real children, not just a handful locally) -- garbled
+  bytes in a DB query string, a cert re-read failing after succeeding
+  earlier in the same run. Not chased down: it lives in the
+  single-container process-supervisor architecture that
+  [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] is about
+  to replace. Revisit there first.
 
 * Out of scope
 

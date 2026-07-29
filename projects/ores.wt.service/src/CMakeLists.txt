@@ -19,22 +19,7 @@ set(name "ores.wt.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/account_dialog.cpp"
-    "app/account_list_widget.cpp"
-    "app/country_dialog.cpp"
-    "app/country_list_widget.cpp"
-    "app/currency_dialog.cpp"
-    "app/currency_list_widget.cpp"
-    "app/login_widget.cpp"
-    "app/ore_application.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "main.cpp"
-    "messaging/registrar.cpp"
-    "service/application_context.cpp"
-    "service/session_manager.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

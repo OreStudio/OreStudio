@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 0AAFA676-6A9B-44BB-95A6-19E22E19BC8B
 :END:
-#+title: Task: Retire Barclays as the demo/test entity now that Acme Bank replaces it
-#+description: Barclays Plc was the system's stand-in test/demo entity before Acme Bank existed. Now that Acme is fully provisioned (parties, business units, portfolios, books, accounts, CRM/IR/FX market data), retire every place that still defaults to or documents Barclays as the reference entity.
+#+title: Task: Retire Barclays as the demo/test entity now that Acme Corporation replaces it
+#+description: Barclays Plc was the system's stand-in test/demo entity before Acme Corporation existed. Now that Acme is fully provisioned (parties, business units, portfolios, books, accounts, CRM/IR/FX market data), retire every place that still defaults to or documents Barclays as the reference entity.
 #+type: task
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Remove/retire barclays_system_provision.org and its tangled .ores script (or clearly mark it non-default/legacy); update every recipe, skill, and tool default that references Barclays as the example/demo tenant (crm_rates_* recipes, import_* market-data recipes, countries recipes, ops recipes including how_do_i_ready_up_an_environment.md and how_do_i_test_a_feature_after_implementation.md, the code-run-feature-test/devops-run-client/devops-run-environment/devops-setup-environment/doc-add-entity-chapter/doc-run-manual-screenshots skills, and compass.py's test_scenario scaffold hint at compass.py:3277) to reference Acme Bank instead; remove any stray 'Barclays' saved connection from the local ores.connections connections database.
+Remove/retire barclays_system_provision.org and its tangled .ores script (or clearly mark it non-default/legacy); update every recipe, skill, and tool default that references Barclays as the example/demo tenant (crm_rates_* recipes, import_* market-data recipes, countries recipes, ops recipes including how_do_i_ready_up_an_environment.md and how_do_i_test_a_feature_after_implementation.md, the code-run-feature-test/devops-run-client/devops-run-environment/devops-setup-environment/doc-add-entity-chapter/doc-run-manual-screenshots skills, and compass.py's test_scenario scaffold hint at compass.py:3277) to reference Acme Corporation instead; remove any stray 'Barclays' saved connection from the local ores.connections connections database.
 
 * Status
 

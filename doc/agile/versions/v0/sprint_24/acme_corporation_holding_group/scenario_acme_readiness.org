@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: D28E67F7-0F2B-4184-B338-57D0F8A29DEC
 :END:
-#+title: Test Scenario: Acme Bank readiness: full-system verification
-#+description: Comprehensive QA pass verifying Acme Bank is genuinely ready to replace Barclays as the system's main reference entity: party/business-unit/portfolio/book structure, account default parties, per-role login behaviour, onboarding suppression, logos, and live CRM/IR market data ticking.
+#+title: Test Scenario: Acme Corporation readiness: full-system verification
+#+description: Comprehensive QA pass verifying Acme Corporation is genuinely ready to replace Barclays as the system's main reference entity: party/business-unit/portfolio/book structure, account default parties, per-role login behaviour, onboarding suppression, logos, and live CRM/IR market data ticking.
 #+type: test_scenario
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
@@ -30,8 +30,8 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
 - The database must be freshly provisioned via =--source acme=, not
   reused from an earlier partial/failed run: =compass db recreate -y
   -k= then =compass shell -f
-  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_bank_holding_group.ores=
-  (see [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Bank (holding group)?]]).
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  (see [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]).
   Confirm the run completes with no failed steps before starting.
 - Have a =compass shell= session available alongside the clients —
   several steps cross-check server-side data against what a client
@@ -45,7 +45,7 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
   compass client start --colour red
   compass client start --colour green
   #+end_src
-  - *blue* — general verification + =tenant_admin@acmebank=.
+  - *blue* — general verification + =tenant_admin@acme_corporation=.
   - *red* — a Trader account.
   - *green* — a Middle Office Manager account.
 - Usernames for generated staff accounts are randomised per run
@@ -59,11 +59,11 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
 
 *** Log in as tenant_admin and select Acme Corporation Plc
 
-- On the *blue* client, log in as =tenant_admin@acmebank= / password
+- On the *blue* client, log in as =tenant_admin@acme_corporation= / password
   =Secure-Password-123=.
 - If the database was recreated since provisioning, re-run: =compass
   db recreate -y -k= then =compass shell -f
-  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_bank_holding_group.ores=
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
   before logging in.
 - Confirm the session lands on *Acme Corporation Plc* with no wizard
   popping up.
@@ -72,7 +72,7 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
 
 *** Verify all four parties exist and are active
 
-In =compass shell=, logged in as =tenant_admin@acmebank=:
+In =compass shell=, logged in as =tenant_admin@acme_corporation=:
 
 #+begin_src sh
 parties list
@@ -135,7 +135,7 @@ accounts list --party <acme-corporation-plc-party-id>
 - Confirm =tenant_admin='s account has =default_party_id= set to
   *Acme Corporation Plc* (the holding company) — not the
   auto-created System Party.
-- On the *blue* client, log in as =tenant_admin@acmebank= and confirm
+- On the *blue* client, log in as =tenant_admin@acme_corporation= and confirm
   the session lands directly on Acme Corporation Plc (no Party
   Provisioning Wizard, no manual party selection needed).
 
@@ -217,7 +217,7 @@ counterparties list --limit 5
 
 - On the *red* client, log in as the Trader account noted in blue's
   "Verify staff accounts and roles per office" step
-  (=<username>@acmebank=, password =Secure-Password-123= unless the
+  (=<username>@acme_corporation=, password =Secure-Password-123= unless the
   generator set something else — check =generate_data.py= if login
   fails).
 - Confirm the session's default party is that trader's *own office*

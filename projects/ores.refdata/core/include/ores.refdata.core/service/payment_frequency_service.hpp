@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_payment_frequencies();
 
+
     /**
      * @brief Retrieves a single payment frequency as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the payment frequency.
      * @param version The version to fetch.
      * @return The payment frequency at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
     get_payment_frequency_at_version(const std::string& code, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single payment frequency by its code.
+     * @brief Retrieves a single payment frequency by its primary key.
      *
-     * @param code The code of the payment frequency.
      * @return The payment frequency if found, std::nullopt otherwise.
      */
     std::optional<domain::payment_frequency> get_payment_frequency(const std::string& code);
@@ -113,15 +112,14 @@ public:
     save_payment_frequencies(const std::vector<domain::payment_frequency>& payment_frequencies);
 
     /**
-     * @brief Deletes a payment frequency by its code.
+     * @brief Deletes a payment frequency by its primary key.
      *
-     * @param code The code of the payment frequency to delete.
      * @throws std::exception on failure.
      */
     void delete_payment_frequency(const std::string& code);
 
     /**
-     * @brief Deletes payment frequencies by their codes.
+     * @brief Deletes payment frequencies by their primary keys.
      */
     void delete_payment_frequencies(const std::vector<std::string>& codes);
 

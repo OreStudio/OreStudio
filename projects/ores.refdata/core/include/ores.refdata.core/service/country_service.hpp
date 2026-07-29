@@ -78,10 +78,21 @@ public:
     std::uint32_t count_countries();
 
     /**
+     * @brief Lists countries as they stood at a specific
+     * timepoint (valid_from <= as_of < valid_to), possibly filtered by
+     * alpha2_code.
+     *
+     * @param as_of The timepoint to resolve against.
+     * @param alpha2_code Optional alpha2_code filter; empty for all.
+     * @return Vector of matching countries as of that timepoint.
+     */
+    std::vector<domain::country> list_countries_at_timepoint(const std::string& as_of,
+                                                             const std::string& alpha2_code = "");
+
+    /**
      * @brief Retrieves a single country as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param alpha2_code The alpha2_code of the country.
      * @param version The version to fetch.
      * @return The country at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +100,8 @@ public:
                                                           std::uint32_t version);
 
     /**
-     * @brief Retrieves a single country by its alpha2_code.
+     * @brief Retrieves a single country by its primary key.
      *
-     * @param alpha2_code The alpha2_code of the country.
      * @return The country if found, std::nullopt otherwise.
      */
     std::optional<domain::country> get_country(const std::string& alpha2_code);
@@ -113,15 +123,14 @@ public:
     void save_countries(const std::vector<domain::country>& countries);
 
     /**
-     * @brief Deletes a country by its alpha2_code.
+     * @brief Deletes a country by its primary key.
      *
-     * @param alpha2_code The alpha2_code of the country to delete.
      * @throws std::exception on failure.
      */
     void delete_country(const std::string& alpha2_code);
 
     /**
-     * @brief Deletes countries by their alpha2_codes.
+     * @brief Deletes countries by their primary keys.
      */
     void delete_countries(const std::vector<std::string>& alpha2_codes);
 

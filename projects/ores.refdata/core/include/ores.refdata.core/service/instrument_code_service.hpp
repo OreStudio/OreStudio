@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_instruments();
 
+
     /**
      * @brief Retrieves a single instrument code as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the instrument code.
      * @param version The version to fetch.
      * @return The instrument code at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                      std::uint32_t version);
 
     /**
-     * @brief Retrieves a single instrument code by its code.
+     * @brief Retrieves a single instrument code by its primary key.
      *
-     * @param code The code of the instrument code.
      * @return The instrument code if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_code> get_instrument(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_instruments(const std::vector<domain::instrument_code>& instruments);
 
     /**
-     * @brief Deletes a instrument code by its code.
+     * @brief Deletes a instrument code by its primary key.
      *
-     * @param code The code of the instrument code to delete.
      * @throws std::exception on failure.
      */
     void delete_instrument(const std::string& code);
 
     /**
-     * @brief Deletes instrument codes by their codes.
+     * @brief Deletes instrument codes by their primary keys.
      */
     void delete_instruments(const std::vector<std::string>& codes);
 

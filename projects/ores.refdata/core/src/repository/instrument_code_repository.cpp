@@ -37,7 +37,7 @@ std::string instrument_code_repository::sql() {
 }
 
 void instrument_code_repository::write(context ctx, const domain::instrument_code& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument code: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing instrument code. " << "code: " << v.code;
     execute_write_query(
         ctx, instrument_code_mapper::map(v), lg(), "Writing instrument code to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::instrument_code> instrument_code_repository::read_latest(con
 
 std::vector<domain::instrument_code>
 instrument_code_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument code. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument code. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ instrument_code_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest instrument code by code.");
 }
 
+
 std::vector<domain::instrument_code> instrument_code_repository::read_all(context ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all instrument code versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all instrument code versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_code_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::instrument_code> instrument_code_repository::read_all(contex
 
 std::optional<domain::instrument_code> instrument_code_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading instrument code at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading instrument code at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_code_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::instrument_code> instrument_code_repository::read_at_versi
 }
 
 void instrument_code_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument code. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

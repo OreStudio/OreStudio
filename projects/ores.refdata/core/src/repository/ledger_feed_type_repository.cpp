@@ -37,7 +37,7 @@ std::string ledger_feed_type_repository::sql() {
 }
 
 void ledger_feed_type_repository::write(context ctx, const domain::ledger_feed_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed type. " << "code: " << v.code;
     execute_write_query(
         ctx, ledger_feed_type_mapper::map(v), lg(), "Writing ledger feed type to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(c
 
 std::vector<domain::ledger_feed_type>
 ledger_feed_type_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest ledger feed type. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest ledger feed type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -81,13 +81,14 @@ ledger_feed_type_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest ledger feed type by code.");
 }
 
+
 std::vector<domain::ledger_feed_type>
 ledger_feed_type_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all ledger feed type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all ledger feed type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ledger_feed_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<ledger_feed_type_entity, domain::ledger_feed_type>(
         ctx,
@@ -99,7 +100,7 @@ ledger_feed_type_repository::read_all(context ctx, const std::string& code) {
 
 std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading ledger feed type at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading ledger feed type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ledger_feed_type_entity>> |
@@ -119,7 +120,7 @@ std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_ver
 }
 
 void ledger_feed_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

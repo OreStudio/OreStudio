@@ -70,8 +70,13 @@ public:
         get_countries_response resp;
         if (auto req = decode<get_countries_request>(msg)) {
             try {
-                resp.countries = svc.list_countries(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_countries());
+                if (!req->as_of.empty()) {
+                    resp.countries = svc.list_countries_at_timepoint(req->as_of);
+                    resp.total_available_count = static_cast<int>(resp.countries.size());
+                } else {
+                    resp.countries = svc.list_countries(req->offset, req->limit);
+                    resp.total_available_count = static_cast<int>(svc.count_countries());
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(country_handler_lg(), error)

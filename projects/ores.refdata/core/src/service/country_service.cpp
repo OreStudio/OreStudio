@@ -46,15 +46,24 @@ std::uint32_t country_service::count_countries() {
     return repo_.get_total_country_count(ctx_);
 }
 
+std::vector<domain::country>
+country_service::list_countries_at_timepoint(const std::string& as_of,
+                                             const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing countries at timepoint: " << as_of;
+    if (alpha2_code.empty())
+        return repo_.read_at_timepoint(ctx_, as_of);
+    return repo_.read_at_timepoint(ctx_, as_of, alpha2_code);
+}
+
 std::optional<domain::country>
 country_service::get_country_at_version(const std::string& alpha2_code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting country at version: " << alpha2_code
+    BOOST_LOG_SEV(lg(), debug) << "Getting country at version. " << "alpha2_code: " << alpha2_code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, alpha2_code, version);
 }
 
 std::optional<domain::country> country_service::get_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting country: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting country. " << "alpha2_code: " << alpha2_code;
     auto results = repo_.read_latest(ctx_, alpha2_code);
     if (results.empty())
         return std::nullopt;
@@ -64,17 +73,18 @@ std::optional<domain::country> country_service::get_country(const std::string& a
 void country_service::save_country(const domain::country& v) {
     if (v.alpha2_code.empty())
         throw std::invalid_argument("Country alpha2_code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving country: " << v.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving country. " << "alpha2_code: " << v.alpha2_code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved country: " << v.alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Saved country. " << "alpha2_code: " << v.alpha2_code;
 }
 
 void country_service::save_countries(const std::vector<domain::country>& countries) {
-    for (const auto& e : countries)
+    for (const auto& e : countries) {
         if (e.alpha2_code.empty())
             throw std::invalid_argument("Country alpha2_code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
     auto ts = countries;
     for (auto& e : ts)
@@ -83,9 +93,9 @@ void country_service::save_countries(const std::vector<domain::country>& countri
 }
 
 void country_service::delete_country(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing country: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
     repo_.remove(ctx_, alpha2_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed country: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Removed country. " << "alpha2_code: " << alpha2_code;
 }
 
 void country_service::delete_countries(const std::vector<std::string>& alpha2_codes) {
@@ -93,7 +103,7 @@ void country_service::delete_countries(const std::vector<std::string>& alpha2_co
 }
 
 std::vector<domain::country> country_service::get_country_history(const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for country: " << alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for country. " << "alpha2_code: " << alpha2_code;
     return repo_.read_all(ctx_, alpha2_code);
 }
 

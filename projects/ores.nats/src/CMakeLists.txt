@@ -52,6 +52,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ${CNATS_LIB}
         Boost::program_options
+        reflectcpp::reflectcpp
     PRIVATE
         ores.logging.lib
         ores.utility.lib

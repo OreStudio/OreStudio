@@ -18,6 +18,9 @@
  *
  */
 #include "ores.nats/config/nats_configuration.hpp"
+#include "ores.nats/domain/wire_format.hpp"
+#include <boost/throw_exception.hpp>
+#include <stdexcept>
 
 namespace ores::nats::config {
 
@@ -28,6 +31,7 @@ const std::string nats_subject_prefix_arg("nats-subject-prefix");
 const std::string nats_tls_ca_arg("nats-tls-ca");
 const std::string nats_tls_cert_arg("nats-tls-cert");
 const std::string nats_tls_key_arg("nats-tls-key");
+const std::string nats_wire_format_arg("nats-wire-format");
 
 }
 
@@ -52,7 +56,11 @@ boost::program_options::options_description nats_configuration::make_options_des
         nats_tls_key_arg.c_str(),
         value<std::string>()->default_value(""),
         "Path to client private key for mTLS (<service>.key). "
-        "Env: ORES_NATS_TLS_KEY.");
+        "Env: ORES_NATS_TLS_KEY.")(nats_wire_format_arg.c_str(),
+                                   value<std::string>()->default_value("json"),
+                                   "Wire format for NATS message bodies: json or msgpack, "
+                                   "decided once at process startup. "
+                                   "Env: ORES_NATS_WIRE_FORMAT.");
 
     return r;
 }
@@ -64,6 +72,15 @@ nats_options nats_configuration::read_options(const boost::program_options::vari
     r.tls_ca_cert = vm[nats_tls_ca_arg].as<std::string>();
     r.tls_client_cert = vm[nats_tls_cert_arg].as<std::string>();
     r.tls_client_key = vm[nats_tls_key_arg].as<std::string>();
+
+    const auto wire_format_str = vm[nats_wire_format_arg].as<std::string>();
+    const auto parsed = parse_wire_format(wire_format_str);
+    if (!parsed)
+        BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid " + nats_wire_format_arg + ": '" +
+                                                    wire_format_str +
+                                                    "' (expected 'json' or 'msgpack')."));
+    r.wire_format = *parsed;
+
     return r;
 }
 

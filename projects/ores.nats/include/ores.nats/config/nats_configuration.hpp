@@ -34,7 +34,8 @@ namespace ores::nats::config {
  * logging_configuration and database_configuration.
  *
  * Standard options:
- *   --nats-url      NATS server URL (default: nats://localhost:4222)
+ *   --nats-url          NATS server URL (default: nats://localhost:4222)
+ *   --nats-wire-format  Message wire format: json or msgpack (default: json)
  */
 class ORES_NATS_EXPORT nats_configuration final {
 public:

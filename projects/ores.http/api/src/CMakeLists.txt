@@ -19,16 +19,7 @@ set(name "ores.http.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/http_request.cpp"
-    "domain/http_response.cpp"
-    "domain/route.cpp"
-    "net/http_server.cpp"
-    "net/http_server_options.cpp"
-    "net/http_session.cpp"
-    "net/router.cpp"
-    "openapi/endpoint_registry.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

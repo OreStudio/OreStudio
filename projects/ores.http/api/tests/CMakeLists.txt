@@ -20,15 +20,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "endpoint_registry_tests.cpp"
-    "http_request_tests.cpp"
-    "http_response_tests.cpp"
-    "http_server_options_tests.cpp"
-    "main.cpp"
-    "route_tests.cpp"
-    "router_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

@@ -280,6 +280,7 @@ std::nullopt
 :window_title:            Counterparties
 :icon:                    Handshake
 :has_pagination:          true
+:flag_icon_column:        ShortCode
 :END:
 
 *** Detail fields

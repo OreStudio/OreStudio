@@ -23,6 +23,7 @@
 #include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -30,6 +31,8 @@
 #include "ui_CounterpartyDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
+#include <QIcon>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
@@ -98,7 +101,8 @@ void CounterpartyDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
-    // Logo editor hosted in the .ui flagGroup; base class owns the button.
+    // Flag editor hosted in the .ui flagGroup; base class owns the button
+    // (also wires the inline key-field icon — see initKeyFlagField()).
     initFlagButton(ui_->flagGroup->layout());
 }
 
@@ -195,11 +199,6 @@ void CounterpartyDetailDialog::setUsername(const std::string& username) {
 void CounterpartyDetailDialog::setCounterparty(const refdata::domain::counterparty& counterparty) {
     counterparty_ = counterparty;
     updateUiFromCounterparty();
-    // initFlagButton() (setupUi(), constructor time) already ran
-    // updateFlagDisplay() once against a default-constructed counterparty_
-    // (entityImageId() -> nullopt) -- re-run now that the real image_id is
-    // known, else the flag button never reflects it.
-    updateFlagDisplay();
     childTables_->reload(
         counterparty_.id, clientManager_, username_, imageCache(), changeReasonCache());
     hierarchyTab_->reload(counterparty_.id, clientManager_);
@@ -301,7 +300,7 @@ void CounterpartyDetailDialog::populateParentCounterpartyCombo() {
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(boost::uuids::to_string(t.id)); },
-        [this](const auto& t) { return t.id == counterparty_.id; },
+        [this](const auto& t) { return t.short_code == counterparty_.short_code; },
         QObject::tr("No Parent"));
 }
 void CounterpartyDetailDialog::updateUiFromCounterparty() {
@@ -444,25 +443,28 @@ void CounterpartyDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
-            QString code = QString::fromStdString(self->counterparty_.short_code);
-            self->hasChanges_ = false;
-            self->resetFlagChanged();
-            self->updateSaveButtonState();
-            emit self->counterpartySaved(code);
-            self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Counterparty saved successfully";
+                    QString code = QString::fromStdString(self->counterparty_.short_code);
+                    self->hasChanges_ = false;
+                    self->resetFlagChanged();
+                    self->updateSaveButtonState();
+                    emit self->counterpartySaved(code);
+                    self->notifySaveSuccess(tr("Counterparty '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

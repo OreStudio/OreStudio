@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_centres();
 
+
     /**
      * @brief Retrieves a single business centre as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the business centre.
      * @param version The version to fetch.
      * @return The business centre at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                  std::uint32_t version);
 
     /**
-     * @brief Retrieves a single business centre by its code.
+     * @brief Retrieves a single business centre by its primary key.
      *
-     * @param code The code of the business centre.
      * @return The business centre if found, std::nullopt otherwise.
      */
     std::optional<domain::business_centre> get_centre(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_centres(const std::vector<domain::business_centre>& centres);
 
     /**
-     * @brief Deletes a business centre by its code.
+     * @brief Deletes a business centre by its primary key.
      *
-     * @param code The code of the business centre to delete.
      * @throws std::exception on failure.
      */
     void delete_centre(const std::string& code);
 
     /**
-     * @brief Deletes business centres by their codes.
+     * @brief Deletes business centres by their primary keys.
      */
     void delete_centres(const std::vector<std::string>& codes);
 

@@ -42,17 +42,18 @@ std::uint32_t day_count_fraction_type_service::count_types() {
     return repo_.get_total_type_count(ctx_);
 }
 
+
 std::optional<domain::day_count_fraction_type>
 day_count_fraction_type_service::get_type_at_version(const std::string& code,
                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting day count fraction type at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting day count fraction type at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::day_count_fraction_type>
 day_count_fraction_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting day count fraction type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting day count fraction type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -62,18 +63,19 @@ day_count_fraction_type_service::get_type(const std::string& code) {
 void day_count_fraction_type_service::save_type(const domain::day_count_fraction_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Day Count Fraction Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving day count fraction type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving day count fraction type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved day count fraction type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved day count fraction type. " << "code: " << v.code;
 }
 
 void day_count_fraction_type_service::save_types(
     const std::vector<domain::day_count_fraction_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.code.empty())
             throw std::invalid_argument("Day Count Fraction Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " day count fraction types";
     auto ts = types;
     for (auto& e : ts)
@@ -82,9 +84,9 @@ void day_count_fraction_type_service::save_types(
 }
 
 void day_count_fraction_type_service::delete_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed day count fraction type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed day count fraction type. " << "code: " << code;
 }
 
 void day_count_fraction_type_service::delete_types(const std::vector<std::string>& codes) {
@@ -93,7 +95,8 @@ void day_count_fraction_type_service::delete_types(const std::vector<std::string
 
 std::vector<domain::day_count_fraction_type>
 day_count_fraction_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for day count fraction type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for day count fraction type. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: EBFDA8AD-34C6-4A28-AAB2-89FD3D3E9808
+:END:
+#+title: ores.marketdata.client
+#+description: Client-side NATS wrapper for the marketdata service: FX spot/CRM subscriptions and request/response helpers used by non-Qt consumers.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: marketdata.client
+#+full_name: ores.marketdata.client
+#+brief: Market data client
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.marketdata.client component diagram
+#+caption: ores.marketdata.client
+[[file:ores.marketdata.client.png][file:ores.marketdata.client.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

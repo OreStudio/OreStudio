@@ -19,13 +19,7 @@ set(name "ores.marketdata.client")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "crm_rate_display_service_tests.cpp"
-    "crm_rate_formatter_tests.cpp"
-    "crm_rate_table_tests.cpp"
-    "fx_spot_subscription_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

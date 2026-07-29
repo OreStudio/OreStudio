@@ -19,15 +19,7 @@ set(name "ores.marketdata.client")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "crm_client.cpp"
-    "fx_spot_subscription.cpp"
-    "market_data_client.cpp"
-    "presentation/crm_rate_display_service.cpp"
-    "presentation/crm_rate_formatter.cpp"
-    "presentation/crm_rate_table.cpp"
-    "presentation/crm_rate_table_io.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

@@ -118,7 +118,13 @@ private:
  * per-instance or per-message choice. Not thread-safe against concurrent
  * set_default_wire_codec() calls from multiple clients disagreeing on
  * format -- no service constructs more than one client with conflicting
- * config, so this does not arise in practice.
+ * config, so this does not arise in practice. This also relies on
+ * set_default_wire_codec() completing (from the client constructor, on
+ * the main thread) before any NATS worker thread that calls decode()/
+ * default_wire_codec() is spawned -- true today because client
+ * construction always precedes connect()/subscribe(), but not enforced
+ * by any lock; revisit with a std::atomic<wire_format> if that startup
+ * ordering ever changes.
  */
 ORES_NATS_EXPORT void set_default_wire_codec(wire_codec codec);
 

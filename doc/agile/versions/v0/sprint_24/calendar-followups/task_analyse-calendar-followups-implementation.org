@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/analyse-calendar-followups-implementation
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,29 +31,29 @@ implementation.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin analysis.                        |
-| Last touched | 2026-07-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- [ ] Each of the three follow-ups has a documented implementation
+- [X] Each of the three follow-ups has a documented implementation
   approach: affected components/files, key design decisions, and
   open risks.
-- [ ] Holiday-aware date picker: identify the reusable widget's
+- [X] Holiday-aware date picker: identify the reusable widget's
   interface (calendar input, holiday highlighting/tooltip) and where
   it plugs into existing Qt date-entry points.
-- [ ] Pagination fix: identify why =Client*Model.cpp= never sends
+- [X] Pagination fix: identify why =Client*Model.cpp= never sends
   offset/limit and confirm the scope of affected entities (currently
   estimated at 27) and the fix pattern to apply consistently.
-- [ ] QuantLib materialisation: confirm how QuantLib-computed
+- [X] QuantLib materialisation: confirm how QuantLib-computed
   holiday dates get persisted into a DQ-published, read-only refdata
   table, and how =calendar_adjustment= should be modelled as a
   layerable override on top of a QuantLib base calendar.
-- [ ] Findings distilled into the parent story's =* Decisions= and
+- [X] Findings distilled into the parent story's =* Decisions= and
   each of the three implementation tasks updated with a =* Plan=
   reflecting this analysis.
 
@@ -62,6 +62,53 @@ implementation.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation
+
+Checked each of the three follow-up tasks' current state before
+doing fresh analysis, since two of the three have had substantial
+work land against them since this task was scaffolded back on
+2026-07-22:
+
+- [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]]
+  (STARTED) already carries an extensive, concrete =* Plan= --
+  the templates/instantiation data-model distinction, the
+  =calendar_dates= materialised table, =calendar_adjustment=
+  layering design, and the QuantLib-sourced/read-only UI treatment
+  are all written up there in detail, well past what a fresh
+  analysis pass here would add. The affected components (=ores.refdata=
+  domain/repository/service, =ores.qt.refdata= detail dialog, the
+  =calendar_date= junction Qt facet) are enumerated across that
+  task and its own child tasks
+  ([[id:35F743BF-F513-4976-B294-D4E8DB975906][codegen-paginated-readonly-junction-list]],
+  [[id:1C673C53-9ED0-4C02-B856-EF031A1CC95F][codegen-qt-parent-scoped-list]],
+  [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][junction-qt-facet-codegen]],
+  [[id:F081079A-312E-46C5-91AB-2C83310DA8F0][qt-wire-browse-holidays-view]], now all DONE).
+- [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]]'s
+  own =* Goal= already *is* the analysis this task was meant to
+  produce: root cause (=:has_pagination:= unset defaults the
+  generated =Client*Model.cpp= to silently ignore offset/limit), the
+  exact detection script, the full enumerated list of 61 affected
+  entities across 12 components, and the one-line fix pattern
+  (=:has_pagination: true= + regenerate) per entity. Nothing left to
+  scope -- it's a mechanical rollout task now.
+- [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]]'s own =* Goal=/=* Acceptance=
+  already specify the widget interface (accepts one or more calendar
+  codes, highlights the union of their holidays, tooltip attribution
+  per calendar, weekend/holiday shared convention) and its data
+  source (=calendar_dates= + =calendar_adjustment=, not a live
+  QuantLib call). It remains genuinely =BLOCKED= on
+  [[id:7FF8A057-F95D-4654-B709-13D74525892B][the materialisation task]], which is still STARTED, not DONE.
+
+** Direction
+
+No fresh analysis needed beyond confirming and cross-linking what
+already exists: this task's acceptance criteria are satisfied by the
+sibling tasks' own =* Goal=/=* Plan= sections, not by new content
+written here. Closing on that basis rather than duplicating
+already-current analysis, and recording the cross-links above so a
+reader lands on the right task directly instead of re-deriving this
+mapping.
 
 * Notes
 
@@ -89,3 +136,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed without producing new analysis: by the time this task was
+picked up, the three follow-ups had already accumulated their own
+implementation plans organically through iterative work on the
+story's other tasks (the QuantLib materialisation chain in
+particular ran to 6+ sub-tasks, all now DONE, each documenting its
+own design decisions as it went). Re-deriving that analysis fresh
+here would have duplicated, not added to, what already exists.
+
+Findings, distilled into the parent story's =* Decisions=:
+
+- QuantLib materialisation and the browse-holidays UI chain are
+  fully implemented and DONE (calendar_dates table, calendar
+  parent-scoped Qt facet, Browse Holidays action). Only
+  =calendar_adjustment='s own UI/CRUD modelling (mentioned in
+  =7FF8A057='s =* Plan= as future work) remains open under that
+  task, which itself is still STARTED.
+- The pagination-truncation fix (=914B206F=) is fully scoped
+  already in its own task doc -- a mechanical, well-enumerated
+  rollout (61 entities, one knob, regenerate) with no design
+  decisions left to make. Ready to pick up directly.
+- The holiday-aware date picker (=1D064DDB=) is scoped but
+  genuinely blocked on =7FF8A057= reaching DONE (its data source,
+  materialised =calendar_dates=/=calendar_adjustment=, isn't fully
+  settled yet).

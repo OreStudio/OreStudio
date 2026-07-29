@@ -23,9 +23,9 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Promoted into Sprint 24. Starting with an analysis task before picking up any of the three implementation tasks. |
+| Now           | Analysis closed (superseded by organic per-task planning). Materialisation chain and Browse Holidays UI DONE; pagination fix and date picker remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Analyse implementation approach for all three follow-ups. |
+| Next          | Pick up the pagination-truncation fix (fully scoped, unblocked) or continue calendar_adjustment CRUD/UI under the materialisation task. |
 | Last touched  | 2026-07-22                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:61622B26-5E92-42B7-825A-7395A83B9179][Analyse implementation approach for calendar entity follow-ups]] | BACKLOG | | | Analyse how to implement the three calendar-followup items (holiday-aware date picker widget, list-pagination fix, QuantLib calendar materialisation/adjustments): scope each, identify design decisions and risks, and produce a plan before implementation starts. |
+| [[id:61622B26-5E92-42B7-825A-7395A83B9179][Analyse implementation approach for calendar entity follow-ups]] | DONE | 2026-07-29 | 2026-07-29 | Analyse how to implement the three calendar-followup items (holiday-aware date picker widget, list-pagination fix, QuantLib calendar materialisation/adjustments): scope each, identify design decisions and risks, and produce a plan before implementation starts. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
 | [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]] | BACKLOG | | | 27 ores.refdata Qt entities show working-looking pagination controls (Next/Load All/page size) but their Client*Model.cpp never sends offset/limit to the server and reports total_available_count as just the fetched page size -- silently capping every list at the server's default limit (100) with no visible indication rows are missing. |
 | [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] | STARTED | 2026-07-24 | | Materialise QuantLib-computed holiday dates into a real, DQ-published, read-only refdata table, clearly attributed as QuantLib-sourced, and model calendar_adjustment as a proper refdata entity so users can layer institution-specific overrides on top of a QuantLib base calendar instead of editing it directly. |
@@ -58,6 +58,22 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
   tasks: added an analysis task first to scope each item, surface
   design decisions and risks, and produce an implementation plan
   before committing to any of the three.
+
+- Closed the analysis task ([[id:61622B26-5E92-42B7-825A-7395A83B9179][Analyse implementation approach for calendar
+  entity follow-ups]]) without producing fresh analysis: by the time
+  it was picked up, each of the three follow-ups had already
+  accumulated its own implementation plan organically through
+  iterative work on the story's other tasks (the QuantLib
+  materialisation chain alone ran to 6+ sub-tasks, all DONE).
+  Re-deriving that analysis fresh would have duplicated, not added
+  to, what already existed. Status per follow-up: materialisation +
+  browse-holidays UI DONE (=calendar_adjustment='s own CRUD/UI still
+  open under [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]]);
+  pagination fix ([[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]])
+  fully scoped and ready to pick up directly (61 entities, one knob,
+  regenerate -- no design decisions left); date picker
+  ([[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]]) scoped but genuinely blocked on
+  materialisation reaching DONE.
 
 - =extra_list_requests= turned out to be domain_entity-only (every
   facet using it declares =#+model_types: domain_entity schema=, and

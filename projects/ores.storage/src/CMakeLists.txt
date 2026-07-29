@@ -20,11 +20,7 @@ set(name "ores.storage")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "filesystem/archiver.cpp"
-    "net/http_client.cpp"
-    "net/storage_transfer.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

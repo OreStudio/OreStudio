@@ -71,6 +71,7 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void bindSyntheticRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;

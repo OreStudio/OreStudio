@@ -56,7 +56,6 @@ private:
 public:
     explicit SyntheticBindingDialog(ClientManager* clientManager,
                                     const std::string& username,
-                                    const std::vector<std::string>& existingSourceNames,
                                     QWidget* parent = nullptr);
 
     ~SyntheticBindingDialog() override = default;

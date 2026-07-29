@@ -70,15 +70,13 @@ signals:
     // request to a related entity's list window) — see
     // paste_blocks_in_codegen.org. Left empty when no entity implements
     // this kind.
+    void bindSyntheticRequested();
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
-    // Hand-maintained (not codegen-generated -- see setupToolbar()/bindFromSynthetic()'s own
-    // comment): re-add after every `compass codegen entity generate feed_binding` regeneration.
-    void bindFromSynthetic();
 
 protected:
     void doReload() override;
@@ -113,7 +111,6 @@ private:
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
-    QAction* bindSyntheticAction_; // hand-maintained, see bindFromSynthetic()
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;

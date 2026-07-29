@@ -239,3 +239,44 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 | Enabled    | enabled     | Enabled     | boolean | 80    |
 | Version    | version     | Version     | int     | 80    |
 | ModifiedBy | modified_by | Modified By | string  | 120   |
+
+*** Bind synthetic seam
+
+Manual, checklist-driven bulk-create of feed bindings from available
+synthetic FX/IR configs (=SyntheticBindingDialog=) -- not a generic
+codegen CRUD concern, so it's injected via the standard paste-block
+extension points (see
+[[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]])
+rather than hand-edited into the generated =FeedBindingMdiWindow=/
+=FeedBindingController= files, which would otherwise be silently
+dropped on the next regeneration. Mirrors
+[[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]]'s own
+=showPartyTypesRequested=-style cross-navigation seam: MDI window
+emits a signal, the controller relays it, and the plugin composition
+root (=MarketdataPlugin.cpp=, hand-written, not generated) does the
+actual work -- constructing and opening =SyntheticBindingDialog=.
+
+#+begin_src cpp :name mdi_window_signal :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A
+void bindSyntheticRequested();
+#+end_src
+
+#+begin_src cpp :name mdi_window_toolbar :implements 18B9ED63-78C2-4259-93AC-CCDFBC88EFBD
+{
+    auto* bindSyntheticAction = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
+        tr("Bind synthetic"));
+    bindSyntheticAction->setToolTip(
+        tr("Query available synthetic feeds and create bindings for selected ones."));
+    connect(bindSyntheticAction, &QAction::triggered, this,
+            &FeedBindingMdiWindow::bindSyntheticRequested);
+}
+#+end_src
+
+#+begin_src cpp :name controller_signal :implements 66E078FB-D6A6-4DF6-814B-65995D948090
+void bindSyntheticRequested();
+#+end_src
+
+#+begin_src cpp :name controller_relay :implements 52E70F3B-5903-4359-91FB-B533054A18AC
+connect(listWindow_, &FeedBindingMdiWindow::bindSyntheticRequested,
+        this, &FeedBindingController::bindSyntheticRequested);
+#+end_src

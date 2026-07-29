@@ -93,6 +93,10 @@ void FeedBindingController::showListWindow() {
             &FeedBindingMdiWindow::showBindingHistory,
             this,
             &FeedBindingController::onShowHistory);
+    connect(listWindow_,
+            &FeedBindingMdiWindow::bindSyntheticRequested,
+            this,
+            &FeedBindingController::bindSyntheticRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);

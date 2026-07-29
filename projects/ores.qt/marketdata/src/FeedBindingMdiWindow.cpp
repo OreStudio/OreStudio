@@ -22,7 +22,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/SyntheticBindingDialog.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -47,7 +46,6 @@ FeedBindingMdiWindow::FeedBindingMdiWindow(ClientManager* clientManager,
     , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
-    , bindSyntheticAction_(nullptr)
     , editAction_(nullptr)
     , deleteAction_(nullptr)
     , historyAction_(nullptr) {
@@ -91,19 +89,6 @@ void FeedBindingMdiWindow::setupToolbar() {
     addAction_->setToolTip(tr("Add new feed binding"));
     connect(addAction_, &QAction::triggered, this, &FeedBindingMdiWindow::addNew);
 
-    // Hand-maintained: not part of the codegen CRUD template, re-added here after every
-    // `compass codegen entity generate feed_binding` regeneration (see bindFromSynthetic()'s
-    // own comment, and FeedBindingMdiWindow.hpp's matching slot/member comments).
-    bindSyntheticAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
-        tr("Bind synthetic"));
-    bindSyntheticAction_->setToolTip(
-        tr("Query available synthetic feeds and create bindings for selected ones."));
-    connect(bindSyntheticAction_,
-            &QAction::triggered,
-            this,
-            &FeedBindingMdiWindow::bindFromSynthetic);
-
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected feed binding"));
@@ -121,6 +106,17 @@ void FeedBindingMdiWindow::setupToolbar() {
     historyAction_->setToolTip(tr("View feed binding history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &FeedBindingMdiWindow::viewHistorySelected);
+    {
+        auto* bindSyntheticAction = toolbar_->addAction(
+            IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
+            tr("Bind synthetic"));
+        bindSyntheticAction->setToolTip(
+            tr("Query available synthetic feeds and create bindings for selected ones."));
+        connect(bindSyntheticAction,
+                &QAction::triggered,
+                this,
+                &FeedBindingMdiWindow::bindSyntheticRequested);
+    }
 }
 
 void FeedBindingMdiWindow::setupTable() {
@@ -222,30 +218,6 @@ void FeedBindingMdiWindow::updateActionStates() {
 void FeedBindingMdiWindow::addNew() {
     BOOST_LOG_SEV(lg(), debug) << "Add new feed binding requested";
     emit addNewRequested();
-}
-
-// Hand-maintained: not part of the codegen CRUD template (feed_binding has no equivalent
-// "bind from synthetic" concept in the generic entity model), re-added here after every
-// `compass codegen entity generate feed_binding` regeneration.
-void FeedBindingMdiWindow::bindFromSynthetic() {
-    BOOST_LOG_SEV(lg(), debug) << "Bind from synthetic requested";
-
-    // Collect source_names of bindings already loaded in the model so the
-    // dialog can mark them as already bound.
-    std::vector<std::string> existing;
-    for (int r = 0; r < model_->rowCount(); ++r)
-        if (const auto* b = model_->getBinding(r))
-            existing.push_back(b->source_name);
-
-    auto* dlg = new SyntheticBindingDialog(clientManager_, username_.toStdString(), existing, this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    connect(dlg, &QDialog::accepted, this, [this, dlg]() {
-        const int n = dlg->bindingsCreated();
-        BOOST_LOG_SEV(lg(), info) << "Created " << n << " binding(s) from synthetic dialog";
-        emit statusChanged(tr("Created %1 binding(s) from synthetic feeds.").arg(n));
-        model_->refresh();
-    });
-    dlg->open();
 }
 
 void FeedBindingMdiWindow::editSelected() {

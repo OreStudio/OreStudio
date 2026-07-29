@@ -55,12 +55,10 @@ std::string strip_currency_prefix(const std::string& currency_code, const std::s
 
 SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
                                                const std::string& username,
-                                               const std::vector<std::string>& existingSourceNames,
                                                QWidget* parent)
     : QDialog(parent)
     , clientManager_(clientManager)
     , username_(username)
-    , existingSourceNames_(existingSourceNames)
     , table_(new QTableWidget(this))
     , createButton_(new QPushButton(tr("Create bindings"), this)) {
 
@@ -114,14 +112,29 @@ void SyntheticBindingDialog::loadConfigs() {
     auto* cm = clientManager_;
     QPointer<SyntheticBindingDialog> self = this;
 
-    using Result = std::pair<bool, std::vector<BindableConfig>>;
+    struct Result {
+        bool ok = false;
+        std::vector<BindableConfig> configs;
+        std::vector<std::string> existing_source_names;
+    };
     auto task = [cm]() -> Result {
         std::vector<BindableConfig> configs;
+
+        // Fetch already-bound source names first so the table can pre-tick rows the caller
+        // doesn't need to know about -- keeps this dialog self-contained (no dependency on
+        // whatever list window/model happens to be open) rather than requiring the caller to
+        // pass a possibly-stale snapshot in.
+        std::vector<std::string> existing_source_names;
+        marketdata::messaging::get_feed_bindings_request fb_req{.offset = 0, .limit = 1000};
+        auto fb_resp = cm->process_authenticated_request(fb_req);
+        if (fb_resp && fb_resp->success)
+            for (const auto& b : fb_resp->feed_bindings)
+                existing_source_names.push_back(b.source_name);
 
         synthetic::messaging::get_fx_spot_generation_configs_request fx_req;
         auto fx_resp = cm->process_authenticated_request(fx_req);
         if (!fx_resp)
-            return {false, {}};
+            return {.ok = false};
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
             configs.push_back(
                 {"FX", cfg.ore_key, cfg.source_name, marketdata::domain::asset_class::fx});
@@ -151,12 +164,14 @@ void SyntheticBindingDialog::loadConfigs() {
             }
         }
 
-        return {true, std::move(configs)};
+        return Result{.ok = true,
+                     .configs = std::move(configs),
+                     .existing_source_names = std::move(existing_source_names)};
     };
 
     auto* watcher = new QFutureWatcher<Result>(this);
     connect(watcher, &QFutureWatcher<Result>::finished, this, [self, watcher]() {
-        auto [ok, configs] = watcher->result();
+        auto [ok, configs, existing_source_names] = watcher->result();
         watcher->deleteLater();
         if (!self)
             return;
@@ -168,6 +183,7 @@ void SyntheticBindingDialog::loadConfigs() {
             return;
         }
         self->configs_ = std::move(configs);
+        self->existingSourceNames_ = std::move(existing_source_names);
         self->populateTable(self->configs_);
         self->table_->setEnabled(true);
         self->createButton_->setEnabled(true);

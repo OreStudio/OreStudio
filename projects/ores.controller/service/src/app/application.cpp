@@ -104,6 +104,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error) << "start_all() failed: " << e.what();
                 *start_all_failure = std::current_exception();
+            } catch (...) {
+                BOOST_LOG_SEV(lg(), error) << "start_all() failed with a non-std::exception";
+                *start_all_failure = std::current_exception();
             }
             start_all_done->expires_at(boost::asio::steady_timer::clock_type::time_point::min());
             co_return;
@@ -149,8 +152,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // error to propagate.
     try {
         co_await start_all_done->async_wait(boost::asio::use_awaitable);
-    } catch (const boost::system::system_error&) {
-        // Expected: cancel() completes the wait with operation_aborted.
+    } catch (const boost::system::system_error& e) {
+        // Expected: cancel() completes the wait with operation_aborted. Any
+        // other error on this timer is unexpected and should surface.
+        if (e.code() != boost::asio::error::operation_aborted)
+            throw;
     }
     if (*start_all_failure && !failure)
         failure = *start_all_failure;

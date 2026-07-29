@@ -471,10 +471,10 @@ boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_n
     // structurally similar to the co_spawn(..., use_awaitable) pattern found
     // (in application::run(), see its comment) to never get its first resume
     // scheduled when the returned awaitable isn't awaited immediately. This
-    // one *is* awaited immediately, which should make it safe, but it has
-    // not yet been independently stress-tested the way that one was -- if
-    // service startup is ever observed stalling here specifically, this is
-    // the next place to apply the same detached+one-shot-event treatment.
+    // one *is* awaited immediately, which makes it safe from that hazard.
+    // We hop back onto ioc_ before returning (see below) since start_all()
+    // co_await's this coroutine directly and would otherwise keep running
+    // on db_pool_'s thread past this point.
     BOOST_LOG_SEV(lg(), trace) << "Switching to db_pool_ for post-launch writes: " << service_name
                                << "[" << replica_index << "]";
     co_await boost::asio::post(
@@ -519,8 +519,14 @@ boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_n
         BOOST_LOG_SEV(lg(), warn) << "DB update failed after launch of " << service_name << "["
                                   << replica_index << "]: " << e.what();
     }
-    // do_launch ends here on the db_pool thread — that is fine since the
-    // coroutine is detached and no shared state is accessed after this point.
+    // Switch back to ioc_ before returning: start_all() co_await's this
+    // coroutine directly (not detached), so whatever thread we return on is
+    // the thread the caller resumes on -- including, transitively, the
+    // completion signal in application::run() and further processes_ writes
+    // in start_all()'s own loop. Mirrors monitor_process()'s existing hop
+    // back onto ioc_ below.
+    co_await boost::asio::post(
+        boost::asio::bind_executor(ioc_.get_executor(), boost::asio::use_awaitable));
 }
 
 boost::asio::awaitable<void> process_supervisor::do_stop(std::string service_name,

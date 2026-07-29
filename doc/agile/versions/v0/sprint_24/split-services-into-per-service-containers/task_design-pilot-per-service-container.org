@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 9E08056D-DEC1-43E3-803E-03E5F9808AD5
+:END:
+#+title: Task: Design the per-service container architecture and pilot it with one service
+#+description: Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17.
+#+type: task
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch: feature/design-pilot-per-service-container
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Design how the control-plane responsibilities ~process_supervisor~
+currently owns -- dependency-ordered startup, readiness gating
+(~wait_for_log_ready~), and DB-backed ~service_instance~/phase tracking
+-- move to the orchestration layer (podman pod/compose init containers
+and dependency ordering in the pod spec) once each service is its own
+container's PID 1, rather than a process the controller ~exec~'s and
+babysits directly. Prove the design end-to-end on one real service
+before rolling out to the remaining 17: IAM is the natural pilot, since
+it's the one dependency every other service already waits on.
+
+This design should also account for the apparent memory-corruption
+issue found while deploying to Newton in the sibling WSL-offload story
+(PR #1747): if that corruption is specific to the single-container
+process-supervisor's in-process child bookkeeping, splitting into one
+container per service may sidestep it entirely; if it reproduces here
+too, it's a separate, real bug worth its own task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- A written design covering: how dependency order and readiness
+  gating are expressed at the orchestration layer instead of in
+  ~process_supervisor~; whether/how the DB-backed
+  ~service_instance~/phase tracking is kept, moved, or dropped; and
+  what a per-service container image looks like (one shared image
+  parameterised by entrypoint args, vs. 18 separate images).
+- IAM runs as its own container, as PID 1, supervised by the
+  orchestrator (not exec'd by the controller), reaching a healthy
+  state end-to-end.
+- ~podman logs iam~ (or equivalent) shows IAM's own log output
+  directly, without ~--log-to-console~/~--log-enabled~ plumbing.
+- A explicit note on whether the Newton memory-corruption finding
+  (PR #1747) reproduces in this architecture or not.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

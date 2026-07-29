@@ -21,12 +21,12 @@ Eliminate GLOB-based source discovery across the codebase so that a target's sou
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-28                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-29                               |
 
 * Acceptance
 
@@ -38,9 +38,33 @@ Eliminate GLOB-based source discovery across the codebase so that a target's sou
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E1143C4A-5B25-4401-89D3-037AFE3102F3][Migrate all CMakeLists.txt off GLOB_RECURSE to explicit, script-maintained source lists]] | STARTED | 2026-07-29 | | Write a regenerate_cmake_sources.py script that rewrites file(GLOB_RECURSE ...) blocks (plain .cpp lists and Qt AUTOMOC .hpp lists) into explicit, checked-in set() lists, matching the idiomatic CMake community pattern (explicit lists in the real build, external generator script to regenerate them, --check mode for CI drift detection). Run it across every component, one commit per component, updating the codegen archetype templates so newly scaffolded components start with explicit lists too. |
+| [[id:E1143C4A-5B25-4401-89D3-037AFE3102F3][Migrate all CMakeLists.txt off GLOB_RECURSE to explicit, script-maintained source lists]] | DONE | 2026-07-29 | 2026-07-29 | Write a regenerate_cmake_sources.py script that rewrites file(GLOB_RECURSE ...) blocks (plain .cpp lists and Qt AUTOMOC .hpp lists) into explicit, checked-in set() lists, matching the idiomatic CMake community pattern (explicit lists in the real build, external generator script to regenerate them, --check mode for CI drift detection). Run it across every component, one commit per component, updating the codegen archetype templates so newly scaffolded components start with explicit lists too. |
 
 * Decisions
+
+** Explicit source list lives in its own codegen-generated file, not spliced into CMakeLists.txt
+
+Considered rewriting =file(GLOB_RECURSE ...)= in place inside each
+hand-maintained =CMakeLists.txt= (a regex-based script, landed as a
+first batch of 96 commits) versus generating the list as its own
+file, =include()=d by =CMakeLists.txt=. Chose the latter and redid the
+migration: parsing an evolving, hand-edited file to find "the
+generated region" is exactly the kind of fragility this story was
+trying to remove in the first place, whereas a dedicated generated
+file is a safe full-overwrite every time. Implemented as a proper
+codegen archetype pair
+([[id:0C35DF87-6CBE-41E7-A4FC-B6828EAEE1A8][ores.cmake.component.files_src]]/
+[[id:16520415-5CFB-4D46-844C-25688B6425BC][files_tests]]) in the existing =ores.cmake.component= facet, following
+the same address system as every other CMake archetype, rather than
+a bespoke standalone tool.
+
+** No exceptions: every C++ component goes through codegen for its source list
+
+Ten components had no =modeling/component_overview.org= at task
+start and so couldn't be regenerated via the model-driven pipeline.
+Rather than leave them on the earlier regex-script's inline-list
+approach, scaffolded a =component_overview.org= for each so every C++
+component -- no exceptions -- uses the same generated-file mechanism.
 
 * Out of scope
 

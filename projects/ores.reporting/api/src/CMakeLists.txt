@@ -19,10 +19,25 @@ set(name "ores.reporting.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain/concurrency_policy_json_io.cpp"
+    "domain/concurrency_policy_table.cpp"
+    "domain/concurrency_policy_table_io.cpp"
+    "domain/report_definition_json_io.cpp"
+    "domain/report_definition_table.cpp"
+    "domain/report_definition_table_io.cpp"
+    "domain/report_definition_template_json_io.cpp"
+    "domain/report_instance_json_io.cpp"
+    "domain/report_instance_table.cpp"
+    "domain/report_instance_table_io.cpp"
+    "domain/report_type_json_io.cpp"
+    "domain/report_type_table.cpp"
+    "domain/report_type_table_io.cpp"
+    "generators/concurrency_policy_generator.cpp"
+    "generators/report_definition_generator.cpp"
+    "generators/report_instance_generator.cpp"
+    "generators/report_type_generator.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

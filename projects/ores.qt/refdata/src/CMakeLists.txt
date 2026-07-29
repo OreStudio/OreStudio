@@ -51,7 +51,7 @@ target_include_directories(${lib_target_name} PRIVATE
     # Transient: refdata controllers include headers still in ores.qt.
     # Remove as files migrate to their final projects.
     "${CMAKE_SOURCE_DIR}/projects/ores.qt/application/include"
-    "${CMAKE_SOURCE_DIR}/projects/ores.qt/admin/include")
+    "${CMAKE_SOURCE_DIR}/projects/ores.qt/iam/include")
 
 target_link_libraries(${lib_target_name}
     PUBLIC

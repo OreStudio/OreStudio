@@ -141,7 +141,6 @@ void AccountContactInformationMdiWindow::setupTable() {
         {
             cs::text_left,
             cs::text_left,
-            cs::text_left,
             cs::icon_text_left,
             cs::text_left,
             cs::text_left,
@@ -185,6 +184,7 @@ void AccountContactInformationMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -202,7 +202,7 @@ void AccountContactInformationMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading account contact informations";
     clearStaleIndicator();
     emit statusChanged(tr("Loading account contact informations..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void AccountContactInformationMdiWindow::onDataLoaded() {
@@ -271,7 +271,7 @@ void AccountContactInformationMdiWindow::viewHistorySelected() {
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* accountContactInformation = model_->getInformation(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug)
-            << "Emitting showInformationHistory for code: " << accountContactInformation->full_name;
+            << "Emitting showInformationHistory for code: " << accountContactInformation->email;
         emit showInformationHistory(*accountContactInformation);
     }
 }
@@ -295,7 +295,7 @@ void AccountContactInformationMdiWindow::deleteSelected() {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* accountContactInformation = model_->getInformation(sourceIndex.row())) {
             ids.push_back(boost::uuids::to_string(accountContactInformation->id));
-            codes.push_back(accountContactInformation->full_name);
+            codes.push_back(accountContactInformation->email);
         }
     }
 
@@ -383,7 +383,8 @@ void AccountContactInformationMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?

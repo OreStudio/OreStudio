@@ -39,7 +39,7 @@ std::string account_contact_information_repository::sql() {
 
 void account_contact_information_repository::write(context ctx,
                                                    const domain::account_contact_information& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing account contact information: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing account contact information. " << "id: " << v.id;
     execute_write_query(ctx,
                         account_contact_information_mapper::map(v),
                         lg(),
@@ -74,7 +74,7 @@ account_contact_information_repository::read_latest(context ctx) {
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_contact_information_entity>> |
@@ -89,9 +89,11 @@ account_contact_information_repository::read_latest(context ctx, const std::stri
         "Reading latest account contact information by id.");
 }
 
+
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all account contact information versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all account contact information versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_contact_information_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -110,7 +112,7 @@ std::optional<domain::account_contact_information>
 account_contact_information_repository::read_at_version(context ctx,
                                                         const std::string& id,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading account contact information at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading account contact information at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_contact_information_entity>> |
@@ -207,7 +209,7 @@ account_contact_information_repository::read_by_account_id_as_of(
         "Reading account contact informations as of window by account_id.");
 }
 void account_contact_information_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account contact information: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<account_contact_information_entity> |

@@ -25,6 +25,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/IamExport.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 #include <expected>
@@ -44,7 +45,7 @@ class ImageCache;
  * Manages the lifecycle of account contact information list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class AccountContactInformationController final : public EntityController {
+class ORES_QT_IAM_EXPORT AccountContactInformationController final : public EntityController {
     Q_OBJECT
 
 private:
@@ -70,7 +71,7 @@ public:
     void reloadListWindow() override;
 
     void openAdd();
-    void openAddWithParent(boost::uuids::uuid parentAccountId);
+    void openAddWithParent(boost::uuids::uuid accountId);
     void openEdit(const iam::domain::account_contact_information& accountContactInformation);
     void openHistory(const iam::domain::account_contact_information& accountContactInformation);
 
@@ -93,7 +94,7 @@ private slots:
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
-    void showAddWindow(boost::uuids::uuid parentAccountId = {});
+    void showAddWindow(boost::uuids::uuid accountId = {});
     void
     showDetailWindow(const iam::domain::account_contact_information& accountContactInformation);
     void

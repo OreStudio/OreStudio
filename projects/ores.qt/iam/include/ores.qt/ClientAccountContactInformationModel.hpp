@@ -54,7 +54,6 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
-        FullName,
         StreetLine1,
         City,
         CountryCode,

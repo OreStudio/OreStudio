@@ -17,25 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/domain/account_contact_information_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_QT_IAM_EXPORT_HPP
+#define ORES_QT_IAM_EXPORT_HPP
 
-namespace ores::iam::domain {
+#include <boost/config.hpp>
 
+#ifdef ORES_QT_IAM_LIBRARY
+#    define ORES_QT_IAM_EXPORT BOOST_SYMBOL_EXPORT
+#else
+#    define ORES_QT_IAM_EXPORT BOOST_SYMBOL_IMPORT
+#endif
 
-std::string convert_to_table(const std::vector<account_contact_information>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Account" << "City" << "Country" << "Phone" << "Email" << "Modified By"
-          << "Version" << fort::endr;
-
-    for (const auto& aci : v) {
-        table << boost::uuids::to_string(aci.account_id) << aci.city << aci.country_code
-              << aci.phone << aci.email << aci.modified_by << aci.version << fort::endr;
-    }
-    return table.to_string();
-}
-
-}
+#endif

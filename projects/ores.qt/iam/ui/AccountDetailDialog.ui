@@ -96,6 +96,30 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelJobTitle">
+            <property name="text">
+             <string>Job Title:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="jobTitleEdit">
+            <property name="placeholderText">
+             <string>e.g. Head of Desk, Senior Trader</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelReportsTo">
+            <property name="text">
+             <string>Reports To:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="reportsToCombo"/>
+          </item>
          </layout>
         </widget>
        </item>

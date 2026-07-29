@@ -30,7 +30,6 @@ render_account_contact_information_fields(const domain::account_contact_informat
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Account ID", .value = boost::uuids::to_string(v.account_id)});
-    fields.push_back({.name = "Full Name", .value = v.full_name});
     fields.push_back({.name = "Street Line 1", .value = v.street_line_1});
     fields.push_back({.name = "Street Line 2", .value = v.street_line_2});
     fields.push_back({.name = "City", .value = v.city});

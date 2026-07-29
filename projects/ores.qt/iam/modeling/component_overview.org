@@ -1,9 +1,9 @@
 :PROPERTIES:
 :ID: DB5A4924-8F0A-440C-873E-D823F430043E
 :END:
-#+title: ores.qt.admin
-#+name: qt.admin
-#+full_name: ores.qt.admin
+#+title: ores.qt.iam
+#+name: qt.iam
+#+full_name: ores.qt.iam
 #+description: Qt plugin for IAM UI — accounts, roles, tenants, system settings, badge types, and tenant onboarding.
 #+type: ores.codegen.component
 #+level: cross
@@ -13,13 +13,13 @@
 
 * Diagram
 
-#+attr_html: :width 100% :alt ores.qt.admin component diagram
-#+caption: ores.qt.admin
-[[file:ores.qt.admin.png][file:ores.qt.admin.png]]
+#+attr_html: :width 100% :alt ores.qt.iam component diagram
+#+caption: ores.qt.iam
+[[file:ores.qt.iam.png][file:ores.qt.iam.png]]
 
 * Summary
 
-=ores.qt.admin= is the Qt plugin for identity and access management UI.
+=ores.qt.iam= is the Qt plugin for identity and access management UI.
 It provides MDI windows and dialogs for managing accounts, roles, tenants,
 tenant types, system settings, badge definitions, and badge severities.
 It also provides the Tenant Onboarding Wizard for provisioning new tenants

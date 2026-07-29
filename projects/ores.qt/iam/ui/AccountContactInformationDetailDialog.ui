@@ -56,139 +56,125 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelFullName">
-            <property name="text">
-             <string>Full Name:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="fullNameEdit">
-            <property name="placeholderText">
-             <string>Enter full name</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
            <widget class="QLabel" name="labelStreetLine1">
             <property name="text">
              <string>Street Line 1:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="streetLine1Edit">
             <property name="placeholderText">
              <string>Enter street line 1</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="labelStreetLine2">
             <property name="text">
              <string>Street Line 2:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="streetLine2Edit">
             <property name="placeholderText">
              <string>Enter street line 2</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelCity">
             <property name="text">
              <string>City:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="cityEdit">
             <property name="placeholderText">
              <string>Enter city</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelState">
             <property name="text">
              <string>State:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="stateEdit">
             <property name="placeholderText">
              <string>Enter state</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelCountryCode">
             <property name="text">
              <string>Country Code:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="5" column="1">
            <widget class="QComboBox" name="countryCodeCombo">
             <property name="insertPolicy">
              <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelPostalCode">
             <property name="text">
              <string>Postal Code:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="6" column="1">
            <widget class="QLineEdit" name="postalCodeEdit">
             <property name="placeholderText">
              <string>Enter postal code</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="labelPhone">
             <property name="text">
              <string>Phone:</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="7" column="1">
            <widget class="QLineEdit" name="phoneEdit">
             <property name="placeholderText">
              <string>Enter phone</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="labelEmail">
             <property name="text">
              <string>Email:</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="8" column="1">
            <widget class="QLineEdit" name="emailEdit">
             <property name="placeholderText">
              <string>Enter email</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="labelWebPage">
             <property name="text">
              <string>Web Page:</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
+          <item row="9" column="1">
            <widget class="QLineEdit" name="webPageEdit">
             <property name="placeholderText">
              <string>Enter web page</string>

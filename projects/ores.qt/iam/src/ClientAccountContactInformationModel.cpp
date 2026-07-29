@@ -33,7 +33,7 @@ using namespace ores::logging;
 namespace {
 std::string
 account_contact_information_key_extractor(const iam::domain::account_contact_information& e) {
-    return e.full_name;
+    return e.email;
 }
 }
 
@@ -84,8 +84,6 @@ QVariant ClientAccountContactInformationModel::data(const QModelIndex& index, in
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case FullName:
-                return QString::fromStdString(accountContactInformation.full_name);
             case StreetLine1:
                 return QString::fromStdString(accountContactInformation.street_line_1);
             case City:
@@ -113,7 +111,7 @@ QVariant ClientAccountContactInformationModel::data(const QModelIndex& index, in
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(accountContactInformation.full_name);
+        return recency_foreground_color(accountContactInformation.email);
     }
 
     return {};
@@ -122,12 +120,17 @@ QVariant ClientAccountContactInformationModel::data(const QModelIndex& index, in
 QVariant ClientAccountContactInformationModel::headerData(int section,
                                                           Qt::Orientation orientation,
                                                           int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
 
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
+
     switch (section) {
-        case FullName:
-            return tr("Full Name");
         case StreetLine1:
             return tr("Street");
         case City:

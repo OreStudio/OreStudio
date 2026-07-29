@@ -31,13 +31,12 @@ namespace ores::iam::domain {
 /**
  * @brief Real name and contact details for an account.
  *
- * An account's real-world identity: full name, plus the usual address/
- * phone/email/web page fields. Accounts (ores_iam_accounts_tbl) carry
- * only username/email/credentials — no name field — so this is the
- * only place an account's actual name is recorded. One contact record
- * per account (unlike party contact information, which allows several
- * by contact_type — a person doesn't need a Legal/Operations/
- * Settlement/Billing split).
+ * An account's address/phone/email/web page fields. The account's real
+ * name lives on ores_iam_accounts_tbl itself (full_name), not here —
+ * this entity is purely "how to reach them", not "who they are". One
+ * contact record per account (unlike party contact information, which
+ * allows several by contact_type — a person doesn't need a Legal/
+ * Operations/Settlement/Billing split).
  */
 struct account_contact_information final {
     /**
@@ -63,14 +62,6 @@ struct account_contact_information final {
      * References the parent account record.
      */
     boost::uuids::uuid account_id;
-
-    /**
-     * @brief The account holder's full name.
-     *
-     * Not nullable -- this is the whole point of the entity: accounts have no name field of their
-     * own.
-     */
-    std::string full_name;
 
     /**
      * @brief First line of the street address.

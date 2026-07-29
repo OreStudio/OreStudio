@@ -32,7 +32,7 @@ namespace ores::qt {
  * @brief Records a plugin that could not be loaded.
  */
 struct plugin_load_error {
-    QString filename; ///< Short filename (e.g. libores.qt.admin.so)
+    QString filename; ///< Short filename (e.g. libores.qt.iam.so)
     QString message;  ///< Human-readable error from QPluginLoader::errorString()
 };
 

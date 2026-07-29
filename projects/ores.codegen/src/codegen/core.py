@@ -582,6 +582,14 @@ def _component_path_vars(entity):
         dict: placeholder name -> resolved value.
     """
     component = entity.get('component', 'unknown')
+    # qt_component: override for entities whose Qt UI lives in a
+    # different ores.qt.* project than the entity's own component (e.g.
+    # a variability system_setting entity whose UI is grouped into
+    # ores.qt.iam alongside accounts/roles/tenants rather than getting
+    # its own ores.qt.variability project). Defaults to component so
+    # every entity that doesn't set this keeps generating into
+    # ores.qt.{component} as before.
+    qt_component = entity.get('qt_component', component)
     subcomponent = entity.get('subcomponent', '')
     if subcomponent:
         component_include = f"{component}.{subcomponent}"
@@ -618,6 +626,7 @@ def _component_path_vars(entity):
 
     return {
         'component': component,
+        'qt_component': qt_component,
         'component_dir': component_dir,
         'component_core_dir': component_core_dir,
         'component_service_dir': component_service_dir,

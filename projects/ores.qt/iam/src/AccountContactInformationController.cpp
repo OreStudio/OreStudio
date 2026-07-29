@@ -158,7 +158,7 @@ void AccountContactInformationController::reloadListWindow() {
 
 void AccountContactInformationController::onShowDetails(
     const iam::domain::account_contact_information& accountContactInformation) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << accountContactInformation.full_name;
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << accountContactInformation.email;
     showDetailWindow(accountContactInformation);
 }
 
@@ -170,8 +170,8 @@ void AccountContactInformationController::onAddNewRequested() {
 void AccountContactInformationController::openAdd() {
     showAddWindow();
 }
-void AccountContactInformationController::openAddWithParent(boost::uuids::uuid parentAccountId) {
-    showAddWindow(parentAccountId);
+void AccountContactInformationController::openAddWithParent(boost::uuids::uuid accountId) {
+    showAddWindow(accountId);
 }
 void AccountContactInformationController::openEdit(
     const iam::domain::account_contact_information& accountContactInformation) {
@@ -184,12 +184,11 @@ void AccountContactInformationController::openHistory(
 
 void AccountContactInformationController::onShowHistory(
     const iam::domain::account_contact_information& accountContactInformation) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: "
-                               << accountContactInformation.full_name;
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << accountContactInformation.email;
     showHistoryWindow(accountContactInformation);
 }
 
-void AccountContactInformationController::showAddWindow(boost::uuids::uuid parentAccountId) {
+void AccountContactInformationController::showAddWindow(boost::uuids::uuid accountId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new account contact information";
 
     auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
@@ -198,9 +197,9 @@ void AccountContactInformationController::showAddWindow(boost::uuids::uuid paren
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    if (!parentAccountId.is_nil()) {
+    if (!accountId.is_nil()) {
         iam::domain::account_contact_information prefilled;
-        prefilled.account_id = parentAccountId;
+        prefilled.account_id = accountId;
         detailDialog->setInformation(prefilled);
     }
     detailDialog->setCreateMode(true);
@@ -240,7 +239,7 @@ void AccountContactInformationController::showAddWindow(boost::uuids::uuid paren
 void AccountContactInformationController::showDetailWindow(
     const iam::domain::account_contact_information& accountContactInformation) {
 
-    const QString identifier = QString::fromStdString(accountContactInformation.full_name);
+    const QString identifier = QString::fromStdString(accountContactInformation.email);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -248,8 +247,7 @@ void AccountContactInformationController::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: "
-                               << accountContactInformation.full_name;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << accountContactInformation.email;
 
     auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -314,21 +312,21 @@ void AccountContactInformationController::showDetailWindow(
 
 void AccountContactInformationController::showHistoryWindow(
     const iam::domain::account_contact_information& accountContactInformation) {
-    const QString code = QString::fromStdString(accountContactInformation.full_name);
+    const QString code = QString::fromStdString(accountContactInformation.email);
     BOOST_LOG_SEV(lg(), info) << "Opening history window for account contact information: "
-                              << accountContactInformation.full_name;
+                              << accountContactInformation.email;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << accountContactInformation.full_name;
+                                  << accountContactInformation.email;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << accountContactInformation.full_name;
+                              << accountContactInformation.email;
 
     const QString entityId =
         QString::fromStdString(boost::uuids::to_string(accountContactInformation.id));
@@ -403,9 +401,9 @@ void AccountContactInformationController::onOpenVersion(
     const iam::domain::account_contact_information& accountContactInformation, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for account contact information: "
-                              << accountContactInformation.full_name;
+                              << accountContactInformation.email;
 
-    const QString code = QString::fromStdString(accountContactInformation.full_name);
+    const QString code = QString::fromStdString(accountContactInformation.email);
     const QString windowKey =
         build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
@@ -598,9 +596,8 @@ void AccountContactInformationController::onRevertVersion(
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Revert Account Contact Information: %1")
-            .arg(QString::fromStdString(accountContactInformation.full_name)));
+    detailWindow->setWindowTitle(QString("Revert Account Contact Information: %1")
+                                     .arg(QString::fromStdString(accountContactInformation.email)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
                                                                IconUtils::DefaultIconColor));
 

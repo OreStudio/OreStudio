@@ -77,7 +77,7 @@ ProvenanceWidget* AccountContactInformationDetailDialog::provenanceWidget() cons
 }
 
 QString AccountContactInformationDetailDialog::code() const {
-    return QString::fromStdString(accountContactInformation_.full_name);
+    return QString::fromStdString(accountContactInformation_.email);
 }
 
 void AccountContactInformationDetailDialog::setupUi() {
@@ -112,10 +112,6 @@ void AccountContactInformationDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &AccountContactInformationDetailDialog::onCodeChanged);
-    connect(ui_->fullNameEdit,
-            &QLineEdit::textChanged,
-            this,
-            &AccountContactInformationDetailDialog::onFieldChanged);
     connect(ui_->streetLine1Edit,
             &QLineEdit::textChanged,
             this,
@@ -231,7 +227,6 @@ void AccountContactInformationDetailDialog::markDirty() {
 void AccountContactInformationDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->idEdit->setReadOnly(true);
-    ui_->fullNameEdit->setReadOnly(readOnly);
     ui_->streetLine1Edit->setReadOnly(readOnly);
     ui_->streetLine2Edit->setReadOnly(readOnly);
     ui_->cityEdit->setReadOnly(readOnly);
@@ -248,7 +243,6 @@ void AccountContactInformationDetailDialog::setReadOnly(bool readOnly) {
 void AccountContactInformationDetailDialog::updateUiFromInformation() {
     ui_->idEdit->setText(
         QString::fromStdString(boost::uuids::to_string(accountContactInformation_.id)));
-    ui_->fullNameEdit->setText(QString::fromStdString(accountContactInformation_.full_name));
     ui_->streetLine1Edit->setText(QString::fromStdString(accountContactInformation_.street_line_1));
     ui_->streetLine2Edit->setText(QString::fromStdString(accountContactInformation_.street_line_2));
     ui_->cityEdit->setText(QString::fromStdString(accountContactInformation_.city));
@@ -275,7 +269,6 @@ void AccountContactInformationDetailDialog::updateUiFromInformation() {
 }
 
 void AccountContactInformationDetailDialog::updateInformationFromUi() {
-    accountContactInformation_.full_name = ui_->fullNameEdit->text().trimmed().toStdString();
     accountContactInformation_.street_line_1 = ui_->streetLine1Edit->text().trimmed().toStdString();
     accountContactInformation_.street_line_2 = ui_->streetLine2Edit->text().trimmed().toStdString();
     accountContactInformation_.city = ui_->cityEdit->text().trimmed().toStdString();
@@ -305,9 +298,8 @@ void AccountContactInformationDetailDialog::updateSaveButtonState() {
 
 bool AccountContactInformationDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
-    const QString full_name_val = ui_->fullNameEdit->text().trimmed();
 
-    return true && !id_val.isEmpty() && !full_name_val.isEmpty();
+    return true && !id_val.isEmpty();
 }
 
 void AccountContactInformationDetailDialog::onSaveClicked() {
@@ -336,7 +328,7 @@ void AccountContactInformationDetailDialog::onSaveClicked() {
     updateInformationFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving account contact information: "
-                              << accountContactInformation_.full_name;
+                              << accountContactInformation_.email;
 
     QPointer<AccountContactInformationDetailDialog> self = this;
 
@@ -372,8 +364,7 @@ void AccountContactInformationDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Account Contact Information saved successfully";
-                    QString code =
-                        QString::fromStdString(self->accountContactInformation_.full_name);
+                    QString code = QString::fromStdString(self->accountContactInformation_.email);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
                     emit self->accountContactInformationSaved(code);
@@ -399,7 +390,7 @@ void AccountContactInformationDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(accountContactInformation_.full_name);
+    QString code = QString::fromStdString(accountContactInformation_.email);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Account Contact Information",
@@ -416,7 +407,7 @@ void AccountContactInformationDetailDialog::onDeleteClicked() {
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting account contact information: "
-                              << accountContactInformation_.full_name;
+                              << accountContactInformation_.email;
 
     QPointer<AccountContactInformationDetailDialog> self = this;
 

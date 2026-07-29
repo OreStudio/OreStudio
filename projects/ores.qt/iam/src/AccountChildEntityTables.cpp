@@ -39,7 +39,7 @@ namespace ores::qt {
 AccountChildEntityTables::AccountChildEntityTables(QWidget* dialogParent)
     : QObject(dialogParent)
     , dialogParent_(dialogParent)
-    , contactTable_(new ChildEntityTableWidget({"Full Name", "Country", "Street", "City", "Phone"},
+    , contactTable_(new ChildEntityTableWidget({"Email", "Country", "Street", "City", "Phone"},
                                                "Add Contact",
                                                "Delete Contact",
                                                dialogParent)) {
@@ -111,7 +111,7 @@ void AccountChildEntityTables::loadContacts() {
                 std::vector<QStringList> rows;
                 rows.reserve(self->contacts_.size());
                 for (const auto& c : self->contacts_) {
-                    rows.push_back({QString::fromStdString(c.full_name),
+                    rows.push_back({QString::fromStdString(c.email),
                                     QString::fromStdString(c.country_code),
                                     QString::fromStdString(c.street_line_1),
                                     QString::fromStdString(c.city),

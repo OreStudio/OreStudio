@@ -53,7 +53,7 @@ public:
     ~AdminPlugin() override;
 
     QString name() const override {
-        return QStringLiteral("ores.qt.admin");
+        return QStringLiteral("ores.qt.iam");
     }
     int load_order() const override {
         return 50;

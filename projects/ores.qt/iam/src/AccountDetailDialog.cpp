@@ -62,10 +62,23 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     , clientManager_(nullptr)
     , rolesWidget_(nullptr)
     , partiesWidget_(nullptr)
-    , childTables_(nullptr) {
+    , childTables_(nullptr)
+    , reportsToWatcher_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
+
+    reportsToWatcher_ = new QFutureWatcher<std::vector<iam::domain::account>>(this);
+    connect(reportsToWatcher_,
+            &QFutureWatcher<std::vector<iam::domain::account>>::finished,
+            this,
+            &AccountDetailDialog::onReportsToAccountsLoaded);
+
+    connect(ui_->jobTitleEdit, &QLineEdit::textChanged, this, &AccountDetailDialog::onFieldChanged);
+    connect(ui_->reportsToCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &AccountDetailDialog::onFieldChanged);
 
     // Create toolbar (for historical navigation only, hidden by default)
     toolBar_ = new QToolBar(this);
@@ -244,6 +257,9 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
 
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
+    ui_->jobTitleEdit->setText(QString::fromStdString(account.job_title));
+
+    populateReportsToCombo(account);
 
     const QString typeCode = QString::fromStdString(account.account_type);
     const int typeIdx = ui_->accountTypeCombo->findData(typeCode);
@@ -331,9 +347,59 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
     account.account_type = ui_->accountTypeCombo->currentData().toString().toStdString();
+    account.job_title = ui_->jobTitleEdit->text().toStdString();
     account.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
+}
+
+void AccountDetailDialog::populateReportsToCombo(const iam::domain::account& account) {
+    {
+        const QSignalBlocker blocker(ui_->reportsToCombo);
+        ui_->reportsToCombo->clear();
+        ui_->reportsToCombo->addItem(tr("(none)"), QString());
+    }
+
+    if (!clientManager_)
+        return;
+
+    QPointer<AccountDetailDialog> self = this;
+    reportsToWatcher_->setFuture(
+        QtConcurrent::run([self]() -> std::vector<iam::domain::account> {
+            if (!self || !self->clientManager_)
+                return {};
+
+            iam::messaging::get_accounts_request_typed req;
+            req.limit = 10'000;
+            auto result = self->clientManager_->process_authenticated_request(std::move(req));
+            if (!result)
+                return {};
+
+            return result->accounts;
+        }));
+}
+
+void AccountDetailDialog::onReportsToAccountsLoaded() {
+    const auto accounts = reportsToWatcher_->result();
+
+    const QSignalBlocker blocker(ui_->reportsToCombo);
+    ui_->reportsToCombo->clear();
+    ui_->reportsToCombo->addItem(tr("(none)"), QString());
+
+    int selectIndex = 0;
+    for (const auto& a : accounts) {
+        // Exclude self by username (a not-yet-saved account in create mode
+        // has a nil id, so id comparison alone wouldn't exclude it there).
+        if (a.username == currentAccount_.username && !currentAccount_.username.empty())
+            continue;
+
+        const auto idStr = QString::fromStdString(boost::uuids::to_string(a.id));
+        ui_->reportsToCombo->addItem(QString::fromStdString(a.username), idStr);
+        if (!currentAccount_.reports_to_account_id.is_nil() &&
+            a.id == currentAccount_.reports_to_account_id)
+            selectIndex = ui_->reportsToCombo->count() - 1;
+    }
+    ui_->reportsToCombo->setCurrentIndex(selectIndex);
 }
 
 void AccountDetailDialog::clearDialog() {
@@ -692,6 +758,9 @@ void AccountDetailDialog::onSaveClicked() {
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
+        const std::string jobTitle = ui_->jobTitleEdit->text().toStdString();
+        const std::string reportsToAccountId =
+            ui_->reportsToCombo->currentData().toString().toStdString();
         const auto pendingRoleAdds =
             needsRoleSave ? rolesWidget_->pendingAdds() : std::vector<boost::uuids::uuid>{};
         const auto pendingRoleRemoves =
@@ -700,6 +769,8 @@ void AccountDetailDialog::onSaveClicked() {
         QFuture<FutureResult> future = QtConcurrent::run([self,
                                                           account_id,
                                                           email,
+                                                          jobTitle,
+                                                          reportsToAccountId,
                                                           defaultPartyId,
                                                           needsAccountSave,
                                                           pendingPartyAdds,
@@ -719,6 +790,8 @@ void AccountDetailDialog::onSaveClicked() {
                 request.account_id = boost::uuids::to_string(account_id);
                 request.email = email;
                 request.default_party_id = defaultPartyId;
+                request.job_title = jobTitle;
+                request.reports_to_account_id = reportsToAccountId;
 
                 auto response_result =
                     self->clientManager_->process_authenticated_request(std::move(request));

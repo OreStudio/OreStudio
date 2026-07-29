@@ -52,7 +52,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib          # shared framework: ClientManager, EntityController,
                                  # IPlugin, PluginRegistry, utilities, caches — pulls Qt6 core modules
-        # Domain plugins (ores.qt.admin, .compute, .refdata, .party, .mktdata, .trading)
+        # Domain plugins (ores.qt.iam, .compute, .refdata, .party, .mktdata, .trading)
         # are loaded at runtime via QPluginLoader — no compile-time link needed.
         ores.ore.core.lib
         ores.ore.api.lib
@@ -123,7 +123,7 @@ endif()
 # Force every plugin to always be rebuilt alongside the exe so this can't
 # happen from an ordinary `cmake --build --target ores.qt.exe`.
 add_dependencies(${exe_target_name}
-    ores.qt.admin.lib
+    ores.qt.iam.lib
     ores.qt.analytics.lib
     ores.qt.compute.lib
     ores.qt.data_management.lib

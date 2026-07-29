@@ -29,6 +29,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include <QAction>
+#include <QFutureWatcher>
 #include <QToolBar>
 #include <memory>
 #include <optional>
@@ -165,12 +166,14 @@ private slots:
     void onDeleteClicked();
     void onRevertClicked();
     void onFieldChanged();
+    void onReportsToAccountsLoaded();
 
 private:
     void updateSaveResetButtonState();
     void setCreateMode(bool createMode);
     void setFieldsReadOnly(bool readOnly);
     bool validatePassword() const;
+    void populateReportsToCombo(const iam::domain::account& account);
 
 private:
     std::unique_ptr<Ui::AccountDetailDialog> ui_;
@@ -189,6 +192,7 @@ private:
     AccountRolesWidget* rolesWidget_;
     AccountPartiesWidget* partiesWidget_;
     AccountChildEntityTables* childTables_;
+    QFutureWatcher<std::vector<iam::domain::account>>* reportsToWatcher_;
 };
 
 }

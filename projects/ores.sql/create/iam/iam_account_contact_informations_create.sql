@@ -24,13 +24,12 @@
  *
  * Account Contact Information Table
  *
- * An account's real-world identity: full name, plus the usual address/
- * phone/email/web page fields. Accounts (ores_iam_accounts_tbl) carry
- * only username/email/credentials — no name field — so this is the
- * only place an account's actual name is recorded. One contact record
- * per account (unlike party contact information, which allows several
- * by contact_type — a person doesn't need a Legal/Operations/
- * Settlement/Billing split).
+ * An account's address/phone/email/web page fields. The account's real
+ * name lives on ores_iam_accounts_tbl itself (full_name), not here —
+ * this entity is purely "how to reach them", not "who they are". One
+ * contact record per account (unlike party contact information, which
+ * allows several by contact_type — a person doesn't need a Legal/
+ * Operations/Settlement/Billing split).
  */
 
 create table if not exists "ores_iam_account_contact_informations_tbl" (
@@ -38,7 +37,6 @@ create table if not exists "ores_iam_account_contact_informations_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "account_id" uuid not null,
-    "full_name" text not null,
     "street_line_1" text null,
     "street_line_2" text null,
     "city" text null,

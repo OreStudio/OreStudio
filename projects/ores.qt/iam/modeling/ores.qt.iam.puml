@@ -17,7 +17,7 @@
 '
 @startuml
 
-title ores.qt.admin Component
+title ores.qt.iam Component
 
 set namespaceSeparator ::
 
@@ -469,6 +469,6 @@ namespace ores #F2F2F2 {
 ' --- manual: everything below this line is hand-authored; the script preserves it ---
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.admin.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.qt.iam.puml"
 ' End:
 @enduml

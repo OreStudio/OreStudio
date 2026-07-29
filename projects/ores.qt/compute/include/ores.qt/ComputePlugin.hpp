@@ -77,7 +77,7 @@ private:
     /**
      * @brief System > Message Queue, disabled until login — this menu
      * needs a live session same as everything else this plugin
-     * contributes, and (unlike ores.qt.admin's &Testing) isn't meant
+     * contributes, and (unlike ores.qt.iam's &Testing) isn't meant
      * to work before login.
      */
     QMenu* messageQueueMenu_{nullptr};

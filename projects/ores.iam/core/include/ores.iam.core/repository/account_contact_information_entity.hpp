@@ -42,7 +42,6 @@ struct account_contact_information_entity {
     int version = 0;
     std::string account_id;
 
-    std::string full_name;
     std::optional<std::string> street_line_1;
     std::optional<std::string> street_line_2;
     std::optional<std::string> city;

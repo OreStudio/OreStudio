@@ -8,7 +8,7 @@
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
 #+branch: feature/literate-template-block-commentary
-#+pr:
+#+pr: 1743
 #+blocked_on: A2EDDEDC-D5D3-469D-88C9-7CE00951CC72
 #+blocked_since: 2026-07-29
 #+created: 2026-06-29
@@ -263,7 +263,7 @@ the =\*\* Reverting to a historical version= exemplar in
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1743][#1743]] | [agile,codegen] Literate-split cpp_repository pilot (partial); block on refdata drift fix |
 
 * Review
 

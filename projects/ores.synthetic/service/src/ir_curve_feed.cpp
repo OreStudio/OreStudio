@@ -153,6 +153,18 @@ void ir_curve_feed::stop() {
     stop_flag_.store(true, std::memory_order_relaxed);
 }
 
+const ir_curve_resolved_entry*
+select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
+    const ir_curve_resolved_entry* anchor = nullptr;
+    for (const auto& e : resolved) {
+        if (e.curve_role != "DEPOSIT")
+            continue;
+        if (!anchor || e.ticks_ahead_end < anchor->ticks_ahead_end)
+            anchor = &e;
+    }
+    return anchor;
+}
+
 namespace {
 std::string lowercase(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
@@ -246,18 +258,6 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
     throw vintage_data_missing_error(missing_message());
 }
 
-}
-
-const ir_curve_resolved_entry*
-select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
-    const ir_curve_resolved_entry* anchor = nullptr;
-    for (const auto& e : resolved) {
-        if (e.curve_role != "DEPOSIT")
-            continue;
-        if (!anchor || e.ticks_ahead_end < anchor->ticks_ahead_end)
-            anchor = &e;
-    }
-    return anchor;
 }
 
 std::shared_ptr<ir_curve_feed>

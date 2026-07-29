@@ -16,7 +16,12 @@ ways to authenticate that call — mint its own service identity (the
 *client credentials* grant) or forward the calling user's own token (the
 *on-behalf-of*, OBO, delegation flow) — never both blended into one call,
 and never a shortcut around either by reaching into the other service's
-repository/tables directly. Which of the two to use is decided by one
+repository/tables directly. (A third, narrower pattern —
+[[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][internal actor impersonation]] — applies specifically to server-side
+orchestrators that must act as several identities in turn with no inbound
+caller to delegate from; see that doc for when it, rather than either
+flow below, is the right call.) Which of the two flows below to use is
+decided by one
 question: is the data being read scoped to the *current caller* (tenant,
 party, permissions) or is it scoped to *the service itself* (background
 work, bootstrap, data the service is always allowed to see regardless of

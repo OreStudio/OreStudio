@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: AAC60D20-8696-4455-9292-E8FAE1389CBC
+:END:
+#+title: Internal Actor Impersonation: Server-Side Orchestration via Self-Minted JWTs
+#+description: A service self-mints a short-lived JWT impersonating a specific end-user/party so it can drive its own real NATS request/handler pipeline server-side, exactly as a real client would -- a third auth pattern alongside client-credentials and on-behalf-of delegation, for orchestrators that must not duplicate the service layer in hand-written SQL.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:services:authentication:iam:nats:jwt:workflow:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+* Summary
+
+A server-side orchestrator that needs to simulate several distinct real
+users' actions in one request — e.g. "provision this entire multi-party
+tenant, importing LEIs, publishing each party's data, activating and
+onboarding each one" — has a third option alongside [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][client credentials and
+on-behalf-of delegation]]: mint its own short-lived JWT *as if it were* a
+specific end-user/party, and drive the real NATS request/handler pipeline
+through it, exactly as a real client would. This is *internal actor
+impersonation* — =ores.iam.core='s =internal_impersonation_service= mints
+the token, =internal_request_client= issues requests and polls workflows
+with it. The token is deliberately short-lived (60s default), which is
+fine for a single call but not for the multi-minute polling loops this
+pattern is built to drive — so =internal_request_client= transparently
+re-mints and retries once on expiry, given a refresh callback; without
+one, expiry is a fast, clearly-labelled failure rather than a silent
+retry-until-timeout. =tenant_handler::provision_acme= (see
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]) is the worked example and the pattern's origin.
+
+* Detail
+
+** Why a third pattern, not one of the existing two
+
+[[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]]
+covers the two standard flows, and internal impersonation is neither:
+
+- *Client credentials* gives the orchestrator its own service identity —
+  no tenant, no party, no end-user permissions. It cannot drive handlers
+  that are written to act *as a specific party* (activate this party,
+  set this account's default party, complete this party's onboarding) —
+  those handlers resolve "which party" from the caller's JWT claims, and
+  a service identity has none.
+- *On-behalf-of delegation* forwards an *inbound* caller's token. There is
+  no inbound caller to forward for most of an orchestrator's own steps —
+  by the time it needs to act as "Acme Corporation UK plc", nothing has
+  ever authenticated as that party; the party didn't exist as an
+  authenticate-able identity until this same request created it.
+
+Internal impersonation originates a *new* identity, chosen by the
+orchestrator itself from data it already trusts (the tenant/account it is
+provisioning, a party it just looked up) — not by forwarding or reusing
+anyone else's credential. It is a purpose-built escape hatch for
+*orchestration*, not a general substitute for either flow: reach for it
+only when a server-side process must act as several different identities
+in turn to drive real, permission-checked handlers, and hand-writing SQL
+that duplicates those handlers' logic is the only alternative.
+
+** The flow
+
+1. *Mint*: =internal_impersonation_service::mint_token(ctx, tenant_id,
+   account_id, party_id, username, ttl = 60s)= builds a full JWT — tenant,
+   party, and the *account's actual permission set* (looked up from
+   =account_id=, not inherited from whatever context is minting it) — and
+   signs it with the same signer every other JWT in the system uses.
+   Downstream handlers cannot tell this token apart from one a real login
+   produced; they enforce =has_permission= and tenant/party scoping
+   exactly as normal.
+2. *Request*: =internal_request_client(nats, token, refresh_token)= wraps
+   one impersonated identity. =client.request(req)= attaches the token as
+   a plain =Authorization= header (not =X-Delegated-Authorization= — this
+   is an originated identity, not a forwarded one), serialises/
+   deserialises via the same typed request/response structs any other
+   caller of that subject uses, and throws on transport or parse failure.
+3. *Poll*: =client.wait_for_workflow_instance(instance_id, timeout,
+   expected_steps, on_progress)= drives a =dq.v1.bundles.publish=-style
+   workflow to completion, calling =on_progress= on every step-status
+   change so the orchestrator can stream human-readable progress back to
+   its own caller.
+
+** Token expiry: fail fast, then self-heal
+
+The token's short TTL (documented at the mint site as "keep short — this
+is a use-once, discard-immediately token, not a session credential") is
+correct for a single request but routinely too short for the polling
+loops built on top of it — a GLEIF counterparty import alone can run past
+600s. Two things make that survivable rather than either an infinite
+retry storm or a spurious failure:
+
+- *The server tells the client why it was rejected.* A JWT-validation
+  failure replies with an empty body and an =X-Error= header (e.g.
+  =token_expired=; see =ores::service::messaging::error_reply= /
+  =error_code=) rather than a payload. =internal_request_client::request()=
+  checks for that header *before* attempting to parse a body, and raises
+  it as a distinct, typed =service_error= — never a generic parse-failure
+  =std::runtime_error= that reads as "the server sent garbage" when it
+  actually said something specific.
+- *=service_error("token_expired")= is retried once, transparently, if a
+  refresh callback was supplied* — =request()= re-mints via
+  =refresh_token()=, updates its own token, and retries the same call
+  once. No caller-visible error, no interruption to a poll loop, for the
+  routine case of a token expiring mid-wait. Without a refresh callback
+  (or if the rejection isn't =token_expired=, or the retried call is
+  rejected again), the =service_error= propagates. In
+  =wait_for_workflow_instance=, that is caught separately from generic
+  transport failures and treated as *terminal, not transient* — it logs
+  a clear "aborting wait: token rejected, cannot succeed on retry"
+  message and returns =false= immediately, rather than retrying every
+  500ms until the wait's own deadline expires with no useful signal
+  about why. Get this distinction right: an expired token will never
+  become valid by asking again with the *same* token, so treating it
+  like a busy-server hiccup (worth retrying) rather than a stale
+  credential (worth refreshing, or else giving up loudly) is the
+  concrete bug this pattern's first iteration shipped with, went
+  undetected through a full ~10-minute happy-path run, and only
+  surfaced under an end-to-end test against live services -- see [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]'s task journal for how it was caught, diagnosed via
+  the =ores.iam.service=/=ores.workflow.service= logs, and fixed.
+
+** Wiring the refresh callback: one identity per client
+
+A single orchestrator run typically impersonates *several* identities in
+turn (the caller's own party for tenant-wide steps, then each
+newly-activated party for its own steps) — refreshing must re-mint for
+the *same* party each client was built for, not whichever party happens
+to be in scope when expiry is detected. The idiom, from
+=tenant_handler::provision_acme=:
+
+#+begin_src cpp
+auto mint = [&](const boost::uuids::uuid& party_id) {
+    return impersonation_.mint_token(*ctx_expected, tenant_id_str, account_id,
+                                     party_id, username);
+};
+auto make_client = [&](const boost::uuids::uuid& party_id) {
+    return internal_request_client(nats_, mint(party_id),
+                                   [&mint, party_id] { return mint(party_id); });
+};
+
+internal_request_client client = make_client(party->id);
+#+end_src
+
+=make_client= closes over =mint= and the *specific* =party_id= by value, so
+the refresh callback always re-mints for that same party regardless of
+what the surrounding loop has since moved on to. Every
+=internal_request_client= built in =provision_acme= goes through this
+helper — there is no direct =internal_request_client(nats_, mint(...))=
+construction left in that handler.
+
+** What this pattern is not for
+
+- *Not* a way to skip permission checks — the minted token carries the
+  impersonated account's real permission set; a handler that would
+  reject that account acting as that party rejects this token too.
+- *Not* a substitute for OBO when there genuinely is an inbound caller to
+  forward — if the identity to act as is the request's own caller,
+  delegate their token; only mint a new one when no such caller token
+  exists for the identity you need.
+- *Not* a general request-retry helper — the refresh-on-expiry behaviour
+  in =internal_request_client= is specific to the =token_expired= =X-Error=
+  case; other rejections (=forbidden=, =bad_request=) still fail immediately,
+  by design — they will not resolve by re-minting.
+
+* See also
+
+- [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]]
+  — the other two service-to-service auth flows this pattern sits
+  alongside.
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] — the
+  story that introduced this pattern; =tenant_handler::provision_acme= is
+  the worked example.
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — general service call mechanics (mint or
+  delegate) this pattern's =mint= step builds on.
+- [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — ordering constraints for minting tokens
+  against a service's own just-started subjects, relevant background for
+  why tokens are minted per-call rather than once at startup here.

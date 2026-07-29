@@ -19,10 +19,27 @@ set(name "ores.utility")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "compression/gzip.cpp"
+    "convert/base32_converter.cpp"
+    "convert/base64_converter.cpp"
+    "domain/hierarchy.cpp"
+    "faker/datetime.cpp"
+    "faker/internet.cpp"
+    "faker/totp.cpp"
+    "generation/generation_context.cpp"
+    "generation/generation_engine.cpp"
+    "generation/generation_environment.cpp"
+    "generation/tree_builder.cpp"
+    "program_options/common_configuration.cpp"
+    "program_options/environment_mapper_factory.cpp"
+    "serialization/reader.cpp"
+    "serialization/writer.cpp"
+    "string/converter.cpp"
+    "string/short_code_generator.cpp"
+    "uuid/tenant_id.cpp"
+    "uuid/uuid_v7_generator.cpp"
+)
 
 if(VCPKG_TARGET_TRIPLET)
     set(ORES_PLATFORM_TRIPLET "${VCPKG_TARGET_TRIPLET}")

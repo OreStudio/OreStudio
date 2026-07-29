@@ -20,11 +20,7 @@ set(name "ores.controller.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/service_definition_json_io.cpp"
-    "domain/service_event_json_io.cpp"
-    "domain/service_instance_json_io.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

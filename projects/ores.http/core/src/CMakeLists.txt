@@ -19,13 +19,7 @@ set(name "ores.http.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "routes/assets_routes.cpp"
-    "routes/iam_routes.cpp"
-    "routes/risk_routes.cpp"
-    "routes/storage_routes.cpp"
-    "routes/variability_routes.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

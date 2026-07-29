@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/qa-market-simulator-tree-theme-atomicity
-#+pr:
+#+pr: 1741
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1741][#1741]] | [ores.qt] Fix Start-at-Root theme picker for merged synthetic themes |
 
 * Review
 

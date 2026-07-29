@@ -87,8 +87,15 @@ public:
      * setter, because =AdminPlugin::setup_menus()= — where the
      * Scenario Runner is actually built — runs synchronously inside
      * this constructor, before any caller could call a setter.
+     * @param cliMasterPassword If non-empty, a connections.db master
+     * password to attempt non-interactively in
+     * initializeConnectionManager() before falling back to
+     * MasterPasswordDialog (=--master-password= /
+     * =ORES_CONNECTIONS_MASTER_PASSWORD=).
      */
-    explicit MainWindow(QWidget* parent = nullptr, const QString& openScenarioPath = {});
+    explicit MainWindow(QWidget* parent = nullptr,
+                        const QString& openScenarioPath = {},
+                        const QString& cliMasterPassword = {});
 
     /**
      * @brief Destroys the main window.
@@ -245,6 +252,7 @@ private:
 
     QString activeConnectionName_;
     QString masterPassword_;
+    QString cliMasterPassword_;
 };
 
 }

@@ -44,6 +44,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 13 | 2026-07-23 | Add PGPORT for non-default-port Postgres hosts (e.g. remote/WSL offload) |
 | 14 | 2026-07-25 | Added per-service and per-client DB_HOST/DB_PORT env vars so every service derives its DB endpoint from ORES_DB_HOST/PGPORT instead of silently defaulting to localhost:5432 |
 | 15 | 2026-07-28 | ORES_COMPILER_CACHE now defaults to ccache instead of sccache (btrfs reflink caching, story 03831B51); removed the stale SCCACHE_DIR/SCCACHE_CACHE_SIZE block from the generated .env, which version 10 said was removed but the template kept writing |
+| 16 | 2026-07-29 | Add ORES_CONNECTIONS_MASTER_PASSWORD (blank by default) for ores.qt's connections.db master-password auto-unlock, story 5B1B987E |
 
 * See also
 

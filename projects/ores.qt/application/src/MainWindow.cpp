@@ -105,7 +105,9 @@ void alphabetizeMenu(QMenu* menu) {
 
 }
 
-MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
+MainWindow::MainWindow(QWidget* parent,
+                       const QString& openScenarioPath,
+                       const QString& cliMasterPassword)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
     , mdiArea_(nullptr)
@@ -130,6 +132,7 @@ MainWindow::MainWindow(QWidget* parent, const QString& openScenarioPath)
     , envLabelWidget_(nullptr)
     , envLabelNameLabel_(nullptr) {
     pendingScenarioPath_ = openScenarioPath;
+    cliMasterPassword_ = cliMasterPassword;
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -957,6 +960,15 @@ bool MainWindow::initializeConnectionManager() {
 
     BOOST_LOG_SEV(lg(), debug) << "Connections database path: " << dbPath.toStdString();
 
+    // Auto-unlock: try a CLI/env-supplied master password before falling
+    // back to the interactive dialog, if no password is already in hand.
+    const bool autoUnlockAttempted = masterPassword_.isEmpty() && !cliMasterPassword_.isEmpty();
+    if (autoUnlockAttempted) {
+        masterPassword_ = cliMasterPassword_;
+        BOOST_LOG_SEV(lg(), info)
+            << "Attempting connections.db auto-unlock from CLI/env master password";
+    }
+
     try {
         // First, try with stored master password (or empty if none)
         connectionManager_ = std::make_unique<connections::service::connection_manager>(
@@ -966,6 +978,21 @@ bool MainWindow::initializeConnectionManager() {
         if (!connectionManager_->verify_master_password()) {
             // There are encrypted passwords but the master password is wrong
             BOOST_LOG_SEV(lg(), debug) << "Master password required for encrypted passwords";
+
+            if (autoUnlockAttempted) {
+                BOOST_LOG_SEV(lg(), warn) << "Auto-unlock from CLI/env master password failed";
+                MessageBoxHelper::warning(
+                    this,
+                    tr("Auto-Unlock Failed"),
+                    tr("Connections database auto-unlock was attempted automatically from the "
+                       "command line or environment, but the supplied master password was "
+                       "incorrect. Please enter it manually."));
+                masterPassword_.clear();
+                // Prevent retrying the same known-bad password on a later
+                // call (e.g. reopening the Connection Browser after
+                // cancelling the dialog below).
+                cliMasterPassword_.clear();
+            }
 
             // Prompt for master password (Unlock mode)
             MasterPasswordDialog dialog(MasterPasswordDialog::Unlock, this);
@@ -1037,6 +1064,16 @@ bool MainWindow::initializeConnectionManager() {
                 }
                 // If cancelled, continue with empty password (user can set it later)
             }
+        } else if (autoUnlockAttempted) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Connections database auto-unlocked successfully via CLI/env master password";
+            // verify_master_password() trivially succeeds on a fresh DB with
+            // no encrypted passwords yet, so this path can be taken on
+            // first run too -- mark configured the same way the Create
+            // dialog does, or a later launch without the CLI/env value
+            // would unexpectedly re-prompt to create one.
+            QSettings settings;
+            settings.setValue("connections/master_password_configured", true);
         }
 
         return true;

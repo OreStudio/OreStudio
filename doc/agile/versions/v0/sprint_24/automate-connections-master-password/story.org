@@ -19,7 +19,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 =ores.connections=) is protected by a master password that gates
 decryption of stored server-login credentials. Today the only way to
 supply it is =MasterPasswordDialog= (=MainWindow::initializeConnectionManager()=,
-=projects/ores.qt/application/src/MainWindow.cpp:948-1039=) --
+=projects/ores.qt/application/src/MainWindow.cpp:948-1049=) --
 =Unlock= mode when encrypted passwords already exist and the current
 in-memory =masterPassword_= doesn't verify, =Create= mode on first run.
 Every dev/test workflow that spins up one or more =ores.qt= instances

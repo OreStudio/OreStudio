@@ -24,34 +24,7 @@ set(ORES_QT_MKTDATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(files
-    "ClientMarketFixingModel.cpp"
-    "ClientMarketObservationModel.cpp"
-    "ClientMarketSeriesModel.cpp"
-    "FxSpotChartWindow.cpp"
-    "FxSpotGridWindow.cpp"
-    "MarketDataController.cpp"
-    "MarketFixingDetailMdiWindow.cpp"
-    "MarketFixingsMdiWindow.cpp"
-    "MarketObservationMdiWindow.cpp"
-    "MarketSeriesMdiWindow.cpp"
-    "MktdataPlugin.cpp"
-)
-
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-set(HEADERS
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/ClientMarketFixingModel.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/ClientMarketObservationModel.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/ClientMarketSeriesModel.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/FxSpotChartWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/FxSpotGridWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MarketDataController.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MarketFixingDetailMdiWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MarketFixingsMdiWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MarketObservationMdiWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MarketSeriesMdiWindow.hpp"
-    "${ORES_QT_MKTDATA_DIR}/include/ores.qt/MktdataPlugin.hpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_MKTDATA_DIR}/ui/*.ui")
 

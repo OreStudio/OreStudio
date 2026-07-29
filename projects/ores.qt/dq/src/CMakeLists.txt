@@ -24,46 +24,7 @@ set(ORES_QT_DQ_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(files
-    "BadgeDefinitionController.cpp"
-    "BadgeDefinitionDetailDialog.cpp"
-    "BadgeDefinitionHistoryDialog.cpp"
-    "BadgeDefinitionMdiWindow.cpp"
-    "BadgeMappingsTab.cpp"
-    "BadgeSeverityController.cpp"
-    "BadgeSeverityDetailDialog.cpp"
-    "BadgeSeverityHistoryDialog.cpp"
-    "BadgeSeverityMdiWindow.cpp"
-    "ClientBadgeDefinitionModel.cpp"
-    "ClientBadgeSeverityModel.cpp"
-    "ClientCodeDomainModel.cpp"
-    "CodeDomainController.cpp"
-    "CodeDomainDetailDialog.cpp"
-    "CodeDomainHistoryDialog.cpp"
-    "CodeDomainMdiWindow.cpp"
-    "DqPlugin.cpp"
-)
-
-# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
-set(HEADERS
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeDefinitionController.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeDefinitionDetailDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeDefinitionHistoryDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeDefinitionMdiWindow.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeMappingsTab.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeSeverityController.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeSeverityDetailDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeSeverityHistoryDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/BadgeSeverityMdiWindow.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/ClientBadgeDefinitionModel.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/ClientBadgeSeverityModel.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/ClientCodeDomainModel.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/CodeDomainController.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/CodeDomainDetailDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/CodeDomainHistoryDialog.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/CodeDomainMdiWindow.hpp"
-    "${ORES_QT_DQ_DIR}/include/ores.qt/DqPlugin.hpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 # UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_DQ_DIR}/ui/*.ui")
 

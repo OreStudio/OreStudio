@@ -20,15 +20,7 @@ set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 set(ORES_QT_HEADLESS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-set(files
-    "EnvironmentMetadata.cpp"
-    "HierarchyModelBuilder.cpp"
-    "OrgDocRenderer.cpp"
-    "RepoFileFinder.cpp"
-    "TestScenarioResultsWriter.cpp"
-    "parse_swap_instruments.cpp"
-    "parse_trade_instrument.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_library(${lib_target_name} SHARED ${files})
 

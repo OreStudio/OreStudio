@@ -19,16 +19,7 @@ set(name "ores.compute.wrapper")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "app/application.cpp"
-    "app/host.cpp"
-    "app/log_publisher.cpp"
-    "config/options.cpp"
-    "config/parser.cpp"
-    "filesystem/archiver.cpp"
-    "main.cpp"
-    "net/http_client.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")

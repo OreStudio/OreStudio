@@ -160,6 +160,25 @@ recommends as the safer choice.
   archetypes individually via the entity's =:ores.*.enabled:= drawer
   overrides, since no detail dialog is ever wired to when this knob
   is set.
+- *Parent-scoped lists* — =:has_parent_scoped_list:= (default: false),
+  paired with =:parent_key_field:= (the protocol get-request field,
+  e.g. =calendar_code=) and =:parent_key_param:= (the C++ member/
+  parameter name) -- both required when the knob is set, since the
+  parent key belongs to a different entity and neither can be
+  derived. Only meaningful alongside =:has_readonly_paginated_list:=
+  (a still-full-CRUD entity has no analogous need). When set: the
+  =Client<Entity>Model= constructor takes the parent key and sends it
+  on every paginated fetch alongside offset/limit; the =MdiWindow=
+  constructor threads it through to the model it creates; the
+  controller's =showListWindow()= override still satisfies
+  =EntityController='s pure-virtual contract (opens with an
+  empty/unset key), while the real entry point is the new
+  =openForParent(const QString&)= public method (analogous to
+  =openAddWithParent=, but filtering a read-only list's get-request
+  rather than pre-filling a create form's foreign key -- do not
+  conflate this with =:parent_entity_singular:=/
+  =:has_parent_relationship:= above, which solves that unrelated
+  problem).
 
 * Overrides
 

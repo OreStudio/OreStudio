@@ -27,6 +27,7 @@
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
 #include "ores.qt/CalendarController.hpp"
+#include "ores.qt/CalendarDateController.hpp"
 #include "ores.qt/CalendarExceptionController.hpp"
 #include "ores.qt/CalendarRuleController.hpp"
 #include "ores.qt/CdsConventionController.hpp"
@@ -462,6 +463,22 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                this);
     connectControllerSignals(calendarController_.get());
 
+    calendarDateController_ = std::make_unique<CalendarDateController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+    connectControllerSignals(calendarDateController_.get());
+
+    // CalendarController cross-domain relay: the "Browse Holidays" toolbar
+    // action on CalendarDetailDialog opens calendar_date's read-only,
+    // parent-scoped list window for the current calendar, mirroring
+    // BookController's showBookStatusesRequested relay shape above.
+    connect(calendarController_.get(),
+            &CalendarController::browseHolidaysRequested,
+            this,
+            [this](const QString& calendarCode) {
+                if (calendarDateController_)
+                    calendarDateController_->openForParent(calendarCode);
+            });
+
     calendarRuleController_ = std::make_unique<CalendarRuleController>(ctx_.main_window,
                                                                        ctx_.mdi_area,
                                                                        ctx_.client_manager,
@@ -701,27 +718,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     reference_data_menu_ = smc.reference_data_menu;
     auto* ref = reference_data_menu_;
     if (ref) {
-        // FX & market cluster.
-        act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
-        connect(act_currencies_, &QAction::triggered, this, [this]() {
-            if (currencyController_)
-                currencyController_->showListWindow();
-        });
-        act_currency_pairs_ = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
-        connect(act_currency_pairs_, &QAction::triggered, this, [this]() {
-            if (currencyPairController_)
-                currencyPairController_->showListWindow();
-        });
-        act_currency_groups_ = ref->addAction(ico(Icon::Currency), tr("Currency &Groups"));
-        connect(act_currency_groups_, &QAction::triggered, this, [this]() {
-            if (currencyGroupController_)
-                currencyGroupController_->showListWindow();
-        });
-        act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
-        connect(act_countries_, &QAction::triggered, this, [this]() {
-            if (countryController_)
-                countryController_->showListWindow();
-        });
+        // FX & market cluster. Alphabetical.
         act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
         connect(act_business_centres_, &QAction::triggered, this, [this]() {
             if (businessCentreController_)
@@ -732,16 +729,25 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             if (calendarController_)
                 calendarController_->showListWindow();
         });
-        act_calendar_rules_ = ref->addAction(ico(Icon::CalendarClock), tr("Calendar &Rules"));
-        connect(act_calendar_rules_, &QAction::triggered, this, [this]() {
-            if (calendarRuleController_)
-                calendarRuleController_->showListWindow();
+        act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
+        connect(act_countries_, &QAction::triggered, this, [this]() {
+            if (countryController_)
+                countryController_->showListWindow();
         });
-        act_calendar_exceptions_ =
-            ref->addAction(ico(Icon::CalendarClock), tr("Calendar &Exceptions"));
-        connect(act_calendar_exceptions_, &QAction::triggered, this, [this]() {
-            if (calendarExceptionController_)
-                calendarExceptionController_->showListWindow();
+        act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
+        connect(act_currencies_, &QAction::triggered, this, [this]() {
+            if (currencyController_)
+                currencyController_->showListWindow();
+        });
+        act_currency_groups_ = ref->addAction(ico(Icon::Currency), tr("Currency &Groups"));
+        connect(act_currency_groups_, &QAction::triggered, this, [this]() {
+            if (currencyGroupController_)
+                currencyGroupController_->showListWindow();
+        });
+        act_currency_pairs_ = ref->addAction(ico(Icon::Currency), tr("Currency &Pairs"));
+        connect(act_currency_pairs_, &QAction::triggered, this, [this]() {
+            if (currencyPairController_)
+                currencyPairController_->showListWindow();
         });
 
         ref->addSeparator();
@@ -775,13 +781,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         ref->addSeparator();
 
-        // Conventions submenu: merges what used to be two near-identically
-        // named peer submenus ("Trading Conventions" and "Conventions")
-        // into nested Trading / Curve Building groups.
-        auto* menuConventions = ref->addMenu(tr("Con&ventions"));
-
-        // Curve Building group. Entries alphabetical.
-        auto* menuCurveBuildingConventions = menuConventions->addMenu(tr("&Curve Building"));
+        // Curve Building / Trading: two direct top-level submenus (not
+        // nested under a wrapping "Conventions" menu) -- flattened since
+        // "Conventions" wasn't a meaningful umbrella label for either
+        // group and added a needless extra click. Entries alphabetical
+        // within each group.
+        auto* menuCurveBuildingConventions = ref->addMenu(tr("&Curve Building"));
         auto* actCdsConventions =
             menuCurveBuildingConventions->addAction(ico(Icon::Tag), tr("&CDS Conventions"));
         connect(actCdsConventions, &QAction::triggered, this, [this]() {
@@ -838,7 +843,7 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         });
 
         // Trading group. Entries alphabetical.
-        auto* menuTradingConventions = menuConventions->addMenu(tr("&Trading"));
+        auto* menuTradingConventions = ref->addMenu(tr("&Trading"));
         auto* actBusinessDayConventionTypes =
             menuTradingConventions->addAction(ico(Icon::Tag), tr("&Business Day Convention Types"));
         connect(actBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
@@ -1041,6 +1046,30 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         });
 
         ref->addSeparator();
+
+        // Calendar Data submenu: auxiliary child data for calendars
+        // (Calendar Rules, Calendar Exceptions) -- editable entity data,
+        // not classification lookups, so kept as its own standalone
+        // domain submenu here alongside Cross Rates Matrix rather than
+        // folded into Codes. The primary Calendars list itself stays a
+        // direct, flat action up in the FX & market cluster above --
+        // this submenu is deliberately auxiliary-only. Named "Calendar
+        // Data" rather than "Calendars" to avoid a duplicate label/
+        // mnemonic collision with that flat action within the same
+        // Reference Data menu. Entries alphabetical.
+        auto* menuCalendars = ref->addMenu(tr("Calendar &Data"));
+        act_calendar_exceptions_ =
+            menuCalendars->addAction(ico(Icon::CalendarClock), tr("Calendar &Exceptions"));
+        connect(act_calendar_exceptions_, &QAction::triggered, this, [this]() {
+            if (calendarExceptionController_)
+                calendarExceptionController_->showListWindow();
+        });
+        act_calendar_rules_ =
+            menuCalendars->addAction(ico(Icon::CalendarClock), tr("Calendar &Rules"));
+        connect(act_calendar_rules_, &QAction::triggered, this, [this]() {
+            if (calendarRuleController_)
+                calendarRuleController_->showListWindow();
+        });
 
         // Cross Rates Matrix submenu: configuration data (changes
         // infrequently, curated per party) that drives ores.marketdata's

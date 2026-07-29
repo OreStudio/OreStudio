@@ -76,6 +76,13 @@ signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
+    /**
+     * @brief Relayed from CalendarDetailDialog's "Browse Holidays" toolbar
+     * action; RefdataPlugin connects this to
+     * CalendarDateController::openForParent(calendarCode).
+     */
+    void browseHolidaysRequested(const QString& calendarCode);
+
 protected:
     EntityListMdiWindow* listWindow() const override;
     void notifyOpenDialogs(const QStringList& entityIds) override;

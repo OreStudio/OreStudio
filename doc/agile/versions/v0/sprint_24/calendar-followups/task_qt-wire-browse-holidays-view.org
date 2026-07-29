@@ -8,9 +8,9 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/qt-wire-browse-holidays-view
-#+pr: 1737
-#+blocked_on: [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]]
-#+blocked_since: 2026-07-29
+#+pr: 1749
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-29
 #+environment: clever_dijkstra
@@ -33,16 +33,16 @@ open calendar. Closes the deferred acceptance item from
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Blocked on codegen groundwork.         |
-| Waiting on   | [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]] |
-| Next         | Resume once the junction-Qt codegen path exists; regenerate =calendar_date --address ores.cpp.qt=, wire =CalendarDetailDialog=. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- [ ] =ores.refdata.calendar_date.org= gains a =** Qt= drawer (under
+- [X] =ores.refdata.calendar_date.org= gains a =** Qt= drawer (under
   =* C++=, mirroring =ores.refdata.book.org='s =** Qt= drawer shape)
   setting =:has_readonly_paginated_list: true=,
   =:has_parent_scoped_list: true=, =:parent_key_field: calendar_code=,
@@ -53,35 +53,35 @@ open calendar. Closes the deferred acceptance item from
   =:get_message_type:=, =:collection_name: calendar_dates=,
   =:item_var: calendar_date=, =:key_field:=, MDI chrome
   (=:settings_group:=, =:window_title: Browse Holidays=, =:icon:=).
-- [ ] Generating =calendar_date='s =ores.cpp.qt= facet produces a
+- [X] Generating =calendar_date='s =ores.cpp.qt= facet produces a
   working =ClientCalendarDateModel=, =CalendarDateMdiWindow=, and
   =CalendarDateController= -- read-only (no add/edit/delete/history,
   per =has_readonly_paginated_list=), paginated, and scoped to the
   parent =calendar_code= on every fetch (per
   =has_parent_scoped_list=), per the design in =1C673C53=.
-- [ ] =RefdataPlugin= constructs a =CalendarDateController= alongside
+- [X] =RefdataPlugin= constructs a =CalendarDateController= alongside
   the other refdata controllers (same constructor-injection pattern
   as =calendarController_=/=businessCentreController_=).
-- [ ] =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
+- [X] =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
   (same shape as the existing =regenerateAction_=/=onRegenerateClicked=
   pair added in #1707), emitting a new
   =browseHolidaysRequested(QString calendarCode)= signal instead of
   reaching for a sibling controller directly (dialogs don't hold
   controller references today -- see =calendarSaved=/=calendarDeleted=
   for the existing signal-out pattern).
-- [ ] =CalendarController= relays that signal outward (mirroring
+- [X] =CalendarController= relays that signal outward (mirroring
   =BookController::showBookStatusesRequested='s cross-domain relay
   shape), and =RefdataPlugin= connects it to
   =calendarDateController_->openForParent(calendarCode)=.
-- [ ] Each row of the opened "Browse Holidays" list shows date,
+- [X] Each row of the opened "Browse Holidays" list shows date,
   is-business-day, and source, per =B2888D7D='s original acceptance
   wording and the =calendar_date.org= "Table display" table.
-- [ ] Verified via =--diff= against an existing entity with the new
+- [X] Verified via =--diff= against an existing entity with the new
   knobs left unset showing zero unrelated drift (same approach as
   =1C673C53='s verification), plus a real, working generation for
   =calendar_date= itself (first entity to actually exercise these
   knobs end to end).
-- [ ] Full local build green; manual QA scenario opening "Browse
+- [X] Full local build green; manual QA scenario opening "Browse
   Holidays" for a seeded QuantLib calendar (e.g. TARGET) and
   confirming paginated, read-only holiday rows.
 
@@ -218,12 +218,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:4C33C1B5-43F8-4142-8D55-0540B3089761][Browse Holidays view for a QuantLib calendar]] | PASSED | All 4 steps passed against TARGET (and a second calendar for parent-scoping); surfaced two pre-existing bugs fixed along the way (see Notes) |
 
 * PRs
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1749][#1749]] | [ores.qt] Wire Browse Holidays action; fix service-registry grant drift |
 | [[https://github.com/OreStudio/OreStudio/pull/1737][#1737]] | [ores.codegen,agile] Prep calendar_date Qt facet, block browse-holidays on render-path gap |
 
 * Review
@@ -233,5 +234,84 @@ via its "Verifies task" field.
 | 1 | model_types widening on ores.cpp.qt.org is facet-wide -- every existing junction (not just calendar_date) becomes a latent candidate for broken Qt generation, not just calendar_date | ores.cpp.qt.org | Accepted | Fixed in follow-up PR #1742: core.py fails fast with a clear error when a junction lacking a ** Qt drawer is targeted at ores.cpp.qt, instead of silently emitting broken output. Verified currency_calendar (an existing Qt-drawer-less junction) now errors cleanly with no files written. |
 | 2 | story.org's F081079A row says STARTED but the task's own Status table says BLOCKED; truncated/unlinked ID reference; doubled leading-dash bullets in two new task files | story.org, task_junction-qt-facet-codegen.org, task_prune-merged-branches.org | Accepted | Fixed in follow-up PR #1742: story.org row synced to BLOCKED, ID reference is now a proper org link, both doubled bullets fixed. |
 | 3 | calendar_date.org's Columns (Qt model) table missing enum_name column; source's type "text" isn't a recognised type keyword | ores.refdata.calendar_date.org | Accepted | Fixed in follow-up PR #1742: table now has enum_name (Date/IsBusinessDay/Source) and source's type is string. Verified via a real (not just --diff) generation that now compiles and links. |
+| 4 | Duplicate "Calendars" menu label -- the flat top-level action and the new auxiliary submenu had the identical label/mnemonic within the same Reference Data menu (PR #1749, both reviewers independently flagged) | RefdataPlugin.cpp | Accepted | Renamed the auxiliary submenu to "Calendar Data" to disambiguate. |
+| 5 | PR #1749 description said Browse Holidays got Icon::Wand, but the diff actually put Wand on Regenerate and Icon::Table (pre-existing) on Browse Holidays | (description only) | Declined | Wording slip in the PR write-up, not a code issue -- code is correct as intended (Wand = "generate/regenerate" semantic on Regenerate; Table = list-view semantic on Browse Holidays). |
+| 6 | Inline rationale comments (why synthetic_service/marketdata_service need certain grants) are lost from the generated SQL since the service_registry.org model has no per-prefix comment mechanism | iam_service_db_grants_create.sql | Declined | Accepted, documented trade-off (noted in this task's own Result section) of moving from hand-patched to fully-generated grants; adding a :note: property mechanism is a reasonable future enhancement but out of scope here. |
 
 * Result
+
+With the junction-Qt render path (=290FBDF6=) done and merged,
+finished wiring "Browse Holidays" onto Calendar's UI:
+
+- =RefdataPlugin= constructs =CalendarDateController= alongside the
+  other refdata controllers, same constructor-injection pattern as
+  =calendarController_=.
+- =CalendarDetailDialog= gains a "Browse Holidays" toolbar action
+  (same shape as the existing =regenerateAction_=/=onRegenerateClicked=
+  pair), emitting a new =browseHolidaysRequested(QString)= signal
+  rather than reaching for a sibling controller directly.
+- =CalendarController= relays that signal outward (mirroring
+  =BookController::showBookStatusesRequested='s cross-domain relay
+  shape); =RefdataPlugin= connects it to
+  =calendarDateController_->openForParent(calendarCode)=.
+- Reorganised the Reference Data menu's calendar entries per review
+  during manual testing: =Calendars= stays a flat, alphabetically
+  placed top-level action (was already there); a new, separate
+  =Calendars= auxiliary submenu (housing =Calendar Rules=/=Calendar
+  Exceptions=) sits alongside =Cross Rates Matrix= at the bottom,
+  matching how other auxiliary/lookup data is grouped. Also flattened
+  the =Conventions= wrapper menu into direct =Curve Building=/
+  =Trading= top-level submenus -- neither group was really "a
+  convention" as a category, and the wrapper added a needless click.
+
+** Bugs found and fixed during manual QA
+
+Manual testing (=doc-run-manual-screenshots=-style live verification,
+not just =--diff=) surfaced two real, pre-existing defects unrelated
+to this task's own code, both fixed properly rather than patched
+around:
+
+1. *=refdata_service= missing a DB grant it has always needed.*
+   =calendar_materialisation_service= (the =Regenerate= action,
+   landed in PR #1707) reads =ores_variability_system_settings_tbl=
+   directly, but the service-registry model
+   (=projects/modeling/service_registry.org=) never granted
+   =refdata_service= =SELECT= on it -- =Regenerate= failed with
+   =permission denied= on every environment provisioned from a clean
+   =db recreate=. Root-causing this also surfaced that the committed
+   =iam_service_db_grants_create.sql= had drifted well ahead of what
+   the =service-registry= codegen profile could actually reproduce
+   (a gap already flagged in capture =9CBEE91B=): =synthetic_service='s
+   DML grants, =marketdata_service='s cross-read of =ores_refdata_=,
+   and the entire EXECUTE-grants mechanism for =publish_from_dq=
+   SECURITY DEFINER functions existed only as hand-added SQL the
+   model/template had no way to express. Rather than hand-patch the
+   live DB (rejected explicitly -- SQL files must stay the source of
+   truth) or hand-edit the generated =.sql= file (silently reverted
+   by the next regen), fixed properly: added =Execute prefixes=
+   support to =load_org_service_registry_model()= (mirroring the
+   existing =Select prefixes= mechanism) and to the
+   =ores.sql.service.db_grants= archetype template, then reconciled
+   =service_registry.org= to declare every grant the committed SQL
+   already had, plus the new =refdata_service=/=ores_variability_=
+   one. Verified byte-for-byte: diffing the full set of
+   =_ores_grant_*= statements before/after the regen shows exactly
+   one addition (the new grant) and zero removals -- every
+   previously-hand-added grant now has a model-driven source.
+2. *Two seed rows were needed, not a code bug* -- =calendar_dates=
+   starts empty on every fresh database (it's materialised only by
+   =Regenerate=, never by provisioning), which is expected behaviour,
+   not a defect; documented as a scenario step so future testers
+   don't rediscover it.
+
+** Verification
+
+=--diff= against =calendar_date='s =ores.cpp.repository=/
+=ores.cpp.service=/=ores.cpp.nats-handler=/=ores.cpp.qt= facets all
+show zero drift after the service-registry model/template change.
+Full local build (=compass build --preset linux-clang-debug-make=)
+green; full =ctest= run 74/74 passed. Live manual QA via the QA
+Validation Runner: all 4 steps of
+[[id:4C33C1B5-43F8-4142-8D55-0540B3089761][Browse Holidays view for a QuantLib calendar]]
+passed against a freshly re-provisioned Barclays Plc environment
+(=db recreate= with the corrected grants baked in, no hand-patching).

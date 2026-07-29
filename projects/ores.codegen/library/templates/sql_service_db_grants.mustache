@@ -56,6 +56,24 @@ begin
     end loop;
 end $$;
 
+-- Helper: grant EXECUTE on every function whose name starts with p_prefix.
+-- Used for publish-from-dq SECURITY DEFINER functions: each runs with
+-- DB-owner privileges, but the calling service user still needs EXECUTE.
+create or replace function _ores_grant_execute_fn(p_prefix text, p_user text)
+returns void language plpgsql as $$
+declare
+    v_fn_sig text;
+begin
+    for v_fn_sig in
+        select oid::regprocedure::text
+        from pg_proc
+        where pronamespace = (select oid from pg_namespace where nspname = 'public')
+          and proname like p_prefix || '%'
+    loop
+        execute format('grant execute on function %s to %I', v_fn_sig, p_user);
+    end loop;
+end $$;
+
 -- ---------------------------------------------------------------------------
 -- Sequence access — granted to all service users.
 -- ---------------------------------------------------------------------------
@@ -93,6 +111,9 @@ grant select on {{table}} to :{{psql_var}}_user;
 {{#select_prefixes}}
 select _ores_grant_select_fn('{{prefix}}', :'{{psql_var}}_user');
 {{/select_prefixes}}
+{{#execute_prefixes}}
+select _ores_grant_execute_fn('{{prefix}}', :'{{psql_var}}_user');
+{{/execute_prefixes}}
 
 {{/services}}
 {{/service_registry}}
@@ -101,3 +122,4 @@ select _ores_grant_select_fn('{{prefix}}', :'{{psql_var}}_user');
 -- ---------------------------------------------------------------------------
 drop function _ores_grant_dml_fn(text, text);
 drop function _ores_grant_select_fn(text, text);
+drop function _ores_grant_execute_fn(text, text);

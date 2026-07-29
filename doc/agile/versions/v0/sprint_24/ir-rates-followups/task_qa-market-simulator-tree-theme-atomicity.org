@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: EE248D0B-5B61-409D-9966-DECC3B499D36
+:END:
+#+title: Task: QA Market Simulator tree Start/Stop-at-Root for merged theme datasets
+#+description: Verify the Market Simulator Qt tree's Start/Stop-at-Root behaviour and run the Synthetic data themes manual test scenario end-to-end against the new one-dataset-per-theme model, and fix any issues found.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Follow-up QA left open by [[id:3461BD8C-B8B1-4037-9B3D-D07AF9EA4768][Make a synthetic theme one atomic dataset]]:
+that task's SQL-level structural check confirmed the new
+one-dataset-per-theme model (one collection folder per theme, with
+FX/Rates asset-class sub-folders as children), but the Market
+Simulator Qt tree's Start/Stop-at-Root behaviour and the full
+"Synthetic data themes" manual test scenario were not re-verified
+end to end. Run that scenario against this environment's
+re-provisioned Barclays tenant and fix any issues the merged-theme
+model introduced.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- The "Synthetic data themes" manual test scenario
+  ([[id:90B1018E-C019-4C75-B0EE-91284A1E1A75][Test Scenario: Synthetic data themes (2016 ORE Samples / 2026
+  Realistic / Uniform Volatility Demo) and the Start-at-Root theme
+  picker]]) is run end to end against this environment and passes.
+- Starting/stopping a theme's root node in the Market Simulator tree
+  starts/stops every asset class under it, for all three themes.
+- Any regression or defect surfaced by the scenario is fixed, or
+  explicitly filed as a follow-up task if out of scope for a same-PR
+  fix.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

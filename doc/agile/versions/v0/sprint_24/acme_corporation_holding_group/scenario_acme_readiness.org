@@ -72,7 +72,7 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | party setup wizard comes up on tenant admin |
 
 *** Verify all four parties exist and are active
@@ -95,7 +95,7 @@ parties list
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify business units, portfolios, and books per office
 
@@ -119,7 +119,8 @@ books list --party <party-id>
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | we seem to have lost the correct strucutre we had in barclays. i am now able to see all business units and all portfolios books that relate to all entities. what i expected was for each entity to have their own business units and portfolios all completely isolated from the other entities. but maybe my expectation is incorrect? i want this to mirror how a global investment bank would actually manage their org structure.; ; [[file:scenario_acme_readiness_step3_20260729_153828.png]] |
 
 *** Verify staff accounts and roles per office
 
@@ -299,9 +300,9 @@ counterparties list --limit 5
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-07-29T11:28:19Z |
+| Completed at  | 2026-07-29T14:38:33Z |
 | Branch        | feature/simulate-holding-group-provisioning-via-internal-impersonation |
-| Commit        | 098404b5e |
+| Commit        | 3672f4588 |
 | Worktree      | brave_hopper |
 
 * Notes

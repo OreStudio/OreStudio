@@ -44,11 +44,11 @@ only intentionally-committed changes) across the board.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -90,3 +90,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Regenerated every refdata =domain_entity= (68 of them) against current
+codegen templates; junction entities (=calendar_date= and 8 siblings)
+were left out of scope -- 8 of the 9 error with "junction has no ** Qt
+drawer", which would mean authoring substantial new Qt/messaging
+scaffolding rather than fixing drift. Filed as a follow-up.
+
+Along the way, found and fixed real bugs beyond simple regeneration:
+
+- =cpp_history_field_mapper= template didn't handle date/timestamp
+  natural keys (surfaced by =calendar_exception=).
+- 9 entities (=calendar_type= + 8 convention entities) had a
+  *pre-existing broken build* on this branch from earlier sessions:
+  stale protocol field names in their Qt layer, and =calendar_type='s
+  stale umbrella =messaging/protocol.hpp= include.
+- =counterparty= and =party= were both missing =:flag_icon_column:=,
+  which would have silently dropped their logo/flag-upload feature on
+  regeneration.
+- =party='s SQL is explicitly flagged hand-maintained (BLOCKED
+  codegen task, no paste-block coverage for its touch-version
+  function, codename generation, per-party queue provisioning) --
+  caught this only after a full regen of it broke schema creation;
+  reverted that commit and re-ran with =--address ores.cpp.qt= only.
+- 4 synthetic generators (=business_unit=, =business_unit_type=,
+  =party_id_scheme=, =business_centre=) fabricated soft-FK values
+  (business centre / coding scheme codes) that don't exist in a
+  freshly-recreated default database -- some using values only seeded
+  by optional artefact datasets, one missing
+  =:no_generator_suffix:= on a natural key. Fixed all 4; swept every
+  other refdata generator for the same anti-pattern, no further
+  occurrences found.
+
+=compass build= and full =rat= (test suite) both green after every
+commit in the final state.
+
+Follow-up needed: author Qt drawers for the 8 refdata junctions
+still on stale templates, then regenerate them.

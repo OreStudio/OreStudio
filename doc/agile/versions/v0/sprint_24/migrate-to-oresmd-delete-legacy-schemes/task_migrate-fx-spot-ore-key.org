@@ -8,7 +8,7 @@
 #+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
 #+owner: marco
 #+branch: feature/migrate-fx-spot-ore-key
-#+pr:
+#+pr: 1746
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1746][#1746]] | [marketdata] Migrate fx_spot_generation_config.ore_key onto oresmd |
 
 * Review
 

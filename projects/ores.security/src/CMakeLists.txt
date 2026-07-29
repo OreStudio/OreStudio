@@ -19,10 +19,13 @@ set(name "ores.security")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "crypto/encryption.cpp"
+    "crypto/password_hasher.cpp"
+    "jwt/jwt_authenticator.cpp"
+    "validation/email_validator.cpp"
+    "validation/password_validator.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

@@ -22,10 +22,15 @@ set(name "ores.nats")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "config/nats_configuration.cpp"
+    "domain/compression.cpp"
+    "domain/correlation.cpp"
+    "service/client.cpp"
+    "service/jetstream_admin.cpp"
+    "service/jwks.cpp"
+    "service/nats_client.cpp"
+)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

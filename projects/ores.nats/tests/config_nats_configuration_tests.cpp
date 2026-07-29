@@ -80,7 +80,7 @@ TEST_CASE("nats_configuration_wire_format_defaults_to_json", tags) {
 
     const auto result = parse({});
 
-    CHECK(result.wire_format == ores::nats::wire_format::json);
+    CHECK(result.format == ores::nats::wire_format::json);
 }
 
 TEST_CASE("nats_configuration_wire_format_msgpack", tags) {
@@ -88,7 +88,7 @@ TEST_CASE("nats_configuration_wire_format_msgpack", tags) {
 
     const auto result = parse({"--nats-wire-format", "msgpack"});
 
-    CHECK(result.wire_format == ores::nats::wire_format::msgpack);
+    CHECK(result.format == ores::nats::wire_format::msgpack);
 }
 
 TEST_CASE("nats_configuration_wire_format_rejects_unknown_value", tags) {

@@ -20,6 +20,7 @@
 #include "ores.nats/config/nats_configuration.hpp"
 #include "ores.nats/domain/wire_format.hpp"
 #include <boost/throw_exception.hpp>
+#include <format>
 #include <stdexcept>
 
 namespace ores::nats::config {
@@ -76,10 +77,11 @@ nats_options nats_configuration::read_options(const boost::program_options::vari
     const auto wire_format_str = vm[nats_wire_format_arg].as<std::string>();
     const auto parsed = parse_wire_format(wire_format_str);
     if (!parsed)
-        BOOST_THROW_EXCEPTION(std::invalid_argument("Invalid " + nats_wire_format_arg + ": '" +
-                                                    wire_format_str +
-                                                    "' (expected 'json' or 'msgpack')."));
-    r.wire_format = *parsed;
+        BOOST_THROW_EXCEPTION(
+            std::invalid_argument(std::format("Invalid {}: '{}' (expected 'json' or 'msgpack').",
+                                              nats_wire_format_arg,
+                                              wire_format_str)));
+    r.format = *parsed;
 
     return r;
 }

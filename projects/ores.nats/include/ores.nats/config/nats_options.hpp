@@ -67,7 +67,7 @@ struct nats_options final {
      * startup (env: ORES_NATS_WIRE_FORMAT). Defaults to json, preserving
      * pre-existing behaviour for any process that doesn't set it.
      */
-    ores::nats::wire_format wire_format = ores::nats::wire_format::json;
+    ores::nats::wire_format format = ores::nats::wire_format::json;
 };
 
 }

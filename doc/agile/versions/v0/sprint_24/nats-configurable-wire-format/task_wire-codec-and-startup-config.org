@@ -130,7 +130,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Symmetric malformed-msgpack decode test missing (only json path covered) | domain_wire_codec_tests.cpp | Fixed | Added "wire_codec decode surfaces a parse error for malformed msgpack input" |
+| 2 | =nats_options::wire_format= member shadows the =ores::nats::wire_format= enum type name | nats_options.hpp | Fixed | Renamed field to =format= (call sites: =nats_configuration.cpp=, tests) |
+| 3 | Error message built via =+= concatenation instead of =std::format=, inconsistent with =ores.logging='s equivalent | nats_configuration.cpp | Fixed | Switched to =std::format= |
+|   | Only the CLI flag path is tested for wire format, not the =ORES_NATS_WIRE_FORMAT= env var directly | nats_configuration.cpp | Declined | Consistent with how the pre-existing TLS options are tested (CLI only); not a regression this task introduces |
 
 * Result
 

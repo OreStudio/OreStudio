@@ -91,9 +91,20 @@ TEST_CASE("wire_codec::format returns the format fixed at construction", tags) {
           ores::nats::wire_format::msgpack);
 }
 
-TEST_CASE("wire_codec decode surfaces a parse error for malformed input", tags) {
+TEST_CASE("wire_codec decode surfaces a parse error for malformed json input", tags) {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
     const std::string garbage = "not json";
+    const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
+                                           garbage.size());
+
+    const auto decoded = codec.decode<sample>(bytes);
+
+    CHECK_FALSE(decoded.has_value());
+}
+
+TEST_CASE("wire_codec decode surfaces a parse error for malformed msgpack input", tags) {
+    const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
+    const std::string garbage = "not msgpack";
     const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(garbage.data()),
                                            garbage.size());
 

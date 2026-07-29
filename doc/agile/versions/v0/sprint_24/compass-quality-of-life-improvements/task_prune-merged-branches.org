@@ -35,7 +35,7 @@ Give developers a single compass command to safely prune git branches that have 
 
 * Acceptance
 
-- - A new compass command (git/branches subcommand) identifies local branches fully merged into origin/main and remote branches fully merged into origin/main, excluding the current branch, main itself, and any branch checked out by another worktree (cross-referenced via 'compass fleet' / 'git worktree list' equivalent).
+- A new compass command (git/branches subcommand) identifies local branches fully merged into origin/main and remote branches fully merged into origin/main, excluding the current branch, main itself, and any branch checked out by another worktree (cross-referenced via 'compass fleet' / 'git worktree list' equivalent).
 - The command deletes the safe-to-delete set both locally ('git branch -d') and on the remote ('git push origin --delete'), in one step, with a summary of what was deleted.
 - The command (or a companion report mode) lists branches NOT deleted, bucketed by reason: checked out by another environment (name the environment/worktree), unmerged/active work, or ambiguous/needs-human-review.
 - The report flags 'stale' branches -- e.g. no commits in N days, or merged-but-still-present-in-fleet -- so a human can decide on cases the automatic prune correctly leaves alone (e.g. a worktree still parked on an already-merged branch after finishing its task).

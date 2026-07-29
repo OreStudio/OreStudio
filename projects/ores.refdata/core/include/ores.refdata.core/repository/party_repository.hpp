@@ -65,7 +65,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest parties, possibly filtered by primary key.
+     * @brief Reads latest parties, possibly filtered by id.
      */
     /**@{*/
     std::vector<domain::party> read_latest(context ctx);
@@ -74,7 +74,7 @@ public:
 
 
     /**
-     * @brief Reads all parties, possibly filtered by primary key.
+     * @brief Reads all parties, possibly filtered by id.
      */
     std::vector<domain::party> read_all(context ctx, const std::string& id);
 
@@ -85,6 +85,7 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
+     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::party>

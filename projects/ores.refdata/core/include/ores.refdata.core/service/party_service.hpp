@@ -77,19 +77,20 @@ public:
      */
     std::uint32_t count_parties();
 
-
     /**
      * @brief Retrieves a single party as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
+     * @param id The id of the party.
      * @param version The version to fetch.
      * @return The party at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::party> get_party_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single party by its primary key.
+     * @brief Retrieves a single party by its id.
      *
+     * @param id The id of the party.
      * @return The party if found, std::nullopt otherwise.
      */
     std::optional<domain::party> get_party(const std::string& id);
@@ -111,14 +112,15 @@ public:
     void save_parties(const std::vector<domain::party>& parties);
 
     /**
-     * @brief Deletes a party by its primary key.
+     * @brief Deletes a party by its id.
      *
+     * @param id The id of the party to delete.
      * @throws std::exception on failure.
      */
     void delete_party(const std::string& id);
 
     /**
-     * @brief Deletes parties by their primary keys.
+     * @brief Deletes parties by their ids.
      */
     void delete_parties(const std::vector<std::string>& ids);
 

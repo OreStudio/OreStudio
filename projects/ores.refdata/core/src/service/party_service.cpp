@@ -41,16 +41,14 @@ std::uint32_t party_service::count_parties() {
     return repo_.get_total_party_count(ctx_);
 }
 
-
 std::optional<domain::party> party_service::get_party_at_version(const std::string& id,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party at version. " << "id: " << id
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting party at version: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::party> party_service::get_party(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting party: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -60,11 +58,11 @@ std::optional<domain::party> party_service::get_party(const std::string& id) {
 void party_service::save_party(const domain::party& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Party id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving party: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved party. " << "id: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved party: " << v.id;
 }
 
 void party_service::save_parties(const std::vector<domain::party>& parties) {
@@ -79,9 +77,9 @@ void party_service::save_parties(const std::vector<domain::party>& parties) {
 }
 
 void party_service::delete_party(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing party: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed party: " << id;
 }
 
 void party_service::delete_parties(const std::vector<std::string>& ids) {
@@ -89,7 +87,7 @@ void party_service::delete_parties(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::party> party_service::get_party_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party. " << "id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party: " << id;
     return repo_.read_all(ctx_, id);
 }
 

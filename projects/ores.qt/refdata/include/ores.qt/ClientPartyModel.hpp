@@ -76,13 +76,6 @@ public:
     headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 protected:
-    /** @brief Column whose Qt::DecorationRole shows the entity's flag. */
-    int iconColumn() const override {
-        return Column::ShortCode;
-    }
-
-public:
-protected:
     /** @brief Columns whose Qt::DecorationRole shows an icon (flag, etc.). */
     std::vector<int> iconColumns() const override {
         return {

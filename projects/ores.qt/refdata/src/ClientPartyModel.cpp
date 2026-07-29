@@ -101,10 +101,6 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
         }
     }
 
-    if (role == Qt::DecorationRole && index.column() == iconColumn()) {
-        return flagDecoration(party.image_id);
-    }
-
     if (role == Qt::DecorationRole && imageCache_) {
         if (index.column() == Column::BusinessCenterCode)
             return business_centre_flag_icon(*imageCache_, party.business_center_code);
@@ -118,15 +114,8 @@ QVariant ClientPartyModel::data(const QModelIndex& index, int role) const {
 }
 
 QVariant ClientPartyModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
-
-    if (role == Qt::ToolTipRole) {
-        switch (section) {
-            default:
-                return {};
-        }
-    }
 
     switch (section) {
         case ShortCode:

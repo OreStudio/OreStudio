@@ -79,6 +79,9 @@ A brief mnemonic code used in trading systems.
 std::string(faker::string::alpha(6))
 #+end_src
 
+Regular columns. Inserted as struct fields in C++ and as table columns in
+SQL.
+
 ** codename
 :PROPERTIES:
 :type:     text
@@ -339,7 +342,6 @@ Everything below is consumed by the C++ codegen pipeline only.
 :window_title:           Parties
 :icon:                   Organization
 :has_pagination:         true
-:flag_icon_column:       ShortCode
 :END:
 
 *** Detail fields

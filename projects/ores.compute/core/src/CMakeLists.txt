@@ -20,39 +20,7 @@ set(name "ores.compute.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "messaging/registrar.cpp"
-    "messaging/report_submit_handler.cpp"
-    "repository/app_entity.cpp"
-    "repository/app_mapper.cpp"
-    "repository/app_repository.cpp"
-    "repository/app_version_entity.cpp"
-    "repository/app_version_mapper.cpp"
-    "repository/app_version_platform_repository.cpp"
-    "repository/app_version_repository.cpp"
-    "repository/batch_entity.cpp"
-    "repository/batch_mapper.cpp"
-    "repository/batch_repository.cpp"
-    "repository/compute_telemetry_repository.cpp"
-    "repository/host_entity.cpp"
-    "repository/host_mapper.cpp"
-    "repository/host_repository.cpp"
-    "repository/platform_entity.cpp"
-    "repository/platform_repository.cpp"
-    "repository/result_entity.cpp"
-    "repository/result_mapper.cpp"
-    "repository/result_repository.cpp"
-    "repository/workflow_batch_link_repository.cpp"
-    "repository/workunit_entity.cpp"
-    "repository/workunit_mapper.cpp"
-    "repository/workunit_repository.cpp"
-    "service/app_service.cpp"
-    "service/app_version_service.cpp"
-    "service/batch_service.cpp"
-    "service/host_service.cpp"
-    "service/result_service.cpp"
-    "service/workunit_service.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

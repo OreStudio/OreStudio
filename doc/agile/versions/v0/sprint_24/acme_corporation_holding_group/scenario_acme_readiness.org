@@ -70,6 +70,11 @@ This page documents a test scenario verifying [[id:D9FC5720-C3B2-4280-9512-A0335
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | party setup wizard comes up on tenant admin |
+
 *** Verify all four parties exist and are active
 
 In =compass shell=, logged in as =tenant_admin@acme_corporation=:
@@ -87,6 +92,10 @@ parties list
   LEI).
 
 **** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Verify business units, portfolios, and books per office
 
@@ -108,6 +117,10 @@ books list --party <party-id>
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Verify staff accounts and roles per office
 
 #+begin_src sh
@@ -126,6 +139,10 @@ accounts list --party <party-id>
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Verify the tenant admin's default party
 
 #+begin_src sh
@@ -141,6 +158,10 @@ accounts list --party <acme-corporation-plc-party-id>
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Verify onboarding is suppressed for every activated party
 
 - Still logged in as =tenant_admin= on *blue*, switch context to each
@@ -151,6 +172,10 @@ accounts list --party <acme-corporation-plc-party-id>
   leave unset for LEI-imported parties).
 
 **** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Verify GLEIF counterparties and the demo logo
 
@@ -168,6 +193,10 @@ counterparties list --limit 5
   own logo renders too.
 
 **** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Verify the CRM cross-rates matrix is ticking
 
@@ -189,6 +218,10 @@ counterparties list --limit 5
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Verify IR curves/rates are ticking
 
 - On *blue*, open the IR rate/curve view (Rate Curves / IR Curve
@@ -201,6 +234,10 @@ counterparties list --limit 5
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Verify each office trades against a realistic counterparty set
 
 - On *blue*, for one operating company, open its book and confirm
@@ -210,6 +247,10 @@ counterparties list --limit 5
   should appear as an option.
 
 **** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** red
 
@@ -230,6 +271,10 @@ counterparties list --limit 5
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** green
 
 *** Log in as a Middle Office Manager and confirm RBAC
@@ -245,14 +290,33 @@ counterparties list --limit 5
 
 **** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-07-29T11:28:19Z |
+| Branch        | feature/simulate-holding-group-provisioning-via-internal-impersonation |
+| Commit        | 098404b5e |
+| Worktree      | brave_hopper |
 
 * Notes
+
+Root cause of the first step's FAIL ("party setup wizard comes up on
+tenant admin"), diagnosed 2026-07-29: =system_settings_repository::
+remove()= deletes by =name= only (=DELETE ... WHERE name = $1=),
+relying on RLS for scoping -- but the RLS policy on
+=ores_variability_system_settings_tbl= isolates by =tenant_id= only,
+not =party_id=. Every =complete_party_onboarding= call for a new
+party silently removes the =onboarding.party= row for *every other
+party in the tenant*, so only the last party processed (HK, in
+office-loop order) keeps its flag -- the holding company (processed
+first, in Step 3) and UK/US lose theirs. This is a pre-existing
+product bug, not specific to Acme's provisioning path -- it would hit
+any tenant with 2+ parties provisioned via the generic "provision
+party" flow too. Filed as [[id:CCBBC80E-DC7C-4C0C-AFD8-CE673169FA43][Fix: onboarding.party flag clobbered across
+sibling parties in the same tenant]].

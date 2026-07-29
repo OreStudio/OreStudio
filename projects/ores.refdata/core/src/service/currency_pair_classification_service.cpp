@@ -45,8 +45,16 @@ std::uint32_t currency_pair_classification_service::count_classifications() {
 
 
 std::optional<domain::currency_pair_classification>
+currency_pair_classification_service::get_classification_at_version(const std::string& code,
+                                                                    std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair classification at version. "
+                               << "code: " << code << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::currency_pair_classification>
 currency_pair_classification_service::get_classification(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair classification: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency pair classification. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -57,18 +65,19 @@ void currency_pair_classification_service::save_classification(
     const domain::currency_pair_classification& v) {
     if (v.code.empty())
         throw std::invalid_argument("Currency Pair Classification code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving currency pair classification: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving currency pair classification. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved currency pair classification: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved currency pair classification. " << "code: " << v.code;
 }
 
 void currency_pair_classification_service::save_classifications(
     const std::vector<domain::currency_pair_classification>& classifications) {
-    for (const auto& e : classifications)
+    for (const auto& e : classifications) {
         if (e.code.empty())
             throw std::invalid_argument("Currency Pair Classification code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << classifications.size()
                                << " currency pair classifications";
     auto ts = classifications;
@@ -78,9 +87,9 @@ void currency_pair_classification_service::save_classifications(
 }
 
 void currency_pair_classification_service::delete_classification(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed currency pair classification: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed currency pair classification. " << "code: " << code;
 }
 
 void currency_pair_classification_service::delete_classifications(
@@ -90,7 +99,8 @@ void currency_pair_classification_service::delete_classifications(
 
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_service::get_classification_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency pair classification: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for currency pair classification. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -37,7 +37,7 @@ std::string currency_group_repository::sql() {
 }
 
 void currency_group_repository::write(context ctx, const domain::currency_group& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency group: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency group. " << "code: " << v.code;
     execute_write_query(
         ctx, currency_group_mapper::map(v), lg(), "Writing currency group to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::currency_group> currency_group_repository::read_latest(conte
 
 std::vector<domain::currency_group>
 currency_group_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency group. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency group. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,13 +80,14 @@ currency_group_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest currency group by code.");
 }
 
+
 std::vector<domain::currency_group> currency_group_repository::read_all(context ctx,
                                                                         const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency group versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency group versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_group_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<currency_group_entity, domain::currency_group>(
         ctx,
@@ -96,9 +97,29 @@ std::vector<domain::currency_group> currency_group_repository::read_all(context 
         "Reading all currency group versions by code.");
 }
 
+std::optional<domain::currency_group> currency_group_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency group at version. " << "code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<currency_group_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<currency_group_entity, domain::currency_group>(
+        ctx,
+        query,
+        [](const auto& entities) { return currency_group_mapper::map(entities); },
+        lg(),
+        "Reading currency group at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
 
 void currency_group_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency group: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency group. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

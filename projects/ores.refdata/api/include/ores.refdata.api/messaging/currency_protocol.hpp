@@ -33,6 +33,9 @@ struct get_currencies_request {
     static constexpr std::string_view nats_subject = "refdata.v1.currencies.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    // Empty = current/latest. Note: when as_of is set, results are not
+    // paginated by offset/limit -- all matching rows are returned.
+    std::string as_of;
 };
 
 struct get_currencies_response {

@@ -38,7 +38,7 @@ std::string currency_repository::sql() {
 }
 
 void currency_repository::write(context ctx, const domain::currency& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing currency: " << v.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing currency. " << "iso_code: " << v.iso_code;
     execute_write_query(ctx, currency_mapper::map(v), lg(), "Writing currency to database.");
 }
 
@@ -64,7 +64,7 @@ std::vector<domain::currency> currency_repository::read_latest(context ctx) {
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx,
                                                                const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency. iso_code: " << iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest currency. " << "iso_code: " << iso_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -117,7 +117,7 @@ std::vector<domain::currency> currency_repository::read_at_timepoint(context ctx
 
 std::vector<domain::currency> currency_repository::read_all(context ctx,
                                                             const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all currency versions. iso_code: " << iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all currency versions. " << "iso_code: " << iso_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_entity>> |
                        where("tenant_id"_c == tid && "iso_code"_c == iso_code) |
@@ -134,7 +134,7 @@ std::vector<domain::currency> currency_repository::read_all(context ctx,
 std::optional<domain::currency> currency_repository::read_at_version(context ctx,
                                                                      const std::string& iso_code,
                                                                      std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading currency at version. iso_code: " << iso_code
+    BOOST_LOG_SEV(lg(), debug) << "Reading currency at version. " << "iso_code: " << iso_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -155,7 +155,7 @@ std::optional<domain::currency> currency_repository::read_at_version(context ctx
 }
 
 void currency_repository::remove(context ctx, const std::string& iso_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing currency: " << iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing currency. " << "iso_code: " << iso_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -70,8 +70,13 @@ public:
         get_currencies_response resp;
         if (auto req = decode<get_currencies_request>(msg)) {
             try {
-                resp.currencies = svc.list_currencies(req->offset, req->limit);
-                resp.total_available_count = static_cast<int>(svc.count_currencies());
+                if (!req->as_of.empty()) {
+                    resp.currencies = svc.list_currencies_at_timepoint(req->as_of);
+                    resp.total_available_count = static_cast<int>(resp.currencies.size());
+                } else {
+                    resp.currencies = svc.list_currencies(req->offset, req->limit);
+                    resp.total_available_count = static_cast<int>(svc.count_currencies());
+                }
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(currency_handler_lg(), error)

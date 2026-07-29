@@ -20,11 +20,7 @@ set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "database_sink_backend_tests.cpp"
-    "main.cpp"
-    "telemetry_repository_tests.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 # Exclude example files from test compilation
 list(FILTER files EXCLUDE REGEX ".*_example\\.cpp$")

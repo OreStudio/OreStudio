@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: C1B403E3-E48A-418D-9240-F880D32DE58B
+:END:
+#+title: Task: Add tenant_read_scope: shared to badge_mapping_junction, regenerate all three badge repositories
+#+description: badge_definition.org and badge_severity.org already declare tenant_read_scope: shared but their generated repository .cpp files are stale (never regenerated since the flag was added). badge_mapping_junction.org doesn't have the flag at all. Add it, regenerate all three via codegen, and verify the diff carefully -- a prior regeneration this session (iam_service_db_grants_create.sql) silently reverted unrelated hand-added grants never round-tripped into the source .org.
+#+type: task
+#+level: s1
+#+filetags: :fix-badge-tenant-read-scope-regression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the cross-tenant badge lookup regression (see parent story
+=* Goal= for the full root-cause writeup):
+
+1. Add =:tenant_read_scope: shared= to
+   =ores.dq.badge_mapping_junction.org='s properties -- it doesn't
+   have the flag set at all.
+2. Regenerate all three entities via codegen
+   (=compass codegen entity generate <entity> --address <repository
+   facet's address>= -- check the archetype for the correct address,
+   since =badge_definition=/=badge_severity= already have the flag
+   and their generated =.cpp= is just stale).
+3. Verify the regenerated diff carefully before accepting it: diff
+   the regenerated repository files line-by-line against current,
+   and if anything unrelated to the tenant-filter change shows up,
+   treat that as separate pre-existing drift to flag, not something
+   to silently accept -- this exact trap hit a different generated
+   file (=iam_service_db_grants_create.sql=) earlier this session,
+   silently reverting unrelated hand-added grants never round-tripped
+   back into the source =.org=.
+4. Rebuild, recreate the DB, log in as a non-system tenant, confirm
+   badges render with real colours (not the orange fallback) and
+   =ores.dq.service.0.log= shows =Total: 63=/=Total: 114= (or current
+   row counts) instead of =Total: 0=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- =ores.dq.badge_mapping_junction.org= declares
+  =:tenant_read_scope: shared=.
+- Regenerated =badge_definition_repository.cpp=,
+  =badge_severity_repository.cpp=, =badge_mapping_repository.cpp= no
+  longer hard-code =tenant_id = ctx.tenant_id()= on read methods; RLS
+  alone governs visibility.
+- Regenerated-diff review found no unrelated drift, or any found was
+  explicitly flagged separately rather than silently accepted.
+- Verified live as a non-system tenant: badges render with real
+  colours, =ores.dq.service= log shows non-zero
+  =Total:= counts for badge definitions/mappings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

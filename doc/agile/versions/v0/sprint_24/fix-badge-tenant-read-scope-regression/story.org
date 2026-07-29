@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: F6F99E54-34FF-4B5C-8624-9478A649002E
+:END:
+#+title: Story: Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared
+#+description: badge_definition_repository.cpp, badge_severity_repository.cpp, and badge_mapping_repository.cpp hard-code an app-level WHERE tenant_id = ctx.tenant_id() filter on every read method, narrower than the RLS policy that already permits system-tenant shared rows. Every non-system tenant sees zero badge definitions/mappings, so all badges render with the fallback colour.
+#+type: story
+#+level: s2
+#+filetags: :qt:dq:badges:bugfix:rls:codegen:sprint_24:v0:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Found by brave_hopper: every badge in the UI renders with the
+default/fallback colour, for every entity, in every tenant except the
+system tenant.
+
+Root cause: =badge_definition_repository.cpp= and
+=badge_mapping_repository.cpp= (=ores.dq.core=) hard-code an app-level
+=WHERE tenant_id = ctx.tenant_id()= filter on every read method --
+narrower than the RLS policy on both tables, which already permits:
+
+#+begin_src sql
+using (tenant_id = ores_iam_current_tenant_id_fn() OR tenant_id = ores_utility_system_tenant_id_fn())
+#+end_src
+
+Badge definitions/mappings are seeded once under the system tenant
+(=ffffffff-ffff-ffff-ffff-ffffffffffff=) as shared reference data
+meant to be visible to every tenant. RLS would let the system-tenant
+rows through; the repository's own narrower =WHERE= clause silently
+returns zero rows first.
+
+Verified live: =ores_dq_badge_definitions_tbl=/=ores_dq_badge_mappings_tbl=
+have 63/114 rows, all =tenant_id = ffffffff-...=. =BadgeCache= on login
+logs "Fetched 0 badge definitions" / "Fetched 0 badge mappings" for a
+non-system tenant; server-side, =ores.dq.service='s own log shows
+"Reading latest badge definitions... Total: 0".
+
+The fix mechanism already exists, just not applied consistently: codegen
+has a =tenant_read_scope: shared= entity-model flag
+(=ores.codegen/src/codegen/core.py=, search =read_tenant_filtered=)
+specifically built to omit the tenant filter on reads for exactly this
+class of table.
+
+- =ores.dq.badge_definition.org= -- has =tenant_read_scope: shared=
+  already, but the generated =.cpp= is stale, never regenerated since
+  the flag was added.
+- =ores.dq.badge_severity.org= -- same flag, same staleness; not
+  directly verified live but the generated repository has the same
+  hard-coded filter.
+- =ores.dq.badge_mapping_junction.org= -- does not have the flag set
+  at all.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-29                               |
+
+* Acceptance
+
+- =ores.dq.badge_mapping_junction.org= declares
+  =:tenant_read_scope: shared=.
+- All three entities (=badge_definition=, =badge_severity=,
+  =badge_mapping_junction=) are regenerated via codegen, and the
+  regenerated repository diffs contain only the tenant-filter
+  removal -- any unrelated drift surfaced by the regeneration is
+  flagged separately, not silently accepted.
+- Rebuild and recreate the DB; logging in as a non-system tenant
+  shows badges rendering with their real configured colours (not the
+  orange fallback), and =ores.dq.service='s log shows
+  =Total: 63=/=Total: 114= (or current row counts) instead of
+  =Total: 0= for badge definitions/mappings.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C1B403E3-E48A-418D-9240-F880D32DE58B][Add tenant_read_scope: shared to badge_mapping_junction, regenerate all three badge repositories]] | BACKLOG | | | badge_definition.org and badge_severity.org already declare tenant_read_scope: shared but their generated repository .cpp files are stale (never regenerated since the flag was added). badge_mapping_junction.org doesn't have the flag at all. Add it, regenerate all three via codegen, and verify the diff carefully -- a prior regeneration this session (iam_service_db_grants_create.sql) silently reverted unrelated hand-added grants never round-tripped into the source .org. |
+
+* Decisions
+
+* Out of scope
+
+-

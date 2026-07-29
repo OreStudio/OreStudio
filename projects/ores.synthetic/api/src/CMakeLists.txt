@@ -19,37 +19,7 @@ set(name "ores.synthetic.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/curve_template_validation.cpp"
-    "domain/folder_json_io.cpp"
-    "domain/folder_table.cpp"
-    "domain/folder_table_io.cpp"
-    "domain/fx_spot_generation_config_json_io.cpp"
-    "domain/fx_spot_generation_config_table.cpp"
-    "domain/fx_spot_generation_config_table_io.cpp"
-    "domain/gmm_component_json_io.cpp"
-    "domain/gmm_component_table.cpp"
-    "domain/gmm_component_table_io.cpp"
-    "domain/ir_curve_generation_config_json_io.cpp"
-    "domain/ir_curve_generation_config_table.cpp"
-    "domain/ir_curve_generation_config_table_io.cpp"
-    "domain/ir_curve_template_entry_json_io.cpp"
-    "domain/ir_curve_template_entry_table.cpp"
-    "domain/ir_curve_template_entry_table_io.cpp"
-    "domain/market_data_generation_config_json_io.cpp"
-    "domain/market_data_generation_config_table.cpp"
-    "domain/market_data_generation_config_table_io.cpp"
-    "domain/yield_curve_process_type_json_io.cpp"
-    "domain/yield_curve_process_type_table.cpp"
-    "domain/yield_curve_process_type_table_io.cpp"
-    "generators/folder_generator.cpp"
-    "generators/fx_spot_generation_config_generator.cpp"
-    "generators/gmm_component_generator.cpp"
-    "generators/ir_curve_generation_config_generator.cpp"
-    "generators/ir_curve_template_entry_generator.cpp"
-    "generators/market_data_generation_config_generator.cpp"
-    "generators/yield_curve_process_type_generator.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

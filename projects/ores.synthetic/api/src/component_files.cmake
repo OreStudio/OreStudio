@@ -1,0 +1,112 @@
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(files
+    "domain/curve_template_validation.cpp"
+    "domain/folder_json_io.cpp"
+    "domain/folder_table.cpp"
+    "domain/folder_table_io.cpp"
+    "domain/fx_spot_generation_config_json_io.cpp"
+    "domain/fx_spot_generation_config_table.cpp"
+    "domain/fx_spot_generation_config_table_io.cpp"
+    "domain/gmm_component_json_io.cpp"
+    "domain/gmm_component_table.cpp"
+    "domain/gmm_component_table_io.cpp"
+    "domain/ir_curve_generation_config_json_io.cpp"
+    "domain/ir_curve_generation_config_table.cpp"
+    "domain/ir_curve_generation_config_table_io.cpp"
+    "domain/ir_curve_template_entry_json_io.cpp"
+    "domain/ir_curve_template_entry_table.cpp"
+    "domain/ir_curve_template_entry_table_io.cpp"
+    "domain/market_data_generation_config_json_io.cpp"
+    "domain/market_data_generation_config_table.cpp"
+    "domain/market_data_generation_config_table_io.cpp"
+    "domain/yield_curve_process_type_json_io.cpp"
+    "domain/yield_curve_process_type_table.cpp"
+    "domain/yield_curve_process_type_table_io.cpp"
+    "generators/folder_generator.cpp"
+    "generators/fx_spot_generation_config_generator.cpp"
+    "generators/gmm_component_generator.cpp"
+    "generators/ir_curve_generation_config_generator.cpp"
+    "generators/ir_curve_template_entry_generator.cpp"
+    "generators/market_data_generation_config_generator.cpp"
+    "generators/yield_curve_process_type_generator.cpp"
+)
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/curve_template_validation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/fx_spot_generation_config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/fx_spot_generation_config_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/fx_spot_generation_config_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/fx_spot_generation_config_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/generated_organisation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/generation_options.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/gmm_component.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/gmm_component_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/gmm_component_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/gmm_component_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_generation_config_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_generation_config_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_generation_config_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_template_entry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_template_entry_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_template_entry_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/ir_curve_template_entry_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/organisation_generation_options.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/synthetic_catalog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/gmm_component_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_template_entry_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/market_data_generation_config_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/yield_curve_process_type_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/folder_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/fx_spot_generation_config_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/gmm_component_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/ir_curve_generation_config_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/ir_curve_template_entry_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/market_data_generation_config_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/generators/yield_curve_process_type_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/folder_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/gmm_component_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
+)

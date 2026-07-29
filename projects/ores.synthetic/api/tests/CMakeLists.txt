@@ -19,14 +19,7 @@ set(name "ores.synthetic.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files
-    "domain_curve_template_validation_tests.cpp"
-    "domain_generated_organisation_tests.cpp"
-    "domain_generation_options_tests.cpp"
-    "domain_organisation_generation_options_tests.cpp"
-    "domain_synthetic_catalog_tests.cpp"
-    "main.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

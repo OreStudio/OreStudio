@@ -20,6 +20,12 @@ RUN strip --strip-debug /src/bin/ores.*.service /src/lib/libores.*.so*
 # time.
 RUN mkdir -p /src/log /src/run && chmod 777 /src/log /src/run
 
+# Chainguard glibc-dynamic has no shell to `ln -s` with, so the entrypoint
+# symlink is created here instead, where the real binary already exists --
+# relative, so it resolves identically once COPY'd into /app/bin/ below.
+ARG SERVICE_NAME=ores.controller.service
+RUN ln -s "./${SERVICE_NAME}" /src/bin/entrypoint
+
 FROM cgr.dev/chainguard/glibc-dynamic:latest
 
 WORKDIR /app
@@ -32,4 +38,4 @@ COPY --from=strip /src/run/ /app/run/
 ENV LD_LIBRARY_PATH=/app/lib
 WORKDIR /app/bin
 
-ENTRYPOINT ["./ores.controller.service"]
+ENTRYPOINT ["./entrypoint"]

@@ -373,9 +373,35 @@ void client::connect() {
         check_file(impl_->opts.tls_client_key, "client key");
 
         natsOptions_SetSecure(opts, true);
-        natsOptions_LoadCATrustedCertificates(opts, impl_->opts.tls_ca_cert.c_str());
-        natsOptions_LoadCertificatesChain(
+        const natsStatus ca_status =
+            natsOptions_LoadCATrustedCertificates(opts, impl_->opts.tls_ca_cert.c_str());
+        if (ca_status != NATS_OK) {
+            natsOptions_Destroy(opts);
+            throw nats_connect_error(nats_error_kind::tls_error,
+                                     std::string("Failed to load NATS CA certificate (") +
+                                         impl_->opts.tls_ca_cert +
+                                         "): " + natsStatus_GetText(ca_status) +
+                                         " -- check the file is actually readable by this "
+                                         "process's real uid (rootless podman without "
+                                         "--userns=keep-id remaps uids, so a mode-600 file "
+                                         "owned by the host user may be unreadable even "
+                                         "though it exists)");
+        }
+        const natsStatus chain_status = natsOptions_LoadCertificatesChain(
             opts, impl_->opts.tls_client_cert.c_str(), impl_->opts.tls_client_key.c_str());
+        if (chain_status != NATS_OK) {
+            natsOptions_Destroy(opts);
+            throw nats_connect_error(nats_error_kind::tls_error,
+                                     std::string("Failed to load NATS client certificate/key (") +
+                                         impl_->opts.tls_client_cert + ", " +
+                                         impl_->opts.tls_client_key +
+                                         "): " + natsStatus_GetText(chain_status) +
+                                         " -- check the files are actually readable by this "
+                                         "process's real uid (rootless podman without "
+                                         "--userns=keep-id remaps uids, so a mode-600 file "
+                                         "owned by the host user may be unreadable even "
+                                         "though it exists)");
+        }
         BOOST_LOG_SEV(lg(), info) << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
                                   << ", cert=" << impl_->opts.tls_client_cert << ")";
     }

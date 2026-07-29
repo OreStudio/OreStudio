@@ -39,9 +39,9 @@ other binaries.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Design done, IAM pilot partially proven (connects to NATS standalone); a distinct JWT-signing bug and the HEALTHCHECK probe remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Finish the IAM pilot (JWT bug + healthcheck), then the dependency generator and events watcher. |
 | Last touched  | 2026-07-27                               |
 
 * Acceptance
@@ -64,9 +64,31 @@ other binaries.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9E08056D-DEC1-43E3-803E-03E5F9808AD5][Design the per-service container architecture and pilot it with one service]] | STARTED | 2026-07-29 | | Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17. |
+| [[id:9E08056D-DEC1-43E3-803E-03E5F9808AD5][Design the per-service container architecture and pilot it with one service]] | DONE | 2026-07-29 | 2026-07-29 | Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17. |
+| [[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][Finish IAM per-service pilot: JWT signing failure and HEALTHCHECK]] | BACKLOG | | | The per-service container pilot for IAM got past a rootless-podman uid-remapping issue (fixed, needs --userns=keep-id) and connects to NATS successfully standalone, but does not yet reach a fully healthy end-to-end state: a distinct, not-yet-root-caused JWT token signing failure (in-memory PEM parsing, bio read failed) surfaces afterward. Root-cause and fix that, then add the HEALTHCHECK probe (tailing IAM's own log for Service ready.) and confirm IAM reaches podman ps healthy end-to-end. |
 
 * Decisions
+
+- Per-service images: one parameterised ~docker/service-runtime.Dockerfile~
+  (~ARG SERVICE_NAME~) plus ~docker/stage-runtime.sh --service <name>~,
+  not 18 separate Dockerfiles and not one shared "kitchen sink" image
+  switched via ~--entrypoint~ (the latter was tried first, rejected in
+  review as not idiomatic -- ships every service's dead code and a
+  larger attack surface per container).
+- Rootless podman containers reading host-owned NATS client private
+  keys (mode 600) *must* use ~--userns=keep-id~ -- without it, the
+  container's mapped uid does not match the host uid that owns the
+  key, causing a silent ~EACCES~ inside OpenSSL that surfaced only as
+  a generic "Connection Closed" (fixed at the source in
+  ~ores.nats/service/client.cpp~, which now checks and reports this
+  explicitly). This is the same root cause as the Newton cert-
+  permission fix in PR #1747/~docker/run-pod.sh~ -- confirmed to apply
+  uniformly to every container in this architecture, not just Newton.
+- The Newton PR #1747 memory-corruption finding does *not* reproduce
+  in the per-service pilot (as expected -- no in-process multi-child
+  bookkeeping exists there to race). What initially looked like a
+  second instance of it was actually the uid-remapping issue above --
+  a distinct, now-understood, unrelated bug.
 
 * Out of scope
 

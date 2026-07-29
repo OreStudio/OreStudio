@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.nats/domain/compression.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include <algorithm>
+#include <cstdlib>
+#include <memory>
 #include <nats/nats.h>
 #include <stdexcept>
 #include <string>
@@ -68,6 +71,38 @@ domain::stream_info fill_stream_info(jsStreamInfo* info) {
 
     return si;
 }
+
+// Extract headers and decompress data from a natsMsg into result, mirroring
+// client.cpp's extract_message() so peeked messages match what subscribers
+// actually see, rather than raw (possibly gzip'd) wire bytes.
+void fill_data_and_headers(natsMsg* msg, domain::stream_message& result) {
+    const int len = natsMsg_GetDataLength(msg);
+    if (len > 0) {
+        const auto* p = reinterpret_cast<const std::byte*>(natsMsg_GetData(msg));
+        result.data.assign(p, p + len);
+    }
+
+    // Extract all headers; cnats allocates the keys array but the key strings
+    // themselves are owned by the message — only free the array, not the keys.
+    const char** keys = nullptr;
+    int key_count = 0;
+    if (natsMsgHeader_Keys(msg, &keys, &key_count) == NATS_OK && keys) {
+        for (int i = 0; i < key_count; ++i) {
+            const char* val = nullptr;
+            if (natsMsgHeader_Get(msg, keys[i], &val) == NATS_OK && val)
+                result.headers[keys[i]] = val;
+        }
+        // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,hicpp-no-malloc)
+        free(keys);
+    }
+
+    result.data = ores::nats::decompress_if_flagged(result.data, result.headers);
+}
+
+// RAII guard for natsMsg (a raw C pointer): decompress_if_flagged() inside
+// fill_data_and_headers() can throw on a gzip-flagged-but-malformed payload,
+// and without this guard that would skip natsMsg_Destroy() and leak msg.
+using nats_msg_guard = std::unique_ptr<natsMsg, decltype(&natsMsg_Destroy)>;
 
 domain::consumer_info fill_consumer_info(jsConsumerInfo* info) {
     domain::consumer_info ci;
@@ -240,20 +275,15 @@ domain::stream_message jetstream_admin::peek_message(std::string_view stream_nam
     const natsStatus s =
         js_GetMsg(&msg, js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
     check(s, "js_GetMsg");
+    nats_msg_guard guard(msg, natsMsg_Destroy);
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
         result.subject = subj;
     result.sequence = sequence;
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
+    fill_data_and_headers(msg, result);
 
-    const int len = natsMsg_GetDataLength(msg);
-    if (len > 0) {
-        const auto* p = reinterpret_cast<const std::byte*>(natsMsg_GetData(msg));
-        result.data.assign(p, p + len);
-    }
-
-    natsMsg_Destroy(msg);
     return result;
 }
 
@@ -269,20 +299,15 @@ domain::stream_message jetstream_admin::peek_last_message(std::string_view strea
     const natsStatus s = js_GetLastMsg(
         &msg, js, std::string(stream_name).c_str(), std::string(subject).c_str(), &opts, &jerr);
     check(s, "js_GetLastMsg");
+    nats_msg_guard guard(msg, natsMsg_Destroy);
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
         result.subject = subj;
     result.sequence = natsMsg_GetSequence(msg);
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
+    fill_data_and_headers(msg, result);
 
-    const int len = natsMsg_GetDataLength(msg);
-    if (len > 0) {
-        const auto* p = reinterpret_cast<const std::byte*>(natsMsg_GetData(msg));
-        result.data.assign(p, p + len);
-    }
-
-    natsMsg_Destroy(msg);
     return result;
 }
 

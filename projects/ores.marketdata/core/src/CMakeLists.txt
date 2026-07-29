@@ -40,6 +40,9 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+find_package(Boost REQUIRED COMPONENTS url)
+find_package(magic_enum CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.marketdata.api.lib
@@ -55,7 +58,9 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx
-        Boost::boost)
+        magic_enum::magic_enum
+        Boost::boost
+        Boost::url)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -1,0 +1,346 @@
+:PROPERTIES:
+:ID: D9BCA1E0-BB8C-4B3E-8A0B-4FC7098E0ED9
+:END:
+#+title: Task: In-depth analysis: migrate legacy identifiers onto oresmd
+#+description: Ground the per-field migration plan in the current codebase: enumerate every read/write consumer of ore_key, market_series qualifier/point_id, and ir_curve_generation_config's (currency_code, index_name), and confirm the oresmd projection rules cover every one before any schema/code change starts.
+#+type: task
+#+level: s1
+#+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
+#+owner: marco
+#+branch: feature/migrate-to-oresmd-delete-legacy-schemes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-28
+#+updated: 2026-07-28
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Before any schema or code change starts, ground the story's per-field
+migration plan in the actual codebase rather than the design-time
+assumptions it was written from:
+
+- Enumerate every read and write consumer of
+  =fx_spot_generation_config.ore_key=, =market_series='s
+  =series_type=/=metric=/=qualifier=/=point_id= columns, and
+  =ir_curve_generation_config='s (=currency_code=, =index_name=) pair
+  -- SQL, C++ repositories/controllers, and Qt UI alike -- so the
+  migration has a concrete, complete cutover list instead of the
+  three representative call sites the design doc worked from.
+- For each consumer, confirm a [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][=oresmd=]] projection rule already
+  produces its exact current value (or identify the gap if it
+  doesn't) -- no consumer should be discovered mid-migration.
+- Resolve the two open findings already surfaced in this story's
+  =Promoted from capture= section from a parallel implementation
+  attempt on [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]]: whether
+  that task's =index=/=currency_index= refdata design should be
+  dropped in favour of migrating =ir_curve_generation_config= directly
+  onto =oresmd=, and how =oresmd='s =index_family= enum should map
+  onto (or absorb) the =floating_index_type=, =overnight_index_convention=,
+  and =ibor_index_convention= tables that =ores.cli='s
+  =conventions.xml= importer actually writes into.
+- Produce a concrete, sequenced migration plan (which consumer moves
+  first, what stays dual-write during transition, what the final
+  delete step looks like) that the story's remaining tasks will
+  implement -- this task is analysis and planning only, no schema or
+  code change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-28                               |
+
+* Acceptance
+
+- A complete inventory exists of every =ore_key=, =market_series=
+  qualifier/point_id, and =ir_curve_generation_config= (currency_code,
+  index_name) read/write consumer in the codebase, with file/line
+  references -- not a representative sample.
+- Each consumer is checked against =oresmd='s projection rules; any
+  consumer the current design doesn't cover is documented as a gap
+  (with a proposed fix) rather than silently left for a later task to
+  discover.
+- The =index=/=currency_index= vs. direct =oresmd= migration question
+  for [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] is explicitly
+  resolved (superseded, re-scoped, or kept as a distinct concern),
+  with rationale.
+- =oresmd='s =index_family= enum's relationship to =floating_index_type=,
+  =overnight_index_convention=, and =ibor_index_convention= (including
+  the =conventions.xml= importer that writes into them) is mapped out.
+- Whether =oresmd= also needs to round-trip through ORE's own XML/text
+  file formats (not just internal consumers) is checked and the
+  finding recorded, since a real ORE run reads =curveconfig.xml=/
+  =todaysmarket.xml=/market-data-quote files rather than ORE Studio's
+  internal representations.
+- A sequenced migration plan (ordering, transition strategy, final
+  delete step) is written, ready to be split into implementation
+  tasks on this story.
+- No schema, code, or =curve_feed_controller= change is made as part
+  of this task -- the deliverable is the analysis and plan.
+
+* Plan
+
+Grepped every real consumer of the three legacy identifier fields
+across =projects/= (SQL, C++ repositories/controllers/services, Qt UI)
+and read the domain structs and the one collision check that matters
+(=curve_feed_controller=), rather than relying on the design task's
+three representative call sites.
+
+** =fx_spot_generation_config.ore_key= consumers
+
+=ore_key= (=projects/ores.synthetic/api/include/.../fx_spot_generation_config.hpp:83-86=)
+is documented in its own doc comment as "derived from the currency
+pair; not entered directly" — it is already a pure projection, never
+hand-entered. Its full consumer set: the mapper/generator/entity in
+=ores.synthetic.core/api= that construct it, =fx_spot_feed=/=feed_controller=/
+=market_feed_config_handler=/=folder_feed_control_handler=/=vintage_validity_handler=
+in =ores.synthetic.service= that read it to publish/query observations,
+=feed_binding=/=market_data_client=/=subject_helpers=/=fx_spot_subscription=/
+=feed_ingest_loop= in =ores.marketdata= that carry it as a wire/subject
+key, and seven Qt windows/dialogs/models in =ores.qt.marketdata=,
+=ores.qt.synthetic=, =ores.qt.mktdata= that display it. All of these read
+a stored string; none independently re-derive the FX/RATE/CCY/CCY
+shape, so migration is a single generation-source swap (stop writing
+=ore_key= from the currency pair, start writing it from
+=oresmd://fx/eurusd?type=quote='s FX projection rule), not a fan-out of
+independent call-site changes.
+
+** =market_series= consumers
+
+=market_series= (=ores.marketdata.api/domain/market_series.hpp:43-81=) is
+a genuine catalog table, not a derived cache: =series_type=/=metric=
+are typed/validated columns, =qualifier= is documented in its own
+comment as "free-text ... e.g. EUR, EUR-EURIBOR-3M" -- exactly the
+free-text gap the gap-analysis task and the oresmd design both target.
+=point_id= lives on the child =market_observation= table
+(=ores.marketdata.api/domain/market_observation.hpp:81=), not on
+=market_series= itself, so the story's "qualifier[/point_id]" framing
+should be read as "qualifier on market_series, point_id on
+market_observation" -- two tables, not two columns of one. Consumers
+span =market_series_repository=/=mapper=/=service=/=entity= (the
+read/write path), =market_series_handler=/=registrar=/=curve_snapshot_handler=
+(NATS), =market_series_table=/=json_io=/=table_io= (wire formats),
+=market_data_client= (consumer-side subject building), and five Qt
+windows/models (=RateCurvesMdiWindow=, =MarketSeriesMdiWindow=,
+=MarketObservationMdiWindow=, =MarketFixingDetailMdiWindow=,
+=ClientMarketSeriesModel=). =IrCurveEditor=/=FxSpotRateEditor= in
+=ores.qt.synthetic= also write into it from the generation-config side.
+=series_type=/=metric= already match oresmd's =type=/=asset_class=
+projection outputs; only =qualifier='s free-text population path needs
+replacing with a generated value from =oresmd='s
+=entity=/=index=/=tenor=/=point= fields -- the column shape itself does
+not need to change, matching the story's original per-field plan.
+
+** =ir_curve_generation_config= consumers and the =index_name= reality
+
+Reading the domain struct
+(=ores.synthetic.api/domain/ir_curve_generation_config.hpp:70-86=)
+surfaced a fact the story's original per-field plan understated:
+=index_name= is not a bare free-text suffix like "SOFR" -- its own doc
+comment says it stores "the full ISDA/ORE code (references
+=ores.refdata.floating_index_type.code=, e.g. \"USD-SOFR\", \"EUR-ESTR\")"
+specifically so the FK validator can stay a single-argument
+=ores_refdata_validate_floating_index_type_fn(tenant_id, value)= call.
+So =index_name= is already FK-constrained against a real catalog
+table, not raw free text -- the actual gap is that
+=ir_curve_generation_config= has no =role= column at all (confirmed:
+no "role"/"discount"/"projection" hit anywhere in
+=ir_curve_generation_config.hpp= or =ir_curve_template_entry.hpp=), and
+=curve_feed_controller='s one-feed-per-qualifier collision check
+(=projects/ores.synthetic/service/src/curve_feed_controller.hpp:42-51=)
+keys purely on =ir_curve_feed::qualifier()= = currency_code + index_name
+-- exactly the flat-string collision the gap analysis and the design
+doc's worked "discount vs projection" example describe, with no way to
+express "these two legitimately coexist."
+
+** Resolving the two open findings from the parallel implementation attempt
+
+- *=index=/=currency_index= refdata design vs. direct =oresmd=
+  migration*: confirmed via the struct read above that =index_name= is
+  already an FK'd, catalog-backed value (=floating_index_type.code=),
+  not the free-text problem the =index=/=currency_index= design was
+  built to solve. Building that design would create the "third
+  competing scheme" the earlier finding warned about. *Decision*:
+  migrate =ir_curve_generation_config= directly onto =oresmd= per the
+  existing per-field plan (replace =index_name= with =oresmd='s
+  =index_family= enum + =tenor=, add the =role= field this table has no
+  equivalent of today); [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]]
+  should be closed as superseded once this migration lands.
+- *=index_family= vs. =floating_index_type=/=overnight_index_convention=/
+  =ibor_index_convention=*: confirmed =floating_index_type= is a
+  separately hand-seeded catalog (=refdata_floating_index_types_populate.sql=,
+  25 rows) rather than a materialised view of the other two tables.
+  Confirmed via =application::import_conventions=
+  (=projects/ores.cli/src/app/application.cpp:197-221=) that ORE's real
+  =conventions.xml= importer writes =overnight_index_convention= and
+  =ibor_index_convention= directly (=overnight_rp.write=/=ibor_rp.write=)
+  and never touches =floating_index_type= at all -- so today there are
+  two independently-populated sources of truth for "what indices
+  exist," one hand-seeded and one importer-fed, with no code path
+  reconciling them. *Recommendation*: =oresmd='s =index_family= enum
+  should be backed by =overnight_index_convention=/=ibor_index_convention=
+  (the importer-fed, convention-carrying tables), with
+  =floating_index_type= either retired or turned into a generated view
+  over the other two -- not the other way around, since the importer is
+  the actual external-data entry point and would otherwise need a
+  second write path to stay in sync.
+
+** ORE XML round-trip: a gap the original per-field plan didn't cover
+
+The story's original scope was framed entirely in terms of ORE
+Studio's *internal* consumers (SQL/repositories/NATS/Qt) -- it never
+checked whether =oresmd= also needs to round-trip through ORE's own
+XML/text file formats, the actual inputs/outputs of a real ORE run.
+Checking =ores.ore.core/xml/importer.hpp= and =exporter.hpp=:
+
+- *Conventions already round-trip both ways*: =importer::import_conventions=
+  and =exporter::export_conventions= both exist
+  (=ores.ore.core/xml/importer.hpp:115=, =exporter.hpp:69=), covering
+  =mapped_conventions= (zero/deposit/swap/ois/fra/ibor_index/overnight_index/
+  currency_pair/cds). This is what =application::import_conventions=
+  (see above) already exercises on the way in; nothing new is needed
+  here for the migration itself, beyond making sure =oresmd='s
+  =index_family= enum stays reconcilable with whatever
+  =conventions_mapper= produces from XML.
+- *Curve configs and market data quotes do not round-trip at all
+  today*: the entire =ores.ore.xml= importer/exporter surface only
+  covers =import_currency_config=/=export_currency_config=,
+  =import_calendar_adjustments=/=export_calendar_adjustments=,
+  =import_conventions=/=export_conventions=, and
+  =import_portfolio_with_context=/=export_portfolio= (trades). There is
+  no =import_curve_config=/=export_curve_config= for ORE's
+  =curveconfig.xml= (=CurveConfig= schema types already generated in
+  =ores.ore.core/domain/domain.cpp= from the XSD, but never wired to a
+  reader/writer), no =todaysmarket.xml= mapping import/export, and no
+  market-data quote-string import/export (ORE's own
+  =TYPE/SUBTYPE/dim1/...= text format that a real ORE run's
+  =market.txt=/=fixings.txt= inputs use) -- =market_series_export_protocol.hpp='s
+  =export_market_data_to_storage_request= exports to *internal*
+  storage, not to ORE's native format.
+- *Consequence for this migration*: =oresmd= projecting correctly into
+  ORE's index/curve/quote key *strings* (already covered by the design
+  doc's projection rules) is necessary but not sufficient for a real
+  ORE run -- those strings also need to land inside actual
+  =curveconfig.xml=/=todaysmarket.xml=/market-data-quote files, and
+  ideally be re-parseable back into =oresmd= identifiers when importing
+  an externally-authored ORE config. Building that XML/text
+  round-trip is not yet scoped as a task on this story and should be,
+  otherwise =oresmd= risks becoming correct in ORE Studio's internal
+  model while still disconnected from the files ORE itself consumes.
+
+** Sequenced migration plan for the story's remaining tasks
+
+1. Add =oresmd= parsing/projection as a library (=parse_oresmd=,
+   =to_uri=, =resolve=) with no consumer changes yet.
+2. Migrate =fx_spot_generation_config.ore_key= first -- it is a pure
+   derived value with a single generation point and no free-text
+   catalog dependency, the lowest-risk cutover. Switch its generation
+   source to the =oresmd= FX projection, verify against existing rows,
+   then delete the old derivation code (field/column can stay if
+   external consumers still expect it, revisit once migrated).
+3. Migrate =ir_curve_generation_config= next: replace =index_name= with
+   =index_family= (backed by =overnight_index_convention=/
+   =ibor_index_convention=, not =floating_index_type=) + =tenor=, add
+   =role=, and rebuild =curve_feed_controller='s collision check on the
+   full =oresmd= field set so discount/projection coexistence works.
+   This unblocks closing
+   [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] as superseded.
+4. Migrate =market_series= qualifier/point_id generation next -- widest
+   internal consumer surface (repository/service/NATS/wire/Qt), and
+   benefits from the =oresmd= library already being proven on the two
+   simpler migrations first. Generate =qualifier=/=point_id= from
+   =oresmd= fields at every write path; column shapes stay as-is.
+5. Build ORE curve-config/market-data XML round-trip
+   (=import_curve_config=/=export_curve_config= for =curveconfig.xml=,
+   =todaysmarket.xml= mapping, and market-data quote-string
+   import/export) on top of the =oresmd= projection rules, so an
+   =oresmd= identifier can both generate and be recovered from ORE's
+   own native run-input files -- this is new capability, not a
+   migration of an existing round-trip (conventions already round-trip;
+   curve/market-data does not exist yet).
+6. Once every write path in 2-4 generates from =oresmd=, the XML
+   round-trip in 5 is in place, and every read path has been verified
+   against both, delete the legacy free-text generation code (not
+   necessarily the columns/tables themselves, which may still serve as
+   the generated projection's storage).
+
+Each numbered step above should become its own task on this story once
+this analysis task closes.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered a complete, grounded inventory and a sequenced migration
+plan, meeting every Acceptance bullet:
+
+- Every read/write consumer of =ore_key= (16 files), =market_series=
+  (30+ files across repository/service/NATS/wire/Qt), and
+  =ir_curve_generation_config= (60+ files) is enumerated in the =Plan=
+  section above with file paths, grounded in the actual domain structs
+  and collision-check code rather than the design task's three
+  representative call sites.
+- =ore_key= and =market_series='s =series_type=/=metric= are confirmed
+  to already match =oresmd='s projection outputs exactly; the only real
+  generation-source gaps are =market_series.qualifier= (free text) and
+  =ir_curve_generation_config= (no =role= field at all, and
+  =index_name=, while FK-constrained, has no =tenor=-vs-=index=
+  separation =oresmd= provides).
+- The =index=/=currency_index= vs. direct =oresmd= migration question is
+  resolved: migrate =ir_curve_generation_config= directly onto =oresmd=;
+  [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] should be closed as
+  superseded once that migration lands.
+- =oresmd='s =index_family= enum's relationship to the three legacy
+  catalogs is mapped: it should be backed by
+  =overnight_index_convention=/=ibor_index_convention= (the tables ORE's
+  real =conventions.xml= importer actually writes into), not
+  =floating_index_type= (a separately hand-seeded, unreconciled catalog).
+- A six-step sequenced migration plan (library first, =ore_key= as the
+  lowest-risk cutover, then =ir_curve_generation_config=, then
+  =market_series= as the widest internal-consumer surface, then a new
+  ORE curve-config/market-data XML round-trip, then delete the legacy
+  generation paths) is written, ready to be split into tasks.
+- *ORE XML round-trip finding*: =conventions.xml= already round-trips
+  both ways (=importer::import_conventions=/=exporter::export_conventions=
+  in =ores.ore.core/xml=), but there is no existing
+  import/export for ORE's =curveconfig.xml=, =todaysmarket.xml=, or
+  market-data quote-string formats at all -- =oresmd= projecting
+  correctly into ORE's key strings is necessary but not sufficient for
+  a real ORE run without this new round-trip capability, which the
+  original story scope did not account for. Added as its own step in
+  the migration plan and flagged for a follow-on task.
+- No schema, code, or =curve_feed_controller= change was made -- the
+  deliverable is this analysis and plan.

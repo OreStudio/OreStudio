@@ -145,46 +145,58 @@ is a =static_combo= for a fixed value set with no backing entity).
   every existing =fetch_*= function in =LookupFetcher.hpp= takes only a
   =ClientManager*=, none take a scoping parameter tied to another
   field, so a currency-scoped cascading combo would be new Qt/codegen
-  plumbing, not just new data, and is out of scope for this task. Given
-  that constraint, =index_family= is still =dynamic_combo= (still a
-  real soft FK, reusing the two convention tables rather than a
-  disconnected static enum), backed by a *new*, unscoped
-  =fetch_index_families(ClientManager*)= that returns the distinct
-  family suffixes across both tables -- the combo may list a family not
-  valid for whatever currency happens to be selected, but the
-  Step 2 composite validator still rejects an invalid
-  =(currency_code, index_family)= pair server-side at save time, so
-  incorrect data can't actually be persisted; it just isn't
-  pre-filtered client-side. Flag as a follow-on capture if the resulting
-  UX (a combo occasionally listing an option the currently-selected
-  currency doesn't support) proves confusing in practice.
+  plumbing, not just new data. *Revised while implementing Step 1*
+  (after reading the actual =dynamic_combo=/=static_combo= mustache
+  branches in
+  =cpp_qt_detail_dialog.cpp.mustache=): every worked =dynamic_combo=
+  example in the codebase populates from a *real, persisted* domain
+  struct via an object-list =combo_fetch_fn=; inventing a synthetic,
+  non-persisted "index family" struct purely to keep the widget type
+  =dynamic_combo= would mean adding a new cross-table aggregation
+  query, a new NATS request/response, and a new domain type for a
+  six-value, effectively-fixed vocabulary (=index_family= is itself a
+  closed C++ enum, not user-editable data) -- disproportionate for
+  what the widget needs. =index_family= is therefore =static_combo=
+  (fixed =libor,euribor,sofr,estr,sonia,tona= values), *not* a soft FK
+  at the widget layer. The actual "reuse existing entities" requirement
+  is still met where it matters: the Step 2 composite trigger validator
+  rejects any =(currency_code, index_family)= combination that doesn't
+  resolve to a real =overnight_index_convention=/=ibor_index_convention=
+  row, so the soft-FK enforcement happens server-side against the real
+  tables, just not via the combo's data source.
+- *=tenor=* (confirmed while implementing Step 1): =dynamic_combo= over
+  =refdata::domain::tenor= (=combo_code_field: code=,
+  =combo_display_field: display_name=, =combo_tooltip_field:
+  description=, =combo_sort_field: sort_order=), matching the
+  =calendar_exception.calendar_code -> fetch_calendars= worked example
+  exactly -- a real object-list fetch against a real persisted entity,
+  backed by a new =fetch_tenors(ClientManager*)= (Step 3).
 
 ** Step 1 -- Model changes (codegen source of truth)
 
 Edit
-=projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org=:
+=projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org=
+(done):
 
-1. Delete the =index_name= natural-key column and its
+1. Deleted the =index_name= natural-key column and its
    =ores_refdata_validate_floating_index_type_fn= trigger validation.
-2. Add =index_family= (text, not nullable) -- =dynamic_combo= backed by
-   a new =fetch_index_families= (see widget survey above), *and*
-   validated server-side by a *new* composite validator (Step 2), not a
-   bare enum CHECK, since it must resolve against real convention rows.
-3. Add =tenor= (text, not nullable, empty-string-when-absent -- same
+2. Added =index_family= (text, not nullable) -- =static_combo= (fixed
+   =libor,euribor,sofr,estr,sonia,tona= values; see revised widget
+   survey above), *and* validated server-side by a *new* composite
+   validator (Step 2), not a bare enum CHECK, since it must resolve
+   against real convention rows.
+3. Added =tenor= (text, not nullable, empty-string-when-absent -- same
    pattern as =vintage_source=/=vintage_date=) -- =dynamic_combo= over
-   =tenor.code= backed by a new =fetch_tenor_codes= (see widget survey
-   above), with a SQL check: required (non-empty) iff
+   =refdata::domain::tenor= backed by a new =fetch_tenors= (Step 3),
+   with a SQL check: required (non-empty) iff
    =index_family in ('libor','euribor')=, empty otherwise (overnight
    families have no tenor dimension, mirrors oresmd's own
    =index_family=-conditional grammar).
-4. Add =role= (text, not nullable, default =self_discounting= for
-   backward-compatible seed data) -- =static_combo= (see widget survey
-   above) with a SQL check: one of
-   =discount=/=projection=/=self_discounting=.
-5. Update the generator block, Qt Detail fields table, and Qt model
-   Columns table to replace =index_name= with =index_family=/=tenor=/=role=,
-   wiring the two new =combo_fetch_fn= entries plus the =static_combo=
-   =combo_values= for =role=.
+4. Added =role= (text, not nullable, default =self_discounting= for
+   backward-compatible seed data) -- =static_combo= with a SQL check:
+   one of =discount=/=projection=/=self_discounting=.
+5. Updated the generator block, Qt Detail fields table, and Qt model
+   Columns table to replace =index_name= with =index_family=/=tenor=/=role=.
 
 ** Step 2 -- Composite validator for (currency_code, index_family)
 
@@ -210,18 +222,14 @@ repository entity/mapper, Qt detail dialog/list model/history dialog,
 generator. Diff the regenerated files against a scratch copy of the
 current ones to confirm only the intended fields moved.
 
-Hand-write the two new =LookupFetcher.hpp=/=.cpp= functions the
-=dynamic_combo= widgets need (these are never codegen-generated --
-every existing =fetch_*= is hand-written against the relevant
-service/repository query):
-- =fetch_tenor_codes(ClientManager*)= -- lists =tenor.code= values,
-  same shape as the existing =fetch_calendar_codes=/=fetch_currency_codes=
-  plain-code-list fetchers.
-- =fetch_index_families(ClientManager*)= -- queries both
-  =overnight_index_convention= and =ibor_index_convention=, strips each
-  row's =currency_code + "-"= prefix off its =id=, and returns the
-  distinct family suffixes (unscoped by currency, per the widget
-  survey above).
+Hand-write the one new =LookupFetcher.hpp=/=.cpp= function the
+=tenor= =dynamic_combo= needs (never codegen-generated -- every
+existing =fetch_*= is hand-written against the relevant
+service/repository query): =fetch_tenors(ClientManager*)= returning
+=std::vector<refdata::domain::tenor>=, matching the existing
+=fetch_calendars=/=fetch_book_statuses= object-list shape exactly.
+=index_family= needs no new fetch function (=static_combo=, per the
+revised widget survey above).
 
 ** Step 4 -- Migrate consumers off index_name
 

@@ -19,10 +19,14 @@ set(name "ores.synthetic.api")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
-set(files "")
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+set(files
+    "domain_curve_template_validation_tests.cpp"
+    "domain_generated_organisation_tests.cpp"
+    "domain_generation_options_tests.cpp"
+    "domain_organisation_generation_options_tests.cpp"
+    "domain_synthetic_catalog_tests.cpp"
+    "main.cpp"
+)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

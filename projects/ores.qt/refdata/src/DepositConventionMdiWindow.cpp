@@ -302,7 +302,7 @@ void DepositConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " deposit conventions";
 
         refdata::messaging::delete_deposit_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

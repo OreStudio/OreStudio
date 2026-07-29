@@ -21,7 +21,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -300,7 +300,7 @@ void CalendarTypeMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " calendar types";
 
         refdata::messaging::delete_calendar_type_request request;
-        request.type = codes;
+        request.codes = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

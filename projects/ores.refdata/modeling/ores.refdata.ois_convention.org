@@ -260,7 +260,7 @@ std::nullopt
 :key_field:               id
 :has_uuid_primary_key:    false
 :has_change_reason_cache:     true
-:delete_request_id_field:   codes
+:delete_request_id_field:   ids
 :get_request_class:       refdata::messaging::get_ois_conventions_request
 :get_response_class:      refdata::messaging::get_ois_conventions_response
 :get_message_type:        get_ois_conventions_request
@@ -273,7 +273,7 @@ std::nullopt
 :delete_message_type:     delete_ois_convention_request
 :history_request_class:   refdata::messaging::get_ois_convention_history_request
 :history_response_class:  refdata::messaging::get_ois_convention_history_response
-:history_response_data_field: ois_conventions
+:history_response_data_field: history
 :history_message_type:    get_ois_convention_history_request
 :settings_group:          OisConventionListWindow
 :window_title:            OIS Conventions

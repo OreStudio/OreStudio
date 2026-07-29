@@ -292,7 +292,7 @@ void FraConventionDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_fra_convention_request request;
-        request.codes = {code};
+        request.ids = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

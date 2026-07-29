@@ -313,7 +313,7 @@ void OvernightIndexConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " overnight index conventions";
 
         refdata::messaging::delete_overnight_index_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

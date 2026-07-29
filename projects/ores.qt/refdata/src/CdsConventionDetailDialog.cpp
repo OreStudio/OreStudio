@@ -373,7 +373,7 @@ void CdsConventionDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_cds_convention_request request;
-        request.codes = {code};
+        request.ids = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

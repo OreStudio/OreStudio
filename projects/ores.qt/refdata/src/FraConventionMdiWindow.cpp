@@ -295,7 +295,7 @@ void FraConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " FRA conventions";
 
         refdata::messaging::delete_fra_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

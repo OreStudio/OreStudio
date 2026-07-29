@@ -298,7 +298,7 @@ void SwapConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " swap conventions";
 
         refdata::messaging::delete_swap_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

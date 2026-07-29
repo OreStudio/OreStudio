@@ -436,7 +436,7 @@ void DepositConventionController::fetchDepositConventionHistory(
             return std::unexpected(QString::fromStdString(result.error()));
         if (!result->success)
             return std::unexpected(QString::fromStdString(result->message));
-        return std::move(result->deposit_conventions);
+        return std::move(result->history);
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);

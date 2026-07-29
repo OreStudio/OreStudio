@@ -444,7 +444,7 @@ void OvernightIndexConventionController::fetchOvernightIndexConventionHistory(
             return std::unexpected(QString::fromStdString(result.error()));
         if (!result->success)
             return std::unexpected(QString::fromStdString(result->message));
-        return std::move(result->overnight_index_conventions);
+        return std::move(result->history);
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);

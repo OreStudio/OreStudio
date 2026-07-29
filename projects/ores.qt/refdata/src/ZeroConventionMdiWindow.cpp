@@ -298,7 +298,7 @@ void ZeroConventionMdiWindow::deleteSelected() {
             << "Making delete request for " << codes.size() << " zero conventions";
 
         refdata::messaging::delete_zero_convention_request request;
-        request.codes = codes;
+        request.ids = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

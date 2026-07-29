@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/calendar_type_changed_event.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -421,7 +421,7 @@ void CalendarTypeController::fetchCalendarTypeHistory(
     std::function<void(std::expected<std::vector<refdata::domain::calendar_type>, QString>)>
         callback) {
     refdata::messaging::get_calendar_type_history_request request;
-    request.type = entityId.toStdString();
+    request.code = entityId.toStdString();
 
     using FetchResult = std::expected<std::vector<refdata::domain::calendar_type>, QString>;
 

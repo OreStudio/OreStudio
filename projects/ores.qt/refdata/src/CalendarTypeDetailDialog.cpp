@@ -21,7 +21,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_type_protocol.hpp"
 #include "ui_CalendarTypeDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
@@ -297,7 +297,7 @@ void CalendarTypeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_calendar_type_request request;
-        request.type = {code};
+        request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

@@ -19,13 +19,7 @@ set(name "ores.scheduler.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files
-    "domain/cron_expression.cpp"
-    "domain/job_definition_json_io.cpp"
-    "domain/job_definition_table.cpp"
-    "domain/job_definition_table_io.cpp"
-    "generators/job_definition_generator.cpp"
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})

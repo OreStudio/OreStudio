@@ -82,5 +82,6 @@ Manually, as part of
 
 * See also
 
+- [[id:0D50400F-874A-4134-8985-4875655E0EDC][How do I regenerate CMake component file lists?]] — the =--all= case: after a rebase/merge lands files you didn't add yourself.
 - [[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]] — the story this recipe documents.
 - [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] — the facet whose =files_src=/=files_tests= archetypes this recipe drives.

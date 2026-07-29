@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 0D50400F-874A-4134-8985-4875655E0EDC
+:END:
+#+title: How do I regenerate CMake component file lists?
+#+description: Refresh every component's generated component_files.cmake -- needed after adding/removing a source file, and after any rebase/merge that pulls in new files from another branch.
+#+type: recipe
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+Every component's =src/CMakeLists.txt=/=tests/CMakeLists.txt= =include()=s
+a generated =component_files.cmake= instead of using
+=file(GLOB_RECURSE ...)= — see
+[[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]].
+A generated file is a *snapshot*, not a live glob: a rebase or merge
+that lands new source files on components you didn't personally
+touch leaves your checked-out =component_files.cmake= stale, and the
+build fails with undefined-reference linker errors for the files it
+doesn't know about yet — indistinguishable from a real bug unless you
+know to check this first.
+
+* Question
+
+How do I regenerate CMake component file lists?
+
+* Answer
+
+1. After *any* rebase or merge onto a branch that may have added or
+   removed source files (not just your own branch's changes) —
+   before your next build:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
+   #+end_src
+
+2. Check what changed — if =git status= shows any
+   =component_files.cmake= touched, that component gained/lost files
+   upstream of your branch; commit the regenerated file(s) alongside
+   your own changes:
+
+   #+begin_src sh :results verbatim
+   git status --short -- '**/component_files.cmake'
+   #+end_src
+
+3. To check for drift without writing (e.g. as a pre-build sanity
+   check, or to confirm nothing is stale before opening a PR) —
+   exits non-zero if anything would change:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check
+   #+end_src
+
+4. Symptom if you skip this after a rebase: a linker error naming a
+   symbol that's clearly defined somewhere in the tree (e.g.
+   ~undefined reference to `ores::nats::parse_wire_format(...)`~) —
+   the =.cpp= defining it exists on disk, but the stale
+   =component_files.cmake= from before the rebase never listed it.
+   Re-run step 1 and rebuild.
+
+* Script
+
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py=
+— see
+[[id:B8B13087-1F32-405D-8A7B-39648BA1106F][How do I add a new source file to a component?]]
+for how it's implemented (the =ores.cmake.component.files_src=/
+=files_tests= codegen archetypes).
+
+* Tested by
+
+Manually: this exact failure mode (a rebase landing
+=ores.nats/domain/wire_codec.cpp= from a concurrently-merged PR,
+producing undefined-reference linker errors until =--all= was
+re-run) was hit and fixed while closing
+[[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]].
+
+* See also
+
+- [[id:B8B13087-1F32-405D-8A7B-39648BA1106F][How do I add a new source file to a component?]] — the single-component, single-file-add case.
+- [[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]] — the story this recipe documents.

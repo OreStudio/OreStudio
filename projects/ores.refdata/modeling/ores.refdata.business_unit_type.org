@@ -42,9 +42,10 @@ Surrogate key for the record.
 
 ** coding_scheme_code
 :PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:natural_key: true
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
 :END:
 
 Coding scheme this type belongs to.
@@ -52,6 +53,8 @@ Coding scheme this type belongs to.
 Soft FK to ores_dq_coding_schemes_tbl (e.g. "ORES-ORG").
 
 #+begin_src cpp :name generator
+// no_generator_suffix: validated soft FK, a "-<idx>" suffix would never
+// match a real seeded coding scheme.
 std::string("ORES-ORG")
 #+end_src
 

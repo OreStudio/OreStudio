@@ -80,7 +80,16 @@ Cross-reference to DQ coding scheme table.
 Optional link to ores_dq_coding_schemes_tbl for validation.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun())
+// Rotate through the codes ores_dq_coding_schemes_tbl is guaranteed to
+// have seeded (see refdata_party_id_schemes_populate.sql) -- a random
+// faker word never matches a real coding scheme and fails the soft-FK
+// validation trigger.
+[idx]{
+    static constexpr const char* schemes[] = {
+        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
+        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"};
+    return std::string(schemes[idx % 10]);
+}()
 #+end_src
 
 ** display_order
@@ -92,6 +101,10 @@ std::string(faker::word::noun())
 :END:
 
 Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
 
 ** max_cardinality
 :PROPERTIES:

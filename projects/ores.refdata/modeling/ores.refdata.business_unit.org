@@ -110,7 +110,11 @@ Business centre for the unit.
 References the business centres scheme. May be null for global units.
 
 #+begin_src cpp :name generator
-std::string("GBLO")
+// WRLD is the only business centre guaranteed seeded by the base
+// bootstrap (a real FpML city code like GBLO only exists once the
+// large, optional FpML business-centre reference dataset is loaded --
+// see the same reasoning in ores.refdata.party.org).
+std::string("WRLD")
 #+end_src
 
 ** unit_type_id

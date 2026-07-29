@@ -46,7 +46,11 @@ generate_synthetic_business_centre(utility::generation::generation_context& ctx)
     r.description = std::string(faker::lorem::sentence());
     r.city_name = std::string(faker::location::city());
     r.country_alpha2_code = std::string("US");
-    r.coding_scheme_code = std::string("FPML_BUSINESS_CENTER");
+    r.coding_scheme_code = // "FPML_BUSINESS_CENTER" is only seeded by the optional FpML coding-
+        // scheme dataset. "NONE" is the one guaranteed seeded by the base
+        // bootstrap (see dq_coding_scheme_populate.sql -- the same code the
+        // system-tenant WRLD business centre row itself uses).
+        std::string("NONE");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

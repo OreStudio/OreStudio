@@ -1047,14 +1047,17 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         ref->addSeparator();
 
-        // Calendars submenu: auxiliary child data for calendars (Calendar
-        // Rules, Calendar Exceptions) -- editable entity data, not
-        // classification lookups, so kept as its own standalone domain
-        // submenu here alongside Cross Rates Matrix rather than folded
-        // into Codes. The primary Calendars list itself stays a direct,
-        // flat action up in the FX & market cluster above -- this
-        // submenu is deliberately auxiliary-only. Entries alphabetical.
-        auto* menuCalendars = ref->addMenu(tr("Ca&lendars"));
+        // Calendar Data submenu: auxiliary child data for calendars
+        // (Calendar Rules, Calendar Exceptions) -- editable entity data,
+        // not classification lookups, so kept as its own standalone
+        // domain submenu here alongside Cross Rates Matrix rather than
+        // folded into Codes. The primary Calendars list itself stays a
+        // direct, flat action up in the FX & market cluster above --
+        // this submenu is deliberately auxiliary-only. Named "Calendar
+        // Data" rather than "Calendars" to avoid a duplicate label/
+        // mnemonic collision with that flat action within the same
+        // Reference Data menu. Entries alphabetical.
+        auto* menuCalendars = ref->addMenu(tr("Calendar &Data"));
         act_calendar_exceptions_ =
             menuCalendars->addAction(ico(Icon::CalendarClock), tr("Calendar &Exceptions"));
         connect(act_calendar_exceptions_, &QAction::triggered, this, [this]() {

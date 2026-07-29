@@ -76,7 +76,7 @@ struct tenor_convention final {
 
     /**
      * @brief Default [[id:3F8B6C2A-1D4E-4A7F-9B3C-6E2D8F1A5C90][tenor anchor]] code (references
-     * tenor_anchor.code) this convention's regular PERIOD tenors resolve from. Empty whenever every
+     * tenor_anchor.code) this convention's regular PERIOD tenors resolve from. NONE whenever every
      * tenor under this convention carries its own anchor_override (as FX_SWAP_NEAR_LEG does — it
      * has no PERIOD tenors to fall back to a default for) or whenever resolution_algorithm does not
      * use a fixed anchor at all (IMM_ROLL) — not only the latter case.

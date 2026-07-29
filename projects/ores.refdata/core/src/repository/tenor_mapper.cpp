@@ -37,7 +37,7 @@ domain::tenor tenor_mapper::map(const tenor_entity& v) {
     r.description = v.description.value_or("");
     r.sort_order = v.sort_order;
     r.kind = v.kind;
-    r.unit = v.unit.value_or("");
+    r.unit = v.unit;
     r.multiplier = v.multiplier;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -60,7 +60,7 @@ tenor_entity tenor_mapper::map(const domain::tenor& v) {
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.sort_order = v.sort_order;
     r.kind = v.kind;
-    r.unit = v.unit.empty() ? std::nullopt : std::optional(v.unit);
+    r.unit = v.unit;
     r.multiplier = v.multiplier;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_conventions();
 
+
     /**
      * @brief Retrieves a single tenor convention as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the tenor convention.
      * @param version The version to fetch.
      * @return The tenor convention at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                       std::uint32_t version);
 
     /**
-     * @brief Retrieves a single tenor convention by its code.
+     * @brief Retrieves a single tenor convention by its primary key.
      *
-     * @param code The code of the tenor convention.
      * @return The tenor convention if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_convention> get_convention(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_conventions(const std::vector<domain::tenor_convention>& conventions);
 
     /**
-     * @brief Deletes a tenor convention by its code.
+     * @brief Deletes a tenor convention by its primary key.
      *
-     * @param code The code of the tenor convention to delete.
      * @throws std::exception on failure.
      */
     void delete_convention(const std::string& code);
 
     /**
-     * @brief Deletes tenor conventions by their codes.
+     * @brief Deletes tenor conventions by their primary keys.
      */
     void delete_conventions(const std::vector<std::string>& codes);
 

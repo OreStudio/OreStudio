@@ -77,11 +77,11 @@ public:
      */
     std::uint32_t count_algorithms();
 
+
     /**
      * @brief Retrieves a single tenor resolution algorithm as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the tenor resolution algorithm.
      * @param version The version to fetch.
      * @return The tenor resolution algorithm at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +89,8 @@ public:
     get_algorithm_at_version(const std::string& code, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single tenor resolution algorithm by its code.
+     * @brief Retrieves a single tenor resolution algorithm by its primary key.
      *
-     * @param code The code of the tenor resolution algorithm.
      * @return The tenor resolution algorithm if found, std::nullopt otherwise.
      */
     std::optional<domain::tenor_resolution_algorithm> get_algorithm(const std::string& code);
@@ -113,15 +112,14 @@ public:
     void save_algorithms(const std::vector<domain::tenor_resolution_algorithm>& algorithms);
 
     /**
-     * @brief Deletes a tenor resolution algorithm by its code.
+     * @brief Deletes a tenor resolution algorithm by its primary key.
      *
-     * @param code The code of the tenor resolution algorithm to delete.
      * @throws std::exception on failure.
      */
     void delete_algorithm(const std::string& code);
 
     /**
-     * @brief Deletes tenor resolution algorithms by their codes.
+     * @brief Deletes tenor resolution algorithms by their primary keys.
      */
     void delete_algorithms(const std::vector<std::string>& codes);
 

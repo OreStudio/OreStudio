@@ -42,15 +42,16 @@ std::uint32_t tenor_anchor_service::count_anchors() {
     return repo_.get_total_anchor_count(ctx_);
 }
 
+
 std::optional<domain::tenor_anchor>
 tenor_anchor_service::get_anchor_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor anchor at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor anchor at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_anchor> tenor_anchor_service::get_anchor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor anchor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor anchor. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::tenor_anchor> tenor_anchor_service::get_anchor(const std::
 void tenor_anchor_service::save_anchor(const domain::tenor_anchor& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Anchor code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor anchor: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor anchor. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor anchor: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor anchor. " << "code: " << v.code;
 }
 
 void tenor_anchor_service::save_anchors(const std::vector<domain::tenor_anchor>& anchors) {
-    for (const auto& e : anchors)
+    for (const auto& e : anchors) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor Anchor code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << anchors.size() << " tenor anchors";
     auto ts = anchors;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void tenor_anchor_service::save_anchors(const std::vector<domain::tenor_anchor>&
 }
 
 void tenor_anchor_service::delete_anchor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor anchor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor anchor. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor anchor: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed tenor anchor. " << "code: " << code;
 }
 
 void tenor_anchor_service::delete_anchors(const std::vector<std::string>& codes) {
@@ -90,7 +92,7 @@ void tenor_anchor_service::delete_anchors(const std::vector<std::string>& codes)
 
 std::vector<domain::tenor_anchor>
 tenor_anchor_service::get_anchor_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor anchor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor anchor. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

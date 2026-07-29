@@ -42,15 +42,16 @@ std::uint32_t tenor_kind_service::count_kinds() {
     return repo_.get_total_kind_count(ctx_);
 }
 
+
 std::optional<domain::tenor_kind> tenor_kind_service::get_kind_at_version(const std::string& code,
                                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor kind at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor kind at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor_kind> tenor_kind_service::get_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor kind: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor kind. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::tenor_kind> tenor_kind_service::get_kind(const std::string
 void tenor_kind_service::save_kind(const domain::tenor_kind& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor Kind code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor kind: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor kind. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor kind: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor kind. " << "code: " << v.code;
 }
 
 void tenor_kind_service::save_kinds(const std::vector<domain::tenor_kind>& kinds) {
-    for (const auto& e : kinds)
+    for (const auto& e : kinds) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor Kind code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << kinds.size() << " tenor kinds";
     auto ts = kinds;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void tenor_kind_service::save_kinds(const std::vector<domain::tenor_kind>& kinds
 }
 
 void tenor_kind_service::delete_kind(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor kind: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor kind. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor kind: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed tenor kind. " << "code: " << code;
 }
 
 void tenor_kind_service::delete_kinds(const std::vector<std::string>& codes) {
@@ -89,7 +91,7 @@ void tenor_kind_service::delete_kinds(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::tenor_kind> tenor_kind_service::get_kind_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor kind: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor kind. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -37,7 +37,7 @@ std::string tenor_repository::sql() {
 }
 
 void tenor_repository::write(context ctx, const domain::tenor& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenor: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenor. " << "code: " << v.code;
     execute_write_query(ctx, tenor_mapper::map(v), lg(), "Writing tenor to database.");
 }
 
@@ -62,7 +62,7 @@ std::vector<domain::tenor> tenor_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::tenor> tenor_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -77,12 +77,13 @@ std::vector<domain::tenor> tenor_repository::read_latest(context ctx, const std:
         "Reading latest tenor by code.");
 }
 
+
 std::vector<domain::tenor> tenor_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenor versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenor_entity, domain::tenor>(
         ctx,
@@ -94,7 +95,7 @@ std::vector<domain::tenor> tenor_repository::read_all(context ctx, const std::st
 
 std::optional<domain::tenor>
 tenor_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenor at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenor at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenor_entity>> |
@@ -114,7 +115,7 @@ tenor_repository::read_at_version(context ctx, const std::string& code, std::uin
 }
 
 void tenor_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

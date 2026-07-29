@@ -41,14 +41,16 @@ std::uint32_t tenor_service::count_tenors() {
     return repo_.get_total_tenor_count(ctx_);
 }
 
+
 std::optional<domain::tenor> tenor_service::get_tenor_at_version(const std::string& code,
                                                                  std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor at version: " << code << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor at version. " << "code: " << code
+                               << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::tenor> tenor_service::get_tenor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting tenor. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -58,17 +60,18 @@ std::optional<domain::tenor> tenor_service::get_tenor(const std::string& code) {
 void tenor_service::save_tenor(const domain::tenor& v) {
     if (v.code.empty())
         throw std::invalid_argument("Tenor code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving tenor. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved tenor. " << "code: " << v.code;
 }
 
 void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
-    for (const auto& e : tenors)
+    for (const auto& e : tenors) {
         if (e.code.empty())
             throw std::invalid_argument("Tenor code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << tenors.size() << " tenors";
     auto ts = tenors;
     for (auto& e : ts)
@@ -77,9 +80,9 @@ void tenor_service::save_tenors(const std::vector<domain::tenor>& tenors) {
 }
 
 void tenor_service::delete_tenor(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenor. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed tenor. " << "code: " << code;
 }
 
 void tenor_service::delete_tenors(const std::vector<std::string>& codes) {
@@ -87,7 +90,7 @@ void tenor_service::delete_tenors(const std::vector<std::string>& codes) {
 }
 
 std::vector<domain::tenor> tenor_service::get_tenor_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

@@ -181,6 +181,7 @@ void TenorConventionMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -198,7 +199,7 @@ void TenorConventionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading tenor conventions";
     clearStaleIndicator();
     emit statusChanged(tr("Loading tenor conventions..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void TenorConventionMdiWindow::onDataLoaded() {
@@ -371,7 +372,8 @@ void TenorConventionMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg =

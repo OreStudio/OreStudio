@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 3627D272-CC9F-4A45-B5F4-0B5A5B1E71AE
+:END:
+#+title: Task: Deploy and verify service runtime on the Newton WSL host
+#+description: Deploy the containerized service runtime (docker/run-pod.sh) to the actual Newton WSL host (192.168.1.22, WSL2 Debian 11 bullseye) over SSH, and verify end-to-end: all 18 services reach running phase, and a local Qt client can connect to the remote services/DB. Prior work (PRs #1709, #1724) only validated the pod on this dev box's own podman -- Newton itself has never been exercised.
+#+type: task
+#+level: s1
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
+#+owner: marco
+#+branch: feature/deploy-verify-newton-wsl-host
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Deploy the containerized service runtime (the podman pod built by
+~docker/run-pod.sh~/~docker/stage-runtime.sh~) to the actual Newton WSL
+host (192.168.1.22, WSL2 Debian 11 "bullseye") over SSH, and verify it
+end-to-end there -- not just on this dev box's own podman, which is all
+that PRs #1709 and #1724 exercised. Also confirm the local Qt client can
+reach the services/DB running on Newton over the network.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- The podman pod (services container + NATS sidecar) runs on Newton
+  itself, staged and started over SSH, not just on this dev box.
+- All 18 supervised services reach phase ~running~ in
+  ~public.ores_controller_service_instances_tbl~ on Newton's Postgres.
+- The local Qt client, run on this dev box, connects to the
+  services/DB running on Newton over the network and is usable
+  end-to-end (login, list a reference-data entity).
+- Documented, repeatable steps (or scripts) exist for staging,
+  starting, and tearing down the pod on Newton specifically (SSH
+  target, any host-specific env differences from this dev box).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

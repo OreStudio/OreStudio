@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/quantlib-calendar-transparency-and-adjustments
-#+pr:
+#+pr: 1766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
@@ -188,7 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1766][#1766]] | [refdata] Close QuantLib calendar materialisation/adjustments task |
 
 * Review
 

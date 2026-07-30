@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 9A94B0D4-4244-4A6B-8AFA-26AC69681519
 :END:
-#+title: Task: Tidy up the saved connections database for Acme testing
-#+description: Add a description field to each saved connection, add ~10 curated Acme connections (department heads + a representative sample), and remove stale non-Acme connections
+#+title: Task: Tidy up the saved connections database and decommission Barclays/NatWest
+#+description: Add a description field to each saved connection, add ~10 curated Acme connections (department heads + a representative sample), remove stale Barclays/NatWest connections, and update every skill/recipe/tool default that still points to Barclays as the demo entity to point to Acme Corporation instead
 #+type: task
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/tidy-up-connections-db-retire-barclays
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -42,12 +42,26 @@ This task:
 3. Removes the stale non-Acme connections (Barclays, NatWest, etc.),
    leaving only =tenant_admin=/=super_admin= plus the new curated
    Acme set.
+4. Folds in the connections-database portion of the former "Retire
+   Barclays as the demo/test entity" task (now ABANDONED into this
+   one): removes/retires =barclays_system_provision.org= and its
+   tangled =.ores= script (or clearly marks it non-default/legacy),
+   and updates every recipe, skill, and tool default that references
+   Barclays as the example/demo tenant (=crm_rates_*= recipes,
+   =import_*= market-data recipes, countries recipes, ops recipes
+   including =how_do_i_ready_up_an_environment.md= and
+   =how_do_i_test_a_feature_after_implementation.md=, the
+   =code-run-feature-test=/=devops-run-client=/=devops-run-environment=/
+   =devops-setup-environment=/=doc-add-entity-chapter=/
+   =doc-run-manual-screenshots= skills, and =compass.py='s
+   =test_scenario= scaffold hint) to reference Acme Corporation
+   instead.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -63,6 +77,11 @@ This task:
   individual contributors, each with a role-identifying description.
 - Non-Acme connections (Barclays, NatWest, ...) are removed; only
   =tenant_admin=/=super_admin= and the new curated Acme set remain.
+- =grep -ri barclays= across =doc/recipes=, =.claude/skills=, and
+  =projects/ores.compass/src= returns only historical/explanatory
+  mentions (e.g. "Acme replaces Barclays as..."), not live defaults
+  or instructions; no recipe or skill tells a user to provision or
+  rely on Barclays as the current demo entity.
 
 * Plan
 

@@ -28,38 +28,43 @@ remaining legacy free-text generation path.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Landscape surveyed; scope is much narrower than the title implies -- see Plan. |
+| Now          | Nothing. |
 | Waiting on   | Plan sign-off.                        |
-| Next         | Consolidate the duplicated ORE-key-splitting helper into one shared oresmd utility. |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- [ ] The duplicated "split a projected TYPE/METRIC/QUALIFIER... key
+- [X] The duplicated "split a projected TYPE/METRIC/QUALIFIER... key
   string into parts" logic (currently reimplemented ad-hoc in three
   places) is consolidated into one shared, tested oresmd utility
-  function, used by all three call sites.
-- [ ] Confirmed and documented: FX's and IR's =qualifier= generation
+  function, used by all three call sites. Done:
+  =oresmd_projections::split_market_series_key()=, with 4 new unit
+  tests; =ores.synthetic.service/feed_controller.hpp='s two copies and
+  =ores.marketdata.service/app/feed_ingest_loop.cpp='s copy all now
+  call it.
+- [X] Confirmed and documented: FX's and IR's =qualifier= generation
   already derives from an oresmd-projected key (via =ore_key=/the IR
   curve's own qualifier, both migrated in the two prior tasks on this
   story) -- no separate free-text generation path remains for either.
-- [ ] Confirmed and documented: =point_id= values (tenor codes like
+- [X] Confirmed and documented: =point_id= values (tenor codes like
   "3M"/"1Y", or "SPOT" for scalars) already match oresmd's own =point=
   grammar shape exactly (a plain string, e.g. "5y") -- no
   transformation needed.
-- [ ] Confirmed: =market_series= has no hand-entry Qt UI at all (rows
+- [X] Confirmed: =market_series= has no hand-entry Qt UI at all (rows
   are only ever auto-created by ingest loops/import_service), so there
   is no free-text manual-entry path to migrate or delete.
-- [ ] =ores.ore.core='s real ORE market-data-file import
+- [X] =ores.ore.core='s real ORE market-data-file import
   (=import_service.cpp=, =market_data_parser.cpp=, =series_key_registry.cpp=)
   is confirmed out of scope -- it parses externally-authored ORE key
   strings directly (the reverse direction from oresmd URI generation),
   and belongs to the separate, already-scoped
   [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and
   market-data XML round-trip via oresmd]] task.
-- [ ] Full =compass build= clean; =ctest= full suite green.
+- [X] Full =compass build= clean; =ctest= full suite green, except one
+  pre-existing, unrelated failure -- see =* Result=.
 
 * Plan
 
@@ -172,3 +177,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Landscape survey found the task's title overstated its scope: FX's and
+IR's =market_series.qualifier=/=point_id= generation already went
+through oresmd as a direct consequence of the two prior tasks on this
+story (=ore_key= and =ir_curve_generation_config=), and there is no
+hand-entry UI for =market_series= to migrate at all. The one real gap
+was three independent, hand-written copies of the same "split a
+projected =TYPE/METRIC/QUALIFIER...= key string back into its columns"
+logic. Consolidated all three into
+=oresmd_projections::split_market_series_key()=, the documented reverse
+of =to_quote_key()=/=to_curve_key()=, with 4 new unit tests covering the
+simple/absorbing/round-trip/rejection cases.
+
+Verification: =compass build --preset linux-clang-debug-make= clean;
+=ctest --preset linux-clang-debug-make= 73/74 test binaries passed.
+The one failure, =ores.refdata.core.tests= (calendar-rule insert soft-FK
+trigger checks a nonexistent =id= column on =ores_refdata_calendars_tbl=
+instead of its real PK column =code=), is pre-existing on =main=,
+unrelated to this task's diff, and reported to the environment
+(=clever_dijkstra=) already working the calendar-materialisation story
+for a fix.

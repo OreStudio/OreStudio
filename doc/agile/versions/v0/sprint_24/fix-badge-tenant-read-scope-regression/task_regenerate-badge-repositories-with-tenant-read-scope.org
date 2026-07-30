@@ -53,11 +53,14 @@ it properly means template surgery affecting every junction model,
 not a model-only change. Split into
 [[id:3804E1DD-B8B8-43B0-B9AF-E9379081B6F0][its own follow-up task]];
 this task's scope is now =badge_definition=/=badge_severity= only.
-The =:tenant_read_scope: shared= flag was still added to
+At the time, the =:tenant_read_scope: shared= flag was also added to
 =badge_mapping_junction.org= (harmless, currently a no-op) and
-=core.py= now correctly computes =junction['read_tenant_filtered']=
-(verified via a direct Python harness) -- both land here as
-groundwork the follow-up task builds on.
+=core.py= was extended to correctly compute
+=junction['read_tenant_filtered']= (verified via a direct Python
+harness) as groundwork for the follow-up task. Both were later
+reverted, alongside the sibling =tenant_read_scope: shared= revert
+below, once the follow-up task itself was abandoned -- see
+=** Post-rebase live QA reversed the fix=.
 
 * Status
 

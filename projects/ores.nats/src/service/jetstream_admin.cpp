@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.nats/domain/compression.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.nats/domain/compression.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <memory>

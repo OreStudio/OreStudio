@@ -44,8 +44,8 @@ generate_synthetic_counterparty_identifier(utility::generation::generation_conte
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.counterparty_id = ctx.generate_uuid();
     r.id_scheme = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
-        // Rotate so a batch of several identifiers for one counterparty gets
-        // distinct schemes (max one identifier per scheme per counterparty).
+                  // Rotate so a batch of several identifiers for one counterparty gets
+                  // distinct schemes (max one identifier per scheme per counterparty).
         [idx] {
             static constexpr const char* schemes[] = {"LEI",
                                                       "BIC",

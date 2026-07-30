@@ -70,7 +70,7 @@ SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
     layout->addWidget(
         new QLabel(tr("Select synthetic FX/IR curve feeds to create feed bindings for. "
                       "Rows already bound are pre-checked and will be skipped."),
-                  this));
+                   this));
 
     table_->setColumnCount(4);
     table_->setHorizontalHeaderLabels({tr(""), tr("Type"), tr("ORE Key"), tr("Source name")});
@@ -157,7 +157,7 @@ void SyntheticBindingDialog::loadConfigs() {
                 // find_series("RATES", "YIELD", qualifier) call looks the series up under --
                 // this must match that exactly, not just the bare qualifier.
                 const auto qualifier = cfg.currency_code + "/" +
-                    strip_currency_prefix(cfg.currency_code, cfg.index_name);
+                                       strip_currency_prefix(cfg.currency_code, cfg.index_name);
                 const auto ore_key = "RATES/YIELD/" + qualifier;
                 configs.push_back(
                     {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});
@@ -165,8 +165,8 @@ void SyntheticBindingDialog::loadConfigs() {
         }
 
         return Result{.ok = true,
-                     .configs = std::move(configs),
-                     .existing_source_names = std::move(existing_source_names)};
+                      .configs = std::move(configs),
+                      .existing_source_names = std::move(existing_source_names)};
     };
 
     auto* watcher = new QFutureWatcher<Result>(this);

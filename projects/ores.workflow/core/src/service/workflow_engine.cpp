@@ -91,8 +91,9 @@ void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id
     e.tenant_id = boost::uuids::to_string(tenant_id);
 
     try {
-        nats_.publish(
-            "ores.workflow.workflow_instance_changed", ores::nats::default_wire_codec().encode(e), {});
+        nats_.publish("ores.workflow.workflow_instance_changed",
+                      ores::nats::default_wire_codec().encode(e),
+                      {});
     } catch (const std::exception& ex) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to publish workflow status event: " << ex.what();
     }
@@ -295,8 +296,8 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
-    auto event_result = ores::nats::default_wire_codec().decode<messaging::step_completed_event>(
-        msg.data);
+    auto event_result =
+        ores::nats::default_wire_codec().decode<messaging::step_completed_event>(msg.data);
     if (!event_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode step_completed_event: "
                                   << event_result.error().what();

@@ -72,7 +72,6 @@
 #include <chrono>
 #include <optional>
 #include <rfl/msgpack.hpp>
-#include <span>
 #include <unordered_map>
 
 namespace ores::trading::messaging {

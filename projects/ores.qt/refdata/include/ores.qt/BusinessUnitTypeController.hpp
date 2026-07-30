@@ -34,7 +34,9 @@
 namespace ores::qt {
 
 class BusinessUnitTypeMdiWindow;
+class BusinessUnitTypeDetailDialog;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -61,6 +63,7 @@ public:
                                ClientManager* clientManager,
                                ChangeReasonCache* changeReasonCache,
                                const QString& username,
+                               BadgeCache* badgeCache,
                                QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -89,6 +92,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::business_unit_type& business_unit_type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * BusinessUnitTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(BusinessUnitTypeDetailDialog* detailDialog);
     void showHistoryWindow(const refdata::domain::business_unit_type& business_unit_type);
 
     /**
@@ -106,6 +117,7 @@ private:
             std::expected<std::vector<refdata::domain::business_unit_type>, QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     BusinessUnitTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

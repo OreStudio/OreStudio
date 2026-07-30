@@ -129,6 +129,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.client_manager,
                                                                      ctx_.change_reason_cache,
                                                                      ctx_.username,
+                                                                     ctx_.badge_cache,
                                                                      this);
     connectControllerSignals(contactTypeController_.get());
 
@@ -165,7 +166,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(paymentFrequencyController_.get());
 
     legTypeController_ = std::make_unique<LegTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, ctx_.badge_cache, this);
     connectControllerSignals(legTypeController_.get());
 
     roundingTypeController_ = std::make_unique<RoundingTypeController>(ctx_.main_window,
@@ -173,6 +174,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                        ctx_.client_manager,
                                                                        ctx_.change_reason_cache,
                                                                        ctx_.username,
+                                                                       ctx_.badge_cache,
                                                                        this);
     connectControllerSignals(roundingTypeController_.get());
 
@@ -221,6 +223,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.client_manager,
                                                                      ctx_.change_reason_cache,
                                                                      ctx_.username,
+                                                                     ctx_.badge_cache,
                                                                      this);
     connectControllerSignals(purposeTypeController_.get());
 
@@ -278,6 +281,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                     ctx_.client_manager,
                                                     ctx_.change_reason_cache,
                                                     ctx_.username,
+                                                    ctx_.badge_cache,
                                                     this);
     connectControllerSignals(bookPurposeTypeController_.get());
 
@@ -286,6 +290,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            ctx_.client_manager,
                                                                            ctx_.change_reason_cache,
                                                                            ctx_.username,
+                                                                           ctx_.badge_cache,
                                                                            this);
     connectControllerSignals(ledgerFeedTypeController_.get());
 
@@ -396,6 +401,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                      ctx_.client_manager,
                                                      ctx_.change_reason_cache,
                                                      ctx_.username,
+                                                     ctx_.badge_cache,
                                                      this);
     connectControllerSignals(businessUnitTypeController_.get());
 
@@ -654,6 +660,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                      ctx_.client_manager,
                                                                      ctx_.change_reason_cache,
                                                                      ctx_.username,
+                                                                     ctx_.badge_cache,
                                                                      this);
     connectControllerSignals(tenorAnchorController_.get());
 

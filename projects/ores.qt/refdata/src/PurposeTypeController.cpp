@@ -49,9 +49,11 @@ PurposeTypeController::PurposeTypeController(QMainWindow* mainWindow,
                                              ClientManager* clientManager,
                                              ChangeReasonCache* changeReasonCache,
                                              const QString& username,
+                                             BadgeCache* badgeCache,
                                              QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void PurposeTypeController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PurposeTypeMdiWindow(clientManager_, username_);
+    listWindow_ = new PurposeTypeMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -163,15 +165,11 @@ void PurposeTypeController::onShowHistory(const refdata::domain::purpose_type& t
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void PurposeTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new purpose type";
-
-    auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+void PurposeTypeController::wireDetailDialogCommon(PurposeTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PurposeTypeDetailDialog::statusMessage,
@@ -181,6 +179,15 @@ void PurposeTypeController::showAddWindow() {
             &PurposeTypeDetailDialog::errorMessage,
             this,
             &PurposeTypeController::errorMessage);
+}
+
+void PurposeTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new purpose type";
+
+    auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PurposeTypeDetailDialog::typeSaved,
             this,
@@ -217,21 +224,10 @@ void PurposeTypeController::showDetailWindow(const refdata::domain::purpose_type
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::statusMessage,
-            this,
-            &PurposeTypeController::statusMessage);
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::errorMessage,
-            this,
-            &PurposeTypeController::errorMessage);
     connect(detailDialog,
             &PurposeTypeDetailDialog::typeSaved,
             this,
@@ -370,29 +366,9 @@ void PurposeTypeController::onOpenVersion(const refdata::domain::purpose_type& t
     }
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -511,24 +487,13 @@ void PurposeTypeController::onRevertVersion(const refdata::domain::purpose_type&
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::statusMessage,
-            this,
-            &PurposeTypeController::statusMessage);
-    connect(detailDialog,
-            &PurposeTypeDetailDialog::errorMessage,
-            this,
-            &PurposeTypeController::errorMessage);
     connect(detailDialog,
             &PurposeTypeDetailDialog::typeSaved,
             this,

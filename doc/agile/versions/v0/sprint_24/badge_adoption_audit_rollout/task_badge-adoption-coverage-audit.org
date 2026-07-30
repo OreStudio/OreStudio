@@ -203,16 +203,14 @@ generation-config/component entities), =dq.folder=/=catalog=/
 
 ** Implementation batches
 
-- *Batch 1* (refdata, high-confidence). Correction (found during
-  implementation, not caught by this audit): only 3 of the 11 --
-  =calendar_type=, =currency_market_tier=, =monetary_nature= -- have
-  existing =code_domain=/=badge_definition=/=badge_mapping= rows and
-  are genuinely ready-to-annotate with no new data. The other 8
-  (=book_purpose_type=, =business_unit_type=, =contact_type=,
-  =ledger_feed_type=, =leg_type=, =purpose_type=, =rounding_type=,
-  =tenor_anchor=) need new =code_domain=/=badge_definition=/
-  =badge_mapping= rows authored first, same as Batch 2 -- deferred
-  until that data exists.
+- *Batch 1* (refdata, high-confidence) -- DONE. Correction (found
+  during implementation, not caught by this audit): only 3 of the 11
+  -- =calendar_type=, =currency_market_tier=, =monetary_nature= --
+  had existing =code_domain=/=badge_definition=/=badge_mapping= rows;
+  the other 8 (=book_purpose_type=, =business_unit_type=,
+  =contact_type=, =ledger_feed_type=, =leg_type=, =purpose_type=,
+  =rounding_type=, =tenor_anchor=) needed that data authored first
+  (46 values), same as Batch 2 will. All 11 are now self-badged.
 - *Batch 2* (cross-component, same pattern): =change_reason_category=
   (dq), =account_type=/=tenant_status=/=tenant_type= (iam),
   =party_role_type=/=trade_type= (trading), =report_type= (reporting).

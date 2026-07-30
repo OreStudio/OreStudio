@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
 #+owner: marco
-#+branch: feature/merge-badge-audit-classify-stories
+#+branch: feature/badge-batch1-remaining-entities
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -33,9 +33,9 @@ own, independently reviewable unit of work.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
-| Now          | Batch 1's 3 ready entities (calendar_type, currency_market_tier, monetary_nature) done. |
-| Waiting on   | New code_domain/badge_definition/badge_mapping data for the other 8 Batch-1 entities and all of Batch 2. |
-| Next         | Author that data, then Batch 2; Batch 3 (plain-text documentation) after. |
+| Now          | Batch 1 fully done (all 11 entities self-badged, built, tested). |
+| Waiting on   | Nothing.                               |
+| Next         | Batch 2 (cross-component, same data-authoring approach); Batch 3 (plain-text documentation) after. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -121,6 +121,49 @@ it:
 Build clean (=ores.qt.exe=, =ores.refdata.core.lib=);
 =ctest -R "refdata|badge"= 4/4 passed.
 
+** Batch 1, remaining 8 entities
+
+Authored the =code_domain=/=badge_definition=/=badge_mapping= data
+the audit assumed already existed (=book_purpose_type=,
+=business_unit_type=, =contact_type=, =ledger_feed_type=, =leg_type=,
+=purpose_type=, =rounding_type=, =tenor_anchor=; 46 distinct values
+total) in both places that must stay in sync:
+=dq_badge_system_populate.sql= (the actual runtime seed, via
+=PERFORM= upsert calls) and the three artefact mirror scripts
+(=dq_code_domains_artefact_populate.sql=,
+=dq_badge_definitions_artefact_populate.sql=,
+=dq_badge_mappings_artefact_populate.sql=) that feed the
+publish-from-dq pipeline.
+
+Colour choices follow [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][ux_language.org]]'s documented rule: green/red/amber
+("RAG") and gray are reserved for genuine status/lifecycle semantics,
+never a plain category. None of these 8 domains are lifecycle
+states (they're pure classifications), so all use the
+Blue/Teal/Violet/Purple/Fuchsia/Pink/Indigo/Sky/Slate "classification"
+family, cycled per domain; gray is used only for the two values that
+genuinely mean "none" (=ledger_feed_type='s =None=,
+=tenor_anchor='s =NONE=) and =book_purpose_type='s =Test= (not a
+production purpose). Hit one real bug this surfaced: =badge_definitions=
+has a =(tenant_id, name)= unique constraint, and both =None= values
+initially shared that display name -- renamed to "No Feed"/"No
+Anchor" (caught by a full =db recreate=, not by inspection).
+
+Self-badged all 8 entities' own =code= columns
+(=is_badge=/=badge_key=) the same way as the first 3; none had a
+=badge_key= column in their "Columns (Qt model)" table yet, so it was
+added throughout. Regenerated all 8 via =compass codegen entity
+generate <entity> --address ores.cpp.qt=, diffed first -- each diff
+was the expected badge_key wiring plus the =wireDetailDialogCommon()=
+refactor (all 8 already had detail dialogs, unlike =calendar_type=
+which turned out to be dead-code-wired). Fixed 8 more
+=RefdataPlugin.cpp= construction sites needing the new =badgeCache_=
+parameter (all 8 controllers ARE instantiated there, confirmed by the
+build failing with exactly 8 "no matching constructor" errors, then
+passing clean once fixed).
+
+Build clean (=ores.qt.exe=); =ctest -R "refdata|badge"= (=ores.dq= +
+=ores.refdata=) all passed.
+
 * Notes
 
 * Test Scenarios
@@ -153,17 +196,18 @@ via its "Verifies task" field.
 
 * Result
 
-Batch 1 partially shipped: =calendar_type=, =currency_market_tier=,
-=monetary_nature= self-badged and wired into their consumers
-(=calendar=, =currency=); regenerated, built, tested. The remaining 8
-Batch-1 entities and all of Batch 2 need new
-=code_domain=/=badge_definition=/=badge_mapping= data authored before
-they can be annotated -- not a documentation gap, a genuine
-prerequisite discovered mid-implementation and recorded back on the
-audit task. Task stays STARTED; not closing until Batch 1 is fully
-done per its acceptance criteria (revisit acceptance/scope with the
-parent story once the data-authoring approach for the other 8+7
-entities is decided).
+Batch 1 fully shipped: all 11 refdata entities
+(=calendar_type=, =currency_market_tier=, =monetary_nature=,
+=book_purpose_type=, =business_unit_type=, =contact_type=,
+=ledger_feed_type=, =leg_type=, =purpose_type=, =rounding_type=,
+=tenor_anchor=) self-badged, with the first 3's consumers
+(=calendar=, =currency=) wired too. The other 8 needed new
+=code_domain=/=badge_definition=/=badge_mapping= data authored first
+(46 values, colour-mapped per ux_language.org's RAG/gray rules) --
+authored in both the runtime seed and its artefact-catalogue mirror.
+Regenerated, built, tested throughout. Task stays STARTED -- Batch 2
+(cross-component, same pattern) and Batch 3 (plain-text
+documentation) remain.
 
 As a side effect, fixed a standing codegen gap: there was no way to
 add a custom signal to a generated Qt detail dialog (or relay it

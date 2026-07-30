@@ -77,4 +77,12 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_kind', 0, 'Tenor Kind', 'Whether a tenor is a fixed PERIOD duration or a convention-resolved SPECIAL label.', 27),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_unit', 0, 'Tenor Unit', 'Period unit for a tenor''s duration (day/week/month/year), or NONE for a SPECIAL tenor.', 28),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'crm_enabled', 0, 'CRM Enabled', 'Whether a CRM topology config, driver pair, or enabled derived pair is currently active (Yes/No badge); shared across all three crm_* entities.', 29),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 0, 'Asset Class', 'Top-level product classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset), shown on instrument_code and asset_class_code.', 30);
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'asset_class', 0, 'Asset Class', 'Top-level product classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset), shown on instrument_code and asset_class_code.', 30),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'book_purpose_type', 0, 'Book Purpose Type', 'Purpose classification codes for book records (funding, remittance target, reserve, sales, sweep target, test, trading, wash, write-off).', 61),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'business_unit_type', 0, 'Business Unit Type', 'Classification codes for business unit records (branch, business area, cost centre, desk, division).', 62),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'contact_type', 0, 'Contact Type', 'Classification codes for party contact records (billing, legal, operations, settlement).', 63),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'ledger_feed_type', 0, 'Ledger Feed Type', 'Feed automation classification for ledger records (automatic, manual, none).', 64),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'leg_type', 0, 'Leg Type', 'Classification codes for trade leg records (asset swap, CMS, CMS spread, CPI, digital CMS, fixed, floating, OIS, YoY, zero coupon).', 65),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'purpose_type', 0, 'Purpose Type', 'Purpose classification codes for reports (client reporting, internal, regulatory, risk).', 66),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'rounding_type', 0, 'Rounding Type', 'Rounding method classification codes for currencies (ceiling, closest, down, floor, up).', 67),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor', 0, 'Tenor Anchor', 'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68);

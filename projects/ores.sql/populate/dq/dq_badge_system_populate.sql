@@ -440,6 +440,164 @@ BEGIN
         'asset_class_cross_asset', 'Cross Asset', 'Cross-asset asset class.',
         '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 57);
 
+    -- Book purpose type, business unit type, contact type, ledger feed
+    -- type, leg type, purpose type, rounding type, tenor anchor: all
+    -- purely descriptive classifications, not lifecycle/status codes --
+    -- deliberately NOT green/amber/red (RAG is reserved for genuine
+    -- status semantics; see ux_language.org rule 3). Uses the
+    -- Blue/Teal/Violet/Purple/Fuchsia/Pink/Indigo/Sky/Slate
+    -- "classification" family instead, cycled per domain. Gray is used
+    -- only where the value genuinely means "none/no" (Test, the
+    -- ledger_feed_type/tenor_anchor None/NONE values), consistent with
+    -- gray's "inactive only" reservation (rule 1).
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_funding', 'Funding', 'Book used for funding purposes.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 65);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_remittance_target', 'Remittance Target', 'Book that receives remitted balances.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 66);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_reserve', 'Reserve', 'Book holding reserve balances.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 67);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_sales', 'Sales', 'Book used for client sales activity.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 68);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_sweep_target', 'Sweep Target', 'Book that receives spot-swept balances.',
+        '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 69);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_test', 'Test', 'Book used for testing, not production activity.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 70);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_trading', 'Trading', 'Book used for trading activity.',
+        '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 71);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_wash', 'Wash', 'Book used for wash/internal offsetting trades.',
+        '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 72);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type_write_off', 'Write-off', 'Book used to write off balances.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 73);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type_branch', 'Branch', 'A geographic branch business unit.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 74);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type_business_area', 'Business Area', 'A broad business-area business unit.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 75);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type_cost_centre', 'Cost Centre', 'A cost-centre business unit.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 76);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type_desk', 'Desk', 'A trading-desk business unit.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 77);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type_division', 'Division', 'A divisional business unit.',
+        '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 78);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type_billing', 'Billing', 'A billing contact.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 79);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type_legal', 'Legal', 'A legal contact.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 80);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type_operations', 'Operations', 'An operations contact.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 81);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type_settlement', 'Settlement', 'A settlement contact.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 82);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type_automatic', 'Automatic', 'Ledger is fed automatically.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 83);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type_manual', 'Manual', 'Ledger is fed manually.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 84);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type_none', 'No Feed', 'Ledger has no feed configured.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 85);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_asset_swap', 'Asset Swap', 'An asset swap trade leg.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 86);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_cms', 'CMS', 'A constant maturity swap trade leg.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 87);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_cms_spread', 'CMS Spread', 'A CMS spread trade leg.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 88);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_cpi', 'CPI', 'A CPI-linked trade leg.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 89);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_digital_cms', 'Digital CMS', 'A digital CMS trade leg.',
+        '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 90);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_fixed', 'Fixed', 'A fixed-rate trade leg.',
+        '#ec4899', '#ffffff', 'primary', 'badge bg-primary', 91);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_floating', 'Floating', 'A floating-rate trade leg.',
+        '#6366f1', '#ffffff', 'primary', 'badge bg-primary', 92);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_ois', 'OIS', 'An overnight index swap trade leg.',
+        '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 93);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_yoy', 'YoY', 'A year-on-year inflation trade leg.',
+        '#64748b', '#ffffff', 'secondary', 'badge bg-secondary', 94);
+    -- ZeroCoupon reuses the CMS badge colour -- the classification
+    -- family (9 hues) is one short of leg_type's 10 distinct values.
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type_zero_coupon', 'Zero Coupon', 'A zero coupon trade leg.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 95);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type_client_reporting', 'Client Reporting', 'Report generated for client-facing reporting.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 96);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type_internal', 'Internal', 'Report generated for internal use.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 97);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type_regulatory', 'Regulatory', 'Report generated for regulatory submission.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 98);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type_risk', 'Risk', 'Report generated for risk management use.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 99);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type_ceiling', 'Ceiling', 'Always rounds up to the next increment.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 100);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type_closest', 'Closest', 'Rounds to the nearest increment.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 101);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type_down', 'Down', 'Always rounds down to the previous increment.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 102);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type_floor', 'Floor', 'Always rounds down to the floor increment.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 103);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type_up', 'Up', 'Always rounds up to the next increment.',
+        '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 104);
+
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_imm_roll', 'IMM Roll', 'Tenor anchored to an IMM roll date.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 105);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_near_leg', 'Near Leg', 'Tenor anchored to the near leg of an FX swap.',
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 106);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_none', 'No Anchor', 'Tenor has no special anchor.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 107);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_spot', 'Spot', 'Tenor anchored to the spot date.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 108);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_today', 'Today', 'Tenor anchored to today''s date.',
+        '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 109);
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor_tomorrow', 'Tomorrow', 'Tenor anchored to tomorrow''s date.',
+        '#a855f7', '#ffffff', 'primary', 'badge bg-primary', 110);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -495,6 +653,38 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'asset_class', 'Asset Class',
         'Top-level product classification codes (fx, rates, credit, equity, commodity, inflation, bond, cross_asset), shown on instrument_code and asset_class_code.', 30);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Book Purpose Type',
+        'Purpose classification codes for book records (funding, remittance target, reserve, sales, sweep target, test, trading, wash, write-off).', 61);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'Business Unit Type',
+        'Classification codes for business unit records (branch, business area, cost centre, desk, division).', 62);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type', 'Contact Type',
+        'Classification codes for party contact records (billing, legal, operations, settlement).', 63);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type', 'Ledger Feed Type',
+        'Feed automation classification for ledger records (automatic, manual, none).', 64);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'Leg Type',
+        'Classification codes for trade leg records (asset swap, CMS, CMS spread, CPI, digital CMS, fixed, floating, OIS, YoY, zero coupon).', 65);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type', 'Purpose Type',
+        'Purpose classification codes for reports (client reporting, internal, regulatory, risk).', 66);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Rounding Type',
+        'Rounding method classification codes for currencies (ceiling, closest, down, floor, up).', 67);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'Tenor Anchor',
+        'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68);
 
     -- =============================================================================
     -- Badge Mappings
@@ -820,6 +1010,114 @@ BEGIN
     -- Note: payment_frequency.period_unit is badged with badge_key
     -- 'tenor_unit' (see the Qt model column config), reusing tenor_unit's
     -- own badge domain/mappings above rather than seeding a second set.
+
+    -- book_purpose_type: shown on book's Purpose column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Funding', 'book_purpose_type_funding');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'RemittanceTarget', 'book_purpose_type_remittance_target');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Reserve', 'book_purpose_type_reserve');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Sales', 'book_purpose_type_sales');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'SweepTarget', 'book_purpose_type_sweep_target');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Test', 'book_purpose_type_test');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Trading', 'book_purpose_type_trading');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'Wash', 'book_purpose_type_wash');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'book_purpose_type', 'WriteOff', 'book_purpose_type_write_off');
+
+    -- business_unit_type: shown on business_unit's Type column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'BRANCH', 'business_unit_type_branch');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'BUSINESS_AREA', 'business_unit_type_business_area');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'COST_CENTRE', 'business_unit_type_cost_centre');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'DESK', 'business_unit_type_desk');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'business_unit_type', 'DIVISION', 'business_unit_type_division');
+
+    -- contact_type: shown on party_contact_information's Type column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type', 'Billing', 'contact_type_billing');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type', 'Legal', 'contact_type_legal');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type', 'Operations', 'contact_type_operations');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'contact_type', 'Settlement', 'contact_type_settlement');
+
+    -- ledger_feed_type: shown on ledger's Feed column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type', 'Automatic', 'ledger_feed_type_automatic');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type', 'Manual', 'ledger_feed_type_manual');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'ledger_feed_type', 'None', 'ledger_feed_type_none');
+
+    -- leg_type: shown on trade leg's Type column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'AssetSwap', 'leg_type_asset_swap');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'CMS', 'leg_type_cms');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'CMSSpread', 'leg_type_cms_spread');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'CPI', 'leg_type_cpi');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'DigitalCMS', 'leg_type_digital_cms');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'Fixed', 'leg_type_fixed');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'Floating', 'leg_type_floating');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'OIS', 'leg_type_ois');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'YoY', 'leg_type_yoy');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'leg_type', 'ZeroCoupon', 'leg_type_zero_coupon');
+
+    -- purpose_type: shown on report_definition's Purpose column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type', 'ClientReporting', 'purpose_type_client_reporting');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type', 'Internal', 'purpose_type_internal');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type', 'Regulatory', 'purpose_type_regulatory');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'purpose_type', 'Risk', 'purpose_type_risk');
+
+    -- rounding_type: shown on currency's Rounding Type field.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Ceiling', 'rounding_type_ceiling');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Closest', 'rounding_type_closest');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Down', 'rounding_type_down');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Floor', 'rounding_type_floor');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'rounding_type', 'Up', 'rounding_type_up');
+
+    -- tenor_anchor: shown on tenor's Anchor column.
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'IMM_ROLL', 'tenor_anchor_imm_roll');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'NEAR_LEG', 'tenor_anchor_near_leg');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'NONE', 'tenor_anchor_none');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'SPOT', 'tenor_anchor_spot');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'TODAY', 'tenor_anchor_today');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenor_anchor', 'TOMORROW', 'tenor_anchor_tomorrow');
 
     -- =============================================================================
     -- Summary

@@ -34,7 +34,9 @@
 namespace ores::qt {
 
 class ContactTypeMdiWindow;
+class ContactTypeDetailDialog;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -61,6 +63,7 @@ public:
                           ClientManager* clientManager,
                           ChangeReasonCache* changeReasonCache,
                           const QString& username,
+                          BadgeCache* badgeCache,
                           QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -88,6 +91,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::contact_type& type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * ContactTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(ContactTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**
@@ -105,6 +116,7 @@ private:
             callback);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     ContactTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -1,3 +1,19 @@
+# HEALTHCHECK probe: the final chainguard/glibc-dynamic image has no shell
+# (so no grep/test to script a check with) -- a tiny statically-linked C
+# binary instead, checking any *.log file under /app/log for the
+# "Service ready." marker every supervised service logs once it has
+# registered its NATS handlers (see ores.service's *_runner_impl.hpp),
+# automating today's wait_for_log_ready polling loop as a container-native
+# probe.
+FROM debian:bookworm-slim AS healthcheck-build
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY docker/healthcheck.c .
+RUN gcc -O2 -static -o /healthcheck healthcheck.c
+
 FROM debian:bookworm-slim AS strip
 
 RUN apt-get update && apt-get install -y --no-install-recommends binutils \
@@ -41,8 +57,16 @@ COPY --from=strip /src/lib/ /app/lib/
 COPY --from=strip /src/log/ /app/log/
 COPY --from=strip /src/run/ /app/run/
 COPY --from=strip /src/storage/ /app/storage/
+COPY --from=healthcheck-build /healthcheck /app/bin/healthcheck
 
 ENV LD_LIBRARY_PATH=/app/lib
 WORKDIR /app/bin
+
+# Must build this image with `podman build --format docker` -- the default
+# OCI format has no health-check concept and silently drops this directive
+# entirely (only a build-time warning, easy to miss); `podman ps`/`inspect`
+# will never show a health status at all if built without it.
+HEALTHCHECK --interval=2s --timeout=2s --start-period=60s --retries=3 \
+    CMD ["./healthcheck"]
 
 ENTRYPOINT ["./entrypoint"]

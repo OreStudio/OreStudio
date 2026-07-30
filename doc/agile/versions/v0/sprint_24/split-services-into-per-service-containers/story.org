@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :docker:architecture:deployment:sprint_24:v0:
 #+created: 2026-07-27
-#+updated: 2026-07-29
+#+updated: 2026-07-31
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -39,10 +39,10 @@ other binaries.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Design done, IAM pilot partially proven (connects to NATS standalone); a distinct JWT-signing bug and the HEALTHCHECK probe remain. |
+| Now           | IAM pilot complete end-to-end: JWT signing fixed (same root cause as PR #1779), HEALTHCHECK added, reaches podman ps healthy standalone. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the IAM pilot (JWT bug + healthcheck), then the dependency generator and events watcher. |
-| Last touched  | 2026-07-29                               |
+| Next          | Dependency-graph generator, podman-events watcher, then rollout to the remaining 17 services (three follow-up tasks, all BACKLOG). |
+| Last touched  | 2026-07-31                               |
 
 * Acceptance
 
@@ -51,8 +51,11 @@ other binaries.
   not spawned as a child process by another container.
 - Startup ordering (e.g. IAM before its dependents) and readiness gating are
   expressed at the orchestration layer, not inside a C++ process supervisor.
-- Per-service logs are retrievable via ~podman logs <service>~ without
-  needing ~--log-to-console~/~--log-enabled~ plumbing per binary.
+- Per-service logs are retrievable via ~podman logs <service>~ --
+  requires each service's own container to pass ~--log-to-console~
+  alongside ~--log-enabled~ (confirmed empirically in the IAM pilot:
+  podman's log driver only captures stdout/stderr, and none of our
+  services write there by default).
 - The existing DB-backed service_instance/phase tracking either moves to
   the orchestrator's own state (preferred) or is demonstrably still useful
   and is kept deliberately, not by default.
@@ -65,7 +68,10 @@ other binaries.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9E08056D-DEC1-43E3-803E-03E5F9808AD5][Design the per-service container architecture and pilot it with one service]] | DONE | 2026-07-29 | 2026-07-29 | Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17. |
-| [[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][Finish IAM per-service pilot: JWT signing failure and HEALTHCHECK]] | BACKLOG | | | The per-service container pilot for IAM got past a rootless-podman uid-remapping issue (fixed, needs --userns=keep-id) and connects to NATS successfully standalone, but does not yet reach a fully healthy end-to-end state: a distinct, not-yet-root-caused JWT token signing failure (in-memory PEM parsing, bio read failed) surfaces afterward. Root-cause and fix that, then add the HEALTHCHECK probe (tailing IAM's own log for Service ready.) and confirm IAM reaches podman ps healthy end-to-end. |
+| [[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][Finish IAM per-service pilot: JWT signing failure and HEALTHCHECK]] | DONE | 2026-07-30 | 2026-07-31 | The per-service container pilot for IAM got past a rootless-podman uid-remapping issue (fixed, needs --userns=keep-id) and connects to NATS successfully standalone, but does not yet reach a fully healthy end-to-end state: a distinct, not-yet-root-caused JWT token signing failure (in-memory PEM parsing, bio read failed) surfaces afterward. Root-cause and fix that, then add the HEALTHCHECK probe (tailing IAM's own log for Service ready.) and confirm IAM reaches podman ps healthy end-to-end. |
+| [[id:22287ABA-E21F-4B52-87A0-AB887C618203][Generate podman-compose/systemd ordering from service_dependency]] | BACKLOG | | | A small generator step that reads the DB-driven service_definition/service_dependency tables and emits podman-compose depends_on (or podman generate systemd After=/Requires=) directives, so startup ordering stays data-driven instead of hand-maintained in a static compose/systemd file once services split into one container each. |
+| [[id:F4BD29A9-0DAE-4662-B381-CCAD9122AFA7][Mirror podman events into service_instance/service_event tables]] | BACKLOG | | | A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working once containers (not process_supervisor) own the actual process lifecycle. |
+| [[id:5B6F80E0-11C9-4A7F-9D0B-EBD50B0A9451][Roll out per-service containers to the remaining 17 services]] | BACKLOG | | | Apply the proven IAM pilot pattern (parameterised Dockerfile + stage-runtime.sh --service + HEALTHCHECK) to the other 17 service binaries, replace the single-container fleet with one podman pod/compose spec running 18 per-service containers, and verify the full fleet reaches steady state end-to-end (the story's own acceptance: full fleet starts, survives killing/restarting one service container without taking down the others). |
 
 * Decisions
 
@@ -89,6 +95,23 @@ other binaries.
   bookkeeping exists there to race). What initially looked like a
   second instance of it was actually the uid-remapping issue above --
   a distinct, now-understood, unrelated bug.
+- The IAM pilot's "bio read failed" JWT-signing failure was *not* a
+  distinct bug either: it was the exact same escaped-~\n~ env-file
+  corruption already root-caused and fixed generically in PR #1779
+  (~docker/generate-env.sh~'s quote-stripping plus a ~--env~
+  passthrough for that one variable), just predating that fix in this
+  pilot's own session. No source change was needed to close this
+  task once verified. The Newton storage ~EIO~ finding from that same
+  PR also reproduces locally under ~--userns=keep-id~, confirming it
+  was never Newton-specific either -- both are uid-remap-dependent,
+  not host-dependent.
+- ~HEALTHCHECK~ needs a real binary, not a shell script --
+  ~cgr.dev/chainguard/glibc-dynamic~ has no shell at all. Added a
+  small statically-linked C program (~docker/healthcheck.c~), built in
+  its own debian stage, that scans ~/app/log/*.log~ for "Service
+  ready.". Also: podman silently drops ~HEALTHCHECK~ unless built with
+  ~podman build --format docker~ (the default OCI format has no
+  health-check concept) -- easy to miss, only a build-time warning.
 
 * Out of scope
 

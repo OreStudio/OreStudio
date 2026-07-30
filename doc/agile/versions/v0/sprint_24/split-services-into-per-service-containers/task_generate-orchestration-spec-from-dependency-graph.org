@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 22287ABA-E21F-4B52-87A0-AB887C618203
+:END:
+#+title: Task: Generate podman-compose/systemd ordering from service_dependency
+#+description: A small generator step that reads the DB-driven service_definition/service_dependency tables and emits podman-compose depends_on (or podman generate systemd After=/Requires=) directives, so startup ordering stays data-driven instead of hand-maintained in a static compose/systemd file once services split into one container each.
+#+type: task
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read ~service_definition~/~service_dependency~ from the DB and emit
+the equivalent ordering directives for the orchestration layer chosen
+for the per-service rollout (podman-compose ~depends_on~, or
+~podman generate systemd~'s ~After=~/~Requires=~), so the dependency
+graph that currently drives ~process_supervisor~'s topological launch
+order in-process stays data-driven instead of becoming a hand-
+maintained static file once each service is its own container.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- A generator reads ~service_definition~/~service_dependency~ and
+  produces a valid ordering spec for the chosen orchestration
+  mechanism, without hand-editing.
+- Changing a dependency edge in the DB and re-running the generator
+  changes the emitted ordering accordingly, with no code change.
+- The generated spec is verified against a real multi-service startup
+  (at minimum IAM before one of its dependents), confirming the
+  emitted ordering is actually honoured by podman/systemd.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

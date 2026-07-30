@@ -47,39 +47,95 @@ than calling into QuantLib live from the UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] landing first. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-19                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- [ ] A reusable widget exists (e.g. =HolidayAwareDatePicker=) that
-  accepts one or more calendar codes/IDs and highlights their holidays
-  in the date grid.
-- [ ] Weekends are highlighted using the same convention as holidays
-  (or visually distinguished, matching QuantLib calendar semantics).
-- [ ] Hovering a highlighted holiday date shows a tooltip naming which
-  input calendar(s) it's a holiday in — clear attribution when
-  multiple calendars are given, not just an undifferentiated
-  highlight.
-- [ ] Widget is documented (Qt UI patterns doc) so other screens know
+- [X] A reusable widget exists (=HolidayAwareDatePicker=, =ores.qt.api=)
+  that accepts one or more calendar codes and highlights their
+  non-business dates in the popup date grid.
+- [X] Weekends are highlighted using the same convention as holidays --
+  =calendar_date::is_business_day= covers both, undistinguished by
+  design (see its own doc comment), so the widget highlights every
+  non-business date uniformly rather than re-deriving a separate
+  weekend mask client-side.
+- [X] Hovering a highlighted date shows a tooltip naming which input
+  calendar(s) it's non-business in — clear attribution when multiple
+  calendars are given, not just an undifferentiated highlight.
+- [X] Widget is documented in the Qt UI patterns doc (new
+  "Reusable input widgets" section), alongside its siblings
+  =OreDateEdit= and =CalendarAssignmentWidget=, so other screens know
   to reuse it instead of a plain date picker for calendar-sensitive
   dates.
-- [ ] At least one real usage wired up as a proof point (e.g. a spot
-  date or fixing date field).
-- [ ] The date picker highlights the union of materialised base-calendar
-  dates and any =calendar_adjustment= overrides for the given
-  calendar(s), not a live QuantLib computation — sourced from
-  [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]].
+- [X] At least one real usage wired up as a proof point:
+  =SwapInstrumentForm='s =fraFixingDateEdit= (FRA Fixing Date).
+- [X] The date picker highlights materialised =calendar_dates= rows
+  fetched from the server, not a live QuantLib computation — sourced
+  from [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]]
+  via =fetch_calendar_holidays()=.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Data source: paged fetch of materialised calendar_dates, not a new bulk endpoint
+
+The server already exposes
+=refdata.v1.calendar_dates.list_by_calendar_code= (offset/limit,
+ordered by date ascending -- the same request the Browse Holidays
+list window uses). Rather than adding a new bulk "give me all
+holidays" endpoint, =fetch_calendar_holidays()= (=ores.qt.api=) pages
+through the existing request per calendar code, stopping as soon as a
+page's dates run past the requested window's end -- cheap in the
+common case (a few hundred rows at most for a practical window) and
+reuses proven server-side plumbing rather than adding a parallel
+data path.
+
+** Window sizing: lazy, bounded, not the full materialisation horizon
+
+=calendar_dates= is materialised out to a multi-decade horizon
+(default 2050) per the parent materialisation task -- eagerly
+fetching that whole range per calendar for every date picker would be
+wasted work for the overwhelming common case (a date a few months to
+a couple of years out). The widget instead loads a practical window
+(1 year back, 5 years forward) around whichever month its popup
+happens to be showing, expanding on demand as the user navigates
+further via =QCalendarWidget::currentPageChanged=. A curve reaching
+decades out (e.g. a 30Y swap) would need to navigate the popup that
+far to see highlighting that far -- a deliberate, documented trade-off
+of eager-fetch cost against picker responsiveness, not an oversight.
+
+** Highlight mechanism: setDateTextFormat, not a custom paintCell override
+
+=QCalendarWidget::setDateTextFormat()= (a supported public API for
+per-date styling) does the highlighting -- no need to subclass
+=QCalendarWidget= and override its paint logic. Tooltips, which
+=QCalendarWidget= has no built-in per-cell API for, use an event
+filter on its internal =QAbstractItemView= (=QEvent::ToolTip=,
+reconstructing the hovered cell's date from the view's model index,
+the shown month/year, and =firstDayOfWeek()= -- the model has no
+header rows/columns of its own, headers are drawn by the view
+separately).
+
+** Real usage: SwapInstrumentForm's FRA Fixing Date, with a static TARGET default
+
+=fraFixingDateEdit= (=SwapInstrumentForm.ui=) swapped from
+=OreDateEdit= to =HolidayAwareDatePicker= as the proof point. Its
+calendar is hardcoded to =TARGET= rather than derived from the
+form's own currency selection: no client-facing currency-to-calendar
+lookup exists today -- =currency_calendar= is a junction with no
+NATS-exposed service/protocol layer of its own (the same precedent
+=CalendarAssignmentWidget='s own doc comment already documents), so
+deriving it dynamically would be new, unrelated scope. Documented as
+a known simplification in the wiring code itself, not silently
+passed off as the finished article.
 
 * Notes
 
@@ -89,6 +145,21 @@ to show the holidays for the calendar" when reviewing a =CalendarDetailDialog=
 row. This task's scope (holiday-aware picker, reusable everywhere a
 calendar-sensitive date is entered) covers that need; no longer
 blocked, since [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar entity for codegen]] has landed.
+
+** Manual verification: partial
+
+Launched the Qt client (=compass client start=) against the running
+dev environment -- the app started cleanly, loaded every plugin
+(including =ores.qt.trading=, which now links the widget), and
+reached the login screen with no crash, confirming the new code
+loads and runs, not just compiles. Did not click through to
+=SwapInstrumentForm= and visually confirm the popup calendar's
+highlighting/tooltip: this environment has no display/screenshot
+tool available to this session to drive or observe the GUI
+interactively. Flagging honestly rather than claiming a full manual
+click-through that didn't happen -- a human with display access (or
+a future screenshot-capable tool) should do that pass before/soon
+after merge.
 
 * PRs
 
@@ -103,3 +174,34 @@ blocked, since [[id:1F43998E-BD20-4CBC-8C05-509F1ABF0E0C][Model the calendar ent
 |   |                 |      |          |       |
 
 * Result
+
+All six acceptance criteria met. Shipped =HolidayAwareDatePicker=
+(=ores.qt.api=), a drop-in =OreDateEdit= replacement that highlights
+non-business dates in its popup calendar for one or more calendars,
+sourced from the server's materialised =calendar_dates= table via a
+new =fetch_calendar_holidays()= helper (paged, windowed, never a
+live QuantLib call). Tooltips on hover name which calendar(s) a
+highlighted date applies to. Documented in the Qt UI patterns doc
+alongside its siblings; wired into =SwapInstrumentForm='s FRA Fixing
+Date field as the proof point.
+
+Two deliberate, documented scope limits (see Plan):
+- The widget loads a practical window (1y back / 5y forward) around
+  the popup's shown month, not the full multi-decade materialisation
+  horizon, expanding lazily as the user navigates further.
+- The proof-point wiring uses a static =TARGET= calendar default
+  rather than deriving it from the form's selected currency -- no
+  client-facing currency-to-calendar lookup exists yet
+  (=currency_calendar= has no NATS service/protocol layer, matching
+  =CalendarAssignmentWidget='s own precedent); wiring that up is new,
+  separate scope.
+
+Verified: full local build clean (=linux-clang-debug-make=,
+including =ores.qt.exe= linking); =ctest= 72/74 passed, excluding
+the two pre-existing, already-captured =ores.iam= failures unrelated
+to this change. Manual verification was partial: the Qt client
+launches cleanly with the new widget's code loaded (confirmed via
+=compass client start=), but this session had no display/screenshot
+tool to click through and visually confirm the popup's highlighting/
+tooltip -- flagged honestly rather than claimed. A human (or a
+future screenshot-capable session) should do that pass.

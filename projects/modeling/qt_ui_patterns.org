@@ -72,6 +72,39 @@ The controller and MdiWindow templates are the authoritative source.
 | =cpp_qt_mdi_window.hpp.mustache= | MdiWindow class declaration |
 | =cpp_qt_mdi_window.cpp.mustache= | =setupToolbar()= — the full toolbar pattern |
 
+* Reusable input widgets
+
+Hand-authored (not codegen-generated) widgets meant to be reused
+across any form that needs them, not tied to a specific entity's
+generated Qt facet:
+
+- =OreDateEdit= (=ores.qt.trading=) -- a plain =QDateEdit= with the
+  app's ISO-date/blank-state conventions (=isoDate()=/=setIsoDate()=,
+  a single-space special value text for "unset"). The default choice
+  for any date field with no calendar sensitivity.
+- =HolidayAwareDatePicker= (=ores.qt.api=) -- drop-in replacement for
+  =OreDateEdit= (same =isoDate()=/=setIsoDate()= contract) that also
+  highlights non-business dates (weekends and holidays, undistinguished
+  -- see =calendar_date::is_business_day='s own doc comment) in its
+  popup calendar grid for one or more calendars, with a hover tooltip
+  naming which calendar(s) a highlighted date applies to. Sourced from
+  the server's materialised =calendar_dates= table (via
+  =fetch_calendar_holidays()=), never a live computation. Use this
+  instead of =OreDateEdit= for any calendar-sensitive date field --
+  trade dates, fixing dates, spot dates, and so on. Call
+  =setClientManager()= and =setCalendarCodes()= before the field is
+  shown; the widget lazily (re)loads a practical window (roughly one
+  year back, five years forward) around whichever month the popup
+  happens to be showing, expanding as the user navigates further out,
+  rather than eagerly fetching the full multi-decade materialisation
+  horizon per calendar. See =SwapInstrumentForm='s =fraFixingDateEdit=
+  for a worked example.
+- =CalendarAssignmentWidget= (=ores.qt.api=) -- embeddable
+  list-editor for a text-keyed calendar-assignment junction (e.g.
+  =currency_calendars=), not a date field itself but the pattern to
+  reach for when an entity needs to manage *which* calendars apply to
+  it, as opposed to picking a date against calendars already known.
+
 * See also
 
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — =PluginBase= contract, plugin lifecycle, menu sections.

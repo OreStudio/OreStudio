@@ -75,7 +75,7 @@
          <layout class="QFormLayout" name="ratesFormLayout">
           <item row="0" column="0"><widget class="QLabel" name="labelFraFixingDate"><property name="text"><string>FRA Fixing Date:</string></property></widget></item>
           <item row="0" column="1">
-           <widget class="OreDateEdit" name="fraFixingDateEdit"/>
+           <widget class="ores::qt::HolidayAwareDatePicker" name="fraFixingDateEdit"/>
           </item>
           <item row="1" column="0"><widget class="QLabel" name="labelFraSettlementDate"><property name="text"><string>FRA Settlement Date:</string></property></widget></item>
           <item row="1" column="1">
@@ -144,6 +144,11 @@
   <class>ores::qt::OreCurrencyComboBox</class>
   <extends>QComboBox</extends>
   <header>ores.qt/OreCurrencyComboBox.hpp</header>
+ </customwidget>
+ <customwidget>
+  <class>ores::qt::HolidayAwareDatePicker</class>
+  <extends>QDateEdit</extends>
+  <header>ores.qt/HolidayAwareDatePicker.hpp</header>
  </customwidget>
 </customwidgets>
 <resources/>

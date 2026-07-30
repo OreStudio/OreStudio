@@ -8,7 +8,7 @@
 #+filetags: :fix-cmake-thread-libs-init-windows-warning:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-fix-cmake-thread-libs-init-windows-warning
-#+pr:
+#+pr: 1762
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1762][#1762]] | [cmake] Fix Windows warning: uninitialized CMAKE_THREAD_LIBS_INIT |
 
 * Review
 

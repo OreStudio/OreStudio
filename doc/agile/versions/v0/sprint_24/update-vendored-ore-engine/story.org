@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 9468ACFD-8A99-430E-8E8E-6A828EF48C04
+:END:
+#+title: Story: Update vendored ORE Engine to 1.8.16.0
+#+description: Refresh the vendored ORE Engine binary package, examples, and XSD schemas to a current build, fixing the previously-broken (non-self-contained) engine package and automating hand-patch preservation across future refreshes.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The vendored ORE Engine binary package, examples, and XSD schemas are
+current, genuinely working, and safe to refresh again in the future
+without manual steps or silent regressions.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-30                               |
+
+* Acceptance
+
+- The vendored =ore= engine package is genuinely self-contained and
+  self-tests automatically against a real example's expected output.
+- =external/ore/examples/= and =external/ore/xsd/= are refreshed from
+  the same engine commit, with reproducible provenance, and pass
+  schema validation.
+- Refreshing either in the future is a single reusable script
+  invocation, not a manual copy-and-overwrite -- including reapplying
+  the known upstream hand-patches automatically.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CECBE7BB-0C9E-43EF-B344-B87FE4BC208B][Refresh ORE Engine binary package, examples, and XSD to 1.8.16.0]] | DONE | 2026-07-30 | 2026-07-30 | Rebuild the ore engine self-contained, sync examples/xsd, automate hand-patch preservation. |
+
+* Decisions
+
+** Package self-test runs the actual engine against a real example, not just an ldd check
+
+Verifying "the RPATH points somewhere inside the package" is
+necessary but not sufficient -- a package can be structurally
+self-contained and still be wrong (missing a library, a corrupted
+copy, a version skew between bundled libraries). The self-test
+extracts the package to an isolated scratch directory, runs it
+against =TA002_IR_Swap= exactly the way =ores.compute.wrapper= does
+(same invocation shape, same cwd semantics), and tolerantly diffs the
+real output against real =ExpectedOutput/=, writing a human-readable
+sign-off report. Rejected a byte-exact diff (cross-compiler/library
+floating-point noise and legitimate schema evolution -- e.g. new
+report columns on a version bump -- would both cause false failures).
+
+** Hand-patches are reapplied by the sync script, not documented for a human to remember
+
+The alternative (documenting the 3 hand-patched files in prose and
+trusting a future refresher to read and reapply them) is exactly the
+failure mode that had already silently regressed once before this
+story even started work (caught live during this same task). Automation
+is strictly better than documentation here since the fix is small,
+mechanical, and safe to reapply unconditionally (a no-op if upstream
+ever fixes it at the source).
+
+* Out of scope
+
+- Regenerating =projects/ores.ore='s C++ domain types via
+  =xsdcpp_generate_ore.sh= -- blocked by a pre-existing local =xsdcpp=
+  environment issue unrelated to this story's own changes (see task
+  Notes and capture =99A443B8=).
+- Compute-grid package integrity verification (SHA256 check on
+  download) -- real gap found while building this story's tooling,
+  filed separately (capture =8DBD1BAE=) since it's a
+  =ores.compute.wrapper= change, not an =external/ore/= vendoring one.

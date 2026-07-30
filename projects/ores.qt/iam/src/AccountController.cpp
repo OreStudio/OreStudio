@@ -29,6 +29,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/OrgChartWidget.hpp"
 #include "ores.qt/SessionAuditDialog.hpp"
 #include <QFutureWatcher>
 #include <QPointer>
@@ -205,6 +206,24 @@ void AccountController::reloadListWindow() {
             widget->reload();
         }
     }
+}
+
+void AccountController::showOrgChart() {
+    auto* dialog = new OrgChartWidget(clientManager_, imageCache());
+
+    auto* orgChartWindow = new DetachableMdiSubWindow();
+    orgChartWindow->setAttribute(Qt::WA_DeleteOnClose);
+    orgChartWindow->setWidget(dialog);
+    orgChartWindow->setWindowTitle("Org Chart");
+    orgChartWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
+
+    // Added directly (not via show_managed_window(), which strips the
+    // maximize button for fixed-size detail/history dialogs) -- the org
+    // chart is a resizable view like the accounts list window, not a form.
+    register_detachable_window(orgChartWindow);
+    mdiArea_->addSubWindow(orgChartWindow);
+    orgChartWindow->show();
 }
 
 void AccountController::onNotificationReceived(const QString& eventType,

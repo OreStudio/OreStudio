@@ -51,6 +51,16 @@ BEGIN
     );
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_parties', 20);
 
+    -- --- Group-level staff (no business units/portfolios/books of its
+    -- own) -- published once the holding company's own party exists,
+    -- with a {"party_id": "<holding party id>"} param ---
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme_group',
+        'Acme Corporation Group',
+        'ACME Corporation Plc''s group-level staff accounts. Publish with a {"party_id": "..."} param scoping to the holding company''s own party.'
+    );
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_group', 'acme.acme_group.accounts', 10);
+
     -- --- Per-office business units, portfolios, books, accounts, and
     -- account contact informations -- published once each operating
     -- company's party exists, with a {"party_id": "<company party id>"}

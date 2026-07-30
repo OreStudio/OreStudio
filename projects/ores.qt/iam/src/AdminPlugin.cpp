@@ -185,6 +185,12 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
             accountController_->showListWindow();
     });
 
+    auto* actOrgChart = admin->addAction(tr("&Org Chart"));
+    connect(actOrgChart, &QAction::triggered, this, [this]() {
+        if (accountController_)
+            accountController_->showOrgChart();
+    });
+
     auto* actRoles = admin->addAction(tr("&Roles"));
     connect(actRoles, &QAction::triggered, this, [this]() {
         if (roleController_)

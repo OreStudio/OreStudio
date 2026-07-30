@@ -15,6 +15,37 @@ office in OFFICES below; the filler data (names, emails, addresses)
 is generated -- Faker for locales it supports (GB, US), a curated
 name pool for Hong Kong (Faker has no English-script HK locale).
 
+Regeneration methodology (photo_assignments.json)
+---------------------------------------------------
+Every account's photo_key is pinned in photo_assignments.json (username
+-> photo_key), not recomputed from scratch on every run. Face images
+in external/facestudio/faces/ are added to over time in unrelated
+commits; assigning photos by position in the sorted file listing (the
+original approach) meant a *new* face file landing earlier in sort
+order than an existing one silently reshuffled every account's photo
+downstream of it -- output was reproducible for one snapshot of the
+faces directory, but not stable as that directory grew.
+
+The fix: photo_assignments.json is the durable source of truth for
+"who has which photo".
+- An account whose username is already a key in that file keeps
+  exactly that photo_key, forever, regardless of what's added to
+  faces/ later.
+- Only a genuinely new username (one never seen before) gets a fresh
+  assignment -- deterministically, the lowest-index file in its
+  (ethnicity, gender) bucket not already claimed by any pinned or
+  newly-assigned account this run.
+- main() writes the merged (pinned + newly-assigned) map back to
+  photo_assignments.json before exiting, so the next run's "already
+  pinned" set includes this run's new accounts too.
+
+To regenerate: run `python3 generate_data.py`, then `python3
+generate_sql.py`, and commit accounts.json, photo_assignments.json,
+and the regenerated projects/ores.sql/populate/acme/*.sql together.
+Never hand-edit accounts.json or photo_assignments.json directly --
+add a new account by extending OFFICES/build_office (or, for
+group-level staff, build_group_accounts), then regenerate.
+
 Usage:
     python3 generate_data.py
 """
@@ -401,7 +432,37 @@ def gen_person(office, faker, index, used_slugs):
     return username, email, full_name, gender
 
 
-def build_office(office, faker):
+def build_group_accounts():
+    """The holding company's own staff -- just a Group CEO today, no
+    desks/business units of its own (those live per-office). Every office's
+    Country Head reports to this account, so the org chart is one real tree
+    rather than three disconnected per-office roots. Fixed (not
+    Faker-generated): a single person doesn't need per-office locale/name
+    variety, and staying deterministic keeps it stable across regenerations."""
+    username = "adrian.vance"
+    return [{
+        "company_code": HOLDING["code"],
+        "id": new_uuid(f"account:{username}"),
+        "username": username,
+        "email": f"{username}@acmecorp.com",
+        "full_name": "Adrian Vance",
+        "gender": "male",
+        "password_hash": FIXED_PASSWORD_HASH,
+        "account_type": "user",
+        "role": "Operations",
+        "job_title": "Group Chief Executive Officer",
+        "reports_to_username": None,
+        "business_unit_code": None,
+        "street": None,
+        "city": None,
+        "state": None,
+        "country_code": None,
+        "postal_code": None,
+        "phone": None,
+    }]
+
+
+def build_office(office, faker, group_ceo_username=None):
     company_code = office["code"]
     lei, lei_entity = build_office_lei_entity(office, faker)
 
@@ -473,7 +534,8 @@ def build_office(office, faker):
     # Risk) -- rather than Risk/Operations reporting into the business
     # line they oversee. Only the CEO is common to all three; Trading,
     # Operations, and Risk staff never report across lines.
-    ceo_username = add_account(global_markets_code, "Country Head", SUPPORT_MANAGER_ROLE)
+    ceo_username = add_account(global_markets_code, "Country Head", SUPPORT_MANAGER_ROLE,
+                               reports_to_username=group_ceo_username)
     coo_username = add_account(global_markets_code, "COO", SUPPORT_MANAGER_ROLE,
                                reports_to_username=ceo_username)
     head_of_risk_username = add_account(global_markets_code, "Head of Risk", SUPPORT_MANAGER_ROLE,
@@ -656,6 +718,7 @@ OFFICE_FACE_ETHNICITIES = {
     "acme_uk": ["european", "south_asian", "african", "west_asian"],
     "acme_us": ["european", "african", "latin_american", "east_asian", "south_asian"],
     "acme_hk": ["east_asian", "southeast_asian"],
+    "acme_group": ["european"],
 }
 
 
@@ -672,28 +735,64 @@ def load_face_files():
     return by_bucket
 
 
-def assign_photo_keys(office, accounts, faces_by_bucket, bucket_indices):
-    """Assigns each account a deterministic photo_key: gender-matched, and
-    ethnicity-matched to the office's pool (cycling through that pool for
-    variety). bucket_indices tracks the next unused index per (ethnicity,
-    gender) bucket across the whole run, so offices sharing an ethnicity
-    (e.g. UK and US both drawing "european") don't hand out duplicate
-    photos before they have to."""
+def load_photo_assignments():
+    """Loads the pinned username -> photo_key map (see module docstring
+    for why assignments are pinned rather than recomputed). Missing file
+    (first-ever run) is treated as an empty pin set, not an error."""
+    path = os.path.join(SCRIPT_DIR, "photo_assignments.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        return json.load(f)
+
+
+def save_photo_assignments(assignments):
+    path = os.path.join(SCRIPT_DIR, "photo_assignments.json")
+    with open(path, "w") as f:
+        json.dump(assignments, f, indent=2, sort_keys=True)
+        f.write("\n")
+    print(f"Wrote {path} ({len(assignments)} pinned)")
+
+
+def assign_photo_keys(office, accounts, faces_by_bucket, photo_assignments, used_photo_keys):
+    """Assigns each account a photo_key: an already-pinned username (see
+    load_photo_assignments) always keeps its existing photo_key
+    unchanged, however faces/ or this dataset has grown since it was
+    pinned. Only a genuinely new username gets a fresh assignment --
+    gender-matched, ethnicity-matched to the office's pool, deterministically
+    the lowest-index file in that (ethnicity, gender) bucket not already
+    claimed by used_photo_keys (which starts pre-seeded with every pinned
+    photo_key, so new assignments never collide with existing staff)."""
     ethnicities = OFFICE_FACE_ETHNICITIES[office["code"]]
     for i, a in enumerate(accounts):
+        pinned = photo_assignments.get(a["username"])
+        if pinned:
+            a["photo_key"] = pinned
+            used_photo_keys.add(pinned)
+            continue
+
         ethnicity = ethnicities[i % len(ethnicities)]
         bucket = (ethnicity, a["gender"])
         pool = faces_by_bucket[bucket]
-        idx = bucket_indices.get(bucket, 0)
-        face = pool[idx % len(pool)]
-        bucket_indices[bucket] = idx + 1
-        a["photo_key"] = f"acme_staff_photo:{face.rsplit('.', 1)[0]}"
+        photo_key = next(
+            (f"acme_staff_photo:{face.rsplit('.', 1)[0]}" for face in pool
+             if f"acme_staff_photo:{face.rsplit('.', 1)[0]}" not in used_photo_keys),
+            None)
+        if photo_key is None:
+            raise RuntimeError(
+                f"No unclaimed photo left in bucket {bucket} for new account "
+                f"{a['username']!r} -- add more face images to faces/.")
+
+        a["photo_key"] = photo_key
+        used_photo_keys.add(photo_key)
+        photo_assignments[a["username"]] = photo_key
 
 
 def main():
     holding_lei, holding_entity = build_holding_lei_entity()
     faces_by_bucket = load_face_files()
-    bucket_indices = {}
+    photo_assignments = load_photo_assignments()
+    used_photo_keys = set(photo_assignments.values())
 
     lei_entities = [holding_entity]
     lei_relationships = []
@@ -710,6 +809,12 @@ def main():
         "is_holding": True,
     }]
 
+    group_accounts = build_group_accounts()
+    assign_photo_keys({"code": HOLDING["code"]}, group_accounts, faces_by_bucket,
+                      photo_assignments, used_photo_keys)
+    all_accounts.extend(group_accounts)
+    group_ceo_username = group_accounts[0]["username"]
+
     for office in OFFICES:
         if office["locale"]:
             faker = Faker(office["locale"])
@@ -719,7 +824,8 @@ def main():
             faker.seed_instance(f"acme_bank:{office['code']}")
         else:
             faker = None
-        lei, entity, business_units, portfolios, books, accounts = build_office(office, faker)
+        lei, entity, business_units, portfolios, books, accounts = build_office(
+            office, faker, group_ceo_username=group_ceo_username)
 
         lei_entities.append(entity)
         lei_relationships.append(build_relationship(holding_lei, lei))
@@ -728,7 +834,7 @@ def main():
         all_books.extend(books)
         all_accounts.extend(accounts)
 
-        assign_photo_keys(office, accounts, faces_by_bucket, bucket_indices)
+        assign_photo_keys(office, accounts, faces_by_bucket, photo_assignments, used_photo_keys)
 
         companies.append({
             "code": office["code"],
@@ -753,6 +859,7 @@ def main():
     write("portfolios.json", all_portfolios)
     write("books.json", all_books)
     write("accounts.json", all_accounts)
+    save_photo_assignments(photo_assignments)
 
 
 if __name__ == "__main__":

@@ -193,6 +193,15 @@ def generate_dataset_populate(companies):
             f"Generated staff real names/contact details for ACME Corporation {label}.",
             "account_contact_informations"))
 
+    body.append(dataset_upsert(
+        "acme.acme_group.accounts", "Organisation",
+        "ACME Corporation Group Accounts",
+        "Generated staff login accounts for the ACME Corporation Plc holding "
+        "company itself (group-level roles with no office/business-unit of "
+        "their own) -- published party-scoped to the holding company's own "
+        "party, same convention as the per-office accounts datasets.",
+        "accounts"))
+
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
  * ACME Corporation Dataset Population Script
@@ -690,13 +699,19 @@ def main():
     generate_dataset_populate(COMPANIES)
     generate_lei_entities_populate(lei_entities)
     generate_lei_relationships_populate(lei_relationships)
-    generate_staff_photos_populate([a for company in COMPANIES for a in accounts[company]])
+    generate_staff_photos_populate(
+        [a for company in COMPANIES for a in accounts[company]] + accounts["acme_group"])
     for company in COMPANIES:
         generate_business_units_populate(company, business_units[company])
         generate_portfolios_populate(company, portfolios[company], business_units[company])
         generate_books_populate(company, books[company], portfolios[company])
         generate_accounts_populate(company, accounts[company])
         generate_account_contact_informations_populate(company, accounts[company])
+
+    # Group-level staff: no business units/portfolios/books/contact
+    # informations of their own, just accounts scoped to the holding
+    # company's own party.
+    generate_accounts_populate("acme_group", accounts["acme_group"])
 
 
 if __name__ == "__main__":

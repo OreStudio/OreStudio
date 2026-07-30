@@ -8,7 +8,7 @@
 #+filetags: :badge_colour_scheme_snags:sprint_24:v0:
 #+owner: marco
 #+branch: feature/close-badge-colour-scheme-snags-story
-#+pr:
+#+pr: 1765
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1765][#1765]] | [agile] Close story: badge colour scheme visual polish and self-badging fixes |
 
 * Review
 

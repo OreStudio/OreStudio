@@ -220,8 +220,8 @@ TEST_CASE("reject_ir_metric_present_when_type_is_not_quote", tags) {
 }
 
 TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags) {
-    const auto id = oresmd_parser::parse(
-        uri("oresmd://ir/usd?index=libor&tenor=3m&metric=par_rate"));
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=par_rate"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.type == instrument_type::quote);
     REQUIRE(ir.metric == metric::par_rate);

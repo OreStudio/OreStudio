@@ -93,8 +93,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // cancel() would be a no-op and the later async_wait() would block
     // forever against an expiry of time_point::max(). An expiry in the
     // past makes any wait issued afterward complete immediately too.
-    auto start_all_done =
-        std::make_shared<boost::asio::steady_timer>(io_ctx, boost::asio::steady_timer::time_point::max());
+    auto start_all_done = std::make_shared<boost::asio::steady_timer>(
+        io_ctx, boost::asio::steady_timer::time_point::max());
     auto start_all_failure = std::make_shared<std::exception_ptr>();
     boost::asio::co_spawn(
         io_ctx,

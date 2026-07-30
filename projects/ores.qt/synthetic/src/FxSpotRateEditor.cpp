@@ -932,7 +932,8 @@ void FxSpotRateEditor::recomputeOreKey() {
     if (base.empty() || quote.empty())
         oreKeyLabel_->setText({});
     else
-        oreKeyLabel_->setText(QString::fromStdString(oreKeyFor(base, quote).value_or(std::string())));
+        oreKeyLabel_->setText(
+            QString::fromStdString(oreKeyFor(base, quote).value_or(std::string())));
 }
 
 void FxSpotRateEditor::recomputeDefaultSourceName() {
@@ -1812,9 +1813,8 @@ void FxSpotRateEditor::onSaveClicked() {
     fx.quote_currency_code = quote;
     const auto oreKey = oreKeyFor(base, quote);
     if (!oreKey) {
-        QMessageBox::warning(this,
-                             tr("Invalid pair"),
-                             tr("Could not derive an ORE key for this currency pair."));
+        QMessageBox::warning(
+            this, tr("Invalid pair"), tr("Could not derive an ORE key for this currency pair."));
         return;
     }
     fx.ore_key = *oreKey;

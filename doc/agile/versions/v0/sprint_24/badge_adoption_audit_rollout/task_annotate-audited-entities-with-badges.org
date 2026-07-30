@@ -149,6 +149,7 @@ via its "Verifies task" field.
 | 3 | currency_pair classified as both Image and Badge | task_badge-adoption-coverage-audit.org | Fixed | Not a duplicate -- it genuinely has flag icons (base/quote combos) and a badge (classification field). Added a "Both" note clarifying the policy is per-field, not per-entity. |
 | 4 | 108 vs 120 entity-count mismatch | story.org, task_annotate-audited-entities-with-badges.org | Fixed | Updated acceptance/description text to the corrected 120 count. |
 | 5 | Cosmetic: badge_key column not padded to table width | ores.refdata.{monetary_nature,currency_market_tier}.org | Fixed | Re-aligned; regenerated diff confirmed no functional change. |
+| 6 | One more stale-link occurrence (sprint_23, out of scope, optional) | sprint_23/badge-colour-scheme-support/story.org | Fixed | Bot confirmed rounds 1-5 fully resolved; fixed this low-priority extra find anyway since it was trivial. |
 
 * Result
 

@@ -23,10 +23,10 @@
  *
  * Registers the synthetic.ir_curve_configs.realistic_2026 dataset: one
  * overnight-RFR-based curve per each of the top 20 currencies by FX
- * turnover (USD/SOFR, EUR/ESTR, JPY/TONAR, GBP/SONIA, CHF/SARON, AUD/
- * AONIA, CAD/CORRA, CNY/SHIBOR-ON, HKD/HONIA, SGD/SORA, SEK/SWESTR,
- * NOK/NOWA, NZD/NZIONA, KRW/KOFR, INR/MIBOR, MXN/TIIE-ON, ZAR/ZARONIA,
- * DKK/DESTR, PLN/POLONIA, TWD/TAIBOR-ON), with per-currency-calibrated
+ * turnover (USD/SOFR, EUR/ESTR, JPY/TONA, GBP/SONIA, CHF/SARON, AUD/
+ * AONIA, CAD/CORRA, CNY/SHIBOR, HKD/HONIA, SGD/SORA, SEK/SWESTR,
+ * NOK/NOWA, NZD/NZONIA, KRW/KOFR, INR/MIBOR, MXN/TIIE, ZAR/ZARONIA,
+ * DKK/DESTR, PLN/POLONIA, TWD/TAIBOR), with per-currency-calibrated
  * Cox-Ingersoll-Ross parameters (distinct reversion speed/vol/level per curve,
  * reflecting each market's own typical short-rate level and
  * volatility -- e.g. JPY near-zero and low-vol, EM currencies
@@ -111,7 +111,7 @@ begin
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
-        currency_code, index_name, process_type,
+        currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
         price_source, vintage_source, vintage_date
@@ -120,58 +120,62 @@ begin
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         -- Name prefix mirrors price_source (see the 2016 ORE Samples populate script's own
         -- comment on this convention) -- every row here is 'fixed' today.
-        'Fixed Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.index_name,
+        'Fixed Synthetic IR Curve (2026 Realistic): ' || c.currency_code || '/' || c.currency_code || '-' || upper(c.index_family),
         '2026 Realistic archetype: a per-currency-calibrated Cox-Ingersoll-Ross short-rate process for '
-        || c.currency_code || '''s current overnight risk-free rate, ' || c.index_name || '. '
+        || c.currency_code || '''s current overnight risk-free rate, ' || c.currency_code || '-' || upper(c.index_family) || '. '
         || 'Cox-Ingersoll-Ross''s volatility-scales-with-level, non-negative-by-construction dynamics are a '
         || 'better fit for short rates than Vasicek''s constant-vol Gaussian, without needing '
         || 'a real reference curve to calibrate Hull-White against. This is the dataset '
         || 'Barclays'' own provisioning flow publishes and auto-starts by default -- the '
         || 'primary, currently-live curve for this currency.',
-        true, true, c.currency_code, c.index_name, 'COX_INGERSOLL_ROSS',
+        true, true, c.currency_code, c.index_family, '', 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly',
         'fixed', '', ''
     from (values
-        -- currency, index code, annual kappa, annual sigma, theta (mean/initial level)
-        ('USD', 'USD-SOFR',      0.55, 0.008, 0.0400),
-        ('EUR', 'EUR-ESTR',      0.35, 0.010, 0.0300),
-        ('JPY', 'JPY-TONAR',     0.20, 0.006, 0.0025),
-        ('GBP', 'GBP-SONIA',     0.25, 0.013, 0.0450),
-        ('CHF', 'CHF-SARON',     0.30, 0.009, 0.0100),
-        ('AUD', 'AUD-AONIA',     0.40, 0.012, 0.0430),
-        ('CAD', 'CAD-CORRA',     0.45, 0.011, 0.0350),
-        ('CNY', 'CNY-SHIBOR-ON', 0.20, 0.006, 0.0180),
-        ('HKD', 'HKD-HONIA',     0.50, 0.009, 0.0450),
-        ('SGD', 'SGD-SORA',      0.35, 0.010, 0.0300),
-        ('SEK', 'SEK-SWESTR',    0.30, 0.012, 0.0250),
-        ('NOK', 'NOK-NOWA',      0.30, 0.013, 0.0400),
-        ('NZD', 'NZD-NZIONA',    0.35, 0.014, 0.0400),
-        ('KRW', 'KRW-KOFR',      0.30, 0.011, 0.0280),
-        ('INR', 'INR-MIBOR',     0.30, 0.018, 0.0650),
-        ('MXN', 'MXN-TIIE-ON',   0.25, 0.022, 0.1000),
-        ('ZAR', 'ZAR-ZARONIA',   0.25, 0.020, 0.0750),
-        ('DKK', 'DKK-DESTR',     0.35, 0.010, 0.0280),
-        ('PLN', 'PLN-POLONIA',   0.28, 0.016, 0.0550),
-        ('TWD', 'TWD-TAIBOR-ON', 0.30, 0.008, 0.0200)
-    ) as c(currency_code, index_name, annual_kappa, annual_sigma, theta);
+        -- currency, index_family, annual kappa, annual sigma, theta (mean/initial level).
+        -- Real-benchmark conventions (fixing calendar/day-count/settlement) for each family
+        -- are seeded in refdata_overnight_index_conventions_populate.sql /
+        -- refdata_ibor_index_conventions_populate.sql, sourced from ORE's own QuantExt/
+        -- QuantLib index definitions (see task C80D94BB's Notes).
+        ('USD', 'sofr',    0.55, 0.008, 0.0400),
+        ('EUR', 'estr',    0.35, 0.010, 0.0300),
+        ('JPY', 'tona',    0.20, 0.006, 0.0025),
+        ('GBP', 'sonia',   0.25, 0.013, 0.0450),
+        ('CHF', 'saron',   0.30, 0.009, 0.0100),
+        ('AUD', 'aonia',   0.40, 0.012, 0.0430),
+        ('CAD', 'corra',   0.45, 0.011, 0.0350),
+        ('CNY', 'shibor',  0.20, 0.006, 0.0180),
+        ('HKD', 'honia',   0.50, 0.009, 0.0450),
+        ('SGD', 'sora',    0.35, 0.010, 0.0300),
+        ('SEK', 'swestr',  0.30, 0.012, 0.0250),
+        ('NOK', 'nowa',    0.30, 0.013, 0.0400),
+        ('NZD', 'nzonia',  0.35, 0.014, 0.0400),
+        ('KRW', 'kofr',    0.30, 0.011, 0.0280),
+        ('INR', 'mibor',   0.30, 0.018, 0.0650),
+        ('MXN', 'tiie',    0.25, 0.022, 0.1000),
+        ('ZAR', 'zaronia', 0.25, 0.020, 0.0750),
+        ('DKK', 'destr',   0.35, 0.010, 0.0280),
+        ('PLN', 'polonia', 0.28, 0.016, 0.0550),
+        ('TWD', 'taibor',  0.30, 0.008, 0.0200)
+    ) as c(currency_code, index_family, annual_kappa, annual_sigma, theta);
 
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
-        dataset_id, tenant_id, currency_code, index_name,
+        dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )
     select
-        v_dataset_id, v_tenant_id, c.currency_code, c.index_name,
+        v_dataset_id, v_tenant_id, c.currency_code, c.index_family, '',
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
     from (values
-        ('USD', 'USD-SOFR'), ('EUR', 'EUR-ESTR'), ('JPY', 'JPY-TONAR'), ('GBP', 'GBP-SONIA'),
-        ('CHF', 'CHF-SARON'), ('AUD', 'AUD-AONIA'), ('CAD', 'CAD-CORRA'),
-        ('CNY', 'CNY-SHIBOR-ON'), ('HKD', 'HKD-HONIA'), ('SGD', 'SGD-SORA'),
-        ('SEK', 'SEK-SWESTR'), ('NOK', 'NOK-NOWA'), ('NZD', 'NZD-NZIONA'),
-        ('KRW', 'KRW-KOFR'), ('INR', 'INR-MIBOR'), ('MXN', 'MXN-TIIE-ON'),
-        ('ZAR', 'ZAR-ZARONIA'), ('DKK', 'DKK-DESTR'), ('PLN', 'PLN-POLONIA'),
-        ('TWD', 'TWD-TAIBOR-ON')
-    ) as c(currency_code, index_name)
+        ('USD', 'sofr'), ('EUR', 'estr'), ('JPY', 'tona'), ('GBP', 'sonia'),
+        ('CHF', 'saron'), ('AUD', 'aonia'), ('CAD', 'corra'),
+        ('CNY', 'shibor'), ('HKD', 'honia'), ('SGD', 'sora'),
+        ('SEK', 'swestr'), ('NOK', 'nowa'), ('NZD', 'nzonia'),
+        ('KRW', 'kofr'), ('INR', 'mibor'), ('MXN', 'tiie'),
+        ('ZAR', 'zaronia'), ('DKK', 'destr'), ('PLN', 'polonia'),
+        ('TWD', 'taibor')
+    ) as c(currency_code, index_family)
     cross join (values
         (0, 'SPOT', '1M', 'DEPO'),
         (1, 'SPOT', '3M', 'DEPO'),

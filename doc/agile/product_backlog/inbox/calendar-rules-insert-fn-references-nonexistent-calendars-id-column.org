@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: DA6C4A03-8033-4D34-BF0E-D7A0A3EA0929
+:END:
+#+title: calendar_rules insert trigger references calendars.id, which does not exist (calendars use code as PK)
+#+description: ores_refdata_calendar_rules_insert_fn() queries ores_refdata_calendars_tbl.id but that table's primary key column is code, not id -- causes 4 test failures in ores.refdata.core.tests (service_calendar_materialisation_service_tests.cpp), surfaced while running the full suite for an unrelated IR curve fix. Traced to commit 7351a89f7.
+#+type: capture
+#+level: cross
+#+filetags: :bug:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_refdata_calendar_rules_insert_fn()= (line ~96 of
+=projects/ores.sql/create/refdata/refdata_calendar_rules_create.sql=)
+does:
+
+#+begin_src sql
+not exists (
+    select 1 from ores_refdata_calendars_tbl
+    where tenant_id = NEW.tenant_id
+      and id = NEW.calendar_code
+      and valid_to = ores_utility_infinity_timestamp_fn()
+)
+#+end_src
+
+but =ores_refdata_calendars_tbl='s primary key is =(tenant_id, code,
+valid_from, valid_to)= -- it has no =id= column at all (see
+=refdata_calendars_create.sql:59=). Any =calendar_rule= insert/update
+fails with ~column "id" does not exist~.
+
+* Why
+
+Causes 4 test failures in =ores.refdata.core.tests=
+(=service_calendar_materialisation_service_tests.cpp=, e.g.
+=regenerate_exception_overrides_rule_holiday_back_to_business_day=),
+surfaced while running the full suite for an unrelated IR curve fix
+(task C80D94BB). Root-cause commit: =7351a89f7= "[refdata] Regenerate
+calendar_rule/calendar_type/calendar_date/business_day_convention_type
+against current templates" -- the FK check should read
+=code = NEW.calendar_code=, not =id = NEW.calendar_code=.
+
+* References
+
+- =projects/ores.sql/create/refdata/refdata_calendar_rules_create.sql:96=
+- =projects/ores.sql/create/refdata/refdata_calendars_create.sql:59= (the actual PK shape)
+- =projects/ores.refdata/core/tests/service_calendar_materialisation_service_tests.cpp=
+- Root-cause commit: =7351a89f7=
+
+* See also
+
+-

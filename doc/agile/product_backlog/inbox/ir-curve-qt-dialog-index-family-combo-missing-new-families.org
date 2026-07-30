@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: CE133221-9187-4901-8630-3B56AE75277F
+:END:
+#+title: IrCurveGenerationConfigDetailDialog's index_family combo doesn't list the new RFR/IBOR families
+#+description: The static indexFamilyCombo in IrCurveGenerationConfigDetailDialog.cpp is a hand-patched addition (no codegen paste-block seam exists for it), so widening index_family's enum via the org model doesn't propagate to it -- the interactive Qt create flow still only offers the original 6 families (libor/euribor/sofr/estr/sonia/tona), not the 15 added in task C80D94BB.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:synthetic:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=IrCurveGenerationConfigDetailDialog.cpp='s =setupIndexFamilyCombo()=-
+style block populates =ui_->indexFamilyCombo= with a hand-written list
+of =addItem= calls -- confirmed via =codegen entity generate
+ir_curve_generation_config --diff=: a full regen from the current
+=.org= model would *delete* this population entirely (along with a
+sibling =updateTenorComboForIndexFamily()= method and a service-layer
+=validate_index_family= composite validator), meaning none of these
+are driven by any documented paste-block seam -- they're direct hand-
+patches on generated files. Task C80D94BB widened =index_family='s
+allowed values from 6 to 22 (via the =.org= model's =static_combo=
+field list and SQL =Checks= table, generated narrowly via
+=--address ores.sql.schema= specifically to avoid clobbering these
+hand-patches), but could not safely propagate that to the Qt combo
+without either running the destructive full regen or hand-editing the
+generated file again (both out of bounds).
+
+* Why
+
+The interactive "create a new IR curve config" flow in the Qt Market
+Simulator still only offers the original 6 families
+(=libor=/=euribor=/=sofr=/=estr=/=sonia=/=tona=) in its dropdown, even
+though the schema, SQL publish pipeline, and DQ seed data now support
+22 (see task C80D94BB, story C29FE5A3). A user manually creating an IR
+curve config for e.g. AUD/AONIA via the Qt dialog cannot select it.
+Proper fix: add a real paste-block seam for Qt static-combo population
+(and, separately, for service-layer composite validators) to the
+codegen templates -- mirroring the =mdi_window=/=controller=
+header+impl seam pattern already established for toolbar
+actions/signals -- then convert these three hand-patches onto it.
+
+* References
+
+- =projects/ores.qt/synthetic/src/IrCurveGenerationConfigDetailDialog.cpp= (the hand-patched combo population)
+- =projects/ores.synthetic/core/src/service/ir_curve_generation_config_service.cpp= (=validate_index_family=, same problem)
+- =projects/ores.synthetic/modeling/ores.synthetic.ir_curve_generation_config.org= (the entity model; =index_family= is now 22 values)
+- =projects/ores.codegen/docs/paste_blocks_in_codegen.org= (existing paste-block catalogue to extend)
+- Task: [[id:C80D94BB-DA80-4871-AAF0-D4F852F58831][Fix realistic_2026 IR curve seed data / index_family enum mismatch]]
+
+* See also
+
+-

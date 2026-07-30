@@ -96,7 +96,7 @@ begin
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
-        currency_code, index_name, process_type,
+        currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
         price_source, vintage_source, vintage_date
@@ -107,28 +107,29 @@ begin
         -- the Simulator tree and list windows -- same convention applied across every synthetic
         -- FX spot config populate script (see synthetic_fx_spot_configs_*_populate.sql).
         initcap(c.price_source) || ' Synthetic IR Curve (2016 ORE Samples): '
-            || c.currency_code || '/' || c.index_name,
+            || c.currency_code || '/' || c.currency_code || '-' || upper(c.index_family) || '-' || c.tenor,
         '2016 ORE Samples archetype: a Vasicek short-rate process for ' || c.currency_code
-        || '''s discontinued IBOR-era benchmark, ' || c.index_name || ' -- '
+        || '''s discontinued IBOR-era benchmark, ' || c.currency_code || '-' || upper(c.index_family) || '-' || c.tenor || ' -- '
         || c.retirement_note
         || ' This is the dataset this theme''s own provisioning publishes and'
         || ' auto-starts by default when the 2016 ORE Samples collection is'
         || ' selected.',
-        true, true, c.currency_code, c.index_name, 'VASICEK',
+        true, true, c.currency_code, c.index_family, c.tenor, 'VASICEK',
         0.4, c.theta, 0.006, c.theta,
         60, 'Quarterly',
         c.price_source, c.vintage_source, c.vintage_date
     from (values
-        -- currency, legacy index code, theta (representative pre-cessation level), retirement
-        -- note, price_source, vintage_source, vintage_date. USD is seeded as the vintage
-        -- exemplar -- its DEPOSIT tenor (3M) has a real observation from ORE's own bundled
-        -- Legacy/Example_56 vintage (see marketdata_ir_deposit_rates_populate.sql); the other
-        -- three stay 'fixed' pending their own real DEPOSIT-tenor observations.
-        ('USD', 'USD-LIBOR-3M',   0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05'),
-        ('EUR', 'EUR-EURIBOR-3M', 0.0000, 'EURIBOR was never fully retired, unlike LIBOR, but €STR (since Oct 2019) is now EUR''s primary risk-free reference.', 'fixed', '', ''),
-        ('GBP', 'GBP-LIBOR-6M',   0.0050, 'GBP LIBOR ceased 31 December 2021; superseded by SONIA.', 'fixed', '', ''),
-        ('JPY', 'JPY-LIBOR-6M',   0.0010, 'JPY LIBOR ceased end 2021; superseded by TONA/TONAR.', 'fixed', '', '')
-    ) as c(currency_code, index_name, theta, retirement_note, price_source, vintage_source, vintage_date);
+        -- currency, index_family, tenor, theta (representative pre-cessation level),
+        -- retirement note, price_source, vintage_source, vintage_date. USD is seeded as
+        -- the vintage exemplar -- its DEPOSIT tenor (3M) has a real observation from
+        -- ORE's own bundled Legacy/Example_56 vintage (see
+        -- marketdata_ir_deposit_rates_populate.sql); the other three stay 'fixed'
+        -- pending their own real DEPOSIT-tenor observations.
+        ('USD', 'libor',    '3M', 0.0025, 'USD LIBOR ceased 30 June 2023 (most tenors); superseded by SOFR.', 'vintage', 'ore.samples.2016-02-05', '2016-02-05'),
+        ('EUR', 'euribor',  '3M', 0.0000, 'EURIBOR was never fully retired, unlike LIBOR, but €STR (since Oct 2019) is now EUR''s primary risk-free reference.', 'fixed', '', ''),
+        ('GBP', 'libor',    '6M', 0.0050, 'GBP LIBOR ceased 31 December 2021; superseded by SONIA.', 'fixed', '', ''),
+        ('JPY', 'libor',    '6M', 0.0010, 'JPY LIBOR ceased end 2021; superseded by TONA/TONAR.', 'fixed', '', '')
+    ) as c(currency_code, index_family, tenor, theta, retirement_note, price_source, vintage_source, vintage_date);
 
     -- Legacy curve templates: fuller LIBOR-style construction -- the spot
     -- fixing, an FRA strip bridging to the 2Y swap point (3x6/6x9/9x12 for
@@ -137,14 +138,14 @@ begin
     -- LIBOR/EURIBOR curve was actually constructed (deposit + FRA strip +
     -- swap strip), not an arbitrary abbreviation.
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
-        dataset_id, tenant_id, currency_code, index_name,
+        dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )
     select
-        v_dataset_id, v_tenant_id, e.currency_code, e.index_name,
+        v_dataset_id, v_tenant_id, e.currency_code, e.index_family, e.curve_tenor,
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
     from (
-        select 'USD' currency_code, 'USD-LIBOR-3M' index_name, s.sequence_index,
+        select 'USD' currency_code, 'libor' index_family, '3M' curve_tenor, s.sequence_index,
                s.start_tenor_code, s.end_tenor_code, s.instrument_code
         from (values
             (0, 'SPOT', '3M',  'DEPO'),
@@ -161,7 +162,7 @@ begin
             (11, 'SPOT', '30Y', 'IRS')
         ) as s(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
         union all
-        select 'EUR', 'EUR-EURIBOR-3M', s.sequence_index,
+        select 'EUR', 'euribor', '3M', s.sequence_index,
                s.start_tenor_code, s.end_tenor_code, s.instrument_code
         from (values
             (0, 'SPOT', '3M',  'DEPO'),
@@ -178,7 +179,7 @@ begin
             (11, 'SPOT', '30Y', 'IRS')
         ) as s(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
         union all
-        select 'GBP', 'GBP-LIBOR-6M', s.sequence_index,
+        select 'GBP', 'libor', '6M', s.sequence_index,
                s.start_tenor_code, s.end_tenor_code, s.instrument_code
         from (values
             (0, 'SPOT', '6M',  'DEPO'),
@@ -194,7 +195,7 @@ begin
             (10, 'SPOT', '30Y', 'IRS')
         ) as s(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
         union all
-        select 'JPY', 'JPY-LIBOR-6M', s.sequence_index,
+        select 'JPY', 'libor', '6M', s.sequence_index,
                s.start_tenor_code, s.end_tenor_code, s.instrument_code
         from (values
             (0, 'SPOT', '6M',  'DEPO'),
@@ -209,5 +210,5 @@ begin
             (9, 'SPOT', '20Y', 'IRS'),
             (10, 'SPOT', '30Y', 'IRS')
         ) as s(sequence_index, start_tenor_code, end_tenor_code, instrument_code)
-    ) as e(currency_code, index_name, sequence_index, start_tenor_code, end_tenor_code, instrument_code);
+    ) as e(currency_code, index_family, curve_tenor, sequence_index, start_tenor_code, end_tenor_code, instrument_code);
 end $$;

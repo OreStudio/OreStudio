@@ -40,8 +40,8 @@
  * which per-curve-calibrates and (for 2016 ORE Samples) is grounded in a
  * real historical curve.
  *
- * auto_start = false: this dataset shares (currency_code, index_name)
- * pairs with synthetic.ir_curve_configs.realistic_2026 (e.g. USD/USD-SOFR),
+ * auto_start = false: this dataset shares (currency_code, index_family)
+ * pairs with synthetic.ir_curve_configs.realistic_2026 (e.g. USD/sofr),
  * so starting both at once for the same currency would trip
  * curve_feed_controller's qualifier-collision check. Still enabled = true
  * (available, manually startable) for direct comparison against a vintage
@@ -101,7 +101,7 @@ begin
     insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled, auto_start,
-        currency_code, index_name, process_type,
+        currency_code, index_family, tenor, process_type,
         kappa, theta, sigma, initial_rate,
         ticks_per_hour, fixed_leg_payment_frequency_code,
         price_source, vintage_source, vintage_date
@@ -110,62 +110,62 @@ begin
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         -- Name prefix mirrors price_source (see the 2016 ORE Samples populate script's own
         -- comment on this convention) -- every row here is 'fixed' today.
-        'Fixed Synthetic IR Curve (Uniform Demo): ' || c.currency_code || '/' || c.index_name,
+        'Fixed Synthetic IR Curve (Uniform Demo): ' || c.currency_code || '/' || c.currency_code || '-' || upper(c.index_family),
         'Uniform Volatility Demo archetype: a single, uniform Vasicek short-rate process (same '
         || 'kappa/sigma across every currency, only theta/initial_rate vary) applied to '
-        || c.currency_code || '''s current risk-free rate, ' || c.index_name || '. '
+        || c.currency_code || '''s current risk-free rate, ' || c.currency_code || '-' || upper(c.index_family) || '. '
         || 'Intended for exercising the tick-batch/pricing pipeline with predictable, '
         || 'easy-to-reason-about dynamics -- not for realistic curve shape or '
         || 'per-currency calibration (see synthetic.ir_curve_configs.realistic_2026 for that). '
         || 'Not auto-started by default -- both this and realistic_2026 seed the same '
         || '(currency, index) pairs, so only one may run at a time per currency; enable '
         || 'and start this one explicitly to compare against a vintage theme''s calibration.',
-        true, false, c.currency_code, c.index_name, 'VASICEK',
+        true, false, c.currency_code, c.index_family, '', 'VASICEK',
         v_kappa, c.theta, v_sigma, c.theta,
         60, 'Quarterly',
         'fixed', '', ''
     from (values
-        -- currency, index code, theta (mean/initial level) -- same 20 currencies and levels
+        -- currency, index_family, theta (mean/initial level) -- same 20 currencies and levels
         -- as synthetic.ir_curve_configs.realistic_2026, but uniform kappa/sigma (v_kappa/v_sigma
         -- above) rather than per-curve calibration.
-        ('USD', 'USD-SOFR',      0.0400),
-        ('EUR', 'EUR-ESTR',      0.0300),
-        ('JPY', 'JPY-TONAR',     0.0025),
-        ('GBP', 'GBP-SONIA',     0.0450),
-        ('CHF', 'CHF-SARON',     0.0100),
-        ('AUD', 'AUD-AONIA',     0.0430),
-        ('CAD', 'CAD-CORRA',     0.0350),
-        ('CNY', 'CNY-SHIBOR-ON', 0.0180),
-        ('HKD', 'HKD-HONIA',     0.0450),
-        ('SGD', 'SGD-SORA',      0.0300),
-        ('SEK', 'SEK-SWESTR',    0.0250),
-        ('NOK', 'NOK-NOWA',      0.0400),
-        ('NZD', 'NZD-NZIONA',    0.0400),
-        ('KRW', 'KRW-KOFR',      0.0280),
-        ('INR', 'INR-MIBOR',     0.0650),
-        ('MXN', 'MXN-TIIE-ON',   0.1000),
-        ('ZAR', 'ZAR-ZARONIA',   0.0750),
-        ('DKK', 'DKK-DESTR',     0.0280),
-        ('PLN', 'PLN-POLONIA',   0.0550),
-        ('TWD', 'TWD-TAIBOR-ON', 0.0200)
-    ) as c(currency_code, index_name, theta);
+        ('USD', 'sofr',    0.0400),
+        ('EUR', 'estr',    0.0300),
+        ('JPY', 'tona',    0.0025),
+        ('GBP', 'sonia',   0.0450),
+        ('CHF', 'saron',   0.0100),
+        ('AUD', 'aonia',   0.0430),
+        ('CAD', 'corra',   0.0350),
+        ('CNY', 'shibor',  0.0180),
+        ('HKD', 'honia',   0.0450),
+        ('SGD', 'sora',    0.0300),
+        ('SEK', 'swestr',  0.0250),
+        ('NOK', 'nowa',    0.0400),
+        ('NZD', 'nzonia',  0.0400),
+        ('KRW', 'kofr',    0.0280),
+        ('INR', 'mibor',   0.0650),
+        ('MXN', 'tiie',    0.1000),
+        ('ZAR', 'zaronia', 0.0750),
+        ('DKK', 'destr',   0.0280),
+        ('PLN', 'polonia', 0.0550),
+        ('TWD', 'taibor',  0.0200)
+    ) as c(currency_code, index_family, theta);
 
     insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
-        dataset_id, tenant_id, currency_code, index_name,
+        dataset_id, tenant_id, currency_code, index_family, tenor,
         sequence_index, start_tenor_code, end_tenor_code, instrument_code
     )
     select
-        v_dataset_id, v_tenant_id, c.currency_code, c.index_name,
+        v_dataset_id, v_tenant_id, c.currency_code, c.index_family, '',
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
     from (values
-        ('USD', 'USD-SOFR'), ('EUR', 'EUR-ESTR'), ('JPY', 'JPY-TONAR'), ('GBP', 'GBP-SONIA'),
-        ('CHF', 'CHF-SARON'), ('AUD', 'AUD-AONIA'), ('CAD', 'CAD-CORRA'),
-        ('CNY', 'CNY-SHIBOR-ON'), ('HKD', 'HKD-HONIA'), ('SGD', 'SGD-SORA'),
-        ('SEK', 'SEK-SWESTR'), ('NOK', 'NOK-NOWA'), ('NZD', 'NZD-NZIONA'),
-        ('KRW', 'KRW-KOFR'), ('INR', 'INR-MIBOR'), ('MXN', 'MXN-TIIE-ON'),
-        ('ZAR', 'ZAR-ZARONIA'), ('DKK', 'DKK-DESTR'), ('PLN', 'PLN-POLONIA'),
-        ('TWD', 'TWD-TAIBOR-ON')
-    ) as c(currency_code, index_name)
+        ('USD', 'sofr'), ('EUR', 'estr'), ('JPY', 'tona'), ('GBP', 'sonia'),
+        ('CHF', 'saron'), ('AUD', 'aonia'), ('CAD', 'corra'),
+        ('CNY', 'shibor'), ('HKD', 'honia'), ('SGD', 'sora'),
+        ('SEK', 'swestr'), ('NOK', 'nowa'), ('NZD', 'nzonia'),
+        ('KRW', 'kofr'), ('INR', 'mibor'), ('MXN', 'tiie'),
+        ('ZAR', 'zaronia'), ('DKK', 'destr'), ('PLN', 'polonia'),
+        ('TWD', 'taibor')
+    ) as c(currency_code, index_family)
     cross join (values
         (0, 'SPOT', '3M', 'DEPO'),
         (1, '3M', '6M', 'FRA'),

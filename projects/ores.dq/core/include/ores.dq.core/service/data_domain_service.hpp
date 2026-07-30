@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_domains();
 
+
     /**
      * @brief Retrieves a single data domain as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param name The name of the data domain.
      * @param version The version to fetch.
      * @return The data domain at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                              std::uint32_t version);
 
     /**
-     * @brief Retrieves a single data domain by its name.
+     * @brief Retrieves a single data domain by its primary key.
      *
-     * @param name The name of the data domain.
      * @return The data domain if found, std::nullopt otherwise.
      */
     std::optional<domain::data_domain> get_domain(const std::string& name);
@@ -111,15 +110,14 @@ public:
     void save_domains(const std::vector<domain::data_domain>& domains);
 
     /**
-     * @brief Deletes a data domain by its name.
+     * @brief Deletes a data domain by its primary key.
      *
-     * @param name The name of the data domain to delete.
      * @throws std::exception on failure.
      */
     void delete_domain(const std::string& name);
 
     /**
-     * @brief Deletes data domains by their names.
+     * @brief Deletes data domains by their primary keys.
      */
     void delete_domains(const std::vector<std::string>& names);
 

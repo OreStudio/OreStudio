@@ -164,6 +164,9 @@ generate_synthetic_{{entity_plural}}(std::size_t n,
 {{#has_uuid_left_or_right}}
 #include <boost/uuid/uuid_io.hpp>
 {{/has_uuid_left_or_right}}
+{{#needs_counter}}
+#include <atomic>
+{{/needs_counter}}
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -173,6 +176,10 @@ using ores::utility::generation::generation_keys;
 
 domain::{{name_singular}} generate_synthetic_{{name_singular}}(
     utility::generation::generation_context& ctx) {
+{{#needs_counter}}
+    static std::atomic<int> counter{0};
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+{{/needs_counter}}
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 {{#has_tenant_id}}

@@ -100,7 +100,7 @@ TEST_CASE("dataset_bundle_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated bundle: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());

@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_catalogs();
 
+
     /**
      * @brief Retrieves a single catalog as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param name The name of the catalog.
      * @param version The version to fetch.
      * @return The catalog at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                           std::uint32_t version);
 
     /**
-     * @brief Retrieves a single catalog by its name.
+     * @brief Retrieves a single catalog by its primary key.
      *
-     * @param name The name of the catalog.
      * @return The catalog if found, std::nullopt otherwise.
      */
     std::optional<domain::catalog> get_catalog(const std::string& name);
@@ -111,15 +110,14 @@ public:
     void save_catalogs(const std::vector<domain::catalog>& catalogs);
 
     /**
-     * @brief Deletes a catalog by its name.
+     * @brief Deletes a catalog by its primary key.
      *
-     * @param name The name of the catalog to delete.
      * @throws std::exception on failure.
      */
     void delete_catalog(const std::string& name);
 
     /**
-     * @brief Deletes catalogs by their names.
+     * @brief Deletes catalogs by their primary keys.
      */
     void delete_catalogs(const std::vector<std::string>& names);
 

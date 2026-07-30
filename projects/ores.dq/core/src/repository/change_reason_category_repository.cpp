@@ -38,7 +38,7 @@ std::string change_reason_category_repository::sql() {
 
 void change_reason_category_repository::write(context ctx,
                                               const domain::change_reason_category& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing change reason category: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing change reason category. " << "code: " << v.code;
     execute_write_query(ctx,
                         change_reason_category_mapper::map(v),
                         lg(),
@@ -70,7 +70,7 @@ change_reason_category_repository::read_latest(context ctx) {
 
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason category. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason category. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
@@ -83,9 +83,11 @@ change_reason_category_repository::read_latest(context ctx, const std::string& c
         "Reading latest change reason category by code.");
 }
 
+
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all change reason category versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all change reason category versions. "
+                               << "code: " << code;
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
                        where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
@@ -100,7 +102,7 @@ change_reason_category_repository::read_all(context ctx, const std::string& code
 
 std::optional<domain::change_reason_category> change_reason_category_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading change reason category at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading change reason category at version. " << "code: " << code
                                << " version: " << version;
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
                        where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
@@ -119,7 +121,7 @@ std::optional<domain::change_reason_category> change_reason_category_repository:
 }
 
 void change_reason_category_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing change reason category: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing change reason category. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

@@ -996,14 +996,15 @@ def _substitute_paste_markers(text, data):
     every block in the current entity that ``:implements`` that kind UUID.
 
     Org-mode entity models carry an ``implementations`` dict keyed by kind
-    UUID under ``domain_entity``. For each marker, look up the matching
-    list of code bodies, join them with a blank line, and substitute.
+    UUID under ``domain_entity`` (or ``junction``, for junction models).
+    For each marker, look up the matching list of code bodies, join them
+    with a blank line, and substitute.
 
     Missing kinds produce an empty substitution and the entire marker line
     (including its newline) is collapsed, leaving no trace in the output.
     This makes templates safe to include markers that no current entity
     implements."""
-    de = data.get("domain_entity") or {}
+    de = data.get("domain_entity") or data.get("junction") or {}
     impls = de.get("implementations") or {}
 
     def replace(match):
@@ -1451,17 +1452,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Check for Qt generation flag (qt_ or cpp_qt_ prefix in target_template)
     generate_qt = target_template and (target_template.startswith('qt_') or target_template.startswith('cpp_qt_'))
 
-    # A junction is only ever eligible for ores.cpp.qt generation via its
-    # own ** Qt drawer (see the domain_entity aliasing below) -- the
-    # facet's #+model_types: admits every junction at the routing layer
-    # (physical_space.py has no visibility into a junction's body, only
-    # its frontmatter), so a junction with no Qt drawer must fail fast
-    # here rather than silently emit a domain_entity-less render (empty
-    # class names, mangled macro guards -- the exact failure this facet
-    # exhibited before junction support existed at all).
+    # A junction or domain_entity is only ever eligible for ores.cpp.qt
+    # generation via its own ** Qt drawer -- the facet's #+model_types:
+    # admits every junction/domain_entity at the routing layer
+    # (physical_space.py has no visibility into a model's body, only its
+    # frontmatter), so a model with no Qt drawer must fail fast here
+    # rather than silently emit a qt-less render (empty class names,
+    # mangled macro guards, blank #include "" -- both model kinds have
+    # exhibited this before their Qt drawer became mandatory).
     if is_junction and generate_qt and not model.get('junction', {}).get('qt'):
         print(f"{model_filename}: junction has no ** Qt drawer -- "
               f"{target_template} needs one (see ores.refdata.calendar_date.org "
+              f"for a worked example)")
+        return 1
+    if is_domain_entity and generate_qt and not model.get('domain_entity', {}).get('qt'):
+        print(f"{model_filename}: domain_entity has no ** Qt drawer -- "
+              f"{target_template} needs one (see ores.refdata.calendar.org "
               f"for a worked example)")
         return 1
 
@@ -2101,6 +2107,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             'delete_request_id_field',
             pk_col + 's' if pk_type == 'text' else 'ids')
         domain_entity.setdefault('history_request_id_field', pk_col)
+        # Composite primary keys: history_request_id_field/delete_request_id_field
+        # above only ever cover the FIRST pk column (back-compat single-column
+        # mirroring in _primary_key_dict()). A multi-column text pk (e.g.
+        # subject_area's name+domain_name) needs every remaining column passed
+        # to the service call too, or history()/remove() silently look up (or
+        # delete!) rows keyed on a partial, ambiguous key. These extra-arg
+        # lists are empty for every single-column-pk entity, so the nats-
+        # handler template's use of them is a no-op there.
+        pk_extra_cols = (pk.get('columns') or [])[1:]
+        domain_entity.setdefault(
+            'history_request_extra_args',
+            [{'name': c['column']} for c in pk_extra_cols])
+        domain_entity.setdefault(
+            'delete_request_extra_args',
+            [{'name': c['column'] + 's'} for c in pk_extra_cols])
         domain_entity.setdefault('single_delete', False)
         validate_read_for_cache(domain_entity)
         validate_cached_by(domain_entity)
@@ -2979,6 +3000,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction.get('left', {}).get('is_date', False) or
             junction.get('right', {}).get('is_date', False) or
             any(c.get('is_date') for c in junction.get('columns', []))
+        )
+        # Mirrors domain_entity's needs_counter: only declare the
+        # generator's counter/idx local when some generator_expr actually
+        # references it -- otherwise it's an unused variable for every
+        # junction whose left/right/columns codes don't need a uniqueness
+        # suffix (e.g. badge_mapping).
+        junction['needs_counter'] = any(
+            'idx' in (side.get('generator_expr') or '')
+            for side in (junction.get('left', {}), junction.get('right', {}))
+        ) or any(
+            'idx' in (col.get('generator_expr') or '')
+            for col in junction.get('columns', [])
         )
         # Format description as comment block lines (for SQL)
         if 'description' in junction:

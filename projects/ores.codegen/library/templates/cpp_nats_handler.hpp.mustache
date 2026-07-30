@@ -195,7 +195,7 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
             try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}});
+                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}}{{#history_request_extra_args}}, req->{{name}}{{/history_request_extra_args}});
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_{{entity_singular}}_history_response{
@@ -231,10 +231,10 @@ public:
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
 {{#single_delete}}
-                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}});
+                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
 {{/single_delete}}
 {{^single_delete}}
-                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}});
+                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
 {{/single_delete}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
@@ -494,6 +494,7 @@ public:
     }
 
 {{/right.list_by}}
+<<paste:29297654-A74D-492F-B77C-B3A201474D86>>
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
@@ -649,7 +650,7 @@ public:
 {{/system_tenant_validation}}
         if (auto req = decode<get_{{entity_singular}}_history_request>(msg)) {
             try {
-                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}});
+                auto hist = svc.get_{{entity_singular_short}}_history(req->{{history_request_id_field}}{{#history_request_extra_args}}, req->{{name}}{{/history_request_extra_args}});
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, get_{{entity_singular}}_history_response{
@@ -685,10 +686,10 @@ public:
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
 {{#single_delete}}
-                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}});
+                svc.delete_{{entity_singular_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
 {{/single_delete}}
 {{^single_delete}}
-                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}});
+                svc.delete_{{entity_plural_short}}(req->{{delete_request_id_field}}{{#delete_request_extra_args}}, req->{{name}}{{/delete_request_extra_args}});
 {{/single_delete}}
                 BOOST_LOG_SEV({{entity_singular}}_handler_lg(), debug)
                     << "Completed " << msg.subject;

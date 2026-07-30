@@ -50,14 +50,14 @@ TEST_CASE("write_single_dataset_bundle", tags) {
     database_helper h;
 
     generation_context ctx;
-    dataset_bundle_repository repo(h.context());
+    dataset_bundle_repository repo;
     auto bundle = generate_synthetic_dataset_bundle(ctx);
-    bundle.tenant_id = h.tenant_id().to_string();
+    bundle.tenant_id = h.tenant_id();
     bundle.change_reason_code = "system.test";
     bundle.code = bundle.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Dataset bundle: " << bundle;
-    CHECK_NOTHROW(repo.write(bundle));
+    CHECK_NOTHROW(repo.write(h.context(), bundle));
 }
 
 TEST_CASE("write_multiple_dataset_bundles", tags) {
@@ -65,17 +65,17 @@ TEST_CASE("write_multiple_dataset_bundles", tags) {
 
     database_helper h;
 
-    dataset_bundle_repository repo(h.context());
+    dataset_bundle_repository repo;
     generation_context ctx;
     auto bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : bundles) {
-        b.tenant_id = h.tenant_id().to_string();
+        b.tenant_id = h.tenant_id();
         b.change_reason_code = "system.test";
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Dataset bundles: " << bundles;
 
-    CHECK_NOTHROW(repo.write(bundles));
+    CHECK_NOTHROW(repo.write(h.context(), bundles));
 }
 
 TEST_CASE("read_latest_dataset_bundles", tags) {
@@ -83,19 +83,19 @@ TEST_CASE("read_latest_dataset_bundles", tags) {
 
     database_helper h;
 
-    dataset_bundle_repository repo(h.context());
+    dataset_bundle_repository repo;
     generation_context ctx;
     auto written_bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : written_bundles) {
-        b.tenant_id = h.tenant_id().to_string();
+        b.tenant_id = h.tenant_id();
         b.change_reason_code = "system.test";
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
     BOOST_LOG_SEV(lg, debug) << "Written bundles: " << written_bundles;
 
-    repo.write(written_bundles);
+    repo.write(h.context(), written_bundles);
 
-    auto read_bundles = repo.read_latest();
+    auto read_bundles = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     CHECK(!read_bundles.empty());
@@ -107,22 +107,22 @@ TEST_CASE("read_latest_dataset_bundle_by_id", tags) {
 
     database_helper h;
 
-    dataset_bundle_repository repo(h.context());
+    dataset_bundle_repository repo;
     generation_context ctx;
     auto bundles = generate_synthetic_dataset_bundles(3, ctx);
     for (auto& b : bundles) {
-        b.tenant_id = h.tenant_id().to_string();
+        b.tenant_id = h.tenant_id();
         b.change_reason_code = "system.test";
         b.code = b.code + "_" + std::string(faker::string::alphanumeric(8));
     }
 
     const auto target = bundles.front();
     BOOST_LOG_SEV(lg, debug) << "Write bundles: " << bundles;
-    repo.write(bundles);
+    repo.write(h.context(), bundles);
 
     BOOST_LOG_SEV(lg, debug) << "Target bundle: " << target;
 
-    auto read_bundles = repo.read_latest(target.id);
+    auto read_bundles = repo.read_latest(h.context(), boost::uuids::to_string(target.id));
     BOOST_LOG_SEV(lg, debug) << "Read bundles: " << read_bundles;
 
     REQUIRE(read_bundles.size() == 1);

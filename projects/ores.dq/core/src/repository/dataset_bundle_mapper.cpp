@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -33,10 +33,14 @@ domain::dataset_bundle dataset_bundle_mapper::map(const dataset_bundle_entity& v
 
     domain::dataset_bundle r;
     r.version = v.version;
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.code = v.code;
+
+
     r.name = v.name;
+
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -53,10 +57,14 @@ dataset_bundle_entity dataset_bundle_mapper::map(const domain::dataset_bundle& v
 
     dataset_bundle_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.code = v.code;
+
+
     r.name = v.name;
+
     r.description = v.description;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

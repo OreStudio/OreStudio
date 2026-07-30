@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_domains();
 
+
     /**
      * @brief Retrieves a single code domain as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the code domain.
      * @param version The version to fetch.
      * @return The code domain at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                              std::uint32_t version);
 
     /**
-     * @brief Retrieves a single code domain by its code.
+     * @brief Retrieves a single code domain by its primary key.
      *
-     * @param code The code of the code domain.
      * @return The code domain if found, std::nullopt otherwise.
      */
     std::optional<domain::code_domain> get_domain(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_domains(const std::vector<domain::code_domain>& domains);
 
     /**
-     * @brief Deletes a code domain by its code.
+     * @brief Deletes a code domain by its primary key.
      *
-     * @param code The code of the code domain to delete.
      * @throws std::exception on failure.
      */
     void delete_domain(const std::string& code);
 
     /**
-     * @brief Deletes code domains by their codes.
+     * @brief Deletes code domains by their primary keys.
      */
     void delete_domains(const std::vector<std::string>& codes);
 

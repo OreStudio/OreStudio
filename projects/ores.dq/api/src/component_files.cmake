@@ -197,6 +197,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/coding_scheme_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/data_domain_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_bundle_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/dataset_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/methodology_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/eventing/nature_dimension_changed_event.hpp"

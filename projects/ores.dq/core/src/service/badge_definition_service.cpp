@@ -42,17 +42,18 @@ std::uint32_t badge_definition_service::count_definitions() {
     return repo_.get_total_definition_count(ctx_);
 }
 
+
 std::optional<domain::badge_definition>
 badge_definition_service::get_definition_at_version(const std::string& code,
                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::badge_definition>
 badge_definition_service::get_definition(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting badge definition. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -62,18 +63,19 @@ badge_definition_service::get_definition(const std::string& code) {
 void badge_definition_service::save_definition(const domain::badge_definition& v) {
     if (v.code.empty())
         throw std::invalid_argument("Badge Definition code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving badge definition: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving badge definition. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved badge definition: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved badge definition. " << "code: " << v.code;
 }
 
 void badge_definition_service::save_definitions(
     const std::vector<domain::badge_definition>& definitions) {
-    for (const auto& e : definitions)
+    for (const auto& e : definitions) {
         if (e.code.empty())
             throw std::invalid_argument("Badge Definition code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " badge definitions";
     auto ts = definitions;
     for (auto& e : ts)
@@ -82,9 +84,9 @@ void badge_definition_service::save_definitions(
 }
 
 void badge_definition_service::delete_definition(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge definition: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing badge definition. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed badge definition: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed badge definition. " << "code: " << code;
 }
 
 void badge_definition_service::delete_definitions(const std::vector<std::string>& codes) {
@@ -93,7 +95,7 @@ void badge_definition_service::delete_definitions(const std::vector<std::string>
 
 std::vector<domain::badge_definition>
 badge_definition_service::get_definition_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge definition: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge definition. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

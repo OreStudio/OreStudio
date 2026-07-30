@@ -75,6 +75,7 @@ public:
      */
     std::uint32_t count_areas();
 
+
     /**
      * @brief Retrieves a single subject area as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.

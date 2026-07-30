@@ -41,6 +41,11 @@ namespace ores::dq::domain {
  * - ('dq_nature',    'Actual')  -> 'dq_actual'
  *
  * Populated via seed scripts; no management UI needed.
+ *
+ * NATS/protocol/service are disabled above: badge lookups already go
+ * through the hand-maintained badge_handler/badge_service (see
+ * registrar.cpp's own comment), so the generic generated messaging
+ * stack for this junction would be dead code alongside it.
  */
 struct badge_mapping final {
     /**

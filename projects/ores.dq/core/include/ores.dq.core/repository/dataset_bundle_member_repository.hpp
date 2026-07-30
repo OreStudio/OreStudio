@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -57,6 +57,17 @@ public:
     std::vector<domain::dataset_bundle_member> read_latest();
     std::vector<domain::dataset_bundle_member>
     read_latest_by_bundle(const std::string& bundle_code);
+    /**
+     * @brief Reads latest dataset bundle members filtered by bundle_code, with pagination.
+     */
+    std::vector<domain::dataset_bundle_member> read_latest_by_bundle(const std::string& bundle_code,
+                                                                     std::uint32_t offset,
+                                                                     std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active dataset bundle members filtered by bundle_code.
+     */
+    std::uint32_t get_total_member_count_by_bundle(const std::string& bundle_code);
     std::vector<domain::dataset_bundle_member>
     read_latest_by_dataset(const std::string& dataset_code);
 

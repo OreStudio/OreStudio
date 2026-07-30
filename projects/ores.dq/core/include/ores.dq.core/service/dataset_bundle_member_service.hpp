@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
-#define ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
+#ifndef ORES_DQ_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
+#define ORES_DQ_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
-#include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <string>
@@ -36,7 +35,7 @@ namespace ores::dq::service {
  * This service provides functionality for:
  * - Managing dataset bundle members (CRUD operations)
  */
-class ORES_DQ_CORE_EXPORT dataset_bundle_member_service {
+class dataset_bundle_member_service {
 private:
     inline static std::string_view logger_name = "ores.dq.service.dataset_bundle_member_service";
 
@@ -70,18 +69,22 @@ public:
     list_members_by_bundle(const std::string& bundle_code);
 
     /**
+     * @brief Lists dataset bundle members for a specific bundle, with pagination.
+     */
+    std::vector<domain::dataset_bundle_member> list_members_by_bundle(
+        const std::string& bundle_code, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active dataset bundle members filtered by bundle_code.
+     */
+    std::uint32_t get_total_member_count_by_bundle(const std::string& bundle_code);
+
+    /**
      * @brief Saves a dataset bundle member (creates or updates).
      *
      * @param member The dataset bundle member to save
      */
     void save_member(const domain::dataset_bundle_member& member);
-
-    /**
-     * @brief Saves multiple dataset bundle members (creates or updates).
-     *
-     * @param members The dataset bundle members to save
-     */
-    void save_members(const std::vector<domain::dataset_bundle_member>& members);
 
     /**
      * @brief Removes a dataset bundle member.

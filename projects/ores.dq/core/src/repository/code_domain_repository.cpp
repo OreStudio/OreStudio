@@ -37,7 +37,7 @@ std::string code_domain_repository::sql() {
 }
 
 void code_domain_repository::write(context ctx, const domain::code_domain& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing code domain: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing code domain. " << "code: " << v.code;
     execute_write_query(ctx, code_domain_mapper::map(v), lg(), "Writing code domain to database.");
 }
 
@@ -63,7 +63,7 @@ std::vector<domain::code_domain> code_domain_repository::read_latest(context ctx
 
 std::vector<domain::code_domain> code_domain_repository::read_latest(context ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest code domain. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest code domain. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -78,9 +78,10 @@ std::vector<domain::code_domain> code_domain_repository::read_latest(context ctx
         "Reading latest code domain by code.");
 }
 
+
 std::vector<domain::code_domain> code_domain_repository::read_all(context ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all code domain versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all code domain versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<code_domain_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -97,7 +98,7 @@ std::vector<domain::code_domain> code_domain_repository::read_all(context ctx,
 std::optional<domain::code_domain> code_domain_repository::read_at_version(context ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading code domain at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading code domain at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<code_domain_entity>> |
@@ -117,7 +118,7 @@ std::optional<domain::code_domain> code_domain_repository::read_at_version(conte
 }
 
 void code_domain_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing code domain: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing code domain. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

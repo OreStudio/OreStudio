@@ -1311,6 +1311,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     if cpp_out:
         j["cpp"] = cpp_out
 
+    # Implementations by kind UUID -- consumed by the post-render
+    # ``<<paste:UUID>>`` substitution pass in the codegen driver, mirroring
+    # domain_entity's equivalent collection in org_document_to_model().
+    impls = _collect_implementations(doc.root)
+    if impls:
+        j["implementations"] = impls
+
     return {"junction": j}
 
 

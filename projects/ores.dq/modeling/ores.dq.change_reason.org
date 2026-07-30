@@ -29,11 +29,13 @@ external source).
 :component: dq
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique code identifying this change reason.
@@ -43,10 +45,6 @@ Examples: "typo_fix", "new_regulation".
 #+begin_src cpp :name generator
 std::string(faker::word::verb()) + "_reason"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -151,12 +149,6 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_dq_change_reasons_tbl
-:END:
-
-* Validation function
-:PROPERTIES:
-:tenant_scope: tenant
-:order_by:     code
 :END:
 
 * Insert trigger

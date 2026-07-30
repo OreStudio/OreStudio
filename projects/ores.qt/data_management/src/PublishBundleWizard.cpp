@@ -135,6 +135,7 @@ void BundleSummaryPage::loadMembers() {
 
     dq::messaging::get_dataset_bundle_members_by_bundle_request request;
     request.bundle_code = wizard_->bundleCode().toStdString();
+    request.limit = 1000;
 
     auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
 
@@ -146,7 +147,7 @@ void BundleSummaryPage::loadMembers() {
     }
 
     // Store members in wizard for use by other pages
-    wizard_->setMembers(std::move(result->members));
+    wizard_->setMembers(std::move(result->dataset_bundle_members));
     membersLoaded_ = true;
 
     // Scan for lei_parties datasets and optional members

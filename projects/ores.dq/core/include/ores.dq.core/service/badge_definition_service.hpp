@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_definitions();
 
+
     /**
      * @brief Retrieves a single badge definition as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the badge definition.
      * @param version The version to fetch.
      * @return The badge definition at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                       std::uint32_t version);
 
     /**
-     * @brief Retrieves a single badge definition by its code.
+     * @brief Retrieves a single badge definition by its primary key.
      *
-     * @param code The code of the badge definition.
      * @return The badge definition if found, std::nullopt otherwise.
      */
     std::optional<domain::badge_definition> get_definition(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_definitions(const std::vector<domain::badge_definition>& definitions);
 
     /**
-     * @brief Deletes a badge definition by its code.
+     * @brief Deletes a badge definition by its primary key.
      *
-     * @param code The code of the badge definition to delete.
      * @throws std::exception on failure.
      */
     void delete_definition(const std::string& code);
 
     /**
-     * @brief Deletes badge definitions by their codes.
+     * @brief Deletes badge definitions by their primary keys.
      */
     void delete_definitions(const std::vector<std::string>& codes);
 

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,7 +24,9 @@
 #include "ores.dq.api/domain/dataset_bundle.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,22 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit dataset_bundle_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(const domain::dataset_bundle& bundle);
-    void write(const std::vector<domain::dataset_bundle>& bundles);
+    /**
+     * @brief Writes dataset bundles to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::dataset_bundle& v);
+    void write(context ctx, const std::vector<domain::dataset_bundle>& v);
+    /**@}*/
 
-    std::vector<domain::dataset_bundle> read_latest();
-    std::vector<domain::dataset_bundle> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::dataset_bundle> read_latest_by_code(const std::string& code);
+    /**
+     * @brief Reads latest dataset bundles, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::dataset_bundle> read_latest(context ctx);
+    std::vector<domain::dataset_bundle> read_latest(context ctx, const std::string& id);
+    /**@}*/
 
-    std::vector<domain::dataset_bundle> read_all(const boost::uuids::uuid& id);
-    void remove(const boost::uuids::uuid& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Reads all dataset bundles, possibly filtered by primary key.
+     */
+    std::vector<domain::dataset_bundle> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single dataset bundle as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::dataset_bundle>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest dataset bundles with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::dataset_bundle>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active dataset bundles.
+     * @param ctx Repository context with database connection
+     * @return Total number of active dataset bundles
+     */
+    std::uint32_t get_total_bundle_count(context ctx);
+
+    /**
+     * @brief Deletes a dataset bundle by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes dataset bundles by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -29,17 +29,21 @@ using ores::utility::generation::generation_keys;
 domain::dataset_bundle_member
 generate_synthetic_dataset_bundle_member(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::dataset_bundle_member r;
-    r.version = 1;
+    r.version = 0;
+    r.tenant_id = tenant_id;
     r.bundle_code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
     r.dataset_code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun()) +
                      "_" + std::to_string(idx);
-    r.display_order = ctx.random_int(1, 100);
+    r.display_order = faker::number::integer(1, 100);
+    r.optional = faker::datatype::boolean();
     r.modified_by = modified_by;
-    r.change_reason_code = "system.new_record";
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

@@ -97,13 +97,13 @@ TEST_CASE("dataset_bundle_member_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated bundle member: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.bundle_code.empty());
     CHECK(!sut.dataset_code.empty());
     CHECK(sut.display_order >= 1);
     CHECK(sut.display_order <= 100);
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new_record");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("dataset_bundle_member_generator_produces_multiple_instances", tags) {

@@ -42,16 +42,17 @@ std::uint32_t badge_severity_service::count_severities() {
     return repo_.get_total_severity_count(ctx_);
 }
 
+
 std::optional<domain::badge_severity>
 badge_severity_service::get_severity_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::badge_severity>
 badge_severity_service::get_severity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting badge severity. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -61,18 +62,19 @@ badge_severity_service::get_severity(const std::string& code) {
 void badge_severity_service::save_severity(const domain::badge_severity& v) {
     if (v.code.empty())
         throw std::invalid_argument("Badge Severity code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving badge severity: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving badge severity. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved badge severity: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved badge severity. " << "code: " << v.code;
 }
 
 void badge_severity_service::save_severities(
     const std::vector<domain::badge_severity>& severities) {
-    for (const auto& e : severities)
+    for (const auto& e : severities) {
         if (e.code.empty())
             throw std::invalid_argument("Badge Severity code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << severities.size() << " badge severities";
     auto ts = severities;
     for (auto& e : ts)
@@ -81,9 +83,9 @@ void badge_severity_service::save_severities(
 }
 
 void badge_severity_service::delete_severity(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed badge severity: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed badge severity. " << "code: " << code;
 }
 
 void badge_severity_service::delete_severities(const std::vector<std::string>& codes) {
@@ -92,7 +94,7 @@ void badge_severity_service::delete_severities(const std::vector<std::string>& c
 
 std::vector<domain::badge_severity>
 badge_severity_service::get_severity_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge severity: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for badge severity. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

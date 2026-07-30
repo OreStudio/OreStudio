@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,6 +22,8 @@
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::dq::repository {
@@ -42,7 +44,7 @@ struct dataset_bundle_member_entity {
     std::string dataset_code;
     int version = 0;
     int display_order = 0;
-    bool optional = false;
+    bool optional;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

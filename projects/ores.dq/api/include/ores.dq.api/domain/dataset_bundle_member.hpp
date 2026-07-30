@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
-#define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
+#ifndef ORES_DQ_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
+#define ORES_DQ_DOMAIN_DATASET_BUNDLE_MEMBER_HPP
 
 #include <chrono>
-#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
@@ -65,23 +65,26 @@ struct dataset_bundle_member final {
     /**
      * @brief Order in which this dataset should be displayed or processed.
      *
-     * Lower numbers appear first. Used for controlling installation order
-     * and UI presentation.
+     * Lower numbers appear first. Used for controlling installation order and UI presentation.
      */
     int display_order = 0;
 
     /**
      * @brief Whether this dataset is optional in the bundle.
      *
-     * Optional datasets require explicit opt-in during publication.
-     * They are skipped unless the user selects them in the wizard.
+     * Optional datasets are skipped if not available during bundle installation.
      */
-    bool optional = false;
+    bool optional;
 
     /**
-     * @brief Username of the person who last modified this membership.
+     * @brief Username of the person who last modified this dataset bundle member.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -96,15 +99,20 @@ struct dataset_bundle_member final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for dataset_bundle_member, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const dataset_bundle_member&) {
+    return "ores.dq.dataset_bundle_member";
+}
 
 }
 

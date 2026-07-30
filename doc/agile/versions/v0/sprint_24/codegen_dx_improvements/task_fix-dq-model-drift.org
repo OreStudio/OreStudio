@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-dq-model-drift
+#+pr: 1777
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,11 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -89,12 +89,78 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1777][#1777]] | [dq] Fix dq entity model drift |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction generator template unconditionally declares counter/idx even when no generator_expr references idx (e.g. badge_mapping) | ores.cpp.generator.generator_impl.org, core.py | Fixed | Added a needs_counter flag for junctions mirroring domain_entity's, gated the declaration (a1c52579a). |
+| 2 | badge_mapping's newly generated messaging/service stack is completely unwired -- registrar.cpp still routes through the bespoke badge_handler | ores.dq.badge_mapping_junction.org, generated messaging/service files | Fixed | Disabled ores.cpp.nats-handler/nats-sub-registrar/protocol/service for badge_mapping via :ores.*.enabled: false; removed the dead generated files (a1c52579a). |
+| 3 | Junction template drops boolean :default: initializers (dataset_bundle_member's optional field) | cpp_domain_type_class.hpp.mustache | Declined | Pre-existing gap, also present in refdata's calendar_date before this PR; every construction site already sets the field explicitly. Out of scope for this task. |
+| 4 | NATS subject/response-field rename for dataset_bundle_members by-bundle lookup | dataset_bundle_member_protocol.hpp | Declined | Informational only; producer and consumer updated together in this PR, internally consistent. |
+| 5 | No unit test coverage for the new codegen logic | core.py, generate.py | Fixed | Added projects/ores.codegen/tests/test_dq_drift_fixes.py covering composite-PK extra args and junction counter/idx gating (a1c52579a). |
 
 * Result
+
+All ores.dq =domain_entity= and =junction= models regenerated clean.
+Along the way, uncovered and fixed several codegen infrastructure
+gaps that were classes of bugs rather than one-off drift:
+
+- Junctions had no =<<paste:UUID>>= mechanism at all (unlike
+  domain_entity). Added it to the nats-handler and protocol junction
+  templates and to =load_org_junction_model=/=_substitute_paste_markers=,
+  and used it to restore =dataset_bundle_member='s hand-written plain
+  =list()= operation. Its =by_bundle= operation instead moved onto the
+  existing generic =:list_by:= mechanism (already proven by
+  =calendar_date=) rather than a paste block, per "paste blocks only
+  for what isn't already generic".
+- A junction or domain_entity with no =** Qt= drawer used to abort
+  the *entire* generate the moment it reached the first Qt unit
+  (junction), or silently emit broken Qt output -- empty =#include=,
+  empty class names (domain_entity, no guard at all) -- starving
+  every facet ordered after Qt (repository, service, SQL) of ever
+  being generated. Both are now skipped cleanly under the default
+  full generate; an explicit =--address ores.cpp.qt= still fails
+  loud. Removed the resulting untracked, never-successfully-generated
+  Qt scaffolding for =catalog=, =subject_area=, =change_reason=,
+  =change_reason_category=, =data_domain=.
+- Composite text primary keys: the generated NATS handler's
+  =history()=/=remove()= only ever passed the *first* pk column to
+  the service, silently dropping the rest of a compound key (caught
+  via =subject_area='s =name=+=domain_name= key). Added
+  =history_request_extra_args=/=delete_request_extra_args= to carry
+  the remaining columns.
+- Junction generators had no per-row uniqueness guarantee (unlike
+  domain_entity's counter/idx mechanism) -- batch-generating a
+  junction with plain faker-word left/right codes could (and did)
+  collide on the composite PK. Added the same counter/idx pattern to
+  the junction generator template.
+- Model-level fixes: stale pre-split =ores.dq/domain/...= /
+  =ores.dq/messaging/...= include paths in =code_domain=/
+  =dataset_bundle=/=badge_severity='s Qt drawers; an invalid =Icon=
+  enum value on two entities (=Award=, =Grid= -- neither exists);
+  =change_reason.org='s own auto-generated validation function
+  collided by name with the pre-existing, widely-used shared
+  =ores_dq_validate_change_reason_fn= helper (removed the entity's
+  redundant =* Validation function= section -- nothing referenced
+  it); the =dataset_bundle= seed upsert function's =ON CONFLICT=
+  clause didn't match the entity's actual =(tenant_id, code, name)=
+  composite natural key.
+- =code_domain='s Qt regen was reverted: its =BadgeCache= passthrough
+  (Badge Mappings tab) has no template support and isn't common to
+  other entities, so it stays hand-maintained until a Qt paste-block
+  seam exists -- same treatment as =party='s SQL in the refdata task.
+- Updated stale test expectations (generator =version=/
+  =change_reason_code= defaults) and hand-written call sites
+  (=registrar.cpp=, =PublishBundleWizard.cpp=,
+  =DataLibrarianWindow.cpp=, =DatasetBundleDetailDialog.cpp=) to
+  match the regenerated shapes.
+
+Verification: local build clean (=linux-clang-debug-make=); full
+=rat= (build + ctest across every component) passed, after a
+=db recreate= (the schema had drifted: the change_reason_fn name
+collision and the dataset_bundle seed ON CONFLICT mismatch both
+blocked schema setup).
+
+Task-ID: B8FE7DA1-18D7-4F33-8402-21411A51A8E2

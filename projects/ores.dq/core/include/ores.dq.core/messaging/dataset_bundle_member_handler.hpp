@@ -30,14 +30,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
-#include <stdexcept>
 
 namespace ores::dq::messaging {
-
-using ores::service::messaging::reply;
-using ores::service::messaging::decode;
-using ores::service::messaging::error_reply;
-using namespace ores::logging;
 
 namespace {
 inline auto& dataset_bundle_member_handler_lg() {
@@ -47,6 +41,14 @@ inline auto& dataset_bundle_member_handler_lg() {
 }
 } // namespace
 
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for dataset bundle members operations.
+ */
 class dataset_bundle_member_handler {
 public:
     dataset_bundle_member_handler(ores::nats::service::client& nats,
@@ -56,66 +58,62 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void list(ores::nats::message msg) {
+    void list_by_bundle(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_dataset_bundle_members_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::dataset_bundle_member_service svc(ctx);
-        try {
-            const auto items = svc.list_members();
-            get_dataset_bundle_members_response resp;
-            resp.members = items;
-            resp.total_available_count = static_cast<int>(items.size());
+        const auto& req_ctx = *req_ctx_expected;
+        service::dataset_bundle_member_service svc(req_ctx);
+        if (auto req = decode<get_dataset_bundle_members_by_bundle_request>(msg)) {
+            get_dataset_bundle_members_by_bundle_response resp;
+            try {
+                resp.dataset_bundle_members =
+                    svc.list_members_by_bundle(req->bundle_code, req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.get_total_member_count_by_bundle(req->bundle_code));
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            get_dataset_bundle_members_response resp;
-            resp.total_available_count = 0;
-            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
-    void by_bundle(ores::nats::message msg) {
+    void list(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_dataset_bundle_members_by_bundle_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        service::dataset_bundle_member_service svc(ctx);
-        try {
-            const auto members = svc.list_members_by_bundle(req->bundle_code);
-            get_dataset_bundle_members_by_bundle_response resp;
-            resp.success = true;
-            resp.members = members;
+        const auto& req_ctx = *req_ctx_expected;
+        service::dataset_bundle_member_service svc(req_ctx);
+        if (auto req = decode<get_dataset_bundle_members_request>(msg)) {
+            get_dataset_bundle_members_response resp;
+            try {
+                resp.dataset_bundle_members = svc.list_members();
+                resp.total_available_count = static_cast<int>(resp.dataset_bundle_members.size());
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+            }
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            get_dataset_bundle_members_by_bundle_response resp;
-            resp.success = false;
-            resp.message = e.what();
-            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 

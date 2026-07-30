@@ -42,15 +42,16 @@ std::uint32_t data_domain_service::count_domains() {
     return repo_.get_total_domain_count(ctx_);
 }
 
+
 std::optional<domain::data_domain>
 data_domain_service::get_domain_at_version(const std::string& name, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting data domain at version: " << name
+    BOOST_LOG_SEV(lg(), debug) << "Getting data domain at version. " << "name: " << name
                                << " version: " << version;
     return repo_.read_at_version(ctx_, name, version);
 }
 
 std::optional<domain::data_domain> data_domain_service::get_domain(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting data domain: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Getting data domain. " << "name: " << name;
     auto results = repo_.read_latest(ctx_, name);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::data_domain> data_domain_service::get_domain(const std::st
 void data_domain_service::save_domain(const domain::data_domain& v) {
     if (v.name.empty())
         throw std::invalid_argument("Data Domain name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving data domain: " << v.name;
+    BOOST_LOG_SEV(lg(), debug) << "Saving data domain. " << "name: " << v.name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << v.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved data domain. " << "name: " << v.name;
 }
 
 void data_domain_service::save_domains(const std::vector<domain::data_domain>& domains) {
-    for (const auto& e : domains)
+    for (const auto& e : domains) {
         if (e.name.empty())
             throw std::invalid_argument("Data Domain name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " data domains";
     auto ts = domains;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void data_domain_service::save_domains(const std::vector<domain::data_domain>& d
 }
 
 void data_domain_service::delete_domain(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing data domain: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Removing data domain. " << "name: " << name;
     repo_.remove(ctx_, name);
-    BOOST_LOG_SEV(lg(), info) << "Removed data domain: " << name;
+    BOOST_LOG_SEV(lg(), info) << "Removed data domain. " << "name: " << name;
 }
 
 void data_domain_service::delete_domains(const std::vector<std::string>& names) {
@@ -89,7 +91,7 @@ void data_domain_service::delete_domains(const std::vector<std::string>& names) 
 }
 
 std::vector<domain::data_domain> data_domain_service::get_domain_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for data domain: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for data domain. " << "name: " << name;
     return repo_.read_all(ctx_, name);
 }
 

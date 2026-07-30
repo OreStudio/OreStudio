@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: C80D94BB-DA80-4871-AAF0-D4F852F58831
+:END:
+#+title: Task: Fix realistic_2026 IR curve seed data / index_family enum mismatch
+#+description: Fixes the index_name/index_family regression left by df398d5f1 that currently blocks IR curve theme provisioning.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore end-to-end provisioning of the synthetic.themes.realistic_2026 IR curves theme, currently broken by df398d5f1's index_name to index_family/tenor migration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- provision party --dataset-size small completes successfully through the IR curve theme publish step; ores_synthetic_publish_theme_from_dq_fn no longer references the removed index_name column; realistic_2026 seed data's currency/index coverage is reconciled with the index_family enum (either by extending the enum's allowed values or by trimming/reworking the seed dataset to the currently supported families), with the choice and rationale recorded in the task's Decisions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Root-cause analysis captured in
+[[id:F27A0EA4-AB19-424A-B2C5-A82369CDB650][Realistic-2026 IR curve seed data incompatible with index_family enum]]
+(backlog capture, merged in PR #1768). Root-cause commit: =df398d5f1=
+"[synthetic] Migrate ir_curve_generation_config onto oresmd, add curve
+role". Affected files:
+- =projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=
+  (=ores_synthetic_publish_theme_from_dq_fn=, lines ~578-664 reference
+  the removed =index_name= column).
+- =projects/ores.sql/populate/synthetic/synthetic_ir_curve_configs_realistic_2026_populate.sql=
+  (20-currency seed list at lines ~137-156; only 4 currencies map onto
+  the current 6-value =index_family= enum).
+- =projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=
+  (the =index_family= check constraint, line ~77).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

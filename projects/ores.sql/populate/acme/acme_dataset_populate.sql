@@ -358,4 +358,22 @@ BEGIN
         'Internal Use Only',
         'account_contact_informations'
     );
+    PERFORM ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.accounts',
+        'ACME Corporation',
+        'Organisation',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'ACME Corporation Group Accounts',
+        'Generated staff login accounts for the ACME Corporation Plc holding company itself (group-level roles with no office/business-unit of their own) -- published party-scoped to the holding company''s own party, same convention as the per-office accounts datasets.',
+        'ACMEBANK',
+        'ACME Corporation generated data',
+        current_date,
+        'Internal Use Only',
+        'accounts'
+    );
 END $$;

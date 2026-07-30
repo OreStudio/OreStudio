@@ -385,9 +385,10 @@ public:
                     { reply(nats_, msg, resp); return; }
             }
 
-            // Step 3: the holding company -- no desks/staff of its own, so
-            // just activation, logo, onboarding, and the tenant admin's
-            // default party.
+            // Step 3: the holding company -- activation, logo, onboarding,
+            // the tenant admin's default party, and its own group-level
+            // staff (no desks/business units of its own, just a handful of
+            // group-level roles like the Group CEO).
             {
                 internal_request_client discover = make_client(caller_party_id);
                 auto holding = find_party(discover, "Acme Corporation Plc");
@@ -399,6 +400,20 @@ public:
                     finish_party(client, *ctx_expected, tenant_id_str, account_id, username,
                                 *holding, /*set_default=*/true);
                     add_step("Step 3: Activating Acme Corporation Plc", "completed");
+
+                    add_step("Step 3: Publishing group-level staff", "starting", 0);
+                    dq::messaging::publish_bundle_params groupParams;
+                    groupParams.party_id = boost::uuids::to_string(holding->id);
+                    publish_bundle(client,
+                                   "acme_group",
+                                   username,
+                                   dq::messaging::build_params_json(groupParams),
+                                   add_step,
+                                   progress("acme_group"));
+
+                    add_step("acme_group.staff_photos", "starting", 0);
+                    attach_staff_photos(client, *ctx_expected, tenant_id_str, "acme_group", username);
+                    add_step("acme_group.staff_photos", "completed");
                 }
             }
 

@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
 #+branch: feature/fix-list-truncation-missing-pagination
-#+pr:
+#+pr: 1760
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
@@ -248,7 +248,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1760][#1760]] | [refdata,marketdata,qt] Fix silent 100-row list truncation on 29 entities missing has_pagination |
 
 * Review
 

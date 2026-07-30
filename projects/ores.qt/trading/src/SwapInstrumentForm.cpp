@@ -20,6 +20,7 @@
 #include "ores.qt/SwapInstrumentForm.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/HolidayAwareDatePicker.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
@@ -327,6 +328,16 @@ void SwapInstrumentForm::setupConnections() {
 void SwapInstrumentForm::setClientManager(ClientManager* cm) {
     clientManager_ = cm;
     populateCurrencies();
+
+    // Proof-of-concept wiring for the holiday-aware date picker: TARGET is
+    // a reasonable, widely-applicable default for a FRA fixing date until
+    // this form can derive the actual calendar(s) from the selected
+    // currency (no client-facing currency-to-calendar lookup exists yet --
+    // currency_calendar is a junction with no NATS-exposed service/
+    // protocol layer of its own, matching CalendarAssignmentWidget's own
+    // documented precedent).
+    ui_->fraFixingDateEdit->setClientManager(cm);
+    ui_->fraFixingDateEdit->setCalendarCodes({"TARGET"});
 }
 
 void SwapInstrumentForm::setImageCache(ImageCache* cache) {

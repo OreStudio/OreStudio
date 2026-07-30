@@ -224,7 +224,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/generators/subject_area_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/generators/treatment_dimension_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/badge_definition_protocol.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/badge_mapping_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/badge_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/badge_severity_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/catalog_protocol.hpp"

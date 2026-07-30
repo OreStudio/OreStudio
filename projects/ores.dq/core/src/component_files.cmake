@@ -18,7 +18,6 @@
 #
 set(files
     "messaging/badge_definition_registrar.cpp"
-    "messaging/badge_mapping_registrar.cpp"
     "messaging/badge_severity_registrar.cpp"
     "messaging/catalog_registrar.cpp"
     "messaging/change_reason_category_registrar.cpp"
@@ -108,7 +107,6 @@ set(files
     "repository/treatment_dimension_mapper.cpp"
     "repository/treatment_dimension_repository.cpp"
     "service/badge_definition_service.cpp"
-    "service/badge_mapping_service.cpp"
     "service/badge_service.cpp"
     "service/badge_severity_service.cpp"
     "service/catalog_service.cpp"
@@ -133,8 +131,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_definition_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_definition_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_handler.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_mapping_handler.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_mapping_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_severity_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_severity_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/catalog_handler.hpp"
@@ -244,7 +240,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/repository/treatment_dimension_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/repository/treatment_dimension_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_definition_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_mapping_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_severity_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/catalog_service.hpp"

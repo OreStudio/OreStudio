@@ -1,5 +1,9 @@
 :PROPERTIES:
 :ID: BBB49AAA-E476-435B-88CF-CC252B76655C
+:ores.cpp.nats-handler.enabled: false
+:ores.cpp.nats-sub-registrar.enabled: false
+:ores.cpp.protocol.enabled: false
+:ores.cpp.service.enabled: false
 :END:
 #+title: ores.dq.badge_mapping
 #+description: Codegen junction model for badge_mappings.
@@ -29,6 +33,11 @@ Examples:
 - ('dq_nature',    'Actual')  -> 'dq_actual'
 
 Populated via seed scripts; no management UI needed.
+
+NATS/protocol/service are disabled above: badge lookups already go
+through the hand-maintained =badge_handler=/=badge_service= (see
+=registrar.cpp='s own comment), so the generic generated messaging
+stack for this junction would be dead code alongside it.
 
 * Left
 :PROPERTIES:

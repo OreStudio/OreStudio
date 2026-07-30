@@ -3001,6 +3001,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             junction.get('right', {}).get('is_date', False) or
             any(c.get('is_date') for c in junction.get('columns', []))
         )
+        # Mirrors domain_entity's needs_counter: only declare the
+        # generator's counter/idx local when some generator_expr actually
+        # references it -- otherwise it's an unused variable for every
+        # junction whose left/right/columns codes don't need a uniqueness
+        # suffix (e.g. badge_mapping).
+        junction['needs_counter'] = any(
+            'idx' in (side.get('generator_expr') or '')
+            for side in (junction.get('left', {}), junction.get('right', {}))
+        ) or any(
+            'idx' in (col.get('generator_expr') or '')
+            for col in junction.get('columns', [])
+        )
         # Format description as comment block lines (for SQL)
         if 'description' in junction:
             junction['description_formatted'] = _format_description_as_comment(junction['description'])

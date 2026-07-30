@@ -30,7 +30,7 @@ Notes for the full list): flat entities only (no
 =ores.refdata= entities use them); enum columns not yet rendered
 (=is_enum=, none present in the covered entities today); primary key
 supports =string= and =uuid= only; natural keys support =string=,
-=uuid=, =date=, and =timestamp=.
+=uuid=, =date=, =timestamp=, and =int=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -83,7 +83,12 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
         {.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_utc(v.{{column}})});
 {{/is_timestamp}}
 {{^is_timestamp}}
+{{#is_int}}
+    fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{column}})});
+{{/is_int}}
+{{^is_int}}
     fields.push_back({.name = "{{render_label}}", .value = v.{{column}}});
+{{/is_int}}
 {{/is_timestamp}}
 {{/is_date}}
 {{/is_uuid}}

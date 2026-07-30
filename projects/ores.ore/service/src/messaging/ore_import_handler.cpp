@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
@@ -30,7 +31,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <rfl/json.hpp>
-#include <span>
 
 namespace ores::ore::service::messaging {
 
@@ -123,9 +123,8 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     swm.correlation_id = correlation_id;
     swm.instance_id = instance_id_str;
 
-    const auto swm_json = rfl::json::write(swm);
-    const auto data = std::as_bytes(std::span{swm_json.data(), swm_json.size()});
-    nats_.js_publish(start_workflow_message::nats_subject, data);
+    nats_.js_publish(start_workflow_message::nats_subject,
+                     ores::nats::default_wire_codec().encode(swm));
 
     BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
                               << " instance_id=" << instance_id_str;

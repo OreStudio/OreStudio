@@ -23,8 +23,8 @@
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <rfl/json.hpp>
 
 namespace ores::marketdata::client {
 
@@ -45,8 +45,9 @@ std::expected<typename Request::response_type, std::string>
 send(ores::nats::service::nats_client& nats, const Request& request) {
     using Response = typename Request::response_type;
     try {
-        const auto json = rfl::json::write(request);
-        const auto reply = nats.authenticated_request(Request::nats_subject, json);
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto bytes = codec.encode(request);
+        const auto reply = nats.authenticated_request(Request::nats_subject, bytes);
 
         // A handler that rejects the request (auth, permission, validation)
         // replies with an empty body and an X-Error header. Translate that into
@@ -66,9 +67,7 @@ send(ores::nats::service::nats_client& nats, const Request& request) {
             return std::unexpected(std::string(Request::nats_subject) + " failed: " + detail);
         }
 
-        const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
-                                  reply.data.size());
-        auto result = rfl::json::read<Response>(sv);
+        auto result = codec.decode<Response>(reply.data);
         if (!result)
             return std::unexpected(std::string("Failed to decode response from ") +
                                    std::string(Request::nats_subject) + ": " +

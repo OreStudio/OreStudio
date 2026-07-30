@@ -24,10 +24,10 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/party_changed_event.hpp"
 #include <memory>
-#include <rfl/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -64,7 +64,7 @@ warm_and_subscribe_party_cache(ores::nats::service::client& nats,
     return nats.subscribe(
         std::string(event_traits<party_changed_event>::name), [cache](ores::nats::message msg) {
             using ores::eventing::domain::entity_change_event;
-            auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
+            auto evt = ores::nats::default_wire_codec().decode<entity_change_event>(msg.data);
             if (evt && !evt->tenant_id.empty()) {
                 // Offload to a detached thread: load() calls request_sync,
                 // which would block the NATS callback thread if called inline.

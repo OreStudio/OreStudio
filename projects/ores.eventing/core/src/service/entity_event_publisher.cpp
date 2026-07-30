@@ -19,8 +19,7 @@
  */
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <algorithm>
-#include <rfl/json.hpp>
+#include "ores.nats/domain/wire_codec.hpp"
 
 namespace ores::eventing::service {
 
@@ -37,10 +36,7 @@ void publish_entity_event(ores::nats::service::client& nats,
                           const std::string& subject,
                           const domain::entity_change_event& notification) {
     try {
-        const auto json = rfl::json::write(notification);
-        std::vector<std::byte> data(json.size());
-        std::transform(json.begin(), json.end(), data.begin(), [](char c) { return std::byte(c); });
-        nats.publish(subject, std::move(data), {});
+        nats.publish(subject, ores::nats::default_wire_codec().encode(notification), {});
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Failed to publish event to '" << subject << "': " << e.what();

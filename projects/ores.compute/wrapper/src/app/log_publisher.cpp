@@ -19,11 +19,10 @@
  */
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/log/ore_log_parser.hpp"
 #include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
 #include <fstream>
-#include <rfl/json.hpp>
-#include <span>
 #include <string>
 #include <vector>
 
@@ -45,10 +44,8 @@ void publish_batch(ores::nats::service::client& nats,
     if (req.entries.empty())
         return;
 
-    const auto json = rfl::json::write(req);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
     nats.publish(ores::telemetry::messaging::publish_log_entries_request::nats_subject,
-                 std::span<const std::byte>(p, json.size()));
+                 ores::nats::default_wire_codec().encode(req));
     req.entries.clear();
 }
 

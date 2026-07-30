@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -42,7 +43,6 @@
 #include <cstddef>
 #include <optional>
 #include <rfl/json.hpp>
-#include <span>
 
 namespace ores::reporting::messaging {
 
@@ -289,10 +289,8 @@ public:
                     .correlation_id = inst_id_str,
                     .instance_id = wf_instance_id};
 
-                const auto swm_json = rfl::json::write(swm);
-                const auto data = std::as_bytes(std::span{swm_json.data(), swm_json.size()});
                 nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                                 data);
+                                 ores::nats::default_wire_codec().encode(swm));
 
                 BOOST_LOG_SEV(report_instance_handler_lg(), info)
                     << "Dispatched report_execution_workflow for instance " << inst_id_str

@@ -24,6 +24,7 @@
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.compute.wrapper/filesystem/archiver.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -48,7 +49,6 @@
 #include <fstream>
 #include <mutex>
 #include <rfl/json.hpp>
-#include <span>
 #include <sstream>
 #include <thread>
 
@@ -208,10 +208,8 @@ private:
         msg.seconds_since_hb = seconds_since_hb;
 
         try {
-            const auto json = rfl::json::write(msg);
-            const auto* p = reinterpret_cast<const std::byte*>(json.data());
             nats_.publish(compute::messaging::node_sample_message::nats_subject,
-                          std::span<const std::byte>(p, json.size()));
+                          ores::nats::default_wire_codec().encode(msg));
             BOOST_LOG_SEV(lg(), debug)
                 << "Published node telemetry sample: tasks_since_last=" << tasks_since_last
                 << " avg_ms=" << avg_ms << " input_bytes=" << input_bytes
@@ -302,10 +300,8 @@ private:
         try {
             compute::messaging::heartbeat_message msg;
             msg.host_id = host_id_;
-            const auto json = rfl::json::write(msg);
-            const auto* p = reinterpret_cast<const std::byte*>(json.data());
             nats_.publish(compute::messaging::heartbeat_message::nats_subject,
-                          std::span<const std::byte>(p, json.size()));
+                          ores::nats::default_wire_codec().encode(msg));
             if (reporter_)
                 reporter_->notify_heartbeat();
         } catch (const std::exception& e) {
@@ -339,16 +335,11 @@ void submit_result(ores::nats::service::client& nats,
     req.outcome = outcome;
     req.error_message = error_message;
 
-    const auto json = rfl::json::write(req);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
-
+    const auto& codec = ores::nats::default_wire_codec();
     const auto reply = nats.request_sync(compute::messaging::submit_result_request::nats_subject,
-                                         std::span<const std::byte>(p, json.size()));
+                                         codec.encode(req));
 
-    const std::string_view reply_data(reinterpret_cast<const char*>(reply.data.data()),
-                                      reply.data.size());
-
-    const auto resp = rfl::json::read<compute::messaging::submit_result_response>(reply_data);
+    const auto resp = codec.decode<compute::messaging::submit_result_response>(reply.data);
     if (!resp || !resp->success) {
         const std::string msg = resp ? resp->message : "failed to deserialize response";
         BOOST_LOG_SEV(lg, error) << "results.submit failed: " << msg;
@@ -717,10 +708,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 durable_name,
                 queue_group,
                 [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
-                    const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                                msg.data.size());
-                    const auto evt =
-                        rfl::json::read<compute::messaging::work_assignment_event>(data);
+                    const auto evt = ores::nats::default_wire_codec()
+                                         .decode<compute::messaging::work_assignment_event>(msg.data);
                     if (!evt) {
                         BOOST_LOG_SEV(lg(), error)
                             << "Failed to decode work_assignment_event: " << evt.error().what();

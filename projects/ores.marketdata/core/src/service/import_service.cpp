@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
@@ -35,7 +36,6 @@
 #include <algorithm>
 #include <map>
 #include <rfl/enums.hpp>
-#include <rfl/json.hpp>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -131,11 +131,10 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
             ores::refdata::messaging::get_currency_pairs_request req;
             req.offset = offset;
             req.limit = page_size;
-            const auto json = rfl::json::write(req);
-            const auto reply = auth_nats.authenticated_request(req.nats_subject, json);
-            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
-                                      reply.data.size());
-            auto resp = rfl::json::read<ores::refdata::messaging::get_currency_pairs_response>(sv);
+            const auto& codec = ores::nats::default_wire_codec();
+            const auto reply = auth_nats.authenticated_request(req.nats_subject, codec.encode(req));
+            auto resp = codec.decode<ores::refdata::messaging::get_currency_pairs_response>(
+                reply.data);
             if (!resp || !resp->success) {
                 BOOST_LOG_SEV(import_helpers_lg(), warn)
                     << "Failed to fetch currency pairs for FX quote convention checking; "

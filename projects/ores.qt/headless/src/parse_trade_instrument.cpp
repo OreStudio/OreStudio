@@ -19,10 +19,11 @@
  */
 #include "ores.qt.headless/parse_trade_instrument.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "parse_swap_impl.hpp"
-#include <rfl/json.hpp>
+#include <span>
 
 // Swap-type rfl instantiations live in parse_swap_instruments.cpp (separate TU)
 // to avoid MSVC C1202: the accumulated rfl::StringLiteral field-name types from
@@ -42,7 +43,9 @@ inline std::string_view logger_name = "ores.qt.parse_trade_instrument";
 
 template <typename T>
 static std::optional<T> try_parse(const std::string& raw) {
-    auto r = rfl::json::read<T>(raw);
+    const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(raw.data()),
+                                           raw.size());
+    auto r = ores::nats::default_wire_codec().decode<T>(bytes);
     if (!r) {
         BOOST_LOG_SEV(lg(), error)
             << "getTradeInstrument: deserialise failed: " << r.error().what();

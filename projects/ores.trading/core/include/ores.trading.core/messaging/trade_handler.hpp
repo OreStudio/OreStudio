@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -70,9 +71,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
-#include <span>
 #include <unordered_map>
 
 namespace ores::trading::messaging {
@@ -729,8 +728,7 @@ private:
 
         service::fsm_transition_map result;
         const get_fsm_transitions_request req{};
-        const auto json = rfl::json::write(req);
-        const auto* p = reinterpret_cast<const std::byte*>(json.data());
+        const auto& codec = ores::nats::default_wire_codec();
         try {
             using namespace ores::nats::headers;
             std::unordered_map<std::string, std::string> hdrs;
@@ -738,12 +736,10 @@ private:
                 hdrs[std::string(delegated_authorization)] =
                     std::string(bearer_prefix) + std::string(bearer);
             const auto reply = nats_.request_sync(get_fsm_transitions_request::nats_subject,
-                                                  std::span<const std::byte>(p, json.size()),
+                                                  codec.encode(req),
                                                   std::move(hdrs),
                                                   std::chrono::seconds(2));
-            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
-                                      reply.data.size());
-            const auto resp = rfl::json::read<get_fsm_transitions_response>(sv);
+            const auto resp = codec.decode<get_fsm_transitions_response>(reply.data);
             if (resp && resp->success) {
                 for (auto& t : resp->transitions)
                     result[t.id] = std::move(t);

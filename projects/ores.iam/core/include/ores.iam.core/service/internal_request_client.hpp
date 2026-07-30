@@ -22,11 +22,11 @@
 
 #include "ores.iam.core/export.hpp"
 #include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
-#include <rfl/json.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -105,11 +105,11 @@ public:
     template <typename Request>
     typename Request::response_type
     request(const Request& req, std::chrono::seconds timeout = std::chrono::seconds{30}) {
+        const auto& codec = ores::nats::default_wire_codec();
         for (int attempt = 0; ; ++attempt) {
-            const auto json = rfl::json::write(req);
-            const auto* data = reinterpret_cast<const std::byte*>(json.data());
+            const auto bytes = codec.encode(req);
             const auto reply = nats_.request_sync(Request::nats_subject,
-                                                  std::span<const std::byte>(data, json.size()),
+                                                  std::span<const std::byte>(bytes),
                                                   headers(),
                                                   timeout);
             if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
@@ -121,9 +121,7 @@ public:
                 throw service_error(it->second, Request::nats_subject);
             }
 
-            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
-                                      reply.data.size());
-            auto result = rfl::json::read<typename Request::response_type>(sv);
+            auto result = codec.decode<typename Request::response_type>(reply.data);
             if (!result)
                 throw std::runtime_error("Failed to parse response to " +
                                          std::string(Request::nats_subject) +

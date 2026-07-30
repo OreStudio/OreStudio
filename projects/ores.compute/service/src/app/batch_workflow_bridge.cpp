@@ -21,14 +21,13 @@
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
 #include <format>
-#include <rfl/json.hpp>
-#include <span>
 
 namespace ores::compute::service::app {
 
@@ -82,10 +81,9 @@ void batch_workflow_bridge::poll_once() {
                 R"({{"success":true,"batch_id":"{}","message":"Compute batch completed"}})",
                 batch_id);
 
-            const auto json = rfl::json::write(evt);
-            const auto data = std::as_bytes(std::span{json.data(), json.size()});
             nats_.publish(
-                std::string(ores::workflow::messaging::step_completed_event::nats_subject), data);
+                std::string(ores::workflow::messaging::step_completed_event::nats_subject),
+                ores::nats::default_wire_codec().encode(evt));
 
             BOOST_LOG_SEV(lg(), info) << "Fired step_completed for batch " << batch_id
                                       << " (step=" << link.workflow_step_id

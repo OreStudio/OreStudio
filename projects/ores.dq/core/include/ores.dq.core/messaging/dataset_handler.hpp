@@ -28,6 +28,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -39,7 +40,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <rfl/json.hpp>
-#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -267,9 +267,8 @@ public:
             start_msg.correlation_id = correlation_id;
             start_msg.instance_id = instance_id;
 
-            const auto json = rfl::json::write(start_msg);
-            const auto data = std::as_bytes(std::span{json.data(), json.size()});
-            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject, data);
+            nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
+                             ores::nats::default_wire_codec().encode(start_msg));
 
             publish_datasets_response resp;
             resp.success = true;

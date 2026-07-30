@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/messaging/workflow_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -28,7 +29,6 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
-#include <span>
 
 namespace ores::workflow::messaging {
 
@@ -109,9 +109,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         start_msg.request_json = rfl::json::write(wf_req);
         start_msg.correlation_id = correlation_id;
 
-        const auto json = rfl::json::write(start_msg);
-        const auto data = std::as_bytes(std::span{json.data(), json.size()});
-        nats_.js_publish(start_workflow_message::nats_subject, data);
+        nats_.js_publish(start_workflow_message::nats_subject,
+                         ores::nats::default_wire_codec().encode(start_msg));
 
         resp.party_ids.push_back(party_id_str);
     }

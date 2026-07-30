@@ -20,6 +20,7 @@
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
@@ -30,9 +31,6 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include <span>
 #include <stdexcept>
 
 namespace ores::scheduler::service {
@@ -70,9 +68,7 @@ void scheduler_loop::publish_instance_event(std::string_view change_type,
         if (job.tenant_id)
             ev.tenant_id = boost::uuids::to_string(*job.tenant_id);
 
-        const auto json = rfl::json::write(ev);
-        const auto* p = reinterpret_cast<const std::byte*>(json.data());
-        nats_.publish(job_instance_events_subject, std::span<const std::byte>(p, json.size()));
+        nats_.publish(job_instance_events_subject, ores::nats::default_wire_codec().encode(ev));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to publish instance event (" << change_type
                                   << ") for job " << job.job_name << ": " << e.what();

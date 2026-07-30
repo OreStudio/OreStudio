@@ -34,7 +34,9 @@
 namespace ores::qt {
 
 class LegTypeMdiWindow;
+class LegTypeDetailDialog;
 class DetachableMdiSubWindow;
+class BadgeCache;
 
 /**
  * @brief Controller for managing leg type windows and operations.
@@ -59,6 +61,7 @@ public:
                       QMdiArea* mdiArea,
                       ClientManager* clientManager,
                       const QString& username,
+                      BadgeCache* badgeCache,
                       QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -86,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::leg_type& type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * LegTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(LegTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**
@@ -102,6 +113,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::leg_type>, QString>)>
             callback);
 
+    BadgeCache* badgeCache_;
     LegTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing book purpose types.
@@ -54,6 +55,7 @@ private:
 public:
     explicit BookPurposeTypeMdiWindow(ClientManager* clientManager,
                                       const QString& username,
+                                      BadgeCache* badgeCache,
                                       QWidget* parent = nullptr);
     ~BookPurposeTypeMdiWindow() override = default;
 
@@ -100,6 +102,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

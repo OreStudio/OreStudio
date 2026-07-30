@@ -49,9 +49,11 @@ BookPurposeTypeController::BookPurposeTypeController(QMainWindow* mainWindow,
                                                      ClientManager* clientManager,
                                                      ChangeReasonCache* changeReasonCache,
                                                      const QString& username,
+                                                     BadgeCache* badgeCache,
                                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void BookPurposeTypeController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookPurposeTypeMdiWindow(clientManager_, username_);
+    listWindow_ = new BookPurposeTypeMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -163,15 +165,11 @@ void BookPurposeTypeController::onShowHistory(const refdata::domain::book_purpos
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void BookPurposeTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book purpose type";
-
-    auto* detailDialog = new BookPurposeTypeDetailDialog(mainWindow_);
+void BookPurposeTypeController::wireDetailDialogCommon(BookPurposeTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BookPurposeTypeDetailDialog::statusMessage,
@@ -181,6 +179,15 @@ void BookPurposeTypeController::showAddWindow() {
             &BookPurposeTypeDetailDialog::errorMessage,
             this,
             &BookPurposeTypeController::errorMessage);
+}
+
+void BookPurposeTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book purpose type";
+
+    auto* detailDialog = new BookPurposeTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BookPurposeTypeDetailDialog::typeSaved,
             this,
@@ -217,21 +224,10 @@ void BookPurposeTypeController::showDetailWindow(const refdata::domain::book_pur
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new BookPurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::statusMessage,
-            this,
-            &BookPurposeTypeController::statusMessage);
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::errorMessage,
-            this,
-            &BookPurposeTypeController::errorMessage);
     connect(detailDialog,
             &BookPurposeTypeDetailDialog::typeSaved,
             this,
@@ -371,29 +367,9 @@ void BookPurposeTypeController::onOpenVersion(const refdata::domain::book_purpos
     }
 
     auto* detailDialog = new BookPurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BookPurposeTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BookPurposeTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +488,13 @@ void BookPurposeTypeController::onRevertVersion(const refdata::domain::book_purp
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookPurposeTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::statusMessage,
-            this,
-            &BookPurposeTypeController::statusMessage);
-    connect(detailDialog,
-            &BookPurposeTypeDetailDialog::errorMessage,
-            this,
-            &BookPurposeTypeController::errorMessage);
     connect(detailDialog,
             &BookPurposeTypeDetailDialog::typeSaved,
             this,

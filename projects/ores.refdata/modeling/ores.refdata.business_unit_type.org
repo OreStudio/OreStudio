@@ -277,16 +277,16 @@ $$ language plpgsql;
 
 *** Columns (Qt model)
 
-| enum_name        | field              | header        | type      | width |
-|-------------------+--------------------+---------------+-----------+-------|
-| Code              | code               | Code          | string    | 120   |
-| Name              | name               | Name          | string    | 200   |
-| CodingSchemeCode  | coding_scheme_code | Coding Scheme | string    | 150   |
-| Level             | level              | Level         | int       | 80    |
-| Description       | description        | Description   | string    | 250   |
-| Version           | version            | Version       | int       | 80    |
-| ModifiedBy        | modified_by        | Modified By   | string    | 120   |
-| RecordedAt        | recorded_at        | Recorded At   | timestamp | 150   |
+| enum_name        | field              | header        | type      | width | is_badge | badge_key           |
+|-------------------+--------------------+---------------+-----------+-------+----------+---------------------|
+| Code              | code               | Code          | string    | 120   | true     | business_unit_type |
+| Name              | name               | Name          | string    | 200   |          |                     |
+| CodingSchemeCode  | coding_scheme_code | Coding Scheme | string    | 150   |          |                     |
+| Level             | level              | Level         | int       | 80    |          |                     |
+| Description       | description        | Description   | string    | 250   |          |                     |
+| Version           | version            | Version       | int       | 80    |          |                     |
+| ModifiedBy        | modified_by        | Modified By   | string    | 120   |          |                     |
+| RecordedAt        | recorded_at        | Recorded At   | timestamp | 150   |          |                     |
 
 ** Custom repository methods
 

@@ -50,10 +50,12 @@ BusinessUnitTypeController::BusinessUnitTypeController(QMainWindow* mainWindow,
                                                        ClientManager* clientManager,
                                                        ChangeReasonCache* changeReasonCache,
                                                        const QString& username,
+                                                       BadgeCache* badgeCache,
                                                        QObject* parent)
     : EntityController(
           mainWindow, mdiArea, clientManager, username, business_unit_type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -70,7 +72,7 @@ void BusinessUnitTypeController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessUnitTypeMdiWindow(clientManager_, username_);
+    listWindow_ = new BusinessUnitTypeMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -167,15 +169,12 @@ void BusinessUnitTypeController::onShowHistory(
     showHistoryWindow(business_unit_type);
 }
 
-void BusinessUnitTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit type";
-
-    auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+void BusinessUnitTypeController::wireDetailDialogCommon(
+    BusinessUnitTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BusinessUnitTypeDetailDialog::statusMessage,
@@ -185,6 +184,15 @@ void BusinessUnitTypeController::showAddWindow() {
             &BusinessUnitTypeDetailDialog::errorMessage,
             this,
             &BusinessUnitTypeController::errorMessage);
+}
+
+void BusinessUnitTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit type";
+
+    auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BusinessUnitTypeDetailDialog::business_unit_typeSaved,
             this,
@@ -222,21 +230,10 @@ void BusinessUnitTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << business_unit_type.code;
 
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(business_unit_type);
 
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::statusMessage,
-            this,
-            &BusinessUnitTypeController::statusMessage);
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::errorMessage,
-            this,
-            &BusinessUnitTypeController::errorMessage);
     connect(detailDialog,
             &BusinessUnitTypeDetailDialog::business_unit_typeSaved,
             this,
@@ -380,29 +377,9 @@ void BusinessUnitTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(business_unit_type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -524,24 +501,13 @@ void BusinessUnitTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_business_unit_type = business_unit_type;
     reverted_business_unit_type.version = 0;
     detailDialog->setType(reverted_business_unit_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::statusMessage,
-            this,
-            &BusinessUnitTypeController::statusMessage);
-    connect(detailDialog,
-            &BusinessUnitTypeDetailDialog::errorMessage,
-            this,
-            &BusinessUnitTypeController::errorMessage);
     connect(detailDialog,
             &BusinessUnitTypeDetailDialog::business_unit_typeSaved,
             this,

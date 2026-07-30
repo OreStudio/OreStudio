@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing ledger feed types.
@@ -54,6 +55,7 @@ private:
 public:
     explicit LedgerFeedTypeMdiWindow(ClientManager* clientManager,
                                      const QString& username,
+                                     BadgeCache* badgeCache,
                                      QWidget* parent = nullptr);
     ~LedgerFeedTypeMdiWindow() override = default;
 
@@ -100,6 +102,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

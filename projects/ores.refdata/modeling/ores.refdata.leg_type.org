@@ -132,13 +132,13 @@ std::string(faker::lorem::sentence())
 
 *** Columns (Qt model)
 
-| enum_name   | field       | header      | type      | width |
-|-------------+-------------+-------------+-----------+-------|
-| Code        | code        | Code        | string    | 200   |
-| Description | description | Description | string    | 350   |
-| Version     | version     | Version     | int       | 80    |
-| ModifiedBy  | modified_by | Modified By | string    | 120   |
-| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+| enum_name   | field       | header      | type      | width | is_badge | badge_key |
+|-------------+-------------+-------------+-----------+-------+----------+-----------|
+| Code        | code        | Code        | string    | 200   | true     | leg_type  |
+| Description | description | Description | string    | 350   |          |           |
+| Version     | version     | Version     | int       | 80    |          |           |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |          |           |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |          |           |
 
 ** Custom repository methods
 

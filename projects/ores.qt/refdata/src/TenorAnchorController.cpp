@@ -49,9 +49,11 @@ TenorAnchorController::TenorAnchorController(QMainWindow* mainWindow,
                                              ClientManager* clientManager,
                                              ChangeReasonCache* changeReasonCache,
                                              const QString& username,
+                                             BadgeCache* badgeCache,
                                              QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, anchor_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void TenorAnchorController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new TenorAnchorMdiWindow(clientManager_, username_);
+    listWindow_ = new TenorAnchorMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -163,15 +165,11 @@ void TenorAnchorController::onShowHistory(const refdata::domain::tenor_anchor& a
     showHistoryWindow(QString::fromStdString(anchor.code));
 }
 
-void TenorAnchorController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor anchor";
-
-    auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+void TenorAnchorController::wireDetailDialogCommon(TenorAnchorDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &TenorAnchorDetailDialog::statusMessage,
@@ -181,6 +179,15 @@ void TenorAnchorController::showAddWindow() {
             &TenorAnchorDetailDialog::errorMessage,
             this,
             &TenorAnchorController::errorMessage);
+}
+
+void TenorAnchorController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor anchor";
+
+    auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenorAnchorDetailDialog::anchorSaved,
             this,
@@ -217,21 +224,10 @@ void TenorAnchorController::showDetailWindow(const refdata::domain::tenor_anchor
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << anchor.code;
 
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setAnchor(anchor);
 
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::statusMessage,
-            this,
-            &TenorAnchorController::statusMessage);
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::errorMessage,
-            this,
-            &TenorAnchorController::errorMessage);
     connect(detailDialog,
             &TenorAnchorDetailDialog::anchorSaved,
             this,
@@ -370,29 +366,9 @@ void TenorAnchorController::onOpenVersion(const refdata::domain::tenor_anchor& a
     }
 
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setAnchor(anchor);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenorAnchorController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenorAnchorController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -511,24 +487,13 @@ void TenorAnchorController::onRevertVersion(const refdata::domain::tenor_anchor&
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorAnchorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_anchor = anchor;
     reverted_anchor.version = 0;
     detailDialog->setAnchor(reverted_anchor);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::statusMessage,
-            this,
-            &TenorAnchorController::statusMessage);
-    connect(detailDialog,
-            &TenorAnchorDetailDialog::errorMessage,
-            this,
-            &TenorAnchorController::errorMessage);
     connect(detailDialog,
             &TenorAnchorDetailDialog::anchorSaved,
             this,

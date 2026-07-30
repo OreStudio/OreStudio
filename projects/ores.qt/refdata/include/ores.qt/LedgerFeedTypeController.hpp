@@ -35,7 +35,9 @@
 namespace ores::qt {
 
 class LedgerFeedTypeMdiWindow;
+class LedgerFeedTypeDetailDialog;
 class DetachableMdiSubWindow;
+class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -62,6 +64,7 @@ public:
                              ClientManager* clientManager,
                              ChangeReasonCache* changeReasonCache,
                              const QString& username,
+                             BadgeCache* badgeCache,
                              QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -89,6 +92,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::ledger_feed_type& type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * LedgerFeedTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(LedgerFeedTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**
@@ -106,6 +117,7 @@ private:
             callback);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     LedgerFeedTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

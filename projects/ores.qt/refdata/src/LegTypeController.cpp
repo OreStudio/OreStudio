@@ -47,8 +47,10 @@ LegTypeController::LegTypeController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
                                      const QString& username,
+                                     BadgeCache* badgeCache,
                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -65,7 +67,7 @@ void LegTypeController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new LegTypeMdiWindow(clientManager_, username_);
+    listWindow_ = new LegTypeMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &LegTypeMdiWindow::statusChanged, this, &LegTypeController::statusMessage);
@@ -150,18 +152,23 @@ void LegTypeController::onShowHistory(const refdata::domain::leg_type& type) {
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void LegTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new leg type";
-
-    auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
+void LegTypeController::wireDetailDialogCommon(LegTypeDetailDialog* detailDialog) {
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(
         detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
     connect(
         detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
+}
+
+void LegTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new leg type";
+
+    auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &LegTypeDetailDialog::typeSaved,
             this,
@@ -198,15 +205,10 @@ void LegTypeController::showDetailWindow(const refdata::domain::leg_type& type) 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(
-        detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
-    connect(
-        detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
     connect(detailDialog,
             &LegTypeDetailDialog::typeSaved,
             this,
@@ -344,27 +346,9 @@ void LegTypeController::onOpenVersion(const refdata::domain::leg_type& type, int
     }
 
     auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &LegTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<LegTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &LegTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<LegTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -481,18 +465,13 @@ void LegTypeController::onRevertVersion(const refdata::domain::leg_type& type) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(
-        detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
-    connect(
-        detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
     connect(detailDialog,
             &LegTypeDetailDialog::typeSaved,
             this,

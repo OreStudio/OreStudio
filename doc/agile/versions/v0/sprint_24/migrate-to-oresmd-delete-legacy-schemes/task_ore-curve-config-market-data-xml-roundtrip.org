@@ -8,7 +8,7 @@
 #+filetags: :market-data:identifiers:oresmd:migration:ore-xml:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
 #+owner: marco
 #+branch: feature/ore-curve-config-market-data-xml-roundtrip
-#+pr:
+#+pr: 1782
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -199,7 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1782][#1782]] | [agile] Abandon ORE curve-config XML round-trip task |
 
 * Review
 

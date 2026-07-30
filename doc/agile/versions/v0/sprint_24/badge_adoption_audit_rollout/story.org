@@ -48,11 +48,11 @@ today.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Audit/classification done; ready to pick up implementation, one batch at a time. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the audit/classification task first — it produces the batched list the implementation task consumes. |
+| Next          | Implement Batch 1 (11 refdata entities).  |
 | Last touched  | 2026-07-30                               |
 
 * Acceptance
@@ -78,7 +78,7 @@ today.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit and classify entities: badge, image, or plain text]] | BACKLOG | | | Inventory every FK-like/code/lookup domain_entity model; classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy. Split the result into batches for implementation. |
+| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit and classify entities: badge, image, or plain text]] | DONE | 2026-07-30 | 2026-07-30 | Inventory every FK-like/code/lookup domain_entity model; classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy. Split the result into batches for implementation. |
 | [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Implement classified entities in batches]] | BACKLOG | | | Consume the audit/classification's batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time. |
 
 * Decisions

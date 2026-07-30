@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
 #+branch: feature/holiday-aware-date-picker-widget
-#+pr: 1769
+#+pr: 1772
 #+blocked_on: 7FF8A057-F95D-4654-B709-13D74525892B
 #+blocked_since: 2026-07-19
 #+created: 2026-07-08
@@ -165,6 +165,7 @@ after merge.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1772][#1772]] | [agile] Fix stale sprint.org row for calendar-followups story |
 | [[https://github.com/OreStudio/OreStudio/pull/1769][#1769]] | [qt] Add HolidayAwareDatePicker reusable calendar-sensitive date widget |
 
 * Review

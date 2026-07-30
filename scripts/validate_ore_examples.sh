@@ -45,8 +45,13 @@ failed_files=()
 
 while IFS= read -r -d '' file; do
     total=$((total + 1))
-    output=$(xmllint --schema "${XSD}" --path "${XSD_DIR}" --noout "${file}" 2>&1)
-    if [[ $? -eq 0 ]]; then
+    # Assigning a command substitution's output IS the whole statement's
+    # exit status under `set -e` -- when xmllint fails validation, that
+    # non-zero status kills the script right here, before the `if [[ $? ]]`
+    # check below ever runs, unless the assignment itself is the `if`'s
+    # own condition (command substitution failing inside an `if` doesn't
+    # trigger `set -e`).
+    if output=$(xmllint --schema "${XSD}" --path "${XSD_DIR}" --noout "${file}" 2>&1); then
         passed=$((passed + 1))
     else
         failed=$((failed + 1))

@@ -1,0 +1,32 @@
+{
+  "description": "Provenance for the ORE engine binary packages and sample data in this directory. This manifest is metadata for humans/tooling reasoning about this directory -- it is NOT the per-package manifest.json ores.compute.wrapper reads (that one lives inside each package tarball itself, at its root, and is deliberately minimal: {\"executable\": ..., \"args\": [...]} only -- see projects/ores.compute/wrapper/src/app/application.cpp's read_manifest()).",
+  "version_scheme": "Package version is `git describe --tags --always` run against the ORE Engine source checkout (git@github.com:OreStudio/Engine.git, upstream git@github.com:OpenSourceRisk/Engine.git), with any leading 'v' stripped. When the checkout is exactly on a release tag this is the plain tag (e.g. '1.8.16.0'); when it's N commits past the nearest tag it's '<tag>-<N>-g<short-sha>' (e.g. '1.8.16.0-3-g3b62ba248' means 3 commits after the v1.8.16.0 tag, at commit 3b62ba248...). The full commit hash and its commit date are recorded per-package below for exact traceability -- the describe string alone is enough to `git checkout` the same content, but the explicit fields avoid needing to.",
+  "packages": [
+    {
+      "file": "ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz",
+      "engine_version": "1.8.16.0-3-g3b62ba248",
+      "engine_commit": "3b62ba248e36ea92f408f0d863ede09639074836",
+      "engine_commit_date": "2026-06-11T12:45:15+02:00",
+      "built_at": "2026-07-30T20:40:00Z",
+      "built_with": "clang++ (linux-clang-ninja-release CMake preset), Boost 1.90.0, self-contained (bundles libOREAnalytics/libOREData/libQuantExt/libQuantLib.so.1 plus every non-glibc runtime dependency under lib/, RPATH=$ORIGIN/lib)",
+      "sha256": "44188963c2c2eb0014b7edc760f2a17224aa65fa2d1f228a6cc3214adafbdf8a",
+      "size_bytes": 57560489,
+      "built_by": "external/ore/tools/package_ore.sh",
+      "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.16.0-3-g3b62ba248-x64-linux.diff-report.txt in this directory",
+      "superseded": [
+        {
+          "file": "ore-1.8.15.0-x64-linux.tar.gz",
+          "removed_reason": "Broken: not self-contained -- dynamically linked against libOREAnalytics.so/libQuantExt.so/libQuantLib.so.1 with no RPATH into the package and no bundled copies, so `ldd` reported them \"not found\" outside the exact machine/build-tree it was hand-copied from. ores.compute.wrapper spawns the packaged executable directly with no LD_LIBRARY_PATH customisation (see projects/ores.compute/wrapper/src/app/application.cpp), so this package could only ever have worked by coincidence. Replaced, not patched, since a genuinely self-contained rebuild was the correct fix."
+        }
+      ]
+    }
+  ],
+  "sample_packages": [
+    {
+      "file": "TA002_IR_Swap.tar.gz",
+      "description": "The Input/ directory of external/ore/examples/Academy/TA002_IR_Swap (a plain 20Y EUR fixed-vs-float IR swap), repackaged with no manifest.json of its own -- it is a *job input* sample (what ores.compute.wrapper extracts per-job over an engine package's own output), not itself an engine package.",
+      "source": "external/ore/examples/Academy/TA002_IR_Swap/Input/ (see external/ore/examples/manifest.json for that directory's own provenance)",
+      "sha256": "2cf207a3a014fc2f2da8e399ac5f2b82526ad38b97af20f09cbcc488f0ed0475"
+    }
+  ]
+}

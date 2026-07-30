@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 8DBD1BAE-EC77-4008-99CB-3C08C20CB575
+:END:
+#+title: Verify compute grid package SHA256 on download
+#+description: ores.compute.wrapper should verify a downloaded engine package's checksum against a known-good SHA256 before extracting/running it.
+#+type: capture
+#+level: cross
+#+filetags: :compute:security:ore:integrity:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_compute_app_version_platforms_tbl= (see
+=projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp=)
+has no checksum column at all today, and
+=ores.compute.wrapper='s download path
+(=projects/ores.compute/wrapper/src/app/application.cpp:497=,
+=net::http_client::download(make_url(cfg.http_base_url,
+evt.package_uri), pkg_archive)=) never verifies the bytes it fetches
+against anything -- it downloads, extracts, and runs the engine package
+purely on trust. Add a =sha256= column to
+=ores_compute_app_version_platforms_tbl=, populate it from each
+package's own manifest (see =external/ore/packages/manifest.json='s
+=packages[].sha256= field, already recorded for exactly this reason --
+see =external/ore/tools/package_ore.sh=), thread it through
+=ores_compute_app_version_platforms_upsert_fn=/the seed script
+(=compute_ore_app_seed.sql=), and have the wrapper hash the downloaded
+archive and compare before extracting -- refuse to run and report a
+clear error on mismatch, rather than silently executing a corrupted or
+tampered package.
+
+* Why
+
+A compute node currently has no way to detect a truncated download, a
+corrupted upload, or (worst case) a tampered package before running
+untrusted third-party financial-calculation code with the wrapper's
+own privileges. Surfaced while building
+=external/ore/tools/package_ore.sh=, which already computes and
+records each package's sha256 in
+=external/ore/packages/manifest.json= for human/tooling provenance --
+but nothing downstream (the DB seed, the wrapper) actually consumes it
+to verify anything at run time.
+
+* References
+
+- =projects/ores.compute/wrapper/src/app/application.cpp:497= (the unverified download call)
+- =projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp= (no checksum column)
+- =projects/ores.sql/populate/compute/compute_ore_app_seed.sql= (where =package_uri= is seeded; =sha256= would be seeded alongside it)
+- =external/ore/tools/package_ore.sh= / =external/ore/packages/manifest.json= (already computes+records sha256 per package, just not consumed downstream)
+
+* See also
+
+-

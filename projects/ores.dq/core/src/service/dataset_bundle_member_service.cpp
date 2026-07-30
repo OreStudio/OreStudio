@@ -38,6 +38,18 @@ dataset_bundle_member_service::list_members_by_bundle(const std::string& bundle_
     return repo_.read_latest_by_bundle(bundle_code);
 }
 
+std::vector<domain::dataset_bundle_member> dataset_bundle_member_service::list_members_by_bundle(
+    const std::string& bundle_code, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing dataset bundle members for bundle: " << bundle_code
+                               << " offset: " << offset << " limit: " << limit;
+    return repo_.read_latest_by_bundle(bundle_code, offset, limit);
+}
+
+std::uint32_t
+dataset_bundle_member_service::get_total_member_count_by_bundle(const std::string& bundle_code) {
+    return repo_.get_total_member_count_by_bundle(bundle_code);
+}
+
 void dataset_bundle_member_service::save_member(const domain::dataset_bundle_member& member) {
     if (member.bundle_code.empty()) {
         throw std::invalid_argument("Bundle cannot be empty.");
@@ -50,20 +62,6 @@ void dataset_bundle_member_service::save_member(const domain::dataset_bundle_mem
     repo_.write(member);
     BOOST_LOG_SEV(lg(), info) << "Saved dataset bundle member: " << member.bundle_code << "/"
                               << member.dataset_code;
-}
-
-void dataset_bundle_member_service::save_members(
-    const std::vector<domain::dataset_bundle_member>& members) {
-    for (const auto& m : members) {
-        if (m.bundle_code.empty()) {
-            throw std::invalid_argument("Bundle cannot be empty.");
-        }
-        if (m.dataset_code.empty()) {
-            throw std::invalid_argument("Dataset cannot be empty.");
-        }
-    }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << members.size() << " dataset bundle members";
-    repo_.write(members);
 }
 
 void dataset_bundle_member_service::remove_member(const std::string& bundle_code,

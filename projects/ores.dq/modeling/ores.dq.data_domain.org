@@ -27,11 +27,13 @@ source).
 :component: dq
 :END:
 
-* Primary key
+* Columns
+
+** name
 :PROPERTIES:
-:column:   name
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique name identifying this data domain.
@@ -41,10 +43,6 @@ Examples: "reference_data", "market_data", "trade_data".
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_data"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

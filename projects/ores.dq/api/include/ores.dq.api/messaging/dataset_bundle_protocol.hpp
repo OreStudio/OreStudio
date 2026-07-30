@@ -21,28 +21,34 @@
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/dataset_bundle.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::dq::messaging {
 
 struct get_dataset_bundles_request {
     using response_type = struct get_dataset_bundles_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_dataset_bundles_response {
     std::vector<ores::dq::domain::dataset_bundle> bundles;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_dataset_bundle_request {
     using response_type = struct save_dataset_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.save";
-    std::vector<ores::dq::domain::dataset_bundle> bundles;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.save";
+    ores::dq::domain::dataset_bundle data;
+
+    static save_dataset_bundle_request from(ores::dq::domain::dataset_bundle v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_dataset_bundle_response {
@@ -52,7 +58,7 @@ struct save_dataset_bundle_response {
 
 struct delete_dataset_bundle_request {
     using response_type = struct delete_dataset_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.delete";
     std::vector<std::string> ids;
 };
 
@@ -63,14 +69,14 @@ struct delete_dataset_bundle_response {
 
 struct get_dataset_bundle_history_request {
     using response_type = struct get_dataset_bundle_history_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.history";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset_bundles.history";
     std::string id;
 };
 
 struct get_dataset_bundle_history_response {
+    std::vector<ores::dq::domain::dataset_bundle> history;
     bool success = false;
     std::string message;
-    std::vector<ores::dq::domain::dataset_bundle> history;
 };
 
 }

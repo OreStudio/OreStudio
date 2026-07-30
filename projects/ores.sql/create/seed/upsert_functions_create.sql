@@ -945,7 +945,7 @@ begin
         current_user, current_user, 'system.new_record', 'System seed data - dataset bundle',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )
-    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    on conflict (tenant_id, code, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
         raise debug 'Created dataset bundle: %', p_code;

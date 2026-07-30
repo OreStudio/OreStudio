@@ -63,15 +63,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest data domains, possibly filtered by name.
+     * @brief Reads latest data domains, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::data_domain> read_latest(context ctx);
     std::vector<domain::data_domain> read_latest(context ctx, const std::string& name);
     /**@}*/
 
+
     /**
-     * @brief Reads all data domains, possibly filtered by name.
+     * @brief Reads all data domains, possibly filtered by primary key.
      */
     std::vector<domain::data_domain> read_all(context ctx, const std::string& name);
 
@@ -82,7 +83,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param name The name to look up
      * @param version The version to fetch
      */
     std::optional<domain::data_domain>

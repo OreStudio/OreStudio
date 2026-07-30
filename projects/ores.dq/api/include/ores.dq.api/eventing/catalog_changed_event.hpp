@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -30,24 +30,17 @@ namespace ores::dq::eventing {
 /**
  * @brief Domain event indicating that catalog data has changed.
  *
- * This event is published when any catalog entity is created,
- * updated, or deleted in the database. Subscribers can use the timestamp to
- * query for changes since that point.
+ * Published when any catalog entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct catalog_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Names of catalogs that changed.
-     *
-     * Contains the names of catalogs that were created, updated,
-     * or deleted. May contain multiple names for batch operations.
+     * @brief Changed catalog codes.
      */
     std::vector<std::string> names;
 

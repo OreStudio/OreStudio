@@ -25,7 +25,8 @@
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/dataset_bundle_repository.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -35,8 +36,8 @@ namespace ores::dq::service {
 /**
  * @brief Service for managing dataset bundles.
  *
- * This service provides functionality for:
- * - Managing dataset bundles (CRUD operations)
+ * Provides a higher-level interface for dataset bundle operations,
+ * wrapping the underlying repository.
  */
 class ORES_DQ_CORE_EXPORT dataset_bundle_service {
 private:
@@ -52,57 +53,81 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Constructs a dataset_bundle_service with required repositories.
+     * @brief Constructs a dataset_bundle_service with a database context.
      *
-     * @param ctx The database context.
+     * @param ctx The database context for operations.
      */
     explicit dataset_bundle_service(context ctx);
 
     /**
-     * @brief Lists all dataset bundles.
+     * @brief Lists dataset bundles with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of dataset bundles for the requested page.
      */
-    std::vector<domain::dataset_bundle> list_bundles();
+    std::vector<domain::dataset_bundle> list_bundles(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Finds a dataset bundle by its ID.
+     * @brief Gets the total count of active dataset bundles.
+     *
+     * @return Total number of active dataset bundles.
      */
-    std::optional<domain::dataset_bundle> find_bundle(const boost::uuids::uuid& id);
+    std::uint32_t count_bundles();
+
 
     /**
-     * @brief Finds a dataset bundle by its code.
+     * @brief Retrieves a single dataset bundle as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The dataset bundle at that version if found, std::nullopt otherwise.
      */
-    std::optional<domain::dataset_bundle> find_bundle_by_code(const std::string& code);
+    std::optional<domain::dataset_bundle> get_bundle_at_version(const std::string& id,
+                                                                std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single dataset bundle by its primary key.
+     *
+     * @return The dataset bundle if found, std::nullopt otherwise.
+     */
+    std::optional<domain::dataset_bundle> get_bundle(const std::string& id);
 
     /**
      * @brief Saves a dataset bundle (creates or updates).
      *
-     * @param bundle The dataset bundle to save
+     * @param bundle The dataset bundle to save.
+     * @throws std::exception on failure.
      */
     void save_bundle(const domain::dataset_bundle& bundle);
 
     /**
-     * @brief Saves multiple dataset bundles (creates or updates).
+     * @brief Saves a batch of dataset bundles.
      *
-     * @param bundles The dataset bundles to save
+     * @param bundles The dataset bundles to save.
+     * @throws std::exception on failure.
      */
     void save_bundles(const std::vector<domain::dataset_bundle>& bundles);
 
     /**
-     * @brief Removes a dataset bundle.
+     * @brief Deletes a dataset bundle by its primary key.
      *
-     * @param id The ID of the dataset bundle to remove
+     * @throws std::exception on failure.
      */
-    void remove_bundle(const boost::uuids::uuid& id);
+    void delete_bundle(const std::string& id);
 
     /**
-     * @brief Gets the version history for a dataset bundle.
-     *
-     * @param id The dataset bundle ID
-     * @return Vector of all versions, newest first
+     * @brief Deletes dataset bundles by their primary keys.
      */
-    std::vector<domain::dataset_bundle> get_bundle_history(const boost::uuids::uuid& id);
+    void delete_bundles(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a dataset bundle.
+     */
+    std::vector<domain::dataset_bundle> get_bundle_history(const std::string& id);
 
 private:
+    context ctx_;
     repository::dataset_bundle_repository repo_;
 };
 

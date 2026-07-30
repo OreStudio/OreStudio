@@ -209,8 +209,7 @@ void DatasetBundleDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
         }
 
-        dq::messaging::save_dataset_bundle_request request;
-        request.bundles.push_back(bundle);
+        auto request = dq::messaging::save_dataset_bundle_request::from(bundle);
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

@@ -30,23 +30,24 @@ Examples:
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this bundle.
 
 This is the surrogate key for the bundle.
 
-* Natural keys
-
 ** code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Unique code for stable referencing.
@@ -61,6 +62,7 @@ std::string(faker::word::noun()) + "_bundle"
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Human-readable name for the bundle.
@@ -68,8 +70,6 @@ Human-readable name for the bundle.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -140,9 +140,9 @@ std::string(faker::lorem::sentence())
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.dq/domain/dataset_bundle.hpp
+:domain_include:         ores.dq.api/domain/dataset_bundle.hpp
 :domain_class:           dq::domain::dataset_bundle
-:protocol_include:       ores.dq/messaging/dataset_bundle_protocol.hpp
+:protocol_include:       ores.dq.api/messaging/dataset_bundle_protocol.hpp
 :collection_name:        bundles
 :item_var:               bundle
 :key_field:              code

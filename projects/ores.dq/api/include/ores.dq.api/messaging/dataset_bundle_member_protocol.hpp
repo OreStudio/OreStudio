@@ -21,11 +21,27 @@
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_MEMBER_PROTOCOL_HPP
 
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::dq::messaging {
+
+struct get_dataset_bundle_members_by_bundle_request {
+    using response_type = struct get_dataset_bundle_members_by_bundle_response;
+    static constexpr std::string_view nats_subject =
+        "dq.v1.dataset_bundle_members.list_by_bundle_code";
+    std::string bundle_code;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_dataset_bundle_members_by_bundle_response {
+    std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
+};
 
 struct get_dataset_bundle_members_request {
     using response_type = struct get_dataset_bundle_members_response;
@@ -35,22 +51,9 @@ struct get_dataset_bundle_members_request {
 };
 
 struct get_dataset_bundle_members_response {
-    std::vector<ores::dq::domain::dataset_bundle_member> members;
+    std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
     int total_available_count = 0;
 };
-
-struct get_dataset_bundle_members_by_bundle_request {
-    using response_type = struct get_dataset_bundle_members_by_bundle_response;
-    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundle-members.by-bundle";
-    std::string bundle_code;
-};
-
-struct get_dataset_bundle_members_by_bundle_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::dq::domain::dataset_bundle_member> members;
-};
-
 }
 
 #endif

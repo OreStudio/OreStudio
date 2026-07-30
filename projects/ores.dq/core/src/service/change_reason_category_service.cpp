@@ -42,17 +42,18 @@ std::uint32_t change_reason_category_service::count_categories() {
     return repo_.get_total_category_count(ctx_);
 }
 
+
 std::optional<domain::change_reason_category>
 change_reason_category_service::get_category_at_version(const std::string& code,
                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting change reason category at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting change reason category at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::change_reason_category>
 change_reason_category_service::get_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting change reason category: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting change reason category. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -62,18 +63,19 @@ change_reason_category_service::get_category(const std::string& code) {
 void change_reason_category_service::save_category(const domain::change_reason_category& v) {
     if (v.code.empty())
         throw std::invalid_argument("Change Reason Category code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved change reason category: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved change reason category. " << "code: " << v.code;
 }
 
 void change_reason_category_service::save_categories(
     const std::vector<domain::change_reason_category>& categories) {
-    for (const auto& e : categories)
+    for (const auto& e : categories) {
         if (e.code.empty())
             throw std::invalid_argument("Change Reason Category code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size() << " change reason categories";
     auto ts = categories;
     for (auto& e : ts)
@@ -82,9 +84,9 @@ void change_reason_category_service::save_categories(
 }
 
 void change_reason_category_service::delete_category(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing change reason category: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing change reason category. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed change reason category: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed change reason category. " << "code: " << code;
 }
 
 void change_reason_category_service::delete_categories(const std::vector<std::string>& codes) {
@@ -93,7 +95,8 @@ void change_reason_category_service::delete_categories(const std::vector<std::st
 
 std::vector<domain::change_reason_category>
 change_reason_category_service::get_category_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for change reason category: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for change reason category. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

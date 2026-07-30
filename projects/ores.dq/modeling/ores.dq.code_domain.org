@@ -30,23 +30,24 @@ can reference this table.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique code domain identifier.
 
 Examples: 'party_status', 'book_type', 'fsm_state', 'dq_nature'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Human-readable name for the code domain.
@@ -54,8 +55,6 @@ Human-readable name for the code domain.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + " Domain"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -137,9 +136,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.dq/domain/code_domain.hpp
+:domain_include:         ores.dq.api/domain/code_domain.hpp
 :domain_class:           dq::domain::code_domain
-:protocol_include:       ores.dq/messaging/code_domain_protocol.hpp
+:protocol_include:       ores.dq.api/messaging/code_domain_protocol.hpp
 :collection_name:        domains
 :item_var:               domain
 :key_field:              code
@@ -158,7 +157,7 @@ faker::number::integer(1, 100)
 :history_message_type:   get_code_domain_history_request
 :settings_group:         CodeDomainListWindow
 :window_title:           Code Domains
-:icon:                   Grid
+:icon:                   Table
 :END:
 
 *** Columns (Qt model)

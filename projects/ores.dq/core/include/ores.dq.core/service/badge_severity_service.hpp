@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_severities();
 
+
     /**
      * @brief Retrieves a single badge severity as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the badge severity.
      * @param version The version to fetch.
      * @return The badge severity at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                   std::uint32_t version);
 
     /**
-     * @brief Retrieves a single badge severity by its code.
+     * @brief Retrieves a single badge severity by its primary key.
      *
-     * @param code The code of the badge severity.
      * @return The badge severity if found, std::nullopt otherwise.
      */
     std::optional<domain::badge_severity> get_severity(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_severities(const std::vector<domain::badge_severity>& severities);
 
     /**
-     * @brief Deletes a badge severity by its code.
+     * @brief Deletes a badge severity by its primary key.
      *
-     * @param code The code of the badge severity to delete.
      * @throws std::exception on failure.
      */
     void delete_severity(const std::string& code);
 
     /**
-     * @brief Deletes badge severities by their codes.
+     * @brief Deletes badge severities by their primary keys.
      */
     void delete_severities(const std::vector<std::string>& codes);
 

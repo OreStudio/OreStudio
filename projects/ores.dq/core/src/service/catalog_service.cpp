@@ -42,14 +42,16 @@ std::uint32_t catalog_service::count_catalogs() {
     return repo_.get_total_catalog_count(ctx_);
 }
 
+
 std::optional<domain::catalog> catalog_service::get_catalog_at_version(const std::string& name,
                                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting catalog at version: " << name << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting catalog at version. " << "name: " << name
+                               << " version: " << version;
     return repo_.read_at_version(ctx_, name, version);
 }
 
 std::optional<domain::catalog> catalog_service::get_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting catalog: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Getting catalog. " << "name: " << name;
     auto results = repo_.read_latest(ctx_, name);
     if (results.empty())
         return std::nullopt;
@@ -59,17 +61,18 @@ std::optional<domain::catalog> catalog_service::get_catalog(const std::string& n
 void catalog_service::save_catalog(const domain::catalog& v) {
     if (v.name.empty())
         throw std::invalid_argument("Catalog name cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving catalog: " << v.name;
+    BOOST_LOG_SEV(lg(), debug) << "Saving catalog. " << "name: " << v.name;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << v.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved catalog. " << "name: " << v.name;
 }
 
 void catalog_service::save_catalogs(const std::vector<domain::catalog>& catalogs) {
-    for (const auto& e : catalogs)
+    for (const auto& e : catalogs) {
         if (e.name.empty())
             throw std::invalid_argument("Catalog name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << catalogs.size() << " catalogs";
     auto ts = catalogs;
     for (auto& e : ts)
@@ -78,9 +81,9 @@ void catalog_service::save_catalogs(const std::vector<domain::catalog>& catalogs
 }
 
 void catalog_service::delete_catalog(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing catalog: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Removing catalog. " << "name: " << name;
     repo_.remove(ctx_, name);
-    BOOST_LOG_SEV(lg(), info) << "Removed catalog: " << name;
+    BOOST_LOG_SEV(lg(), info) << "Removed catalog. " << "name: " << name;
 }
 
 void catalog_service::delete_catalogs(const std::vector<std::string>& names) {
@@ -88,7 +91,7 @@ void catalog_service::delete_catalogs(const std::vector<std::string>& names) {
 }
 
 std::vector<domain::catalog> catalog_service::get_catalog_history(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for catalog: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for catalog. " << "name: " << name;
     return repo_.read_all(ctx_, name);
 }
 

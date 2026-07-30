@@ -37,7 +37,7 @@ std::string data_domain_repository::sql() {
 }
 
 void data_domain_repository::write(context ctx, const domain::data_domain& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing data domain: " << v.name;
+    BOOST_LOG_SEV(lg(), debug) << "Writing data domain. " << "name: " << v.name;
     execute_write_query(ctx, data_domain_mapper::map(v), lg(), "Writing data domain to database.");
 }
 
@@ -61,7 +61,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
 
 std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx,
                                                                      const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. name: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<data_domain_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
@@ -74,9 +74,10 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
         "Reading latest data domain by name.");
 }
 
+
 std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
                                                                   const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. name: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
     const auto query = sqlgen::read<std::vector<data_domain_entity>> | where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -91,7 +92,7 @@ std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
 std::optional<domain::data_domain> data_domain_repository::read_at_version(context ctx,
                                                                            const std::string& name,
                                                                            std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. name: " << name
+    BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
                                << " version: " << version;
     const auto query = sqlgen::read<std::vector<data_domain_entity>> |
                        where("name"_c == name && "version"_c == version) | sqlgen::limit(1);
@@ -109,7 +110,7 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(conte
 }
 
 void data_domain_repository::remove(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing data domain: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Removing data domain. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

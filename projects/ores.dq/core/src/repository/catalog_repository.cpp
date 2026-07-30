@@ -37,7 +37,7 @@ std::string catalog_repository::sql() {
 }
 
 void catalog_repository::write(context ctx, const domain::catalog& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing catalog: " << v.name;
+    BOOST_LOG_SEV(lg(), debug) << "Writing catalog. " << "name: " << v.name;
     execute_write_query(ctx, catalog_mapper::map(v), lg(), "Writing catalog to database.");
 }
 
@@ -60,7 +60,7 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. name: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
                        where("name"_c == name && "valid_to"_c == max.value());
@@ -73,8 +73,9 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const 
         "Reading latest catalog by name.");
 }
 
+
 std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. name: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. " << "name: " << name;
     const auto query = sqlgen::read<std::vector<catalog_entity>> | where("name"_c == name) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -88,7 +89,7 @@ std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std
 
 std::optional<domain::catalog>
 catalog_repository::read_at_version(context ctx, const std::string& name, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading catalog at version. name: " << name
+    BOOST_LOG_SEV(lg(), debug) << "Reading catalog at version. " << "name: " << name
                                << " version: " << version;
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
                        where("name"_c == name && "version"_c == version) | sqlgen::limit(1);
@@ -106,7 +107,7 @@ catalog_repository::read_at_version(context ctx, const std::string& name, std::u
 }
 
 void catalog_repository::remove(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing catalog: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Removing catalog. " << "name: " << name;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

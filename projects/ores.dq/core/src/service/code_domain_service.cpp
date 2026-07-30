@@ -42,15 +42,16 @@ std::uint32_t code_domain_service::count_domains() {
     return repo_.get_total_domain_count(ctx_);
 }
 
+
 std::optional<domain::code_domain>
 code_domain_service::get_domain_at_version(const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting code domain at version: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Getting code domain at version. " << "code: " << code
                                << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::code_domain> code_domain_service::get_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting code domain: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting code domain. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -60,17 +61,18 @@ std::optional<domain::code_domain> code_domain_service::get_domain(const std::st
 void code_domain_service::save_domain(const domain::code_domain& v) {
     if (v.code.empty())
         throw std::invalid_argument("Code Domain code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving code domain: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving code domain. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved code domain: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved code domain. " << "code: " << v.code;
 }
 
 void code_domain_service::save_domains(const std::vector<domain::code_domain>& domains) {
-    for (const auto& e : domains)
+    for (const auto& e : domains) {
         if (e.code.empty())
             throw std::invalid_argument("Code Domain code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << domains.size() << " code domains";
     auto ts = domains;
     for (auto& e : ts)
@@ -79,9 +81,9 @@ void code_domain_service::save_domains(const std::vector<domain::code_domain>& d
 }
 
 void code_domain_service::delete_domain(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing code domain: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing code domain. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed code domain: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed code domain. " << "code: " << code;
 }
 
 void code_domain_service::delete_domains(const std::vector<std::string>& codes) {
@@ -89,7 +91,7 @@ void code_domain_service::delete_domains(const std::vector<std::string>& codes) 
 }
 
 std::vector<domain::code_domain> code_domain_service::get_domain_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for code domain: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for code domain. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

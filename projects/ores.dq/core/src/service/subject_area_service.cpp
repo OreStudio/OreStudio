@@ -42,6 +42,7 @@ std::uint32_t subject_area_service::count_areas() {
     return repo_.get_total_area_count(ctx_);
 }
 
+
 std::optional<domain::subject_area> subject_area_service::get_area_at_version(
     const std::string& name, const std::string& domain_name, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting subject area at version. " << "name: " << name

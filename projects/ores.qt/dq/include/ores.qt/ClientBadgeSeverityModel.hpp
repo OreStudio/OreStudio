@@ -26,7 +26,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -87,6 +86,7 @@ public:
      * @return The badge severity, or nullptr if row is invalid.
      */
     const dq::domain::badge_severity* getSeverity(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

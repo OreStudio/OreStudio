@@ -75,11 +75,11 @@ public:
      */
     std::uint32_t count_reasons();
 
+
     /**
      * @brief Retrieves a single change reason as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the change reason.
      * @param version The version to fetch.
      * @return The change reason at that version if found, std::nullopt otherwise.
      */
@@ -87,9 +87,8 @@ public:
                                                                std::uint32_t version);
 
     /**
-     * @brief Retrieves a single change reason by its code.
+     * @brief Retrieves a single change reason by its primary key.
      *
-     * @param code The code of the change reason.
      * @return The change reason if found, std::nullopt otherwise.
      */
     std::optional<domain::change_reason> get_reason(const std::string& code);
@@ -111,15 +110,14 @@ public:
     void save_reasons(const std::vector<domain::change_reason>& reasons);
 
     /**
-     * @brief Deletes a change reason by its code.
+     * @brief Deletes a change reason by its primary key.
      *
-     * @param code The code of the change reason to delete.
      * @throws std::exception on failure.
      */
     void delete_reason(const std::string& code);
 
     /**
-     * @brief Deletes change reasons by their codes.
+     * @brief Deletes change reasons by their primary keys.
      */
     void delete_reasons(const std::vector<std::string>& codes);
 

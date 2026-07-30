@@ -37,7 +37,7 @@ std::string change_reason_repository::sql() {
 }
 
 void change_reason_repository::write(context ctx, const domain::change_reason& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing change reason: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing change reason. " << "code: " << v.code;
     execute_write_query(
         ctx, change_reason_mapper::map(v), lg(), "Writing change reason to database.");
 }
@@ -63,7 +63,7 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
 
 std::vector<domain::change_reason> change_reason_repository::read_latest(context ctx,
                                                                          const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
                        where("code"_c == code && "valid_to"_c == max.value());
@@ -76,9 +76,10 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
         "Reading latest change reason by code.");
 }
 
+
 std::vector<domain::change_reason> change_reason_repository::read_all(context ctx,
                                                                       const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all change reason versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all change reason versions. " << "code: " << code;
     const auto query = sqlgen::read<std::vector<change_reason_entity>> | where("code"_c == code) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
@@ -92,7 +93,7 @@ std::vector<domain::change_reason> change_reason_repository::read_all(context ct
 
 std::optional<domain::change_reason> change_reason_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading change reason at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading change reason at version. " << "code: " << code
                                << " version: " << version;
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
                        where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
@@ -110,7 +111,7 @@ std::optional<domain::change_reason> change_reason_repository::read_at_version(
 }
 
 void change_reason_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing change reason: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing change reason. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

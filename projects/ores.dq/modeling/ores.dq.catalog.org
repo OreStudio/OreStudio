@@ -31,11 +31,13 @@ authored directly (not mirrored from an external source).
 :component: dq
 :END:
 
-* Primary key
+* Columns
+
+** name
 :PROPERTIES:
-:column:   name
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique name identifying this catalog.
@@ -45,10 +47,6 @@ Examples: "ISO Standards", "Cryptocurrency", "FpML Standards".
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + " Catalog"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

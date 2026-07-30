@@ -28,11 +28,13 @@ authored directly (not mirrored from an external source).
 :component: dq
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique code identifying this change reason category.
@@ -42,10 +44,6 @@ Examples: "data_correction", "regulatory_update".
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_category"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:

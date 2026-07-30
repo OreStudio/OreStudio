@@ -137,9 +137,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.dq/domain/badge_severity.hpp
+:domain_include:         ores.dq.api/domain/badge_severity.hpp
 :domain_class:           dq::domain::badge_severity
-:protocol_include:       ores.dq/messaging/badge_severity_protocol.hpp
+:protocol_include:       ores.dq.api/messaging/badge_severity_protocol.hpp
 :collection_name:        severities
 :item_var:               severity
 :key_field:              code
@@ -158,7 +158,8 @@ faker::number::integer(1, 100)
 :history_message_type:   get_badge_severity_history_request
 :settings_group:         BadgeSeverityListWindow
 :window_title:           Badge Severities
-:icon:                   Award
+:icon:                   Star
+:has_change_reason_cache: true
 :END:
 
 *** Columns (Qt model)

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,10 +20,11 @@
 #ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::dq::domain {
 
@@ -48,7 +49,7 @@ struct dataset_bundle final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::string tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID uniquely identifying this bundle.
@@ -75,9 +76,14 @@ struct dataset_bundle final {
     std::string description;
 
     /**
-     * @brief Username of the person who last modified this bundle.
+     * @brief Username of the person who last modified this dataset bundle.
      */
     std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -92,15 +98,20 @@ struct dataset_bundle final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for dataset_bundle, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const dataset_bundle&) {
+    return "ores.dq.dataset_bundle";
+}
 
 }
 

@@ -76,11 +76,11 @@ public:
      */
     std::uint32_t count_categories();
 
+
     /**
      * @brief Retrieves a single change reason category as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the change reason category.
      * @param version The version to fetch.
      * @return The change reason category at that version if found, std::nullopt otherwise.
      */
@@ -88,9 +88,8 @@ public:
                                                                           std::uint32_t version);
 
     /**
-     * @brief Retrieves a single change reason category by its code.
+     * @brief Retrieves a single change reason category by its primary key.
      *
-     * @param code The code of the change reason category.
      * @return The change reason category if found, std::nullopt otherwise.
      */
     std::optional<domain::change_reason_category> get_category(const std::string& code);
@@ -112,15 +111,14 @@ public:
     void save_categories(const std::vector<domain::change_reason_category>& categories);
 
     /**
-     * @brief Deletes a change reason category by its code.
+     * @brief Deletes a change reason category by its primary key.
      *
-     * @param code The code of the change reason category to delete.
      * @throws std::exception on failure.
      */
     void delete_category(const std::string& code);
 
     /**
-     * @brief Deletes change reason categories by their codes.
+     * @brief Deletes change reason categories by their primary keys.
      */
     void delete_categories(const std::vector<std::string>& codes);
 

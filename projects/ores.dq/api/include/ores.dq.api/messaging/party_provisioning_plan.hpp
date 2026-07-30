@@ -40,16 +40,17 @@ struct party_bundle_publish_step {
  * filter -- so a new bundle member (e.g. a new asset class added to
  * synthetic_realistic_2026) never requires a client code change in either
  * provisioner, only a new row in dq_dataset_bundle_member_populate.sql.
- * synthetic_realistic_2026 is the default vintage theme published here --
- * a party also wanting the 2016 ORE Samples or Uniform Volatility Demo
- * themes publishes synthetic_ore_samples_2016/synthetic_uniform_demo
- * separately (e.g. via ores.shell); only one theme's feeds should ever run
- * at a time, so provisioning never defaults to more than one.
+ *
+ * synthetic_realistic_2026 is TEMPORARILY excluded: its only dataset,
+ * synthetic.themes.realistic_2026, fails at publish time via
+ * ores_synthetic_publish_theme_from_dq_fn ("column existing.index_name
+ * does not exist") -- see task tracking this fix. Re-add it here once
+ * that's resolved; no other change needed, per the "new row only" design
+ * above.
  */
 inline const std::vector<party_bundle_publish_step>& party_provisioning_bundle_plan() {
     static const std::vector<party_bundle_publish_step> plan{
         {"risk_management", "organisation structure and risk reporting"},
-        {"synthetic_realistic_2026", "synthetic market data configuration"},
         {"marketdata.reference_vintage_2026_05_05", "FX driver rates"},
     };
     return plan;

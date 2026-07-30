@@ -343,12 +343,39 @@ public:
                 return [&, step](const std::string& line) { add_step(step, line, 0); };
             };
 
-            // Step 1: business centres + the four-party LEI hierarchy, in
-            // one bundle -- tenant-wide, so scoped to the caller's own
-            // (already-active) party rather than a not-yet-created one.
+            // Step 1: the generic 'base' bundle (countries, currencies,
+            // calendars, fpml.* reference codes, GLEIF entities/
+            // relationships, and the badge system) -- tenant-wide, same
+            // bundle Barclays' generic provision-party flow publishes, so
+            // Acme gets full reference-data parity instead of only the
+            // Acme-specific datasets below. Must run before Step 2: the
+            // fpml.business_center rows here are what acme_lei_import's
+            // LEI-imported parties are addressed against. opted_in_datasets
+            // pulls in real GLEIF counterparties (small -- ~13k rows, still
+            // the slowest single step here), mirroring Barclays' own
+            // opted_in_datasets. Best-effort: every party a tester actually
+            // cares about is created in steps 3+ regardless of whether this
+            // large, non-blocking dataset finishes within the wait window,
+            // so a slow/failed import here is logged and does not abort
+            // the rest of provisioning.
             {
                 internal_request_client client = make_client(caller_party_id);
-                add_step("Step 1: Importing Acme Corporation LEI hierarchy", "starting", 0);
+                add_step("Step 1: Publishing base reference data", "starting", 0);
+                publish_bundle(client,
+                              "base",
+                              username,
+                              R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})",
+                              add_step,
+                              progress("base"),
+                              std::chrono::seconds{600});
+            }
+
+            // Step 2: the four-party Acme Corporation LEI hierarchy --
+            // tenant-wide, so scoped to the caller's own (already-active)
+            // party rather than a not-yet-created one.
+            {
+                internal_request_client client = make_client(caller_party_id);
+                add_step("Step 2: Importing Acme Corporation LEI hierarchy", "starting", 0);
                 if (!publish_bundle(client,
                                     "acme_lei_import",
                                     username,
@@ -356,24 +383,6 @@ public:
                                     add_step,
                                     progress("acme_lei_import")))
                     { reply(nats_, msg, resp); return; }
-            }
-
-            // Step 2: real GLEIF counterparties (small -- ~13k rows, still
-            // the slowest single step here). Best-effort: every party a
-            // tester actually cares about is created in steps 3+
-            // regardless of whether this large, non-blocking dataset finishes
-            // within the wait window, so a slow/failed import here is
-            // logged and does not abort the rest of provisioning.
-            {
-                internal_request_client client = make_client(caller_party_id);
-                add_step("Step 2: Importing GLEIF counterparties", "starting", 0);
-                publish_bundle(client,
-                              "acme_gleif_counterparties",
-                              username,
-                              "{}",
-                              add_step,
-                              progress("acme_gleif_counterparties"),
-                              std::chrono::seconds{600});
             }
 
             // Step 3: the holding company -- no desks/staff of its own, so

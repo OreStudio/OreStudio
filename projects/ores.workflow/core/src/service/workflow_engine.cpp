@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/service/workflow_engine.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <boost/lexical_cast.hpp>
@@ -89,10 +90,9 @@ void workflow_engine::publish_status_event(const boost::uuids::uuid& instance_id
     e.entity_ids = {boost::uuids::to_string(instance_id)};
     e.tenant_id = boost::uuids::to_string(tenant_id);
 
-    const auto json = rfl::json::write(e);
-    const auto data = std::as_bytes(std::span{json.data(), json.size()});
     try {
-        nats_.publish("ores.workflow.workflow_instance_changed", data, {});
+        nats_.publish(
+            "ores.workflow.workflow_instance_changed", ores::nats::default_wire_codec().encode(e), {});
     } catch (const std::exception& ex) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to publish workflow status event: " << ex.what();
     }
@@ -295,8 +295,8 @@ void workflow_engine::check_compensation_complete(const domain::workflow_instanc
 }
 
 void workflow_engine::on_step_completed(ores::nats::message msg) {
-    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto event_result = rfl::json::read<messaging::step_completed_event>(sv);
+    auto event_result = ores::nats::default_wire_codec().decode<messaging::step_completed_event>(
+        msg.data);
     if (!event_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode step_completed_event: "
                                   << event_result.error().what();
@@ -397,8 +397,8 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
 
 void workflow_engine::on_start_workflow(ores::nats::message msg) {
 
-    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto msg_result = rfl::json::read<messaging::start_workflow_message>(sv);
+    auto msg_result =
+        ores::nats::default_wire_codec().decode<messaging::start_workflow_message>(msg.data);
     if (!msg_result) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to decode start_workflow_message: "
                                   << msg_result.error().what();

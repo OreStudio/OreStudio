@@ -23,6 +23,7 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
 #include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
@@ -42,8 +43,6 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <algorithm>
-#include <rfl/json.hpp>
 
 namespace ores::refdata::service::app {
 
@@ -79,10 +78,7 @@ void publish_entity_event(ores::nats::service::client& nats,
                           const std::string& subject,
                           const ev::domain::entity_change_event& notif) {
     try {
-        const auto json = rfl::json::write(notif);
-        std::vector<std::byte> data(json.size());
-        std::transform(json.begin(), json.end(), data.begin(), [](char c) { return std::byte(c); });
-        nats.publish(subject, std::move(data), {});
+        nats.publish(subject, ores::nats::default_wire_codec().encode(notif), {});
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(pub_lg(), error)
             << "Failed to publish event to '" << subject << "': " << e.what();

@@ -25,10 +25,10 @@
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::marketdata::service::app {
@@ -53,7 +53,7 @@ void curve_feed_ingest_loop::start() {
     boost::uuids::random_generator uuid_gen;
 
     sub_ = nats_.subscribe(wildcard_subject, [this, uuid_gen](ores::nats::message msg) mutable {
-        auto tick = rfl::json::read<domain::ir_curve_tick>(ores::nats::as_string_view(msg.data));
+        auto tick = ores::nats::default_wire_codec().decode<domain::ir_curve_tick>(msg.data);
         if (!tick) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to decode ir_curve_tick: " << tick.error().what();
             return;

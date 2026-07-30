@@ -24,13 +24,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <functional>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -106,7 +106,8 @@ public:
     [[nodiscard]] std::string load(const std::string& tenant_id) {
         using namespace ores::logging;
         try {
-            const auto req_json = rfl::json::write(
+            const auto& codec = ores::nats::default_wire_codec();
+            const auto bytes = codec.encode(
                 ores::refdata::messaging::read_currency_pair_conventions_for_cache_request{
                     .tenant_id = tenant_id});
             std::unordered_map<std::string, std::string> headers;
@@ -116,11 +117,11 @@ public:
             const auto reply = nats_.request_sync(
                 ores::refdata::messaging::read_currency_pair_conventions_for_cache_request::
                     nats_subject,
-                ores::nats::as_bytes(req_json),
+                bytes,
                 std::move(headers));
-            auto resp = rfl::json::read<
+            auto resp = codec.decode<
                 ores::refdata::messaging::read_currency_pair_conventions_for_cache_response>(
-                ores::nats::as_string_view(reply.data));
+                reply.data);
             if (!resp || !resp->success) {
                 const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
                 BOOST_LOG_SEV(currency_pair_convention_cache_lg(), warn)

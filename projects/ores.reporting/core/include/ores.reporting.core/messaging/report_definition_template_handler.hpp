@@ -24,6 +24,7 @@
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
@@ -31,7 +32,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::reporting::messaging {
 
@@ -73,16 +73,13 @@ public:
 
             ores::dq::messaging::list_dq_report_definition_templates_request dq_req;
             dq_req.bundle_code = bundle_code;
-            const auto json = rfl::json::write(dq_req);
-            const auto* p = reinterpret_cast<const std::byte*>(json.data());
+            const auto& codec = ores::nats::default_wire_codec();
             const auto dq_reply = nats_.request_sync(
                 ores::dq::messaging::list_dq_report_definition_templates_request::nats_subject,
-                std::span<const std::byte>(p, json.size()));
-            const std::string_view sv(reinterpret_cast<const char*>(dq_reply.data.data()),
-                                      dq_reply.data.size());
+                codec.encode(dq_req));
             const auto dq_resp =
-                rfl::json::read<ores::dq::messaging::list_dq_report_definition_templates_response>(
-                    sv);
+                codec.decode<ores::dq::messaging::list_dq_report_definition_templates_response>(
+                    dq_reply.data);
             if (!dq_resp || !dq_resp->success) {
                 resp.success = false;
                 resp.message = dq_resp ? dq_resp->message : dq_resp.error().what();

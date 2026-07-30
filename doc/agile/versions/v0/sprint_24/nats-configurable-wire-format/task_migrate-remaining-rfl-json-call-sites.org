@@ -20,30 +20,95 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every remaining NATS request/reply and publish/subscribe call site
+that still hard-codes =rfl::json::write=/=read= for its wire payload
+is migrated onto =ores::nats::default_wire_codec()=, so a
+process-wide switch to =wire_format::msgpack= is safe repo-wide, not
+just for the six task lists already closed in this story.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
 
--
+- A repo-wide sweep for =rfl::json::write=/=read= co-located with a
+  NATS transport call (=request_sync=, =.request(=,
+  =authenticated_request(=, =.publish(=, =js_publish(=) shows only
+  intentionally-excepted embedded/persisted-JSON fields remaining
+  (documented in =doc/knowledge/architecture/nats_wire_format.org=),
+  not genuine wire-payload hardcodes.
+- Full-repo build and =ctest= pass (74/74 test binaries).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Started from the task's own named list (6 files + the
+=ClientManagerTradeInstrument.cpp= decode side), then broadened via a
+repeated sweep (=grep= for a NATS transport call co-located with
+=rfl::json::write=/=read=) since the discovery grep undercounted —
+many hits are duplicated per-service helpers (e.g. a
+=publish_entity_event= copy-pasted into 6 different
+=application.cpp= files) or matched publish/subscribe pairs across
+different components.
+
+For every hit, classified it as either:
+1. *Genuine wire payload* — the bytes handed to
+   =publish=/=request=/=authenticated_request=/=js_publish= — migrate
+   to =codec.encode()=/=codec.decode()=.
+2. *Embedded/persisted JSON field* — a =std::string= field whose
+   *value* happens to be JSON (workflow =command_json=/=result_json=,
+   scheduler =action_payload=, nested =request_json= inner payloads,
+   or the JWKS bootstrap exchange) — left untouched; these are a
+   category error to migrate, not an oversight. See
+   =doc/knowledge/architecture/nats_wire_format.org= for the full
+   rationale and the list of recognised exceptions.
+
+Fixed pairs together in the same change wherever a publisher and its
+matching subscriber both needed migrating (else the pair would break
+under msgpack): =entity_change_event= publishers across 6 service
+=application.cpp= files; =work_assignment_event= between
+=ores.compute.core::workunit_handler=/=report_submit_handler=
+(producers) and =ores.compute.wrapper::application.cpp= (consumer);
+=fx_spot_tick=/=ir_curve_tick= between =ores.synthetic.service='s
+feed publishers and =ores.marketdata.service='s ingest loops;
+=step_completed_event= and =start_workflow_message= between
+=ores.service::messaging::workflow_helpers= /
+=ores.workflow.core::workflow_handler.cpp= (producers) and
+=ores.workflow.core::workflow_engine.cpp= (consumer) — the latter
+pair was a real, previously-unnoticed mismatch (producer already used
+=wire_codec=, consumer still hard-coded =rfl::json::read=).
+
+Also closed the =ClientManagerTradeInstrument.cpp= gap this task was
+named for: =parse_trade_instrument.cpp= and
+=parse_swap_instruments.cpp= (=ores.qt.headless=) now decode via
+=ores::nats::default_wire_codec()= instead of a hard-coded
+=rfl::json::read= per wrapper type in their two-phase parse. This
+needed a new =ores.qt.headless -> ores.nats.lib= link dependency
+(=CMakeLists.txt=), regenerated via
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py=
+where headers moved between components (none did here, this dependency
+was link-only).
+
+Documented the payload-vs-envelope model and the wire-vs-embedded-JSON
+distinction in a new architecture doc
+(=doc/knowledge/architecture/nats_wire_format.org=), since this
+distinction is easy to get wrong when auditing future call sites.
 
 * Notes
+
+Re-running the sweep after every fix kept surfacing new hits because
+the initial discovery grep (=rfl::json= + =request_sync=) missed
+=publish=/=js_publish=-only sites and single-direction-typed helpers.
+The final sweep command (see the architecture doc's "Practical audit
+pattern" section) is broader and should be the standard tool for any
+future audit before a wire-format-sensitive change.
 
 * Test Scenarios
 
@@ -69,3 +134,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Migrated ~40 genuine wire-payload call sites across =ores.iam=,
+=ores.marketdata= (client, core, service), =ores.refdata=,
+=ores.reporting=, =ores.trading=, =ores.workflow=, =ores.compute=
+(core, service, wrapper), =ores.dq=, =ores.eventing=, =ores.scheduler=,
+=ores.synthetic=, =ores.ore=, =ores.analytics=, =ores.workspace= and
+=ores.qt.headless= onto =ores::nats::default_wire_codec()=, including
+the =ClientManagerTradeInstrument.cpp= two-phase decode this task was
+originally named for. Fixed one real producer/consumer wire-format
+mismatch found along the way (=workflow_engine.cpp='s
+=on_step_completed=/=on_start_workflow= still hard-coded JSON while
+their publishers already used =wire_codec=). Left ~15 embedded/
+persisted-JSON-field call sites untouched by design (workflow
+=command_json=/=result_json=, scheduler =action_payload=, nested
+=request_json= fields, JWKS bootstrap) and documented the rationale in
+a new architecture doc,
+=doc/knowledge/architecture/nats_wire_format.org=. Full-repo build and
+=ctest= both pass (74/74 test binaries, 100%). A final repo-wide sweep
+confirms no genuine wire-payload =rfl::json= hardcodes remain.

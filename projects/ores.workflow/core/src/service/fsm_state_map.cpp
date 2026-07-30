@@ -19,9 +19,9 @@
  */
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <format>
-#include <rfl/json.hpp>
 
 namespace ores::workflow::service {
 
@@ -29,11 +29,12 @@ fsm_state_map load_fsm_states(ores::nats::service::nats_client& nats,
                               const std::string& machine_name) {
     using namespace ores::dq::messaging;
 
-    const auto json = rfl::json::write(get_fsm_states_request{.machine_name = machine_name});
-    const auto msg = nats.authenticated_request(get_fsm_states_request::nats_subject, json);
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto msg = nats.authenticated_request(
+        get_fsm_states_request::nats_subject,
+        codec.encode(get_fsm_states_request{.machine_name = machine_name}));
 
-    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto result = rfl::json::read<get_fsm_states_response>(sv);
+    auto result = codec.decode<get_fsm_states_response>(msg.data);
     if (!result)
         throw std::runtime_error(
             std::format("Failed to parse fsm-states response for machine '{}': {}",

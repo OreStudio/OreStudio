@@ -32,6 +32,7 @@
 #include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -39,8 +40,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/json.hpp>
-#include <span>
 #include <stdexcept>
 
 namespace ores::compute::messaging {
@@ -154,11 +153,9 @@ public:
                         .config_uri = req->workunit.config_uri,
                         .output_uri =
                             ores::compute::net::compute_storage::output_path(result_id_str)};
-                    const auto json = rfl::json::write(event);
-                    const auto* p = reinterpret_cast<const std::byte*>(json.data());
                     nats_.js_publish("compute.v1.work.assignments." + tenant_id_str + "." +
                                          avp.platform_code,
-                                     std::span<const std::byte>(p, json.size()));
+                                     ores::nats::default_wire_codec().encode(event));
                     BOOST_LOG_SEV(workunit_handler_lg(), debug)
                         << "Dispatched result " << result_id_str << " for workunit " << wu_id_str
                         << " on platform " << avp.platform_code;

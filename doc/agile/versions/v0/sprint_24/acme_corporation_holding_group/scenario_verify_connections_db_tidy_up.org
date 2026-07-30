@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: E8707C8E-A071-4397-ACCC-C2A82E43C46F
+:END:
+#+title: Test Scenario: Verify connections database tidy-up and Barclays decommission
+#+description: Confirm the login combo shows connection descriptions, the curated Acme staff connections work, and Barclays/NatWest connections are gone
+#+type: test_scenario
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission Barclays/NatWest]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission Barclays/NatWest]] |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Open the login screen without logging in yet
+
+- Launch the client (=compass client start --colour blue=) if not
+  already running; do not log in yet — the check below is on the
+  login screen's quick-connect dropdown itself.
+- If the database was recreated since Acme was last provisioned,
+  re-run =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  first (this scenario doesn't depend on live Acme data, only on the
+  saved connections in =connections.db=, but a logged-in check later
+  needs a provisioned tenant).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm the quick-connect dropdown shows descriptions
+
+- Open the =brave-hopper= environment's quick-connect dropdown on the
+  login screen.
+- Under "Connections", confirm entries like =brave-hopper:
+  leanne.shaw@acme_corporation= show a role description (e.g.
+  "Country Head, ACME Corporation UK plc") next to the name, not a
+  bare username.
+- Confirm there are 10 curated Acme staff connections (Country
+  Head/Head of Middle Office/Head of Trading per UK/US/HK office, plus
+  one Senior Trader) alongside =super_admin= and
+  =tenant_admin@acme_corporation=.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Confirm no Barclays/NatWest connections remain
+
+- Scroll the full quick-connect dropdown (all environments, not just
+  =brave-hopper=).
+- Confirm no entry mentions =barclays= or =natwest= anywhere in its
+  name.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Log in via a curated Acme staff connection
+
+- Select the =brave-hopper: leanne.shaw@acme_corporation= quick-connect
+  entry (Country Head, ACME Corporation UK plc).
+- Confirm the username field auto-fills as
+  =leanne.shaw@acme_corporation=; type the password
+  =Secure-Password-123= (all curated connections share this password,
+  per the story's own generation convention) and log in.
+- Confirm login succeeds and the session lands on ACME Corporation UK
+  plc.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

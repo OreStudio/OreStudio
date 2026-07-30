@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E8707C8E-A071-4397-ACCC-C2A82E43C46F][Verify connections database tidy-up and Barclays decommission]] | PENDING | |
 
 * PRs
 

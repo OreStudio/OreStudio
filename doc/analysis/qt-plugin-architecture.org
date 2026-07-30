@@ -737,7 +737,7 @@ target_link_libraries(ores.qt PRIVATE
     ores.qt.app.lib      # static: MainWindow, login dialogs, etc.
     ores.qt.api          # shared: must be explicit for RPATH
     ores.openssl_cleanup
-    ${CMAKE_THREAD_LIBS_INIT})
+    Threads::Threads)
 
 # On Linux: find ores.qt.api.so next to the binary, and plugins/ subdirectory
 set_target_properties(ores.qt PROPERTIES

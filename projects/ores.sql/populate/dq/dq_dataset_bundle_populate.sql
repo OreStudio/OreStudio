@@ -81,5 +81,17 @@ BEGIN
         'Synthetic Data: Uniform Volatility Demo',
         'Not a vintage theme -- a deliberately simple demo/exercise archetype: uniform, exaggerated volatility for both FX (single-component geometric process) and IR (one uniform Vasicek kappa/sigma across all 20 currencies), easy to eyeball and exercises every UI feature.'
     );
+
+    -- The CRM Cross-Rates Matrix's topology config (which crosses/tiers
+    -- exist -- majors/exotics/scandies) is deliberately its own bundle,
+    -- independent of any synthetic-data vintage or theme: a party gets a
+    -- working CRM window regardless of which theme's feed (if any) is
+    -- currently running, and adding/retiring a vintage bundle never has to
+    -- remember to carry CRM topology along with it.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'crm_topology',
+        'CRM Cross-Rates Matrix Topology',
+        'Named CRM topology configs (majors/exotics/scandies tiers) for the Cross-Rates Matrix window. Published per party, independent of which synthetic-data theme (if any) is providing live rates -- the CRM shows static/stale prices until a feed starts ticking the underlying driver pairs.'
+    );
 END $$;
 

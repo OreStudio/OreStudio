@@ -26,6 +26,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/executable.hpp"
 #include "ores.service/service/exit_codes.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -179,7 +180,18 @@ std::vector<std::string> process_supervisor::build_args(const api::domain::servi
 
     replace_all(tmpl, "{nats_url}", nats_.url);
     replace_all(tmpl, "{nats_prefix}", nats_.subject_prefix);
-    replace_all(tmpl, "{tenant_id}", nats_.subject_prefix);
+    // {tenant_id}: the compute grid (hosts, workunits, batches) is entirely
+    // system-tenant scoped by design, regardless of which real tenant a
+    // client is using -- confirmed by every existing row in
+    // ores_compute_hosts_tbl/workunits_tbl/batches_tbl already living under
+    // the system tenant. Previously substituted with nats_.subject_prefix
+    // (e.g. "ores.dev.swift_curie"), which is not a UUID at all: any code
+    // parsing it as a tenant_id would reject it, and ores.compute.wrapper's
+    // own NATS subscription subject
+    // (compute.v1.work.assignments.{tenant_id}.{platform}) would then never
+    // match what the server actually publishes to, so no host ever received
+    // dispatched work.
+    replace_all(tmpl, "{tenant_id}", ores::utility::uuid::tenant_id::system().to_string());
     replace_all(tmpl, "{log_level}", log_level_);
     replace_all(tmpl, "{log_dir}", "../log");
     replace_all(tmpl, "{replica_index}", std::to_string(replica_index));

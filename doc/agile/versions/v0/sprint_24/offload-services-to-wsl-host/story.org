@@ -35,9 +35,9 @@ approach.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Newton deploy closed with a partial-success caveat (PR #1747); the process_supervisor corruption finding is flagged on the split-per-service story instead of chased here. |
+| Now           | All 18 services running reproducibly on Newton, Acme scenario passed end-to-end. Only the compass remote-deploy tooling task remains open. |
 | Waiting on    | Nothing.                               |
-| Next          | Add compass tooling for remote deploys and multi-env-file support (open follow-up tasks). |
+| Next          | Add compass tooling for remote deploys (open follow-up task).            |
 | Last touched  | 2026-07-29                               |
 
 * Acceptance
@@ -64,6 +64,7 @@ approach.
 | [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][Debug: start_all() coroutine never resumes inside podman container]] | DONE | 2026-07-27 | 2026-07-29 | process_supervisor::start_all()'s coroutine, spawned via co_spawn(io_ctx, ..., use_awaitable) in application.cpp, never begins executing inside the podman container -- its unconditional first log line never appears despite the same io_ctx demonstrably running other coroutines concurrently (NATS connect succeeds, JWKS-fetch retries fire on schedule). Natively, the identical code reaches that line and does its DB reads within ~200ms. Consequence: no supervised services (IAM etc.) ever launch in-container, so the controller's own JWKS fetch from IAM loops forever. |
 | [[id:3627D272-CC9F-4A45-B5F4-0B5A5B1E71AE][Deploy and verify service runtime on the Newton WSL host]] | DONE | 2026-07-29 | 2026-07-29 | Deploy the containerized service runtime (docker/run-pod.sh) to the actual Newton WSL host (192.168.1.22, WSL2 Debian 11 bullseye) over SSH. Reached partial success (image/uid/log/DB-password fixes, --network=host model); all-18-running and Qt-client-connects deferred, blocked on an apparent memory-corruption issue in process_supervisor under real load, carried to the split-per-service follow-on story rather than fixed here. |
 | [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
+| [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]] | DONE | 2026-07-30 | 2026-07-30 | Reached full success: all 18 services (22 rows with compute.wrapper replicas) running reproducibly across 3+ restarts, no distinct corruption bug remained once several real bugs (Newton storage EIO, DB connection exhaustion, stale schema, missing http.server/compute.wrapper staging, wrong http-base-url, podman env-file quote handling, NATS cert SAN type, compute dispatch tenant mismatch) were fixed. Acme end-to-end scenario passed in full, including a compute job run to completion. Two deeper issues (compute-domain tenant scoping, a vendored ORE package missing its own shared libs) filed as captures rather than fixed blind. |
 
 * Decisions
 
@@ -96,14 +97,23 @@ approach.
   same host the pod runs on (confirmed slirp4netns can't route to it;
   WSL2's mirrored networking doesn't extend into podman's own virtual
   network).
-- Deploying to Newton surfaced an apparent memory-safety/corruption
-  issue in ~process_supervisor~'s child-process bookkeeping under
-  real load (18 real children, not just a handful locally) -- garbled
-  bytes in a DB query string, a cert re-read failing after succeeding
-  earlier in the same run. Not chased down: it lives in the
-  single-container process-supervisor architecture that
-  [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] is about
-  to replace. Revisit there first.
+- *Resolved, not a distinct bug after all*: deploying to Newton had
+  surfaced an apparent memory-safety/corruption issue in
+  ~process_supervisor~'s child-process bookkeeping under real load
+  (garbled bytes in a DB query string, a cert re-read failing after
+  succeeding earlier in the same run), originally left un-chased and
+  attributed to the single-container architecture
+  [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] was
+  about to replace. It wasn't a distinct bug: it was the
+  ~--userns=keep-id~ uid-remapping issue (root-caused and fixed in
+  that same split-per-service story's own pilot, PR #1752), plus
+  several further real but unrelated bugs (Newton storage EIO, DB
+  connection exhaustion, stale schema, missing staged binaries, wrong
+  http-base-url, podman env-file quote handling, NATS cert SAN type,
+  compute dispatch tenant mismatch) found and fixed getting all 18
+  services running reproducibly. No corruption remained once these
+  were fixed -- see
+  [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]].
 
 * Out of scope
 

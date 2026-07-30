@@ -75,8 +75,8 @@ private:
         std::string ore_key;
         // Resolved once in buildRows() (direct or reversed lookup against
         // conventionCache_), not re-resolved on every tick -- applyTick() runs
-        // on the hot path. See crm_rate_formatter::format_rate's own doc for
-        // what convention_reversed means.
+        // on the hot path. See currency_pair_rate_formatter::format_rate's
+        // own doc for what convention_reversed means.
         std::optional<refdata::domain::currency_pair_convention> convention;
         bool convention_reversed = false;
         double last_mid = 0.0;

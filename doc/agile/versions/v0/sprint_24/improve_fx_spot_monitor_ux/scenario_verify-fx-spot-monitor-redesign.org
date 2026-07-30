@@ -149,3 +149,10 @@ should still show its own explanatory text.)
 | Worktree      | bright_faraday |
 
 * Notes
+
+Subsequent commits (convention-driven JPY rework, then the
+=currency_pair_rate_formatter= extraction, up to 856c5a875) postdate this
+manual run. Both are no-UI-behavior-change refactors of the formatting
+math -- the extraction is a pure move+delegate, verified equivalent by
+the new =currency_pair_rate_formatter_tests.cpp= unit suite rather than
+by re-running this manual scenario.

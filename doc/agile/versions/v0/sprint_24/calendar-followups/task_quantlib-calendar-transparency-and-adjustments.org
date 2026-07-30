@@ -112,40 +112,65 @@ the start, not bolted on later.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Steps 4 and 5 done (calendar_dates materialisation + on-demand regenerate; calendar_adjustment export service). Step 5's actual ORE-run consumer split out to a separate task (see Notes). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 6: Qt UI (source/editability display, browse-holidays view, regenerate button). |
-| Last touched | 2026-07-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- [ ] QuantLib calendar holiday dates are materialised into a real
+- [X] QuantLib calendar holiday dates are materialised into a real
   refdata table/entity (calendar code + date), DQ-published like the
   other calendar datasets, instead of being computed only on demand.
-- [ ] Materialised dates are clearly attributed as QuantLib-sourced
+  DQ-publishing specifically was confirmed with the user as not
+  applicable (see step 4's Notes: the DQ-publish pattern is
+  DQ→refdata, the reverse of what a self-computed table needs) —
+  materialisation into a real, queried table is otherwise complete.
+- [X] Materialised dates are clearly attributed as QuantLib-sourced
   (visible in the UI, not just in a code comment) and are read-only —
-  no user CRUD on these rows.
-- [ ] =calendar_adjustment= (additional holidays / additional business
-  days, optionally layered on a base calendar) is modelled as a
-  proper refdata entity with codegen + Qt CRUD, so users can manage
-  institution-specific calendar overrides without touching the
-  QuantLib-sourced base data.
-- [ ] It's documented/discoverable in the UI that extending a
-  QuantLib calendar means creating a =calendar_adjustment= against it,
-  and that a calendar that doesn't fit any built-in base should be a
-  brand new =calendar= entity, not an edit to a QuantLib one.
-- [ ] The calendar entity is modelled as a template (QuantLib-sourced
+  no user CRUD on these rows. =calendar_dates= is a
+  =has_readonly_paginated_list= entity (no add/edit/delete) whose
+  Browse Holidays view shows a =Source= column
+  (=quantlib_computed=/=user_adjustment=/=user_defined=).
+- [X] The =calendar_adjustment=-style mechanism (additional holidays /
+  additional business days, optionally layered on a base calendar) is
+  modelled as a proper refdata entity with codegen + Qt CRUD, so users
+  can manage institution-specific calendar overrides without touching
+  the QuantLib-sourced base data. Superseded during implementation
+  (see the Revision section): =calendar_adjustment= itself stayed a
+  transient export-time DTO; the persisted, Qt-CRUD-backed entities
+  are =calendar_rule= (indefinite rules) and =calendar_exception=
+  (one-off overrides), which fulfil the same acceptance intent.
+- [X] It's documented/discoverable in the UI that extending a
+  QuantLib calendar means creating rule/exception rows against it (or,
+  for a based template, picking it as =Base Calendar=), and that a
+  calendar that doesn't fit any built-in base should be a brand new
+  =calendar= entity, not an edit to a QuantLib one. Discoverable via
+  the calendar detail screen's =Source=/=Editable=/=Base Calendar=
+  fields plus =Calendar Rules=/=Calendar Exceptions= menu actions --
+  no additional prose/tooltip added (the codegen Qt facet has no
+  tooltip-text knob; adding one for a single field was judged
+  disproportionate to this acceptance item, see Notes).
+- [X] The calendar entity is modelled as a template (QuantLib-sourced
   or user-authored), with the read-only/editable distinction tracked
-  per-template rather than assumed from source.
-- [ ] Users can author their own calendar templates using the same
+  per-template rather than assumed from source. =calendar.source=/
+  =is_editable=/=base_calendar_code=, independent columns as designed.
+- [X] Users can author their own calendar templates using the same
   mechanism as QuantLib templates (optionally based on one, via
-  =calendar_adjustment=-style overrides), fully editable.
-- [ ] Instantiating a template into concrete holiday dates works
-  identically for QuantLib and user templates; QuantLib instantiation
-  feeds visualisation (UI), user-template instantiation feeds the
-  actual holidays supplied to ORE.
+  =calendar_rule=/=calendar_exception= overrides), fully editable.
+  =calendar=, =calendar_rule=, and =calendar_exception= all have full
+  Qt CRUD; =source='user'= rows are editable, =source='quantlib'= rows
+  are locked.
+- [X] Instantiating a template into concrete holiday dates works
+  identically for QuantLib-transcribed and user templates; the same
+  =calendar_materialisation_service= path is used for both, verified
+  by the new service-layer test suite. QuantLib instantiation feeds
+  visualisation (UI, Browse Holidays); user-template instantiation is
+  the actual-holidays path fed to ORE via
+  =calendar_adjustment_export_service= (step 5, DONE via the split-out
+  [[id:C8401FBC-8536-4578-9C96-ECF914123E46][Wire ORE export path for user-authored calendar templates]] task).
 
 * Plan
 
@@ -908,6 +933,51 @@ path.
   =refdata.v1.calendar_adjustments.export= NATS command, ready for
   whichever future ORE-run export feature calls it.
 
+** Step 6 done (Qt UI), picked up on close-out
+
+Found already done at pickup, via the two split-out UI tasks --
+[[id:B2888D7D-9D16-48DE-AE4C-48FF610841AA][Calendar Qt UI: source/editability display, regenerate button, browse-holidays view]]
+and
+[[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]]
+(both DONE): =CalendarDetailDialog= shows =Source=/=Editable=/
+=Base Calendar=, locks the form for non-editable rows, and has
+=Regenerate=/=Browse Holidays= toolbar actions; =calendar_rule=/
+=calendar_exception= have their own full Qt CRUD wired into
+=RefdataPlugin='s menu. No further UI work needed to close this task.
+
+** Service-layer test coverage added at close-out
+
+The one concrete gap flagged in step 4's notes ("no unit tests added
+for the service itself") -- added a 6-case integration suite,
+=service_calendar_materialisation_service_tests.cpp=, covering: a
+base-less calendar's rule + additional-holiday-exception application;
+an exception overriding a rule-generated holiday back to a business
+day; a based calendar inheriting its base's materialised dates with
+its own exception overlay (and *not* the base's); extend-only
+regeneration (a second identical-horizon call writes nothing, a wider
+horizon writes only the newly-covered days); an unknown calendar
+throwing; and a base_calendar_code that pointed at a real calendar
+when set but was since removed, throwing cleanly from =regenerate()=
+rather than crashing.
+
+Two design notes from getting these green:
+- Test dates are built from "Nth Monday of June" via
+  =std::chrono::year_month_weekday=, not fixed month/day literals --
+  Monday is never a weekend day under the engine's default mask, so
+  this is weekday-independent and safe to run in any year, unlike
+  e.g. "Jan 2nd" whose business-day status silently depends on which
+  year "next year" happens to be at test-run time.
+- A genuine =base_calendar_code= cycle cannot be constructed through
+  the normal write path at all: =calendars_insert_fn='s soft-FK
+  trigger validates the reference against an existing row at insert
+  time, so two calendars can never be written pointing at each other
+  (whichever is inserted second would fail validation against the
+  first, which doesn't exist yet). The service's own cycle guard is
+  defensive code for a state the schema already forbids -- not
+  something a repository-level test can exercise. Tested the
+  reachable analogue instead: a base_calendar_code valid when set,
+  whose target calendar was later removed.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -938,3 +1008,41 @@ via its "Verifies task" field.
 | 7 | High: unvalidated date text crashes the app on Save | CalendarExceptionDetailDialog.cpp | Fixed | Added a non-throwing =datetime::is_valid_iso8601_date()= and wired every =is_date= detail field into the generated =validateInput()= generically, not just calendar_exception. |
 
 * Result
+
+All seven acceptance criteria met, verified against the final,
+revised design (see the * Revision section: QuantLib was dropped from
+the runtime path in favour of a transcribed rule/exception engine in
+=ores.analytics.quant=). Steps 1-6 of the plan were already complete
+at pickup (steps 1-5 by prior sessions on this task; step 6's Qt UI
+via the two split-out tasks =B2888D7D=/=F081079A=). This session's
+close-out work:
+
+- Re-verified every acceptance item honestly against the current
+  codebase rather than assuming prior "done" notes still held,
+  updating their wording where the persisted design (=calendar_rule=/
+  =calendar_exception=) superseded the original acceptance text's
+  =calendar_adjustment=-as-entity framing.
+- Closed the one concrete, previously-flagged gap: added a 6-case
+  integration test suite for =calendar_materialisation_service=
+  (=service_calendar_materialisation_service_tests.cpp=) covering
+  rule application, exception overrides (both directions), based-
+  calendar inheritance, extend-only regeneration, and two error
+  paths. All green.
+- Judged the UI-discoverability acceptance item met by the existing
+  =Source=/=Editable=/=Base Calendar= fields and calendar-rules/
+  calendar-exceptions menu actions, rather than adding a new codegen
+  tooltip-text knob for a single field -- see Notes for the
+  reasoning.
+- Found and captured a pre-existing, unrelated defect while running
+  the full suite: =ores.iam.api.tests=/=ores.iam.core.tests= fail
+  with an assertion, FK violations, and a SIGABRT/memory-corruption
+  crash on unmodified =main= (reproduced on a branch touching zero
+  =ores.iam= files). Not fixed here -- out of scope and risky to
+  hand-patch blind -- filed as a product-backlog capture instead:
+  =doc/agile/product_backlog/inbox/ores_iam_api_tests_and_ores_iam_core_tests_fail_on.org=.
+
+Verified: full local build clean (=linux-clang-debug-make=); =ctest=
+71/71 passed excluding the two pre-existing, unrelated =ores.iam=
+failures captured above (=ctest -E ores.iam=); those two were also
+independently confirmed failing on a from-scratch rerun, ruling out
+resource-contention flakiness.

@@ -45,4 +45,5 @@ set(files
     "repository_party_type_repository_tests.cpp"
     "repository_regulatory_book_type_repository_tests.cpp"
     "repository_rounding_type_repository_tests.cpp"
+    "service_calendar_materialisation_service_tests.cpp"
 )

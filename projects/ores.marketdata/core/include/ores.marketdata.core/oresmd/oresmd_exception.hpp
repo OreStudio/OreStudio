@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_ORESMD_ORESMD_EXCEPTION_HPP
 #define ORES_MARKETDATA_CORE_ORESMD_ORESMD_EXCEPTION_HPP
 
+#include "ores.marketdata.core/export.hpp"
 #include <boost/exception/info.hpp>
 #include <string>
 
@@ -28,8 +29,16 @@ namespace ores::marketdata::core {
 /**
  * @brief An oresmd URI failed to parse, or a market_data_requirement could not be resolved
  * into a market_data_identifier.
+ *
+ * Explicitly exported: thrown from within this shared library and caught by name
+ * (catch (const oresmd_exception&)) across the library boundary (e.g. by
+ * ores.marketdata.core.tests). Without default visibility, Mach-O's stricter RTTI rules can
+ * leave two non-identical typeinfo copies either side of that boundary, so the catch silently
+ * never matches even though the thrown message is correct -- reproduced on macOS CI, not on
+ * Linux (ELF's weak-symbol merging is more permissive).
  */
-class oresmd_exception : public virtual std::exception, public virtual boost::exception {
+class ORES_MARKETDATA_CORE_EXPORT oresmd_exception : public virtual std::exception,
+                                                      public virtual boost::exception {
 public:
     explicit oresmd_exception(std::string_view message = "")
         : message_(message) {}

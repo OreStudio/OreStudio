@@ -110,7 +110,9 @@ HistoryDialogBase::DiffResult IrCurveGenerationConfigHistoryDialog::calculateDif
     const auto& prev = versions_[pi];
 
     checkString(diffs, tr("Currency"), curr.currency_code, prev.currency_code);
-    checkString(diffs, tr("Index"), curr.index_name, prev.index_name);
+    checkString(diffs, tr("Index Family"), curr.index_family, prev.index_family);
+    checkString(diffs, tr("Tenor"), curr.tenor, prev.tenor);
+    checkString(diffs, tr("Role"), curr.role, prev.role);
     checkString(diffs, tr("Process Type"), curr.process_type, prev.process_type);
     checkDouble(diffs, tr("Kappa"), curr.kappa, prev.kappa);
     checkDouble(diffs, tr("Theta"), curr.theta, prev.theta);
@@ -128,7 +130,8 @@ void IrCurveGenerationConfigHistoryDialog::displayFullDetails(int index) {
     const auto& version = versions_[index];
 
     ui_->currencyValue->setText(QString::fromStdString(version.currency_code));
-    ui_->indexNameValue->setText(QString::fromStdString(version.index_name));
+    ui_->indexNameValue->setText(QString::fromStdString(
+        version.tenor.empty() ? version.index_family : version.index_family + "-" + version.tenor));
     ui_->processTypeValue->setText(QString::fromStdString(version.process_type));
     ui_->kappaValue->setText(QString::number(version.kappa));
     ui_->thetaValue->setText(QString::number(version.theta));

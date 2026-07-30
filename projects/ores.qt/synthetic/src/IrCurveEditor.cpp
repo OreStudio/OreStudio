@@ -61,10 +61,12 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <format>
 #include <map>
 #include <set>
+#include <tuple>
 
 namespace ores::qt {
 
@@ -85,6 +87,29 @@ constexpr EngineInfo kEngines[] = {
     {"COX_INGERSOLL_ROSS", QT_TR_NOOP("Cox-Ingersoll-Ross")},
     {"HULL_WHITE", QT_TR_NOOP("Hull-White")},
 };
+
+// indexNameCombo_ still lists the floating_index_type suffix shape this editor has
+// always fetched (e.g. "SOFR", "LIBOR-3M") -- split/rejoin at the oresmd
+// index_family/tenor boundary here rather than restructuring the combo/fetch
+// itself, since oresmd's index_family enum values are exactly those suffixes'
+// lower-cased family segment.
+std::pair<std::string, std::string> splitIndexFamilyAndTenor(const std::string& suffix) {
+    const auto dash = suffix.find('-');
+    std::string family = dash == std::string::npos ? suffix : suffix.substr(0, dash);
+    std::string tenor = dash == std::string::npos ? std::string() : suffix.substr(dash + 1);
+    std::transform(family.begin(), family.end(), family.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return {family, tenor};
+}
+
+QString joinIndexFamilyAndTenor(const std::string& index_family, const std::string& tenor) {
+    auto family = index_family;
+    std::transform(family.begin(), family.end(), family.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+    if (tenor.empty())
+        return QString::fromStdString(family);
+    return QString::fromStdString(family + "-" + tenor);
+}
 
 } // namespace
 
@@ -248,6 +273,20 @@ void IrCurveEditor::buildInstrumentTab() {
     indexNameCombo_->setEditable(false);
     indexNameCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Index name"), indexNameCombo_);
+
+    // discount/projection/self_discounting -- lets a discount curve and a projection curve for
+    // the same currency+index+tenor coexist (curve_feed_controller's collision check keys on
+    // (qualifier, role), not qualifier alone). Defaults to self_discounting, the shape every
+    // pre-existing synthetic curve assumes.
+    roleCombo_ = new QComboBox(identityBox);
+    roleCombo_->setEditable(false);
+    roleCombo_->setInsertPolicy(QComboBox::NoInsert);
+    roleCombo_->addItem(tr("Self-discounting"), QString("self_discounting"));
+    roleCombo_->addItem(tr("Discount"), QString("discount"));
+    roleCombo_->addItem(tr("Projection"), QString("projection"));
+    if (const int idx = roleCombo_->findData(QString::fromStdString(ir_.role)); idx >= 0)
+        roleCombo_->setCurrentIndex(idx);
+    form->addRow(tr("Role"), roleCombo_);
 
     // Mirrors FxSpotRateEditor::buildInstrumentTab()'s ORE key label -- shows the exact key
     // SyntheticBindingDialog will bind this config under (currency_code + "/" + stripped index
@@ -768,11 +807,8 @@ void IrCurveEditor::populateIndexNameCombo() {
         // Preselect from the loaded entity on first population (edit mode), or restore whatever
         // the user had picked before a currency change repopulated this combo.
         QString wanted = preselect;
-        if (wanted.isEmpty() && !self->ir_.index_name.empty() && self->ir_.currency_code == ccy) {
-            const auto ir_prefix = self->ir_.currency_code + "-";
-            wanted = QString::fromStdString(self->ir_.index_name.starts_with(ir_prefix) ?
-                                                self->ir_.index_name.substr(ir_prefix.size()) :
-                                                self->ir_.index_name);
+        if (wanted.isEmpty() && !self->ir_.index_family.empty() && self->ir_.currency_code == ccy) {
+            wanted = joinIndexFamilyAndTenor(self->ir_.index_family, self->ir_.tenor);
         }
         if (!wanted.isEmpty())
             self->indexNameCombo_->setCurrentText(wanted);
@@ -1275,9 +1311,10 @@ void IrCurveEditor::onSaveClicked() {
 
     auto ir = ir_;
     ir.currency_code = ccy;
-    // Stored as the full floating_index_type code (see the field's own doc comment) --
-    // indexNameCombo_ shows just the suffix, so re-prefix it here.
-    ir.index_name = ccy + "-" + idx;
+    // indexNameCombo_ shows the floating_index_type suffix shape (e.g. "SOFR",
+    // "LIBOR-3M") -- split it at the oresmd index_family/tenor boundary here.
+    std::tie(ir.index_family, ir.tenor) = splitIndexFamilyAndTenor(idx);
+    ir.role = roleCombo_->currentData().toString().toStdString();
     ir.process_type = engineCombo_->currentData().toString().toStdString();
     ir.kappa = kappaSpin_->value();
     ir.theta = thetaSpin_->value();

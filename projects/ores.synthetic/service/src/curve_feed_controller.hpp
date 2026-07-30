@@ -32,6 +32,18 @@
 namespace ores::synthetic::service {
 
 /**
+ * @brief Whether two running/candidate feeds would collide: same (qualifier, role) pair.
+ * role is part of the comparison deliberately -- a discount feed and a projection feed for the
+ * same qualifier are expected to coexist, not conflict. Pure and free of ir_curve_feed/NATS so
+ * it's directly unit-testable (curve_feed_controller_tests.cpp) without a live NATS client,
+ * which neither ir_curve_feed nor curve_feed_controller itself can be constructed without.
+ */
+inline bool ir_curve_feeds_conflict(const std::string& qualifier_a, const std::string& role_a,
+                                    const std::string& qualifier_b, const std::string& role_b) {
+    return qualifier_a == qualifier_b && role_a == role_b;
+}
+
+/**
  * @brief Owns the running ir_curve_feed producers; one tick thread per feed, keyed by
  * source_name -- same shape as feed_controller's own feeds_ map for FX.
  *
@@ -40,15 +52,18 @@ namespace ores::synthetic::service {
  * mirroring feed_controller/market_feed_config_handler's manual-control surface for FX.
  *
  * Enforces one additional invariant neither source_name uniqueness nor the config-level
- * enabled/auto_start flags can, on their own: at most one running feed per published qualifier
- * (currency_code + index_name -- see ir_curve_feed::qualifier(), what every consumer actually
- * looks up market_observation rows by). Two different configs (different source_name, e.g. one
- * from the basic dataset, one from realistic, or a legacy-vs-recent vintage pair) can carry the
- * identical (currency_code, index_name) and would otherwise race to publish into the same
- * observation series if both were ever started. Both add() and start() reject a feed whose
- * qualifier already has a different feed running -- never silently, and never by stopping the
- * existing one; switching requires an explicit stop() first, real consent rather than an implicit
- * rebind.
+ * enabled/auto_start flags can, on their own: at most one running feed per published
+ * (qualifier, role) pair (currency_code + index_family[+tenor] -- see ir_curve_feed::qualifier(),
+ * what every consumer actually looks up market_observation rows by -- and role(), oresmd's
+ * curve_role). Two different configs (different source_name, e.g. one from the basic dataset,
+ * one from realistic, or a legacy-vs-recent vintage pair) can carry the identical
+ * (currency_code, index_family, tenor) and would otherwise race to publish into the same
+ * observation series if both were ever started with the *same* role -- but a discount config and
+ * a projection config for that same currency+index+tenor are expected to coexist and must NOT be
+ * treated as conflicting, which is why role is part of the conflict key rather than excluded from
+ * it. Both add() and start() reject a feed whose (qualifier, role) pair already has a different
+ * feed running -- never silently, and never by stopping the existing one; switching requires an
+ * explicit stop() first, real consent rather than an implicit rebind.
  */
 class curve_feed_controller final {
 public:
@@ -67,7 +82,8 @@ public:
              std::string* out_conflicting_source_name = nullptr) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
-        if (const auto conflict = find_qualifier_conflict(feed->qualifier(), source_name)) {
+        if (const auto conflict =
+                find_qualifier_conflict(feed->qualifier(), feed->role(), source_name)) {
             if (out_conflicting_source_name)
                 *out_conflicting_source_name = *conflict;
             return false;
@@ -76,6 +92,7 @@ public:
         running_feed rf;
         rf.feed = feed;
         rf.qualifier = feed->qualifier();
+        rf.role = feed->role();
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(source_name, std::move(rf));
         return true;
@@ -91,27 +108,29 @@ public:
         const auto source_name = feed->source_name();
         if (feeds_.contains(source_name))
             return start_result::already_running;
-        if (find_qualifier_conflict(feed->qualifier(), source_name))
+        if (find_qualifier_conflict(feed->qualifier(), feed->role(), source_name))
             return start_result::qualifier_conflict;
         auto* raw = feed.get();
         running_feed rf;
         rf.feed = feed;
         rf.qualifier = feed->qualifier();
+        rf.role = feed->role();
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(source_name, std::move(rf));
         return start_result::started;
     }
 
     /**
-     * @brief The source_name of the running feed currently holding @p qualifier, if any --
-     * for building the "already running as X -- stop it first" message after a qualifier_conflict
-     * result.
+     * @brief The source_name of the running feed currently holding @p qualifier for @p role, if
+     * any -- for building the "already running as X -- stop it first" message after a
+     * qualifier_conflict result.
      */
     std::optional<std::string>
-    running_source_name_for_qualifier(const std::string& qualifier) const {
+    running_source_name_for_qualifier(const std::string& qualifier,
+                                      const std::string& role) const {
         std::lock_guard lock(mu_);
         for (const auto& [name, rf] : feeds_)
-            if (rf.qualifier == qualifier)
+            if (rf.qualifier == qualifier && rf.role == role)
                 return name;
         return std::nullopt;
     }
@@ -164,6 +183,7 @@ private:
     struct running_feed {
         std::shared_ptr<ir_curve_feed> feed;
         std::string qualifier;
+        std::string role;
         std::thread thread;
     };
 
@@ -175,15 +195,18 @@ private:
     }
 
     /**
-     * @brief Source_name of a *different* running feed already holding @p qualifier, if any --
-     * excludes @p excluding_source_name so re-adding/restarting the same config never
-     * self-conflicts. Caller must already hold mu_.
+     * @brief Source_name of a *different* running feed already holding @p qualifier for the same
+     * @p role, if any -- a running feed with the same qualifier but a *different* role (e.g.
+     * discount vs. projection) is not a conflict. Excludes @p excluding_source_name so
+     * re-adding/restarting the same config never self-conflicts. Caller must already hold mu_.
      */
     std::optional<std::string>
     find_qualifier_conflict(const std::string& qualifier,
+                            const std::string& role,
                             const std::string& excluding_source_name) const {
         for (const auto& [name, rf] : feeds_)
-            if (rf.qualifier == qualifier && name != excluding_source_name)
+            if (ir_curve_feeds_conflict(rf.qualifier, rf.role, qualifier, role) &&
+                name != excluding_source_name)
                 return name;
         return std::nullopt;
     }

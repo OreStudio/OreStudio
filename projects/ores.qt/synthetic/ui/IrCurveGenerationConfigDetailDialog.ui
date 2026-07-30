@@ -53,97 +53,125 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelIndexName">
+           <widget class="QLabel" name="labelIndexFamily">
             <property name="text">
-             <string>Index:</string>
+             <string>Index Family:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="indexNameEdit">
-            <property name="placeholderText">
-             <string>Enter floating-rate index (e.g. SOFR)</string>
+           <widget class="QComboBox" name="indexFamilyCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
             </property>
            </widget>
           </item>
           <item row="2" column="0">
+           <widget class="QLabel" name="labelTenor">
+            <property name="text">
+             <string>Tenor:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="tenorCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelRole">
+            <property name="text">
+             <string>Role:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="roleCombo">
+            <property name="insertPolicy">
+             <enum>QComboBox::NoInsert</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
            <widget class="QLabel" name="labelProcessType">
             <property name="text">
              <string>Process Type:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="processTypeEdit">
             <property name="placeholderText">
              <string>VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelKappa">
             <property name="text">
              <string>Kappa:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="kappaEdit">
             <property name="placeholderText">
              <string>Mean-reversion speed</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelTheta">
             <property name="text">
              <string>Theta:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="6" column="1">
            <widget class="QLineEdit" name="thetaEdit">
             <property name="placeholderText">
              <string>Mean-reversion target level</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="labelSigma">
             <property name="text">
              <string>Sigma:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="7" column="1">
            <widget class="QLineEdit" name="sigmaEdit">
             <property name="placeholderText">
              <string>Volatility</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="labelInitialRate">
             <property name="text">
              <string>Initial Rate:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="8" column="1">
            <widget class="QLineEdit" name="initialRateEdit">
             <property name="placeholderText">
              <string>Starting short rate</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="9" column="0">
            <widget class="QLabel" name="labelTicksPerHour">
             <property name="text">
              <string>Ticks per Hour:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="9" column="1">
            <widget class="QSpinBox" name="ticksPerHourEdit">
             <property name="minimum">
              <number>0</number>
@@ -153,98 +181,98 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="10" column="0">
            <widget class="QLabel" name="labelFixedLegPaymentFrequencyCode">
             <property name="text">
              <string>Fixed Leg Payment Frequency:</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="1">
+          <item row="10" column="1">
            <widget class="QLineEdit" name="fixedLegPaymentFrequencyEdit">
             <property name="placeholderText">
              <string>Enter payment frequency code (e.g. Annual)</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="11" column="0">
            <widget class="QLabel" name="labelEnabled">
             <property name="text">
              <string>Enabled:</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="1">
+          <item row="11" column="1">
            <widget class="QCheckBox" name="enabledCheck">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="10" column="0">
+          <item row="12" column="0">
            <widget class="QLabel" name="labelAutoStart">
             <property name="text">
              <string>Auto-Start:</string>
             </property>
            </widget>
           </item>
-          <item row="10" column="1">
+          <item row="12" column="1">
            <widget class="QCheckBox" name="autoStartCheck">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
-          <item row="11" column="0">
+          <item row="13" column="0">
            <widget class="QLabel" name="labelPriceSource">
             <property name="text">
              <string>Price Source:</string>
             </property>
            </widget>
           </item>
-          <item row="11" column="1">
+          <item row="13" column="1">
            <widget class="QLineEdit" name="priceSourceEdit">
             <property name="placeholderText">
              <string>fixed, or vintage</string>
             </property>
            </widget>
           </item>
-          <item row="12" column="0">
+          <item row="14" column="0">
            <widget class="QLabel" name="labelVintageSource">
             <property name="text">
              <string>Vintage Source:</string>
             </property>
            </widget>
           </item>
-          <item row="12" column="1">
+          <item row="14" column="1">
            <widget class="QLineEdit" name="vintageSourceEdit">
             <property name="placeholderText">
              <string>Required if Price Source is vintage, e.g. ore.reference</string>
             </property>
            </widget>
           </item>
-          <item row="13" column="0">
+          <item row="15" column="0">
            <widget class="QLabel" name="labelVintageDate">
             <property name="text">
              <string>Vintage Date:</string>
             </property>
            </widget>
           </item>
-          <item row="13" column="1">
+          <item row="15" column="1">
            <widget class="QLineEdit" name="vintageDateEdit">
             <property name="placeholderText">
              <string>Required if Price Source is vintage, YYYY-MM-DD</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="0">
+          <item row="16" column="0">
            <widget class="QLabel" name="labelDescription">
             <property name="text">
              <string>Description:</string>
             </property>
            </widget>
           </item>
-          <item row="14" column="1">
+          <item row="16" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size>

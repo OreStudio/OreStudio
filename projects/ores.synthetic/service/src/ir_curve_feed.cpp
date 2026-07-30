@@ -65,6 +65,7 @@ ir_curve_feed::ir_curve_feed(
     std::string series_type,
     std::string metric,
     std::string qualifier,
+    std::string role,
     std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> process,
     double ticks_per_hour,
     std::vector<ir_curve_resolved_entry> entries)
@@ -76,6 +77,7 @@ ir_curve_feed::ir_curve_feed(
     , series_type_(std::move(series_type))
     , metric_(std::move(metric))
     , qualifier_(std::move(qualifier))
+    , role_(std::move(role))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
     , entries_(std::move(entries)) {
@@ -173,16 +175,16 @@ std::string lowercase(std::string s) {
     return s;
 }
 
-// index_name is stored as the full floating_index_type code (e.g. "USD-SOFR"), which already
-// bakes in currency_code -- strip that redundant "<CCY>-" prefix back off for display/subject
-// purposes (see the field's own doc comment on ir_curve_generation_config for why it's stored
-// with the prefix in the first place: reusing floating_index_type's existing single-argument
-// validator rather than a bespoke composite one).
-std::string strip_currency_prefix(const std::string& currency_code, const std::string& index_name) {
-    const auto prefix = currency_code + "-";
-    if (index_name.starts_with(prefix))
-        return index_name.substr(prefix.size());
-    return index_name;
+// Display/subject suffix for a curve's index (e.g. "SOFR" or "LIBOR-3M"), built from
+// index_family/tenor -- mirrors ores.qt.synthetic's own ir_index_display_suffix() (same shape,
+// separate component with no natural common header for a one-line helper).
+std::string index_display_suffix(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
+    auto family = cfg.index_family;
+    std::transform(family.begin(), family.end(), family.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    if (cfg.tenor.empty())
+        return family;
+    return family + "-" + cfg.tenor;
 }
 
 // ISO date part of an observation_datetime -- see feed_controller::date_part()'s own copy of this
@@ -216,8 +218,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                ", date=" + cfg.vintage_date + ", point_id=" + anchor->point_id + ".";
     };
 
-    const auto qualifier =
-        cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name);
+    const auto qualifier = cfg.currency_code + "/" + index_display_suffix(cfg);
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -294,7 +295,8 @@ make_ir_curve_feed(ores::nats::service::client& nats,
         "synthetic.v1.curve_family." + cfg.source_name,
         "RATES",
         "YIELD",
-        cfg.currency_code + "/" + strip_currency_prefix(cfg.currency_code, cfg.index_name),
+        cfg.currency_code + "/" + index_display_suffix(cfg),
+        cfg.role,
         std::move(process),
         static_cast<double>(cfg.ticks_per_hour),
         std::move(resolved));

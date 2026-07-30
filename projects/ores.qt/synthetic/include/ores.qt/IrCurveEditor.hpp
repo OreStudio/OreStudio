@@ -181,6 +181,7 @@ private:
     // Instrument tab.
     QComboBox* currencyCombo_;
     QComboBox* indexNameCombo_;
+    QComboBox* roleCombo_;
     QLabel* oreKeyLabel_;
     QComboBox* fixedLegFrequencyCombo_;
     QCheckBox* enabledCheck_;

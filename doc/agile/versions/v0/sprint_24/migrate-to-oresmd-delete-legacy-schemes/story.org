@@ -87,7 +87,7 @@ Per-field migration:
 | [[id:D9BCA1E0-BB8C-4B3E-8A0B-4FC7098E0ED9][In-depth analysis: migrate legacy identifiers onto oresmd]] | DONE | 2026-07-28 | 2026-07-28 | Ground the per-field migration plan in the current codebase: enumerate every read/write consumer of ore_key, market_series qualifier/point_id, and ir_curve_generation_config's (currency_code, index_name), and confirm the oresmd projection rules cover every one before any schema/code change starts. |
 | [[id:657F1AF9-0B49-40DA-9F2D-68006B53F814][Add oresmd support to ores.marketdata]] | BACKLOG | | | Implement parse_oresmd, to_uri, and resolve inside ores.marketdata (api/core) -- not a separate library/component -- per the oresmd design's variant-based data model, with projection rules into ORE's index/curve/quote keys. No consumer migration yet. |
 | [[id:05D5C710-7C9E-4CE1-859D-95B19E605F9B][Migrate fx_spot_generation_config.ore_key onto oresmd]] | DONE | 2026-07-29 | 2026-07-29 | Switch ore_key's generation source from the currency-pair derivation to oresmd's FX projection rule, verify against existing rows, then delete the old derivation code. |
-| [[id:9DB7786E-C9BE-467F-A2B9-5A9AFCFD6B45][Migrate ir_curve_generation_config onto oresmd, add curve role]] | BACKLOG | | | Replace index_name with oresmd's index_family (backed by overnight_index_convention/ibor_index_convention) plus tenor, add the missing role field, and rebuild curve_feed_controller's collision check on the full oresmd field set so discount/projection coexistence works. Close Normalize floating-rate index reference data as superseded once this lands. |
+| [[id:9DB7786E-C9BE-467F-A2B9-5A9AFCFD6B45][Migrate ir_curve_generation_config onto oresmd, add curve role]] | DONE | 2026-07-29 | 2026-07-30 | Replace index_name with oresmd's index_family (backed by overnight_index_convention/ibor_index_convention) plus tenor, add the missing role field, and rebuild curve_feed_controller's collision check on the full oresmd field set so discount/projection coexistence works. Close Normalize floating-rate index reference data as superseded once this lands. |
 | [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Migrate market_series qualifier/point_id generation onto oresmd]] | BACKLOG | | | Generate market_series.qualifier and market_observation.point_id from oresmd fields at every write path instead of free text; column shapes stay as-is. Once every consumer reads/writes through oresmd, delete the legacy free-text generation paths across all three migrations. |
 | [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and market-data XML round-trip via oresmd]] | BACKLOG | | | Add import_curve_config/export_curve_config for ORE's curveconfig.xml, todaysmarket.xml mapping, and market-data quote-string import/export, all keyed through oresmd -- new capability, since only currency config, calendar adjustments, conventions, and portfolio/trades round-trip through ORE's XML today. |
 
@@ -126,6 +126,36 @@ Per-field migration:
   real ORE run's actual input/output files, so building that round-trip
   is included as its own task rather than assumed to fall out of the
   internal-consumer migrations.
+- *Widget/soft-FK convention for new oresmd-shaped fields*: a
+  =dynamic_combo= only when a real, persisted entity backs the field
+  (=tenor= -> =refdata::domain::tenor=, matching
+  =calendar_exception.calendar_code -> fetch_calendars=); a
+  =static_combo= for a closed, intrinsic vocabulary with no entity to
+  reuse (=role=), or where the "real" enforcement is better done
+  server-side than via a new cross-table aggregation query just to
+  populate a combo (=index_family=, validated against
+  =overnight_index_convention=/=ibor_index_convention= in the C++
+  service layer instead).
+- *Composite (multi-column) soft FKs live in the C++ service layer, not
+  SQL*: the codegen Insert-trigger Validations mechanism only supports
+  =fn(tenant_id, NEW.column)= (one column in, one value out); a
+  two-column lookup like =(currency_code, index_family)= against
+  =overnight_index_convention=/=ibor_index_convention= is validated in
+  =ir_curve_generation_config_service= instead, matching the precedent
+  =ir_curve_template_entry='s own tenor codes already set (also
+  app-layer-only, no DB trigger).
+- *=curve_feed_controller='s collision key includes =role=, not just
+  qualifier*: a discount curve and a projection curve for the same
+  =(currency_code, index_family, tenor)= are expected to coexist, so
+  role is part of the conflict comparison rather than excluded from it
+  -- two feeds only conflict when qualifier AND role both match.
+- *=ores.synthetic='s legacy =* Primary key=/=* Natural keys= model
+  format needs migrating to the unified =Columns= +
+  =:primary_key:=/=:natural_key:= flags, entity by entity, as each is
+  touched* -- codegen no longer supports the old dual-heading format at
+  all (discovered while regenerating =ir_curve_generation_config=); this
+  story migrates each entity it touches, not the whole component at
+  once.
 
 * Out of scope
 

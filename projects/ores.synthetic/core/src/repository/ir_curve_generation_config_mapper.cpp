@@ -44,7 +44,13 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     r.currency_code = v.currency_code;
 
 
-    r.index_name = v.index_name;
+    r.index_family = v.index_family;
+
+
+    r.tenor = v.tenor;
+
+
+    r.role = v.role;
 
     r.process_type = v.process_type;
     r.kappa = v.kappa;
@@ -89,7 +95,13 @@ ir_curve_generation_config_mapper::map(const domain::ir_curve_generation_config&
     r.currency_code = v.currency_code;
 
 
-    r.index_name = v.index_name;
+    r.index_family = v.index_family;
+
+
+    r.tenor = v.tenor;
+
+
+    r.role = v.role;
 
     r.process_type = v.process_type;
     r.kappa = v.kappa;

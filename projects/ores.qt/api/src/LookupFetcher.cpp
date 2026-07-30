@@ -50,6 +50,7 @@
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_anchor_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_kind_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_resolution_algorithm_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -468,6 +469,18 @@ fetch_tenor_kinds(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->kinds);
+}
+
+std::expected<std::vector<refdata::domain::tenor>, QString> fetch_tenors(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_tenors_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->tenors);
 }
 
 std::expected<std::vector<refdata::domain::tenor_unit>, QString>

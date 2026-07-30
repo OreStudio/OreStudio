@@ -55,7 +55,9 @@ public:
      */
     enum Column {
         CurrencyCode,
-        IndexName,
+        IndexFamily,
+        Tenor,
+        Role,
         ProcessType,
         Kappa,
         Theta,

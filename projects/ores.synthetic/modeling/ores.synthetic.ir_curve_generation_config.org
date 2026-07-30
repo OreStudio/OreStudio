@@ -80,29 +80,76 @@ Currency this curve is denominated in (soft FK to currencies).
 std::string("USD")
 #+end_src
 
-** index_name
+** index_family
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :natural_key: true
 :END:
 
-Floating-rate index this curve represents, stored as the full ISDA/ORE
-code (references =ores.refdata.floating_index_type.code=, e.g.
-"USD-SOFR", "EUR-ESTR", "GBP-SONIA") rather than a bare suffix
-("SOFR") -- =floating_index_type.code= already bakes in currency, and
-storing the full code lets this FK reuse the entity's own generated
-single-argument validator directly (=ores_refdata_validate_floating_index_type_fn(tenant_id,
-value)=) instead of a bespoke composite validator the codegen
-Insert-trigger Validations mechanism can't express (it always calls
-=fn(tenant_id, NEW.column)=, one column in, one value out).
-=ir_curve_feed_source_name()= and display code strip the redundant
-=<currency_code>-= prefix back off for the "ir_curve.<ccy>.<idx>"
-subject and UI labels, so the wire subject/tree text are unaffected by
-this storage change.
+Floating-rate index family this curve represents (oresmd's
+=index_family=: =libor=/=euribor=/=sofr=/=estr=/=sonia=/=tona=), stored
+as a fixed lower-case token rather than the full ISDA/ORE code the
+predecessor =index_name= column held ("USD-SOFR") -- =currency_code=
+already carries the currency half of that pair. The
+=(currency_code, index_family)= pair is validated as a whole by a
+hand-written composite trigger (not the codegen single-argument
+Validations mechanism, which cannot express a two-column lookup)
+against =overnight_index_convention=/=ibor_index_convention=, whose own
+=id= is =currency_code + "-" + upper(index_family)=.
 
 #+begin_src cpp :name generator
-std::string("USD-SOFR")
+std::string("sofr")
+#+end_src
+
+** tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Tenor of this curve's floating-rate index (references =tenor.code=,
+e.g. "3M", "6M"), required when =index_family= is a term family
+(=libor=/=euribor=), empty for overnight families (=sofr=/=estr=/=sonia=/=tona=,
+which have no tenor dimension) -- mirrors oresmd's own
+=index_family=-conditional grammar. Empty string, not SQL NULL: the
+codegen used here has no true-nullable text support, same pattern as
+=vintage_source=/=vintage_date=. Not DB-FK-validated against =tenor=,
+matching the precedent set by =ir_curve_template_entry='s own
+=start_tenor_code=/=end_tenor_code= (also soft FKs to =tenor.code=,
+resolved only at the application layer via
+=ores.refdata.api/domain/tenor_resolution.hpp=, not a DB trigger --
+=tenor.org= itself emits no single-argument validator function to reuse).
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** role
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "self_discounting"
+:natural_key:   true
+:END:
+
+Whether this curve discounts cashflows, projects a floating index's
+forward rate, or both (oresmd's =curve_role=:
+=discount=/=projection=/=self_discounting=). Defaults to
+=self_discounting= for backward-compatible seed data (the shape every
+existing synthetic IR curve config already assumes: one curve serving
+both purposes). Fixed 3-value vocabulary intrinsic to this record, not
+a reference to another entity -- no soft FK, validated by a plain SQL
+check rather than a lookup-table trigger.
+=curve_feed_controller='s collision check deliberately excludes =role=
+from its conflict key, so a =discount= config and a =projection=
+config for the same =(currency_code, index_family, tenor)= can run
+side by side.
+
+#+begin_src cpp :name generator
+std::string("self_discounting")
 #+end_src
 
 ** process_type
@@ -229,8 +276,9 @@ alongside a currency's primary config so the two never silently fight
 over the same published qualifier at boot). Starting a feed --
 whether auto-start-at-boot or a manual Start -- is rejected outright
 if another feed is already running for the same
-=(currency_code, index_name)= qualifier; nothing auto-disables the
-running one, so switching requires an explicit Stop then Start.
+=(currency_code, index_family, tenor)= tuple *and the same* =role=;
+nothing auto-disables the running one, so switching requires an
+explicit Stop then Start.
 
 #+begin_src cpp :name generator
 faker::datatype::boolean()
@@ -349,8 +397,8 @@ Stable source name carried as provenance of published ticks/observations
 =fx_spot_generation_config.source_name= exactly: namespaced by
 collection only (so two collections' same currency+index never
 collide), editable, defaulting to a derived value at publish/save time
-rather than parsed back out of currency_code/index_name at every
-consumer (the earlier approach, replaced by this column).
+rather than parsed back out of currency_code/index_family/tenor at
+every consumer (the earlier approach, replaced by this column).
 
 #+begin_src cpp :name generator
 std::string("synthetic.") + std::string(faker::finance::currencyCode())
@@ -387,7 +435,9 @@ std::nullopt
 | expression                                              |
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
-| "index_name" <> ''                                        |
+| "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona') |
+| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona') and "tenor" = '') |
+| "role" in ('discount', 'projection', 'self_discounting') |
 | "source_name" <> ''                                       |
 | "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
@@ -418,7 +468,6 @@ std::nullopt
 |----------------------------------+--------------------------------------------------|
 | process_type                     | ores_synthetic_validate_yield_curve_process_type_fn |
 | fixed_leg_payment_frequency_code | ores_refdata_validate_payment_frequency_fn      |
-| index_name                       | ores_refdata_validate_floating_index_type_fn    |
 
 * Validation function
 :PROPERTIES:
@@ -493,30 +542,34 @@ std::nullopt
 
 *** Detail fields
 
-| field                             | label                        | widget                       | type      | is_key | is_required | placeholder                              |
-|-----------------------------------+-------------------------------+-------------------------------+-----------+--------+-------------+--------------------------------------------|
-| currency_code                     | Currency                     | currencyEdit                 | line_edit |        | true        | Enter currency code                      |
-| index_name                        | Index                        | indexNameEdit                 | line_edit |        | true        | Enter floating-rate index (e.g. SOFR)    |
-| process_type                      | Process Type                  | processTypeEdit                | line_edit |        | true        | VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE               |
-| kappa                              | Kappa                         | kappaEdit                     | line_edit |        | true        | Mean-reversion speed                     |
-| theta                              | Theta                          | thetaEdit                     | line_edit |        | true        | Mean-reversion target level               |
-| sigma                              | Sigma                          | sigmaEdit                     | line_edit |        | true        | Volatility                                |
-| initial_rate                       | Initial Rate                   | initialRateEdit                | line_edit |        | true        | Starting short rate                       |
-| ticks_per_hour                     | Ticks per Hour                 | ticksPerHourEdit               | spin_box  |        | true        |                                            |
-| fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit |        | true        | Enter payment frequency code (e.g. Annual)|
-| enabled                            | Enabled                        | enabledCheck                   | check_box |        |             |                                            |
-| auto_start                         | Auto-Start                     | autoStartCheck                 | check_box |        |             |                                            |
-| price_source                       | Price Source                   | priceSourceEdit                | line_edit |        | true        | fixed, or vintage                         |
-| vintage_source                     | Vintage Source                 | vintageSourceEdit              | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
-| vintage_date                       | Vintage Date                   | vintageDateEdit                | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |
-| description                        | Description                    | descriptionEdit                | plain_text_edit |   |             | What this configuration represents        |
+| field                             | label                        | widget                       | type          | is_key | is_required | placeholder                              | combo_domain_type      | combo_display_field | combo_fetch_include       | combo_fetch_fn | combo_watcher_name                  | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_values                        |
+|-----------------------------------+-------------------------------+-------------------------------+---------------+--------+-------------+--------------------------------------------+--------------------------+----------------------+-----------------------------+------------------+---------------------------------------+--------------------+------------------------+--------------------+---------------+---------------------------------------|
+| currency_code                     | Currency                     | currencyEdit                 | line_edit     |        | true        | Enter currency code                      |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| index_family                      | Index Family                 | indexFamilyCombo             | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | libor,euribor,sofr,estr,sonia,tona   |
+| tenor                             | Tenor                         | tenorCombo                    | dynamic_combo |        |             |                                            | refdata::domain::tenor  | display_name         | ores.qt/LookupFetcher.hpp  | fetch_tenors   | irCurveGenerationConfigTenorWatcher  | code               | description          | sort_order         | tenors      |                                      |
+| role                              | Role                          | roleCombo                     | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | discount,projection,self_discounting |
+| process_type                      | Process Type                  | processTypeEdit                | line_edit     |        | true        | VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE               |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| kappa                              | Kappa                         | kappaEdit                     | line_edit     |        | true        | Mean-reversion speed                     |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| theta                              | Theta                          | thetaEdit                     | line_edit     |        | true        | Mean-reversion target level               |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| sigma                              | Sigma                          | sigmaEdit                     | line_edit     |        | true        | Volatility                                |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| initial_rate                       | Initial Rate                   | initialRateEdit                | line_edit     |        | true        | Starting short rate                       |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| ticks_per_hour                     | Ticks per Hour                 | ticksPerHourEdit               | spin_box      |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit     |        | true        | Enter payment frequency code (e.g. Annual)|                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| enabled                            | Enabled                        | enabledCheck                   | check_box     |        |             |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| auto_start                         | Auto-Start                     | autoStartCheck                 | check_box     |        |             |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| price_source                       | Price Source                   | priceSourceEdit                | line_edit     |        | true        | fixed, or vintage                         |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| vintage_source                     | Vintage Source                 | vintageSourceEdit              | line_edit     |        |             | Required if Price Source is vintage, e.g. ore.reference |            |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| vintage_date                       | Vintage Date                   | vintageDateEdit                | line_edit     |        |             | Required if Price Source is vintage, YYYY-MM-DD |          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| description                        | Description                    | descriptionEdit                | plain_text_edit |      |             | What this configuration represents        |                        |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 
 *** Columns (Qt model)
 
 | enum_name                    | field                             | header                      | type      | width |
 |-------------------------------+------------------------------------+------------------------------+-----------+-------|
 | CurrencyCode                 | currency_code                      | Currency                    | string    | 100   |
-| IndexName                    | index_name                         | Index                       | string    | 100   |
+| IndexFamily                  | index_family                       | Index Family                 | string    | 100   |
+| Tenor                        | tenor                              | Tenor                        | string    | 80    |
+| Role                         | role                               | Role                         | string    | 100   |
 | ProcessType                  | process_type                       | Process Type                 | string    | 100   |
 | Kappa                        | kappa                              | Kappa                       | double    | 90    |
 | Theta                        | theta                               | Theta                       | double    | 90    |

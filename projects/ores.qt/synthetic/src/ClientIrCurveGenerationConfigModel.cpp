@@ -85,8 +85,12 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
         switch (index.column()) {
             case CurrencyCode:
                 return QString::fromStdString(ir_curve_generation_config.currency_code);
-            case IndexName:
-                return QString::fromStdString(ir_curve_generation_config.index_name);
+            case IndexFamily:
+                return QString::fromStdString(ir_curve_generation_config.index_family);
+            case Tenor:
+                return QString::fromStdString(ir_curve_generation_config.tenor);
+            case Role:
+                return QString::fromStdString(ir_curve_generation_config.role);
             case ProcessType:
                 return QString::fromStdString(ir_curve_generation_config.process_type);
             case Kappa:
@@ -146,8 +150,12 @@ QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
     switch (section) {
         case CurrencyCode:
             return tr("Currency");
-        case IndexName:
-            return tr("Index");
+        case IndexFamily:
+            return tr("Index Family");
+        case Tenor:
+            return tr("Tenor");
+        case Role:
+            return tr("Role");
         case ProcessType:
             return tr("Process Type");
         case Kappa:

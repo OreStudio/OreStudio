@@ -18,6 +18,7 @@
 #
 set(files
     "config_parser_tests.cpp"
+    "curve_feed_controller_tests.cpp"
     "ir_curve_feed_vintage_tests.cpp"
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"

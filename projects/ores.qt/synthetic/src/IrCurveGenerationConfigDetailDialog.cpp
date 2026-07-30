@@ -19,10 +19,14 @@
  */
 #include "ores.qt/IrCurveGenerationConfigDetailDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ui_IrCurveGenerationConfigDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -40,7 +44,9 @@ IrCurveGenerationConfigDetailDialog::IrCurveGenerationConfigDetailDialog(QWidget
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -86,6 +92,20 @@ void IrCurveGenerationConfigDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void IrCurveGenerationConfigDetailDialog::setupCombos() {
+    ui_->indexFamilyCombo->clear();
+    ui_->indexFamilyCombo->addItem(tr("libor"), QString("libor"));
+    ui_->indexFamilyCombo->addItem(tr("euribor"), QString("euribor"));
+    ui_->indexFamilyCombo->addItem(tr("sofr"), QString("sofr"));
+    ui_->indexFamilyCombo->addItem(tr("estr"), QString("estr"));
+    ui_->indexFamilyCombo->addItem(tr("sonia"), QString("sonia"));
+    ui_->indexFamilyCombo->addItem(tr("tona"), QString("tona"));
+    ui_->roleCombo->clear();
+    ui_->roleCombo->addItem(tr("discount"), QString("discount"));
+    ui_->roleCombo->addItem(tr("projection"), QString("projection"));
+    ui_->roleCombo->addItem(tr("self_discounting"), QString("self_discounting"));
+}
+
 void IrCurveGenerationConfigDetailDialog::setupConnections() {
     connect(ui_->saveButton,
             &QPushButton::clicked,
@@ -104,8 +124,20 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->indexNameEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->indexFamilyCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->indexFamilyCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily);
+    connect(ui_->tenorCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->roleCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->processTypeEdit,
@@ -164,6 +196,7 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
 
 void IrCurveGenerationConfigDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateTenor();
 }
 
 void IrCurveGenerationConfigDetailDialog::setUsername(const std::string& username) {
@@ -197,7 +230,9 @@ void IrCurveGenerationConfigDetailDialog::markDirty() {
 void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->currencyEdit->setReadOnly(readOnly);
-    ui_->indexNameEdit->setReadOnly(readOnly);
+    ui_->indexFamilyCombo->setEnabled(!readOnly);
+    updateTenorComboForIndexFamily();
+    ui_->roleCombo->setEnabled(!readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
     ui_->kappaEdit->setReadOnly(readOnly);
     ui_->thetaEdit->setReadOnly(readOnly);
@@ -214,9 +249,66 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void IrCurveGenerationConfigDetailDialog::populateTenor() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating tenor combo";
+    populateDynamicCombo<refdata::domain::tenor>(
+        ui_->tenorCombo,
+        this,
+        clientManager_,
+        &fetch_tenors,
+        "irCurveGenerationConfigTenorWatcher",
+        [](const auto& t) { return QString::fromStdString(t.display_name); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.sort_order; },
+        [this]() { return QString::fromStdString(ir_curve_generation_config_.tenor); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load tenors: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; },
+        tr("(None)"));
+}
+
+// index_family is a term family (libor/euribor) iff tenor is required (non-empty); the SQL
+// check constraint enforces this at save time, but the combo must also let the user represent
+// (and default to) an empty tenor for the overnight families -- otherwise every save of an
+// overnight-family curve would send whatever tenor code happened to be selected, violating the
+// constraint. Mirrors IrCurveEditor.cpp's splitIndexFamilyAndTenor(), which produces an empty
+// tenor for a suffix with no '-'.
+void IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily() {
+    const auto family = ui_->indexFamilyCombo->currentData().toString().toStdString();
+    const bool is_term_family = family == "libor" || family == "euribor";
+    ui_->tenorCombo->setEnabled(is_term_family && !readOnly_);
+    if (!is_term_family) {
+        const int blank_idx = ui_->tenorCombo->findData(QString());
+        if (blank_idx >= 0)
+            ui_->tenorCombo->setCurrentIndex(blank_idx);
+    }
+}
 void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->currencyEdit->setText(QString::fromStdString(ir_curve_generation_config_.currency_code));
-    ui_->indexNameEdit->setText(QString::fromStdString(ir_curve_generation_config_.index_name));
+    {
+        const auto val = QString::fromStdString(ir_curve_generation_config_.index_family);
+        const int idx = ui_->indexFamilyCombo->findData(val);
+        if (idx >= 0)
+            ui_->indexFamilyCombo->setCurrentIndex(idx);
+    }
+    updateTenorComboForIndexFamily();
+    {
+        const auto val = QString::fromStdString(ir_curve_generation_config_.tenor);
+        const int idx = ui_->tenorCombo->findData(val);
+        if (idx >= 0)
+            ui_->tenorCombo->setCurrentIndex(idx);
+    }
+    {
+        const auto val = QString::fromStdString(ir_curve_generation_config_.role);
+        const int idx = ui_->roleCombo->findData(val);
+        if (idx >= 0)
+            ui_->roleCombo->setCurrentIndex(idx);
+    }
     ui_->processTypeEdit->setText(QString::fromStdString(ir_curve_generation_config_.process_type));
     ui_->kappaEdit->setText(QString::number(ir_curve_generation_config_.kappa));
     ui_->thetaEdit->setText(QString::number(ir_curve_generation_config_.theta));
@@ -247,7 +339,10 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
 
 void IrCurveGenerationConfigDetailDialog::updateConfigFromUi() {
     ir_curve_generation_config_.currency_code = ui_->currencyEdit->text().trimmed().toStdString();
-    ir_curve_generation_config_.index_name = ui_->indexNameEdit->text().trimmed().toStdString();
+    ir_curve_generation_config_.index_family =
+        ui_->indexFamilyCombo->currentData().toString().toStdString();
+    ir_curve_generation_config_.tenor = ui_->tenorCombo->currentData().toString().toStdString();
+    ir_curve_generation_config_.role = ui_->roleCombo->currentData().toString().toStdString();
     ir_curve_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.kappa = ui_->kappaEdit->text().trimmed().toDouble();
     ir_curve_generation_config_.theta = ui_->thetaEdit->text().trimmed().toDouble();
@@ -280,7 +375,6 @@ void IrCurveGenerationConfigDetailDialog::updateSaveButtonState() {
 
 bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const QString currency_code_val = ui_->currencyEdit->text().trimmed();
-    const QString index_name_val = ui_->indexNameEdit->text().trimmed();
     const QString process_type_val = ui_->processTypeEdit->text().trimmed();
     const QString kappa_val = ui_->kappaEdit->text().trimmed();
     const QString theta_val = ui_->thetaEdit->text().trimmed();
@@ -289,11 +383,13 @@ bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const QString fixed_leg_payment_frequency_code_val =
         ui_->fixedLegPaymentFrequencyEdit->text().trimmed();
     const QString price_source_val = ui_->priceSourceEdit->text().trimmed();
+    const bool index_family_selected = ui_->indexFamilyCombo->currentIndex() >= 0;
+    const bool role_selected = ui_->roleCombo->currentIndex() >= 0;
 
-    return true && !currency_code_val.isEmpty() && !index_name_val.isEmpty() &&
-           !process_type_val.isEmpty() && !kappa_val.isEmpty() && !theta_val.isEmpty() &&
-           !sigma_val.isEmpty() && !initial_rate_val.isEmpty() &&
-           !fixed_leg_payment_frequency_code_val.isEmpty() && !price_source_val.isEmpty();
+    return true && !currency_code_val.isEmpty() && !process_type_val.isEmpty() &&
+           !kappa_val.isEmpty() && !theta_val.isEmpty() && !sigma_val.isEmpty() &&
+           !initial_rate_val.isEmpty() && !fixed_leg_payment_frequency_code_val.isEmpty() &&
+           !price_source_val.isEmpty() && index_family_selected && role_selected;
 }
 
 void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
@@ -352,7 +448,7 @@ void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
     connect(watcher,
             &QFutureWatcher<SaveResult>::finished,
             self,
-            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            [self, watcher]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
 

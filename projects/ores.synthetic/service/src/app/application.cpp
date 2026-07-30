@@ -167,7 +167,7 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
         const auto it = entries_by_config.find(cfg.id);
         if (it == entries_by_config.end() || it->second.empty()) {
             BOOST_LOG_SEV(auto_start_lg(), warn)
-                << "Skipping enabled IR curve config " << cfg.currency_code << "/" << cfg.index_name
+                << "Skipping enabled IR curve config " << cfg.currency_code << "/" << cfg.index_family
                 << " — no template entries.";
             continue;
         }
@@ -182,14 +182,14 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
                 // qualifier), not a per-request error -- log clearly and move on rather than
                 // failing the whole auto-start pass.
                 BOOST_LOG_SEV(auto_start_lg(), error)
-                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_name
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
                     << " — qualifier already held by auto-started feed '" << conflicting_source_name
                     << "'; both are enabled+auto_start for the same market data key.";
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auto_start_lg(), error)
                 << "Failed to start IR curve feed for " << cfg.currency_code << "/"
-                << cfg.index_name << ": " << e.what();
+                << cfg.index_family << ": " << e.what();
         }
     }
     BOOST_LOG_SEV(auto_start_lg(), info)

@@ -18,7 +18,11 @@
  *
  */
 #include "ores.synthetic.core/service/ir_curve_generation_config_service.hpp"
+#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <stdexcept>
 
@@ -27,6 +31,37 @@ using ores::service::messaging::stamp;
 namespace ores::synthetic::service {
 
 using namespace ores::logging;
+
+namespace {
+
+// (currency_code, index_family) has no single-column soft FK the codegen
+// Insert-trigger Validations mechanism can express -- it must resolve
+// against whichever of the two real convention tables backs that family,
+// keyed on their shared "CCY-FAMILY" id shape (e.g. "USD-SOFR"). Validated
+// here, not in SQL, matching the precedent already set by this entity's own
+// tenor field (also a soft FK, also only resolved at the application layer).
+void validate_index_family(ores::database::context ctx,
+                           const std::string& currency_code,
+                           const std::string& index_family) {
+    auto upper = index_family;
+    std::transform(upper.begin(), upper.end(), upper.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+    const auto id = currency_code + "-" + upper;
+
+    refdata::repository::overnight_index_convention_repository overnight_repo;
+    if (!overnight_repo.read_latest(ctx, id).empty())
+        return;
+
+    refdata::repository::ibor_index_convention_repository ibor_repo;
+    if (!ibor_repo.read_latest(ctx, id).empty())
+        return;
+
+    throw std::invalid_argument(
+        "Invalid (currency_code, index_family): no overnight_index_convention or "
+        "ibor_index_convention found with id '" + id + "'.");
+}
+
+}
 
 ir_curve_generation_config_service::ir_curve_generation_config_service(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -65,6 +100,7 @@ void ir_curve_generation_config_service::save_ir_curve_generation_config(
     const domain::ir_curve_generation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Generation Config id cannot be empty.");
+    validate_index_family(ctx_, v.currency_code, v.index_family);
     BOOST_LOG_SEV(lg(), debug) << "Saving IR curve generation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
@@ -74,9 +110,11 @@ void ir_curve_generation_config_service::save_ir_curve_generation_config(
 
 void ir_curve_generation_config_service::save_ir_curve_generation_configs(
     const std::vector<domain::ir_curve_generation_config>& ir_curve_generation_configs) {
-    for (const auto& e : ir_curve_generation_configs)
+    for (const auto& e : ir_curve_generation_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Generation Config id cannot be empty.");
+        validate_index_family(ctx_, e.currency_code, e.index_family);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_generation_configs.size()
                                << " IR curve generation configs";
     auto ts = ir_curve_generation_configs;

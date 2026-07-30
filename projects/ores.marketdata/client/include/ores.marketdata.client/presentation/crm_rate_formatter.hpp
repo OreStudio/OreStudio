@@ -85,7 +85,13 @@ public:
     static std::vector<crm_rate_display>
     format(const std::vector<crm_rate_format_request>& requests);
 
-private:
+    /**
+     * @brief Formats a single rate against its (optional) convention -- the
+     * per-item primitive @c format() batches internally. Public so any
+     * rate-display surface (not just CRM's batched reload) can render a
+     * convention-aware value without hand-rolling precision/tick-snapping
+     * logic of its own; see the "Rate display conventions" story.
+     */
     static std::string
     format_rate(double rate,
                 const std::optional<ores::refdata::domain::currency_pair_convention>& convention,

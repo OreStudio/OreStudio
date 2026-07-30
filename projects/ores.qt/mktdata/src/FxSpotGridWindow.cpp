@@ -20,9 +20,11 @@
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -174,19 +176,6 @@ static QString pair_from_ore_key(const std::string& ore_key) {
     return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
 }
 
-// JPY pairs are conventionally quoted to 3 decimal places (pip on the 2nd,
-// fractional pip on the 3rd), not the 5 decimals standard G10 pairs use --
-// per the FX Spot Monitor UI/UX audit's convention-violation finding.
-static bool is_jpy_quoted(const QString& pairText) {
-    const auto slash = pairText.lastIndexOf(QLatin1Char('/'));
-    const auto quote = slash >= 0 ? pairText.mid(slash + 1) : pairText;
-    return quote.compare(QStringLiteral("JPY"), Qt::CaseInsensitive) == 0;
-}
-
-static QString format_rate(double mid, bool jpy) {
-    return QString::number(mid, 'f', jpy ? 3 : 5);
-}
-
 // This window has no separate base/quote columns to put one flag each on
 // (just a single "GBP/USD"-style cell), so it needs the composited pair icon
 // (see currency_flag_icon() in FlagIconHelper) rather than a single flag.
@@ -195,6 +184,32 @@ static QIcon pair_icon_for(ImageCache& imageCache, const QString& pairText) {
     if (parts.size() != 2)
         return {};
     return currency_flag_icon(imageCache, parts[0].toStdString(), parts[1].toStdString());
+}
+
+// Resolves pairText's currency_pair_convention -- direct first, then reversed
+// (a convention is only ever stored for one direction of a pair) -- mirroring
+// crm_rate_display_service::rates()'s own resolution, so this window and the
+// CRM matrix derive decimal places/tick size the same way instead of each
+// hand-rolling precision rules (see the "Rate display conventions" story).
+struct ResolvedConvention {
+    std::optional<refdata::domain::currency_pair_convention> convention;
+    bool reversed = false;
+};
+
+static ResolvedConvention
+resolve_convention(refdata::service::cache::currency_pair_convention_cache& cache,
+                   const std::string& tenantId,
+                   const QString& pairText) {
+    const QStringList parts = pairText.split(QLatin1Char('/'));
+    if (parts.size() != 2)
+        return {};
+    const auto base = parts[0].toStdString();
+    const auto quote = parts[1].toStdString();
+    if (auto direct = cache.lookup(tenantId, base + "/" + quote))
+        return {.convention = direct, .reversed = false};
+    if (auto reverse = cache.lookup(tenantId, quote + "/" + base))
+        return {.convention = reverse, .reversed = true};
+    return {};
 }
 
 // ── FxSpotGridWindow ───────────────────────────────────────────────────────
@@ -231,6 +246,49 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
         };
         connect(imageCache_, &ImageCache::imagesLoaded, this, refreshFlags);
         connect(imageCache_, &ImageCache::allLoaded, this, refreshFlags);
+    }
+
+    if (clientManager_) {
+        // Snapshot synchronously on the GUI thread rather than handing the
+        // cache a token_provider that re-reads ClientManager's session state
+        // from load()'s own background thread later -- safe here since
+        // load() only ever fires once, at construction, mirroring
+        // CrmCrossRatesMatrixMdiWindow's identical pattern/reasoning.
+        const auto authToken = clientManager_->currentAuthToken();
+        conventionCache_ =
+            std::make_shared<refdata::service::cache::currency_pair_convention_cache>(
+                clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
+        QPointer<FxSpotGridWindow> self = this;
+        const auto tenantId = clientManager_->currentTenantId();
+        auto conventionCache = conventionCache_;
+        auto* cacheWatcher = new QFutureWatcher<QString>(this);
+        connect(cacheWatcher, &QFutureWatcher<QString>::finished, this,
+                [self, cacheWatcher, tenantId]() {
+                    const auto error = cacheWatcher->result();
+                    cacheWatcher->deleteLater();
+                    if (!self)
+                        return;
+                    if (!error.isEmpty()) {
+                        BOOST_LOG_SEV(lg(), warn) << "Currency pair convention cache load failed: "
+                                                  << error.toStdString();
+                        return;
+                    }
+                    // Re-resolve every row already built before the cache finished
+                    // loading -- format_rate() falls back to default precision with
+                    // no convention, so rows built in that window need their
+                    // convention filled in retroactively.
+                    for (auto& [key, rs] : self->rows_) {
+                        if (auto* item = self->table_->item(rs.row, ColPair)) {
+                            const auto resolved = resolve_convention(
+                                *self->conventionCache_, tenantId, item->text());
+                            rs.convention = resolved.convention;
+                            rs.convention_reversed = resolved.reversed;
+                        }
+                    }
+                });
+        cacheWatcher->setFuture(QtConcurrent::run([conventionCache, tenantId]() -> QString {
+            return QString::fromStdString(conventionCache->load(tenantId));
+        }));
     }
 
     reload();
@@ -331,7 +389,7 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         // for fast scanning (UI/UX audit Strategy 2) -- a proportional font still
         // drifts column-to-column under right-alignment alone since digit widths
         // differ.
-        const QFont numFont(QStringLiteral("Monospace"));
+        const QFont numFont = FontUtils::monospace();
 
         // Mid
         auto* midItem = new QTableWidgetItem(QStringLiteral("—"));
@@ -362,6 +420,12 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         RowState rs;
         rs.row = row;
         rs.ore_key = ore_key;
+        if (conventionCache_ && clientManager_) {
+            const auto resolved =
+                resolve_convention(*conventionCache_, clientManager_->currentTenantId(), pairText);
+            rs.convention = resolved.convention;
+            rs.convention_reversed = resolved.reversed;
+        }
         rs.status_icon_label = indicator.icon_label;
         rs.status_text_label = indicator.text_label;
         rows_.emplace(ore_key, std::move(rs));
@@ -424,8 +488,9 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
     if (midItem) {
         const QString arrow =
             first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
-        const bool jpy = is_jpy_quoted(pair_from_ore_key(ore_key));
-        midItem->setText(arrow + format_rate(mid, jpy));
+        const auto rateText = marketdata::client::presentation::crm_rate_formatter::format_rate(
+            mid, rs.convention, rs.convention_reversed);
+        midItem->setText(arrow + QString::fromStdString(rateText));
         midItem->setForeground(dirColor);
     }
 

@@ -101,6 +101,7 @@ private:
     bool validateInput();
 
     void populateTenor();
+    void updateTenorComboForIndexFamily();
 
 
     Ui::IrCurveGenerationConfigDetailDialog* ui_;

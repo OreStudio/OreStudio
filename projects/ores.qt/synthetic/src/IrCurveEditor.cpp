@@ -274,6 +274,20 @@ void IrCurveEditor::buildInstrumentTab() {
     indexNameCombo_->setInsertPolicy(QComboBox::NoInsert);
     form->addRow(tr("Index name"), indexNameCombo_);
 
+    // discount/projection/self_discounting -- lets a discount curve and a projection curve for
+    // the same currency+index+tenor coexist (curve_feed_controller's collision check keys on
+    // (qualifier, role), not qualifier alone). Defaults to self_discounting, the shape every
+    // pre-existing synthetic curve assumes.
+    roleCombo_ = new QComboBox(identityBox);
+    roleCombo_->setEditable(false);
+    roleCombo_->setInsertPolicy(QComboBox::NoInsert);
+    roleCombo_->addItem(tr("Self-discounting"), QString("self_discounting"));
+    roleCombo_->addItem(tr("Discount"), QString("discount"));
+    roleCombo_->addItem(tr("Projection"), QString("projection"));
+    if (const int idx = roleCombo_->findData(QString::fromStdString(ir_.role)); idx >= 0)
+        roleCombo_->setCurrentIndex(idx);
+    form->addRow(tr("Role"), roleCombo_);
+
     // Mirrors FxSpotRateEditor::buildInstrumentTab()'s ORE key label -- shows the exact key
     // SyntheticBindingDialog will bind this config under (currency_code + "/" + stripped index
     // name), so the tester doesn't have to work it out by hand.
@@ -1300,6 +1314,7 @@ void IrCurveEditor::onSaveClicked() {
     // indexNameCombo_ shows the floating_index_type suffix shape (e.g. "SOFR",
     // "LIBOR-3M") -- split it at the oresmd index_family/tenor boundary here.
     std::tie(ir.index_family, ir.tenor) = splitIndexFamilyAndTenor(idx);
+    ir.role = roleCombo_->currentData().toString().toStdString();
     ir.process_type = engineCombo_->currentData().toString().toStdString();
     ir.kappa = kappaSpin_->value();
     ir.theta = thetaSpin_->value();

@@ -128,6 +128,10 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->indexFamilyCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily);
     connect(ui_->tenorCombo,
             &QComboBox::currentIndexChanged,
             this,
@@ -227,7 +231,7 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->currencyEdit->setReadOnly(readOnly);
     ui_->indexFamilyCombo->setEnabled(!readOnly);
-    ui_->tenorCombo->setEnabled(!readOnly);
+    updateTenorComboForIndexFamily();
     ui_->roleCombo->setEnabled(!readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
     ui_->kappaEdit->setReadOnly(readOnly);
@@ -265,7 +269,24 @@ void IrCurveGenerationConfigDetailDialog::populateTenor() {
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto&) { return false; },
-        QString{});
+        tr("(None)"));
+}
+
+// index_family is a term family (libor/euribor) iff tenor is required (non-empty); the SQL
+// check constraint enforces this at save time, but the combo must also let the user represent
+// (and default to) an empty tenor for the overnight families -- otherwise every save of an
+// overnight-family curve would send whatever tenor code happened to be selected, violating the
+// constraint. Mirrors IrCurveEditor.cpp's splitIndexFamilyAndTenor(), which produces an empty
+// tenor for a suffix with no '-'.
+void IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily() {
+    const auto family = ui_->indexFamilyCombo->currentData().toString().toStdString();
+    const bool is_term_family = family == "libor" || family == "euribor";
+    ui_->tenorCombo->setEnabled(is_term_family && !readOnly_);
+    if (!is_term_family) {
+        const int blank_idx = ui_->tenorCombo->findData(QString());
+        if (blank_idx >= 0)
+            ui_->tenorCombo->setCurrentIndex(blank_idx);
+    }
 }
 void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->currencyEdit->setText(QString::fromStdString(ir_curve_generation_config_.currency_code));
@@ -275,6 +296,7 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
         if (idx >= 0)
             ui_->indexFamilyCombo->setCurrentIndex(idx);
     }
+    updateTenorComboForIndexFamily();
     {
         const auto val = QString::fromStdString(ir_curve_generation_config_.tenor);
         const int idx = ui_->tenorCombo->findData(val);
@@ -319,7 +341,7 @@ void IrCurveGenerationConfigDetailDialog::updateConfigFromUi() {
     ir_curve_generation_config_.currency_code = ui_->currencyEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.index_family =
         ui_->indexFamilyCombo->currentData().toString().toStdString();
-    ir_curve_generation_config_.tenor = ui_->tenorCombo->currentText().toStdString();
+    ir_curve_generation_config_.tenor = ui_->tenorCombo->currentData().toString().toStdString();
     ir_curve_generation_config_.role = ui_->roleCombo->currentData().toString().toStdString();
     ir_curve_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.kappa = ui_->kappaEdit->text().trimmed().toDouble();
@@ -426,7 +448,7 @@ void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
     connect(watcher,
             &QFutureWatcher<SaveResult>::finished,
             self,
-            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            [self, watcher]() {
                 auto result = watcher->result();
                 watcher->deleteLater();
 

@@ -44,10 +44,14 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.config_id = ctx.generate_uuid();
+    // Uniqueness of the natural key (party_id, config_id, currency_code, index_family, tenor,
+    // role) across generated rows comes from party_id/config_id already being fresh UUIDs --
+    // index_family/tenor/role must stay within the SQL check constraint's fixed vocabulary, so
+    // they can't carry the idx uniqueness suffix currency_code does.
     r.currency_code = std::string("USD") + "-" + std::to_string(idx);
-    r.index_family = std::string("sofr") + "-" + std::to_string(idx);
-    r.tenor = std::string("") + "-" + std::to_string(idx);
-    r.role = std::string("self_discounting") + "-" + std::to_string(idx);
+    r.index_family = std::string("sofr");
+    r.tenor = std::string("");
+    r.role = std::string("self_discounting");
     r.process_type = std::string("VASICEK");
     r.kappa = faker::number::decimal(0.01, 2.0);
     r.theta = faker::number::decimal(0.0, 0.1);

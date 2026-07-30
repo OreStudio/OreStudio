@@ -325,7 +325,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tenor combo saved display_name instead of code (currentText vs currentData) | IrCurveGenerationConfigDetailDialog.cpp | Accepted | Switched to currentData(); matches indexFamilyCombo/roleCombo on the same lines. |
+| 2 | Tenor combo has no way to represent "no tenor" for overnight families, would violate the tenor-required-iff-term-family CHECK | IrCurveGenerationConfigDetailDialog.cpp | Accepted | Added blank_label to populateTenor, new updateTenorComboForIndexFamily() gates enabled state + forces blank on overnight families, wired to indexFamilyCombo's currentIndexChanged and called from updateUiFromConfig/setReadOnly. |
+| 3 | IrCurveEditor (MarketSimulatorWindow's curve editor) has no UI for the new role field | IrCurveEditor.cpp/.hpp | Accepted | Added roleCombo_ to the Instrument tab, preselected from ir_.role, wired into the save path alongside index_family/tenor. |
+| 4 | Generator produces index_family/role values with an idx suffix that violate the new CHECK constraints | ir_curve_generation_config_generator.cpp | Accepted | Fixed values (sofr/self_discounting/empty tenor); uniqueness across generated rows already comes from party_id/config_id being fresh UUIDs, not from suffixing every field. |
+| 5 | Doc-comment typo: stray "=" before the semicolon | ir_curve_generation_config.org (model source) | Accepted | Fixed in the model source and regenerated the domain header. |
+| 6 | Unused lambda capture (crReasonCode/crCommentary already applied earlier) | IrCurveGenerationConfigDetailDialog.cpp | Accepted | Removed the dead captures. |
 
 * Result
 

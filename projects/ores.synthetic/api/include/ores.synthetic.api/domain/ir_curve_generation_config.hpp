@@ -160,7 +160,7 @@ struct ir_curve_generation_config final {
      * living alongside a currency's primary config so the two never silently fight over the same
      * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start
      * -- is rejected outright if another feed is already running for the same (currency_code,
-     * index_family, tenor) tuple *and the same role=; nothing auto-disables the running one, so
+     * index_family, tenor) tuple *and the same* role; nothing auto-disables the running one, so
      * switching requires an explicit Stop then Start.
      */
     bool auto_start = false;

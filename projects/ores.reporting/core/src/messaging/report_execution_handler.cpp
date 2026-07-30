@@ -21,6 +21,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/messaging/market_series_export_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
@@ -47,16 +48,15 @@ std::optional<typename Req::response_type>
 nats_call(ores::nats::service::nats_client& nats, const Req& request, std::string& out_error) {
     using Resp = typename Req::response_type;
     try {
-        const auto json = rfl::json::write(request);
-        const auto msg = nats.authenticated_request(Req::nats_subject, json);
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto msg = nats.authenticated_request(Req::nats_subject, codec.encode(request));
 
         const auto err_it = msg.headers.find("X-Error");
         if (err_it != msg.headers.end()) {
             out_error = std::format("Service error on {}: {}", Req::nats_subject, err_it->second);
             return std::nullopt;
         }
-        const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-        auto result = rfl::json::read<Resp>(sv);
+        auto result = codec.decode<Resp>(msg.data);
         if (!result) {
             out_error = std::format(
                 "Failed to parse response from {}: {}", Req::nats_subject, result.error().what());

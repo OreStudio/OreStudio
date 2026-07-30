@@ -39,6 +39,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.trading.api.lib
+        ores.nats.lib
         ores.orgmode.lib
         ores.logging.lib
         ores.utility.lib

@@ -19,9 +19,9 @@
  */
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include <span>
 
 namespace ores::scheduler::service {
 
@@ -76,9 +76,7 @@ nats_publish_action_handler::execute(const action_context& ctx) {
         const nats_trigger_body body{.job_instance_id = ctx.inst_id,
                                      .report_definition_id = parsed->report_definition_id,
                                      .tenant_id = parsed->tenant_id};
-        const auto body_json = rfl::json::write(body);
-        const auto* p = reinterpret_cast<const std::byte*>(body_json.data());
-        nats_.publish(subject, std::span<const std::byte>(p, body_json.size()));
+        nats_.publish(subject, ores::nats::default_wire_codec().encode(body));
         BOOST_LOG_SEV(lg(), info) << "NATS publish action succeeded for job: " << ctx.job.job_name
                                   << " (subject: " << subject << ")";
         co_return std::expected<void, std::string>{};

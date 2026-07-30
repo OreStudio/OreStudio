@@ -36,13 +36,11 @@ ClientManager::getTradeInstrument(const std::string& trade_id,
             encode_request(request),
             std::chrono::seconds(30));
 
-        // parse_trade_instrument() is a JSON-specific two-phase parser (peeks
-        // product_type, then re-parses the same raw bytes as different
-        // wrapper structs) living in ores.qt.headless, outside this task's
-        // file scope -- see the task's Notes for why it stays rfl::json-only
-        // for now. Under wire_format::msgpack this decode will fail (request
-        // and response would be format-mismatched); harmless under today's
-        // json default, which is all this task's acceptance criteria cover.
+        // parse_trade_instrument() is a two-phase parser (peeks product_type,
+        // then re-decodes the same raw bytes as different wrapper structs)
+        // living in ores.qt.headless. It now decodes via the process-wide
+        // default_wire_codec, same as encode_request() above, so request and
+        // response stay format-matched under both json and msgpack.
         return parse_trade_instrument(raw, populator);
 
     } catch (const ores::nats::service::nats_connect_error&) {

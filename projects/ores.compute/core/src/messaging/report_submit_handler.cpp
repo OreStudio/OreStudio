@@ -25,6 +25,7 @@
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -123,9 +124,8 @@ void report_submit_handler::submit(ores::nats::message msg) {
             // result_id, package_uri, config_uri, output_uri left empty
             // until the compute app version is wired up.
 
-            const auto json = rfl::json::write(evt);
-            const auto data = std::as_bytes(std::span{json.data(), json.size()});
-            nats_.publish(assignment_subject(req.tenant_id), data);
+            nats_.publish(assignment_subject(req.tenant_id),
+                         ores::nats::default_wire_codec().encode(evt));
 
             BOOST_LOG_SEV(lg(), debug) << "Dispatched work assignment for workunit " << wu_id;
         }

@@ -20,10 +20,9 @@
 #include "fx_spot_feed.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp"                     // IWYU pragma: keep.
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
-#include <rfl/json.hpp>
-#include <span>
 #include <stdexcept>
 #include <thread>
 
@@ -94,9 +93,7 @@ void fx_spot_feed::start(handler on_tick) {
 
         on_tick(tick);
 
-        const auto json = rfl::json::write(tick);
-        const auto data = std::as_bytes(std::span{json.data(), json.size()});
-        nats_.js_publish(nats_subject_, data);
+        nats_.js_publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
         const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
         if (n == 1 || n % 100 == 0) {
             BOOST_LOG_SEV(lg(), info)

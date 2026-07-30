@@ -35,6 +35,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -225,8 +226,8 @@ public:
             try {
                 using namespace ores::variability::messaging;
                 const clear_bootstrap_mode_request req{};
-                const auto json = rfl::json::write(req);
-                const auto* p = reinterpret_cast<const std::byte*>(json.data());
+                const auto& codec = ores::nats::default_wire_codec();
+                const auto bytes = codec.encode(req);
 
                 std::unordered_map<std::string, std::string> hdrs;
                 if (const auto bearer = extract_bearer(msg); !bearer.empty())
@@ -234,12 +235,10 @@ public:
                         std::string(ores::nats::headers::bearer_prefix) + bearer;
 
                 const auto resp_msg = nats_.request_sync(clear_bootstrap_mode_request::nats_subject,
-                                                         std::span<const std::byte>(p, json.size()),
+                                                         bytes,
                                                          std::move(hdrs),
                                                          std::chrono::seconds(5));
-                const std::string_view sv(reinterpret_cast<const char*>(resp_msg.data.data()),
-                                          resp_msg.data.size());
-                const auto resp = rfl::json::read<clear_bootstrap_mode_response>(sv);
+                const auto resp = codec.decode<clear_bootstrap_mode_response>(resp_msg.data);
                 if (resp && resp->success) {
                     BOOST_LOG_SEV(tenant_handler_lg(), info)
                         << "Bootstrap mode cleared for tenant: " << ids.front();

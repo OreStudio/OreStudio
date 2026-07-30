@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 8883F219-5D1F-4C29-B3F9-47D1622C9248
+:END:
+#+title: NATS wire format: payload, envelope, and multi-protocol support
+#+description: Explains the NATS message envelope (headers, subject, correlation) versus the encoded payload body, and how wire_codec makes the payload's protocol (JSON or MessagePack) a single process-wide, decided-once-at-startup choice -- including which fields are the wire encoding versus embedded/persisted JSON strings that stay JSON regardless of wire_format.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:nats:serialisation:wire_format:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+* Summary
+
+Every NATS message has an *envelope* (subject, reply-to, headers,
+correlation id) and a *payload* (an opaque byte buffer). ORE Studio's
+envelope is always transport metadata, handled uniformly regardless
+of protocol; only the payload's encoding is a project-wide choice
+between JSON and MessagePack, made once at process startup and
+exposed as =ores::nats::wire_codec=. Most =rfl::json::write=/=read=
+call sites encode or decode that payload and must route through the
+process-wide codec. A minority of =std::string= fields that happen to
+hold JSON text are not the wire payload -- they are persisted or
+embedded data (DB columns, workflow command bodies, opaque result
+blobs) that stays JSON by design, independent of =wire_format=. Confusing
+the two categories is the most common mistake when migrating a NATS
+call site to be format-agnostic.
+
+* Detail
+
+** Envelope versus payload
+
+A NATS message (see =ores.nats/domain/message.hpp=) carries:
+
+- *Envelope*: =subject=, =reply_subject=, =headers= (a string-to-string
+  map used for =Authorization=, =X-Delegated-Authorization=,
+  =X-Error=, =X-Workflow-Step-Id=, correlation ids, etc.), and
+  transport-level concerns like timeouts and reply matching.
+- *Payload*: =data=, a =std::vector<std::byte>= -- the actual message
+  body, opaque to NATS itself.
+
+The envelope is never protocol-dependent: headers and subjects are
+always plain strings, decided by application logic, not by
+=wire_format=. Only the *payload* -- the request/response struct's
+serialised bytes -- is subject to the JSON/MessagePack choice this
+document covers.
+
+** =wire_codec=: the payload's protocol, decided once
+
+=ores::nats::wire_codec= (=ores.nats/domain/wire_codec.hpp=) is a
+small value type fixed to one =wire_format= (=json= or =msgpack=) at
+construction:
+
+#+begin_src cpp
+class wire_codec final {
+public:
+    explicit wire_codec(wire_format format);
+    template <typename T> std::vector<std::byte> encode(const T& obj) const;
+    template <typename T> rfl::Result<T> decode(std::span<const std::byte> data) const;
+};
+#+end_src
+
+=wire_format= is resolved once per process from =.env=
+(=ORES_NATS_WIRE_FORMAT=) / the =--nats-wire-format= CLI flag, and
+=ores::nats::service::client='s constructor calls
+=set_default_wire_codec()= to publish it process-wide. Every later
+=encode=/=decode= call reads that same value via
+=ores::nats::default_wire_codec()= -- there is no per-message
+negotiation, no content-type header, no runtime auto-detection. This
+is a deliberate, narrow exception to per-instance dependency
+injection: safe because the format is a single, process-wide,
+decided-at-startup value, not a per-instance or per-message choice.
+
+The canonical shape for a NATS request/reply call site is:
+
+#+begin_src cpp
+const auto& codec = ores::nats::default_wire_codec();
+const auto reply = session.request(subject, codec.encode(request));
+auto result = codec.decode<Response>(reply.data);
+#+end_src
+
+=ores.nats/service/request_helpers.hpp= packages this pattern as
+=request_and_decode=/=authenticated_request_and_decode= for callers
+that don't need the intermediate steps, and =ores.shell='s
+=do_request=/=do_auth_request= (=ores.shell/app/request_helpers.hpp=)
+is a thin convention wrapper over the same primitive.
+
+** Publish/subscribe pairs must agree
+
+Fire-and-forget =publish()=/=js_publish()= calls and their matching
+subscription handlers are a *matched pair*: whichever wire_codec the
+publisher used to encode must be the one the subscriber uses to
+decode, since NATS carries no content-type metadata to disambiguate.
+When migrating one side of such a pair, always migrate the other side
+in the same change -- see the =entity_change_event= publishers across
+service =application.cpp= files, the =work_assignment_event= pair
+between =ores.compute.core= (producer) and =ores.compute.wrapper=
+(consumer), or the =step_completed_event=/=start_workflow_message=
+pair between =ores.service::messaging::workflow_helpers= (producer)
+and =ores.workflow.core::workflow_engine= (consumer) as examples.
+
+** What is *not* wire payload: embedded/persisted JSON fields
+
+Several domain structs have a plain =std::string= field that holds
+serialised JSON as its *value*, independent of whatever the current
+process's =wire_format= is. These are not exempt by oversight -- they
+are a different kind of data, and migrating them to =wire_codec=
+would be a category error (or, for DB-backed fields, would require an
+unrelated schema change to a binary column type). Recognised examples:
+
+- *Workflow step commands and results* (=ores.workflow=): the FSM
+  transition functions in the workflow API build/consume =command_json=
+  and =result_json= as literal JSON text; =workflow_engine::publish_command=
+  takes a =workflow_step= entity's =command_json= field and publishes
+  it *raw* onto the wire, unconditionally, regardless of
+  =wire_format=. These fields are persisted to a JSON-typed DB column
+  and are always JSON by the workflow engine's design.
+- *Scheduler job action payloads* (=ores.reporting=,
+  =ores.scheduler=): =job_definition::action_payload= is a DB-persisted
+  field re-published later by the scheduler's own action handlers;
+  building it with =rfl::json::write= is populating a stored column,
+  not encoding a NATS message.
+- *Import/report "request_json" fields*: =ore_import_execute_request::
+  import_choices_json=, =start_workflow_message::request_json=, and
+  similar fields carry an inner request as opaque JSON text inside an
+  outer message. The *outer* message (=start_workflow_message= itself)
+  is the wire payload and must go through =wire_codec=; the *inner*
+  =request_json= string is embedded content and stays JSON.
+- *JWKS/public-key bootstrap* (=ores.iam=, =ores.nats::service::jwks=):
+  the JWKS public-key fetch is deliberately JSON-only on both sides,
+  independent of =wire_format=, because it is bootstrap plumbing that
+  may run before a client's own =wire_codec= is even established. Both
+  the =auth_handler::public_key= reply and =fetch_jwks_public_key='s
+  parse hard-code JSON (the latter via raw =boost::json=, not =rfl=,
+  since it runs before reflect-cpp context is relevant).
+
+When auditing a NATS call site, ask: *is this string field the actual
+bytes handed to =publish=/=request=/=authenticated_request=, or is it
+a value stored inside one of those bytes (or in a DB row)?* Only the
+former is this document's concern.
+
+** Practical audit pattern
+
+To find remaining hard-coded call sites when preparing for a msgpack
+rollout, search for =rfl::json::write=/=read= co-located with a NATS
+transport call:
+
+#+begin_src sh
+grep -rl 'request_sync\|\.request(\|authenticated_request(\|\.publish(\|js_publish(' \
+    projects --include=*.hpp --include=*.cpp \
+  | xargs grep -l 'rfl::json::write\|rfl::json::read'
+#+end_src
+
+Then classify each hit per the two categories above before touching
+it -- see the "Migrate remaining service-to-service hard-coded
+rfl::json call sites to wire_codec" task for a worked example of this
+triage across ~25 files.
+
+* See also
+
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] -- a related but distinct NATS
+  serialisation convention (type-specific subjects), orthogonal to the
+  JSON/MessagePack payload choice this document covers.

@@ -22,6 +22,7 @@
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -131,15 +132,12 @@ report_scheduling_service::send_schedule_request(const domain::report_definition
         .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
         .change_commentary = "Scheduled by reporting service"};
 
-    const auto req_json = rfl::json::write(req);
+    const auto& codec = ores::nats::default_wire_codec();
     try {
         const auto reply_msg = svc_nats_.authenticated_request(
-            ores::scheduler::messaging::schedule_job_request::nats_subject,
-            ores::nats::as_bytes(req_json));
+            ores::scheduler::messaging::schedule_job_request::nats_subject, codec.encode(req));
 
-        const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
-                                  reply_msg.data.size());
-        auto resp = rfl::json::read<ores::scheduler::messaging::schedule_job_response>(sv);
+        auto resp = codec.decode<ores::scheduler::messaging::schedule_job_response>(reply_msg.data);
         if (!resp) {
             const std::string err = "Scheduler returned unparseable response for definition " +
                                     boost::uuids::to_string(def.id);
@@ -211,15 +209,13 @@ report_scheduling_service::unschedule_one(const domain::report_definition& def,
         .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
         .change_commentary = "Unscheduled by reporting service"};
 
-    const auto req_json = rfl::json::write(req);
+    const auto& codec = ores::nats::default_wire_codec();
     try {
         const auto reply_msg = svc_nats_.authenticated_request(
-            ores::scheduler::messaging::unschedule_job_request::nats_subject,
-            ores::nats::as_bytes(req_json));
+            ores::scheduler::messaging::unschedule_job_request::nats_subject, codec.encode(req));
 
-        const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
-                                  reply_msg.data.size());
-        auto resp = rfl::json::read<ores::scheduler::messaging::unschedule_job_response>(sv);
+        auto resp =
+            codec.decode<ores::scheduler::messaging::unschedule_job_response>(reply_msg.data);
         if (!resp) {
             const std::string err = "Scheduler returned unparseable response for job " + job_id_str;
             BOOST_LOG_SEV(lg(), error) << err;
@@ -268,14 +264,11 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     std::vector<ores::iam::domain::tenant> tenants;
     try {
         const ores::iam::messaging::get_tenants_request tenant_req{.include_deleted = false};
-        const auto req_json = rfl::json::write(tenant_req);
-        const auto reply_msg =
-            svc_nats_.authenticated_request(ores::iam::messaging::get_tenants_request::nats_subject,
-                                            ores::nats::as_bytes(req_json));
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto reply_msg = svc_nats_.authenticated_request(
+            ores::iam::messaging::get_tenants_request::nats_subject, codec.encode(tenant_req));
 
-        const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
-                                  reply_msg.data.size());
-        auto resp = rfl::json::read<ores::iam::messaging::get_tenants_response>(sv);
+        auto resp = codec.decode<ores::iam::messaging::get_tenants_response>(reply_msg.data);
         if (!resp) {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to parse tenant list response; aborting reconciliation.";
@@ -364,18 +357,17 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         // Send the batch request to the scheduler.
         BOOST_LOG_SEV(lg(), debug) << "Sending batch of " << pending.size()
                                    << " job(s) to scheduler for tenant: " << tenant_id_str;
-        const auto req_json = rfl::json::write(batch_req);
+        const auto& codec = ores::nats::default_wire_codec();
 
         std::unordered_set<std::string> failed_ids;
         try {
             const auto reply_msg = svc_nats_.authenticated_request(
                 ores::scheduler::messaging::schedule_jobs_batch_request::nats_subject,
-                ores::nats::as_bytes(req_json));
+                codec.encode(batch_req));
 
-            const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
-                                      reply_msg.data.size());
             auto resp =
-                rfl::json::read<ores::scheduler::messaging::schedule_jobs_batch_response>(sv);
+                codec.decode<ores::scheduler::messaging::schedule_jobs_batch_response>(
+                    reply_msg.data);
             if (!resp) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to parse batch schedule response for tenant "
                                            << tenant_id_str << "; skipping.";

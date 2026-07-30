@@ -23,11 +23,11 @@
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/currency_pair_convention_changed_event.hpp"
 #include "ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
 #include <memory>
-#include <rfl/json.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -65,7 +65,7 @@ inline ores::nats::service::subscription warm_and_subscribe_currency_pair_conven
         std::string(event_traits<currency_pair_convention_changed_event>::name),
         [cache](ores::nats::message msg) {
             using ores::eventing::domain::entity_change_event;
-            auto evt = rfl::json::read<entity_change_event>(ores::nats::as_string_view(msg.data));
+            auto evt = ores::nats::default_wire_codec().decode<entity_change_event>(msg.data);
             if (evt && !evt->tenant_id.empty()) {
                 // Offload to a detached thread: load() calls request_sync,
                 // which would block the NATS callback thread if called inline.

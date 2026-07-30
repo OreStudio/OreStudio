@@ -20,8 +20,8 @@
 #include "ores.marketdata.client/crm_client.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <rfl/json.hpp>
 #include <unordered_map>
 
 namespace ores::marketdata::client {
@@ -39,7 +39,8 @@ crm_client::rates(const std::string& party_id, const std::string& crm_name, bool
         req.party_id = party_id;
         req.crm_name = crm_name;
         req.reciprocal = reciprocal;
-        const auto req_json = rfl::json::write(req);
+        const auto& codec = ores::nats::default_wire_codec();
+        const auto bytes = codec.encode(req);
 
         std::unordered_map<std::string, std::string> headers;
         if (token_provider_)
@@ -47,10 +48,9 @@ crm_client::rates(const std::string& party_id, const std::string& crm_name, bool
                 std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
 
         const auto reply = nats_.request_sync(messaging::get_crm_rates_request::nats_subject,
-                                              ores::nats::as_bytes(req_json),
+                                              bytes,
                                               std::move(headers));
-        auto resp = rfl::json::read<messaging::get_crm_rates_response>(
-            ores::nats::as_string_view(reply.data));
+        auto resp = codec.decode<messaging::get_crm_rates_response>(reply.data);
         if (!resp || !resp->success) {
             result.error = resp ? resp->message : "parse error (malformed or error reply)";
             return result;

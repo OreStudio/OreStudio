@@ -24,6 +24,7 @@
 #include "ores.qt/CalendarHolidayFetcher.hpp"
 #include "ores.qt/export.hpp"
 #include <QDateEdit>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -49,11 +50,12 @@ class ClientManager;
  * meant to respect one or more calendars. See the Qt UI patterns doc.
  *
  * Highlights only a practical window around the currently-shown month
- * (loaded lazily as the user navigates the popup, expanding forward or
- * backward one year at a time) rather than the full multi-decade
- * materialisation horizon -- a date picker only ever needs to show a
- * handful of months at a time, and eagerly fetching thousands of rows
- * per calendar up front would be wasted work for the common case.
+ * (loaded lazily as the user navigates the popup, the loaded range
+ * widening to cover wherever they've scrolled to) rather than the full
+ * multi-decade materialisation horizon -- a date picker only ever needs
+ * to show a handful of months at a time, and eagerly fetching thousands
+ * of rows per calendar up front would be wasted work for the common
+ * case.
  */
 class ORES_QT_API HolidayAwareDatePicker : public QDateEdit {
     Q_OBJECT
@@ -114,6 +116,14 @@ private:
     QDate loadedTo_;
     QCalendarWidget* calendarWidget_ = nullptr;
     bool tooltipFilterInstalled_ = false;
+
+    // Bumped on every setCalendarCodes() call; a loadWindow() future
+    // captures the generation it was started under and discards its
+    // result on completion if the widget has since moved to a newer
+    // generation (calendars changed again while it was in flight) --
+    // otherwise a stale fetch could clobber freshly-cleared state with
+    // data for calendars that no longer apply.
+    std::uint64_t generation_ = 0;
 };
 
 }

@@ -171,7 +171,10 @@ after merge.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 (PR #1769, x4 reviewers) | Stale highlights + stale in-flight fetch survive a setCalendarCodes() re-call with different codes | HolidayAwareDatePicker.cpp/.hpp | Fixed | Reset previously-highlighted dates' QTextCharFormat in setCalendarCodes(); added a generation counter, bumped per setCalendarCodes() call and checked in loadWindow()'s finished handler, so a stale in-flight fetch's result is discarded rather than merged in. |
+| 2 | Window expansion re-fetches the whole merged range from scratch each time (protocol has no date-range filter, only offset/limit) | HolidayAwareDatePicker.cpp, CalendarHolidayFetcher.cpp | Declined | Not a correctness bug -- flagged as a protocol-level limitation, not fixable client-side without a new server-side date filter, which is separate scope from this widget. |
+| 3 | errorMessage signal emitted but unwired by SwapInstrumentForm | SwapInstrumentForm.cpp | Declined | Intentional fail-open UX for the proof-point wiring; a real consumer would connect it, same as CalendarAssignmentWidget's own errorMessage/statusMessage signals. |
+| 4 | cellDateAt() relies on undocumented QCalendarWidget internal view/model layout | HolidayAwareDatePicker.cpp | Declined | Correct as flagged -- no public Qt API exists for "date at view index"; already commented in the code as a deliberate reliance on current Qt behaviour. |
 
 * Result
 

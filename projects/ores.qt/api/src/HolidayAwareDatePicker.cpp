@@ -72,6 +72,17 @@ void HolidayAwareDatePicker::setClientManager(ClientManager* clientManager) {
 
 void HolidayAwareDatePicker::setCalendarCodes(std::vector<std::string> calendarCodes) {
     calendarCodes_ = std::move(calendarCodes);
+    ++generation_; // Invalidates any in-flight loadWindow() future's result.
+
+    // Reset every date this widget previously highlighted -- setDateTextFormat
+    // only ever adds/overwrites a per-date format, it has no bulk-clear, so
+    // without this a date that was non-business under the old calendar set
+    // but isn't under the new one would stay visually highlighted forever.
+    if (calendarWidget_) {
+        for (auto it = holidays_.constBegin(); it != holidays_.constEnd(); ++it)
+            calendarWidget_->setDateTextFormat(it.key(), QTextCharFormat());
+    }
+
     holidays_.clear();
     loadedFrom_ = QDate();
     loadedTo_ = QDate();
@@ -122,13 +133,22 @@ void HolidayAwareDatePicker::ensureWindowLoaded(const QDate& around) {
 void HolidayAwareDatePicker::loadWindow(const QDate& from, const QDate& to) {
     auto* cm = clientManager_;
     const auto codes = calendarCodes_;
+    const auto generation = generation_;
 
     auto* watcher = new QFutureWatcher<std::expected<calendar_holiday_map, QString>>(this);
     connect(watcher,
            &QFutureWatcher<std::expected<calendar_holiday_map, QString>>::finished,
            this,
-           [this, watcher, from, to]() {
+           [this, watcher, from, to, generation]() {
                watcher->deleteLater();
+
+               // setCalendarCodes() ran again while this fetch was in
+               // flight -- its result is for a calendar set that no
+               // longer applies; discard it rather than merging stale
+               // data back into holidays_.
+               if (generation != generation_)
+                   return;
+
                const auto result = watcher->result();
                if (!result) {
                    BOOST_LOG_SEV(lg(), warn)

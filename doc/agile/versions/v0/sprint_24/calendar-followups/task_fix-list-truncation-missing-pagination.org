@@ -258,6 +258,7 @@ via its "Verifies task" field.
 | 5129143976 | Investigation section's stale 43/14 figures contradict the 45/16 used elsewhere | task_fix-list-truncation-missing-pagination.org | Accepted | Fixed in 117f89c2c |
 | 5129143976 | story.org still says "27 ores.refdata Qt entities" | story.org | Accepted | Fixed in 117f89c2c |
 | 5129143371 | static_cast<uint32_t> on total_available_count could wrap on a negative server value | Client*Model.cpp | Declined | Pre-existing template pattern, already used by has_pagination entities before this PR; out of scope here, flagged for follow-up 836BB4CE |
+| 5129373378 | task_fix-legacy-primary-key-heading-models.org still has stale 14/43 figures | task_fix-legacy-primary-key-heading-models.org | Accepted | Fixed -- reconciled to 45/16 |
 
 * Result
 

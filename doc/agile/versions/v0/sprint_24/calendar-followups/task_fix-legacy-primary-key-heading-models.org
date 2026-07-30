@@ -2,7 +2,7 @@
 :ID: 836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9
 :END:
 #+title: Task: Fix legacy Primary key heading blocking codegen regen on 70+ models
-#+description: 70+ codegen entity .org models across the repo declare their primary key using an old, now-unsupported top-level heading (Primary key, with column/type/cpp_type properties) instead of the current convention (a field inside Columns flagged with primary_key true). org_loader.py's load_org_model() only recognises the latter, so any regeneration of these models fails with a Missing primary key error. Discovered while fixing the has_pagination truncation bug: 14 of 43 target entities hit this and were excluded from that task's scope.
+#+description: 70+ codegen entity .org models across the repo declare their primary key using an old, now-unsupported top-level heading (Primary key, with column/type/cpp_type properties) instead of the current convention (a field inside Columns flagged with primary_key true). org_loader.py's load_org_model() only recognises the latter, so any regeneration of these models fails with a Missing primary key error. Discovered while fixing the has_pagination truncation bug: 16 of 45 target entities hit this and were excluded from that task's scope.
 #+type: task
 #+level: s1
 #+filetags: :calendar-followups:sprint_24:v0:
@@ -68,7 +68,7 @@ Confirmed to affect entities in =ores.analytics=, =ores.compute=,
   (model was broken), confirm generation now succeeds and produces
   syntactically valid, compilable output.
 - [ ] Full local build green; =ctest= green.
-- [ ] The has_pagination task's 14 excluded entities (=badge_definition=,
+- [ ] The has_pagination task's 16 excluded entities (=badge_definition=,
   =badge_severity=, =code_domain=, =concurrency_policy=,
   =dataset_bundle=, =job_definition=, =pricing_engine_type=,
   =pricing_model_config=, =pricing_model_product=,

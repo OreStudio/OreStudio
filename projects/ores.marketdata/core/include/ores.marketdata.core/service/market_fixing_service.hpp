@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,10 +76,10 @@ public:
      */
     std::uint32_t count_market_fixings();
 
+
     /**
-     * @brief Retrieves a single market fixing by its id.
+     * @brief Retrieves a single market fixing by its primary key.
      *
-     * @param id The id of the market fixing.
      * @return The market fixing if found, std::nullopt otherwise.
      */
     std::optional<domain::market_fixing> get_market_fixing(const std::string& id);
@@ -100,15 +101,14 @@ public:
     void save_market_fixings(const std::vector<domain::market_fixing>& market_fixings);
 
     /**
-     * @brief Deletes a market fixing by its id.
+     * @brief Deletes a market fixing by its primary key.
      *
-     * @param id The id of the market fixing to delete.
      * @throws std::exception on failure.
      */
     void delete_market_fixing(const std::string& id);
 
     /**
-     * @brief Deletes market fixings by their ids.
+     * @brief Deletes market fixings by their primary keys.
      */
     void delete_market_fixings(const std::vector<std::string>& ids);
 

@@ -37,7 +37,7 @@ std::string market_observation_repository::sql() {
 }
 
 void market_observation_repository::write(context ctx, const domain::market_observation& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market observation: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing market observation. " << "id: " << v.id;
     execute_write_query(
         ctx, market_observation_mapper::map(v), lg(), "Writing market observation to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::market_observation> market_observation_repository::read_late
 
 std::vector<domain::market_observation>
 market_observation_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market observation. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_observation_entity>> |
@@ -80,9 +80,10 @@ market_observation_repository::read_latest(context ctx, const std::string& id) {
         "Reading latest market observation by id.");
 }
 
+
 std::vector<domain::market_observation>
 market_observation_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market observation versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market observation versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_observation_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -141,7 +142,7 @@ std::uint32_t market_observation_repository::get_total_market_observation_count_
 }
 
 void market_observation_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market observation: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_observation_entity> |

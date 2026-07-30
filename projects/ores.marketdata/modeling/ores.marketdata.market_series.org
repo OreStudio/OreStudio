@@ -30,21 +30,22 @@ Every ORE market data key follows the skeleton =TYPE / METRIC / QUALIFIER=;
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this market series.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this market series.
@@ -59,6 +60,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
@@ -67,6 +69,7 @@ ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
@@ -75,12 +78,11 @@ Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 =EUR-EURIBOR-3M=, or an empty string for scalars).
-
-* Columns
 
 ** asset_class
 :PROPERTIES:

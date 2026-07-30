@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,10 +76,20 @@ public:
      */
     std::uint32_t count_market_series();
 
+
     /**
-     * @brief Retrieves a single market series by its id.
+     * @brief Retrieves a single market series as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the market series.
+     * @param version The version to fetch.
+     * @return The market series at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::market_series> get_market_series_at_version(const std::string& id,
+                                                                      std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single market series by its primary key.
+     *
      * @return The market series if found, std::nullopt otherwise.
      */
     std::optional<domain::market_series> get_market_series(const std::string& id);
@@ -100,15 +111,14 @@ public:
     void save_market_series(const std::vector<domain::market_series>& market_series);
 
     /**
-     * @brief Deletes a market series by its id.
+     * @brief Deletes a market series by its primary key.
      *
-     * @param id The id of the market series to delete.
      * @throws std::exception on failure.
      */
     void delete_market_series(const std::string& id);
 
     /**
-     * @brief Deletes market series by their ids.
+     * @brief Deletes market series by their primary keys.
      */
     void delete_market_series(const std::vector<std::string>& ids);
 

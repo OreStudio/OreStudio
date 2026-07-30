@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -62,17 +64,19 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest market fixings, possibly filtered by id.
+     * @brief Reads latest market fixings, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::market_fixing> read_latest(context ctx);
     std::vector<domain::market_fixing> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all market fixings, possibly filtered by id.
+     * @brief Reads all market fixings, possibly filtered by primary key.
      */
     std::vector<domain::market_fixing> read_all(context ctx, const std::string& id);
+
 
     /**
      * @brief Reads latest market fixings with pagination support.

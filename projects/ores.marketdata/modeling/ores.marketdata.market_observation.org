@@ -35,21 +35,22 @@ change_commentary) — tick-level data volumes make these impractical.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this observation row.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this observation.
@@ -64,6 +65,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Reference to =ores_marketdata_market_series_tbl(id)= — identifies what was observed.
@@ -72,6 +74,7 @@ Reference to =ores_marketdata_market_series_tbl(id)= — identifies what was obs
 :PROPERTIES:
 :type:     timestamp with time zone
 :cpp_type: std::chrono::system_clock::time_point
+:natural_key: true
 :END:
 
 Financial valid-time: when the market value was observed (UTC).
@@ -86,12 +89,11 @@ ctx.past_timepoint()
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:natural_key: true
 :END:
 
 Tenor or compound surface identifier (e.g. =1Y=, =5Y/2Y/ATM=, =0.03/10Y/2Y=).
 Null for scalar series such as FX spot rates.
-
-* Columns
 
 ** value
 :PROPERTIES:

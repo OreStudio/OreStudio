@@ -42,6 +42,7 @@ std::uint32_t market_observation_service::count_market_observations() {
     return repo_.get_total_market_observation_count(ctx_);
 }
 
+
 std::vector<domain::market_observation>
 market_observation_service::list_market_observations_by_series_id(const std::string& series_id,
                                                                   std::uint32_t offset,
@@ -60,7 +61,7 @@ market_observation_service::count_market_observations_by_series_id(const std::st
 
 std::optional<domain::market_observation>
 market_observation_service::get_market_observation(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market observation: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting market observation. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -70,11 +71,11 @@ market_observation_service::get_market_observation(const std::string& id) {
 void market_observation_service::save_market_observation(const domain::market_observation& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Observation id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market observation: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving market observation. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market observation: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved market observation. " << "id: " << v.id;
 }
 
 void market_observation_service::save_market_observations(
@@ -90,9 +91,9 @@ void market_observation_service::save_market_observations(
 }
 
 void market_observation_service::delete_market_observation(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market observation: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market observation. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed market observation: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed market observation. " << "id: " << id;
 }
 
 void market_observation_service::delete_market_observations(const std::vector<std::string>& ids) {
@@ -101,7 +102,7 @@ void market_observation_service::delete_market_observations(const std::vector<st
 
 std::vector<domain::market_observation>
 market_observation_service::get_market_observation_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market observation: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market observation. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

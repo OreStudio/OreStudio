@@ -25,6 +25,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::marketdata::domain {
 
@@ -84,6 +85,16 @@ struct market_fixing final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for market_fixing, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const market_fixing&) {
+    return "ores.marketdata.market_fixing";
+}
 
 }
 

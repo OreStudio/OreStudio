@@ -767,6 +767,204 @@ def test_malformed_json_does_not_crash(monkeypatch):
     assert hook.main() == 0
 #+end_src
 
+** Deny unscoped `find` invocations
+
+A `find` rooted at `/` or another filesystem-wide root (`/home`,
+`/usr`, `/etc`, `/var`, `/proc`, `/sys`, `/root`, `/opt`, `/boot`,
+`/dev`, `/mnt` with no subpath) scans far more of the machine than any
+task in this repo needs, is slow, and risks surfacing content from
+unrelated projects/worktrees. Permission allow/deny rules cannot tell
+`find . -iname foo.hpp` apart from `find / -iname foo.hpp` — both are
+just `find` with arguments — so this is enforced the same way as the
+piped-compass rule above: a =PreToolUse= hook that inspects the full
+command string.
+
+The hook denies only when `find`'s first non-flag argument is exactly
+one of those unscoped roots; a relative path (`.`, `projects/`,
+`../Engine`), a path under the project root, or any other explicitly
+narrower absolute path (e.g. `/home/marco/Development/ORE/Engine`) is
+untouched. When a genuinely broad search is needed, ask the user
+first rather than routing around this with a narrower-looking but
+still-unscoped path.
+
+`find` is only recognised as a command word at the very start of the
+command string or directly after a shell operator (`;`, `&`, `|`,
+`(`) -- not after bare whitespace. This is deliberately stricter than
+the piped-compass hook's own boundary check: matching on bare
+whitespace too would also catch `find` used as an ordinary English
+word inside an unrelated argument (e.g. a `compass add task
+--description` string that happens to say "...surfaced when an
+unscoped find / scanned the whole machine..."), denying a command
+that contains no `find` invocation at all.
+
+Same fail-open guard as the piped-compass hook: exits 0 (allow) if
+the script itself is missing rather than hard-blocking the =Bash=
+tool.
+
+#+begin_src python :tangle ../../projects/ores.compass/src/deny_unscoped_find_hook.py :mkdirp yes :shebang "#!/usr/bin/env python3"
+"""PreToolUse hook: deny `find` invocations rooted at `/` or another
+filesystem-wide root. See doc/llm/claude_code_settings.org's Hooks
+section.
+
+Targeted finds (relative paths, or absolute paths narrower than a
+top-level root) are unaffected -- only a bare filesystem-root scan is
+denied.
+"""
+import json
+import re
+import sys
+
+# Matches "find" as a command word: start of the whole command, or
+# immediately after a shell operator (;, &, |, () skipping any
+# whitespace -- deliberately NOT bare whitespace alone, which would
+# also match "find" appearing as an ordinary English word inside an
+# unrelated argument (e.g. a --description string mentioning "you'll
+# find / at the root"). Followed by its first non-flag argument; flags
+# (anything starting with "-") are skipped since find's path
+# argument(s) may follow options like -H/-L/-P. Captures that first
+# path argument.
+FIND_RE = re.compile(
+    r"(?:^|[&;|(]\s*)find\s+(?:-\w+\s+)*(\S+)"
+)
+
+# Filesystem-wide roots with no further subpath -- a scan starting here
+# walks far more of the machine than any task in this repo needs.
+UNSCOPED_ROOTS = {
+    "/", "/home", "/usr", "/etc", "/var", "/proc", "/sys",
+    "/root", "/opt", "/boot", "/dev", "/mnt", "/tmp",
+}
+
+DENIAL_MESSAGE = (
+    "Unscoped `find` rooted at a filesystem-wide directory is denied -- "
+    "scope it to the project directory (or another specific, narrower "
+    "path) instead, or ask the user explicitly if a broader search is "
+    "genuinely needed. See doc/llm/claude_code_settings.org.\n"
+)
+
+
+def main() -> int:
+    try:
+        data = json.load(sys.stdin)
+    except (ValueError, json.JSONDecodeError):
+        return 0
+    if not isinstance(data, dict) or data.get("tool_name") != "Bash":
+        return 0
+    command = data.get("tool_input", {}).get("command", "")
+    for match in FIND_RE.finditer(command):
+        if match.group(1) in UNSCOPED_ROOTS:
+            sys.stderr.write(DENIAL_MESSAGE)
+            return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#+end_src
+
+#+begin_src python :tangle ../../projects/ores.compass/tests/test_deny_unscoped_find_hook.py :mkdirp yes
+"""
+Tests for the unscoped-find PreToolUse hook.
+
+Run with:  python -m pytest projects/ores.compass/tests/test_deny_unscoped_find_hook.py -v
+No live database or file system access required.
+"""
+
+import io
+import sys
+from pathlib import Path
+
+# Allow importing from the src directory without installing the package.
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import deny_unscoped_find_hook as hook
+
+
+def run(command, tool_name="Bash", monkeypatch=None):
+    """Drive hook.main() with a synthetic PreToolUse payload on stdin,
+    returning (exit_code, stderr_text)."""
+    payload = {"tool_name": tool_name, "tool_input": {"command": command}}
+    import json
+    monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+    stderr = io.StringIO()
+    monkeypatch.setattr(sys, "stderr", stderr)
+    return hook.main(), stderr.getvalue()
+
+
+def test_find_root_denied(monkeypatch):
+    code, msg = run('find / -iname "aonia.hpp"', monkeypatch=monkeypatch)
+    assert code == 2
+    assert "Unscoped `find`" in msg
+
+
+def test_find_home_denied(monkeypatch):
+    code, _ = run("find /home -iname '*.hpp'", monkeypatch=monkeypatch)
+    assert code == 2
+
+
+def test_find_relative_path_allowed(monkeypatch):
+    code, _ = run("find . -iname foo.hpp", monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_find_project_relative_allowed(monkeypatch):
+    code, _ = run("find projects/ores.sql -iname '*.sql'",
+                   monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_find_narrower_absolute_path_allowed(monkeypatch):
+    code, _ = run("find /home/marco/Development/ORE/Engine -iname '*.hpp'",
+                   monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_find_with_flags_before_path_denied(monkeypatch):
+    code, _ = run("find -L / -iname foo.hpp", monkeypatch=monkeypatch)
+    assert code == 2
+
+
+def test_find_after_chain_operator_denied(monkeypatch):
+    code, _ = run("cd /tmp && find / -iname foo.hpp", monkeypatch=monkeypatch)
+    assert code == 2
+
+
+def test_find_as_prose_word_in_unrelated_command_allowed(monkeypatch):
+    """"find" as an ordinary English word inside an unrelated command's
+    argument (e.g. a --description string) must not be mistaken for a
+    find invocation just because it's preceded by whitespace."""
+    code, _ = run(
+        'compass add task --description "surfaced when an unscoped '
+        'find / scanned the whole machine"',
+        monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_unrelated_command_allowed(monkeypatch):
+    code, _ = run("git log --oneline -5", monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_non_bash_tool_allowed(monkeypatch):
+    code, _ = run("find / -iname foo.hpp", tool_name="Read",
+                  monkeypatch=monkeypatch)
+    assert code == 0
+
+
+def test_non_dict_json_does_not_crash(monkeypatch):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("[1, 2, 3]"))
+    assert hook.main() == 0
+
+
+def test_null_json_does_not_crash(monkeypatch):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("null"))
+    assert hook.main() == 0
+
+
+def test_malformed_json_does_not_crash(monkeypatch):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("not json"))
+    assert hook.main() == 0
+#+end_src
+
 #+begin_src json :tangle no :noweb-ref hooks-pretooluse
     "PreToolUse": [
       {
@@ -775,6 +973,10 @@ def test_malformed_json_does_not_crash(monkeypatch):
           {
             "type": "command",
             "command": "sh -c 'f=projects/ores.compass/src/deny_piped_compass_hook.py; if [ -f \"$f\" ]; then python3 \"$f\"; else exit 0; fi'"
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'f=projects/ores.compass/src/deny_unscoped_find_hook.py; if [ -f \"$f\" ]; then python3 \"$f\"; else exit 0; fi'"
           }
         ]
       }

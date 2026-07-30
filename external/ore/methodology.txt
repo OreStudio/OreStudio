@@ -1,22 +1,80 @@
 Data Sourcing and Generation Steps:
 
-1. SOURCE DATA DOWNLOAD
-   Option A - Manual download:
-     Download: https://github.com/OreStudio/OreStudio/archive/refs/heads/main.zip
-     Extract: Unzip into a temporary directory
-     Copy:
-       - Content of Examples directory into external/ore/examples
-       - xsd directory into external/ore/xsd.
+1. CLONE / SYNC THE ORE ENGINE SOURCE
+   Source: OreStudio's fork of the ORE Engine, kept in sync with
+   upstream OpenSourceRisk/Engine (this replaces the previous
+   "download OreStudio/OreStudio's own zip" instructions below, which
+   were stale/incorrect -- that repo is this one, it never contained
+   ORE's Examples/xsd; the actual, correct source has always been
+   manifest.json's own source_url, OpenSourceRisk/Engine, now tracked
+   via OreStudio's own fork so local hand-patches/version pins are
+   possible without forking on every refresh).
+     git@github.com:OreStudio/Engine.git    (fork, push target)
+     git@github.com:OpenSourceRisk/Engine.git   (upstream, pull-only)
+   Kept as a separate checkout OUTSIDE this repo (e.g.
+   ~/Development/ORE/Engine), not a submodule.
+   Commands (first time):
+     git clone --recurse-submodules git@github.com:OreStudio/Engine.git
+     cd Engine
+     git remote add upstream git@github.com:OpenSourceRisk/Engine.git
+   Commands (updating the fork before syncing):
+     git fetch upstream
+     git checkout master && git merge --ff-only upstream/master
+     git submodule update --init --recursive
+     git push origin master
 
-2. CODE GENERATION
-   Regenerate C++ domain types from the XSD schemas using xsdcpp:
+2. SYNC EXAMPLES + XSD
+   Script: external/ore/tools/update_ore_samples.sh
+   Command:
+     ./external/ore/tools/update_ore_samples.sh <path-to-ore-engine-checkout>
+   Target: external/ore/examples/ (+ its own manifest.json) and
+   external/ore/xsd/ (+ its own manifest.json), synced together from the
+   same engine commit -- a schema/example version mismatch produces
+   spurious validation failures unrelated to either side being wrong.
+   Validates every example XML against the freshly synced schema
+   automatically (scripts/validate_ore_examples.sh) before finishing.
+   See external/ore/examples/methodology.txt and
+   external/ore/xsd/README.md for the full detail on what gets
+   vendored/excluded.
+
+   KNOWN HAND-PATCHES (reapplied automatically by this script -- do not
+   remove without re-verifying against upstream first): 3 files ship a
+   genuinely wrong FX/RATE key order from upstream (confirmed against
+   QuantLib's own FXSpotQuote convention, not an ORE-Studio-specific
+   issue -- see update_ore_samples.sh's own header comment for the
+   full explanation and doc/agile/product_backlog/deferred/
+   document_ore_vendor_hand_patches.org for the history/PR #1423). If a
+   future upstream release fixes this at the source, the script's
+   sed patch becomes a no-op (harmless) until explicitly removed once
+   confirmed unnecessary.
+
+3. PACKAGE THE ENGINE BINARY
+   Script: external/ore/tools/package_ore.sh
+   Command:
+     ./external/ore/tools/package_ore.sh <path-to-ore-engine-build-dir>
+   Target: external/ore/packages/ore-<version>-x64-linux.tar.gz (+
+   diff-report.txt + this directory's own manifest.json). See
+   external/ore/packages/methodology.txt for the full build/package/
+   verify/install detail -- this step needs the engine actually built
+   first (cmake --preset + cmake --build against the same checkout
+   step 1 produced), not just the source sync from step 2.
+
+4. CODE GENERATION
+   Regenerate C++ domain types from the (freshly synced) XSD schemas
+   using xsdcpp:
      ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
    Requires xsdcpp on PATH. If built locally, prepend to PATH:
      PATH="/path/to/xsdcpp/build/src:$PATH" ./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh
    This regenerates:
      - projects/ores.ore/include/ores.ore/domain/domain.hpp
      - projects/ores.ore/src/domain/domain.cpp
+   Run this whenever step 2 changes external/ore/xsd/ content, even if
+   examples/ alone changed and packages/ didn't move -- the generated
+   domain types are schema-derived, not example-derived.
 
-3. COMMIT TO REPOSITORY
+5. COMMIT TO REPOSITORY
    git add external/ore/* projects/ores.ore/include/ores.ore/domain/domain.hpp projects/ores.ore/src/domain/domain.cpp
    git commit -m "[data] Update ORE Sample Data"
+   Commit examples/, xsd/, packages/, and the regenerated domain.hpp/
+   domain.cpp together -- they're all derived from the same engine
+   commit and should never land out of step with each other.

@@ -62,6 +62,10 @@ COPY --from=healthcheck-build /healthcheck /app/bin/healthcheck
 ENV LD_LIBRARY_PATH=/app/lib
 WORKDIR /app/bin
 
+# Must build this image with `podman build --format docker` -- the default
+# OCI format has no health-check concept and silently drops this directive
+# entirely (only a build-time warning, easy to miss); `podman ps`/`inspect`
+# will never show a health status at all if built without it.
 HEALTHCHECK --interval=2s --timeout=2s --start-period=60s --retries=3 \
     CMD ["./healthcheck"]
 

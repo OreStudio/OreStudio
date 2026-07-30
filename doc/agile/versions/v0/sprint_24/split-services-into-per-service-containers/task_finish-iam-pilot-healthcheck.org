@@ -185,7 +185,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | --format docker gotcha only documented in agile notes, not next to the code | service-runtime.Dockerfile | Accepted | Added a comment directly above the HEALTHCHECK directive |
+| 2 | Unexplained "18/22" in rollout task's acceptance | task_rollout-per-service-containers-remaining-17.org | Accepted | Clarified: 18 services, 22 containers counting compute.wrapper's 5 replicas |
+| 3 | Unused #include <stdlib.h> | healthcheck.c | Accepted | Removed |
+| 4 | Rescans whole log file every 2s indefinitely, even once already healthy | healthcheck.c | Declined (for now) | Accepted stopgap per the filed follow-up (service_health_endpoint_not_log_grep.org); not worth optimising a probe already slated for replacement |
+| 5 | Scans every *.log file, not scoped to the current process instance like wait_for_log_ready | healthcheck.c | Declined (for now) | Correctly identified as currently safe (no in-container respawn logic exists); noted as a "watch for this" if the pattern is copied to services with different lifecycle |
 
 * Result
 

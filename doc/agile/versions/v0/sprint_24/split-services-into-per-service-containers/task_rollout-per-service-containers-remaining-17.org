@@ -44,9 +44,11 @@ criterion.
 
 - All 18 service binaries run as PID 1 of their own per-service
   container, not spawned by the controller.
-- The full fleet starts, reaches steady state (all 18/22 containers
-  healthy), and survives killing/restarting one service container
-  without taking down the others.
+- The full fleet starts, reaches steady state -- all 18 services
+  healthy, 22 containers counting ~ores.compute.wrapper~'s 5 replicas
+  (each its own container in this architecture, vs. 5 child processes
+  under one controller previously) -- and survives killing/restarting
+  one service container without taking down the others.
 - Startup ordering and readiness gating come from the orchestration
   layer (via the dependency-graph generator task), not from
   ~process_supervisor~.

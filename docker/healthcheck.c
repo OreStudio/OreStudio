@@ -6,7 +6,6 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 static int file_has_marker(const char *path, const char *marker) {
     FILE *f = fopen(path, "r");

@@ -119,8 +119,8 @@ books list --party <party-id>
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | we seem to have lost the correct strucutre we had in barclays. i am now able to see all business units and all portfolios books that relate to all entities. what i expected was for each entity to have their own business units and portfolios all completely isolated from the other entities. but maybe my expectation is incorrect? i want this to mirror how a global investment bank would actually manage their org structure.; ; [[file:scenario_acme_readiness_step3_20260729_153828.png]] |
+| Status | PASS |
+| Notes  | ok still confused. i thought the holding company would be more or less empty, just a shell to contain the other parties. then the;   london party would be quite filled in. but when i see org structure it looks a bit messy. noticed the unassigned.; ; [[file:scenario_acme_readiness_step3_20260729_173213.png]]; ; also portfolio explorer ; ; [[file:scenario_acme_readiness_step3_20260729_173239.png]] |
 
 *** Verify staff accounts and roles per office
 
@@ -142,7 +142,7 @@ accounts list --party <party-id>
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify the tenant admin's default party
 
@@ -161,7 +161,7 @@ accounts list --party <acme-corporation-plc-party-id>
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify onboarding is suppressed for every activated party
 
@@ -176,7 +176,7 @@ accounts list --party <acme-corporation-plc-party-id>
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify GLEIF counterparties and the demo logo
 
@@ -299,10 +299,10 @@ counterparties list --limit 5
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-29T14:38:33Z |
+| Status        | PENDING |
+| Completed at  | 2026-07-30T00:32:39Z |
 | Branch        | feature/simulate-holding-group-provisioning-via-internal-impersonation |
-| Commit        | 3672f4588 |
+| Commit        | 47bd2a25c |
 | Worktree      | brave_hopper |
 
 * Notes

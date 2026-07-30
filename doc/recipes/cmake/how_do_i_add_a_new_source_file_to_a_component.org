@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: B8B13087-1F32-405D-8A7B-39648BA1106F
+:END:
+#+title: How do I add a new source file to a component?
+#+description: Add a new .cpp/.hpp under a component's src/ or tests/ and regenerate its component_files.cmake -- no file(GLOB_RECURSE ...) to work around.
+#+type: recipe
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+
+Every component's =src/CMakeLists.txt=/=tests/CMakeLists.txt= =include()=s
+a generated =component_files.cmake= instead of using
+=file(GLOB_RECURSE ...)= — see
+[[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]].
+A new file on disk is invisible to the build until that generated
+list is refreshed.
+
+* Question
+
+How do I add a new source file to a component?
+
+* Answer
+
+1. Add the =.cpp= (and, for a Qt AUTOMOC component, =.hpp=) file under
+   the component's =src/= or =tests/= directory as usual — nothing
+   component-specific here.
+
+2. Regenerate that component's =component_files.cmake=:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.assets.core
+   #+end_src
+
+   Or every component at once:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all
+   #+end_src
+
+   Each run is a full-file overwrite of =src/component_files.cmake=
+   (and =tests/component_files.cmake=) — safe and idempotent, never a
+   partial edit. =--component= takes the model's =#+full_name:=
+   (e.g. =ores.assets.core=), not the directory path.
+
+3. Never hand-edit =component_files.cmake= or add a =file(GLOB...)= back
+   into =CMakeLists.txt= — the generated file is overwritten wholesale
+   on the next regenerate, and a re-introduced GLOB reopens exactly
+   the stale-configure class of bug this convention replaced.
+
+4. To check for drift without writing (e.g. in CI, or before a
+   commit) — exits non-zero if any component's list is stale:
+
+   #+begin_src sh :results verbatim
+   python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check
+   #+end_src
+
+* Script
+
+=projects/ores.codegen/scripts/regenerate_cmake_component_files.py= —
+renders the =ores.cmake.component.files_src=/=files_tests= codegen
+archetypes (=cmake_component_files_src.mustache=/
+=cmake_component_files_tests.mustache=) via the same
+=generate_from_model()= the rest of codegen uses. The file list itself
+is a directory scan injected into the render context at generation
+time (=core.py='s =_COMPONENT_FILES_TEMPLATES= branch), since a source
+list isn't data the component's own model carries.
+
+Deliberately *not* routed through =compass codegen regenerate=: that
+command regenerates every archetype in the =ores.cmake.component=
+facet for a component, including =CMakeLists.txt= itself — which
+carries hand-added =target_link_libraries= since its one-shot scaffold
+and would be silently clobbered by a full facet regenerate. This
+script only ever writes the two =component_files.cmake= outputs.
+
+* Tested by
+
+Manually, as part of
+[[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]]:
+=--check= confirmed idempotent across every component, and a full
+=compass build= + =ctest= passed after the migration.
+
+* See also
+
+- [[id:0D50400F-874A-4134-8985-4875655E0EDC][How do I regenerate CMake component file lists?]] — the =--all= case: after a rebase/merge lands files you didn't add yourself.
+- [[id:FA10EE76-EC92-444C-B4F2-2BFFAD9C4AE4][Replace GLOB_RECURSE with explicit source lists across the build]] — the story this recipe documents.
+- [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]] — the facet whose =files_src=/=files_tests= archetypes this recipe drives.

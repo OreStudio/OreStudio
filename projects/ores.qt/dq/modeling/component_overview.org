@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 090E2CA3-11E7-4835-8F49-925DEB107660
+:END:
+#+title: ores.qt.dq
+#+description: Qt widgets for the Data Quality domain: badge definitions, badge mappings, and their list/detail/history dialogs.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: qt.dq
+#+full_name: ores.qt.dq
+#+brief: Qt DQ UI
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.dq component diagram
+#+caption: ores.qt.dq
+[[file:ores.qt.dq.png][file:ores.qt.dq.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

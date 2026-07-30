@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 7E6F80EC-ECEB-4F3F-AA0F-515A75F44ADC
+:END:
+#+title: ores.eventing.api
+#+description: Domain types and NATS protocol for cross-component change-event publication (dataset bundle events, cache invalidation).
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: eventing.api
+#+full_name: ores.eventing.api
+#+brief: Eventing domain types
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.eventing.api component diagram
+#+caption: ores.eventing.api
+[[file:ores.eventing.api.png][file:ores.eventing.api.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

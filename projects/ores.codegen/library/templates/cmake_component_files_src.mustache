@@ -1,0 +1,19 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cmake.component.files_src.org. Edit the org source. }}
+{{{cmake_license}}}
+{{! Regenerate: projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component <name> (or --all). Never hand-edit. }}
+{{#component}}
+set(files
+{{#files}}
+    "{{.}}"
+{{/files}}
+)
+{{#has_headers}}
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+set(HEADERS
+{{#headers}}
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/{{.}}"
+{{/headers}}
+)
+{{/has_headers}}
+{{/component}}

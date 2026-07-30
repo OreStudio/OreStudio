@@ -3,7 +3,7 @@
 :END:
 #+title: ores.qt.headless
 #+description: Qt6::Core/Gui-only logic used by ores.qt.api and testable without a QApplication or display: org-mode doc rendering, test-scenario result writing, font resolution, environment metadata, hierarchy tree model building, and trade-instrument parsing.
-#+type: component
+#+type: ores.codegen.component
 #+level: cross
 #+filetags: 
 #+created: 2026-07-08

@@ -13,6 +13,13 @@ _MODELINE_RE = re.compile(r"^\*{3}\s+\S+\.(\S+)\s+:modeline:\s*$")
 _CODEC_VALUE_RE = re.compile(r"^:masd\.codec\.value:\s+(.+?)\s*$")
 _ORG_TYPE_RE = re.compile(r"^#\+type:\s*(\S+)\s*$", re.MULTILINE | re.IGNORECASE)
 
+# Templates whose context needs a directory-scanned `files` list injected
+# (see the component['files'] assignment below) rather than pure model data.
+_COMPONENT_FILES_TEMPLATES = {
+    "cmake_component_files_src.mustache",
+    "cmake_component_files_tests.mustache",
+}
+
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.entity":           "domain_entity",
@@ -1655,6 +1662,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             component['api_full_name'] = f'ores.{base_name}.api'
             component['core_full_name'] = f'ores.{base_name}.core'
             component['service_full_name'] = f'ores.{base_name}.service'
+
+        # The ores.cmake.component.files_{src,tests} archetypes emit an
+        # explicit, checked-in `set(files ...)` list -- the idiomatic
+        # CMake alternative to file(GLOB_RECURSE ...). Unlike every other
+        # component field above, this one can't come from the model (a
+        # source file list isn't modeled data); it's a directory scan
+        # against this render's own output_dir, which for these two
+        # archetypes IS the src/ or tests/ dir being listed.
+        if target_template in _COMPONENT_FILES_TEMPLATES:
+            component['files'] = sorted(
+                p.relative_to(output_dir).as_posix()
+                for p in Path(output_dir).rglob('*.cpp') if p.is_file())
+            # Qt AUTOMOC components additionally need their headers listed
+            # (Qt needs to see Q_OBJECT declarations); harmless, unused
+            # HEADERS for a non-Qt component with an empty/no include/ dir.
+            include_dir = Path(output_dir).parent / 'include'
+            headers = sorted(
+                p.relative_to(include_dir).as_posix()
+                for p in include_dir.rglob('*.hpp') if p.is_file()
+            ) if include_dir.is_dir() else []
+            component['headers'] = headers
+            component['has_headers'] = bool(headers)
+
         data['component'] = component
 
     # Special processing for service registry models

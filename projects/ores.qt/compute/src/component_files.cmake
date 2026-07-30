@@ -1,0 +1,128 @@
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(files
+    "AppController.cpp"
+    "AppDetailDialog.cpp"
+    "AppHistoryDialog.cpp"
+    "AppMdiWindow.cpp"
+    "AppProvisionerWizard.cpp"
+    "AppVersionController.cpp"
+    "AppVersionDetailDialog.cpp"
+    "AppVersionHistoryDialog.cpp"
+    "AppVersionMdiWindow.cpp"
+    "BatchDetailDialog.cpp"
+    "ClientAppModel.cpp"
+    "ClientAppVersionModel.cpp"
+    "ClientBatchModel.cpp"
+    "ClientConcurrencyPolicyModel.cpp"
+    "ClientHostModel.cpp"
+    "ClientQueueModel.cpp"
+    "ClientReportDefinitionModel.cpp"
+    "ClientReportInstanceModel.cpp"
+    "ClientReportTypeModel.cpp"
+    "ClientWorkunitModel.cpp"
+    "ComputeConsoleController.cpp"
+    "ComputeConsoleWindow.cpp"
+    "ComputeDashboardController.cpp"
+    "ComputeDashboardMdiWindow.cpp"
+    "ComputePlugin.cpp"
+    "ComputeTaskViewModel.cpp"
+    "ComputeTransferModel.cpp"
+    "ConcurrencyPolicyController.cpp"
+    "ConcurrencyPolicyDetailDialog.cpp"
+    "ConcurrencyPolicyHistoryDialog.cpp"
+    "ConcurrencyPolicyMdiWindow.cpp"
+    "CreateQueueDialog.cpp"
+    "QueueChartWindow.cpp"
+    "QueueDetailDialog.cpp"
+    "QueueMonitorController.cpp"
+    "QueueMonitorMdiWindow.cpp"
+    "ReportDefinitionController.cpp"
+    "ReportDefinitionDetailDialog.cpp"
+    "ReportDefinitionHistoryDialog.cpp"
+    "ReportDefinitionMdiWindow.cpp"
+    "ReportInstanceController.cpp"
+    "ReportInstanceDetailDialog.cpp"
+    "ReportInstanceHistoryDialog.cpp"
+    "ReportInstanceMdiWindow.cpp"
+    "ReportTypeController.cpp"
+    "ReportTypeDetailDialog.cpp"
+    "ReportTypeHistoryDialog.cpp"
+    "ReportTypeMdiWindow.cpp"
+    "ServiceDashboardController.cpp"
+    "ServiceDashboardMdiWindow.cpp"
+    "TransferProgressDelegate.cpp"
+    "WorkunitDetailDialog.cpp"
+)
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppProvisionerWizard.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppVersionController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppVersionDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppVersionHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AppVersionMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/BatchDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientAppModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientAppVersionModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientBatchModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientConcurrencyPolicyModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientHostModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientQueueModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientReportDefinitionModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientReportInstanceModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientReportTypeModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientWorkunitModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeConsoleController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeConsoleWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeDashboardController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeDashboardMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputePlugin.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeTaskViewModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ComputeTransferModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ConcurrencyPolicyController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ConcurrencyPolicyDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ConcurrencyPolicyHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ConcurrencyPolicyMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CreateQueueDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/QueueChartWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/QueueDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/QueueMonitorController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/QueueMonitorMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportDefinitionController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportDefinitionDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportDefinitionHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportDefinitionMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportInstanceController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportInstanceDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportInstanceHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportInstanceMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportTypeController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportTypeDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportTypeHistoryDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReportTypeMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ServiceDashboardController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ServiceDashboardMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TransferProgressDelegate.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/WorkunitDetailDialog.hpp"
+)

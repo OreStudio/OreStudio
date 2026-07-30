@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: DCC45886-3275-47AA-81AE-874D40170168
+:END:
+#+title: ores.qt.marketdata
+#+description: Qt widgets for market data: feed bindings and the CRM cross-rates matrix.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: qt.marketdata
+#+full_name: ores.qt.marketdata
+#+brief: Qt market data UI
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.qt.marketdata component diagram
+#+caption: ores.qt.marketdata
+[[file:ores.qt.marketdata.png][file:ores.qt.marketdata.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

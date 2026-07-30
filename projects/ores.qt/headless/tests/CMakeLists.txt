@@ -21,9 +21,7 @@ set(tests_target_name ${name}.tests)
 
 set(ORES_QT_HEADLESS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
-file(GLOB_RECURSE files CONFIGURE_DEPENDS RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

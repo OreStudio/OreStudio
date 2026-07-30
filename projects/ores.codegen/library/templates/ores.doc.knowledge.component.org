@@ -28,7 +28,7 @@ The full template source. Edit here and re-tangle with
 :END:
 ,#+title: {{title}}
 ,#+description: {{description}}
-,#+type: component
+,#+type: ores.codegen.component
 ,#+level: cross
 ,#+filetags: {{filetags}}
 ,#+created: {{date}}

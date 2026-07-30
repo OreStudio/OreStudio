@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: D7FFC4DD-32A1-4CE2-BC4A-770FE02146AC
+:END:
+#+title: ores.eventing.core
+#+description: Core eventing service implementation: publishes and dispatches change events over NATS.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: 
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+name: eventing.core
+#+full_name: ores.eventing.core
+#+brief: Eventing core services
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.eventing.core component diagram
+#+caption: ores.eventing.core
+[[file:ores.eventing.core.png][file:ores.eventing.core.png]]
+
+* Summary
+
+(Three to five sentences: what this component does and why it exists.)
+
+* Inputs
+
+-
+
+* Outputs
+
+-
+
+* Entry points
+
+-
+
+* Dependencies
+
+-
+
+* See also
+
+-

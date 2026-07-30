@@ -41,6 +41,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -52,6 +53,7 @@
 #include <optional>
 #include <stdexcept>
 #include <thread>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -448,6 +450,11 @@ public:
                                    add_step,
                                    progress(mkt_label));
                 }
+
+                const auto photo_label = office.code + ".staff_photos";
+                add_step(photo_label, "starting", 0);
+                attach_staff_photos(client, *ctx_expected, tenant_id_str, office.code, username);
+                add_step(photo_label, "completed");
             }
 
             // Step 7: cross-entity access for the "follow the sun" global-
@@ -473,16 +480,13 @@ public:
             // synthetic-theme-as-one-atomic-dataset work. Reassess once
             // that lands rather than building a second path now.
 
-            // Attaching the Barclays demo logo needs the GLEIF counterparty
-            // import (Step 2) to have actually landed rows -- that bundle
-            // publish is by far the largest and often still running in the
-            // background when Step 2's own wait times out, so this is
-            // deliberately last, after every other step has given it more
-            // time to finish.
-            {
-                internal_request_client client = make_client(caller_party_id);
-                attach_demo_counterparty_logo(client, *ctx_expected, tenant_id_str, username);
-            }
+            // Attaching the Barclays demo logo removed from here -- see the
+            // "GLEIF import should natively attach counterparty logos when
+            // available" cleanup task. The previous approach (a best-effort
+            // poll for up to 8 minutes waiting for the GLEIF import to land
+            // BARCLAYS PLC) added an unbounded-feeling silent tail to every
+            // provision_acme call for a demo-only cosmetic touch; this
+            // belongs in the GLEIF import itself, not bolted on afterwards.
 
             BOOST_LOG_SEV(tenant_handler_lg(), info) << "Acme tenant provisioned: " << tenant_id_str
                                                      << " (" << resp.steps.size() << " step(s))";
@@ -604,7 +608,7 @@ private:
         img.description = *rows.front()[0];
         img.mime_type = *rows.front()[1];
         const auto& base64_data = *rows.front()[2];
-        img.data = std::vector<std::uint8_t>(base64_data.begin(), base64_data.end());
+        img.data = ores::utility::converter::base64_converter::convert(base64_data);
         img.modified_by = username;
         img.performed_by = username;
         img.change_reason_code = "system.external_data_import";
@@ -618,6 +622,72 @@ private:
             return std::nullopt;
         }
         return img.image_id;
+    }
+
+    // Attaches a profile picture to every staff account in one office that
+    // has a photo_key recorded in its accounts dataset and doesn't already
+    // have an image_id. Reads (username, photo_key) directly from the DQ
+    // artefact table (not modeled in the account NATS API, same reason
+    // grant_cross_entity_access's account_ids_for does the same for
+    // business_unit_code/role), then copies each account's own template
+    // image and re-saves the account with every other field echoed back
+    // unchanged (update_account_request has no partial-update semantics --
+    // omitting a field would clear it).
+    void attach_staff_photos(internal_request_client& client,
+                             ores::database::context& ctx,
+                             const std::string& tenant_id,
+                             const std::string& office_code,
+                             const std::string& username) {
+        auto dataset = execute_parameterized_string_query(
+            ctx,
+            "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
+            "AND valid_to = ores_utility_infinity_timestamp_fn()",
+            {"acme." + office_code + ".accounts"}, tenant_handler_lg(), "attach_staff_photos");
+        if (dataset.empty())
+            return;
+
+        auto rows = execute_parameterized_multi_column_query(
+            ctx,
+            "SELECT username, photo_key FROM ores_dq_accounts_artefact_tbl "
+            "WHERE dataset_id = $1::uuid AND photo_key IS NOT NULL",
+            {dataset.front()}, tenant_handler_lg(), "attach_staff_photos");
+        if (rows.empty())
+            return;
+
+        std::unordered_map<std::string, std::string> photo_key_by_username;
+        for (const auto& row : rows) {
+            if (row.size() < 2 || !row[0] || !row[1])
+                continue;
+            photo_key_by_username[*row[0]] = *row[1];
+        }
+
+        iam::messaging::get_accounts_request_typed accounts_req;
+        accounts_req.limit = 10'000;
+        auto accounts_resp = client.request(accounts_req);
+        for (const auto& a : accounts_resp.accounts) {
+            const auto it = photo_key_by_username.find(a.username);
+            if (it == photo_key_by_username.end() || !a.image_id.is_nil())
+                continue;
+
+            auto image_id = copy_template_image(client, ctx, tenant_id, it->second, username);
+            if (!image_id)
+                continue;
+
+            iam::messaging::update_account_request update_req;
+            update_req.account_id = boost::uuids::to_string(a.id);
+            update_req.email = a.email;
+            update_req.full_name = a.full_name;
+            update_req.default_party_id =
+                a.default_party_id ? boost::uuids::to_string(*a.default_party_id) : "";
+            update_req.job_title = a.job_title;
+            update_req.reports_to_account_id = a.reports_to_account_id.is_nil()
+                ? ""
+                : boost::uuids::to_string(a.reports_to_account_id);
+            update_req.image_id = boost::uuids::to_string(*image_id);
+            update_req.change_reason_code = "system.external_data_import";
+            update_req.change_commentary = "Attached staff photo during Acme provisioning";
+            client.request(update_req);
+        }
     }
 
     // Activates the party (if Inactive), attaches its logo (if unset),
@@ -676,68 +746,6 @@ private:
         }
     }
 
-    // Attaches the demo logo to BARCLAYS PLC, the real GLEIF counterparty
-    // used to demonstrate the counterparty image_id feature -- Acme
-    // Corporation is a party, not itself a counterparty (see "Fix
-    // remaining --source acme provisioning gaps" for the history of why
-    // this isn't a synthetic "Acme Corp" counterparty).
-    void attach_demo_counterparty_logo(internal_request_client& client,
-                                       ores::database::context& ctx,
-                                       const std::string& tenant_id,
-                                       const std::string& username) {
-        // The GLEIF counterparty bundle (Step 2) is by far the largest and
-        // slowest publish here; its own wait can give up (or the workflow
-        // engine's progress query can go unresponsive under that load)
-        // well before the underlying import actually finishes. Rather than
-        // depend on that wait, poll refdata directly -- a plain read, not
-        // subject to the same workflow-engine contention -- for BARCLAYS
-        // PLC to actually exist before giving up on the logo.
-        // Best-effort: a demo touch, not a hard prerequisite for anything
-        // else in provisioning, and every request below can transiently
-        // fail (parse/timeout) while the server is busy with the GLEIF
-        // import's own heavy load -- swallow any such failure rather than
-        // letting it abort the whole provision_acme response.
-        try {
-            ores::refdata::messaging::get_counterparties_request req;
-            req.limit = 1000;
-            ores::refdata::messaging::get_counterparties_response resp;
-            // The GLEIF import (Step 2) has been observed taking anywhere
-            // from ~90s to several minutes under load; poll for up to 8
-            // minutes before giving up on the logo.
-            for (int attempt = 0; attempt < 240; ++attempt) {
-                try {
-                    resp = client.request(req);
-                    if (std::any_of(resp.counterparties.begin(), resp.counterparties.end(),
-                                    [](const auto& cp) { return cp.short_code == "BRCLYS"; }))
-                        break;
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                        << "attach_demo_counterparty_logo: poll failed: " << e.what();
-                }
-                std::this_thread::sleep_for(std::chrono::seconds{2});
-            }
-            for (auto& cp : resp.counterparties) {
-                if (cp.short_code != "BRCLYS")
-                    continue;
-                if (cp.image_id)
-                    return;
-                auto image_id =
-                    copy_template_image(client, ctx, tenant_id, "demo_counterparty_logo", username);
-                if (!image_id)
-                    return;
-                cp.image_id = image_id;
-                cp.change_reason_code = "system.external_data_import";
-                cp.change_commentary = "Attached demo logo to BARCLAYS PLC during Acme provisioning";
-                cp.modified_by = username;
-                cp.performed_by = username;
-                client.request(ores::refdata::messaging::save_counterparty_request::from(cp));
-                return;
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                << "attach_demo_counterparty_logo: failed (non-fatal): " << e.what();
-        }
-    }
 
     // Grants the narrow set of cross-entity ores_iam_account_parties_tbl
     // associations that simulate a real multi-entity bank's follow-the-sun

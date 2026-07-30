@@ -110,6 +110,7 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
                                                              ctx_.username,
                                                              ctx_.change_reason_cache,
                                                              ctx_.badge_cache,
+                                                             ctx_.image_cache,
                                                              this);
     connectControllerSignals(accountController_.get());
 

@@ -52,11 +52,13 @@ AccountController::AccountController(QMainWindow* mainWindow,
                                      const QString& username,
                                      ChangeReasonCache* changeReasonCache,
                                      BadgeCache* badgeCache,
+                                     ImageCache* imageCache,
                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
     , accountListWindow_(nullptr)
     , changeReasonCache_(changeReasonCache)
     , badgeCache_(badgeCache) {
+    setImageCache(imageCache);
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 
     // Connect to notification signal from ClientManager
@@ -377,6 +379,7 @@ void AccountController::showDetailWindow(
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setImageCache(imageCache());
 
     if (isCreateMode) {
         iam::domain::account empty_account;
@@ -466,6 +469,7 @@ void AccountController::onOpenAccountVersion(const iam::domain::account& account
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
+    detailDialog->setImageCache(imageCache());
 
     connect(detailDialog,
             &AccountDetailDialog::statusMessage,

@@ -56,8 +56,7 @@ public:
      *        deliberately short-lived (internal_impersonation_service::
      *        mint_token()'s default TTL) -- fine for a single request, but
      *        this client is also used to drive multi-minute polling loops
-     *        (wait_for_workflow_instance(), attach_demo_counterparty_logo()'s
-     *        manual poll), which will outlive that TTL. Without a refresh
+     *        (wait_for_workflow_instance()), which will outlive that TTL. Without a refresh
      *        callback, request() throws service_error("token_expired") the
      *        first time that happens; with one, it re-mints and retries
      *        transparently.

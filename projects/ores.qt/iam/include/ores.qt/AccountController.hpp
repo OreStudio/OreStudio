@@ -35,6 +35,9 @@ class ChangeReasonCache;
 namespace ores::qt {
 class BadgeCache;
 }
+namespace ores::qt {
+class ImageCache;
+}
 
 namespace ores::qt {
 
@@ -85,6 +88,7 @@ public:
                                const QString& username,
                                ChangeReasonCache* changeReasonCache = nullptr,
                                BadgeCache* badgeCache = nullptr,
+                               ImageCache* imageCache = nullptr,
                                QObject* parent = nullptr);
 
     /**

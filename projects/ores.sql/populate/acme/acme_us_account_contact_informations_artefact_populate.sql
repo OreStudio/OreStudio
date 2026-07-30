@@ -52,24 +52,28 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_account_contact_informations_artefact_tbl (
-        dataset_id, tenant_id, id, version, account_username, full_name,
+        dataset_id, tenant_id, id, version, account_username,
         street_line_1, street_line_2, city, state, country_code,
         postal_code, phone, email, web_page
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a01deae1-855c-5c90-a1fe-7079ee4b16ae', 0, 'jennifer.adams.acme_us.0', 'Jennifer Adams', null, null, null, null, null, null, null, 'jennifer.adams.0@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3f054eb0-c1b3-5fc8-89f8-ee3bcd34e62f', 0, 'john.reeves.acme_us.1', 'John Reeves', null, null, null, null, null, null, null, 'john.reeves.1@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6ccbc504-1335-5304-ad3f-477bba83e6a3', 0, 'lance.sanford.acme_us.2', 'Lance Sanford', null, null, null, null, null, null, null, 'lance.sanford.2@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f1b8a368-c0e7-5aef-a020-e4583f4f6a4f', 0, 'karen.armstrong.acme_us.3', 'Karen Armstrong', null, null, null, null, null, null, null, 'karen.armstrong.3@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '152ef943-46f6-59ca-b412-02fbcc1f5d42', 0, 'wendy.choi.acme_us.4', 'Wendy Choi', null, null, null, null, null, null, null, 'wendy.choi.4@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c9e94664-94e8-5832-81d3-29d3623287ec', 0, 'sharon.adams.acme_us.5', 'Sharon Adams', null, null, null, null, null, null, null, 'sharon.adams.5@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6bb6c84e-265d-5129-afd0-c0e6218b08b3', 0, 'kevin.barrett.acme_us.6', 'Kevin Barrett', null, null, null, null, null, null, null, 'kevin.barrett.6@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ae776572-a805-5925-9d61-84dfb7c1eb29', 0, 'tracy.robinson.acme_us.7', 'Tracy Robinson', null, null, null, null, null, null, null, 'tracy.robinson.7@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5c77395-1bb7-5c2e-af7d-c92ba48b0378', 0, 'marissa.green.acme_us.8', 'Marissa Green', null, null, null, null, null, null, null, 'marissa.green.8@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9381770b-4924-5077-b587-4ff9cef31d74', 0, 'michael.jones.acme_us.9', 'Michael Jones', null, null, null, null, null, null, null, 'michael.jones.9@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'de796cfa-8832-50c7-a51f-5ea932b121c8', 0, 'ashley.carlson.acme_us.10', 'Ashley Carlson', null, null, null, null, null, null, null, 'ashley.carlson.10@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e5c585f7-ad22-55d1-b982-9afdab9bddf0', 0, 'james.gross.acme_us.11', 'James Gross', null, null, null, null, null, null, null, 'james.gross.11@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '21e6aea2-5e8d-59ed-b0da-48de6b8f35bf', 0, 'nicole.stevens.acme_us.12', 'Nicole Stevens', null, null, null, null, null, null, null, 'nicole.stevens.12@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '20324ca8-1553-5d74-9ecb-53dc4ee64bac', 0, 'connie.reid.acme_us.13', 'Connie Reid', null, null, null, null, null, null, null, 'connie.reid.13@acme_us.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b07bc142-19f0-56ad-b32e-1c29dd20b6b1', 0, 'kevin.franklin.acme_us.14', 'Kevin Franklin', null, null, null, null, null, null, null, 'kevin.franklin.14@acme_us.acmecorp.example', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '82d7968d-3d6e-53c7-ae2b-935375be98fe', 0, 'mindy.adams', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'mindy.adams@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '16ec96f8-d1cc-5777-8054-a66f518dcf83', 0, 'david.reeves', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'david.reeves@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '8ddbae0f-d39f-5201-bca4-96b9870544d8', 0, 'emily.sanford', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'emily.sanford@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '12ea185f-738b-5f3d-9553-8b578fa0ab82', 0, 'paul.armstrong', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'paul.armstrong@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6e91b428-efc1-5e6e-8b1c-8e7b200a8739', 0, 'yesenia.choi', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'yesenia.choi@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b732b040-f1f1-5f34-a770-1666ca4c60de', 0, 'timothy.adams', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'timothy.adams@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '9a1ba5b8-9b2a-525d-9365-b292a8099c82', 0, 'elizabeth.barrett', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'elizabeth.barrett@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1a33b30e-8994-5d34-bd32-a4f3066169d8', 0, 'john.robinson', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'john.robinson@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7575e752-c191-50d1-a9a3-e4142d2db0ae', 0, 'sandra.green', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'sandra.green@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a5e37f2a-3a57-59c7-ac6c-4bb6711fd31b', 0, 'henry.jones', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'henry.jones@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '67930219-bd7b-5a56-8b82-1cebb3c21a3b', 0, 'laura.carlson', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'laura.carlson@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5c3901a5-5ab3-5f6c-a15a-560be032a939', 0, 'corey.gross', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'corey.gross@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '82be961a-4926-5731-94e5-2f46580d6268', 0, 'shirley.stevens', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'shirley.stevens@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e14926a-ad3f-5e65-b719-c52086239f4e', 0, 'mark.reid', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'mark.reid@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6fa09e02-52d1-526a-9ed8-41b70055f6e3', 0, 'elizabeth.franklin', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'elizabeth.franklin@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1f2ece1a-3895-5d8e-adac-bd0ce8a2c0d9', 0, 'john.sullivan', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'john.sullivan@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4bb59d80-131f-50f3-9dbc-e71ec949545c', 0, 'stacy.lopez', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'stacy.lopez@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e31f6369-6454-56d2-a459-e171818eb3a1', 0, 'charles.nelson', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'charles.nelson@acmecorp.com', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bf0ee385-036e-5248-a063-9031fc1acfff', 0, 'ashley.moore', '200 Park Avenue', null, 'New York', 'NY', 'US', '10166', '+1 212 555 0148', 'ashley.moore@acmecorp.com', null);
 end $$;

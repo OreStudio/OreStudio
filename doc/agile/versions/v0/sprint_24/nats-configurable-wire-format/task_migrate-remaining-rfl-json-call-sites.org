@@ -131,7 +131,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | clang-format drift on wrapped calls (over column limit, misaligned continuation) | workflow_engine.cpp, dataset_handler.hpp, publication_handler.hpp, ore_import_handler.cpp, workflow_handler.cpp | Accepted | Ran clang-format --style=file over the flagged files. |
+| 2 | Unused =#include <span>= left behind now that =codec.encode()= returns =std::vector<std::byte>= directly | dataset_handler.hpp, publication_handler.hpp | Accepted | Removed; also swept remaining changed files for the same pattern and found 2 more (trade_handler.hpp, compute/wrapper/app/application.cpp), removed those too. |
+| 3 | =nats_publish_action_handler.cpp='s =nats_publish_payload=/=nats_trigger_body= locally redeclare the same fields as =trigger_report_instance_message= instead of reusing the shared type | nats_publish_action_handler.cpp | Declined | Pre-existing, not introduced by this PR -- reviewer explicitly flagged as not blocking; a follow-up cleanup task if this duplication pattern recurs, not this PR's scope. |
 
 * Result
 

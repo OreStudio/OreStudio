@@ -110,7 +110,7 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         start_msg.correlation_id = correlation_id;
 
         nats_.js_publish(start_workflow_message::nats_subject,
-                        ores::nats::default_wire_codec().encode(start_msg));
+                         ores::nats::default_wire_codec().encode(start_msg));
 
         resp.party_ids.push_back(party_id_str);
     }

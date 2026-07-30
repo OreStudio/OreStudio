@@ -40,7 +40,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
 #include <rfl/json.hpp>
-#include <span>
 #include <stdexcept>
 #include <vector>
 
@@ -269,7 +268,7 @@ public:
             start_msg.instance_id = instance_id;
 
             nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                            ores::nats::default_wire_codec().encode(start_msg));
+                             ores::nats::default_wire_codec().encode(start_msg));
 
             publish_datasets_response resp;
             resp.success = true;

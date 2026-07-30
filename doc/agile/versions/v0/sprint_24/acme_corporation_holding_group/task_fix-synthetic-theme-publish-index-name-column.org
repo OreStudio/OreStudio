@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:B714E735-2F2C-4763-94F6-E3A390373FC5][Verify IR, FX, and CRM synthetic data for Acme]] | PASSED | |
 
 * PRs
 

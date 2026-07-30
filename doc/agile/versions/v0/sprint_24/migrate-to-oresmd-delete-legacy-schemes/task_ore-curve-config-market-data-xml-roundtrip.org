@@ -7,41 +7,156 @@
 #+level: s1
 #+filetags: :market-data:identifiers:oresmd:migration:ore-xml:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ore-curve-config-market-data-xml-roundtrip
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give ORE's =curveconfig.xml= (IR yield curves) and market-data
+quote-string files a real, working import/export round-trip that is
+keyed entirely through oresmd -- today only currency config, calendar
+adjustments, conventions, and portfolio/trades round-trip through
+ORE's XML at all; curve config and market-data quotes do not.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Now          | Landscape surveyed; plan below awaiting sign-off. |
+| Waiting on   | Plan sign-off.                        |
+| Next         | Begin Step 1 (curve-config import/export) once approved. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
--
+- [ ] =curveconfig.xml='s =YieldCurve= segments round-trip: import
+  produces oresmd-keyed domain objects (curve id -> ~ccy~/~tenor~
+  derivable via =oresmd_projections::to_curve_key= 's own =Yield/CCY/CCYTENOR=
+  shape), export regenerates an equivalent =YieldCurve= segment from
+  those same oresmd-keyed objects, for the segment shapes ORE Studio's
+  own synthetic IR curve generation actually produces (discount +
+  projection curves, direct-quote segments -- not every exotic
+  =YieldCurveSegment= subtype ORE supports).
+- [ ] Market-data quote-string export: given =market_series=/=market_observation=
+  rows, generate =market*.txt= lines whose keys are produced via
+  =oresmd_projections::to_quote_key=/=to_curve_key=, the exact inverse
+  of the existing import path (=market_data_parser.cpp= ->
+  =series_key_registry::decompose_key= -> =import_service.cpp=).
+- [ ] Confirmed and documented: the existing import path
+  (=market_data_parser.cpp=, =series_key_registry.cpp=,
+  =import_service.cpp=) is untouched -- it already round-trips
+  externally-authored ORE key strings correctly (structural
+  decomposition via a per-type registry, not oresmd parsing); this task
+  adds the missing *export* direction and the *curve-config* (as
+  opposed to quote-string) round-trip, it does not replace or
+  reimplement the import side.
+- [ ] =todaysmarket.xml= curve-configuration-ID mapping: scoped down to
+  a documented follow-on (see =* Notes=) unless Step 1 finds it trivial
+  to include -- see narrower-first-slice reasoning below.
+- [ ] Full =compass build= clean; =ctest= full suite green (barring the
+  known, separately-owned =ores.refdata.core.tests= calendar-rule
+  regression, if still unresolved at merge time).
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Landscape survey (as found)
+
+- *Raw XML plumbing already exists*: =ores.ore.core/domain/domain.hpp=
+  (XSD-codegen'd) already has =curveconfiguration= and =todaysmarket=
+  raw structs with =load_file=/=load_data=/=save_file=/=save_data=,
+  the same low-level pattern already used for =conventions=. No new
+  XSD/XML-binding work is needed -- only a mapping layer on top,
+  exactly like =conventions_mapper.hpp=/=.cpp= does for
+  =importer::import_conventions=.
+- *=series_key_registry= is a separate, more sophisticated utility
+  than =oresmd_projections::split_market_series_key=* (added in the
+  prior =market_series= task): it decomposes a key into
+  ={series_type, metric, qualifier, point_id}= via a *per-type
+  registry* that knows how many trailing segments are the =point_id=
+  vs. the =qualifier= (e.g. =DISCOUNT/RATE/EUR/2Y= ->
+  qualifier="EUR", point_id="2Y"), with a lossless-roundtrip fallback
+  for unregistered types. =oresmd_projections::split_market_series_key=
+  only ever splits into 3 parts (qualifier absorbs everything after
+  metric) -- deliberately simpler, for =market_series='s storage
+  columns, not for reconstructing a point-level series. These are
+  different tools for different directions and both stay: registry
+  for real-ORE-file parsing (reverse direction, already correct,
+  already tested), =oresmd_projections= for internal oresmd-URI
+  generation (forward direction). Confirms the prior task's scoping
+  decision was right.
+- *No existing export path*: =import_service.cpp= writes
+  =market_series=/=market_observation= rows from parsed file content;
+  there is no code anywhere that goes the other way (DB rows ->
+  =market*.txt= lines). This is new work, not a migration.
+- *No existing curve-config mapping layer*: nothing maps
+  =curveconfiguration='s raw =YieldCurve= XSD struct to/from any ORES
+  domain type today -- =ir_curve_generation_config=/=ir_curve_feed=
+  (this story's second task) is the closest existing oresmd-keyed IR
+  curve model to map onto/from.
+- *=oresmd_resolver= solves a different problem*: it resolves a
+  possibly-partial =market_data_requirement= into a full
+  =market_data_identifier= (e.g. for a UI's "what feed satisfies this
+  requirement" question) -- not directly reusable for curve-config
+  import/export, though the resulting identifier's
+  =to_curve_key=/=to_quote_key= projections are exactly what curve-config
+  export needs to produce ORE-shaped key strings.
+
+** Narrower-first-slice reasoning
+
+=todaysmarket.xml= maps *configuration IDs* (strings) to
+*curve-configuration IDs* referenced inside =curveconfig.xml= -- it is
+largely a thin ID-to-ID lookup table once curve-config round-trip
+exists, and doesn't have its own oresmd-keying concerns the way
+=curveconfig.xml='s =YieldCurve= segments and market-data quote keys
+do. Landscape survey in Step 1 will confirm whether it is small enough
+to fold in, or genuinely deserves its own follow-on task; either way
+this task does not block on it.
+
+** Step 1 -- Curve-config (=curveconfig.xml=) import/export
+
+Add =importer::import_curve_config=/=exporter::export_curve_config=
+(mirroring =import_conventions=/=export_conventions='s existing shape)
+mapping =curveconfiguration='s =YieldCurve= segments to/from an
+oresmd-keyed domain representation, covering the segment shapes ORE
+Studio's synthetic IR generation actually produces (discount and
+projection curves via direct quotes) -- not attempting full coverage
+of every =YieldCurveSegment= subtype ORE's schema supports.
+
+** Step 2 -- Market-data quote-string export
+
+Add the missing export direction: given =market_series=/=market_observation=
+rows, produce =market*.txt=-shaped lines using
+=oresmd_projections::to_quote_key=/=to_curve_key= to regenerate the key
+string, the exact inverse of today's import path. Confirm round-trip
+fidelity against a sample file already used by the existing import
+tests (parse -> resolve to oresmd identifier -> project back to key ->
+byte-identical to the original key string).
+
+** Step 3 -- =todaysmarket.xml= (scope TBD per Step 1 findings)
+
+Either fold in as a thin ID-mapping addition, or split into its own
+follow-on task -- decided once Step 1 clarifies how =curveconfiguration=
+IDs are actually referenced.
+
+** Step 4 -- Verification
+
+Full =compass build= + =ctest=; unit tests for the new mapping
+functions and the quote-string export round-trip, following this
+story's established "extract pure, testable functions" pattern.
 
 * Notes
 

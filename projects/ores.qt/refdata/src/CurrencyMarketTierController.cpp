@@ -49,9 +49,11 @@ CurrencyMarketTierController::CurrencyMarketTierController(QMainWindow* mainWind
                                                            ClientManager* clientManager,
                                                            ChangeReasonCache* changeReasonCache,
                                                            const QString& username,
+                                                           BadgeCache* badgeCache,
                                                            QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -68,7 +70,7 @@ void CurrencyMarketTierController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CurrencyMarketTierMdiWindow(clientManager_, username_);
+    listWindow_ = new CurrencyMarketTierMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_,
@@ -165,15 +167,12 @@ void CurrencyMarketTierController::onShowHistory(
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void CurrencyMarketTierController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency market tier";
-
-    auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+void CurrencyMarketTierController::wireDetailDialogCommon(
+    CurrencyMarketTierDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyMarketTierDetailDialog::statusMessage,
@@ -183,6 +182,15 @@ void CurrencyMarketTierController::showAddWindow() {
             &CurrencyMarketTierDetailDialog::errorMessage,
             this,
             &CurrencyMarketTierController::errorMessage);
+}
+
+void CurrencyMarketTierController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency market tier";
+
+    auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurrencyMarketTierDetailDialog::typeSaved,
             this,
@@ -220,21 +228,10 @@ void CurrencyMarketTierController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setTier(type);
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            &CurrencyMarketTierController::errorMessage);
     connect(detailDialog,
             &CurrencyMarketTierDetailDialog::typeSaved,
             this,
@@ -374,29 +371,9 @@ void CurrencyMarketTierController::onOpenVersion(const refdata::domain::currency
     }
 
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setTier(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyMarketTierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -518,24 +495,13 @@ void CurrencyMarketTierController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setTier(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::statusMessage,
-            this,
-            &CurrencyMarketTierController::statusMessage);
-    connect(detailDialog,
-            &CurrencyMarketTierDetailDialog::errorMessage,
-            this,
-            &CurrencyMarketTierController::errorMessage);
     connect(detailDialog,
             &CurrencyMarketTierDetailDialog::typeSaved,
             this,

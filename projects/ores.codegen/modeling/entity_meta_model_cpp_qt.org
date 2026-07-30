@@ -257,6 +257,35 @@ includes, before the =Ui= forward declaration, expecting a =body=
 block. Needed by whatever type the private-members block above
 declares.
 
+** Detail dialog extra signals
+:PROPERTIES:
+:ID: EC19A4EE-363D-4D41-A33A-D5F85A139C80
+:END:
+
+Additional signal declarations in the generated
+=<Entity>DetailDialog='s =signals:= block, after the standard
+generated =Saved=/=Deleted=/(optional) =revertRequested= signals,
+expecting a =declaration= block. Pair with the controller header's
+own =signals:= seam ([[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta model]]'s
+=66E078FB-D6A6-4DF6-814B-65995D948090=) and the
+=wireDetailDialogCommon= extra-connect seam below to relay a
+dialog-specific signal up through the controller without hand-editing
+generated code.
+
+** Controller: extra dialog-signal connections
+:PROPERTIES:
+:ID: DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF
+:END:
+
+Additional =connect(detailDialog, ...)= calls at the end of the
+generated =wireDetailDialogCommon()= helper -- the single place every
+detail-window call site (add/edit/history-version/revert) wires a
+freshly-constructed =<Entity>DetailDialog=, expecting a
+=implementation= block. Use to relay a custom dialog signal (declared
+via the seam above) to a matching controller signal, e.g. a
+toolbar action on the dialog that a plugin's composition root needs
+to react to.
+
 ** Composite child-entity tables seam
 :PROPERTIES:
 :ID: 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D

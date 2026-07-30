@@ -199,13 +199,16 @@ generation-config/component entities), =dq.folder=/=catalog=/
 
 ** Implementation batches
 
-- *Batch 1* (refdata, high-confidence, all ready-to-annotate --
-  existing =code_domain=/=badge_definition= infrastructure just needs
-  wiring, no new data to author beyond the standard badge-definition
-  rows): =book_purpose_type=, =business_unit_type=, =calendar_type=,
-  =contact_type=, =currency_market_tier=, =ledger_feed_type=,
-  =leg_type=, =monetary_nature=, =purpose_type=, =rounding_type=,
-  =tenor_anchor=.
+- *Batch 1* (refdata, high-confidence). Correction (found during
+  implementation, not caught by this audit): only 3 of the 11 --
+  =calendar_type=, =currency_market_tier=, =monetary_nature= -- have
+  existing =code_domain=/=badge_definition=/=badge_mapping= rows and
+  are genuinely ready-to-annotate with no new data. The other 8
+  (=book_purpose_type=, =business_unit_type=, =contact_type=,
+  =ledger_feed_type=, =leg_type=, =purpose_type=, =rounding_type=,
+  =tenor_anchor=) need new =code_domain=/=badge_definition=/
+  =badge_mapping= rows authored first, same as Batch 2 -- deferred
+  until that data exists.
 - *Batch 2* (cross-component, same pattern): =change_reason_category=
   (dq), =account_type=/=tenant_status=/=tenant_type= (iam),
   =party_role_type=/=trade_type= (trading), =report_type= (reporting).

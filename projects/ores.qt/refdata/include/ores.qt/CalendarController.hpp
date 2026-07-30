@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class CalendarMdiWindow;
+class CalendarDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
@@ -75,7 +76,6 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
-
     /**
      * @brief Relayed from CalendarDetailDialog's "Browse Holidays" toolbar
      * action; RefdataPlugin connects this to
@@ -99,6 +99,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::calendar& calendar);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * CalendarDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(CalendarDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

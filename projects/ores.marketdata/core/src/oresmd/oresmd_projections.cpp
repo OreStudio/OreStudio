@@ -148,4 +148,23 @@ oresmd_projections::to_quote_key(const domain::market_data_identifier& identifie
         identifier);
 }
 
+std::optional<market_series_key>
+oresmd_projections::split_market_series_key(const std::string& key) {
+    std::vector<std::string> parts;
+    std::stringstream ss(key);
+    std::string tok;
+    while (std::getline(ss, tok, '/'))
+        parts.push_back(tok);
+    if (parts.size() < 3)
+        return std::nullopt;
+
+    market_series_key result;
+    result.series_type = parts[0];
+    result.metric = parts[1];
+    result.qualifier = parts[2];
+    for (std::size_t i = 3; i < parts.size(); ++i)
+        result.qualifier += "/" + parts[i];
+    return result;
+}
+
 }

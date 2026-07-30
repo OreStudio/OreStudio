@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -54,25 +55,14 @@ std::string ore_key_to_publish_subject(const std::string& tenant_id_str, std::st
     return "marketdata.v1.tick." + tenant_id_str + "." + ore_key;
 }
 
-// "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"}
-struct ore_key_parts {
-    std::string series_type, metric, qualifier;
-};
-ore_key_parts parse_ore_key(const std::string& ore_key) {
-    ore_key_parts p;
-    std::istringstream ss(ore_key);
-    std::string tok;
-    std::vector<std::string> parts;
-    while (std::getline(ss, tok, '/'))
-        parts.push_back(tok);
-    if (parts.size() < 3)
+// "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"} -- thin
+// throwing adapter over the shared oresmd split, preserving this file's existing
+// try/catch-based error handling at both call sites.
+ores::marketdata::core::market_series_key parse_ore_key(const std::string& ore_key) {
+    auto kp = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
+    if (!kp)
         throw std::invalid_argument("Unparseable ORE key: " + ore_key);
-    p.series_type = parts[0];
-    p.metric = parts[1];
-    p.qualifier = parts[2];
-    for (std::size_t i = 3; i < parts.size(); ++i)
-        p.qualifier += "/" + parts[i];
-    return p;
+    return *kp;
 }
 
 } // namespace

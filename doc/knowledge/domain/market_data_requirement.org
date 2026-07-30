@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:requirements:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-30
 
 * Summary
 
@@ -292,14 +292,13 @@ beyond a linear product it means re-running enough of the pricing
 model's own cashflow logic to know which points it will read. Knowing a
 book needs EUR and USD curves at all is nearly free; knowing exactly
 which points on those curves a thousand American swaptions and
-barrier options need today is not. This mirrors, again, the DNS
-analogy: a resolver does not re-derive "what kind of record type does a
-web browser typically need" (an A record, by convention, for HTTP) on
-every single lookup; that is fixed by the protocol. What varies per
-lookup is only the specific name being asked about — the DNS equivalent
-of the instance/dynamic distinction is thin (a name is looked up as a
-whole, not resolved into curves-then-points), which is precisely why
-this cluster leans on the DNS analogy less heavily here than elsewhere.
+barrier options need today is not. The DNS analogy is deliberately thinner here than elsewhere in this
+cluster: a resolver does not re-derive "what record type does a browser
+need" on every lookup — that is fixed by the protocol, the equivalent
+of the static level — but a name is resolved as a whole, not
+decomposed into curve-then-point the way the instance/dynamic
+distinction is. The computational-cost argument is therefore this
+document's own, not a consequence of the DNS parallel.
 
 * See also
 

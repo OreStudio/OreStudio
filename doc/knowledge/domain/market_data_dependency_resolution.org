@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:dependency:resolution:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-30
 
 * Summary
 
@@ -28,7 +28,12 @@ graph-theoretic model and the reason it is needed.
 
 * Layperson's mental model
 
-Return to the analogy of a browser loading a web page. The page itself
+This cluster's running DNS analogy extends naturally here: just as a
+browser does not merely resolve the page's own domain name but must
+follow every resource reference the page contains before rendering is
+complete, a resolved set of market data identifiers is not sufficient
+on its own — it must be expanded to include everything those identifiers
+themselves depend on. Return to that browser analogy in detail. The page itself
 is one resource, at one domain name — but the HTML it receives is not
 the whole story: it references a stylesheet at a second domain name, the
 stylesheet references a web font at a third, and an =<img>= tag

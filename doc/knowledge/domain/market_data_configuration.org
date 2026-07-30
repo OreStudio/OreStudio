@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:resolution:configuration:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-30
 
 * Summary
 
@@ -56,36 +56,7 @@ would be useless; nothing built on top of it could ever be trusted or
 reproduced. This is precisely the property this document formalises
 below as the *totality* of the resolution function.
 
-* Detail
-
-** Resolution as a total function
-
-Formally, resolution is a function
-
-$$\rho: \mathrm{Requirements} \to U$$
-
-mapping each element of a set of market data requirements to exactly one
-element of the [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data
-universe]] $U$. The critical word is *total*: $\rho$ must be defined for
-every requirement it is asked about — it cannot decline to answer, or
-return more than one candidate and leave the caller to pick. It need not
-be *injective* (two different requirements are permitted to resolve to
-the same physical identifier — "the discount curve" and "the OIS
-curve," for a currency where those happen to coincide, may both resolve
-to one identifier) nor *surjective* (almost all of $U$ is irrelevant to
-any one requirement set and is simply never in $\rho$'s image for that
-set). What totality buys is the property the source material this
-cluster distils states in prose — "a Valuation Environment is what
-guarantees that every logical/symbolic reference resolves to one and
-only one physical reference" — restated here as a formal property of a
-function rather than as an English sentence about an "environment." A
-$\rho$ that is not total, or that is not deterministic given a fixed
-configuration, cannot support a reproducible valuation: re-running the
-same valuation against the same configuration must yield the same
-resolved identifiers every time, or nothing downstream — snapshotting,
-audit, re-pricing a historical trade — can be trusted.
-
-** Why "configuration," not "profile"
+* Why "configuration," not "profile"
 
 This document deliberately does not use "profile" for the object that
 determines $\rho$, even though that is the word this cluster's original
@@ -117,6 +88,37 @@ rather than "profile" for the same structural role. Two independent
 confirmations outweigh one document's informal word choice; this
 cluster follows the field's actual convention rather than the
 originating notes' own vocabulary.
+
+* Formal definition
+
+** Resolution as a total function
+
+Formally, resolution is a function
+
+$$\rho: \mathrm{Requirements} \to \mathrm{Identifiers}$$
+
+mapping each element of a set of market data requirements to exactly one
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data identifier]].
+The identifiers $\rho$ produces are candidates for membership in the
+[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]] $U$
+but are not yet confirmed members — that confirmation comes later, via
+the $\cap\, U$ step in the full pipeline. The critical word is *total*:
+$\rho$ must be defined for every requirement it is asked about — it
+cannot decline to answer, or return more than one candidate and leave
+the caller to pick. It need not be *injective* (two different
+requirements are permitted to resolve to the same physical identifier
+— "the discount curve" and "the OIS curve," for a currency where those
+happen to coincide, may both resolve to one identifier) nor *surjective*
+(almost all of $\mathrm{Identifiers}$ is irrelevant to any one
+requirement set and is simply never in $\rho$'s image for that set).
+What totality buys is reproducibility: re-running the same valuation
+against the same configuration must yield the same resolved identifiers
+every time, or nothing downstream — snapshotting, audit, re-pricing a
+historical trade — can be trusted. A $\rho$ that is not total, or that
+is not deterministic given a fixed configuration, cannot support this
+guarantee.
+
+* Detail
 
 ** The resolver as an ordered set of rules
 
@@ -177,6 +179,6 @@ a swap off of whichever curve was resolved.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — $\rho$'s domain.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — $\rho$'s codomain.
-- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from after $\cap\, U$ confirms membership.
 - [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency Resolution]] — the step immediately following resolution.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the adjacent, distinct concept this document is careful not to be confused with.

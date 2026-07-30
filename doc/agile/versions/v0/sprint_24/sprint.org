@@ -127,7 +127,9 @@ health review (promote to a story, move to =next=, or discard).
 
 * Health Review
 
-(Run =sprint-reviewer= to generate this section.)
+| # | Date       | Day   | Overall | Task                                                           |
+|---+------------+-------+---------+-----------------------------------------------------------------|
+| 1 | 2026-07-30 | day 9 | RED     | [[id:82D7CA2E-30BF-406D-BAFB-595DD630F502][Health review 1 — sprint 24 mid-sprint analysis]] |
 
 * Charts
 

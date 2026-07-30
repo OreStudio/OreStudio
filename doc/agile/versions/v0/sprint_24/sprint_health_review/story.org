@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 64BD5956-3E3F-4365-94CD-78496E725BD6
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: System 2 health review of sprint 24: goal alignment, load, velocity, focus, and story/task balance.
+#+type: story
+#+level: s2
+#+filetags: :sprint_health_review:sprint_24:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Produce a structured System 2 health review of sprint 24 covering
+goal alignment, sprint load, PR velocity, focus signal, and
+story/task balance.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Health review 1 complete (RED).        |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-30                               |
+
+* Acceptance
+
+- Review written and filed in task Result; summary row added to
+  sprint.org Health Review section.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:82D7CA2E-30BF-406D-BAFB-595DD630F502][Health review 1 — sprint 24 mid-sprint analysis]] | DONE | 2026-07-30 | 2026-07-30 | System 2 health review 1 of sprint 24. |
+
+* Decisions
+
+* Out of scope
+
+-

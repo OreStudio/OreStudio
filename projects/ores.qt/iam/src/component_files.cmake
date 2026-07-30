@@ -74,6 +74,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientSystemSettingModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTenantModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTenantTypeModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/IamExport.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/RoleController.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/RoleDetailDialog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/RoleMdiWindow.hpp"

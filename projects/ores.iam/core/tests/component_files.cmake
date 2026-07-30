@@ -33,4 +33,5 @@ set(files
     "service_account_service_tests.cpp"
     "service_account_tests.cpp"
     "service_authorization_check_permission_tests.cpp"
+    "service_internal_impersonation_service_tests.cpp"
 )

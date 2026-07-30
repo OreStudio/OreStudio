@@ -159,6 +159,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return isDirty_;
     }
+    std::optional<boost::uuids::uuid> entityImageId() const override;
 
 private slots:
     void onSaveClicked();

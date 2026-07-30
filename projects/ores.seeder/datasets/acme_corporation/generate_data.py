@@ -87,6 +87,11 @@ OFFICES = [
         "business_centre_code": "GBLO",
         "locale": "en_GB",
         "city": "London",
+        "email_domain": "acmecorp.co.uk",
+        "street": "1 Poultry",
+        "state": None,
+        "postal_code": "EC2R 8EJ",
+        "phone": "+44 20 7946 0958",
     },
     {
         "code": "acme_us",
@@ -95,6 +100,11 @@ OFFICES = [
         "business_centre_code": "USNY",
         "locale": "en_US",
         "city": "New York",
+        "email_domain": "acmecorp.com",
+        "street": "200 Park Avenue",
+        "state": "NY",
+        "postal_code": "10166",
+        "phone": "+1 212 555 0148",
     },
     {
         "code": "acme_hk",
@@ -103,8 +113,35 @@ OFFICES = [
         "business_centre_code": "HKHK",
         "locale": None,  # curated name pool, see HK_GIVEN_NAMES/HK_FAMILY_NAMES
         "city": "Hong Kong",
+        "email_domain": "acmecorp.hk",
+        "street": "1 Queen's Road Central",
+        "state": None,
+        "postal_code": "999077",
+        "phone": "+852 2543 1188",
     },
 ]
+
+# RBAC roles (ores_iam_roles_tbl has no desk-granularity roles like "Desk
+# Head"/"Trader" -- Trading is the permission set that covers every desk
+# job, Operations covers Middle Office/Market Risk management, Viewer
+# gives their analysts read-only access). ores_iam_publish_accounts_from_dq_fn
+# matches this value verbatim against ores_iam_roles_tbl.name -- these must
+# stay real role names, kept separate from the free-text job_title that
+# actually describes what the person does (see add_account below).
+DESK_STAFF_ROLE = "Trading"
+SUPPORT_MANAGER_ROLE = "Operations"
+SUPPORT_ANALYST_ROLE = "Viewer"
+
+
+def seniority_title(role_label, index, count):
+    """Builds a job title like "Senior Trader"/"Junior Trader" for a cohort
+    of `count` people doing the same job -- first is Senior, last is
+    Junior, any in between are Mid-Level. A cohort of one gets no tier
+    prefix at all (nothing to rank them against)."""
+    if count <= 1:
+        return role_label
+    tier = "Senior" if index == 0 else "Junior" if index == count - 1 else "Mid-Level"
+    return f"{tier} {role_label}"
 
 DESKS = [
     {"code": "ir_swaps", "name": "IR Swaps", "head_count": 1, "trader_count": 2},
@@ -163,9 +200,16 @@ DESK_BOOKS_BY_OFFICE = {
     },
 }
 
+# reports_to_role selects which of build_office's three independent
+# leadership lines (see its own segregation-of-duties comment) this
+# function's own Head reports to -- "coo" for Operations, "risk" for
+# Risk, keeping Middle Office and Market Risk out of the Trading line
+# they oversee.
 SUPPORT_FUNCTIONS = [
-    {"code": "middle_office", "name": "Middle Office", "manager_count": 1, "analyst_count": 2},
-    {"code": "market_risk", "name": "Market Risk", "manager_count": 1, "analyst_count": 2},
+    {"code": "middle_office", "name": "Middle Office", "manager_count": 1, "analyst_count": 2,
+     "reports_to_role": "coo"},
+    {"code": "market_risk", "name": "Market Risk", "manager_count": 1, "analyst_count": 2,
+     "reports_to_role": "risk"},
 ]
 
 # London is deliberately built as an exact replica of the shared
@@ -325,22 +369,36 @@ def gen_hk_name(index):
     return given, family
 
 
-def gen_person(office, faker, index):
+def gen_person(office, faker, index, used_slugs):
+    # Alternate gender deterministically by index -- used both to pick a
+    # gendered first name (Faker) and, in assign_photo_keys, a
+    # gender-matched photo.
+    gender = "female" if index % 2 == 0 else "male"
     if faker:
-        first = faker.first_name()
+        first = faker.first_name_female() if gender == "female" else faker.first_name_male()
         last = faker.last_name()
     else:
         first, last = gen_hk_name(index)
     slug_first = first.lower().replace(" ", ".")
     slug_last = last.lower().replace(" ", ".")
-    # index is folded into both username and email: two people can
-    # legitimately draw the same Faker name within an office, and email
-    # is unique per (tenant_id, email) -- see accounts_email_uniq_idx in
-    # iam_accounts_create.sql.
-    username = f"{slug_first}.{slug_last}.{office['code']}.{index}"
-    email = f"{slug_first}.{slug_last}.{index}@{office['code']}.acmecorp.example"
+    # Two people can legitimately draw the same Faker name within an
+    # office; a plain "first.last" username/email is only unique per
+    # (tenant_id, username/email) -- see accounts_email_uniq_idx in
+    # iam_accounts_create.sql -- so a numeric suffix is added only on an
+    # actual collision, keeping the common case realistic
+    # ("kevin.barrett" rather than "kevin.barrett.acme_us.6").
+    base_slug = f"{slug_first}.{slug_last}"
+    slug = base_slug
+    suffix = 1
+    while slug in used_slugs:
+        suffix += 1
+        slug = f"{base_slug}{suffix}"
+    used_slugs.add(slug)
+
+    username = slug
+    email = f"{slug}@{office['email_domain']}"
     full_name = f"{first} {last}"
-    return username, email, full_name
+    return username, email, full_name, gender
 
 
 def build_office(office, faker):
@@ -353,10 +411,11 @@ def build_office(office, faker):
     accounts = []
 
     person_index = 0
+    used_slugs = set()
 
-    def add_account(unit_code, role):
+    def add_account(unit_code, job_title, rbac_role, reports_to_username=None):
         nonlocal person_index
-        username, email, full_name = gen_person(office, faker, person_index)
+        username, email, full_name, gender = gen_person(office, faker, person_index, used_slugs)
         person_index += 1
         accounts.append({
             "company_code": company_code,
@@ -364,11 +423,24 @@ def build_office(office, faker):
             "username": username,
             "email": email,
             "full_name": full_name,
+            "gender": gender,
             "password_hash": FIXED_PASSWORD_HASH,
             "account_type": "user",
-            "role": role,
+            "role": rbac_role,
+            "job_title": job_title,
+            "reports_to_username": reports_to_username,
             "business_unit_code": unit_code,
+            # Every worker shares their office's own official address --
+            # a real company puts its registered office address on staff
+            # contact records, not a personal home address.
+            "street": office["street"],
+            "city": office["city"],
+            "state": office["state"],
+            "country_code": office["country"],
+            "postal_code": office["postal_code"],
+            "phone": office["phone"],
         })
+        return username
 
     global_markets_code = f"{company_code}.global_markets"
     global_markets_id = new_uuid(f"business_unit:{global_markets_code}")
@@ -394,17 +466,41 @@ def build_office(office, faker):
         "is_virtual": True,
     })
 
+    # Segregation of duties, mirrored the way a real legal entity actually
+    # structures it: the CEO/Country Head sits at the top with three
+    # independent lines reporting directly to them -- Trading (the
+    # business), Operations (via the COO), and Risk (via the Head of
+    # Risk) -- rather than Risk/Operations reporting into the business
+    # line they oversee. Only the CEO is common to all three; Trading,
+    # Operations, and Risk staff never report across lines.
+    ceo_username = add_account(global_markets_code, "Country Head", SUPPORT_MANAGER_ROLE)
+    coo_username = add_account(global_markets_code, "COO", SUPPORT_MANAGER_ROLE,
+                               reports_to_username=ceo_username)
+    head_of_risk_username = add_account(global_markets_code, "Head of Risk", SUPPORT_MANAGER_ROLE,
+                                        reports_to_username=ceo_username)
+
+    # Head of Trading sits above every desk in the office -- the business-
+    # line head Desk Heads report to.
+    head_of_trading_username = add_account(
+        global_markets_code, "Head of Trading", DESK_STAFF_ROLE,
+        reports_to_username=ceo_username)
+
     if company_code == "acme_uk":
         build_barclays_replica_org(office, business_units, portfolios, books, global_markets_code)
         for desk_code, desk in BARCLAYS_UK_STAFFED_DESKS.items():
             full_desk_code = f"{company_code}.{desk_code}"
+            head_username = None
             for _ in range(desk["head_count"]):
-                add_account(full_desk_code, "Desk Head")
-            for _ in range(desk["trader_count"]):
-                add_account(full_desk_code, "Trader")
+                head_username = add_account(full_desk_code, "Head of Desk", DESK_STAFF_ROLE,
+                                           reports_to_username=head_of_trading_username)
+            for i in range(desk["trader_count"]):
+                title = seniority_title("Trader", i, desk["trader_count"])
+                add_account(full_desk_code, title, DESK_STAFF_ROLE,
+                           reports_to_username=head_username)
     else:
         desk_books = DESK_BOOKS_BY_OFFICE[company_code]
-        build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books)
+        build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books,
+                                head_of_trading_username)
 
     for func in SUPPORT_FUNCTIONS:
         func_code = f"{company_code}.{func['code']}"
@@ -418,15 +514,23 @@ def build_office(office, faker):
             "unit_type_code": "COST_CENTRE",
         })
 
+        function_head_reports_to = (
+            coo_username if func["reports_to_role"] == "coo" else head_of_risk_username)
+        manager_username = None
         for _ in range(func["manager_count"]):
-            add_account(func_code, "Manager")
-        for _ in range(func["analyst_count"]):
-            add_account(func_code, "Analyst")
+            manager_username = add_account(
+                func_code, f"Head of {func['name']}", SUPPORT_MANAGER_ROLE,
+                reports_to_username=function_head_reports_to)
+        for i in range(func["analyst_count"]):
+            title = seniority_title("Analyst", i, func["analyst_count"])
+            add_account(func_code, title, SUPPORT_ANALYST_ROLE,
+                       reports_to_username=manager_username)
 
     return lei, lei_entity, business_units, portfolios, books, accounts
 
 
-def build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books):
+def build_generic_desks_org(office, business_units, portfolios, books, add_account, desk_books,
+                            head_of_trading_username):
     company_code = office["code"]
     for desk in DESKS:
         desk_code = f"{company_code}.{desk['code']}"
@@ -476,10 +580,13 @@ def build_generic_desks_org(office, business_units, portfolios, books, add_accou
                 "regulatory_book_type": "Trading",
             })
 
+        head_username = None
         for _ in range(desk["head_count"]):
-            add_account(desk_code, "Desk Head")
-        for _ in range(desk["trader_count"]):
-            add_account(desk_code, "Trader")
+            head_username = add_account(desk_code, "Head of Desk", DESK_STAFF_ROLE,
+                                       reports_to_username=head_of_trading_username)
+        for i in range(desk["trader_count"]):
+            title = seniority_title("Trader", i, desk["trader_count"])
+            add_account(desk_code, title, DESK_STAFF_ROLE, reports_to_username=head_username)
 
 
 def build_barclays_replica_org(office, business_units, portfolios, books, global_markets_code):
@@ -537,8 +644,56 @@ def build_barclays_replica_org(office, business_units, portfolios, books, global
         })
 
 
+FACES_DIR = os.path.join(SCRIPT_DIR, "..", "..", "..", "..", "external", "facestudio", "faces")
+
+# Each office's photo pool leans toward the ethnicities plausible for its
+# generated names -- Hong Kong's curated Cantonese name pool gets
+# east_asian faces, London/New York (Faker en_GB/en_US, Western-sounding
+# names) get a broader/Western-leaning mix. Not a precision-matching
+# claim, just avoiding an obvious mismatch (e.g. an east_asian face next
+# to "Clifford Shaw").
+OFFICE_FACE_ETHNICITIES = {
+    "acme_uk": ["european", "south_asian", "african", "west_asian"],
+    "acme_us": ["european", "african", "latin_american", "east_asian", "south_asian"],
+    "acme_hk": ["east_asian", "southeast_asian"],
+}
+
+
+def load_face_files():
+    """Returns {(ethnicity, gender): [filenames]}, each list sorted for
+    determinism."""
+    by_bucket = {}
+    for f in sorted(os.listdir(FACES_DIR)):
+        if not f.endswith(".jpeg"):
+            continue
+        gender, _age, ethnicity = f.split("_", 2)
+        ethnicity = ethnicity.rsplit("_", 1)[0]  # strip the trailing _NN index
+        by_bucket.setdefault((ethnicity, gender), []).append(f)
+    return by_bucket
+
+
+def assign_photo_keys(office, accounts, faces_by_bucket, bucket_indices):
+    """Assigns each account a deterministic photo_key: gender-matched, and
+    ethnicity-matched to the office's pool (cycling through that pool for
+    variety). bucket_indices tracks the next unused index per (ethnicity,
+    gender) bucket across the whole run, so offices sharing an ethnicity
+    (e.g. UK and US both drawing "european") don't hand out duplicate
+    photos before they have to."""
+    ethnicities = OFFICE_FACE_ETHNICITIES[office["code"]]
+    for i, a in enumerate(accounts):
+        ethnicity = ethnicities[i % len(ethnicities)]
+        bucket = (ethnicity, a["gender"])
+        pool = faces_by_bucket[bucket]
+        idx = bucket_indices.get(bucket, 0)
+        face = pool[idx % len(pool)]
+        bucket_indices[bucket] = idx + 1
+        a["photo_key"] = f"acme_staff_photo:{face.rsplit('.', 1)[0]}"
+
+
 def main():
     holding_lei, holding_entity = build_holding_lei_entity()
+    faces_by_bucket = load_face_files()
+    bucket_indices = {}
 
     lei_entities = [holding_entity]
     lei_relationships = []
@@ -572,6 +727,8 @@ def main():
         all_portfolios.extend(portfolios)
         all_books.extend(books)
         all_accounts.extend(accounts)
+
+        assign_photo_keys(office, accounts, faces_by_bucket, bucket_indices)
 
         companies.append({
             "code": office["code"],

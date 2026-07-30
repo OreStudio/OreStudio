@@ -53,30 +53,44 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLabel" name="labelFullName">
+            <property name="text">
+             <string>Full Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="fullNameEdit">
+            <property name="placeholderText">
+             <string>Enter full name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="labelEmail">
             <property name="text">
              <string>Email:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="emailEdit">
             <property name="placeholderText">
              <string>Enter email address</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelAccountType">
             <property name="text">
              <string>Type:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QComboBox" name="accountTypeCombo"/>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelIsAdmin">
             <property name="text">
              <string>Admin:</string>
@@ -86,7 +100,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QCheckBox" name="isAdminCheckBox">
             <property name="text">
              <string>Grant administrative privileges</string>
@@ -96,31 +110,39 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelJobTitle">
             <property name="text">
              <string>Job Title:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QLineEdit" name="jobTitleEdit">
             <property name="placeholderText">
              <string>e.g. Head of Desk, Senior Trader</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelReportsTo">
             <property name="text">
              <string>Reports To:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QComboBox" name="reportsToCombo"/>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="photoGroup">
+         <property name="title">
+          <string>Photo</string>
+         </property>
+         <layout class="QVBoxLayout" name="photoGroupLayout"/>
         </widget>
        </item>
        <item>

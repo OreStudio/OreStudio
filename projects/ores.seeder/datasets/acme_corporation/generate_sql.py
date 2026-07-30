@@ -22,6 +22,7 @@ Usage:
     python3 generate_sql.py
 """
 
+import base64
 import json
 import os
 import uuid
@@ -31,6 +32,7 @@ NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "..", ".."))
 OUTPUT_DIR = os.path.join(REPO_ROOT, "projects", "ores.sql", "populate", "acme")
+FACES_DIR = os.path.join(REPO_ROOT, "external", "facestudio", "faces")
 
 LICENSE_HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -504,10 +506,14 @@ def generate_accounts_populate(company, accounts):
         rows.append(
             "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
             f"{sql_str(a['id'])}, 0, {sql_str(a['username'])}, "
+            f"{sql_str(a.get('full_name'))}, "
             f"{sql_str(a['email'])}, {sql_str(a['password_hash'])}, "
             f"{sql_str(a['account_type'])}, "
             f"{sql_str(a.get('business_unit_code'))}, "
-            f"{sql_str(a.get('role'))})"
+            f"{sql_str(a.get('role'))}, "
+            f"{sql_str(a.get('job_title'))}, "
+            f"{sql_str(a.get('reports_to_username'))}, "
+            f"{sql_str(a.get('photo_key'))})"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.accounts"
@@ -537,8 +543,9 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_accounts_artefact_tbl (
-        dataset_id, tenant_id, id, version, username,
-        email, password_hash, account_type, business_unit_code, role
+        dataset_id, tenant_id, id, version, username, full_name,
+        email, password_hash, account_type, business_unit_code, role,
+        job_title, reports_to_username, photo_key
     )
     values
 {values};
@@ -555,8 +562,10 @@ def generate_account_contact_informations_populate(company, accounts):
             "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
             f"{sql_str(contact_id)}, "
             f"0, {sql_str(a['username'])}, "
-            f"{sql_str(a['full_name'])}, null, null, null, null, null, null, "
-            f"null, {sql_str(a['email'])}, null)"
+            f"{sql_str(a.get('street'))}, null, "
+            f"{sql_str(a.get('city'))}, {sql_str(a.get('state'))}, "
+            f"{sql_str(a.get('country_code'))}, {sql_str(a.get('postal_code'))}, "
+            f"{sql_str(a.get('phone'))}, {sql_str(a['email'])}, null)"
         )
     values = ",\n".join(rows)
     code = f"acme.{company}.account_contact_informations"
@@ -588,7 +597,7 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_account_contact_informations_artefact_tbl (
-        dataset_id, tenant_id, id, version, account_username, full_name,
+        dataset_id, tenant_id, id, version, account_username,
         street_line_1, street_line_2, city, state, country_code,
         postal_code, phone, email, web_page
     )
@@ -597,6 +606,69 @@ begin
 end $$;
 """
     write(f"{company}_account_contact_informations_artefact_populate.sql", content)
+
+
+def generate_staff_photos_populate(accounts):
+    """Embeds every distinct facestudio face actually used (across all
+    offices) as a system-tenant template row in ores_assets_images_tbl,
+    keyed by photo_key -- copied per-tenant and attached to the matching
+    account by tenant_handler::provision_acme, mirroring how
+    acme_party_logo_populate.sql seeds the party logo template (JPEGs
+    can't go through the SVG-only ores_dq_images_artefact_tbl staging
+    pipeline, see that script's own comment for why)."""
+    seen = {}
+    for a in accounts:
+        photo_key = a["photo_key"]
+        if photo_key in seen:
+            continue
+        face_file = photo_key.split(":", 1)[1] + ".jpeg"
+        with open(os.path.join(FACES_DIR, face_file), "rb") as f:
+            data_b64 = base64.b64encode(f.read()).decode("ascii")
+        seen[photo_key] = data_b64
+
+    # Built as individual idempotent INSERT ... WHERE NOT EXISTS statements
+    # (not a single multi-row VALUES list) since each row's data is large
+    # (a base64-encoded JPEG) and independently idempotent by key.
+    statements = []
+    for photo_key, data_b64 in seen.items():
+        image_id = str(uuid.uuid5(NAMESPACE, f"image:{photo_key}"))
+        statements.append(f"""
+    if not exists (
+        select 1 from ores_assets_images_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and key = {sql_str(photo_key)}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_assets_images_tbl (
+            image_id, tenant_id, version, key, description, mime_type, data,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            {sql_str(image_id)}, ores_utility_system_tenant_id_fn(), 0,
+            {sql_str(photo_key)}, 'Acme Corporation staff photo (facestudio synthetic faces)',
+            'image/jpeg', {sql_str(data_b64)},
+            current_user, current_user, 'system.external_data_import',
+            'Acme staff photo template'
+        );
+    end if;""")
+
+    content = LICENSE_HEADER + GENERATED_NOTE + f"""
+/**
+ * ACME Corporation Staff Photo Templates
+ *
+ * One system-tenant template row per distinct facestudio face used across
+ * the whole Acme dataset, keyed by photo_key (e.g.
+ * "acme_staff_photo:female_age25_east_asian_01"). Copied per-tenant and
+ * attached to the matching account by tenant_handler::provision_acme
+ * (ores.iam.core/messaging/tenant_handler.hpp), the same
+ * copy_template_image() pattern acme_party_logo_populate.sql uses. This
+ * script is idempotent.
+ */
+
+DO $$
+BEGIN{"".join(statements)}
+END $$;
+"""
+    write("acme_staff_photos_populate.sql", content)
 
 
 def by_company(records):
@@ -618,6 +690,7 @@ def main():
     generate_dataset_populate(COMPANIES)
     generate_lei_entities_populate(lei_entities)
     generate_lei_relationships_populate(lei_relationships)
+    generate_staff_photos_populate([a for company in COMPANIES for a in accounts[company]])
     for company in COMPANIES:
         generate_business_units_populate(company, business_units[company])
         generate_portfolios_populate(company, portfolios[company], business_units[company])

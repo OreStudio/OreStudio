@@ -83,13 +83,13 @@ begin
         v_account_id := gen_random_uuid();
 
         insert into ores_iam_accounts_tbl (
-            id, tenant_id, version, account_type, username, password_hash,
-            password_salt, totp_secret, email,
+            id, tenant_id, version, account_type, username, full_name, password_hash,
+            password_salt, totp_secret, email, job_title,
             modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         ) values (
-            v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.password_hash,
-            '', '', r.email,
+            v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
+            r.password_hash, '', '', r.email, r.job_title,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from organisation dataset',
             current_timestamp, ores_utility_infinity_timestamp_fn()
@@ -124,6 +124,58 @@ begin
         end if;
 
         v_inserted := v_inserted + 1;
+    end loop;
+
+    -- Second pass: resolve reports_to_username to reports_to_account_id.
+    -- Needs its own pass rather than resolving inline above -- the target
+    -- manager account may be defined earlier in this same artefact set
+    -- (e.g. a Desk Head row before the Traders who report to them), but
+    -- generation/publish order isn't guaranteed to put every manager
+    -- ahead of every report, so every account is fully published first,
+    -- then every reporting line is wired up against the now-complete set.
+    -- A manager row account's own version gets bumped by re-inserting it
+    -- (temporal versioning is insert-only -- see
+    -- ores_iam_accounts_touch_version_fn for the same pattern).
+    for r in
+        select a.dataset_id, a.reports_to_username, a.username
+        from ores_dq_accounts_artefact_tbl a
+        where a.dataset_id = p_dataset_id
+          and a.reports_to_username is not null
+    loop
+        declare
+            rec ores_iam_accounts_tbl%rowtype;
+            v_manager_id uuid;
+        begin
+            select id into v_manager_id
+            from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and username = r.reports_to_username
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if v_manager_id is null then
+                continue;
+            end if;
+
+            select * into rec
+            from ores_iam_accounts_tbl
+            where tenant_id = p_target_tenant_id
+              and username = r.username
+              and valid_to = ores_utility_infinity_timestamp_fn()
+            for update;
+
+            if not found or rec.reports_to_account_id = v_manager_id then
+                continue;
+            end if;
+
+            rec.version := 0;
+            rec.reports_to_account_id := v_manager_id;
+            rec.modified_by := coalesce(ores_iam_current_service_fn(), current_user);
+            rec.performed_by := current_user;
+            rec.change_reason_code := 'system.external_data_import';
+            rec.change_commentary := 'Reporting line wired from organisation dataset';
+
+            insert into ores_iam_accounts_tbl select (rec).*;
+        end;
     end loop;
 
     return query
@@ -192,13 +244,13 @@ begin
         end if;
 
         insert into ores_iam_account_contact_informations_tbl (
-            id, tenant_id, version, account_id, full_name,
+            id, tenant_id, version, account_id,
             street_line_1, street_line_2, city, state, country_code,
             postal_code, phone, email, web_page,
             modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         ) values (
-            gen_random_uuid(), p_target_tenant_id, 0, v_account_id, r.full_name,
+            gen_random_uuid(), p_target_tenant_id, 0, v_account_id,
             r.street_line_1, r.street_line_2, r.city, r.state, r.country_code,
             r.postal_code, r.phone, r.email, r.web_page,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,

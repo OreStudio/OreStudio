@@ -37,6 +37,7 @@
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/signup_service.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
@@ -874,16 +875,26 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
 
-        // This endpoint doesn't expose default_party_id for editing —
-        // preserve whatever is currently stored rather than clearing it.
+        // This endpoint doesn't expose default_party_id/full_name/job_title/
+        // reports_to_account_id/image_id for editing — preserve whatever is
+        // currently stored rather than clearing them.
         const auto existing = account_service_.find_account_by_id(uuid);
         const auto default_party_id =
             existing ? existing->default_party_id : std::optional<boost::uuids::uuid>{};
+        const auto full_name = existing ? existing->full_name : std::string{};
+        const auto job_title = existing ? existing->job_title : std::string{};
+        const auto reports_to_account_id =
+            existing ? existing->reports_to_account_id : boost::uuids::nil_uuid();
+        const auto image_id = existing ? existing->image_id : boost::uuids::nil_uuid();
 
         bool success =
             account_service_.update_account(uuid,
                                             update_req->email,
+                                            full_name,
                                             default_party_id,
+                                            job_title,
+                                            reports_to_account_id,
+                                            image_id,
                                             req.authenticated_user->username.value_or("system"),
                                             "update",
                                             "");

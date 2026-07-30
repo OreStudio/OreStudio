@@ -84,6 +84,16 @@ struct account final {
     std::string username;
 
     /**
+     * @brief The account holder's full (real) name.
+     *
+     * Not every account represents a person (service/algorithm/llm
+     * accounts leave this empty) -- this is the only place a human
+     * account's real name is recorded; account_contact_information is
+     * purely "how to reach them", not "who they are".
+     */
+    std::string full_name;
+
+    /**
      * @brief Hashed password for secure authentication.
      */
     std::string password_hash;
@@ -124,6 +134,31 @@ struct account final {
      * the nil-sentinel plain-uuid representation instead of optional.
      */
     boost::uuids::uuid image_id = boost::uuids::nil_uuid();
+
+    /**
+     * @brief Job title / functional role of the person holding this
+     * account (e.g. "Head of Desk", "Senior Trader", "Middle Office
+     * Manager") -- distinct from the RBAC @c role assignments
+     * (ores_iam_account_roles_tbl), which grant coarse permission sets
+     * (Trading/Operations/Viewer/...) rather than describe what the
+     * person actually does.
+     */
+    std::string job_title;
+
+    /**
+     * @brief The account this person reports to, capturing the
+     * functional reporting line (e.g. a Trader reports to their desk's
+     * Head, an Analyst reports to their function's Manager).
+     *
+     * Soft self-reference to another row in this same table. A nil UUID
+     * (boost::uuids::nil_uuid()) means no reporting line is recorded
+     * (e.g. the most senior person in a function). Represented as a
+     * plain uuid with a nil sentinel, not std::optional, for the same
+     * reflect-cpp aggregate field-count reason documented on @c
+     * image_id above -- a second std::optional<uuid> field (alongside
+     * default_party_id) reproduces that bug.
+     */
+    boost::uuids::uuid reports_to_account_id = boost::uuids::nil_uuid();
 
     /**
      * @brief Timestamp when this version of the record was recorded in the system.

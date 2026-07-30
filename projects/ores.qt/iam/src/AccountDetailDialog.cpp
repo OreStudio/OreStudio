@@ -68,12 +68,17 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
+    // Photo editor hosted in the .ui photoGroup; base class owns the button.
+    initFlagButton(ui_->photoGroup->layout());
+    connect(this, &DetailDialogBase::flagEdited, this, &AccountDetailDialog::onFieldChanged);
+
     reportsToWatcher_ = new QFutureWatcher<std::vector<iam::domain::account>>(this);
     connect(reportsToWatcher_,
             &QFutureWatcher<std::vector<iam::domain::account>>::finished,
             this,
             &AccountDetailDialog::onReportsToAccountsLoaded);
 
+    connect(ui_->fullNameEdit, &QLineEdit::textChanged, this, &AccountDetailDialog::onFieldChanged);
     connect(ui_->jobTitleEdit, &QLineEdit::textChanged, this, &AccountDetailDialog::onFieldChanged);
     connect(ui_->reportsToCombo,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -249,6 +254,11 @@ ProvenanceWidget* AccountDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+std::optional<boost::uuids::uuid> AccountDetailDialog::entityImageId() const {
+    return currentAccount_.image_id.is_nil() ? std::nullopt
+                                              : std::optional(currentAccount_.image_id);
+}
+
 void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     currentAccount_ = account;
     isAddMode_ = account.username.empty();
@@ -256,8 +266,15 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     setCreateMode(isAddMode_);
 
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
+    ui_->fullNameEdit->setText(QString::fromStdString(account.full_name));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
     ui_->jobTitleEdit->setText(QString::fromStdString(account.job_title));
+
+    // initFlagButton() (constructor time) already ran updateFlagDisplay()
+    // once against a default-constructed currentAccount_ (entityImageId()
+    // -> nullopt) -- re-run now that the real image_id is known, else the
+    // photo button never reflects it.
+    updateFlagDisplay();
 
     populateReportsToCombo(account);
 
@@ -345,6 +362,7 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
 iam::domain::account AccountDetailDialog::getAccount() const {
     iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
+    account.full_name = ui_->fullNameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
     account.account_type = ui_->accountTypeCombo->currentData().toString().toStdString();
     account.job_title = ui_->jobTitleEdit->text().toStdString();
@@ -394,7 +412,10 @@ void AccountDetailDialog::onReportsToAccountsLoaded() {
             continue;
 
         const auto idStr = QString::fromStdString(boost::uuids::to_string(a.id));
-        ui_->reportsToCombo->addItem(QString::fromStdString(a.username), idStr);
+        const auto displayName =
+            a.full_name.empty() ? QString::fromStdString(a.username)
+                                : QString::fromStdString(a.full_name);
+        ui_->reportsToCombo->addItem(displayName, idStr);
         if (!currentAccount_.reports_to_account_id.is_nil() &&
             a.id == currentAccount_.reports_to_account_id)
             selectIndex = ui_->reportsToCombo->count() - 1;
@@ -758,9 +779,14 @@ void AccountDetailDialog::onSaveClicked() {
         QPointer<AccountDetailDialog> self = this;
         const boost::uuids::uuid account_id = currentAccount_.id;
         const std::string email = ui_->emailEdit->text().toStdString();
+        const std::string fullName = ui_->fullNameEdit->text().toStdString();
         const std::string jobTitle = ui_->jobTitleEdit->text().toStdString();
         const std::string reportsToAccountId =
             ui_->reportsToCombo->currentData().toString().toStdString();
+        const auto selectedImage =
+            flagChanged() ? selectedImageId() : entityImageId();
+        const std::string imageId =
+            selectedImage ? boost::uuids::to_string(*selectedImage) : std::string{};
         const auto pendingRoleAdds =
             needsRoleSave ? rolesWidget_->pendingAdds() : std::vector<boost::uuids::uuid>{};
         const auto pendingRoleRemoves =
@@ -769,8 +795,10 @@ void AccountDetailDialog::onSaveClicked() {
         QFuture<FutureResult> future = QtConcurrent::run([self,
                                                           account_id,
                                                           email,
+                                                          fullName,
                                                           jobTitle,
                                                           reportsToAccountId,
+                                                          imageId,
                                                           defaultPartyId,
                                                           needsAccountSave,
                                                           pendingPartyAdds,
@@ -789,9 +817,11 @@ void AccountDetailDialog::onSaveClicked() {
                 iam::messaging::update_account_request request;
                 request.account_id = boost::uuids::to_string(account_id);
                 request.email = email;
+                request.full_name = fullName;
                 request.default_party_id = defaultPartyId;
                 request.job_title = jobTitle;
                 request.reports_to_account_id = reportsToAccountId;
+                request.image_id = imageId;
 
                 auto response_result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -887,6 +917,12 @@ void AccountDetailDialog::onSaveClicked() {
 
                         self->isDirty_ = false;
                         emit self->isDirtyChanged(false);
+
+                        if (self->flagChanged()) {
+                            self->currentAccount_.image_id =
+                                self->selectedImageId().value_or(boost::uuids::nil_uuid());
+                            self->resetFlagChanged();
+                        }
 
                         if (self->partiesWidget_) {
                             // Rebase to finalDefaultPartyId (what was actually sent,

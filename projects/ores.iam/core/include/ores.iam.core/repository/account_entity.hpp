@@ -41,6 +41,7 @@ struct account_entity {
     int version = 0;
     std::string account_type = "user";
     std::string username;
+    std::optional<std::string> full_name;
     std::string password_hash;
     std::string password_salt;
     std::string totp_secret;
@@ -48,6 +49,8 @@ struct account_entity {
     std::optional<std::string> service_password_hash;
     std::optional<std::string> default_party_id;
     std::optional<std::string> image_id;
+    std::optional<std::string> job_title;
+    std::optional<std::string> reports_to_account_id;
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;

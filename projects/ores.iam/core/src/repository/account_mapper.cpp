@@ -41,6 +41,7 @@ domain::account account_mapper::map(const account_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.account_type = v.account_type;
     r.username = v.username;
+    r.full_name = v.full_name.value_or("");
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
@@ -51,8 +52,14 @@ domain::account account_mapper::map(const account_entity& v) {
     if (v.image_id) {
         r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
     }
+    if (v.job_title) {
+        r.job_title = *v.job_title;
+    }
+    if (v.reports_to_account_id) {
+        r.reports_to_account_id = boost::lexical_cast<boost::uuids::uuid>(*v.reports_to_account_id);
+    }
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
-    // Note: r.image_id defaults to nil_uuid() when v.image_id is unset
+    // Note: r.image_id/r.reports_to_account_id default to nil_uuid() when unset
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -67,6 +74,9 @@ account_entity account_mapper::map(const domain::account& v) {
     r.version = v.version;
     r.account_type = v.account_type;
     r.username = v.username;
+    if (!v.full_name.empty()) {
+        r.full_name = v.full_name;
+    }
     r.password_hash = v.password_hash;
     r.password_salt = v.password_salt;
     r.totp_secret = v.totp_secret;
@@ -76,6 +86,12 @@ account_entity account_mapper::map(const domain::account& v) {
     }
     if (!v.image_id.is_nil()) {
         r.image_id = boost::lexical_cast<std::string>(v.image_id);
+    }
+    if (!v.job_title.empty()) {
+        r.job_title = v.job_title;
+    }
+    if (!v.reports_to_account_id.is_nil()) {
+        r.reports_to_account_id = boost::lexical_cast<std::string>(v.reports_to_account_id);
     }
     r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;

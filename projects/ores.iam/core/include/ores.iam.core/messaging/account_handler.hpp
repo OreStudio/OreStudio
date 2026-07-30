@@ -40,6 +40,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -570,10 +571,40 @@ public:
                 default_party_id = party_id;
             }
 
+            auto reports_to_account_id = boost::uuids::nil_uuid();
+            if (!req->reports_to_account_id.empty()) {
+                try {
+                    reports_to_account_id = sg(req->reports_to_account_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{.success = false,
+                                                  .message = "Invalid reports_to_account_id format"});
+                    return;
+                }
+            }
+
+            auto image_id = boost::uuids::nil_uuid();
+            if (!req->image_id.empty()) {
+                try {
+                    image_id = sg(req->image_id);
+                } catch (const std::exception&) {
+                    reply(nats_,
+                          msg,
+                          update_account_response{.success = false,
+                                                  .message = "Invalid image_id format"});
+                    return;
+                }
+            }
+
             service::account_service svc(ctx);
             svc.update_account(account_id,
                                req->email,
+                               req->full_name,
                                default_party_id,
+                               req->job_title,
+                               reports_to_account_id,
+                               image_id,
                                ctx.actor(),
                                req->change_reason_code,
                                req->change_commentary);

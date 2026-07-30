@@ -53,11 +53,30 @@ struct update_account_request {
     std::string account_id;
     std::string email;
     /**
+     * @brief The account holder's full (real) name. Empty clears it.
+     */
+    std::string full_name;
+    /**
      * @brief Party to set as the account's default quick-login party.
      * Empty clears the default. Must be one of the account's assigned
      * parties (validated server-side).
      */
     std::string default_party_id;
+    /**
+     * @brief Job title / functional role of the person holding this
+     * account (e.g. "Head of Desk", "Senior Trader"). Empty clears it.
+     */
+    std::string job_title;
+    /**
+     * @brief The account this person reports to. Empty clears it. Must
+     * be another account in the same tenant (validated server-side).
+     */
+    std::string reports_to_account_id;
+    /**
+     * @brief Profile picture for this account. Empty clears it. Must
+     * reference an existing image (validated server-side).
+     */
+    std::string image_id;
     std::string change_reason_code;
     std::string change_commentary;
 };

@@ -34,6 +34,6 @@ target_link_libraries(${example_target}
         ores.platform.lib
         Boost::log
         Boost::program_options
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 
 install(TARGETS ${example_target} RUNTIME DESTINATION examples)

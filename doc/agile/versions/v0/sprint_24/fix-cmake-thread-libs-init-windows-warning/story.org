@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: DC4B1328-6317-4DB9-8A92-2719DD859863
+:END:
+#+title: Story: Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT
+#+description: target_link_libraries references ${CMAKE_THREAD_LIBS_INIT} across ~98 CMakeLists.txt files; the legacy variable can be left uninitialized on some platforms/generators (e.g. Windows), producing a CMake warning at every affected target. Replace with the Threads::Threads imported target, which find_package(Threads REQUIRED) always defines.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate the CMake warning fired at every =target_link_libraries()=
+call referencing the legacy =${CMAKE_THREAD_LIBS_INIT}= variable,
+which can be left uninitialized on some platforms/generators (e.g.
+Windows). Replace it with the =Threads::Threads= imported target,
+which =find_package(Threads REQUIRED)= always defines.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-30                               |
+
+* Acceptance
+
+- Zero occurrences of =CMAKE_THREAD_LIBS_INIT= remain under =projects/=.
+- The two codegen archetype templates that generated the pattern
+  don't reintroduce it on the next scaffold.
+- Full =compass build= and =ctest= are clean.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5DFE586F-521F-44C4-9FAC-1CA4E31903B9][Scaffold story: Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT]] | DONE | 2026-07-30 | 2026-07-30 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0ADDFEB-E7C8-454E-85D2-BD7D315C3C01][Implement Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT]] | DONE | 2026-07-30 | 2026-07-30 | Initial task for: Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: F0ADDFEB-E7C8-454E-85D2-BD7D315C3C01
+:END:
+#+title: Task: Implement Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT
+#+description: Initial task for: Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT
+#+type: task
+#+level: s1
+#+filetags: :fix-cmake-thread-libs-init-windows-warning:sprint_24:v0:
+#+owner: marco
+#+branch: feature/implement-fix-cmake-thread-libs-init-windows-warning
+#+pr: 1762
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DC4B1328-6317-4DB9-8A92-2719DD859863][Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Eliminate the CMake warning
+=CMake Warning (uninitialized) ... uninitialized variable
+'CMAKE_THREAD_LIBS_INIT'= that fires on Windows (and potentially
+other generators/toolchains) at every =target_link_libraries()= call
+referencing =${CMAKE_THREAD_LIBS_INIT}=. That variable is a legacy
+=FindThreads= output that can be left unset depending on
+platform/generator; the modern, always-defined replacement is the
+=Threads::Threads= imported target that =find_package(Threads
+REQUIRED)= (already called once, in the root =CMakeLists.txt=)
+guarantees.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DC4B1328-6317-4DB9-8A92-2719DD859863][Fix Windows CMake warning: uninitialized CMAKE_THREAD_LIBS_INIT]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- Zero occurrences of =CMAKE_THREAD_LIBS_INIT= remain under =projects/=
+  (=grep -rl CMAKE_THREAD_LIBS_INIT projects= is empty).
+- The two codegen archetype templates that generated the pattern
+  (=ores.cmake.component.tests.org=, =ores.cmake.service.src.org=) are
+  updated so future scaffolds emit =Threads::Threads=, not the old
+  variable.
+- Full =compass build= (default preset) and =ctest= are clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Confirm every occurrence of the pattern is identical
+   (=        ${CMAKE_THREAD_LIBS_INIT})=) across all affected
+   =CMakeLists.txt= -- it was, in all 98 files.
+2. Uniform sed replacement: =${CMAKE_THREAD_LIBS_INIT})= ->
+   =Threads::Threads)= across every =CMakeLists.txt= under =projects/=.
+3. Fix the two source archetype =.org= templates
+   (=ores.cmake.component.tests.org=, =ores.cmake.service.src.org=)
+   and re-tangle, so future scaffolds don't reintroduce the pattern.
+4. Full =compass build= + =ctest=.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1762][#1762]] | [cmake] Fix Windows warning: uninitialized CMAKE_THREAD_LIBS_INIT |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1762#issuecomment-5129588600][5129588600]] | Claude review (3 passes, all "no changes requested"): one optional nit -- a stale =${CMAKE_THREAD_LIBS_INIT}= example survives in =doc/analysis/qt-plugin-architecture.org= | =doc/analysis/qt-plugin-architecture.org= | Accepted | Updated the example to =Threads::Threads= for consistency. |
+
+* Result
+
+Replaced =${CMAKE_THREAD_LIBS_INIT}= with =Threads::Threads= across
+all 98 affected =CMakeLists.txt= (a uniform, mechanical substitution
+-- every occurrence was the identical closing line
+=        ${CMAKE_THREAD_LIBS_INIT})=), plus the two source archetype
+templates that generate it (=ores.cmake.component.tests.org=,
+=ores.cmake.service.src.org=), re-tangled.
+
+Acceptance met:
+- =grep -rl CMAKE_THREAD_LIBS_INIT projects= is empty.
+- Full =compass build= (linux-clang-debug-make) clean, zero errors.
+- =ctest=: 74/74 passed.

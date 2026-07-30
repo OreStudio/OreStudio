@@ -32,7 +32,7 @@ target_link_libraries(${tests_target_name}
         ores.testing.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 # Note: ores.utility.lib comes transitively through ${lib_target_name} (PUBLIC)
 
 add_custom_target(test_${tests_target_name}

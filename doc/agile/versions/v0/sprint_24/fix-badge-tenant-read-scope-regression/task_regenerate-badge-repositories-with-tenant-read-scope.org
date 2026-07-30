@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-badge-tenant-read-scope-regression:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/regenerate-badge-repositories-with-tenant-read-scope
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -44,38 +44,155 @@ Fix the cross-tenant badge lookup regression (see parent story
    =ores.dq.service.0.log= shows =Total: 63=/=Total: 114= (or current
    row counts) instead of =Total: 0=.
 
+** Scope split discovered mid-task
+
+=badge_mapping= is a junction, not a domain_entity, and its
+repository template turned out to have no
+=\{\{read_tenant_filtered\}\}= support at all (see below) -- fixing
+it properly means template surgery affecting every junction model,
+not a model-only change. Split into
+[[id:3804E1DD-B8B8-43B0-B9AF-E9379081B6F0][its own follow-up task]];
+this task's scope is now =badge_definition=/=badge_severity= only.
+The =:tenant_read_scope: shared= flag was still added to
+=badge_mapping_junction.org= (harmless, currently a no-op) and
+=core.py= now correctly computes =junction['read_tenant_filtered']=
+(verified via a direct Python harness) -- both land here as
+groundwork the follow-up task builds on.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- =ores.dq.badge_mapping_junction.org= declares
-  =:tenant_read_scope: shared=.
-- Regenerated =badge_definition_repository.cpp=,
-  =badge_severity_repository.cpp=, =badge_mapping_repository.cpp= no
-  longer hard-code =tenant_id = ctx.tenant_id()= on read methods; RLS
-  alone governs visibility.
-- Regenerated-diff review found no unrelated drift, or any found was
-  explicitly flagged separately rather than silently accepted.
-- Verified live as a non-system tenant: badges render with real
-  colours, =ores.dq.service= log shows non-zero
-  =Total:= counts for badge definitions/mappings.
+Superseded mid-task by live QA findings -- see =* Result= for what
+actually shipped. Original acceptance criteria (below) are struck
+through as no longer the goal:
+
+- [ ] ~=ores.dq.badge_mapping_junction.org= declares
+  =:tenant_read_scope: shared=~ -- reverted; junction's shared-read
+  case no longer exists (see story =* Decisions=).
+- [ ] ~Regenerated =badge_definition_repository.cpp=,
+  =badge_severity_repository.cpp= no longer hard-code
+  =tenant_id = ctx.tenant_id()= on read methods~ -- reverted back to
+  tenant-filtered reads after live QA found duplicate-row regressions.
+- [X] Regenerated-diff review found no unrelated drift for either
+  entity's =ores.cpp.repository=/=ores.sql.schema= facets; the
+  natural-key migration needed for =badge_definition= (moving =name=
+  into =Columns= with =:natural_key: true=, discovered when the
+  first migration attempt silently dropped the column from the
+  generated entity/mapper) is documented in =* Plan= rather than
+  silently folded in. -- Still true; this part of the work stands.
+- [X] Verified live as a non-system tenant via the QA Validation
+  Runner (=scenario_verify-badge-tenant-scoping.org=): confirmed the
+  original symptom no longer reproduces (bundle-publish gives each
+  tenant its own copy), and confirmed the RLS-fallback fix's
+  duplicate-row regression before deciding to revert it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Turned out to be three layers deeper than the story anticipated:
+
+1. **Primary-key model shape.** =badge_definition.org=/=badge_severity.org=
+   declared their primary key via the legacy =* Primary key= heading,
+   which the current =org_loader.py= no longer reads at all --
+   =validate_model()= only derives =primary_key= from a
+   =:primary_key: true= flag inside =* Columns=. Confirmed this is
+   repo-wide pre-existing breakage, not badge-specific: regenerating
+   =catalog= (unrelated, also un-migrated) hits the identical
+   validation error. ~61 of 120 =ores.codegen.entity= models are
+   still on this legacy shape and can't be regenerated via codegen
+   today. Migrated just =badge_definition=/=badge_severity= to the
+   new shape (mirroring =ores.dq.subject_area.org=, the one fully-
+   migrated exemplar in this component), rather than attempt the
+   wider repo-wide migration -- out of scope here.
+2. **Natural-key model shape (same category, easy to miss).** The
+   first migration attempt moved only the primary key and left
+   =name= under the old =* Natural keys= heading. That heading is
+   *also* dead in the current loader -- natural keys need
+   =:natural_key: true= inside =* Columns= too. Regenerating with
+   only the primary key migrated silently dropped =name= from the
+   generated entity/mapper entirely (a real data-loss bug, caught by
+   diffing before applying, never applied). Migrated both key roles
+   together.
+3. **Generator-suffix double-application.** Copied the checked-in
+   generator's =+ "-" + std::to_string(idx)= suffix verbatim into the
+   migrated model's =:primary_key:= generator block; the codegen
+   generator template already appends that suffix automatically for
+   text primary keys (and, separately, for text natural keys) --
+   copying it produced a doubled suffix in the regenerated
+   generator.cpp. Caught via the full (non-address-restricted) diff;
+   fixed by providing only the base expression.
+
+=badge_definition=/=badge_severity= regenerated at
+=ores.cpp.repository= (clean diff: tenant-filter removal + harmless
+template-formatting cosmetics only) and =ores.sql.schema= (zero
+diff). Did not run the default full-address regeneration for these
+two entities in this task: it also touches Qt/service/generator
+layers where *separate*, genuinely unrelated pre-existing drift
+surfaced (e.g. a hand-added guard in
+=BadgeDefinitionDetailDialog.cpp= against deleting the reserved
+=__unmapped__= fallback badge would be silently dropped) -- flagged
+as a distinct pre-existing issue, not touched here, since neither is
+related to the tenant-filter fix.
+
+=badge_mapping= (junction) is the third layer -- see =* Notes= and
+the split-off follow-up task (later abandoned, see below).
+
+** Post-rebase live QA reversed the fix
+
+After rebasing onto latest =main= (283 commits landed while this
+task was in flight) and rebuilding, live QA via the
+=* Test Scenarios= entry below found:
+
+- The originally-reported symptom (=Total: 0=, fallback-colour
+  badges) no longer reproduces on a freshly provisioned tenant --
+  confirmed via direct SQL that Barclays Plc now has its own copied
+  =badge_definition=/=badge_severity=/=badge_mapping= rows (an
+  independent upstream provisioning change: the =base= bundle now
+  publishes these datasets per-tenant).
+- With both the tenant's own rows *and* (via our
+  =tenant_read_scope: shared= fix) the system-tenant rows visible
+  through RLS's own-OR-system fallback, the Badge Definitions/Badge
+  Severities admin lists show every code duplicated -- a new
+  regression, not present before this task's fix.
+
+Reverted =tenant_read_scope: shared= from both =.org= models,
+regenerated =badge_definition=/=badge_severity= back to their
+original tenant-filtered reads (diff against =origin/main= for the
+repository =.cpp=/=.hpp= files is now an exact match, modulo harmless
+template-formatting cosmetics from the kept model-shape migration),
+and reverted the =core.py= junction =read_tenant_filtered=
+computation added to support the abandoned follow-up task. Rebuilt
+=ores.dq.core.lib= and reran =ores.dq.core.tests=/
+=ores.dq.api.tests=/=ores.dq.service.tests= -- all pass.
 
 * Notes
+
+Flagged, not fixed here (out of scope for this task):
+
+- A full (non-=--address=-restricted) regeneration of
+  =badge_definition= shows unrelated pre-existing drift in
+  =BadgeDefinitionDetailDialog.cpp= (a hand-added guard preventing
+  deletion of the reserved =__unmapped__= fallback badge would be
+  silently reverted) and =ClientBadgeDefinitionModel.cpp=/
+  =BadgeDefinitionDetailDialog.ui= (Qt-layer template evolution
+  since these were last regenerated -- tooltip role handling,
+  colour-button placeholder text). None of this is related to the
+  tenant-filter fix; worth a separate capture if the Qt layer for
+  these entities is ever intentionally regenerated.
+- ~59 other =ores.codegen.entity= models still on the legacy
+  =* Primary key=/=* Natural keys= heading shape are equally unable
+  to regenerate via codegen today. Worth a backlog capture to track
+  the wider migration, since this task only touched the two badge
+  entities.
 
 * Test Scenarios
 
@@ -86,7 +203,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C8945E22-EFDF-4D8B-9AF7-D76DE6E6D692][Verify tenant-scoped badge catalogue (severities, definitions, code domains, mappings)]] | FAILED (as expected, drove the revert) | Reused an existing sprint_23 scenario (closest match, describes the per-tenant-copy design that turned out to already be in place). Steps 2-3 caught the duplicate-row regression from this task's now-reverted fix; the scenario's own =* Results= records the run. |
 
 * PRs
 
@@ -101,3 +218,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Net change from this task: badge_definition.org/badge_severity.org
+migrated to the current Columns + :primary_key:/:natural_key: model
+shape (a real, harmless prerequisite fix, unblocking any future
+regeneration of these two entities); everything else reverted.
+
+The originally-reported cross-tenant badge bug turned out to already
+be fixed on current main by an independent, unrelated upstream
+change (tenant provisioning now bundle-publishes badge data per
+tenant). Applying the tenant_read_scope: shared fix on top of that
+caused a new regression (duplicate rows in the Badge
+Definitions/Severities admin lists), caught via live QA and reverted
+before merge. No functional code change ships from this task; the
+model-shape migration is the only lasting artefact, plus two
+backlog-worthy findings recorded in the story's =* Out of scope=
+(wider legacy-model-shape migration; Qt severity-combo duplicate/
+non-badge rendering).

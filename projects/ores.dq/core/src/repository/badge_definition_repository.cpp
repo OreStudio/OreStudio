@@ -37,7 +37,7 @@ std::string badge_definition_repository::sql() {
 }
 
 void badge_definition_repository::write(context ctx, const domain::badge_definition& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge definition: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing badge definition. " << "code: " << v.code;
     execute_write_query(
         ctx, badge_definition_mapper::map(v), lg(), "Writing badge definition to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::badge_definition> badge_definition_repository::read_latest(c
 
 std::vector<domain::badge_definition>
 badge_definition_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge definition. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge definition. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -81,9 +81,10 @@ badge_definition_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest badge definition by code.");
 }
 
+
 std::vector<domain::badge_definition>
 badge_definition_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all badge definition versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all badge definition versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -99,7 +100,7 @@ badge_definition_repository::read_all(context ctx, const std::string& code) {
 
 std::optional<domain::badge_definition> badge_definition_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading badge definition at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading badge definition at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
@@ -119,7 +120,7 @@ std::optional<domain::badge_definition> badge_definition_repository::read_at_ver
 }
 
 void badge_definition_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge definition: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing badge definition. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

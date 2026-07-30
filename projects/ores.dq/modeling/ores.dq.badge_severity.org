@@ -27,23 +27,28 @@ Values: secondary, info, success, warning, danger, primary.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique severity code.
 
 Examples: 'secondary', 'info', 'success', 'warning', 'danger', 'primary'.
 
-* Natural keys
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
 
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the severity level.
@@ -51,8 +56,6 @@ Human-readable name for the severity level.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Severity"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -96,7 +99,6 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
-:tenant_read_scope: shared
 :entity_singular_short: severity
 :entity_plural_short:   severities
 :entity_singular_words: badge severity

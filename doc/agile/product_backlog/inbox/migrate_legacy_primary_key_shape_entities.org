@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: A83E0EB2-B18C-40BB-B7D0-26D72E55A680
+:END:
+#+title: Migrate remaining entities off the legacy Primary key/Natural keys heading shape
+#+description: About 59 of 120 ores.codegen.entity models still declare primary/natural keys via the legacy top-level headings, which the current org_loader.py no longer reads at all -- regenerating any of them fails validation (Missing primary key).
+#+type: capture
+#+level: cross
+#+filetags: :codegen:dq:tech-debt:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Migrate every remaining =ores.codegen.entity= model still declaring
+its primary/natural keys via the legacy top-level =* Primary key=/
+=* Natural keys= headings onto the current =* Columns= +
+=:primary_key: true=/=:natural_key: true= flag shape. Confirmed via
+=validate_model()= in =org_loader.py=: it only derives =primary_key=/
+=natural_keys= from flagged =Columns= entries now, so any model still
+on the legacy shape fails codegen entirely (=Missing primary key: no
+field in 'Columns' is flagged :primary_key: true=) the moment anyone
+tries to regenerate it -- confirmed for =catalog=, =data_domain=,
+=badge_definition=, =badge_severity= (all in =ores.dq=), and ~55 more
+across the codebase (~61 of 120 total). One entity
+(=ores.dq.subject_area.org=) is already on the new shape and can
+serve as the migration exemplar, including its compound-primary-key
+variant.
+
+* Why
+
+Surfaced while fixing a cross-tenant badge lookup bug (sprint 24,
+story =Fix cross-tenant badge lookup...=): =badge_definition=/
+=badge_severity= needed regenerating, but couldn't be, because they
+were on this legacy shape. Migrated just those two as a narrow
+prerequisite; the other ~59 models are equally stuck and will hit the
+same wall the next time anyone needs to regenerate them for an
+unrelated reason. Some of these repositories' checked-in generated
+code may already be stale/incorrect relative to what their =.org=
+models currently describe, since nobody can regenerate them to find
+out.
+
+* References
+
+- =projects/ores.codegen/src/codegen/org_loader.py= --
+  =validate_model()=, =_split_columns_section()=.
+- =projects/ores.dq/modeling/ores.dq.subject_area.org= -- migration
+  exemplar (including compound-key handling).
+
+* See also
+
+-

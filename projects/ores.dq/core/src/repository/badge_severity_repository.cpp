@@ -37,7 +37,7 @@ std::string badge_severity_repository::sql() {
 }
 
 void badge_severity_repository::write(context ctx, const domain::badge_severity& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing badge severity: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing badge severity. " << "code: " << v.code;
     execute_write_query(
         ctx, badge_severity_mapper::map(v), lg(), "Writing badge severity to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::badge_severity> badge_severity_repository::read_latest(conte
 
 std::vector<domain::badge_severity>
 badge_severity_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severity. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severity. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -80,9 +80,10 @@ badge_severity_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest badge severity by code.");
 }
 
+
 std::vector<domain::badge_severity> badge_severity_repository::read_all(context ctx,
                                                                         const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all badge severity versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all badge severity versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
@@ -98,7 +99,7 @@ std::vector<domain::badge_severity> badge_severity_repository::read_all(context 
 
 std::optional<domain::badge_severity> badge_severity_repository::read_at_version(
     context ctx, const std::string& code, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading badge severity at version. code: " << code
+    BOOST_LOG_SEV(lg(), debug) << "Reading badge severity at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
@@ -118,7 +119,7 @@ std::optional<domain::badge_severity> badge_severity_repository::read_at_version
 }
 
 void badge_severity_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing badge severity. " << "code: " << code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

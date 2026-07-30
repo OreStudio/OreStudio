@@ -41,13 +41,12 @@ generate_synthetic_account_contact_information(utility::generation::generation_c
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.account_id = ctx.generate_uuid();
-    r.full_name = std::string("Test User");
     r.street_line_1 = std::string("123 Test Street");
     r.street_line_2 = std::string("Suite 100");
     r.city = std::string("London");
     r.state = std::string("");
     r.country_code = // Left blank: validated against the tenant-scoped countries table, which
-                     // isolated test tenants don't seed; empty skips validation.
+        // isolated test tenants don't seed; empty skips validation.
         std::string("");
     r.postal_code = std::string("EC2V 8AS");
     r.phone = std::string("+44 20 7000 0000");

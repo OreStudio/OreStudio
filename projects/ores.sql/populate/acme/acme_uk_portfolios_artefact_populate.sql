@@ -56,8 +56,24 @@ begin
         parent_portfolio_id, owner_unit_id, purpose_type, aggregation_ccy, is_virtual
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '93925bc5-1800-5c69-a18b-f683dae17f2e', 0, 'ACME Corporation UK plc Global Markets', null, '57e8e604-dcb6-515a-a6bd-38f0be805480', 'Risk', 'GBP', 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2e99eb72-bab9-5a7f-9b57-a194cc2e164b', 0, 'IR Swaps London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', '1e719eee-612e-5927-8e71-4107008a1590', 'Risk', 'GBP', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e7f6b28c-f0b3-5c66-a9f9-bcc057369e3f', 0, 'Credit Trading London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'aeb8a9e6-86a6-5382-b5eb-54c1b9577c32', 'Risk', 'GBP', 0),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4ae8aa86-e0f2-56fc-9cf5-5a631ec54120', 0, 'FX Rates London Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'c3264d1e-2c3a-538c-b598-915a8b354dec', 'Risk', 'GBP', 0);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '93925bc5-1800-5c69-a18b-f683dae17f2e', 0, 'Global Portfolio', null, '57e8e604-dcb6-515a-a6bd-38f0be805480', 'Risk', 'USD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bb237ee5-0d90-502a-b12f-2819bdb7a42f', 0, 'EMEA Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', '477f84a7-7edf-50a7-a96f-559dc2778b8b', 'Risk', 'EUR', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ff26194b-2d3f-5f11-bfe9-035fe8a25784', 0, 'Rates EMEA', 'bb237ee5-0d90-502a-b12f-2819bdb7a42f', '087d2259-9228-57a4-b0d4-5e5c6b4a687d', 'Risk', 'EUR', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '421f5d6a-bdf1-529a-a686-11b3b414a34e', 0, 'GBP Rates', 'ff26194b-2d3f-5f11-bfe9-035fe8a25784', '087d2259-9228-57a4-b0d4-5e5c6b4a687d', 'Risk', 'GBP', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '07a2e6f7-3f5e-5156-a151-a994fb301ffb', 0, 'EUR Rates', 'ff26194b-2d3f-5f11-bfe9-035fe8a25784', '087d2259-9228-57a4-b0d4-5e5c6b4a687d', 'Risk', 'EUR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b5f8c232-b948-56b4-b4ac-3d8bd5b80c86', 0, 'Credit EMEA', 'bb237ee5-0d90-502a-b12f-2819bdb7a42f', '40966335-f572-55ea-8df4-6734d990b94c', 'Risk', 'EUR', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4a188fa2-8a12-5dc7-9e0c-b638f7eb334d', 0, 'IG Credit EMEA', 'b5f8c232-b948-56b4-b4ac-3d8bd5b80c86', '40966335-f572-55ea-8df4-6734d990b94c', 'Risk', 'EUR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ef4cdb83-5b6f-5c87-b1df-fd9788334460', 0, 'FX EMEA', 'bb237ee5-0d90-502a-b12f-2819bdb7a42f', '89fef41b-1c7d-54db-843b-bf06df71a15b', 'Risk', 'EUR', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'fc30df52-0d2f-531e-b53f-77819db78b5a', 0, 'G10 FX EMEA', 'ef4cdb83-5b6f-5c87-b1df-fd9788334460', '89fef41b-1c7d-54db-843b-bf06df71a15b', 'Risk', 'EUR', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cb40d446-de28-5390-adbd-ae10aa2af8ad', 0, 'Americas Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', 'a5d09e78-0f28-5528-b041-f153061b63fb', 'Risk', 'USD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '18e780b6-43a5-5f57-814b-a03c3f403b7d', 0, 'Rates Americas', 'cb40d446-de28-5390-adbd-ae10aa2af8ad', '9532cb35-6a65-5992-a787-00b8c95555fd', 'Risk', 'USD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b1c0b37a-3745-53dd-849f-288dbeac9b00', 0, 'USD Rates', '18e780b6-43a5-5f57-814b-a03c3f403b7d', '9532cb35-6a65-5992-a787-00b8c95555fd', 'Risk', 'USD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '13fdfe0b-69b2-50af-bdc2-095060012170', 0, 'CAD Rates', '18e780b6-43a5-5f57-814b-a03c3f403b7d', '9532cb35-6a65-5992-a787-00b8c95555fd', 'Risk', 'CAD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b27307c8-f333-584a-8f54-588b155e4a1a', 0, 'Credit Americas', 'cb40d446-de28-5390-adbd-ae10aa2af8ad', 'cab78299-7de2-5213-b534-5d1f4556cc95', 'Risk', 'USD', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '31fe7c73-fd4b-5b4a-ab6d-ad19264a9f14', 0, 'IG Credit Americas', 'b27307c8-f333-584a-8f54-588b155e4a1a', 'cab78299-7de2-5213-b534-5d1f4556cc95', 'Risk', 'USD', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6a9ea555-2810-5d05-bb1e-faa00e2cef24', 0, 'APAC Portfolio', '93925bc5-1800-5c69-a18b-f683dae17f2e', '0ba311e9-77e6-5f6d-9f7b-40e431865917', 'Risk', 'JPY', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f31e1462-d37c-5a2b-8c4a-53f1e98af0dd', 0, 'Rates APAC', '6a9ea555-2810-5d05-bb1e-faa00e2cef24', 'aca9bec4-2b34-5093-8505-9e34830cd0c7', 'Risk', 'JPY', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '382e9f13-0613-5ac1-84a2-447b14c894dd', 0, 'JPY Rates', 'f31e1462-d37c-5a2b-8c4a-53f1e98af0dd', 'aca9bec4-2b34-5093-8505-9e34830cd0c7', 'Risk', 'JPY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ccaa774f-83c5-58fe-971b-144577697bb6', 0, 'FX APAC', '6a9ea555-2810-5d05-bb1e-faa00e2cef24', '7078caf2-d53a-5066-9bb7-2a7fcec74d13', 'Risk', 'JPY', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bf123dce-5374-575c-9a6f-f671fcbbbf2f', 0, 'Regulatory Capital', null, 'ee639085-d4a7-5855-bb58-c94d9a6b21f1', 'Risk', 'USD', 0);
 end $$;

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: C96740B8-89CA-44C1-98F1-38EF97886EDC
+:END:
+#+title: Task: Show systemd slice/scope info in compass fleet and bearings
+#+description: Add systemd slice/scope information to compass fleet and compass bearings output
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Surface each environment's systemd scope in compass fleet and compass bearings output, so it is visible which cgroup or scope a session is running under without manually querying systemctl.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- compass fleet lists the scope name per worktree/session where available; compass bearings shows the current session's own scope/slice; falls back gracefully when a session has no named scope.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

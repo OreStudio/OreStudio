@@ -4,7 +4,7 @@
 #+title: ores.cpp.qt.detail_dialog_impl
 #+description: Loads the generated =.ui=; field get/set per widget kind.
 #+type: archetype
-#+output: projects/ores.qt/{component}/src/{EntityPascal}DetailDialog.cpp
+#+output: projects/ores.qt/{qt_component}/src/{EntityPascal}DetailDialog.cpp
 #+facet: ores.cpp.qt
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
@@ -526,9 +526,17 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
 {{/combo_allow_blank}}
             for (const auto& c : codes)
                 combo->addItem(QString::fromStdString(c));
-            // fallback_selection is evaluated here (fetch-completion time), not
-            // at populate-call time, since set{{domain_entity.entity_pascal_short}}() may run before or
-            // after setClientManager() triggers this fetch.
+            // fallback is evaluated here (fetch-completion time), not at
+            // populate-call time, since set{{domain_entity.entity_pascal_short}}() may run before or
+            // after setClientManager() triggers this fetch. Preferred over
+            // previous: set{{domain_entity.entity_pascal_short}}() always runs synchronously before
+            // this dialog is shown to the user, well before this async
+            // fetch can complete, so by the time this callback fires the
+            // model's own field value is authoritative -- previous (the
+            // combo's transient text, empty until this first population)
+            // would otherwise permanently blank the selection on every
+            // dialog open, racing this fetch against every
+            // set{{domain_entity.entity_pascal_short}}() call that happened first.
 {{#is_optional_string}}
             const QString fallback = self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
                 ? QString::fromStdString(*self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
@@ -538,7 +546,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{field_pascal}}Combo(
             const QString fallback = QString::fromStdString(
                 self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_optional_string}}
-            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            const QString to_select = !fallback.isEmpty() ? fallback : previous;
             if (!to_select.isEmpty()) {
                 const int idx = combo->findText(to_select);
                 if (idx >= 0) combo->setCurrentIndex(idx);
@@ -975,8 +983,15 @@ void {{domain_entity.entity_pascal}}DetailDialog::populate{{combo_setter_pascal}
         self->ui_->{{widget}}->clear();
         for (const auto& item : items)
             self->ui_->{{widget}}->addItem(QString::fromStdString(item.{{combo_display}}));
-        const auto to_select = !current.isEmpty() ? current :
+        // fallback is preferred over current: set{{domain_entity.entity_pascal_short}}() always runs
+        // synchronously before this dialog is shown, well before this
+        // async fetch can complete, so by the time this callback fires the
+        // model's own field value is authoritative -- current (the combo's
+        // transient text, empty until this first population) would
+        // otherwise permanently blank the selection on every dialog open.
+        const auto fallback =
             QString::fromStdString(self->{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
+        const auto to_select = !fallback.isEmpty() ? fallback : current;
         if (!to_select.isEmpty())
             self->ui_->{{widget}}->setCurrentText(to_select);
 {{#flag_source}}

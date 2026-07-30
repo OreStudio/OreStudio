@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include <QAbstractItemModel>
 #include <QString>
@@ -44,6 +45,7 @@ struct PortfolioTreeNode {
 
     Kind kind;
     QString party_name;                   // valid when kind == Party
+    boost::uuids::uuid party_id;          // valid when kind == Party
     refdata::domain::portfolio portfolio; // valid when kind == Portfolio
     refdata::domain::book book;           // valid when kind == Book
     PortfolioTreeNode* parent = nullptr;
@@ -62,9 +64,12 @@ struct TreeNodeFilter {
 /**
  * @brief Tree model for the portfolio/book hierarchy.
  *
- * The top-level item is always the owning party node. Real portfolios are
- * inner nodes and books are leaves. Virtual portfolios (is_virtual == 1) are
- * included as structural parents distinguished by the outline Briefcase icon.
+ * Displays one Party node per distinct party_id found in the supplied
+ * portfolios/books, nested by parent_party_id so a holding company shows its
+ * child parties (e.g. regional operating companies) as sub-nodes rather than
+ * flattened siblings. Real portfolios are inner nodes and books are leaves.
+ * Virtual portfolios (is_virtual == 1) are included as structural parents
+ * distinguished by the outline Briefcase icon.
  */
 class PortfolioExplorerTreeModel final : public QAbstractItemModel {
     Q_OBJECT
@@ -83,13 +88,17 @@ public:
     ~PortfolioExplorerTreeModel() override = default;
 
     /**
-     * @brief Rebuild the tree from raw portfolio and book data.
+     * @brief Rebuild the tree from raw party, portfolio, and book data.
      *
-     * Creates a single party root node named party_name, then adds portfolios
-     * and books beneath it. Books are placed as leaves under their
-     * parent_portfolio_id.
+     * Creates one party node per distinct party_id present in
+     * portfolios/books (falling back to a bare node if a referenced party
+     * isn't in parties, e.g. visibility gaps), nested by parent_party_id --
+     * parties with no visible parent (or whose parent isn't present in
+     * `parties`) become top-level roots. Each party node then gets its own
+     * portfolios and books beneath it. Books are placed as leaves under
+     * their parent_portfolio_id.
      */
-    void load(const QString& party_name,
+    void load(const std::vector<refdata::domain::party>& parties,
               std::vector<refdata::domain::portfolio> portfolios,
               std::vector<refdata::domain::book> books);
 

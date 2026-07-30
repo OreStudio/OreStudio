@@ -52,24 +52,28 @@ begin
     where dataset_id = v_dataset_id;
 
     insert into ores_dq_account_contact_informations_artefact_tbl (
-        dataset_id, tenant_id, id, version, account_username, full_name,
+        dataset_id, tenant_id, id, version, account_username,
         street_line_1, street_line_2, city, state, country_code,
         postal_code, phone, email, web_page
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a51ca458-750e-59ca-a476-d76627cedbe0', 0, 'wai.ming.chan.acme_hk.0', 'Wai Ming Chan', null, null, null, null, null, null, null, 'wai.ming.chan.0@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6c965aa5-da63-5db4-9fa6-60ceedaf0685', 0, 'siu.fung.wong.acme_hk.1', 'Siu Fung Wong', null, null, null, null, null, null, null, 'siu.fung.wong.1@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a9089849-173f-546a-8acd-9a7316dbaa33', 0, 'ka.yee.lee.acme_hk.2', 'Ka Yee Lee', null, null, null, null, null, null, null, 'ka.yee.lee.2@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '34a83a23-650b-599e-aad4-16d06eaadaba', 0, 'chi.wing.cheung.acme_hk.3', 'Chi Wing Cheung', null, null, null, null, null, null, null, 'chi.wing.cheung.3@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3af9e8e8-fd62-5abb-972c-37aec338b5d1', 0, 'man.yee.ng.acme_hk.4', 'Man Yee Ng', null, null, null, null, null, null, null, 'man.yee.ng.4@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1147950b-4ac1-53d2-97ad-1fbf3f876224', 0, 'tsz.ching.lau.acme_hk.5', 'Tsz Ching Lau', null, null, null, null, null, null, null, 'tsz.ching.lau.5@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '2cbf164e-9000-5238-9a59-7ab4f54be203', 0, 'ho.yin.tang.acme_hk.6', 'Ho Yin Tang', null, null, null, null, null, null, null, 'ho.yin.tang.6@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'a049b58e-cd6a-5f51-9fe1-ed6c3e91e90e', 0, 'ying.ying.lam.acme_hk.7', 'Ying Ying Lam', null, null, null, null, null, null, null, 'ying.ying.lam.7@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '211e2d97-ebfe-5f38-81ce-036d29a19efd', 0, 'kwok.wing.yip.acme_hk.8', 'Kwok Wing Yip', null, null, null, null, null, null, null, 'kwok.wing.yip.8@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f027b916-0486-5581-882b-1c656ffda684', 0, 'suet.ying.ho.acme_hk.9', 'Suet Ying Ho', null, null, null, null, null, null, null, 'suet.ying.ho.9@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd624263c-148a-5253-8163-9a22c43304ae', 0, 'hoi.yan.chan.acme_hk.10', 'Hoi Yan Chan', null, null, null, null, null, null, null, 'hoi.yan.chan.10@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'bc6c019a-dcf8-52bc-867b-1f558129d85e', 0, 'chun.kit.wong.acme_hk.11', 'Chun Kit Wong', null, null, null, null, null, null, null, 'chun.kit.wong.11@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '93625614-2645-5e13-8f2d-4cab855438ef', 0, 'wai.ming.lee.acme_hk.12', 'Wai Ming Lee', null, null, null, null, null, null, null, 'wai.ming.lee.12@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '16df1981-5ad5-554a-ac45-1e3a6e7fc89d', 0, 'siu.fung.cheung.acme_hk.13', 'Siu Fung Cheung', null, null, null, null, null, null, null, 'siu.fung.cheung.13@acme_hk.acmecorp.example', null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5cfd2240-ec76-5296-bcb8-8fac2e035d3c', 0, 'ka.yee.ng.acme_hk.14', 'Ka Yee Ng', null, null, null, null, null, null, null, 'ka.yee.ng.14@acme_hk.acmecorp.example', null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4a602874-a466-5473-96f7-f272044f4895', 0, 'wai.ming.chan', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'wai.ming.chan@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1931e607-19ff-5dc7-8c22-76b64afaedb8', 0, 'siu.fung.wong', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'siu.fung.wong@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7ce9af66-b0d2-529a-92b4-18bee44bdc9b', 0, 'ka.yee.lee', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ka.yee.lee@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7e77be30-c1b9-589b-97ec-af8a850283fb', 0, 'chi.wing.cheung', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'chi.wing.cheung@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c9da2e51-7d60-5670-9f73-245976cdd45e', 0, 'man.yee.ng', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'man.yee.ng@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '769fb0d9-dbf9-51a5-9372-696d5d1c3a59', 0, 'tsz.ching.lau', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'tsz.ching.lau@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '6557b9e5-7cc3-5aeb-a2b4-d210dbfbe225', 0, 'ho.yin.tang', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ho.yin.tang@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '444e051a-7efc-582b-9ab4-8c07a0dde7f4', 0, 'ying.ying.lam', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ying.ying.lam@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'ecc082e6-4981-590e-8b8f-6e452a51ca6a', 0, 'kwok.wing.yip', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'kwok.wing.yip@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '11a20406-0849-5800-86aa-76b6eaa2f714', 0, 'suet.ying.ho', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'suet.ying.ho@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'cc7cd0fe-8ee5-5be2-aba3-c0df242f0a7a', 0, 'hoi.yan.chan', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'hoi.yan.chan@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5235c095-de72-524e-b2b2-d8d00e3ff739', 0, 'chun.kit.wong', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'chun.kit.wong@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '69f239e9-3a7f-5fdf-81a7-dfd8329c0155', 0, 'wai.ming.lee', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'wai.ming.lee@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '431c4956-5543-52d5-9600-bccdc5d2d79f', 0, 'siu.fung.cheung', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'siu.fung.cheung@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '5c5fb1ce-8062-536a-96f8-fe943ca93ff7', 0, 'ka.yee.ng', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ka.yee.ng@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4612411b-966e-5331-a66f-8ed3a6d2a7a5', 0, 'chi.wing.lau', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'chi.wing.lau@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '3421bbbe-92a3-5471-af25-0ad287abaa82', 0, 'man.yee.tang', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'man.yee.tang@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'c5cfea9d-f562-5175-a8b2-2d965f2c4c97', 0, 'tsz.ching.lam', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'tsz.ching.lam@acmecorp.hk', null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7f630633-73e6-5cb0-838c-5416115943ee', 0, 'ho.yin.yip', '1 Queen''s Road Central', null, 'Hong Kong', null, 'HK', '999077', '+852 2543 1188', 'ho.yin.yip@acmecorp.hk', null);
 end $$;

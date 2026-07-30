@@ -490,16 +490,32 @@ TEST_CASE("update_account_sets_and_clears_default_party_id", tags) {
     boost::uuids::random_generator gen;
     const auto party_id = gen();
 
-    CHECK(sut.update_account(
-        a.id, a.email, party_id, a.modified_by, "common.non_material_update", ""));
+    CHECK(sut.update_account(a.id,
+                             a.email,
+                             "",
+                             party_id,
+                             "",
+                             boost::uuids::nil_uuid(),
+                             boost::uuids::nil_uuid(),
+                             a.modified_by,
+                             "common.non_material_update",
+                             ""));
 
     auto reloaded = sut.find_account_by_id(a.id);
     REQUIRE(reloaded.has_value());
     REQUIRE(reloaded->default_party_id.has_value());
     CHECK(*reloaded->default_party_id == party_id);
 
-    CHECK(sut.update_account(
-        a.id, a.email, std::nullopt, a.modified_by, "common.non_material_update", ""));
+    CHECK(sut.update_account(a.id,
+                             a.email,
+                             "",
+                             std::nullopt,
+                             "",
+                             boost::uuids::nil_uuid(),
+                             boost::uuids::nil_uuid(),
+                             a.modified_by,
+                             "common.non_material_update",
+                             ""));
 
     reloaded = sut.find_account_by_id(a.id);
     REQUIRE(reloaded.has_value());

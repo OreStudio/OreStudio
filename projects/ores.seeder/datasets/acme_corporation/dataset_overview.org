@@ -18,7 +18,7 @@ Source data for Acme Corporation: four synthetic legal entities (Acme
 Corporation Plc, ACME Corporation UK plc, ACME Corporation US Inc, ACME
 Corporation HK Ltd), each with its own LEI, business units (trading desks
 + support functions), portfolios, books, and staff accounts. This is task 1 of
-the Acme provisioning architecture (see [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]]'s =*
+the Acme provisioning architecture (see [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]]'s =*
 Decisions=): JSON only — no SQL, no server-side wiring yet.
 
 * Contents
@@ -63,6 +63,6 @@ record carries a =company_code= tag.
 
 * See also
 
-- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] — the parent story; see its =* Decisions= for the full 4-task provisioning architecture.
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] — the parent story; see its =* Decisions= for the full 4-task provisioning architecture.
 - [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][Analyse Acme Bank corporate structure and current populatability]] — the earlier analysis this dataset implements.
 - [[id:1161B5B0-3D67-4215-A6A0-093618B2FE3E][slovaris]] — contrast case: a self-contained fictional world, deliberately *not* the pattern Acme follows.

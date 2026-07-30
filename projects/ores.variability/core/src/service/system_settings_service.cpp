@@ -61,8 +61,14 @@ void system_settings_service::save(const domain::system_setting& setting) {
     BOOST_LOG_SEV(lg(), info) << "Saving system setting: " << setting.name << " = " << setting.value
                               << " (" << setting.data_type << ")";
 
-    // Bitemporal update: close existing then write new version.
-    repo_.remove(ctx_, setting.name);
+    // Bitemporal update: close existing then write new version. Party-scoped
+    // settings (e.g. onboarding.party) must close only their own party's
+    // row -- RLS isolates by tenant_id alone, so a name-only close would
+    // clobber every other party's row sharing this name in the tenant.
+    if (setting.party_id && !setting.party_id->empty())
+        repo_.remove(ctx_, setting.name, *setting.party_id);
+    else
+        repo_.remove(ctx_, setting.name);
     repo_.write(ctx_, setting);
 
     // Update cache

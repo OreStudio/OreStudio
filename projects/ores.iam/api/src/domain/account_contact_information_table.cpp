@@ -28,13 +28,12 @@ std::string convert_to_table(const std::vector<account_contact_information>& v) 
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Account" << "Full Name" << "City" << "Country" << "Phone" << "Email"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Account" << "City" << "Country" << "Phone" << "Email" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& aci : v) {
-        table << boost::uuids::to_string(aci.account_id) << aci.full_name << aci.city
-              << aci.country_code << aci.phone << aci.email << aci.modified_by << aci.version
-              << fort::endr;
+        table << boost::uuids::to_string(aci.account_id) << aci.city << aci.country_code
+              << aci.phone << aci.email << aci.modified_by << aci.version << fort::endr;
     }
     return table.to_string();
 }

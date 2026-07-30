@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 4D2F72BC-09C5-41B6-A9BB-AF2B8B140B50
+:END:
+#+title: Task: Extract shared party-bundle-plan publisher: dedupe provision_acme vs shell's provision party
+#+description: provision_acme's per-office market-data loop and ores.shell's process_party both iterate party_provisioning_bundle_plan(), calling publish_bundle + wait_for_workflow_instance per bundle -- the same loop, duplicated once in ores.iam.core (internal_request_client-based) and once in ores.shell (nats_client/workflow_commands-based).
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extract one shared helper that publishes every bundle in party_provisioning_bundle_plan() for a given party_id and waits for each, parameterised over which client abstraction issues the request, so provision_acme and shell's provision party share one implementation instead of two independently-maintained copies of the same loop.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- A single function/template drives party_provisioning_bundle_plan() publishing for both callers; provision_acme's per-office market-data steps and ores.shell's provision party continue to behave identically (verified via the acme_bank_system_provision.ores recipe and a manual provision party run); no duplicated bundle-iteration logic remains in either ores.iam.core/messaging/tenant_handler.hpp or ores.shell/app/commands/provision_commands.cpp.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

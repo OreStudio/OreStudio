@@ -38,7 +38,6 @@ account_contact_information_mapper::map(const account_contact_information_entity
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
 
-    r.full_name = v.full_name;
     r.street_line_1 = v.street_line_1.value_or("");
     r.street_line_2 = v.street_line_2.value_or("");
     r.city = v.city.value_or("");
@@ -68,7 +67,6 @@ account_contact_information_mapper::map(const domain::account_contact_informatio
     r.version = v.version;
     r.account_id = boost::uuids::to_string(v.account_id);
 
-    r.full_name = v.full_name;
     r.street_line_1 = v.street_line_1.empty() ? std::nullopt : std::optional(v.street_line_1);
     r.street_line_2 = v.street_line_2.empty() ? std::nullopt : std::optional(v.street_line_2);
     r.city = v.city.empty() ? std::nullopt : std::optional(v.city);

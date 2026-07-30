@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 0AAFA676-6A9B-44BB-95A6-19E22E19BC8B
+:END:
+#+title: Task: Retire Barclays as the demo/test entity now that Acme Corporation replaces it
+#+description: Barclays Plc was the system's stand-in test/demo entity before Acme Corporation existed. Now that Acme is fully provisioned (parties, business units, portfolios, books, accounts, CRM/IR/FX market data), retire every place that still defaults to or documents Barclays as the reference entity.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove/retire barclays_system_provision.org and its tangled .ores script (or clearly mark it non-default/legacy); update every recipe, skill, and tool default that references Barclays as the example/demo tenant (crm_rates_* recipes, import_* market-data recipes, countries recipes, ops recipes including how_do_i_ready_up_an_environment.md and how_do_i_test_a_feature_after_implementation.md, the code-run-feature-test/devops-run-client/devops-run-environment/devops-setup-environment/doc-add-entity-chapter/doc-run-manual-screenshots skills, and compass.py's test_scenario scaffold hint at compass.py:3277) to reference Acme Corporation instead; remove any stray 'Barclays' saved connection from the local ores.connections connections database.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- grep -ri barclays across doc/recipes, .claude/skills, and projects/ores.compass/src returns only historical/explanatory mentions (e.g. 'Acme replaces Barclays as...'), not live defaults or instructions; no recipe or skill tells a user to provision or rely on Barclays as the current demo entity; the connections database has no leftover Barclays entry in a freshly-provisioned environment.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

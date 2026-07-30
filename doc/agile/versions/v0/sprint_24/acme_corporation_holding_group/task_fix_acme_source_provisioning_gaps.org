@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Get --source acme to fully match the one-click UX its own task description promi
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BLOCKED                              |
-| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
 | Now          | Blocked. Left as a partial stopgap fix, tested by direct SQL/shell verification only (no full Qt click-through). |
 | Waiting on   | [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] |
 | Next         | Resume once the internal-impersonation rework lands.  |

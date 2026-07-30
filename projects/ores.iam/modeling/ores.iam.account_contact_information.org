@@ -2,7 +2,7 @@
 :ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
 :END:
 #+title: ores.iam.account_contact_information
-#+description: Contact details for an account, including the person's full name (accounts have no name field on their own).
+#+description: Contact details for an account (address/phone/email/web page) -- the person's name lives on the account itself, not here.
 #+type: ores.codegen.entity
 #+component: iam
 #+filetags: :model:entity:iam:
@@ -13,13 +13,12 @@
 #+created: 2026-07-22
 #+updated: 2026-07-22
 
-An account's real-world identity: full name, plus the usual address/
-phone/email/web page fields. Accounts (=ores_iam_accounts_tbl=) carry
-only =username=/=email=/credentials — no name field — so this is the
-only place an account's actual name is recorded. One contact record
-per account (unlike party contact information, which allows several
-by =contact_type= — a person doesn't need a Legal/Operations/
-Settlement/Billing split).
+An account's address/phone/email/web page fields. The account's real
+name lives on =ores_iam_accounts_tbl= itself (=full_name=), not here —
+this entity is purely "how to reach them", not "who they are". One
+contact record per account (unlike party contact information, which
+allows several by =contact_type= — a person doesn't need a Legal/
+Operations/Settlement/Billing split).
 
 * Flags
 :PROPERTIES:
@@ -29,23 +28,24 @@ Settlement/Billing split).
 :has_tenant_id:    true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this contact information record.
 
 Surrogate key for the account contact information record.
 
-* Natural keys
-
 ** account_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
 :END:
 
 The account this contact information belongs to. One contact record
@@ -55,23 +55,6 @@ References the parent account record.
 
 #+begin_src cpp :name generator
 uuid_gen()
-#+end_src
-
-* Columns
-
-** full_name
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:END:
-
-The account holder's full name.
-
-Not nullable -- this is the whole point of the entity: accounts have
-no name field of their own.
-
-#+begin_src cpp :name generator
-std::string("Test User")
 #+end_src
 
 ** street_line_1
@@ -298,7 +281,6 @@ std::string("https://example.com")
 | column       | header      |
 |--------------+-------------|
 | account_id   | Account     |
-| full_name    | Full Name   |
 | city         | City        |
 | country_code | Country     |
 | phone        | Phone       |
@@ -313,7 +295,7 @@ std::string("https://example.com")
 :protocol_include:        ores.iam.api/messaging/account_contact_information_protocol.hpp
 :collection_name:         account_contact_informations
 :item_var:                accountContactInformation
-:key_field:               full_name
+:key_field:               email
 :get_request_class:       iam::messaging::get_account_contact_informations_request
 :get_response_class:      iam::messaging::get_account_contact_informations_response
 :get_message_type:        get_account_contact_informations_request
@@ -333,6 +315,8 @@ std::string("https://example.com")
 :has_export_macro:        true
 :has_pagination:          true
 :parent_entity_singular:  account
+:parent_id_field:         account_id
+:parent_id_field_camel:   accountId
 :settings_group:          AccountContactInformationListWindow
 :window_title:            Account Contact Information
 :icon:                    PersonAccounts
@@ -349,7 +333,6 @@ never user-chosen.
 | field         | label          | widget            | type          | is_key | is_required | placeholder          | flag_source | combo_allow_blank | combo_fetch          | combo_domain_type              | combo_fetch_include        | combo_fetch_fn      | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label   | combo_setter_pascal | badge_key |
 |---------------+----------------+--------------------+---------------+--------+-------------+-----------------------+--------------+---------------------+------------------------+----------------------------------+-----------------------------+------------------------+----------------------+--------------------+------------------------+--------------------+-----------------+------------------------+------------|
 | id            | Id             | idEdit            | line_edit     | true   | true        | Contact id           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
-| full_name     | Full Name      | fullNameEdit      | line_edit     | false  | true        | Enter full name      |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 | street_line_1 | Street Line 1  | streetLine1Edit   | line_edit     | false  | false       | Enter street line 1  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 | street_line_2 | Street Line 2  | streetLine2Edit   | line_edit     | false  | false       | Enter street line 2  |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
 | city          | City           | cityEdit          | line_edit     | false  | false       | Enter city           |             |                     |                        |                                 |                             |                        |                      |                    |                        |                    |                 |                        |            |
@@ -364,7 +347,6 @@ never user-chosen.
 
 | enum_name    | field         | header         | type      | width |
 |--------------+---------------+----------------+-----------+-------|
-| FullName     | full_name     | Full Name      | string    |   160 |
 | StreetLine1  | street_line_1 | Street         | string    |   180 |
 | City         | city          | City           | string    |   120 |
 | CountryCode  | country_code  | Country        | string    |   100 |

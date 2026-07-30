@@ -28,6 +28,7 @@
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 #include <QAction>
 #include <QDateTime>
 #include <QFutureWatcher>
@@ -111,6 +112,7 @@ private slots:
     void onUnitsLoaded();
     void onBooksLoaded();
     void onCounterpartiesLoaded();
+    void onPartiesLoaded();
     void onEditSelected();
     void onHistorySelected();
     void onTradeDoubleClicked(const QModelIndex& index);
@@ -145,6 +147,13 @@ private:
     struct CounterpartyFetchResult {
         bool success;
         std::unordered_map<std::string, CounterpartyInfo> cpty_map;
+        QString error_message;
+        QString error_details;
+    };
+
+    struct PartyFetchResult {
+        bool success;
+        std::vector<refdata::domain::party> parties;
         QString error_message;
         QString error_details;
     };
@@ -188,13 +197,16 @@ private:
     QFutureWatcher<UnitFetchResult>* unitWatcher_{nullptr};
     QFutureWatcher<BookFetchResult>* bookWatcher_{nullptr};
     QFutureWatcher<CounterpartyFetchResult>* counterpartyWatcher_{nullptr};
+    QFutureWatcher<PartyFetchResult>* partyWatcher_{nullptr};
     QList<QFutureWatcher<CountResult>*> countWatchers_;
 
     // Data
     std::vector<refdata::domain::business_unit> units_;
     std::vector<refdata::domain::book> books_;
+    std::vector<refdata::domain::party> parties_;
     bool units_loaded_{false};
     bool books_loaded_{false};
+    bool parties_loaded_{false};
 };
 
 }

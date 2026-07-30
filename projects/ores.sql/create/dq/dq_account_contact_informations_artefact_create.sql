@@ -33,7 +33,6 @@ create table if not exists "ores_dq_account_contact_informations_artefact_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "account_username" text not null,
-    "full_name" text not null,
     "street_line_1" text null,
     "street_line_2" text null,
     "city" text null,

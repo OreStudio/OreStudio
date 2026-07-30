@@ -18,7 +18,7 @@ can now carry a logo via a nullable =image_id= soft-FK, edited through a
 new logo picker on =CounterpartyDetailDialog= (Menu: Reference Data >
 Counterparties). Runs against the *Acme Corporation* tenant (replacing
 Barclays Plc as the system's reference/demo entity -- see
-[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]). Acme
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]). Acme
 Corporation is a party, not a counterparty -- it trades with real GLEIF
 counterparties -- so provisioning instead attaches a demo logo to one
 of those real, already-imported counterparties: =BARCLAYS PLC=
@@ -52,7 +52,7 @@ outcome and no unexpected error dialog appears.
 | Field         | Value                                                                                                     |
 |---------------+-------------------------------------------------------------------------------------------------------------|
 | Verifies task | [[id:21C9CA52-3515-4D99-9B95-1F5BA8A05DCD][Attach a logo/image to a counterparty]]                                                                    |
-| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]]                                             |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]                                             |
 | Target dialog | =CounterpartyDetailDialog= / =PartyDetailDialog= -- Menu: Reference Data > Counterparties / Parties      |
 | Clients       | blue, red                                                                                                  |
 | State         | PENDING                                                                                                    |

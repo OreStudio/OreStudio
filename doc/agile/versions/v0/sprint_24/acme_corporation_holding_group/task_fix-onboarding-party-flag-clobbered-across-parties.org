@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: CCBBC80E-DC7C-4C0C-AFD8-CE673169FA43
+:END:
+#+title: Task: Fix: onboarding.party flag clobbered across sibling parties in the same tenant
+#+description: system_settings_repository::remove() deletes by name only (DELETE ... WHERE name = $1), relying on RLS for scoping -- but the RLS policy on ores_variability_system_settings_tbl only isolates by tenant_id, not party_id. Every complete_party_onboarding call for a new party silently removes the onboarding.party row for every other party in the same tenant, so only the last party processed keeps its flag.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scope remove()/save() for party-level settings (onboarding.party) by party_id as well as name, either by adding a party_id predicate to the delete query or a dedicated RLS policy/column check, so completing onboarding for one party never clears another party's flag. Confirmed via Acme Corporation provisioning: after --source acme activates all four parties in sequence, only the last-processed party (HK) retains onboarding.party=true; the holding company and UK/US lose theirs, causing the Party Provisioning Wizard to incorrectly reappear on login.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- After provisioning a multi-party tenant (Acme Corporation via --source acme, or any tenant provisioned via the generic provision party flow for 2+ parties), every activated party independently shows onboarding.party=true in ores_variability_system_settings_tbl; logging in as any account and switching between parties never re-triggers the Party Provisioning Wizard for an already-onboarded party; a regression test covers save()/remove() for a party-scoped setting name across two distinct party_ids in the same tenant.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

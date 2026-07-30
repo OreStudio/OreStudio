@@ -60,10 +60,6 @@
 -- informations, roles, and account-party association)
 \ir ./iam_publish_from_dq_create.sql
 
--- Acme one-click tenant provisioner (must follow the publish-from-dq
--- functions above, and refdata's own, which it orchestrates)
-\ir ./iam_acme_provisioner_create.sql
-
 -- Tenant lifecycle (must come after all tables it references)
 \ir ./iam_system_provisioner_create.sql
 \ir ./iam_tenant_provisioner_create.sql

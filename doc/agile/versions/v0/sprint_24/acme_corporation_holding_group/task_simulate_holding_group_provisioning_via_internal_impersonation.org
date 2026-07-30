@@ -7,16 +7,16 @@
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/simulate-holding-group-provisioning-via-internal-impersonation
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
 #+updated: 2026-07-26
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,11 +26,11 @@ The current --source acme path re-implements party activation, onboarding comple
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| State        | STARTED                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Investigated the real NATS request surface; plan written. Next: internal-impersonation token minter. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build the token minter, then the orchestrator rewrite. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
@@ -46,6 +46,75 @@ The current --source acme path re-implements party activation, onboarding comple
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Investigated the existing NATS handler surface first -- every step the
+current SQL orchestration performs already has a real, client-facing
+request type. No new request/response protocols need inventing; the
+work is (1) a token-minting primitive, (2) an orchestrator that calls
+these in the right sequence with the right impersonated identity, and
+(3) data-driving the spec.
+
+** Real request types the orchestrator will drive (found, not invented)
+
+- =dq::messaging::publish_bundle_request= (=dq.v1.bundles.publish=) --
+  already supports =params.lei_parties.root_lei= (LEI hierarchy import)
+  and =params.party_id= (party-scoped bundle, e.g. business
+  units/portfolios/books/accounts) exactly as
+  =party_provisioning_bundle_plan()= uses for the generic
+  =provision party= flow. Acme needs new bundle definitions (one for
+  the LEI/business-centre import, one per operating-company payload)
+  registered the same way as =risk_management=/=synthetic_realistic_2026=
+  (=dq_dataset_bundle_member_populate.sql=), not new C++.
+- =refdata::messaging::save_party_request= / =save_counterparty_request=
+  -- the real versioned-save path (activation via status=Active,
+  logo via image_id) instead of the hand-rolled rowtype-reinsert
+  helpers in =iam_acme_provisioner_create.sql=.
+- =variability::messaging::complete_party_onboarding_request= --
+  already used by =provision_commands.cpp='s generic per-party flow's
+  final phase.
+- =iam::messaging::save_account_party_request= -- account-party
+  membership.
+- =iam::messaging::set_my_default_party_request= -- note the "my":
+  this one is scoped to the *caller's own* JWT subject, not an
+  account-id parameter -- confirms the internal-impersonation design
+  is the intended shape, not a workaround: to set an account's
+  default party, you must actually impersonate that account.
+- Workflow-instance waiting: =ores.shell='s =workflow_commands::wait_for_instance=
+  is client-type-coupled (=nats_client=, not the server's
+  =ores::nats::service::client=) -- needs a small server-side
+  equivalent poll loop, not a reuse of the shell code directly.
+
+** Build order
+
+1. Internal-impersonation token minter: a small, named helper (home:
+   =ores.iam.core=, next to =jwt_authenticator=/=auth_handler.hpp=,
+   since it needs the same claims shape and signer) --
+   =mint_internal_token(signer, tenant_id, account_id, party_id)=,
+   building the same =jwt_claims= shape =auth_handler.hpp='s login
+   path does (subject/issued_at/expires_at/username/email/tenant_id/
+   party_id/session_id/visible_party_ids), skipping password
+   verification (server already trusts itself) and rate limiting.
+   Documented as the reusable primitive future multi-actor workflows
+   call, not Acme-specific.
+2. Server-side workflow-wait helper (poll =get_workflow_steps_request=
+   via =nats_.request_sync= with an impersonated token, mirroring
+   =wait_for_instance='s polling shape).
+3. Acme DQ bundle definitions (data, not code) registering the
+   holding-group spec: which datasets/entities per bundle, LEI root,
+   per-company party-scoping -- this is what makes the spec
+   data-driven per the acceptance criteria, not a C++/SQL literal.
+4. Rewrite =tenant_handler::provision_acme= to orchestrate: mint
+   tenant-admin token -> publish LEI/business-centre bundle -> for
+   each operating-company party (once it exists): mint a
+   party-scoped token -> publish that company's bundle -> save_party
+   (activate) -> complete_party_onboarding -> save_account_party ->
+   set_my_default_party (holding company only) -> save_counterparty
+   (demo logo, once). Each step emits a human-readable progress line
+   to the response stream instead of raw step/action codes.
+5. Delete =ores_iam_provision_acme_tenant_fn= and
+   =ores_iam_acme_activate_party_fn= from
+   =iam_acme_provisioner_create.sql= once the C++ path is verified
+   end to end against a live Acme Corporation tenant.
 
 * Notes
 

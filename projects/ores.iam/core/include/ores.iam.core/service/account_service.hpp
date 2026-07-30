@@ -216,9 +216,17 @@ public:
      *
      * @param account_id The ID of the account to update
      * @param email The new email address
+     * @param full_name The account holder's full name; empty clears it.
      * @param default_party_id The party to set as the account's default
      * quick-login party; nullopt clears it. The caller is responsible for
      * verifying the party is one the account is actually associated with.
+     * @param job_title Job title / functional role; empty clears it.
+     * @param reports_to_account_id The account this person reports to;
+     * nil clears it. The caller is responsible for verifying the target
+     * account exists (the insert trigger also enforces this).
+     * @param image_id Profile picture for this account; nil clears it.
+     * The caller is responsible for verifying the image exists (the
+     * insert trigger also enforces this).
      * @param modified_by The username making the change
      * @param change_reason_code The change reason code for audit trail
      * @param change_commentary Free-text commentary explaining the change
@@ -227,7 +235,11 @@ public:
      */
     bool update_account(const boost::uuids::uuid& account_id,
                         const std::string& email,
+                        const std::string& full_name,
                         const std::optional<boost::uuids::uuid>& default_party_id,
+                        const std::string& job_title,
+                        const boost::uuids::uuid& reports_to_account_id,
+                        const boost::uuids::uuid& image_id,
                         const std::string& modified_by,
                         const std::string& change_reason_code,
                         const std::string& change_commentary);

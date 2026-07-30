@@ -30,6 +30,7 @@ create table if not exists ores_iam_accounts_tbl (
     "version" integer not null,
     "account_type" text not null default 'user',
     "username" text not null,
+    "full_name" text null,
     "password_hash" text not null,
     "password_salt" text not null,
     "service_password_hash" text null,
@@ -37,6 +38,8 @@ create table if not exists ores_iam_accounts_tbl (
     "email" text not null,
     "default_party_id" uuid null,
     "image_id" uuid null,
+    "job_title" text null,
+    "reports_to_account_id" uuid null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
@@ -90,6 +93,21 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid image_id: %. Image must exist.', new.image_id
+        using errcode = '23503';
+    end if;
+
+    -- Validate reports_to_account_id, if set (soft self-reference: no real
+    -- FK given the temporal key shape). A nil check is not needed here --
+    -- the domain layer uses nil_uuid() as its own "unset" sentinel and
+    -- never sends a nil uuid through as a set value.
+    if new.reports_to_account_id is not null and not exists (
+        select 1 from ores_iam_accounts_tbl
+        where tenant_id = new.tenant_id
+          and id = new.reports_to_account_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid reports_to_account_id: %. Account must exist.',
+            new.reports_to_account_id
         using errcode = '23503';
     end if;
 

@@ -265,9 +265,15 @@ void setup_currency_combo(QComboBox* combo,
             for (const auto& code : codes)
                 comboPtr->addItem(QString::fromStdString(code));
 
-            const QString to_select = !current.isEmpty() ?
-                                          current :
-                                          (fallback_selection ? fallback_selection() : QString());
+            // fallback_selection wins over current: the dialog's own
+            // setEntity() always runs synchronously before this async
+            // fetch can complete, so by the time this callback fires the
+            // model's own field value is authoritative -- current (the
+            // combo's transient text, empty until this first population)
+            // would otherwise permanently blank the selection on every
+            // dialog open.
+            const QString fallback = fallback_selection ? fallback_selection() : QString();
+            const QString to_select = !fallback.isEmpty() ? fallback : current;
             if (!to_select.isEmpty())
                 comboPtr->setCurrentText(to_select);
 
@@ -318,9 +324,15 @@ void setup_calendar_combo(QComboBox* combo,
             for (const auto& code : codes)
                 comboPtr->addItem(QString::fromStdString(code));
 
-            const QString to_select = !current.isEmpty() ?
-                                          current :
-                                          (fallback_selection ? fallback_selection() : QString());
+            // fallback_selection wins over current: the dialog's own
+            // setEntity() always runs synchronously before this async
+            // fetch can complete, so by the time this callback fires the
+            // model's own field value is authoritative -- current (the
+            // combo's transient text, empty until this first population)
+            // would otherwise permanently blank the selection on every
+            // dialog open.
+            const QString fallback = fallback_selection ? fallback_selection() : QString();
+            const QString to_select = !fallback.isEmpty() ? fallback : current;
             if (!to_select.isEmpty())
                 comboPtr->setCurrentText(to_select);
 

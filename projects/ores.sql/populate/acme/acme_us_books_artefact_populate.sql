@@ -55,7 +55,8 @@ begin
         book_status, regulatory_book_type, is_sweepable, rates_centre_code
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '7587dbc4-6099-5efd-b6b3-5e3f15fac2c6', 0, 'IR Swaps New York Book', 'c6826c25-9de0-5d23-b39b-96f53c714d65', 'USD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), '35400c12-2a43-5b5c-934e-96f09f406887', 0, 'Credit Trading New York Book', '840f7ff0-f868-5c63-98d4-91fb24180e51', 'USD', null, null, 'Active', 'Trading', false, null),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b60bea04-a671-5dcb-8fb4-9fea97d7d9e6', 0, 'FX Rates New York Book', 'e1b393f8-d984-5ae7-b3ae-0c16ac371aa7', 'USD', null, null, 'Active', 'Trading', false, null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '903faedb-3469-582b-88b9-348985ec7b01', 0, 'USD Rates Book', 'f2463388-54ed-599a-989c-68771cb69657', 'USD', null, null, 'Active', 'Trading', false, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd3903f8f-725c-53b0-a7fa-178053c668f8', 0, 'CAD Rates Book', '35341151-b72b-521f-b317-d52f7d6af62b', 'USD', null, null, 'Active', 'Trading', false, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'f7d3eb2e-1b8e-5ceb-abc8-b8b8f252120c', 0, 'IG Credit Americas Book', '51f0bcc5-2491-5218-80eb-3ceda562f5f7', 'USD', null, null, 'Active', 'Trading', false, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e22051d0-3099-5c8f-ac49-3f0d2cc83a9c', 0, 'G10 FX Americas Book', '0a89e240-4d74-5275-b74b-bef6776e712c', 'USD', null, null, 'Active', 'Trading', false, null);
 end $$;

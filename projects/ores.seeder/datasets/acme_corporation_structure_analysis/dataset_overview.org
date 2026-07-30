@@ -20,7 +20,7 @@ real corporate shape, maps that shape onto ORE Studio's current
 =party=/=account= entity model, and records the gaps that block
 populating it today. It is the analysis output of [[id:69E9CD42-EED4-403F-9331-AE369B8581B6][task: Analyse Acme
 Bank corporate structure and current populatability]] in the
-[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank]] story. The proposed structure below is the
+[[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation]] story. The proposed structure below is the
 blueprint for the actual seeding work in later tasks of that story.
 
 * Scoping decisions made during this analysis
@@ -327,7 +327,7 @@ tasks under the parent story, not part of this analysis task.
 
 * See also
 
-- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Bank: a realistic holding-group test entity]] — the parent story.
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] — the parent story.
 - [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure: Party, Book, Portfolio, Business Unit, Business Centre]] — the entity model this analysis maps onto.
 - [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — current RBAC model, referenced in the gaps above.
 - [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]] — the provisioning pattern to replicate for Acme Bank.

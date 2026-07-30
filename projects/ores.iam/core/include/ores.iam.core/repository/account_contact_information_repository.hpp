@@ -64,7 +64,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest account contact informations, possibly filtered by id.
+     * @brief Reads latest account contact informations, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::account_contact_information> read_latest(context ctx);
@@ -72,8 +72,9 @@ public:
                                                                  const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all account contact informations, possibly filtered by id.
+     * @brief Reads all account contact informations, possibly filtered by primary key.
      */
     std::vector<domain::account_contact_information> read_all(context ctx, const std::string& id);
 
@@ -84,7 +85,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::account_contact_information>

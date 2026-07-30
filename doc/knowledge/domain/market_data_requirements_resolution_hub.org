@@ -7,192 +7,139 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:requirements:resolution:
 #+created: 2026-07-23
-#+updated: 2026-07-28
-
-This is the hub note for how a logical need for market data — a
-requirement — becomes a concrete, usable piece of data at valuation
-time. Each linked note is a single focused concept; start here and
-follow the links.
+#+updated: 2026-07-30
 
 * Summary
 
 Between a trader wanting to know the value of a book of trades and a
-pricing engine actually computing that value lies a pipeline this
-cluster of documents exists to describe precisely: a trade population
-generates a set of logical *requirements* for market data; those
-requirements are *resolved*, under a named *configuration*, into
-physical *identifiers*; each identifier's own further dependencies are
-expanded via *dependency resolution*; the resulting set is intersected
-against the *market data universe* — everything that actually exists —
-to produce the concrete, valuation-scoped set of market data a
-computation genuinely needs; that set can be *filtered* further, in any
-of three distinct senses, and its resolved values can be *snapshotted*
-for reproducibility. Every one of these seven concepts is given its own
-document; this hub supplies the connective tissue, the running
-worked analogy, and the mathematical notation the individual documents
-assume without re-deriving.
+pricing engine actually computing that value lies a pipeline this cluster
+exists to describe precisely. A trade population generates logical
+*requirements* for market data — symbolic descriptions of what is needed,
+independent of any physical source. Those requirements are *resolved*,
+under a named *configuration*, into physical *identifiers* — fully
+specified references that a database query or messaging system can act on
+directly. Each identifier's own further dependencies are expanded via
+*dependency resolution*; the resulting set is intersected against the
+*market data universe* — everything that actually exists and is reachable
+— to produce the concrete, valuation-scoped set a computation genuinely
+needs. That set can be *filtered*, in three genuinely distinct senses,
+and its resolved values *snapshotted* for reproducibility. Each of the
+seven concepts has its own document; this hub supplies the connective
+tissue and the reading order.
 
-* How to read this cluster
+* The pipeline
 
-Each linked note is a single focused concept; start here and follow
-the links in whatever order matches the question you have.
+Requirements and identifiers are two views of the same entity: a
+requirement names what is wanted in logical vocabulary any pricing system
+would recognise; an identifier is that same description with its physical
+fields — source, calendar, day-count conventions, ticker-construction
+hints — filled in, so that a one-directional vendor projection can render
+it into Bloomberg's, Reuters', or ORE's own notation. DNS readers will
+recognise the split immediately: a requirement is a domain name, an
+identifier is the IP address it resolves to, and a configuration is the
+resolver whose rules determine which address is currently authoritative.
+The analogy is imperfect at one point — DNS has no counterpart to
+re-expressing an IP address in a second registrar's own notation, the way
+our identifier must be expressible as a Bloomberg ticker or an ORE
+=CurveSpec= — but it is otherwise close enough to serve as a running
+orientation throughout the cluster.
 
-** Aside, for readers who know DNS
+Requirements are not all generated at the same time or with the same
+information. A trade's *type* determines the structural shape of what it
+needs before any specific trade is booked. A specific trade *instance*
+narrows that shape by binding currencies, indices, and credit names to
+its own attributes. A specific *valuation date* narrows it further by
+localising every curve-level need to the exact tenor points the trade's
+cashflows actually touch on that date. These three levels —
+static/instance/dynamic — are covered in full in
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]].
 
-#+begin_note
-Every document in this cluster returns to the same worked analogy: the
-Domain Name System. A market data *requirement* plays the role of a
-*domain name* — a stable, human-legible description of what is wanted,
-independent of any specific physical answer. A market data *identifier*
-plays the role of the *IP address* a domain name resolves to — the only
-kind of reference a network (or a database query, or a NATS subject) can
-actually act on. A *market data configuration* plays the role of a
-*resolver configuration* — the specific, named set of rules in force
-that determines which address a given name currently resolves to,
-explaining why the same requirement can legitimately resolve differently
-under two different configurations without the requirement itself
-changing meaning. The *market data universe* plays the role of the
-*entire routable Internet* — everything that could possibly be asked
-for, of which any one valuation touches only a small, requirement-derived
-slice. One place the analogy stops early rather than being stretched:
-an *identifier* is fully specified in this cluster's own logical/physical
-field scheme, but it is not yet a vendor's own notation (a Bloomberg
-ticker, a Reuters RIC) — that further, one-directional step is a
-vendor projection, covered in
-[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]], and
-DNS has no real analogue for it (an IP address doesn't need to be
-re-expressed in a second registrar's own addressing scheme the way a
-market data identifier needs to be re-expressed in Bloomberg's or
-Reuters' notation). *Dependency resolution* plays the role of a browser
-recursively fetching a page's stylesheets, fonts, and images before it
-can finish rendering. A *snapshot* plays the role of a cached DNS record
-with its own retention policy, kept around after the fact for a different
-purpose than the cache it superficially resembles. The analogy is chosen
-because DNS is a system almost every reader already understands
-intuitively, and because — as it happens — DNS has already had to solve,
-in a completely unrelated domain, nearly every structural problem this
-cluster is concerned with. Where the analogy breaks down (most notably
-for snapshotting, whose *purpose* differs meaningfully from DNS
-caching's), each document says so explicitly rather than stretching the
-comparison past where it still illuminates. Skip this aside entirely if
-DNS isn't already familiar; nothing in the individual documents depends
-on it.
-#+end_note
+The central relationship the whole cluster builds toward is:
 
-* Set notation
+$$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho\bigl(\mathrm{static}(\tau(T)) \cup \mathrm{dynamic}(T,d)\bigr)\bigr) \cap U$$
 
-This cluster describes its concepts using ordinary mathematical set
-notation and set operations — union, intersection, subset, closure —
-rather than container-like, configuration-like prose. Several candidate
-terms were weighed for the collection of quotes a valuation actually
-resolves against. "Environment" was rejected: it connotes something
-ambient and configured once per run (closer to a deployment's env vars
-than to a value that varies per trade, per valuation date, and per
-pricing engine), and it invites confusion with unrelated senses of
-"environment" already in use elsewhere (runtime, test, deployment).
-"ORE's today's market" and similar ORE-flavoured names were also
-considered and rejected: they tie the concept to one engine's
-terminology and don't generalise to Bloomberg- or Reuters-sourced data,
-nor to the static/dynamic split this cluster relies on. "Set" was chosen
-because the concept genuinely is a set — closed under union,
-intersection, and closure, with subset and membership tests that matter
-operationally (does this valuation's requirement set fall inside the
-market data universe?) — so the mathematical vocabulary is not a
-metaphor layered on top but a precise description of how these objects
-behave; see [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data
-Universe]] for the fuller comparison. The payoff of this framing is that
-most of the relationships between these concepts collapse from paragraphs
-of prose into a single line of notation, checkable the way an algebraic
-identity is checkable, rather than merely plausible the way a prose
-description is merely plausible. The central relationship every other
-document in this cluster either builds toward or assumes is:
-
-$$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho(\,\mathrm{static}(\tau(T)) \,\cup\, \mathrm{dynamic}(T, d)\,)\bigr) \,\cap\, U$$
-
-Read left to right: a trade population $T$'s types $\tau(T)$ generate a
-*static requirement set* (fixed by product type alone); each trade
-instance in $T$ narrows this to an *instance requirement set* by binding
-currencies, indices, and credit names to that trade's actual attributes
-(no analytics, no date needed); and each instance is narrowed further,
-per valuation date $d$, to a *dynamic requirement set* that localises
-every curve down to the specific points that instance's cashflows
-actually touch on that date — $\mathrm{dynamic}(T, d)$ folds both later
-steps into one symbol for the population-level formula, since the
-formula only needs the final, most-refined set. The union of
-$\mathrm{static}(\tau(T))$ and $\mathrm{dynamic}(T, d)$ is *resolved*
-($\rho$) into physical identifiers, one per requirement; the result is
-expanded to its full *dependency closure*; and intersecting that closure
-with the *market data universe* $U$ produces $\mathrm{MDS}(T)$ — the
-concrete market data set the valuation of $T$ actually needs, and the
-only part of $U$ it ever touches.
+Read as: the dynamic requirement set for a trade population $T$ on date
+$d$ is resolved ($\rho$) into identifiers, expanded to its dependency
+closure, and intersected with the universe $U$ of everything that exists.
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] walks
-through this formula in full, with a worked FX Forward example; every
-symbol in it is defined, in depth, by exactly one of the linked
-documents below.
+through this formula in full with a worked FX Forward example and defines
+every symbol; the individual documents below each own one symbol in depth.
 
-* Detail
+* Documents in this cluster
+
+Read in pipeline order for the first pass; jump to any document for a
+specific concept.
 
 ** The core pipeline
 
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] —
-  the logical, symbolic starting point: what a requirement is, what
-  constitutes its identity, and the static/instance/dynamic three-level
-  structure by which requirement sets are actually generated in practice.
+  start here. Defines what a requirement is, what makes two requirements
+  the same, and the static/instance/dynamic three-level structure by which
+  requirement sets are generated. The DNS analogy is developed here in
+  full as the primary layperson model for requirements.
+
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] —
-  the same entity as a requirement, fully specified: logical fields plus
-  physical fields, the latter existing so a one-directional vendor
-  projection can render the identifier into Bloomberg's, Reuters', or
-  ORE's own =CurveSpec= notation.
+  read second. The same entity as a requirement, fully specified: logical
+  fields plus physical fields. Covers the two-field-group design, the
+  projection $\pi$ from identifiers to requirements (many-to-one,
+  no decision), and the one-directional vendor projection $T_{\text{vendor}}$
+  that renders an identifier into Bloomberg's, Reuters', or ORE's own
+  notation. Includes a state-of-the-art survey drawing on
+  [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
+  identifiers]] for the convergence evidence that motivates the
+  logical field structure.
+
 - [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] —
-  $\rho$, the resolution function mapping requirements to identifiers,
-  and why "configuration" — not "profile" — is the term two independent
-  reference systems (ORE, OpenGamma Strata) converge on.
+  $\rho$, the resolution function. Explains why the same requirement can
+  resolve to different identifiers under different configurations, and
+  why "configuration" — not "profile" or "policy" — is the term two
+  independent reference systems (ORE, OpenGamma Strata) converge on.
+
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] —
-  $U$, the global set everything is drawn from, and the full worked
-  derivation of $\mathrm{MDS}(T)$ given above.
+  $U$. The global set every identifier is drawn from. Carries the full
+  worked derivation of $\mathrm{MDS}(T)$ and the argument for why set
+  notation — rather than "environment" or similar terms — is the right
+  vocabulary for this concept.
+
 - [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency
-  Resolution]] — $\mathrm{closure}$, the transitive expansion of a
-  resolved set to include everything it depends on, grounded in ORE's
-  =DependencyGraph= and OpenGamma Strata's =MarketDataNode=.
+  Resolution]] — $\mathrm{closure}$. The transitive expansion of a
+  resolved identifier set to include everything those identifiers depend
+  on, grounded in ORE's =DependencyGraph= and OpenGamma Strata's
+  =MarketDataNode=.
 
 ** Refinements on the resolved set
 
 - [[id:E304DE17-D6DB-4871-9099-9CD316B7D897][Market Data Filtering]] —
   three genuinely distinct senses of "filtering" sharing one word:
   narrowing $\mathrm{MDS}(T)$ by configured pricing engines, aggregating
-  already-computed risk output by dimension, and ranking competing
-  sources for a single identifier during IPV curation. Kept
-  deliberately separate rather than unified, because they operate on
-  three different kinds of object.
+  risk output by dimension, and ranking competing sources for a single
+  identifier during IPV curation. Each operates on a different kind of
+  object; they are kept deliberately separate rather than unified under
+  one mechanism.
+
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] —
   materialising $\mathrm{MDS}(T)$'s actual values at a point in time,
-  fixed or floating, for reproducibility. The one concept in this
-  cluster with no confirmed prior art in either ORE or OpenGamma
-  Strata, documented candidly as this repository's own.
+  fixed or floating, for reproducibility. The one concept in this cluster
+  with no confirmed prior art in either ORE or OpenGamma Strata,
+  documented candidly as this repository's own.
 
-** A note on research method
+#+begin_note
+*A note on research method*
 
-Every claim of prior art in this cluster — every citation of an ORE
-class or an OpenGamma Strata interface — comes from direct inspection of
-those two systems' actual source code, checked out locally
-(=Engine.remote= for ORE/QuantLib/QuantExt, a local Strata checkout for
-OpenGamma), not from memory, inference, or the informal notes this
-cluster's topic list originated from. Those originating notes are a
-personal, unreviewed set of notes, not a citable source, and are
-deliberately not treated as one anywhere in this cluster: every
-terminology decision recorded here — most visibly, replacing
-"environment" with "market data universe" and "profile" with
-"configuration" — was made only once independently confirmed against
-real, production, open-source systems that had no access to those notes
-at all. Where no such confirmation could be found — most notably for
-snapshotting, and for two of the three senses of filtering — each
-affected document says so plainly rather than presenting an educated
-guess as settled prior art.
+Every claim of prior art in this cluster — every citation of an ORE class
+or an OpenGamma Strata interface — comes from direct inspection of those
+two systems' actual source code, not from memory or inference.
+Terminology decisions recorded here (replacing "environment" with "market
+data universe," "profile" with "configuration") were made only once
+independently confirmed against production open-source systems. Where no
+confirmation could be found — most notably for snapshotting, and for two
+of the three senses of filtering — each affected document says so plainly
+rather than presenting an educated guess as settled prior art.
+#+end_note
 
 * See also
 
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — one of this cluster's two reference systems.
-- [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — the ORE-derived logical/physical two-field-group identifier and its one-directional vendor projection.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — comparative analysis of six vendor schemes: RIC, Bloomberg ticker, ORE canonical key (with CurveSpec), MDDL, FIX, and OpenGamma Strata.
-- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, worked through in the same document as a vendor-projection target, not a peer identifier scheme.
+- [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, a vendor-projection target rather than a peer identifier scheme.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — an adjacent, distinct concept (how a resolved value is priced, not how it is resolved), explicitly disambiguated in [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]].

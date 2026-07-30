@@ -69,7 +69,7 @@ where not exists (
 );
 
 -- -------------------------------------------------------------------------
--- ORE App Version 1.8.15.0
+-- ORE App Version 1.8.16.0-3-g3b62ba248
 -- -------------------------------------------------------------------------
 with ore_app as (
     select id from ores_compute_apps_tbl
@@ -102,7 +102,7 @@ inserted_version as (
         1,
         ore_app.id,
         '1.0.0',
-        '1.8.15.0',
+        '1.8.16.0-3-g3b62ba248',
         512,
         current_user,
         current_user,
@@ -115,7 +115,7 @@ inserted_version as (
     where not exists (
         select 1 from ores_compute_app_versions_tbl av
         join ore_app on av.app_id = ore_app.id
-        where av.engine_version = '1.8.15.0'
+        where av.engine_version = '1.8.16.0-3-g3b62ba248'
           and av.wrapper_version = '1.0.0'
           and av.tenant_id = ores_utility_system_tenant_id_fn()
           and av.valid_to = ores_utility_infinity_timestamp_fn()
@@ -128,7 +128,7 @@ app_version_id as (
     select av.id
     from ores_compute_app_versions_tbl av
     join ore_app on av.app_id = ore_app.id
-    where av.engine_version = '1.8.15.0'
+    where av.engine_version = '1.8.16.0-3-g3b62ba248'
       and av.wrapper_version = '1.0.0'
       and av.tenant_id = ores_utility_system_tenant_id_fn()
       and av.valid_to = ores_utility_infinity_timestamp_fn()
@@ -153,7 +153,7 @@ select
     ores_utility_system_tenant_id_fn(),
     app_version_id.id,
     p.id,
-    '/api/v1/storage/compute/packages/ore/1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz',
+    '/api/v1/storage/compute/packages/ore/1.8.16.0-3-g3b62ba248/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz',
     current_user,
     current_user,
     'system.new_record',

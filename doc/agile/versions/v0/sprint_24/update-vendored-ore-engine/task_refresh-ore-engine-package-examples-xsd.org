@@ -126,7 +126,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | compute_ore_app_seed.sql still seeds the deleted ore-1.8.15.0 package (engine_version, package_uri) | compute_ore_app_seed.sql | Fixed | Updated all 5 references to 1.8.16.0-3-g3b62ba248; verified via db recreate that the new engine_version/package_uri land correctly. |
+| 2 | reapply_known_patches() doesn't verify its sed actually matched | update_ore_samples.sh | Declined (informational) | Real robustness suggestion for a future upstream format change, not a defect in this PR's actual output (verified patches applied correctly); left as a known, minor follow-up. |
+| 3 | 57.5MB binary committed as a plain git blob, no LFS | ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz | Accepted, no change | Matches this repo's existing convention -- no Git LFS anywhere, other external/* dirs already vendor large binaries (mddl PDF, lei xlsx, etc.). |
+| 4 | compare_csv.py compares rows positionally, not by key | compare_csv.py | Declined (informational) | ORE's own CSV row order is deterministic for a given input; noted as a future-proofing concern only, not a current defect. |
 
 * Result
 

@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: C50E29B1-2AD7-489C-8940-1778B5B412F8
+:END:
+#+title: Test Scenario: Verify the Acme staff org chart
+#+description: Confirm the Org Chart action renders a maximizable, card-based tree of Acme staff reporting lines with photos, job titles, and office/party labels.
+#+type: test_scenario
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:03D3AF75-BE23-4BAE-AD7A-D3EF0EF2912B][Add an org-chart view to visualise Acme staff reporting lines]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- The database must be freshly provisioned via =--source acme= —
+  confirm via =compass db status=, recreating only if stale:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:03D3AF75-BE23-4BAE-AD7A-D3EF0EF2912B][Add an org-chart view to visualise Acme staff reporting lines]] |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+Log in with account =tenant_admin@acme_corporation= and password
+=Secure-Password-123=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Org Chart from the Admin menu
+
+- With the User Accounts admin menu enabled (already logged in),
+  select *User Accounts > Org Chart*.
+- A new MDI subwindow titled "Org Chart" opens, showing a tree of
+  cards fanning out from a single dark "Adrian Vance / Group Chief
+  Executive Officer" card at the top.
+- Confirms: the window has a working maximize button (double-click
+  its title bar, or the maximize icon, expands it to fill the MDI
+  area) — it behaves like a normal list window, not a fixed-size
+  dialog.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm every card shows photo, name, title, office
+
+- Zoom/pan the chart (mouse wheel / click-drag) to inspect a few
+  cards at different depths — e.g. Adrian Vance (root), one Country
+  Head (e.g. Leanne Shaw), and one of their reports.
+- Each card shows: a circular photo (not a blank/placeholder square),
+  the person's full name, their job title (wrapped onto its own
+  line(s), not cut off or overflowing the card), and an office/party
+  label near the bottom of the card (e.g. "Acme Corporation UK plc"
+  for UK staff, "Acme Corporation Plc" for Adrian Vance).
+- Each of the three Country Head branches (UK/US/HK) renders in a
+  visibly different pastel colour from the others and from the root's
+  neutral dark card; every card within one branch shares that
+  branch's colour.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the current user's card is highlighted
+
+- Log out and log back in as one of the generated staff accounts
+  instead (look one up via =accounts list= in =ores.shell= — staff
+  usernames are randomised per provisioning run, e.g. a UK Trader).
+- Re-open *User Accounts > Org Chart*.
+- That account's own card has a distinct red border around it; no
+  other card does.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-30T19:24:01Z |
+| Branch        | feature/acme-staff-org-chart-view |
+| Commit        | 425f68def |
+| Worktree      | brave_hopper |
+
+* Notes

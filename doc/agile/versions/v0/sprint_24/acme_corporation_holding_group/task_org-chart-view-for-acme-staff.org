@@ -33,11 +33,11 @@ Opened from a menu action in the Accounts area.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Implementing OrgChartDialog in ores.qt.iam. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build tree layout + QGraphicsScene card rendering. |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -68,8 +68,23 @@ Opened from a menu action in the Accounts area.
 - Render via =QGraphicsScene=/=QGraphicsView=: one card item per
   account (rounded rect + circular photo pixmap via =ImageCache= +
   two text labels), one line item per edge.
-- New =OrgChartDialog= in =ores.qt.iam= (mirrors sibling dialogs'
-  structure), wired to a new menu action.
+- New =OrgChartWidget= (a plain =QWidget=, not =QDialog=, so it embeds
+  as a normal maximizable MDI subwindow like the accounts list window)
+  in =ores.qt.iam=, wired to a new =User Accounts > Org Chart= menu
+  action.
+- Colour per depth-1 branch (e.g. one colour per office), not per
+  independent root -- the true root(s) (group/holding level, no
+  manager) get a neutral dark colour instead.
+- Each card also shows the account's office/party affiliation
+  (resolved once per branch anchor via =get_account_parties_by_account_request=
+  + =get_parties_request=, then propagated down that branch -- not a
+  per-account fetch) and highlights the currently logged-in user's own
+  card.
+- Provisioning gap discovered and fixed along the way: the holding
+  company (Acme Corporation Plc) had no staff of its own, so the chart
+  had three disconnected per-office roots instead of one real tree.
+  Added a new =acme_group= dataset/bundle (a Group CEO, "Adrian
+  Vance") and rewired the three Country Heads to report to them.
 
 * Notes
 
@@ -82,7 +97,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C50E29B1-2AD7-489C-8940-1778B5B412F8][Verify the Acme staff org chart]] | PASSED | |
 
 * PRs
 
@@ -97,3 +112,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered a new =OrgChartWidget= (=ores.qt.iam=), opened via *User
+Accounts > Org Chart*: a maximizable MDI window rendering every
+tenant account as a card (circular photo, name, word-wrapped job
+title, office/party label), auto-laid-out top-down and connected to
+its manager, with pastel colours per office branch, a neutral root
+card, and a highlighted border on the current user's own card.
+
+Along the way, discovered and fixed a real provisioning gap: the
+Acme Corporation Plc holding company had no staff of its own, so
+the chart was three disconnected per-office trees rather than one.
+Added a new =acme_group= dataset/bundle publishing a Group CEO
+("Adrian Vance"), rewired the three Country Heads to report to
+them, and wired the new artefact file into =populate.sql= (a
+required registration step easy to miss for new dataset files).
+
+Verified end-to-end via the QA Validation Runner scenario "Verify
+the Acme staff org chart" -- all four steps PASSED.

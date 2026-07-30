@@ -117,7 +117,8 @@ returns table (
     artefact_type text,
     target_subject text,
     has_artefacts boolean,
-    is_publishable boolean
+    is_publishable boolean,
+    optional boolean
 ) as $$
 begin
     return query
@@ -129,7 +130,8 @@ begin
         coalesce(d.artefact_type, 'none')::text,
         coalesce(at.target_subject, '(none)')::text,
         (d.id is not null)::boolean as has_artefacts,
-        (d.id is not null and at.target_subject is not null)::boolean as is_publishable
+        (d.id is not null and at.target_subject is not null)::boolean as is_publishable,
+        m.optional
     from ores_dq_dataset_bundle_members_tbl m
     left join ores_dq_datasets_tbl d
         on d.code = m.dataset_code

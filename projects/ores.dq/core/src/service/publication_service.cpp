@@ -465,22 +465,27 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
     BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code
                                << ", resolve_dependencies=" << resolve_dependencies;
 
-    // Direct member IDs only -- ores_dq_bundle_datasets_list_fn already does the
-    // dataset_code -> dataset_id lookup (skipping codes with no matching dataset record); the
+    // Direct member IDs + their optional flag -- ores_dq_bundle_datasets_list_fn already does
+    // the dataset_code -> dataset_id lookup (skipping codes with no matching dataset record); the
     // dependency closure and target_subject/is_publishable filtering both happen in
-    // list_publishable_datasets() below, the same core the ID-based publish path uses.
-    const auto sql = "SELECT dataset_id FROM ores_dq_bundle_datasets_list_fn($1) "
+    // list_publishable_datasets() below, the same core the ID-based publish path uses (it has no
+    // notion of "optional" -- that's bundle-membership metadata, not a dataset property -- so the
+    // flag is merged back in afterwards by dataset_id).
+    const auto sql = "SELECT dataset_id, optional FROM ores_dq_bundle_datasets_list_fn($1) "
                      "WHERE dataset_id IS NOT NULL ORDER BY display_order";
 
     auto rows = execute_parameterized_multi_column_query(
         ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle members for {}", bundle_code));
 
     std::vector<boost::uuids::uuid> member_ids;
+    std::map<boost::uuids::uuid, bool> optional_by_id;
     member_ids.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() >= 1 && row[0].has_value()) {
+        if (row.size() >= 2 && row[0].has_value()) {
             try {
-                member_ids.push_back(boost::lexical_cast<boost::uuids::uuid>(*row[0]));
+                auto id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+                member_ids.push_back(id);
+                optional_by_id[id] = row[1].has_value() && *row[1] == "t";
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn)
                     << "Invalid dataset_id in bundle " << bundle_code << ": " << e.what();
@@ -489,6 +494,14 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
     }
 
     auto result = list_publishable_datasets(member_ids, resolve_dependencies);
+    for (auto& entry : result) {
+        try {
+            auto it = optional_by_id.find(boost::lexical_cast<boost::uuids::uuid>(entry.dataset_id));
+            entry.optional = it != optional_by_id.end() && it->second;
+        } catch (const std::exception&) {
+            entry.optional = false;
+        }
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " publishable datasets in bundle "
                                << bundle_code << " (" << member_ids.size() << " direct member(s))";

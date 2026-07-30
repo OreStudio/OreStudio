@@ -95,7 +95,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Junction generator template unconditionally declares counter/idx even when no generator_expr references idx (e.g. badge_mapping) | ores.cpp.generator.generator_impl.org, core.py | Fixed | Added a needs_counter flag for junctions mirroring domain_entity's, gated the declaration (a1c52579a). |
+| 2 | badge_mapping's newly generated messaging/service stack is completely unwired -- registrar.cpp still routes through the bespoke badge_handler | ores.dq.badge_mapping_junction.org, generated messaging/service files | Fixed | Disabled ores.cpp.nats-handler/nats-sub-registrar/protocol/service for badge_mapping via :ores.*.enabled: false; removed the dead generated files (a1c52579a). |
+| 3 | Junction template drops boolean :default: initializers (dataset_bundle_member's optional field) | cpp_domain_type_class.hpp.mustache | Declined | Pre-existing gap, also present in refdata's calendar_date before this PR; every construction site already sets the field explicitly. Out of scope for this task. |
+| 4 | NATS subject/response-field rename for dataset_bundle_members by-bundle lookup | dataset_bundle_member_protocol.hpp | Declined | Informational only; producer and consumer updated together in this PR, internally consistent. |
+| 5 | No unit test coverage for the new codegen logic | core.py, generate.py | Fixed | Added projects/ores.codegen/tests/test_dq_drift_fixes.py covering composite-PK extra args and junction counter/idx gating (a1c52579a). |
 
 * Result
 

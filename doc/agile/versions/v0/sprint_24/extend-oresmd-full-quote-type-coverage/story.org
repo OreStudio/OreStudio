@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: D566131C-D08C-4AFE-950E-B3DD26EB2C24
+:END:
+#+title: Story: Extend oresmd to full ORE quote-type coverage
+#+description: oresmd's current design (id:C3E053CA-0D4B-480B-9119-E11530160EC1) structurally represents ~7 of the 49 ORE quote types documented in the market data catalogue (id:F9AE7F54-D995-476A-BA24-93698BF5029D). Extend the design and its C++ implementation, family by family, to represent every catalogued type -- new asset classes (inflation, correlation), new metric/dimension fields on existing asset classes (IR, credit, equity, commodity), and a new volatility-surface sub-schema (strike/expiry/model-subtype) -- so oresmd can express every market data identifier ORE itself supports, even before XML conversion code exists for all of them.
+#+type: story
+#+level: s2
+#+filetags: :market-data:identifiers:oresmd:design:sprint_24:v0:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+oresmd should be able to *express* an identifier for every one of the
+49 ORE quote types [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][the market
+data catalogue]] documents -- not just project a URI into a working ORE
+key string, which is a separate, narrower concern this story does not
+require of every family (see =* Out of scope=). Representation
+completeness is the goal; XML/conversion coverage is tracked
+separately (e.g. the [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][ORE
+curve-config/market-data XML round-trip task]] this story was split off
+from, which stays scoped to =YieldCurve= plus whatever asset classes
+oresmd already represents).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Split into per-family tasks; none started yet. |
+| Waiting on    | Nothing.                               |
+| Next          | Start with IR (largest single gap: 10 of 12 catalogued types unrepresented). |
+| Last touched  | 2026-07-30                               |
+
+* Acceptance
+
+- [ ] Every catalogued quote type has a corresponding, constructible
+  oresmd identifier shape (a variant member, or new fields/enum values
+  on an existing one) with unit tests confirming it can be built and,
+  where the catalogue gives a worked key example, projects to the
+  documented ORE key string.
+- [ ] =market_data_urn.org= (id:C3E053CA-0D4B-480B-9119-E11530160EC1)
+  is updated per family as its task lands -- new asset classes get new
+  "Worked examples" sections in the same style as the existing five;
+  extended asset classes get their new fields documented in "Grammar"
+  and "Field justification" the same way existing fields are.
+- [ ] No existing asset class's current fields/behaviour regress --
+  every extension is additive (new optional fields, new enum values),
+  matching this story's own established "resolution is strictly
+  additive" principle.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C9C888AB-473D-4C91-BC30-9470E4080C5A][Extend oresmd IR coverage: MM, FRA, basis swaps, zero curves, futures]] | BACKLOG | | | Represent the 10 of 12 catalogued IR quote types not yet covered: MM/RATE, FRA/RATE, IMM_FRA/RATE, BASIS_SWAP/BASIS_SPREAD, CC_BASIS_SWAP/BASIS_SPREAD, CC_FIX_FLOAT_SWAP/RATE, BMA_SWAP/RATIO, ZERO/RATE, ZERO/YIELD_SPREAD, MM_FUTURE/PRICE, OI_FUTURE/PRICE. |
+| [[id:37E0F26A-7702-4379-8D18-C58DC701C790][Extend oresmd credit coverage: hazard rate, recovery rate, base correlation, rating transition]] | BACKLOG | | | Represent the 4 of 5 catalogued credit quote types not yet covered: HAZARD_RATE/RATE, RECOVERY_RATE/RATE, CDS_INDEX/BASE_CORRELATION and INDEX_CDS_TRANCHE/BASE_CORRELATION (legacy and modern base-correlation formats), RATING/TRANSITION_PROBABILITY. |
+| [[id:D7FC7525-5532-4498-8B7B-5F14215C99FD][Extend oresmd equity coverage: dividend rate, equity forward price]] | BACKLOG | | | Represent the 2 of 3 catalogued equity quote types not yet covered: EQUITY_DIVIDEND/RATE, EQUITY_FWD/PRICE. |
+| [[id:9E8804D0-16BA-45D6-BCE8-CBCA60219DE2][Extend oresmd commodity coverage: commodity forward price, CPR]] | BACKLOG | | | Represent the 2 of 3 catalogued commodity quote types not yet covered: COMMODITY_FWD/PRICE, CPR/RATE. |
+| [[id:B87C97B8-415B-4C7D-9ACB-2B58EEFCB26E][Extend oresmd FX coverage: FX forward points]] | BACKLOG | | | Represent the 1 of 2 catalogued FX quote types not yet covered: FXFWD/RATE. |
+| [[id:DD35387F-D84B-4392-9C07-8F6F7F2FFF8F][Add oresmd inflation asset class: ZC/YoY swap rate, seasonality]] | BACKLOG | | | oresmd has no inflation asset class at all today. Add inflation_market_data_identifier covering the 3 catalogued inflation quote types: ZC_INFLATIONSWAP/RATE, YY_INFLATIONSWAP/RATE, SEASONALITY/RATE. |
+| [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]] | BACKLOG | | | oresmd only represents swaption RATE_LNVOL today. Design one shared strike/expiry/model-subtype sub-schema and apply it across all 8 catalogued vol sub-families: swaption, cap/floor, FX option, equity option, commodity option, bond option, inflation cap/floor, credit index option (12 quote types total). |
+| [[id:6D1CA504-D70A-4ACB-9560-3C124162FC80][Add oresmd correlation asset class: pairwise factor correlation]] | BACKLOG | | | oresmd has no correlation asset class at all today. Add correlation_market_data_identifier covering CORRELATION/RATE (pairwise correlation between two risk factors, e.g. CCY-CMS-TENOR, FX-FIX-CCY1-CCY2, EQ-TICKER). |
+
+* Decisions
+
+- *Representation and conversion are separate concerns*: this story's
+  acceptance is "oresmd can express an identifier for every catalogued
+  type", not "every type has working XML import/export" -- the latter
+  is per-domain-model conversion work tracked wherever that domain
+  model actually lives (e.g. =ir_curve_generation_config=/=ir_curve_feed=
+  for IR yield curves), and most catalogued types have no ORES domain
+  model behind them at all yet. Confusing the two led to this story's
+  own split-off from an XML-round-trip task that was never meant to
+  carry this scope.
+- *Volatility surfaces get one shared sub-schema, not eight
+  independent ones*: every vol sub-family (swaption, cap/floor, FX/equity/commodity/bond
+  option, inflation cap/floor, credit index option) shares the same
+  underlying shape -- a strike/moneyness dimension, an expiry/tenor
+  dimension, and a model-subtype (=RATE_LNVOL=/=RATE_NVOL=/=RATE_SLNVOL=/=SHIFT=/=PRICE=)
+  -- so the schema design happens once, in its own task, rather than
+  being rediscovered independently per sub-family.
+
+* Out of scope
+
+- Full =curveconfig.xml=/=todaysmarket.xml=/market-data-quote-string
+  *conversion* code for every family -- tracked, where it belongs, in
+  the [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][ORE curve-config/market-data
+  XML round-trip task]] (scoped to =YieldCurve= for now) and future
+  tasks once each family's own ORES domain model exists.
+- Building the ORES domain models each new asset class's real data
+  would live in (e.g. an actual inflation curve entity, a correlation
+  matrix entity) -- this story only extends oresmd's *identifier*
+  representation, not the persisted domain models those identifiers
+  would eventually back.

@@ -184,15 +184,15 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 
 *** Columns (Qt model)
 
-| enum_name    | field         | header      | type      | width | is_badge | badge_key        |
-|--------------+---------------+-------------+-----------+-------+----------+------------------|
+| enum_name    | field         | header      | type      | width | is_badge | badge_key       |
+|--------------+---------------+-------------+-----------+-------+----------+-----------------|
 | Code         | code          | Code        | string    | 150   | true     | monetary_nature |
-| Name         | name          | Name        | string    | 200   |          |                  |
-| Description  | description   | Description | string    | 300   |          |                  |
-| DisplayOrder | display_order | Order       | int       | 80    |          |                  |
-| Version      | version       | Version     | int       | 80    |          |                  |
-| ModifiedBy   | modified_by   | Modified By | string    | 120   |          |                  |
-| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |          |                  |
+| Name         | name          | Name        | string    | 200   |          |                 |
+| Description  | description   | Description | string    | 300   |          |                 |
+| DisplayOrder | display_order | Order       | int       | 80    |          |                 |
+| Version      | version       | Version     | int       | 80    |          |                 |
+| ModifiedBy   | modified_by   | Modified By | string    | 120   |          |                 |
+| RecordedAt   | recorded_at   | Recorded At | timestamp | 150   |          |                 |
 
 ** Custom repository methods
 

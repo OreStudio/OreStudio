@@ -2,7 +2,7 @@
 :ID: 08547F5A-B07C-4429-9EA5-022ACDC882C9
 :END:
 #+title: Task: Implement classified entities in batches
-#+description: Consume the audit/classification task's batched output: for each batch, annotate entities with badge_key or image/flag wiring as classified, author any missing badge_definition/badge_mapping rows or image assets the audit flagged as needed, and regenerate -- one batch at a time rather than all 108 entities in one pass. Depends on the audit/classification task's output.
+#+description: Consume the audit/classification task's batched output: for each batch, annotate entities with badge_key or image/flag wiring as classified, author any missing badge_definition/badge_mapping rows or image assets the audit flagged as needed, and regenerate -- one batch at a time rather than all 120 entities in one pass. Depends on the audit/classification task's output.
 #+type: task
 #+level: s1
 #+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
@@ -16,7 +16,7 @@
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -24,7 +24,7 @@ Every entity the audit/classification task classified as badge or
 image either has that rendering wired and regenerated, or has an
 explicit, documented reason it doesn't (e.g. too many distinct
 values for a badge to be useful). Worked through in the audit's
-batches, not all 108 entities in one pass -- each batch should be its
+batches, not all 120 entities in one pass -- each batch should be its
 own, independently reviewable unit of work.
 
 * Status
@@ -32,7 +32,7 @@ own, independently reviewable unit of work.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] |
+| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
 | Now          | Batch 1's 3 ready entities (calendar_type, currency_market_tier, monetary_nature) done. |
 | Waiting on   | New code_domain/badge_definition/badge_mapping data for the other 8 Batch-1 entities and all of Batch 2. |
 | Next         | Author that data, then Batch 2; Batch 3 (plain-text documentation) after. |
@@ -144,7 +144,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | drift check failure: templates hand-edited instead of their org source | cpp_qt_controller.{hpp,cpp}.mustache, cpp_qt_detail_dialog.hpp.mustache | Fixed | CI check, not a review comment -- moved the same edits into the tangle sources (ores.cpp.qt.controller_header/impl.org, ores.cpp.qt.detail_dialog_header.org) and re-tangled; verified byte-identical output. |
+| 2 | Stale link display text for retitled story 6AC16489 | fk-lookup-entity-badge-image-policy/story.org, badge_adoption_audit_rollout/task_*.org, badge_colour_scheme_snags/story.org | Fixed | Updated all 6 occurrences (including the two pre-existing, lower-priority ones the bot flagged as out of scope). |
+| 3 | currency_pair classified as both Image and Badge | task_badge-adoption-coverage-audit.org | Fixed | Not a duplicate -- it genuinely has flag icons (base/quote combos) and a badge (classification field). Added a "Both" note clarifying the policy is per-field, not per-entity. |
+| 4 | 108 vs 120 entity-count mismatch | story.org, task_annotate-audited-entities-with-badges.org | Fixed | Updated acceptance/description text to the corrected 120 count. |
+| 5 | Cosmetic: badge_key column not padded to table width | ores.refdata.{monetary_nature,currency_market_tier}.org | Fixed | Re-aligned; regenerated diff confirmed no functional change. |
 
 * Result
 

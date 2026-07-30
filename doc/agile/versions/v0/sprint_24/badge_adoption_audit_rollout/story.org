@@ -58,7 +58,7 @@ today.
 * Acceptance
 
 - A written audit/classification exists covering every FK-like/code/
-  lookup =domain_entity= model (all 108, not just the 10 already
+  lookup =domain_entity= model (all 120, not just the 10 already
   badged): each is classified as colour badge, image/flag, or plain
   text/neither, with the reasoning documented (not just the verdict),
   and a stated policy/criteria for the classification so future

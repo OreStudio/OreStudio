@@ -69,7 +69,7 @@ right treatment automatically instead of by convention-following.
 ** Merged into the badge-adoption-audit story
 
 Abandoned in favour of merging this scope into
-[[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]]
+[[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]]
 (retitled to reflect the merged scope), at explicit user request:
 rolling out =badge_key= adoption and classifying badge-vs-image-vs-
 plain-text are the same underlying question, and running them as

@@ -25,7 +25,10 @@ for the full mechanism. This template defines one:
 - =66E078FB-D6A6-4DF6-814B-65995D948090= — in =signals:=, after the
   generated signals. Extra entity-specific signals, e.g. a
   cross-navigation request relayed from the list window (see the
-  matching seam in [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]]).
+  matching seam in [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]]), or a signal relayed
+  from the detail dialog (see =DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF=
+  in [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.controller_impl]] and the paired dialog-side seam in
+  [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]]).
 
 Not a paste-block, but a related extension point: =qt.explorer_interface=
 (a model property, not a paste-block UUID) names an abstract interface
@@ -70,6 +73,9 @@ The full template source. Edit here and re-tangle with
 namespace ores::qt {
 
 class {{domain_entity.entity_pascal}}MdiWindow;
+{{^domain_entity.qt.has_readonly_paginated_list}}
+class {{domain_entity.entity_pascal}}DetailDialog;
+{{/domain_entity.qt.has_readonly_paginated_list}}
 class DetachableMdiSubWindow;
 {{#domain_entity.qt.has_badge_columns}}
 class BadgeCache;
@@ -188,6 +194,14 @@ private:
     void showAddWindow();
 {{/domain_entity.qt.has_parent_relationship}}
     void showDetailWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * {{domain_entity.entity_pascal}}DetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon({{domain_entity.entity_pascal}}DetailDialog* detailDialog);
 {{#domain_entity.qt.has_uuid_primary_key}}
     void showHistoryWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 {{/domain_entity.qt.has_uuid_primary_key}}

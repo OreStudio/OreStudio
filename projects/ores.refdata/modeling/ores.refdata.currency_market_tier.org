@@ -184,7 +184,7 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 
 *** Columns (Qt model)
 
-| enum_name    | field         | header      | type      | width | is_badge | badge_key            |
+| enum_name    | field         | header      | type      | width | is_badge | badge_key             |
 |--------------+---------------+-------------+-----------+-------+----------+-----------------------|
 | Code         | code          | Code        | string    | 150   | true     | currency_market_tier |
 | Name         | name          | Name        | string    | 200   |          |                       |

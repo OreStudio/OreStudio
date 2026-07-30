@@ -16,7 +16,7 @@
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -46,7 +46,7 @@ rationale) into one pass over the entity catalogue:
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] |
+| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
 | Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Pick up the implementation task, one batch at a time. |
@@ -124,14 +124,18 @@ rationale) into one pass over the entity catalogue:
 
 ** Already correctly classified (no action)
 
-- *Image*: =country=, =currency=, =business_centre= (via country),
-  =currency_pair= (via its base/quote currency combos).
+- *Image*: =country=, =currency=, =business_centre= (via country).
 - *Badge*: =asset_class_code=, =book_status=, =currency_pair_classification=,
   =currency_pair_convention= (business-day-convention field),
   =curve_role=, =party_status=, =party_type=, =regulatory_book_type=,
   =tenor_kind=, =tenor_unit=, =book=, =counterparty=, =counterparty_identifier=,
-  =currency_pair=, =instrument_code=, =party=, =party_identifier=,
+  =instrument_code=, =party=, =party_identifier=,
   =payment_frequency=, =tenor=.
+- *Both* (not a policy violation -- different fields, different
+  purposes): =currency_pair= has flag icons on its =base_currency=/
+  =quote_currency= combos *and* a colour badge on its
+  =classification= field. The "exactly one treatment" policy applies
+  per rendered field, not per entity.
 
 ** New classification: colour badge (18 entities, batched below)
 

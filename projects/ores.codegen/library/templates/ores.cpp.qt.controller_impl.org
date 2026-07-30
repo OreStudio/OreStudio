@@ -20,13 +20,22 @@ variables and their semantics.
 
 =<<paste:UUID>>= markers in this template are paste-block injection
 points — see [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste blocks: injecting custom code into generated files]]
-for the full mechanism. This template defines one:
+for the full mechanism. This template defines two:
 
 - =52E70F3B-5903-4359-91FB-B533054A18AC= — end of =showListWindow()=,
   after the generated signal connections. Extra =connect()= wiring,
   e.g. relaying a cross-navigation signal declared via the header seam
   (=66E078FB-D6A6-4DF6-814B-65995D948090= in
   [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]]).
+- =DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF= — end of the generated
+  =wireDetailDialogCommon()= helper (the single place every detail
+  window construction site -- add/edit/history-version/revert --
+  wires a freshly-created =<Entity>DetailDialog=). Extra
+  =connect(detailDialog, ...)= wiring, e.g. relaying a custom dialog
+  signal declared via the dialog header seam
+  (=EC19A4EE-363D-4D41-A33A-D5F85A139C80= in
+  [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]]) up through the controller
+  signal declared via the seam above.
 
 * Template
 
@@ -298,16 +307,8 @@ void {{domain_entity.entity_pascal}}Controller::onShowHistory(
 }
 {{/domain_entity.qt.has_uuid_primary_key}}
 
-{{#domain_entity.qt.has_parent_relationship}}
-void {{domain_entity.entity_pascal}}Controller::showAddWindow(
-    boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}}) {
-{{/domain_entity.qt.has_parent_relationship}}
-{{^domain_entity.qt.has_parent_relationship}}
-void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
-{{/domain_entity.qt.has_parent_relationship}}
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new {{domain_entity.entity_singular_words}}";
-
-    auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+void {{domain_entity.entity_pascal}}Controller::wireDetailDialogCommon(
+    {{domain_entity.entity_pascal}}DetailDialog* detailDialog) {
 {{#domain_entity.qt.has_change_reason_cache}}
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
@@ -320,6 +321,26 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
 {{/domain_entity.qt.has_combo_badge_source}}
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+
+    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
+            this, &{{domain_entity.entity_pascal}}Controller::statusMessage);
+    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::errorMessage,
+            this, &{{domain_entity.entity_pascal}}Controller::errorMessage);
+{{! see * Extension points above }}
+<<paste:DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF>>
+}
+
+{{#domain_entity.qt.has_parent_relationship}}
+void {{domain_entity.entity_pascal}}Controller::showAddWindow(
+    boost::uuids::uuid {{domain_entity.qt.parent_id_field_camel}}) {
+{{/domain_entity.qt.has_parent_relationship}}
+{{^domain_entity.qt.has_parent_relationship}}
+void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
+{{/domain_entity.qt.has_parent_relationship}}
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new {{domain_entity.entity_singular_words}}";
+
+    auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
 {{#domain_entity.qt.has_parent_relationship}}
     if (!{{domain_entity.qt.parent_id_field_camel}}.is_nil()) {
         {{domain_entity.qt.domain_class}} prefilled;
@@ -329,10 +350,6 @@ void {{domain_entity.entity_pascal}}Controller::showAddWindow() {
 {{/domain_entity.qt.has_parent_relationship}}
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::statusMessage);
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::errorMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::errorMessage);
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::{{domain_entity.qt.item_var}}Saved,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& code) {
         if (!self) return;
@@ -367,25 +384,10 @@ void {{domain_entity.entity_pascal}}Controller::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << {{domain_entity.qt.key_to_string_prefix}}{{domain_entity.qt.item_var}}.{{#domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field_access}}{{/domain_entity.qt.key_field_access}}{{^domain_entity.qt.key_field_access}}{{domain_entity.qt.key_field}}{{/domain_entity.qt.key_field_access}}{{domain_entity.qt.key_to_string_suffix}};
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
-{{#domain_entity.qt.has_change_reason_cache}}
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-{{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.needs_image_cache}}
-    detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.needs_image_cache}}
-{{#domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setBadgeCache(badgeCache_);
-{{/domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
 
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::statusMessage);
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::errorMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::errorMessage);
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::{{domain_entity.qt.item_var}}Saved,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& code) {
         if (!self) return;
@@ -537,18 +539,7 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     }
 
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
-{{#domain_entity.qt.has_change_reason_cache}}
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-{{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.needs_image_cache}}
-    detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.needs_image_cache}}
-{{#domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setBadgeCache(badgeCache_);
-{{/domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
 {{#domain_entity.qt.has_version_navigation}}
     // A single version-nav toolbar (first/prev/next/last) only means
     // something if the dialog has the *full* history to navigate, not
@@ -566,17 +557,6 @@ void {{domain_entity.entity_pascal}}Controller::onOpenVersion(
     detailDialog->set{{domain_entity.entity_pascal_short}}({{domain_entity.qt.item_var}});
     detailDialog->setReadOnly(true);
 {{/domain_entity.qt.has_version_navigation}}
-
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
-            this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::errorMessage,
-            this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -741,28 +721,13 @@ void {{domain_entity.entity_pascal}}Controller::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new {{domain_entity.entity_pascal}}DetailDialog(mainWindow_);
-{{#domain_entity.qt.has_change_reason_cache}}
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-{{/domain_entity.qt.has_change_reason_cache}}
-{{#domain_entity.qt.needs_image_cache}}
-    detailDialog->setImageCache(imageCache_);
-{{/domain_entity.qt.needs_image_cache}}
-{{#domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setBadgeCache(badgeCache_);
-{{/domain_entity.qt.has_combo_badge_source}}
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_{{domain_entity.qt.item_var}} = {{domain_entity.qt.item_var}};
     reverted_{{domain_entity.qt.item_var}}.{{#domain_entity.qt.version_access}}{{domain_entity.qt.version_access}}{{/domain_entity.qt.version_access}}{{^domain_entity.qt.version_access}}version{{/domain_entity.qt.version_access}} = 0;
     detailDialog->set{{domain_entity.entity_pascal_short}}(reverted_{{domain_entity.qt.item_var}});
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::statusMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::statusMessage);
-    connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::errorMessage,
-            this, &{{domain_entity.entity_pascal}}Controller::errorMessage);
     connect(detailDialog, &{{domain_entity.entity_pascal}}DetailDialog::{{domain_entity.qt.item_var}}Saved,
             this, [self = QPointer<{{domain_entity.entity_pascal}}Controller>(this)](const QString& code) {
         if (!self) return;

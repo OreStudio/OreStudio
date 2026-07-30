@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 2220EEEE-34DE-4C13-B1D7-5FEDAE5F0AC4
+:END:
+#+title: Vendored ORE engine package missing its own shared libraries
+#+description: external/ore/packages/ore-1.8.15.0-x64-linux.tar.gz only contains the executable and a manifest.json, never bundling libOREAnalytics.so/libQuantExt.so/libQuantLib.so.1 -- every compute job dispatched to a wrapper node fails immediately with a shared-library load error, confirmed reproducible natively (not container/Newton-specific).
+#+type: capture
+#+level: cross
+#+filetags: :compute:ore:packaging:bug:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+~external/ore/packages/ore-1.8.15.0-x64-linux.tar.gz~ extracts to just
+two files: ~manifest.json~ (naming the executable and its args) and
+the ~ore-1.8.15.0-x64-linux~ binary itself. ~ldd~ on that binary shows
+three of its own shared-library dependencies unresolved:
+~libOREAnalytics.so~, ~libQuantExt.so~, ~libQuantLib.so.1~ (only
+~libboost_timer.so.1.90.0~ and libc/libstdc++/libgcc resolve, since
+those happen to already be installed system-wide on this box). Every
+compute job dispatched to a ~ores.compute.wrapper~ node that unpacks
+this package and runs it fails immediately with "error while loading
+shared libraries: libOREAnalytics.so: cannot open shared object file".
+Whatever step assembles/publishes this archive needs to bundle those
+three ~.so~ files alongside the executable (and set
+~LD_LIBRARY_PATH~/~RPATH~ appropriately so the wrapper can find them at
+the package's own extracted location, not rely on them being installed
+system-wide).
+
+* Why
+
+Discovered while verifying a compute job runs end-to-end against the
+Newton deployment via the Acme test scenario
+([[id:549B8ECF-8D78-4361-8568-E0D332A6E196][Acme end-to-end smoke test against the Newton deployment]]) -- after
+fixing the tenant_id dispatch bug (see
+[[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][the Newton deploy task]]) so a workunit actually reaches a worker node,
+the engine itself fails to even start. Confirmed via direct
+reproduction on this dev box (extract the archive, run the binary
+directly, same error) that this is a pre-existing packaging gap in the
+vendored archive, not anything specific to containers, Newton, or an
+older glibc/Debian version -- it would have failed identically on
+localhost had anyone run a compute job through to actual engine
+execution before now.
+
+* References
+
+- ~external/ore/packages/ore-1.8.15.0-x64-linux.tar.gz~
+- ~projects/ores.compute/wrapper/~ (the process that unpacks and runs this package)
+
+* See also
+
+- [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]] -- the task this was found under.
+- [[id:288DAA6A-D0E0-4118-A10A-D2805DAFAA85][Compute repositories should query the system tenant, not the caller's]] -- sibling finding from the same verification session.

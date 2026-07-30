@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 6EB1CA0B-DC35-4A68-9126-A08F30F7A5C2
+:END:
+#+title: Fix badge severity combo box duplicates and non-badge rendering
+#+description: Badge Definition detail dialog's Severity combo box shows duplicate entries and doesn't render items as badges, noticed during live QA of a tenant with both system-tenant and its own bundle-published badge_severity rows.
+#+type: capture
+#+level: cross
+#+filetags: :qt:dq:badges:ui:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+In the Badge Definition detail dialog (=BadgeDefinitionDetailDialog=),
+the Severity combo box shows duplicate entries (each severity code
+listed twice) and renders items as plain text rather than as badges
+(unlike the rest of the app's severity-code presentation, which shows
+a coloured badge). Both noticed together during manual QA of a
+tenant that has both the system-tenant's badge_severity rows and its
+own bundle-published copy of the same rows visible via RLS.
+
+* Why
+
+Discovered while investigating a cross-tenant badge lookup bug
+(sprint 24). The duplicate-entries symptom is a UI-side instance of
+the same "no dedup across own-tenant + system-tenant rows visible via
+RLS" pattern flagged more generally in capture 3AD561EE (single-row
+lookups on tenant_read_scope: shared entities). The non-badge
+rendering is a separate, unrelated polish gap: the combo's item
+delegate never adopted =BadgeComboHelper=/similar badge-rendering
+support the rest of the codebase uses.
+
+* References
+
+- =projects/ores.qt/dq/src/BadgeDefinitionDetailDialog.cpp= --
+  severity combo setup.
+- Capture 3AD561EE-6A37-4D0D-A326-8266EEC9AD6B -- the underlying
+  no-dedup pattern for =tenant_read_scope: shared= entities.
+
+* See also
+
+-

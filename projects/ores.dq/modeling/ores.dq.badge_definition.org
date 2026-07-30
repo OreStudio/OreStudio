@@ -29,23 +29,28 @@ reference data and looked up at render time via BadgeCache.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique badge definition code.
 
 Examples: 'active', 'locked', 'fsm_draft', 'login_online'.
 
-* Natural keys
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
 
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Display label shown inside the badge.
@@ -53,8 +58,6 @@ Display label shown inside the badge.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective())
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -158,7 +161,6 @@ faker::number::integer(1, 100)
 
 ** Repository
 :PROPERTIES:
-:tenant_read_scope: shared
 :entity_singular_short: definition
 :entity_plural_short:   definitions
 :entity_singular_words: badge definition

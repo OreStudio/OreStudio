@@ -69,7 +69,8 @@ each with its background/text colour and severity visible.
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | FAIL |
+| Notes  | badge definitions, severity combo box has duplicates. this implies missing RLS. also combo box is not using badges. |
 
 ** Open Badge Severities
 
@@ -81,7 +82,8 @@ primary).
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | FAIL |
+| Notes  | has duplicates, missing RLS; ; [[file:scenario_verify-badge-tenant-scoping_step3_20260730_102729.png]] |
 
 ** Confirm badge rendering still works end-to-end
 
@@ -99,6 +101,7 @@ same data.
 | Field  | Value |
 |--------+-------|
 | Status | PASS |
+| Notes  | looks good.; [[file:scenario_verify-badge-tenant-scoping_step4_20260730_102754.png]] |
 
 ** Confirm a second tenant would get its own independent copy
 
@@ -117,10 +120,10 @@ independently -- i.e. this isn't a fluke specific to Barclays.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PASSED |
-| Completed at  | 2026-07-16T22:00:34Z |
-| Branch        | feature/migrate-badges-to-standard-codegen |
-| Commit        | 78efc313e |
-| Worktree      | bright_faraday |
+| Status        | FAILED |
+| Completed at  | 2026-07-30T09:28:03Z |
+| Branch        | feature/regenerate-badge-repositories-with-tenant-read-scope |
+| Commit        | 195d29dad |
+| Worktree      | eager_maxwell |
 
 * Notes

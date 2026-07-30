@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 3804E1DD-B8B8-43B0-B9AF-E9379081B6F0
+:END:
+#+title: Task: Support tenant_read_scope: shared in the junction repository template
+#+description: The junction repository template's {{#junction}} section (cpp_domain_type_repository.cpp.mustache, lines ~655-1096) gates every read/write query on {{#has_tenant_id}} only -- it never got the {{read_tenant_filtered}} conditional treatment the domain_entity section has. core.py now computes junction['read_tenant_filtered'] correctly (added alongside this story's other fix), but nothing in the template consumes it yet. Mirror the domain_entity section's read-vs-write split across ~10 call sites, then regenerate badge_mapping_repository.cpp and verify.
+#+type: task
+#+level: s1
+#+filetags: :fix-badge-tenant-read-scope-regression:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split off the sibling task's badge_mapping fix: it's a junction, and
+investigation found the junction repository template
+(=cpp_domain_type_repository.cpp.mustache='s =\{\{#junction\}\}=
+section, lines ~655-1096) has no equivalent to the domain_entity
+section's =\{\{read_tenant_filtered\}\}= conditional at all -- every
+read AND write query gates on bare =\{\{#has_tenant_id\}\}=. Adding
+=:tenant_read_scope: shared= to the model alone has zero effect;
+confirmed empirically (rendered output still hard-codes
+=tenant_id=). Fixing this properly means template surgery across
+~10 read-query call sites in a template every junction model shares
+-- bigger blast radius than the sibling task's model-only fix, hence
+its own task.
+
+=core.py='s =generate_from_model()= already computes
+=junction['read_tenant_filtered']= correctly (mirroring the
+domain_entity computation) as part of the sibling task's work --
+verified via a direct Python harness bypassing the CLI. Only the
+template itself needs updating to consume it.
+
+Mirror the domain_entity section's read-vs-write split: reads
+(=read_latest=, =read_all=, paginated variants, count) should gate on
+=\{\{read_tenant_filtered\}\}=; mutations (insert/delete) must keep
+=\{\{#has_tenant_id\}\}= unconditionally regardless of
+=tenant_read_scope=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:F6F99E54-34FF-4B5C-8624-9478A649002E][Fix cross-tenant badge lookup: stale generated repositories ignore tenant_read_scope: shared]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                                |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- Every read-query call site in the junction repository template's
+  =\{\{#junction\}\}= section gates on =\{\{read_tenant_filtered\}\}=
+  instead of bare =\{\{#has_tenant_id\}\}=; mutation call sites
+  (insert/delete) are unchanged.
+- Regenerating any junction WITHOUT =tenant_read_scope: shared=
+  produces byte-identical output to before this change (backward
+  compatible -- =read_tenant_filtered= computes to the same value as
+  =has_tenant_id= when the flag is absent).
+- Regenerating =badge_mapping= (which now has
+  =tenant_read_scope: shared=) drops the =tenant_id= filter from its
+  read methods only.
+- Verified live: non-system tenant login shows
+  =ores_dq_badge_mappings_tbl='s 114 rows via =ores.dq.service='s log
+  (=Total: 114=, not =Total: 0=).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Abandoned without implementation. Live QA on the sibling task found
+=badge_mapping= no longer needs a shared-tenant read path at all:
+tenant provisioning now bundle-publishes badge mappings into each
+tenant's own rows (an independent upstream change), so the
+motivating case for this task is gone. The =core.py= groundwork this
+task would have built on (=junction['read_tenant_filtered']=) was
+reverted alongside the sibling task's revert. No other junction
+currently has a shared-tenant-read requirement, so the junction
+repository template's =\{\{#has_tenant_id\}\}=-only gating is left
+as-is.

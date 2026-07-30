@@ -8,7 +8,7 @@
 #+filetags: :qt:dq:badges:bugfix:rls:codegen:sprint_24:v0:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -59,36 +59,91 @@ class of table.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-29                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-30                               |
 
 * Acceptance
 
-- =ores.dq.badge_mapping_junction.org= declares
-  =:tenant_read_scope: shared=.
-- All three entities (=badge_definition=, =badge_severity=,
-  =badge_mapping_junction=) are regenerated via codegen, and the
-  regenerated repository diffs contain only the tenant-filter
-  removal -- any unrelated drift surfaced by the regeneration is
-  flagged separately, not silently accepted.
-- Rebuild and recreate the DB; logging in as a non-system tenant
-  shows badges rendering with their real configured colours (not the
-  orange fallback), and =ores.dq.service='s log shows
-  =Total: 63=/=Total: 114= (or current row counts) instead of
-  =Total: 0= for badge definitions/mappings.
+- [X] Confirmed live whether the reported symptom (badges rendering
+  with the fallback colour for non-system tenants) still reproduces
+  on current =main=. It does not: tenant provisioning was updated
+  upstream (independently of this story) to publish each tenant's
+  own copy of the badge catalogue via the standard DQ bundle-publish
+  mechanism, so every tenant now has its own =badge_definition=/
+  =badge_severity=/=badge_mapping= rows and never depends on the
+  system-tenant RLS fallback this story set out to fix.
+- [X] =tenant_read_scope: shared= reverted for =badge_definition=/
+  =badge_severity= after live QA (see =* Decisions=) found it causes
+  a *new* regression given the above: a tenant now has both its own
+  copied rows and (via RLS's own-OR-system-tenant fallback) the
+  original system-tenant rows visible simultaneously, so admin list
+  views (Badge Definitions, Badge Severities) show duplicates with
+  no dedup.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C1B403E3-E48A-418D-9240-F880D32DE58B][Add tenant_read_scope: shared to badge_mapping_junction, regenerate all three badge repositories]] | BACKLOG | | | badge_definition.org and badge_severity.org already declare tenant_read_scope: shared but their generated repository .cpp files are stale (never regenerated since the flag was added). badge_mapping_junction.org doesn't have the flag at all. Add it, regenerate all three via codegen, and verify the diff carefully -- a prior regeneration this session (iam_service_db_grants_create.sql) silently reverted unrelated hand-added grants never round-tripped into the source .org. |
+| [[id:C1B403E3-E48A-418D-9240-F880D32DE58B][Add tenant_read_scope: shared to badge_mapping_junction, regenerate all three badge repositories]] | DONE | 2026-07-29 | 2026-07-30 | Investigated, fixed, then reverted after live QA found a regression given an independent upstream provisioning change -- see task Result. |
+| [[id:3804E1DD-B8B8-43B0-B9AF-E9379081B6F0][Support tenant_read_scope: shared in the junction repository template]] | ABANDONED | | | Motivating case (badge_mapping) no longer needs shared-tenant reads: tenants now get their own copy via bundle-publish. No other junction currently needs this. |
 
 * Decisions
 
+** Reverted tenant_read_scope: shared for badge_definition/badge_severity
+
+Live QA (=doc/agile/versions/v0/sprint_23/badge-colour-scheme-support/scenario_verify-badge-tenant-scoping.org=)
+against a freshly rebased, freshly provisioned Barclays Plc tenant
+found the originally-reported symptom (=Total: 0=, badges rendering
+with the fallback colour) no longer reproduces: tenant provisioning
+now publishes the =base= bundle's =ore.badge_definitions=/
+=ore.badge_severities=/=ore.badge_mappings= datasets into each
+tenant's own rows (confirmed via direct SQL: Barclays' tenant has
+its own 62/116 rows alongside the system tenant's 63/114). This
+landed independently, upstream, sometime in the ~283 commits between
+when this story was filed and when its fix was live-tested.
+
+Given that, =tenant_read_scope: shared='s RLS-fallback mechanism is
+no longer the operative fix for these two entities -- and applying
+it anyway is actively harmful: with a tenant now holding its own
+copy *and* RLS still permitting the system-tenant row through,
+=read_latest()= (no dedup, no natural-key tie-break) returns both,
+so every code shows up twice in the Badge Definitions/Severities
+admin lists. Verified live via the QA scenario above (steps 2-3
+FAILED with exactly this symptom before the revert).
+
+Reverted the =tenant_read_scope: shared= flag and regenerated both
+repositories back to their original tenant-filtered reads (diff
+against =origin/main= is a clean, exact match modulo the harmless
+model-shape migration below). Also reverted the
+=core.py= junction =read_tenant_filtered= computation added to
+support the (now-abandoned) follow-up task -- no other junction
+currently has a motivating use case for it.
+
+** Kept: primary-key/natural-key model-shape migration
+
+Unrelated prerequisite discovered along the way, independent of the
+tenant-scope question: =badge_definition.org=/=badge_severity.org=
+were on the legacy =* Primary key=/=* Natural keys= heading shape,
+which the current =org_loader.py= no longer reads at all --
+confirmed repo-wide (~61 of 120 =ores.codegen.entity= models are in
+the same state; regenerating any of them fails the same validation).
+Migrated just these two to the =Columns= + =:primary_key:=/
+=:natural_key: true= shape (mirroring =ores.dq.subject_area.org=),
+since it's a real, harmless fix that unblocks any future
+regeneration of these two entities regardless of what happens with
+tenant scoping. The wider repo-wide migration is out of scope here
+(see =* Out of scope=).
+
 * Out of scope
 
--
+- The wider migration of ~59 other =ores.codegen.entity= models
+  still on the legacy primary-key/natural-key heading shape. Filed:
+  [[id:A83E0EB2-B18C-40BB-B7D0-26D72E55A680][Migrate remaining entities off the legacy Primary key/Natural keys heading shape]].
+- Two Qt-layer UI polish items noticed during live QA, unrelated to
+  tenant scoping: the =Badge Definition= detail dialog's Severity
+  combo box shows duplicate entries and doesn't render as badges.
+  Filed: [[id:6EB1CA0B-DC35-4A68-9126-A08F30F7A5C2][Fix badge severity combo box duplicates and non-badge rendering]].

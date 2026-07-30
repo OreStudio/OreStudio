@@ -185,7 +185,7 @@ public:
 
     void export_to_storage(ores::nats::message msg, const std::string& http_base_url) {
         [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_series_handler_lg(), msg);
+            ores::service::messaging::log_handler_entry(market_series_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());

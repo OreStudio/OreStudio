@@ -20,6 +20,7 @@
 #include "ores.qt/OrgExplorerTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
+#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>
 
@@ -30,52 +31,134 @@ using namespace ores::logging;
 OrgExplorerTreeModel::OrgExplorerTreeModel(QObject* parent)
     : QAbstractItemModel(parent) {}
 
-void OrgExplorerTreeModel::load(const QString& party_name,
+void OrgExplorerTreeModel::load(const std::vector<refdata::domain::party>& parties,
                                 std::vector<refdata::domain::business_unit> units,
                                 std::vector<refdata::domain::book> books) {
 
     beginResetModel();
     trade_counts_.clear();
 
+    // Invisible container: its children are the per-party root nodes actually
+    // shown at the top level (see index()/parent()/rowCount() for the
+    // invalid-parent special-casing this implies).
     root_ = std::make_unique<OrgTreeNode>();
-    root_->kind = OrgTreeNode::Kind::Party;
-    root_->party_name = party_name;
     root_->parent = nullptr;
-    root_->row_in_parent = 0;
 
-    // Build unit subtree recursively, starting with top-level units
-    build_unit_subtree(root_.get(), units, books, std::nullopt);
+    std::unordered_map<std::string, refdata::domain::party> party_by_id;
+    for (const auto& p : parties)
+        party_by_id[boost::uuids::to_string(p.id)] = p;
 
-    // Collect books with no owner unit into an "Unassigned" synthetic node
-    std::vector<refdata::domain::book> unassigned;
-    for (const auto& b : books) {
-        if (!b.owner_unit_id.has_value())
-            unassigned.push_back(b);
-    }
+    std::unordered_map<std::string, std::vector<refdata::domain::business_unit>> units_by_party;
+    for (const auto& u : units)
+        units_by_party[boost::uuids::to_string(u.party_id)].push_back(u);
 
-    if (!unassigned.empty()) {
-        auto unassigned_node = std::make_unique<OrgTreeNode>();
-        unassigned_node->kind = OrgTreeNode::Kind::BusinessUnit;
-        unassigned_node->unit.unit_name = "(Unassigned)";
-        unassigned_node->parent = root_.get();
-        unassigned_node->row_in_parent = static_cast<int>(root_->children.size());
+    std::unordered_map<std::string, std::vector<refdata::domain::book>> books_by_party;
+    for (const auto& b : books)
+        books_by_party[boost::uuids::to_string(b.party_id)].push_back(b);
 
-        for (const auto& b : unassigned) {
-            auto book_node = std::make_unique<OrgTreeNode>();
-            book_node->kind = OrgTreeNode::Kind::Book;
-            book_node->book = b;
-            book_node->parent = unassigned_node.get();
-            book_node->row_in_parent = static_cast<int>(unassigned_node->children.size());
-            unassigned_node->children.push_back(std::move(book_node));
-        }
+    // The working set of party ids to show: every party with visible units/
+    // books, plus every party fetched outright (so an empty holding company
+    // still appears as the shell containing its child parties). A unit/book
+    // whose party isn't in `parties` (a visibility gap) still gets a bare
+    // fallback node rather than silently disappearing.
+    std::vector<std::string> party_ids;
+    auto ensure_party = [&](const std::string& party_id) {
+        if (std::find(party_ids.begin(), party_ids.end(), party_id) == party_ids.end())
+            party_ids.push_back(party_id);
+    };
+    for (const auto& [pid, _] : party_by_id)
+        ensure_party(pid);
+    for (const auto& [pid, _] : units_by_party)
+        ensure_party(pid);
+    for (const auto& [pid, _] : books_by_party)
+        ensure_party(pid);
 
-        root_->children.push_back(std::move(unassigned_node));
-    }
+    auto name_of = [&](const std::string& pid) {
+        const auto it = party_by_id.find(pid);
+        return it != party_by_id.end() ? QString::fromStdString(it->second.full_name)
+                                       : QString::fromStdString(pid);
+    };
+    // A party's effective parent is its parent_party_id, but only when that
+    // parent is itself part of the working set -- otherwise (parent outside
+    // session visibility, or no parent at all) the party becomes a top-level
+    // root.
+    auto effective_parent_of = [&](const std::string& pid) -> std::optional<std::string> {
+        const auto it = party_by_id.find(pid);
+        if (it == party_by_id.end() || !it->second.parent_party_id.has_value())
+            return std::nullopt;
+        const auto parent_str = boost::uuids::to_string(*it->second.parent_party_id);
+        if (std::find(party_ids.begin(), party_ids.end(), parent_str) == party_ids.end())
+            return std::nullopt;
+        return parent_str;
+    };
+
+    std::function<void(OrgTreeNode*, const std::optional<std::string>&)> build_parties =
+        [&](OrgTreeNode* parent_node, const std::optional<std::string>& parent_id) {
+            std::vector<std::string> children;
+            for (const auto& pid : party_ids) {
+                if (effective_parent_of(pid) == parent_id)
+                    children.push_back(pid);
+            }
+            std::sort(children.begin(), children.end(), [&](const auto& a, const auto& b) {
+                return name_of(a) < name_of(b);
+            });
+
+            for (const auto& pid : children) {
+                auto party_node = std::make_unique<OrgTreeNode>();
+                party_node->kind = OrgTreeNode::Kind::Party;
+                party_node->party_name = name_of(pid);
+                party_node->parent = parent_node;
+                party_node->row_in_parent = static_cast<int>(parent_node->children.size());
+
+                const auto units_it = units_by_party.find(pid);
+                const auto books_it = books_by_party.find(pid);
+                static const std::vector<refdata::domain::business_unit> no_units;
+                static const std::vector<refdata::domain::book> no_books;
+                const auto& party_units = units_it != units_by_party.end() ? units_it->second : no_units;
+                const auto& party_books = books_it != books_by_party.end() ? books_it->second : no_books;
+
+                build_unit_subtree(party_node.get(), party_units, party_books, std::nullopt);
+
+                std::vector<refdata::domain::book> unassigned;
+                for (const auto& b : party_books) {
+                    if (!b.owner_unit_id.has_value())
+                        unassigned.push_back(b);
+                }
+
+                if (!unassigned.empty()) {
+                    auto unassigned_node = std::make_unique<OrgTreeNode>();
+                    unassigned_node->kind = OrgTreeNode::Kind::BusinessUnit;
+                    unassigned_node->unit.unit_name = "(Unassigned)";
+                    unassigned_node->parent = party_node.get();
+                    unassigned_node->row_in_parent = static_cast<int>(party_node->children.size());
+
+                    for (const auto& b : unassigned) {
+                        auto book_node = std::make_unique<OrgTreeNode>();
+                        book_node->kind = OrgTreeNode::Kind::Book;
+                        book_node->book = b;
+                        book_node->parent = unassigned_node.get();
+                        book_node->row_in_parent = static_cast<int>(unassigned_node->children.size());
+                        unassigned_node->children.push_back(std::move(book_node));
+                    }
+
+                    party_node->children.push_back(std::move(unassigned_node));
+                }
+
+                // Recurse into this party's own child parties before moving
+                // party_node into its parent's children (build_parties needs
+                // the still-owning raw pointer).
+                build_parties(party_node.get(), pid);
+
+                parent_node->children.push_back(std::move(party_node));
+            }
+        };
+
+    build_parties(root_.get(), std::nullopt);
 
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), debug) << "Org tree loaded with party root: " << party_name.toStdString()
-                               << ", " << root_->children.size() << " top-level unit nodes.";
+    BOOST_LOG_SEV(lg(), debug) << "Org tree loaded with " << root_->children.size()
+                               << " top-level party node(s).";
 }
 
 void OrgExplorerTreeModel::build_unit_subtree(
@@ -200,10 +283,10 @@ QModelIndex OrgExplorerTreeModel::index(int row, int col, const QModelIndex& par
         return {};
 
     if (!parent.isValid()) {
-        // Top-level: only the party root node
-        if (!root_ || row != 0)
+        // Top-level: one row per party root node
+        if (!root_ || row >= static_cast<int>(root_->children.size()))
             return {};
-        return createIndex(0, 0, root_.get());
+        return createIndex(row, 0, root_->children[row].get());
     }
 
     const auto* parent_node = node_from_index(parent);
@@ -215,7 +298,7 @@ QModelIndex OrgExplorerTreeModel::index(int row, int col, const QModelIndex& par
 
 QModelIndex OrgExplorerTreeModel::parent(const QModelIndex& index) const {
     const auto* node = node_from_index(index);
-    if (!node || !node->parent)
+    if (!node || !node->parent || node->parent == root_.get())
         return {};
 
     return createIndex(node->parent->row_in_parent, 0, node->parent);
@@ -223,7 +306,7 @@ QModelIndex OrgExplorerTreeModel::parent(const QModelIndex& index) const {
 
 int OrgExplorerTreeModel::rowCount(const QModelIndex& parent) const {
     if (!parent.isValid())
-        return root_ ? 1 : 0;
+        return root_ ? static_cast<int>(root_->children.size()) : 0;
 
     const auto* node = node_from_index(parent);
     if (!node)

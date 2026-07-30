@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <QApplication>
@@ -271,6 +272,12 @@ void PortfolioExplorerMdiWindow::setupConnections() {
             &QFutureWatcher<CounterpartyFetchResult>::finished,
             this,
             &PortfolioExplorerMdiWindow::onCounterpartiesLoaded);
+
+    partyWatcher_ = new QFutureWatcher<PartyFetchResult>(this);
+    connect(partyWatcher_,
+            &QFutureWatcher<PartyFetchResult>::finished,
+            this,
+            &PortfolioExplorerMdiWindow::onPartiesLoaded);
 }
 
 void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
@@ -305,6 +312,7 @@ void PortfolioExplorerMdiWindow::doReload() {
 
     portfolios_loaded_ = false;
     books_loaded_ = false;
+    parties_loaded_ = false;
 
     BOOST_LOG_SEV(lg(), info) << "doReload: submitting tasks. Thread pool: "
                               << QThreadPool::globalInstance()->activeThreadCount() << " active / "
@@ -389,6 +397,29 @@ void PortfolioExplorerMdiWindow::doReload() {
             "counterparties");
     }));
 
+    // Fetch parties so each portfolio/book's owning party can be labelled
+    // and nested by parent_party_id -- needed to group the tree per party
+    // and show the holding-group hierarchy.
+    partyWatcher_->setFuture(QtConcurrent::run([self]() -> PartyFetchResult {
+        return exception_helper::wrap_async_fetch<PartyFetchResult>(
+            [&]() -> PartyFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false, .parties = {}, .error_message = "Model destroyed"};
+
+                refdata::messaging::get_parties_request req;
+                req.limit = 10'000;
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                if (!result)
+                    return {.success = false,
+                            .parties = {},
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch parties: " + result.error())};
+
+                return {.success = true, .parties = std::move(result->parties), .error_message = {}};
+            },
+            "parties");
+    }));
+
     BOOST_LOG_SEV(lg(), info) << "doReload: all tasks submitted";
 }
 
@@ -404,7 +435,7 @@ void PortfolioExplorerMdiWindow::onPortfoliosLoaded() {
     portfolios_loaded_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << portfolios_.size() << " portfolios.";
 
-    if (portfolios_loaded_ && books_loaded_)
+    if (portfolios_loaded_ && books_loaded_ && parties_loaded_)
         rebuildTree();
 }
 
@@ -420,7 +451,23 @@ void PortfolioExplorerMdiWindow::onBooksLoaded() {
     books_loaded_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << books_.size() << " books.";
 
-    if (portfolios_loaded_ && books_loaded_)
+    if (portfolios_loaded_ && books_loaded_ && parties_loaded_)
+        rebuildTree();
+}
+
+void PortfolioExplorerMdiWindow::onPartiesLoaded() {
+    const auto result = partyWatcher_->result();
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load parties: " << result.error_message.toStdString();
+        return;
+    }
+
+    parties_ = std::move(result.parties);
+    parties_loaded_ = true;
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << parties_.size() << " parties.";
+
+    if (portfolios_loaded_ && books_loaded_ && parties_loaded_)
         rebuildTree();
 }
 
@@ -462,8 +509,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
     }
     countWatchers_.clear();
 
-    const QString party_name = clientManager_ ? clientManager_->currentPartyName() : tr("Party");
-    treeModel_->load(party_name, portfolios_, books_);
+    treeModel_->load(parties_, portfolios_, books_);
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
     endLoading();

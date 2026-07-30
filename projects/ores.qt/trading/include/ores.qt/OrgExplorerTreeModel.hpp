@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 #include <QAbstractItemModel>
 #include <QString>
 #include <boost/uuid/uuid.hpp>
@@ -58,6 +59,7 @@ struct OrgTreeNode {
 
     Kind kind;
     QString party_name;                  // valid when kind == Party
+    boost::uuids::uuid party_id;         // valid when kind == Party
     refdata::domain::business_unit unit; // valid when kind == BusinessUnit
     refdata::domain::book book;          // valid when kind == Book
     OrgTreeNode* parent = nullptr;
@@ -68,11 +70,15 @@ struct OrgTreeNode {
 /**
  * @brief Tree model for the organisational hierarchy.
  *
- * Displays: Party root → BusinessUnit nodes (recursive via parent_business_unit_id)
- * → Book leaves (via owner_unit_id).
+ * Displays one Party node per distinct party_id found in the supplied
+ * units/books, nested by parent_party_id so a holding company shows its
+ * child parties (e.g. regional operating companies) as sub-nodes rather than
+ * flattened siblings. Each party node has its own BusinessUnit subtree
+ * (recursive via parent_business_unit_id) and Book leaves (via
+ * owner_unit_id).
  *
- * Books with no owner_unit_id are placed under an "Unassigned" synthetic node
- * at the party level.
+ * Books with no owner_unit_id are placed under an "(Unassigned)" synthetic
+ * node under their own party.
  */
 class OrgExplorerTreeModel final : public QAbstractItemModel {
     Q_OBJECT
@@ -91,13 +97,18 @@ public:
     ~OrgExplorerTreeModel() override = default;
 
     /**
-     * @brief Rebuild the tree from raw business unit and book data.
+     * @brief Rebuild the tree from raw party, business unit, and book data.
      *
-     * Creates a single party root node named party_name, then adds business
-     * units recursively and books as leaves under their owning unit.
-     * Books with no owner_unit_id are grouped under an "Unassigned" node.
+     * Creates one party node per distinct party_id present in units/books
+     * (falling back to a bare node if a referenced party isn't in parties,
+     * e.g. visibility gaps), nested by parent_party_id -- parties with no
+     * visible parent (or whose parent isn't present in `parties`) become
+     * top-level roots. Each party node then gets its own business units
+     * (recursively) and books as leaves under their owning unit. Books with
+     * no owner_unit_id are grouped under an "(Unassigned)" node under their
+     * own party.
      */
-    void load(const QString& party_name,
+    void load(const std::vector<refdata::domain::party>& parties,
               std::vector<refdata::domain::business_unit> units,
               std::vector<refdata::domain::book> books);
 

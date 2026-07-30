@@ -28,7 +28,8 @@ create table if not exists "ores_dq_synthetic_ir_curve_template_entries_artefact
     "dataset_id" uuid not null,
     "tenant_id" uuid not null,
     "currency_code" text not null,
-    "index_name" text not null,
+    "index_family" text not null,
+    "tenor" text not null default '',
     "sequence_index" integer not null,
     "start_tenor_code" text not null,
     "end_tenor_code" text not null,
@@ -42,4 +43,4 @@ create index if not exists dq_synthetic_ir_curve_template_entries_artefact_tenan
 on ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (tenant_id);
 
 create index if not exists dq_synthetic_ir_curve_template_entries_artefact_curve_idx
-on ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (dataset_id, currency_code, index_name);
+on ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (dataset_id, currency_code, index_family, tenor);

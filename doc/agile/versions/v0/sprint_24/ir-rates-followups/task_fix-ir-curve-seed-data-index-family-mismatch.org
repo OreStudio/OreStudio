@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: C80D94BB-DA80-4871-AAF0-D4F852F58831
+:END:
+#+title: Task: Fix realistic_2026 IR curve seed data / index_family enum mismatch
+#+description: Fixes the index_name/index_family regression left by df398d5f1 that currently blocks IR curve theme provisioning.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_24:v0:
+#+owner: marco
+#+branch: chore/file-ir-curve-seed-fix-task
+#+pr: 1771
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore end-to-end provisioning of the synthetic.themes.realistic_2026 IR curves theme, currently broken by df398d5f1's index_name to index_family/tenor migration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- provision party --dataset-size small completes successfully through the IR curve theme publish step; ores_synthetic_publish_theme_from_dq_fn no longer references the removed index_name column; realistic_2026 seed data's currency/index coverage is reconciled with the index_family enum. Resolved by extending index_family to all 20 currencies' real index families (not trimming), backed by real convention data sourced from ORE's own index class definitions -- see Plan.
+
+* Plan
+
+Root cause was broader than the capture found: =df398d5f1= migrated
+the target table (=index_name= -> =index_family=/=tenor=/=role=) and
+every C++/Qt consumer, but never touched the DQ pipeline that actually
+publishes IR curve themes -- both artefact ("wire") tables still only
+had =index_name=, and =ores_synthetic_publish_theme_from_dq_fn= still
+referenced it, plus =role= was silently missing from its insert
+entirely. This broke *every* IR curve theme (=ore_samples_2016=,
+=realistic_2026=, =uniform_demo=), not just =realistic_2026= -- which
+is why another environment hit the same bug independently via
+=crm_topology_bundles='s dependency on =synthetic.themes.ore_samples_2016=.
+
+User explicitly asked not to trim currency coverage, so full 20-currency
+=realistic_2026=/=uniform_demo= support was kept. Since the app-layer
+=validate_index_family= composite validator resolves against
+=overnight_index_convention=/=ibor_index_convention= by a real
+=<CCY>-<FAMILY>= id and neither table had ANY seed data (not even for
+the original 6 supported families), extending coverage required
+sourcing real market conventions (fixing calendar, day count,
+settlement lag), not just widening an enum.
+
+Cloned a fresh checkout of the ORE Engine fork
+(=git@github.com:OreStudio/Engine.git=, synced to upstream
+=OpenSourceRisk/Engine=, submodules included) to
+=/home/marco/Development/ORE/Engine= specifically to read authoritative
+conventions straight from QuantLib/QuantExt's own index class
+definitions (=Sofr=, =Estr=, =Sonia=, =Tonar=, =CHFSaron=, =Aonia=,
+=CORRA=, =HKDHonia=, =Sora=, =Swestr=, =Nowa=, =Kofr=,
+=INRMiborOis=, =PLNPolonia=, =USDLibor=, =GBPLibor=, =JPYLibor=,
+=Euribor=, =Shibor=, =MXNTiie=, =TWDTaibor=) rather than relying on
+memory. Two currencies (ZAR, NZD) have no index class in ORE at all;
+web-searched SARB/RBNZ publications instead, which also caught that
+the seed data's =NZD-NZIONA= was a misspelling of the real benchmark
+=NZONIA=.
+
+Widened =index_family='s check constraint via the codegen =.org=
+model (never hand-edited the generated SQL) -- but ran
+=codegen entity generate --address ores.sql.schema= (not a full
+regen), since a full regen would have silently deleted several
+undocumented pre-existing hand-patches on the generated C++/Qt files
+(=validate_index_family=, a Qt tenor-combo-update method, a generator
+idx-suffix bug fix) that have no paste-block seam to survive
+regeneration -- filed as a separate concern, not fixed here (out of
+scope for a seed-data bugfix). The Qt create-dialog's static combo
+therefore still only lists the original 6 families; new families are
+reachable via the DQ/populate-script/API path (this task's actual
+scope) but not yet from the interactive Qt create flow.
+
+Added =index_family=/=tenor= to both DQ artefact tables (replacing
+=index_name=), fixed all =index_name= references (including the
+previously-missing =role= column) in
+=ores_synthetic_publish_theme_from_dq_fn=, and updated all three
+populate scripts to supply =index_family=/=tenor= directly. Added two
+new populate scripts (=refdata_overnight_index_conventions_populate.sql=,
+=refdata_ibor_index_conventions_populate.sql=, 17 + 7 = 24 rows) wired
+into =foundation_populate.sql= after =refdata_calendars_populate.sql=.
+These seed under the system tenant only (matching the
+=day_count_fraction_types=/=calendars= reference-catalog pattern) --
+per-tenant propagation via a DQ bundle (needed for the *interactive Qt
+create flow's* own =validate_index_family= check to pass for a party,
+since that repository read is tenant-scoped) is a separate, real gap
+that pre-dates this task and is out of scope here, since the actual
+reported bug (the SQL publish-from-dq path) inserts directly and was
+never gated by that C++ validator in the first place.
+
+Verified end-to-end: DB recreated clean, full =barclays_system_provision.ores=
+script completes including =synthetic.themes.realistic_2026=; directly
+invoked =ores_synthetic_publish_theme_from_dq_fn= for
+=ore_samples_2016= and =uniform_demo= too (17 and 31 rows inserted,
+zero errors) since the standard provisioning script only exercises
+=realistic_2026=. Confirmed 20/20 currencies in the target table with
+correct =index_family=, and Curve Template entries correctly linked.
+Local build clean; full suite 73/74 test binaries pass (the one
+failure, =ores.refdata.core.tests=, is an unrelated pre-existing
+=calendar_rules= regression from commit =7351a89f7=, filed separately
+as a capture, not touched here).
+
+* Notes
+
+Root-cause analysis captured in
+[[id:F27A0EA4-AB19-424A-B2C5-A82369CDB650][Realistic-2026 IR curve seed data incompatible with index_family enum]]
+(backlog capture, merged in PR #1768). Root-cause commit: =df398d5f1=
+"[synthetic] Migrate ir_curve_generation_config onto oresmd, add curve
+role". Affected files:
+- =projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=
+  (=ores_synthetic_publish_theme_from_dq_fn=, lines ~578-664 reference
+  the removed =index_name= column).
+- =projects/ores.sql/populate/synthetic/synthetic_ir_curve_configs_realistic_2026_populate.sql=
+  (20-currency seed list at lines ~137-156; only 4 currencies map onto
+  the current 6-value =index_family= enum).
+- =projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=
+  (the =index_family= check constraint, line ~77).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1771][#1771]] | [synthetic,refdata] Fix index_name/index_family regression across IR curve themes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Fixed the =index_name=/=index_family= regression across every IR curve
+theme's DQ publish pipeline (=ore_samples_2016=, =realistic_2026=,
+=uniform_demo=), and preserved/extended =realistic_2026='s full
+20-currency coverage rather than trimming it, backed by real
+convention data sourced from ORE's own vendored QuantLib/QuantExt
+index definitions (two RFRs -- ZAR-ZARONIA, NZD-NZONIA -- corroborated
+from public SARB/RBNZ sources instead, also catching that the seed
+data's =NZD-NZIONA= was a misspelling of the real =NZONIA= benchmark).
+=barclays_system_provision.ores= now completes end-to-end; all three
+IR curve themes publish cleanly (20/17/31 rows respectively, zero
+errors). Filed two follow-up captures for pre-existing, out-of-scope
+issues surfaced along the way: the Qt create-dialog's static combo not
+yet listing the new families (no paste-block seam for the affected
+service/Qt files), and an unrelated =calendar_rules= regression
+(=calendars.id= vs =calendars.code=) from commit =7351a89f7=.

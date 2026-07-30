@@ -557,7 +557,8 @@ begin
         for r in
             select
                 a.currency_code,
-                a.index_name,
+                a.index_family,
+                a.tenor,
                 a.process_type,
                 a.kappa,
                 a.theta,
@@ -573,7 +574,7 @@ begin
                 coalesce(a.vintage_date, '') as vintage_date
             from ores_dq_synthetic_ir_curve_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
-            order by a.currency_code, a.index_name
+            order by a.currency_code, a.index_family
         loop
             select exists (
                 select 1 from ores_synthetic_ir_curve_generation_configs_tbl existing
@@ -581,7 +582,8 @@ begin
                   and existing.party_id = v_party_id
                   and existing.config_id = v_config_id
                   and existing.currency_code = r.currency_code
-                  and existing.index_name = r.index_name
+                  and existing.index_family = r.index_family
+                  and existing.tenor = r.tenor
                   and existing.valid_to = ores_utility_infinity_timestamp_fn()
             ) into v_exists;
 
@@ -592,7 +594,7 @@ begin
 
             insert into ores_synthetic_ir_curve_generation_configs_tbl (
                 tenant_id, id, version, party_id, config_id, folder_id,
-                currency_code, index_name, process_type,
+                currency_code, index_family, tenor, role, process_type,
                 kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
@@ -604,7 +606,7 @@ begin
                 coalesce(existing.id, gen_random_uuid()),
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_ir_folder_id,
-                r.currency_code, r.index_name, r.process_type,
+                r.currency_code, r.index_family, r.tenor, 'self_discounting', r.process_type,
                 r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
@@ -612,14 +614,10 @@ begin
                 r.fixed_leg_payment_frequency_code,
                 -- Same shape as fx_spot_generation_config.source_name: namespaced by
                 -- theme only (so two themes' same currency+index never collide), not by
-                -- asset class -- the "<CCY>-" prefix index_name already carries (see
-                -- that column's own doc) is stripped back off first so the tail reads
-                -- "usdsofr", not "usdusd-sofr".
+                -- asset class.
                 'synthetic.' || lower(replace(v_config_name, ' ', '')) || '.' ||
-                    lower(r.currency_code) ||
-                    lower(case when r.index_name like r.currency_code || '-%'
-                               then substring(r.index_name from length(r.currency_code) + 2)
-                               else r.index_name end),
+                    lower(r.currency_code) || lower(r.index_family) ||
+                    lower(replace(r.tenor, ' ', '')),
                 r.price_source, r.vintage_source, r.vintage_date,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
@@ -629,7 +627,8 @@ begin
                and existing.party_id = v_party_id
                and existing.config_id = v_config_id
                and existing.currency_code = r.currency_code
-               and existing.index_name = r.index_name
+               and existing.index_family = r.index_family
+               and existing.tenor = r.tenor
                and existing.valid_to = ores_utility_infinity_timestamp_fn()
             returning id, version into v_ir_config_id, v_new_version;
 
@@ -653,7 +652,8 @@ begin
                   from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
                   where e.dataset_id = p_dataset_id
                     and e.currency_code = r.currency_code
-                    and e.index_name = r.index_name
+                    and e.index_family = r.index_family
+                    and e.tenor = r.tenor
               );
 
             for er in
@@ -661,7 +661,8 @@ begin
                 from ores_dq_synthetic_ir_curve_template_entries_artefact_tbl e
                 where e.dataset_id = p_dataset_id
                   and e.currency_code = r.currency_code
-                  and e.index_name = r.index_name
+                  and e.index_family = r.index_family
+                  and e.tenor = r.tenor
                 order by e.sequence_index
             loop
                 select exists (

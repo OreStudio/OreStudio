@@ -44,7 +44,7 @@ Launching the Qt client, detached so the terminal stays free; colour keeps paral
    =test_scenario= doc opened this way must have, as its *first =* Steps=
    entry* (not just prose in =* Context=, which the Scenario Runner
    panel doesn't track pass/fail for), a step stating the exact account
-   to log in as and its password (e.g. =tenant_admin@barclays_plc= /
+   to log in as and its password (e.g. =tenant_admin@acme_corporation= /
    =Secure-Password-123=) and which party to select, plus how to get
    back to that state if the DB was recreated since (the provisioning
    script to re-run). Never leave the tester to guess credentials or

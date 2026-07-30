@@ -40,7 +40,7 @@ server-side code specific to the shell. This vintage has no
 =fixings.txt=, so only =--file= is passed.
 
 Expectations: the services are up (=compass services start=), a
-tenant/party is provisioned and logged in (e.g. via the Barclays
+tenant/party is provisioned and logged in (e.g. via the Acme Corporation
 provisioning recipe), and =--source= tags every imported
 =market_observation= row so it can be queried back out separately
 from other imports.
@@ -91,8 +91,8 @@ flag) to treat these as hard failures instead — see
 
 * Tested by
 
-Manual: run against a freshly recreated, Barclays-provisioned
-database (=compass db recreate -y -k= then the Barclays provisioning
+Manual: run against a freshly recreated, Acme-provisioned
+database (=compass db recreate -y -k= then the Acme Corporation provisioning
 recipe), then =compass shell -u <user> -p <password> -f
 import_legacy_example_56.ores=.
 
@@ -102,4 +102,4 @@ import_legacy_example_56.ores=.
 - [[id:9C428EBD-E6B2-4616-9225-D374C0555904][Import the 2016-02-05 ORE reference vintage]] — the task this recipe unblocks.
 - [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
 - [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
-- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]

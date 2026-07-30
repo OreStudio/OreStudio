@@ -2,7 +2,7 @@
 :ID: 43A1EE0A-374D-4EA1-BC72-BADDDC525D20
 :END:
 #+title: How do I capture screenshots for a manual chapter?
-#+description: Confirm a build and a fresh, Barclays-provisioned database, turn a chapter's [SCREENSHOT NEEDED] placeholders into a test scenario, capture each one via the QA Validation Runner (or manually when a dialog is modal), crop to the dialog, and wire the real images in.
+#+description: Confirm a build and a fresh, Acme-provisioned database, turn a chapter's [SCREENSHOT NEEDED] placeholders into a test scenario, capture each one via the QA Validation Runner (or manually when a dialog is modal), crop to the dialog, and wire the real images in.
 #+type: recipe
 #+level: cross
 #+filetags: :documentation:docs:manual:entity:testing:recipe:
@@ -39,7 +39,7 @@ what ships.
    #+end_src
 
 2. /Ready the environment/ — confirm the database is recent (recreate
-   only if it's not) and the Barclays Plc tenant is provisioned, per
+   only if it's not) and the Acme Corporation tenant is provisioned, per
    [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5 (skip that recipe's step
    6, client start — the scenario in step 2 below starts its own
    client with the scenario preloaded).

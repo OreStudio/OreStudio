@@ -77,11 +77,21 @@ exactly what to click or type, and exactly what confirms the step
 passed. The panel writes each step's PASS/FAIL/PENDING outcome and
 notes back as a =*** Result= child heading directly under it.
 
-,** Connect to tenant Barclays Plc
+,** Log in as <persona>
 
-Log in against the =prime_origin= environment as
-=tenant_admin@barclays_plc= / =Secure-Password-123= and select
-*BARCLAYS PLC*.
+# This must be the scenario's first step (the QA Validation Runner
+# panel doesn't track pass/fail for prose in * Context, only for
+# * Steps entries) -- fill in the *specific* persona this scenario
+# actually needs: the exact account to log in as and its password
+# (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
+# specific staff username -- see doc/agile/versions/.../
+# acme_corporation_holding_group/story.org for how generated staff
+# usernames work, they're randomised per provisioning run so look one
+# up via `accounts list` rather than assuming a fixed name), which
+# party/environment to select, and how to get back to that state if
+# the database was recreated since (the provisioning script to
+# re-run). Never leave the tester to guess credentials or starting
+# state -- and never copy this placeholder verbatim.
 
 ,** (Next manual step the tester should perform.)
 

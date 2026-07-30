@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: code-run-feature-test
-description: Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provision Barclays Plc yourself via ores.shell, run all tests, write a test scenario (CRUD + eventing + history for entity features), and hand the client to the user to execute.
+description: Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provision Acme Corporation yourself via ores.shell, run all tests, write a test scenario (CRUD + eventing + history for entity features), and hand the client to the user to execute.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -22,7 +22,7 @@ license: Complete terms in LICENSE.txt
 
 When implementation of a feature or task is otherwise complete and it's
 time to verify it before raising a PR: a confirmed build, a fresh
-Barclays-provisioned database, the full test suite, a written test
+Acme-provisioned database, the full test suite, a written test
 scenario, and a client handed to the user to execute it.
 
 * How to use this skill
@@ -30,7 +30,7 @@ scenario, and a client handed to the user to execute it.
 Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] end to end:
 
 1. Its *Prerequisites* section — build/test if needed, validate
-   schemas, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the environment]] (fresh database, Barclays Plc
+   schemas, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the environment]] (fresh database, Acme Corporation
    provisioned by you, not the user). Non-negotiable, in order.
 2. Its *Writing and running the scenario* section — a =test_scenario=
    doc covering every aspect of the feature (CRUD + eventing + history

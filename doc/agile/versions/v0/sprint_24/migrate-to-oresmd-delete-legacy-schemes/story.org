@@ -74,8 +74,8 @@ Per-field migration:
   coexistence instead of colliding on a flat string.
 - [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] is either superseded/closed or explicitly
   reconciled with this migration, not left as a competing scheme.
-- ~~=oresmd= identifiers can round-trip through ORE's own
-  =curveconfig.xml=/=todaysmarket.xml=/market-data-quote file formats~~
+- +=oresmd= identifiers can round-trip through ORE's own
+  =curveconfig.xml=/=todaysmarket.xml=/market-data-quote file formats+
   -- descoped: the task attempting this was abandoned once scoping
   against the real corpus showed it depends on closing oresmd's
   quote-type representation gap first, now tracked as its own story

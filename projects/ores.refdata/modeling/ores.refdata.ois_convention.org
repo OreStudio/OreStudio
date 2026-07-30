@@ -255,6 +255,7 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         ois_conventions
 :item_var:                oc
 :key_field:               id

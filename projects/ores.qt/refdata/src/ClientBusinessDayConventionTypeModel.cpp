@@ -211,6 +211,8 @@ void ClientBusinessDayConventionTypeModel::fetch_types(std::uint32_t offset, std
                 }
 
                 refdata::messaging::get_business_day_convention_types_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -240,12 +242,13 @@ void ClientBusinessDayConventionTypeModel::fetch_types(std::uint32_t offset, std
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->types.size() << " business day convention types";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                                           << " business day convention types, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .types = std::move(result->types),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

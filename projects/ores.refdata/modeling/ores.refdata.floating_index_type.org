@@ -97,6 +97,7 @@ std::string(faker::lorem::sentence())
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/floating_index_type.hpp
 :domain_class:           refdata::domain::floating_index_type
 :protocol_include:       ores.refdata.api/messaging/floating_index_type_protocol.hpp

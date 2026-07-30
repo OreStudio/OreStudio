@@ -108,6 +108,7 @@ std::string("EUR-EURIBOR-6M")
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         fra_conventions
 :item_var:                fc
 :key_field:               id

@@ -162,6 +162,7 @@ false
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         ibor_index_conventions
 :item_var:                ic
 :key_field:               id

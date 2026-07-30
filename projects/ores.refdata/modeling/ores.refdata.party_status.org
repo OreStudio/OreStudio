@@ -155,6 +155,7 @@ drop function if exists ores_refdata_validate_party_status_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/party_status.hpp
 :domain_class:           refdata::domain::party_status
 :protocol_include:       ores.refdata.api/messaging/party_status_protocol.hpp

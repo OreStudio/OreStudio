@@ -181,6 +181,7 @@ ctx.random_int(1, 30)
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor.hpp
 :domain_class:           refdata::domain::tenor
 :protocol_include:       ores.refdata.api/messaging/tenor_protocol.hpp

@@ -212,6 +212,8 @@ void ClientOvernightIndexConventionModel::fetch_overnight_index_conventions(std:
                 }
 
                 refdata::messaging::get_overnight_index_conventions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -243,13 +245,13 @@ void ClientOvernightIndexConventionModel::fetch_overnight_index_conventions(std:
 
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->overnight_index_conventions.size()
-                    << " overnight index conventions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->overnight_index_conventions.size());
+                    << " overnight index conventions, total available: "
+                    << result->total_available_count;
                 return {.success = true,
                         .overnight_index_conventions =
                             std::move(result->overnight_index_conventions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

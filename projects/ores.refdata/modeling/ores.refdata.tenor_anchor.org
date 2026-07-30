@@ -128,6 +128,7 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor_anchor.hpp
 :domain_class:           refdata::domain::tenor_anchor
 :protocol_include:       ores.refdata.api/messaging/tenor_anchor_protocol.hpp

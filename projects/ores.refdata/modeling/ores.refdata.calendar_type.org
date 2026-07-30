@@ -166,6 +166,7 @@ drop function if exists ores_refdata_validate_calendar_type_fn;
 :key_field:              code
 :has_uuid_primary_key:         false
 :has_change_reason_cache:      true
+:has_pagination:               true
 :get_request_class:      refdata::messaging::get_calendar_types_request
 :get_response_class:     refdata::messaging::get_calendar_types_response
 :get_message_type:       get_calendar_types_request

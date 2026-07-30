@@ -40,7 +40,7 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 |------+-------+-------+-----+-------------|
 | [[id:61622B26-5E92-42B7-825A-7395A83B9179][Analyse implementation approach for calendar entity follow-ups]] | DONE | 2026-07-29 | 2026-07-29 | Analyse how to implement the three calendar-followup items (holiday-aware date picker widget, list-pagination fix, QuantLib calendar materialisation/adjustments): scope each, identify design decisions and risks, and produce a plan before implementation starts. |
 | [[id:1D064DDB-0C57-43C6-B17C-07003BC644C1][Holiday-aware date picker widget]] | BACKLOG | | | A reusable Qt date-picker widget that takes one or more calendars as input, highlights their holidays (with a tooltip naming the source calendar), and is used everywhere a date sensitive to holidays needs to be picked. |
-| [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]] | BACKLOG | | | 27 ores.refdata Qt entities show working-looking pagination controls (Next/Load All/page size) but their Client*Model.cpp never sends offset/limit to the server and reports total_available_count as just the fetched page size -- silently capping every list at the server's default limit (100) with no visible indication rows are missing. |
+| [[id:914B206F-CDB2-4CDC-80BF-0285839E514D][Fix silent 100-row list truncation on entities missing has_pagination]] | DONE | 2026-07-29 | 2026-07-30 | 30 Qt entities (29 ores.refdata/ores.marketdata + calendar_type) show working-looking pagination controls (Next/Load All/page size) but their Client*Model.cpp never sends offset/limit to the server and reports total_available_count as just the fetched page size -- silently capping every list at the server's default limit (100) with no visible indication rows are missing. |
 | [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] | STARTED | 2026-07-24 | | Materialise QuantLib-computed holiday dates into a real, DQ-published, read-only refdata table, clearly attributed as QuantLib-sourced, and model calendar_adjustment as a proper refdata entity so users can layer institution-specific overrides on top of a QuantLib base calendar instead of editing it directly. |
 | [[id:C8401FBC-8536-4578-9C96-ECF914123E46][Wire ORE export path for user-authored calendar templates]] | DONE | | | Assemble a CalendarAdjustments XML file for source='user' calendars referenced by an ORE export/run, using the existing calendar_adjustment_mapper::reverse() -- part of the quantlib-calendar-transparency-and-adjustments task's step 5, split out because no ORE-run export mechanism exists yet in the codebase to hang it off. |
 | [[id:35F743BF-F513-4976-B294-D4E8DB975906][Add codegen Qt facet for paginated read-only junction-scoped lists]] | DONE | | 2026-07-25 | Extend ores.codegen's Qt facet with a new shape for junction-backed, read-only, server-paginated lists scoped to a parent key -- a client model + list dialog (no detail dialog, nothing to edit), reusable for calendar_dates and future large materialised/derived datasets. Closer to the existing History dialog shape (read-only, parent-scoped) than to the relationship-assignment-widget pattern (CalendarAssignmentWidget) used by every existing small many-to-many junction today. |
@@ -50,6 +50,9 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
 | [[id:1C673C53-9ED0-4C02-B856-EF031A1CC95F][Codegen: design and implement Qt parent-scoping for has_readonly_paginated_list]] | DONE | 2026-07-28 | 2026-07-28 | The Qt cpp.qt facet has a has_readonly_paginated_list knob but no way to scope a generated list window's get-request to an owning parent key (e.g. a calendar's calendar_code). Design and implement a parent_key_field/parent_key_param-style knob in the client_model/controller/mdi_window templates so a paginated read-only list can be opened for a specific parent and pass that key on every request. |
 | [[id:F081079A-312E-46C5-91AB-2C83310DA8F0][Generate calendar_dates Qt facet and wire Browse Holidays action]] | DONE | 2026-07-29 | 2026-07-29 | Once the junction pagination knob, calendar_date messaging layer, and Qt parent-scoping knob all exist: generate calendar_date's Qt facet (has_readonly_paginated_list, scoped by calendar_code) and add a Browse Holidays action to Calendar's detail dialog that opens it for the selected calendar. Closes the deferred acceptance item from task B2888D7D. |
 | [[id:290FBDF6-0DDA-47E0-BB4C-218CCCC59F95][Codegen: teach the ores.cpp.qt facet to render junction models]] | DONE | | 2026-07-29 | The ores.cpp.qt facet's mustache templates and ~1300 lines of enrichment in core.py/org_loader.py are hard-wired to the domain_entity model shape (entity_pascal/entity_singular derivation, ** Qt drawer parsing including detail_fields/combo-widget machinery). Junction models load into a structurally different {"junction": {...}} dict (name_singular instead of entity_singular, no Qt-section parsing in load_org_junction_model at all, no entity_pascal derivation anywhere in the junction path). Flipping ores.cpp.qt.org's #+model_types: to include junction routes generation correctly (verified: dry-run produces the right 6 files, has_readonly_paginated_list detail-dialog suppression works, zero drift on unrelated domain entities) but the actual render is broken: empty class names (class Controller), empty includes (#include ""), mangled macro guards (ORES_QT__CONTROLLER_HPP) -- because entity_pascal/entity_singular and the Qt-drawer context are simply never populated for a junction model. |
+| [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]] | BACKLOG | | | 70+ codegen entity .org models across the repo declare their primary key using an old, now-unsupported top-level heading (Primary key, with column/type/cpp_type properties) instead of the current convention (a field inside Columns flagged with primary_key true). org_loader.py's load_org_model() only recognises the latter, so any regeneration of these models fails with a Missing primary key error. Discovered while fixing the has_pagination truncation bug: 14 of 43 target entities hit this and were excluded from that task's scope. |
+| [[id:027C8227-A41F-4D88-A2BE-744751CEDB14][Decide fate of 11 hand-written Qt list entities silently capped at 100 rows]] | BACKLOG | | | 11 entities (role, system_setting, dataset, dataset_dependency, methodology, nature_dimension, origin_dimension, telemetry_log, treatment_dimension, coding_scheme, coding_scheme_authority_type) have no codegen .org model at all -- their Qt client models are entirely hand-written, predating the entity_org migration. None of their MdiWindows show a PaginationWidget, so unlike the has_pagination truncation bug, they present no misleading pagination affordance -- they are honest flat lists, just silently capped at the server's default 100-row limit with no visible indication more rows exist. Discovered while scoping the has_pagination pagination-truncation task, which excluded these 11 as out of its actual bug definition. |
+| [[id:9FE837CB-2E33-490C-878C-4B53F6DB79AE][Backfill missing Qt drawer for 5 hand-authored dq Qt entities]] | BACKLOG | | | catalog, change_reason_category, change_reason, data_domain, and subject_area (all ores.dq) have a real codegen .org entity model, but that model has no ** Qt drawer at all -- their generated-looking Qt client models, controllers, detail dialogs, and MDI windows exist in the codebase but were hand-authored outside codegen, never driven by the model. Regenerating any facet of these entities would not touch their Qt layer at all (codegen has nothing to emit for it), so unlike the has_pagination task's main fix, adding :has_pagination: true to these models would be a no-op. Discovered while scoping the has_pagination pagination-truncation task, which excluded these 5 as out of reach of the mechanical model-flip fix. |
 
 * Decisions
 
@@ -109,6 +112,35 @@ Pick up three follow-ups beyond [[id:E1196536-38E8-4365-B0E6-A269F7CA3923][Model
   temporary, reverted smoke test on =currency.org= with the knob set,
   confirming valid generated C++ with zero regression to existing
   entities.
+
+- The pagination-truncation fix's original 61-entity list needed a
+  3-way scope split before any regeneration: 29 had a clean, real
+  codegen model with a =** Qt= drawer and current-convention primary
+  key and were fixed directly; 16 hit a pre-existing, unrelated bug
+  where the model still declares its primary key with a legacy
+  =* Primary key= heading =org_loader.py= never parses (a repo-wide
+  grep found 70+ files with this, not just these 16), split into
+  [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][its own follow-up]]; 11 have no codegen model at all (hand-written
+  Qt predating the entity_org migration) and, having no
+  =PaginationWidget= at all, present no misleading affordance --
+  split into a [[id:027C8227-A41F-4D88-A2BE-744751CEDB14][lower-priority follow-up]]; 5 of those 45 have a
+  model but no =** Qt= drawer in it, so flipping the knob would be a
+  no-op -- split into a [[id:9FE837CB-2E33-490C-878C-4B53F6DB79AE][Qt-drawer-backfill follow-up]]. Rebasing onto
+  main mid-investigation picked up a separately-merged PR that had
+  already absorbed unrelated template-modernisation drift that was
+  contaminating the first round of =--diff= output -- confirms the
+  value of syncing before large mechanical regen work rather than
+  hand-reconciling drift that's already fixed elsewhere.
+
+- Started migrating =badge_definition=/=badge_severity='s legacy
+  primary-key heading as part of this task, then reverted: their
+  committed generated Qt files carry hand-patched logic (an
+  =__unmapped__= reserved-code delete guard, placeholder-text
+  tweaks) the model has no way to express, so a real regen would
+  have silently deleted a safety check. Treated the legacy-heading
+  migration as its own reviewed task instead of folding it into
+  whichever entity happens to touch it next -- each of the 70+ files
+  needs individual verification, not a blind batch fix.
 
 * Out of scope
 

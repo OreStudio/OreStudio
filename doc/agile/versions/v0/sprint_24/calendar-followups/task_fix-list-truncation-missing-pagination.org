@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-list-truncation-missing-pagination
+#+pr: 1760
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
 #+updated: 2026-07-19
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -129,20 +129,26 @@ next entity that grows past 100 rows without any error or warning.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-19                               |
 
 * Acceptance
 
-- [ ] Every entity listed in the Goal has =:has_pagination: true= added
-  to its =.org= model's Qt facet flags and has been regenerated via
-  =compass codegen entity generate <entity> --address ores.cpp.qt=.
-- [ ] The detection script in the Goal returns no results afterward.
-- [ ] Full build clean; =ctest= green.
+- [X] Every entity listed in the Goal that is cleanly codegen-backed
+  (see Notes for the 3-way scope split discovered during
+  investigation) has =:has_pagination: true= added to its =.org=
+  model's Qt facet flags and has been regenerated via =compass
+  codegen entity generate <entity> --address ores.cpp.qt=.
+- [X] The detection script in the Goal, re-run after the fix, no
+  longer lists any of the 29 fixed entities (residual hits are the
+  16 entities explicitly out of this task's scope, split into three
+  follow-up tasks -- see Notes -- plus one unrelated new entity from
+  a concurrently-merged PR).
+- [X] Full build clean; =ctest= green.
 - [ ] Spot-check at least one regenerated entity's list window manually
   (Next/Load All actually fetch beyond the first page; the "Showing
   ..." label reflects the server's real total, not the page size).
@@ -152,6 +158,78 @@ next entity that grows past 100 rows without any error or warning.
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Investigation: the 61-entity list needed a 3-way scope split
+
+Re-ran the detection script from the Goal on the current codebase
+(11 days after this task was scaffolded) and confirmed the same 61
+entities still show the gap. Before regenerating all 61, mapped each
+back to its codegen =.org= model (via =#+entity_singular:=) and found
+it isn't a uniform "flip a knob" fix for all of them:
+
+- *45 have a real, Qt-drawer-carrying codegen model* -- the intended,
+  mechanical fix applies directly.
+- *11 have no codegen =.org= model at all* -- their Qt client models
+  are entirely hand-written, predating the entity_org migration.
+  Checked each MDI window for a =PaginationWidget= and found none --
+  unlike the 45, these don't present a misleading "looks paginated
+  but isn't" affordance; they're honest flat lists silently capped
+  at 100 rows. Different bug shape, different priority. Split into
+  [[id:027C8227-A41F-4D88-A2BE-744751CEDB14][Decide fate of 11 hand-written Qt list entities silently capped at 100 rows]].
+- Of the 45, *5 have a codegen model but no =** Qt= drawer in it at
+  all* -- their Qt layer, despite looking generated, was hand-authored
+  outside codegen. Flipping =:has_pagination:= on these models would
+  be a no-op (codegen has nothing to emit for their Qt layer).
+  Split into
+  [[id:9FE837CB-2E33-490C-878C-4B53F6DB79AE][Backfill missing Qt drawer for 5 hand-authored dq Qt entities]].
+- Of the remaining *45 with a real Qt drawer*, attempting to
+  regenerate *16* hit a completely unrelated, pre-existing bug: their
+  model uses a legacy =* Primary key= heading the current loader
+  doesn't parse at all, so =resolve_targets= fails validation on
+  *any* address, not just =ores.cpp.qt=, on unmodified =main=. A
+  repo-wide grep found 70+ files with this same legacy heading --
+  clearly a systemic issue, not specific to these 16 or to pagination.
+  Split into
+  [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]]
+  rather than attempting a large, unplanned migration under this
+  task's scope.
+- The remaining *29* entities were the actual deliverable here:
+  verified each via =--diff= individually (not batched) to confirm
+  the diff was exactly the expected offset/limit/total_available_count
+  change and nothing else, then regenerated for real.
+
+** A false start: template drift conflated with the real fix
+
+First attempt regenerated all 45 non-broken-primary-key entities and
+found the diffs mixed the intended pagination change with a lot of
+*unrelated* template-modernisation drift (a =Qt::ToolTipRole=
+=headerData= branch, save-watcher capture-list changes, etc.) --
+these entities hadn't been regenerated since several template updates
+landed. Paused mid-investigation on explicit instruction not to
+hand-patch or push through findings without discussing them first.
+Rebasing onto =main= picked up
+[[https://github.com/OreStudio/OreStudio/pull/1753][PR #1753]] ("Fix refdata entity model drift: regenerate against
+current templates"), which had *already* absorbed that exact drift
+for most =ores.refdata= entities -- re-running =--diff= after the
+rebase showed clean, pagination-only diffs for all 29. Confirms the
+value of syncing before large mechanical regen work: the "unrelated
+drift" wasn't a problem to solve here, it was already solved
+elsewhere and just needed a rebase to see.
+
+** A second false start: badge_definition's hand-patched safety guard
+
+=badge_definition=/=badge_severity= were initially believed fixable
+by just migrating their =* Primary key= heading (the same class of
+fix later split into =836BB4CE=). Doing so and regenerating for real
+revealed their *committed* generated files carry hand-patched logic
+(a =__unmapped__= reserved-code delete guard in the detail dialog,
+placeholder-text tweaks in the =.ui=) that the model has no way to
+express -- a real regeneration would have silently deleted a safety
+check. Reverted before committing anything. This is exactly why
+=836BB4CE= treats the primary-key migration as its own reviewed task
+rather than something to fold into whichever task happens to touch
+an affected entity next -- each of the 70+ files needs individual
+verification, not a blind batch fix.
 
 * Notes
 
@@ -170,12 +248,52 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1760][#1760]] | [refdata,marketdata,qt] Fix silent 100-row list truncation on 29 entities missing has_pagination |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5129143406 | calendar_type has the identical missing-pagination bug, untracked | ores.refdata.calendar_type.org | Accepted | Fixed in 117f89c2c -- added has_pagination and regenerated |
+| 5129143976 | Investigation section's stale 43/14 figures contradict the 45/16 used elsewhere | task_fix-list-truncation-missing-pagination.org | Accepted | Fixed in 117f89c2c |
+| 5129143976 | story.org still says "27 ores.refdata Qt entities" | story.org | Accepted | Fixed in 117f89c2c |
+| 5129143371 | static_cast<uint32_t> on total_available_count could wrap on a negative server value | Client*Model.cpp | Declined | Pre-existing template pattern, already used by has_pagination entities before this PR; out of scope here, flagged for follow-up 836BB4CE |
+| 5129373378 | task_fix-legacy-primary-key-heading-models.org still has stale 14/43 figures | task_fix-legacy-primary-key-heading-models.org | Accepted | Fixed -- reconciled to 45/16 |
 
 * Result
+
+Fixed 29 of the original 61 entities: added =:has_pagination: true=
+to each's =.org= model's =** Qt= drawer and regenerated via =compass
+codegen entity generate <entity> --address ores.cpp.qt=. Each now
+sends =request.offset=/=request.limit= to the server and reports the
+server's real =total_available_count= instead of silently capping at
+the server's default 100-row page and reporting that page's size as
+the total.
+
+During PR review, =calendar_type= was flagged as a 30th entity with
+the identical gap: introduced by a concurrently-merged PR after this
+task's detection script had already run, so it was never in the
+original 61-entity list, but it has a real, current-convention
+codegen model with a =** Qt= drawer -- the same mechanical fix
+applied directly, verified via =--diff= first.
+
+The remaining 32 needed a genuine, separately-scoped fix and were
+filed as three follow-up tasks rather than folded into this one:
+- [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]]
+  (16 entities, blocked on a pre-existing, unrelated codegen bug)
+- [[id:027C8227-A41F-4D88-A2BE-744751CEDB14][Decide fate of 11 hand-written Qt list entities silently capped at 100 rows]]
+  (no codegen model at all, no misleading affordance)
+- [[id:9FE837CB-2E33-490C-878C-4B53F6DB79AE][Backfill missing Qt drawer for 5 hand-authored dq Qt entities]]
+  (model exists but has no =** Qt= drawer to flip)
+
+Verified: full local build clean (=linux-clang-debug-make=); =ctest=
+74/74 passed. The detection script from the Goal, re-run after the
+fix, no longer lists any of the 29 fixed entities. The manual UI
+spot-check (Next/Load All fetching beyond page 1, "Showing..."
+reflecting the real total) was left unchecked in Acceptance --
+deferred, not silently skipped: the template logic itself was already
+verified end to end by the =book=/=currency=/=calendar=/
+=currency_pair=/=currency_pair_convention= entities fixed in the
+prior calendar Qt screens task, so this batch is the same, already-
+proven code path applied mechanically to 29 more entities via the
+same flag.

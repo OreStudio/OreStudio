@@ -214,6 +214,8 @@ void ClientDepositConventionModel::fetch_deposit_conventions(std::uint32_t offse
                 }
 
                 refdata::messaging::get_deposit_conventions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -244,12 +246,12 @@ void ClientDepositConventionModel::fetch_deposit_conventions(std::uint32_t offse
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->deposit_conventions.size() << " deposit conventions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->deposit_conventions.size());
+                    << "Fetched " << result->deposit_conventions.size()
+                    << " deposit conventions, total available: " << result->total_available_count;
                 return {.success = true,
                         .deposit_conventions = std::move(result->deposit_conventions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

@@ -98,6 +98,7 @@ std::string(faker::lorem::sentence())
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/leg_type.hpp
 :domain_class:           refdata::domain::leg_type
 :protocol_include:       ores.refdata.api/messaging/leg_type_protocol.hpp

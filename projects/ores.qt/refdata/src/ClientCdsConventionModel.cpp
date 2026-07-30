@@ -207,6 +207,8 @@ void ClientCdsConventionModel::fetch_cds_conventions(std::uint32_t offset, std::
                 }
 
                 refdata::messaging::get_cds_conventions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -237,12 +239,12 @@ void ClientCdsConventionModel::fetch_cds_conventions(std::uint32_t offset, std::
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->cds_conventions.size() << " CDS conventions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->cds_conventions.size());
+                    << "Fetched " << result->cds_conventions.size()
+                    << " CDS conventions, total available: " << result->total_available_count;
                 return {.success = true,
                         .cds_conventions = std::move(result->cds_conventions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

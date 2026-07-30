@@ -281,6 +281,7 @@ entity versioning" architecture doc, "Multi-level composition".
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:          ores.refdata.api/domain/portfolio.hpp
 :domain_class:            refdata::domain::portfolio
 :protocol_include:        ores.refdata.api/messaging/portfolio_protocol.hpp

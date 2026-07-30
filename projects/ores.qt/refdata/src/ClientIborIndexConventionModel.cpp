@@ -210,6 +210,8 @@ void ClientIborIndexConventionModel::fetch_ibor_index_conventions(std::uint32_t 
                 }
 
                 refdata::messaging::get_ibor_index_conventions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -240,12 +242,12 @@ void ClientIborIndexConventionModel::fetch_ibor_index_conventions(std::uint32_t 
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->ibor_index_conventions.size()
-                                           << " IBOR index conventions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->ibor_index_conventions.size());
+                                           << " IBOR index conventions, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .ibor_index_conventions = std::move(result->ibor_index_conventions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

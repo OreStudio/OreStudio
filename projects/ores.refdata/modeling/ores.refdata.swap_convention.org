@@ -190,6 +190,7 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         swap_conventions
 :item_var:                sc
 :key_field:               id

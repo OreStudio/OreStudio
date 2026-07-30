@@ -153,6 +153,7 @@ std::string("ANCHOR_OFFSET")
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor_convention.hpp
 :domain_class:           refdata::domain::tenor_convention
 :protocol_include:       ores.refdata.api/messaging/tenor_convention_protocol.hpp

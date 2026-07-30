@@ -229,6 +229,7 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         cds_conventions
 :item_var:                cc
 :key_field:               id

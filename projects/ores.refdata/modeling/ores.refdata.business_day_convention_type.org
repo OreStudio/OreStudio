@@ -155,6 +155,7 @@ Ordinal position for dropdown/list display.
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:              ores.refdata.api/domain/business_day_convention_type.hpp
 :domain_class:                refdata::domain::business_day_convention_type
 :protocol_include:            ores.refdata.api/messaging/business_day_convention_type_protocol.hpp

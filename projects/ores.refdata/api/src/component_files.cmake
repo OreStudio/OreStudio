@@ -584,6 +584,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/calendar_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/calendar_exception_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/calendar_rule_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/calendar_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/cds_convention_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/contact_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/eventing/counterparty_changed_event.hpp"

@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Generate =market_series.qualifier=/=market_observation.point_id= from
+oresmd at every write path instead of free text, then delete any
+remaining legacy free-text generation path.
 
 * Status
 
@@ -28,20 +30,121 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Now          | Landscape surveyed; scope is much narrower than the title implies -- see Plan. |
+| Waiting on   | Plan sign-off.                        |
+| Next         | Consolidate the duplicated ORE-key-splitting helper into one shared oresmd utility. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
--
+- [ ] The duplicated "split a projected TYPE/METRIC/QUALIFIER... key
+  string into parts" logic (currently reimplemented ad-hoc in three
+  places) is consolidated into one shared, tested oresmd utility
+  function, used by all three call sites.
+- [ ] Confirmed and documented: FX's and IR's =qualifier= generation
+  already derives from an oresmd-projected key (via =ore_key=/the IR
+  curve's own qualifier, both migrated in the two prior tasks on this
+  story) -- no separate free-text generation path remains for either.
+- [ ] Confirmed and documented: =point_id= values (tenor codes like
+  "3M"/"1Y", or "SPOT" for scalars) already match oresmd's own =point=
+  grammar shape exactly (a plain string, e.g. "5y") -- no
+  transformation needed.
+- [ ] Confirmed: =market_series= has no hand-entry Qt UI at all (rows
+  are only ever auto-created by ingest loops/import_service), so there
+  is no free-text manual-entry path to migrate or delete.
+- [ ] =ores.ore.core='s real ORE market-data-file import
+  (=import_service.cpp=, =market_data_parser.cpp=, =series_key_registry.cpp=)
+  is confirmed out of scope -- it parses externally-authored ORE key
+  strings directly (the reverse direction from oresmd URI generation),
+  and belongs to the separate, already-scoped
+  [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and
+  market-data XML round-trip via oresmd]] task.
+- [ ] Full =compass build= clean; =ctest= full suite green.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Landscape survey (as found)
+
+Grepped every real write site of =.qualifier =/=point_id =
+across =ores.marketdata=, =ores.synthetic=, =ores.ore=, =ores.qt=:
+
+- *FX*: =ores.synthetic.service/feed_controller.hpp= builds
+  =ore_key= via =oresmd_projections::to_quote_key= (migrated in the
+  =ore_key= task), then a local =parse_ore_key=-style helper (two
+  near-identical copies in this one file, lines ~268 and ~485) splits
+  that already-oresmd string on ='/'= into =series_type=/=metric=/=qualifier=
+  for =market_series= lookups/creation. =ores.marketdata.service/app/feed_ingest_loop.cpp=
+  has a third, separately hand-written copy of the exact same
+  split-on-='/'= logic, applied to =feed_binding.ore_key= (also
+  oresmd-derived).
+- *IR*: =ores.synthetic.service/ir_curve_feed.cpp='s =qualifier_= is
+  =currency_code + "/" + index_display_suffix(cfg)=, itself built from
+  =index_family=/=tenor= (migrated in the
+  =ir_curve_generation_config= task) -- already oresmd-derived, no
+  splitting needed since IR publishes qualifier directly rather than a
+  combined key string.
+  =ores.marketdata.service/app/curve_feed_ingest_loop.cpp= is a pure
+  pass-through: it copies =tick->qualifier=/=tick->point_id= verbatim,
+  no generation logic of its own.
+- =point_id= for IR ticks comes from =ir_curve_resolved_entry.point_id=
+  (a tenor code, e.g. "3M"), sourced from
+  =ir_curve_template_resolver.cpp=. Checked oresmd's own =point= field
+  (=market_data_identifier.hpp=): it is a plain =std::optional<std::string>=
+  with worked examples like "5y" -- a bare tenor code already *is*
+  exactly the oresmd =point= shape. No transformation needed; this was
+  already correct before this task started.
+- *No hand-entry UI*: =ores.marketdata.market_series.org= has
+  =:ores.cpp.qt.enabled: false= -- confirmed no Detail Dialog exists
+  for this entity at all. =market_series= rows are only ever
+  auto-created by =feed_ingest_loop.cpp=/=curve_feed_ingest_loop.cpp=/=import_service.cpp=,
+  never hand-typed.
+- *Out of scope*: =ores.ore.core/src/market/market_data_parser.cpp=
+  and =series_key_registry.cpp= parse *real, externally-authored* ORE
+  market-data files/keys (e.g. a vendored =market.txt=) into
+  type/metric/qualifier/point_id -- the reverse direction from this
+  story's oresmd URI generation work, and =import_service.cpp='s own
+  =find_or_create_series=/observation-write logic is downstream of
+  that parser, not a free-text-vs-oresmd generation choice. This is
+  explicitly the separate
+  [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and
+  market-data XML round-trip via oresmd]] task's domain, per this
+  story's own =* Decisions=; not touched here.
+
+** Step 1 -- Consolidate the duplicated key-splitting helper
+
+Add a shared utility (likely
+=ores::marketdata::core::oresmd_projections::split_projected_key= or a
+small free function alongside it in =ores.marketdata.core/oresmd/=)
+that splits a =TYPE/METRIC/QUALIFIER...= string (the shape
+=to_quote_key=/=to_curve_key= etc. already produce) into
+={series_type, metric, qualifier}=, with the same "qualifier absorbs
+every remaining slash-segment" behaviour the three existing ad-hoc
+copies share. Replace:
+- =ores.synthetic.service/feed_controller.hpp=' two copies,
+- =ores.marketdata.service/app/feed_ingest_loop.cpp='s copy,
+
+with calls to the shared function. Add unit tests for the shared
+function itself (trivial, pure, easily testable unlike the
+NATS-dependent call sites).
+
+** Step 2 -- Document the already-satisfied criteria
+
+Update this task's =* Acceptance= checkboxes with findings rather than
+code changes for FX qualifier generation, IR qualifier/point_id
+generation, and the no-hand-entry-UI confirmation -- these were
+already correct going in, a direct consequence of the two prior tasks
+on this story having done their job properly.
+
+** Step 3 -- Verification
+
+Full =compass build= + =ctest=; add/extend a small unit test suite for
+the new shared split-key function (pure, no NATS dependency, same
+"extract for testability" pattern used for
+=ir_curve_feeds_conflict=/=select_vintage_anchor_entry=).
 
 * Notes
 

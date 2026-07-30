@@ -66,7 +66,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Raw QFont("Monospace") has no fallback chain/style hint; use FontUtils::monospace() instead | FxSpotGridWindow.cpp | Accepted | Swapped in the project's existing cross-platform monospace utility. |
+| 2 | is_jpy_quoted() re-parses ore_key on every tick instead of caching once per row | FxSpotGridWindow.cpp | Accepted | Superseded entirely by the convention-aware rework below -- the JPY special case (and the re-parsing) is gone, replaced by a convention resolved once per row in buildRows() and cached on RowState. |
+| 3 | (User, not a bot reviewer) Hardcoding JPY as a special case is wrong -- should use convention-driven formatting, not currency-specific literals | FxSpotGridWindow.cpp | Accepted | Reworked to reuse crm_rate_formatter::format_rate() (promoted to public) against refdata.currency_pair_convention via a currency_pair_convention_cache loaded the same way CrmCrossRatesMatrixMdiWindow does. No currency code appears anywhere in the file now. |
 
 * Result
 

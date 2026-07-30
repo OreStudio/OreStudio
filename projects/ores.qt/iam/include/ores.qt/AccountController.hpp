@@ -121,6 +121,15 @@ public:
 
     void reloadListWindow() override;
 
+    /**
+     * @brief Shows the org chart dialog for the current tenant's staff.
+     *
+     * Creates a new OrgChartWidget each time -- unlike the list
+     * window, this isn't tracked/reused across calls since it's a cheap,
+     * throwaway visualisation rather than an editable working window.
+     */
+    void showOrgChart();
+
 private slots:
     /**
      * @brief Handles request to add a new account.

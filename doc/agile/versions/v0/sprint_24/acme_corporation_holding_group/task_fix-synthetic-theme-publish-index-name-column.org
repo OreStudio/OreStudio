@@ -6,14 +6,14 @@
 #+type: task
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
-#+owner: bright_faraday
-#+branch:
+#+owner: brave_hopper
+#+branch: feature/fix-synthetic-theme-publish-index-name-column
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,11 +37,11 @@ fixed, no other client change needed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -49,18 +49,47 @@ fixed, no other client change needed.
 - =ores_synthetic_publish_theme_from_dq_fn= publishes
   =synthetic.themes.realistic_2026= and
   =synthetic.themes.ore_samples_2016= without the
-  =existing.index_name= error.
+  =existing.index_name= error -- confirmed fixed on =main= by
+  =6d3b76ef0= ("Fix index_name/index_family regression across all IR
+  curve themes", PR #1771), unrelated to this story.
 - =synthetic_realistic_2026= is restored to
   =party_provisioning_bundle_plan()=
   (=projects/ores.dq/api/include/ores.dq.api/messaging/party_provisioning_plan.hpp=).
 - A full Acme reprovision (=--source acme=) completes with no failed
-  steps and every party's synthetic feed is ticking.
+  steps and every party's synthetic feed config is published.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Once the upstream fix landed on =main=, went further than a plain
+revert of the workaround, per explicit direction: Acme should pull in
+*all* the config needed to exercise ORE Studio's synthetic-data
+scenarios out of the box, not just today's default theme, since live
+pricing and legacy-ORE-Samples pricing (via workspaces) are both
+coming soon and re-provisioning shouldn't be needed to test them
+later.
+
+- Reverted the =party_provisioning_bundle_plan()= workaround: restored
+  =synthetic_realistic_2026=.
+- Added =synthetic_ore_samples_2016= to the same shared plan --
+  publishing a theme's *config* is safe/cheap even though only one
+  theme's *feed* should ever run at a time (existing
+  =MarketSimulatorWindow= rule); a party can now immediately test
+  either theme once feed-starting/workspace-scoped pricing lands, with
+  no re-provision.
+- Split the CRM Cross-Rates Matrix topology out of both vintage
+  bundles into its own standalone, vintage-independent =crm_topology=
+  bundle (=dq_dataset_bundle_populate.sql=/=dq_dataset_bundle_member_populate.sql=),
+  per explicit direction that CRM must always be available regardless
+  of which synthetic-data theme/vintage a party happens to publish.
+  Added to the shared plan alongside the two themes.
+- None of this required any Acme-specific C++ change: every addition
+  is a SQL bundle registration consumed by the existing, generic
+  =party_provisioning_bundle_plan()= loop that both Acme's provisioner
+  and =ores.shell='s generic "provision party" flow already share --
+  no new hardcoding of Acme into C++. The pre-existing Acme-specific
+  bespoke provisioning logic in =tenant_handler.hpp= (=provision_acme=)
+  predates this task and is tracked separately by [[id:4D2F72BC-09C5-41B6-A9BB-AF2B8B140B50][Extract shared
+  party-bundle-plan publisher]].
 
 * Notes
 
@@ -88,3 +117,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Confirmed the upstream fix (=6d3b76ef0=, PR #1771) landed on =main=,
+then reverted both PR #1773 workarounds and went further:
+=synthetic_realistic_2026= restored, =synthetic_ore_samples_2016=
+added alongside it (config only -- feed-starting is still separate
+future work), and =crm_topology= split into its own vintage-independent
+bundle so the CRM Cross-Rates Matrix is never coupled to a specific
+theme. All three are now first-class members of the shared, generic
+=party_provisioning_bundle_plan()= -- no Acme-specific C++ added.
+
+Verified via full rebuild, db recreate, and Acme reprovisioning: zero
+failed steps, =synthetic.themes.realistic_2026=/=synthetic.themes.ore_samples_2016=
+both publish successfully for every office, and
+=refdata.crm_topology_bundles= publishes independently (3 topologies
+x 3 offices, confirmed via SQL).

@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: CECBE7BB-0C9E-43EF-B344-B87FE4BC208B
+:END:
+#+title: Task: Refresh ORE Engine binary package, examples, and XSD to 1.8.16.0
+#+description: Rebuild the ore engine self-contained, sync examples/xsd, automate hand-patch preservation.
+#+type: task
+#+level: s1
+#+filetags: :update-vendored-ore-engine:sprint_24:v0:
+#+owner: marco
+#+branch: feature/update-ore-vendored-package
+#+pr: 1786
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the broken (not self-contained) vendored ore-1.8.15.0 package and refresh external/ore/examples and external/ore/xsd to a current ORE Engine build, with tooling so both refreshes are reproducible and safe to repeat.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- external/ore/packages/ore-VERSION-x64-linux.tar.gz is genuinely self-contained (ldd resolves every dependency inside the package, none pointing at a build tree) and passes an automated self-test (runs TA002_IR_Swap, tolerantly diffs Output against ExpectedOutput, writes a sign-off diff-report.txt); external/ore/examples and external/ore/xsd are synced from the same engine commit and pass scripts/validate_ore_examples.sh; the 3 known upstream FX-key hand-patches (PR #1423) are reapplied automatically by the sync script, not manually; all new/changed tooling is committed as reusable scripts, not one-off manual steps.
+
+* Plan
+
+Cloned/synced the ORE Engine fork (=git@github.com:OreStudio/Engine.git=,
+upstream =OpenSourceRisk/Engine=) to =~/Development/ORE/Engine=,
+built it (=linux-clang-ninja-release=, system Boost 1.90.0), then
+worked in three parts:
+
+1. *Packaging* (=external/ore/tools/package_ore.sh=): the previous
+   =ore-1.8.15.0-x64-linux.tar.gz= shipped the executable alone, still
+   dynamically linked against =libOREAnalytics.so=/=libQuantExt.so=/
+   =libQuantLib.so.1= with no RPATH into the package -- =ldd= reported
+   them "not found", and =ores.compute.wrapper= spawns the packaged
+   executable directly with no =LD_LIBRARY_PATH= customisation, so it
+   could only ever have worked by coincidence. New script bundles every
+   non-glibc runtime dependency under =lib/=, rewrites RPATH to
+   =$ORIGIN(/lib)= via =patchelf=, and self-tests by actually running
+   the package against =TA002_IR_Swap= and tolerantly diffing (see
+   =external/ore/tools/compare_csv.py= -- cross-compiler float noise
+   and legitimate schema evolution, e.g. new report columns, are not
+   failures) against the real =ExpectedOutput/=, writing a sign-off
+   =diff-report.txt=.
+2. *Examples + XSD sync* (=external/ore/tools/update_ore_samples.sh=):
+   syncs =external/ore/examples/= and =external/ore/xsd/= together
+   from the same engine commit (a version mismatch between them
+   produces spurious schema-validation failures unrelated to either
+   side being wrong -- found this the hard way when the old =xsd/=
+   didn't recognise the newer examples' =ExtrapolationMethod=
+   element), regenerates a =manifest.json= in each with a
+   reproducible =tree_sha256=, and runs
+   =scripts/validate_ore_examples.sh= automatically. Fixed a real,
+   pre-existing bug in that validate script along the way (=set -e=ing
+   out on the first genuine validation failure before its own
+   pass/fail accounting ever ran).
+3. *Hand-patch preservation*: caught, before committing, that the
+   fresh rsync silently reintroduced a genuine upstream bug (3 files'
+   FX/RATE spot-quote keys ship in the wrong order per QuantLib's own
+   documented =FXSpotQuote= convention -- confirmed independently, not
+   just trusted from history) that this codebase had already fixed
+   once in PR #1423 but never automated reapplying. Added
+   =reapply_known_patches()= to the sync script so this can't regress
+   silently again; verified idempotent across three re-syncs. Also
+   found and fixed a second sync-script bug the same way: =rsync
+   --delete= was deleting this directory's own hand-written
+   =README.md=/=methodology.txt= (they don't exist in the upstream
+   source, so a plain sync sees them as "removed upstream").
+
+Deliberately did NOT run the XSD-driven C++ codegen step
+(=xsdcpp_generate_ore.sh=) to regenerate
+=projects/ores.ore/include/ores.ore/domain/domain.hpp=/=domain.cpp= --
+the local =xsdcpp= build fails (=error: Could not find group
+'oreTradeData'=) against both the old and new schema (confirmed via a
+clean A/B test), a pre-existing environment/tool-version issue
+unrelated to this task's own changes. Filed as a capture rather than
+worked around blind; =domain.hpp=/=domain.cpp= are left unregenerated,
+a known, explicitly-flagged gap.
+
+* Notes
+
+- Package version =1.8.16.0-3-g3b62ba248= is =git describe --tags
+  --always= against the Engine checkout (3 commits past the
+  =v1.8.16.0= tag) -- see =external/ore/packages/manifest.json= for
+  the full provenance/version-scheme explanation.
+- Filed captures for out-of-scope findings along the way: the xsdcpp
+  blocker (=99A443B8=), a compute-grid package integrity gap (no
+  SHA256 verification on download, =8DBD1BAE=), and ORE's Python
+  =TradeGenerator= as a possible building block for Acme's synthetic
+  trade portfolios (=2521B2BD=).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1786][#1786]] | [data] Update vendored ORE Engine to 1.8.16.0 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | compute_ore_app_seed.sql still seeds the deleted ore-1.8.15.0 package (engine_version, package_uri) | compute_ore_app_seed.sql | Fixed | Updated all 5 references to 1.8.16.0-3-g3b62ba248; verified via db recreate that the new engine_version/package_uri land correctly. |
+| 2 | reapply_known_patches() doesn't verify its sed actually matched | update_ore_samples.sh | Declined (informational) | Real robustness suggestion for a future upstream format change, not a defect in this PR's actual output (verified patches applied correctly); left as a known, minor follow-up. |
+| 3 | 57.5MB binary committed as a plain git blob, no LFS | ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz | Accepted, no change | Matches this repo's existing convention -- no Git LFS anywhere, other external/* dirs already vendor large binaries (mddl PDF, lei xlsx, etc.). |
+| 4 | compare_csv.py compares rows positionally, not by key | compare_csv.py | Declined (informational) | ORE's own CSV row order is deterministic for a given input; noted as a future-proofing concern only, not a current defect. |
+
+* Result
+
+Replaced the broken =ore-1.8.15.0-x64-linux.tar.gz= with a genuinely
+self-contained, self-tested =ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz=
+(verified: =ldd= resolves every dependency inside the package with
+none pointing at a build tree; automated run against =TA002_IR_Swap=
+tolerantly matches real =ExpectedOutput/= within rtol=1e-6, with
+schema differences called out explicitly for sign-off). Synced
+=external/ore/examples/= (3404 files) and =external/ore/xsd/= (26
+files) from the same engine commit, both with a fresh =manifest.json=
+recording exact provenance; all 1566 example XML files validate
+against the refreshed schema. Automated the 3-file FX-key hand-patch
+reapplication that a fresh sync had previously silently undone (caught
+live, fixed, verified idempotent) -- resolved the long-deferred capture
+this had been tracked under. Added two new reusable scripts
+(=external/ore/tools/package_ore.sh=, =update_ore_samples.sh=, plus
+=compare_csv.py=) and their own README/manifest/methodology docs,
+matching this repo's existing =external/<source>/= vendoring
+convention. Fixed a genuine pre-existing bug in
+=scripts/validate_ore_examples.sh= (=set -e= exiting before its own
+pass/fail accounting on the first real validation failure) found while
+using it. C++ domain-type codegen (=xsdcpp_generate_ore.sh=) could not
+be run -- local =xsdcpp= build fails against both old and new schema,
+a pre-existing environment issue unrelated to this task, filed
+separately rather than worked around.

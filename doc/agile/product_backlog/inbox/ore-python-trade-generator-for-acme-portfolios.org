@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 2521B2BD-3956-4F4C-AC4D-1B621721268D
+:END:
+#+title: ORE's Python TradeGenerator could programmatically build Acme's synthetic trade portfolios
+#+description: external/ore/examples/ORE-Python/TradeGenerator wraps ORE-Python's InputParameters/Portfolio API to build swaps/capfloors/FX options/equity/commodity trades by looking up conventions and curve config by index (e.g. GBP-SONIA), rather than hand-writing trade XML. Discovered while syncing external/ore/examples from a fresh ORE Engine checkout (moved from Examples/TradeGenerator to Examples/ORE-Python/TradeGenerator upstream). Worth evaluating as a building block for the Acme Corporation synthetic-entity story's trade-portfolio generation, instead of hand-crafted XML.
+#+type: capture
+#+level: cross
+#+filetags: :ore:acme:synthetic:python:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+ORE ships a Python-API helper, =TradeGenerator= (now at
+=external/ore/examples/ORE-Python/TradeGenerator/=, moved there from
+=Examples/TradeGenerator/= upstream in commit =ccc7fd717=), that builds
+a =Portfolio= of simple trades -- fixed-float swaps, OIS swaps,
+capfloors, FX options, equity/commodity derivatives -- programmatically
+rather than via hand-written trade XML. Constructed from a curve config
+object, an optional reference-data object, and an implicit
+=Conventions= instance; when built it reads Swap/OIS/Commodity
+Forward/Inflation Swap conventions into a map keyed by index (e.g.
+=GBP-SONIA=), so building a trade is a matter of specifying notional,
+maturity, fixed rate, payer/receiver, and (optionally) a trade ID --
+the generator looks up the rest (payment frequency, calendars, business
+day conventions, spot lags) from the matched convention/curve config.
+=TradeGenerator= extends =Portfolio=, so every built trade is
+auto-added; the whole portfolio can then be saved to XML or run
+directly against market data/fixings for NPV.
+
+* Why
+
+The Acme Corporation synthetic-entity story needs a realistic trade
+portfolio, and this looks like a much better fit than hand-crafting
+trade XML per instrument: real ORE conventions/curve-config-driven
+construction, less error-prone, and scales to generating many trades
+across currencies/indices programmatically. Worth an evaluation spike:
+does ORE-Python's dependency footprint (SWIG bindings, built as part of
+the =OREP= target) fit cleanly into this repo's synthetic-data
+generation pipeline, or is it better used as an offline
+one-time-generation tool whose XML output gets vendored/seeded rather
+than run live.
+
+* References
+
+- =external/ore/examples/ORE-Python/TradeGenerator/Readme.md= -- full description.
+- =external/ore/examples/ORE-Python/TradeGenerator/trade_generator_test.py= -- worked example.
+- Root-cause-of-the-move commit (upstream ORE Engine): =ccc7fd717= "Rearrange TradeGenerator Example Files".
+- Acme story: [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]
+
+* See also
+
+-

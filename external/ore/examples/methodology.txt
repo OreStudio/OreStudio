@@ -1,0 +1,27 @@
+See external/ore/methodology.txt for the full sourcing/sync/package/
+codegen/commit methodology (steps 1-2 cover this directory
+specifically: cloning the ORE Engine source, then
+external/ore/tools/update_ore_samples.sh, which syncs this directory
+and external/ore/xsd/ together from the same commit and validates the
+result).
+
+This file exists as a stub (rather than duplicating that content) so
+this directory follows the same README.md/manifest.json/methodology.txt
+convention as every other external/<source>/ directory in this repo
+(see external/fed_h10/, external/lei/ for the pattern).
+
+Specific to this directory:
+
+- EXCLUDED from the sync: ORE's own pytest test-harness files
+  (conftest.py, ore_examples_helper.py, ore_wrapper.py,
+  run_examples_testsuite.py, copy_out_expected.sh, Readme.md) -- this
+  repo vendors the example DATA, not ORE's own harness for running all
+  of them via pytest. See EXCLUDE_EXAMPLES_FILES in
+  external/ore/tools/update_ore_samples.sh.
+
+- REAPPLIED after every sync: 3 files (KNOWN_PATCH_FILES in that same
+  script) have a genuinely wrong FX/RATE key order shipped by upstream,
+  fixed once in PR #1423 and reapplied automatically on every re-sync
+  since -- see the script's own header comment for the full explanation
+  of why, and doc/agile/product_backlog/deferred/
+  document_ore_vendor_hand_patches.org for the history.

@@ -1,0 +1,14 @@
+{
+  "description": "Provenance for external/ore/examples/ -- a sync of the ORE Engine fork's own Examples/ directory (minus its pytest test-harness files, see external/ore/tools/update_ore_samples.sh's header comment for the exclude list), with exactly 3 known upstream-bug hand-patches reapplied automatically after every sync (KNOWN_PATCH_FILES in that same script -- upstream ships a genuinely wrong FX/RATE key order in these files; see the script's header comment and doc/agile/product_backlog/deferred/document_ore_vendor_hand_patches.org for why). No other manual edits anywhere in this tree.",
+  "source_repo": "git@github.com:OreStudio/Engine.git (fork of git@github.com:OpenSourceRisk/Engine.git)",
+  "source_path": "Examples/",
+  "engine_version": "1.8.16.0-3-g3b62ba248",
+  "engine_commit": "3b62ba248e36ea92f408f0d863ede09639074836",
+  "engine_commit_date": "2026-06-11T12:45:15+02:00",
+  "synced_at": "2026-07-30T22:18:33Z",
+  "synced_by": "external/ore/tools/update_ore_samples.sh",
+  "file_count": 3404,
+  "top_level_entries": ["Academy", "AmericanMonteCarlo", "CreditRisk", "CurveBuilding", "Exposure", "ExposureWithCollateral", "InitialMargin", "Input", "Legacy", "MarketRisk", "MinimalSetup", "ORE-API", "ORE-Python", "Performance", "Products", "ScriptedTrade", "XvaRisk"],
+  "tree_sha256": "770f35d3e8897d07a719c3eef7086872974d0097542ed872ff779003c04227aa",
+  "tree_sha256_method": "sha256 of the sorted 'sha256sum  relative/path' lines for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
+}

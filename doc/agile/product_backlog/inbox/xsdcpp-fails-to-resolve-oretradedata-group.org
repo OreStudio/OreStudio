@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 99A443B8-DD71-4A83-9515-42D0D513A1E9
+:END:
+#+title: xsdcpp codegen fails: cannot resolve group oreTradeData
+#+description: Local xsdcpp 1.0.3 build fails with 'error: Could not find group oreTradeData' against both the old and newly-synced external/ore/xsd/input.xsd, blocking regeneration of projects/ores.ore's domain.hpp/domain.cpp.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:ore:xsdcpp:blocked:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Running =./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh= with
+the local =/home/marco/Development/xsdcpp/build/src/xsdcpp= binary
+(=xsdcpp 1.0.3=) against =external/ore/xsd/input.xsd= fails:
+
+#+begin_example
+error: Could not find group 'oreTradeData'
+#+end_example
+
+Confirmed via a clean A/B test (=git stash= the =external/ore/xsd/=
+sync, re-run, restore) that this happens identically against BOTH the
+=external/ore/xsd/input.xsd= content already committed on =main=
+before this session's ORE version bump AND the freshly-synced 1.8.16.0
+version -- so this is a pre-existing local environment/tool-version
+issue, not something the vendored XSD content update introduced. The
+group *is* defined (=external/ore/xsd/instruments.xsd:6=,
+=<xs:group name="oreTradeData">=) and referenced correctly through the
+same import chain xsdcpp's own log shows it walking
+(=input.xsd= -> =instruments.xsd= -> ... -> =historicalreturnconfig.xsd=,
+erroring right after) -- looks like a genuine resolution bug in this
+xsdcpp build, or a version mismatch between this local xsdcpp checkout
+and whatever version last successfully generated the
+=projects/ores.ore/include/ores.ore/domain/domain.hpp=/=domain.cpp=
+currently committed on =main=.
+
+* Why
+
+Blocks regenerating =ores.ore='s domain types after
+=external/ore/xsd/= is refreshed (see
+[[id:F27A0EA4-AB19-424A-B2C5-A82369CDB650][the IR curve seed-data capture]]-adjacent
+work: the ORE Engine binary/examples/XSD version-bump task). Left
+=projects/ores.ore/include/ores.ore/domain/domain.hpp= and
+=domain.cpp= UNCHANGED (still generated from the pre-bump schema)
+rather than attempt a workaround -- =xsdcpp= is a separate tool/repo
+(=~/Development/xsdcpp=), not something to patch blind. Needs either
+rebuilding xsdcpp from its current upstream source (this local build
+may predate a fix), or investigating the group-resolution bug directly
+in xsdcpp's own source if it's still broken on a fresh build.
+
+* References
+
+- Error reproduction: =./projects/ores.codegen/scripts/xsdcpp_generate_ore.sh= (needs =xsdcpp= on =PATH=)
+- Group definition: =external/ore/xsd/instruments.xsd:6=
+- Group references: =external/ore/xsd/input.xsd= (x3), =external/ore/xsd/referencedata.xsd:224=
+- Local xsdcpp checkout: =~/Development/xsdcpp= (=xsdcpp --version= reports =1.0.3=)
+- Consumer: =projects/ores.ore/include/ores.ore/domain/domain.hpp=, =projects/ores.ore/src/domain/domain.cpp=
+
+* See also
+
+-

@@ -1,0 +1,14 @@
+{
+  "description": "Provenance for external/ore/xsd/ -- a verbatim sync of the ORE Engine fork's own xsd/ directory, kept in lockstep with external/ore/examples/ (same engine_commit) since a schema/example version mismatch produces spurious validation failures -- see scripts/validate_ore_examples.sh.",
+  "source_repo": "git@github.com:OreStudio/Engine.git (fork of git@github.com:OpenSourceRisk/Engine.git)",
+  "source_path": "xsd/",
+  "engine_version": "1.8.16.0-3-g3b62ba248",
+  "engine_commit": "3b62ba248e36ea92f408f0d863ede09639074836",
+  "engine_commit_date": "2026-06-11T12:45:15+02:00",
+  "synced_at": "2026-07-30T22:18:33Z",
+  "synced_by": "external/ore/tools/update_ore_samples.sh",
+  "file_count": 26,
+  "top_level_entries": ["baselTrafficLightconfig.xsd", "calendaradjustment.xsd", "check.cmd", "check.sh", "collateralbalance.xsd", "conventions.xsd", "counterparty.xsd", "creditsimulation.xsd", "currencyconfig.xsd", "curveconfig.xsd", "historicalreturnconfig.xsd", "iborfallbackconfig.xsd", "input.xsd", "instruments.xsd", "nettingsetdefinitions.xsd", "ore.xsd", "ore_types.xsd", "pricingengines.xsd", "referencedata.xsd", "scriptlibrary.xsd", "sensitivity.xsd", "simmcalibration.xsd", "simulation.xsd", "stress.xsd", "todaysmarket.xsd", "xsd_bindings.xjb"],
+  "tree_sha256": "05e00dc97b76ea39651dab90b89203956ad94d4528534711ec9932422885481d",
+  "tree_sha256_method": "sha256 of the sorted 'sha256sum  relative/path' lines for every vendored file (manifest.json/README.md/methodology.txt themselves excluded) -- reproducible by re-running this script against the same engine_commit and diffing the regenerated manifest.json's own tree_sha256."
+}

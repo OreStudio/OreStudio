@@ -1,0 +1,110 @@
+Data Sourcing and Generation Steps:
+
+1. CLONE / SYNC THE ORE ENGINE SOURCE
+   Source: OreStudio's fork of the ORE Engine, kept in sync with
+   upstream OpenSourceRisk/Engine.
+     git@github.com:OreStudio/Engine.git    (fork, push target)
+     git@github.com:OpenSourceRisk/Engine.git   (upstream, pull-only)
+   Kept as a separate checkout OUTSIDE this repo (e.g.
+   ~/Development/ORE/Engine), not a submodule -- it's a multi-gigabyte
+   C++ source tree (QuantLib + QuantExt + OREData + OREAnalytics) that
+   only needs to exist locally when actually rebuilding a package; this
+   repo only vendors the resulting binary artefact.
+   Commands (first time):
+     git clone --recurse-submodules git@github.com:OreStudio/Engine.git
+     cd Engine
+     git remote add upstream git@github.com:OpenSourceRisk/Engine.git
+   Commands (updating the fork before building):
+     git fetch upstream
+     git checkout master && git merge --ff-only upstream/master
+     git submodule update --init --recursive
+     git push origin master
+
+2. BUILD
+   Preset: linux-clang-ninja-release (CMakePresets.json; requires Boost
+   >= 1.75.0 -- BOOST_ROOT=/usr picks up the system apt package, e.g.
+   libboost-all-dev, no separate Boost build needed).
+   Commands:
+     BOOST=/usr cmake --preset linux-clang-ninja-release
+     cmake --build build/linux-clang-ninja-release -j <nproc>
+   Target: build/linux-clang-ninja-release/App/ore (the CLI executable)
+   plus libOREAnalytics.so/libOREData.so/libQuantExt.so/
+   libQuantLib.so.1 it links against. This step alone leaves the
+   executable's RPATH pointing at absolute paths inside the build tree
+   (readelf -d App/ore | grep RUNPATH) -- not portable, fixed in the
+   next step.
+
+3. PACKAGE
+   Script: external/ore/tools/package_ore.sh
+   Command:
+     external/ore/tools/package_ore.sh <path-to-build-dir>
+   What it does (see the script's own header comment for full detail):
+     a. Copies App/ore plus every shared library `ldd` reports it needs,
+        EXCLUDING glibc/loader/libgcc (linux-vdso, ld-linux, libc,
+        libm, libpthread, libdl, librt -- those must always come from
+        the host) -- into a flat package dir with a lib/ subdirectory.
+     b. Rewrites RPATH via patchelf: $ORIGIN/lib on the executable,
+        $ORIGIN on every bundled library -- so the package finds its
+        own bundled libraries wherever it's extracted, with zero
+        environment setup (matches how ores.compute.wrapper actually
+        spawns the engine -- see
+        projects/ores.compute/wrapper/src/app/application.cpp, no
+        LD_LIBRARY_PATH customisation).
+     c. Writes manifest.json ({"executable": ..., "args": ["Input/ore.xml"]}) --
+        the minimal, wrapper-consumed manifest. Deliberately unversioned
+        prose-free; see this directory's own manifest.json for the
+        human-facing provenance record instead.
+     d. tars the whole package dir into ore-<version>-x64-linux.tar.gz.
+   Version: by default, `git describe --tags --always` (leading 'v'
+   stripped) against the build dir's own source tree, auto-discovered
+   from CMakeCache.txt's CMAKE_HOME_DIRECTORY -- override with
+   --version if a different string is wanted.
+
+4. VERIFY (self-test, on by default)
+   The same script run then:
+     a. Confirms the packaged executable's `ldd` output resolves every
+        dependency inside the package itself, with NO path pointing
+        back into the build tree -- proves the RPATH rewrite actually
+        worked, not just that it was attempted.
+     b. Extracts external/ore/packages/TA002_IR_Swap.tar.gz (a plain
+        20Y EUR fixed-vs-float IR swap -- see that file's own entry in
+        this directory's manifest.json) into a scratch job directory
+        and runs the packaged executable against it exactly the way
+        ores.compute.wrapper does: `<exe> Input/ore.xml` with the job
+        directory as cwd.
+     c. Tolerantly diffs every Output/*.csv against
+        external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput/ --
+        see external/ore/tools/compare_csv.py's own doc for why this is
+        NOT a byte-exact diff (cross-compiler/library floating-point
+        noise in the last 1-2 significant digits is expected and not a
+        defect; a newer engine legitimately adding trailing report
+        columns an older reference doesn't have is also not a defect).
+     d. Writes a sign-off report,
+        <package>.diff-report.txt, alongside the tarball, flagging any
+        NEW COLUMNS / REMOVED COLUMNS explicitly so a human reviews and
+        signs off on schema changes even when every shared column's
+        values matched -- read this report before trusting a rebuilt
+        package for anything beyond local testing.
+   Override --sample/--expected-output to verify against a different
+   example instead of (or in addition to) TA002_IR_Swap.
+
+5. INSTALL
+   The script copies the tarball (and its diff-report.txt) straight
+   into external/ore/packages/ -- no separate manual copy step. Pass
+   --no-install to build+verify without touching this directory (e.g.
+   to inspect the package first with --keep-staging).
+
+6. UPDATE THE COMPUTE APP SEED (if this replaces the seeded version)
+   projects/ores.sql/populate/compute/compute_ore_app_seed.sql seeds
+   the `ore` compute app's engine_version and package_uri
+   (/api/v1/storage/compute/packages/ore/<version>/ore-<version>-x64-linux.tar.gz)
+   for the x64-linux platform. The packaging script does NOT update
+   this automatically -- deciding whether a new package replaces the
+   seeded default (vs. being added as an additional version) is a
+   product/deployment decision, not something to infer from a build.
+
+7. COMMIT
+   Commit the new tarball + its diff-report.txt + this directory's
+   updated manifest.json together. Never hand-edit an existing
+   tarball's contents -- rerun the script and get a new one; the
+   RPATH/manifest/library-set are all derived, not hand-maintained.

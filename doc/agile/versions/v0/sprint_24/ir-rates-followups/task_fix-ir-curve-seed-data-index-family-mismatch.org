@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: chore/file-ir-curve-seed-fix-task
 #+pr:
 #+blocked_on:
 #+blocked_since:

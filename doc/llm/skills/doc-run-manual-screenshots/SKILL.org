@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: doc-run-manual-screenshots
-description: Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build and a fresh Barclays-provisioned database (self-provisioned via ores.shell), run a test scenario through the QA Validation Runner, crop and wire the images in, rebuild, and hand off for human review.
+description: Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build and a fresh Acme-provisioned database (self-provisioned via ores.shell), run a test scenario through the QA Validation Runner, crop and wire the images in, rebuild, and hand off for human review.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -30,8 +30,8 @@ human review.
 Run [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] end to end:
 
 1. Its *Prerequisites* section — build if needed, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the
-   environment]] (fresh database, Barclays Plc provisioned by you, not
-   the user), then confirm the chapter itself already builds.
+   environment]] (fresh database, Acme Corporation provisioned by you,
+   not the user), then confirm the chapter itself already builds.
    Non-negotiable, in order — never capture against a build or
    database that predates the entity's current state.
 2. Its capture/wire-in sections — a =test_scenario= with one step per

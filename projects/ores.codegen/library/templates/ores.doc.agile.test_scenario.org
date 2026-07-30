@@ -40,6 +40,24 @@ The full template source. Edit here and re-tangle with
 
 This page documents a test scenario verifying [[id:{{parent_id}}][{{parent_title}}]] in [[id:{{story_id}}][{{story_title}}]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
+,* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned (state what tenant/data the
+  scenario needs, e.g. "via =--source acme=") — confirm via
+  =compass db status=, recreating only if stale: =compass db recreate
+  -y -k= then the relevant =compass shell -f= provisioning script.
+  Confirm the run completes with no failed steps before starting.
+
 ,* Scenario Info
 
 # The QA Validation Runner treats *any* non-empty Clients cell below as
@@ -77,11 +95,21 @@ exactly what to click or type, and exactly what confirms the step
 passed. The panel writes each step's PASS/FAIL/PENDING outcome and
 notes back as a =*** Result= child heading directly under it.
 
-,** Connect to tenant Barclays Plc
+,** Log in as <persona>
 
-Log in against the =prime_origin= environment as
-=tenant_admin@barclays_plc= / =Secure-Password-123= and select
-*BARCLAYS PLC*.
+# This must be the scenario's first step (the QA Validation Runner
+# panel doesn't track pass/fail for prose in * Context, only for
+# * Steps entries) -- name the *specific* persona this scenario
+# actually needs: the exact account to log in as and its password
+# (e.g. =tenant_admin@acme_corporation= / =Secure-Password-123=, or a
+# specific staff username -- see doc/agile/versions/.../
+# acme_corporation_holding_group/story.org for how generated staff
+# usernames work, they're randomised per provisioning run so look one
+# up via `accounts list` rather than assuming a fixed name). Assume
+# the system is already in the state * Before you start establishes --
+# this step is pure tester mechanics, not a readiness check. Never
+# leave the tester to guess credentials -- and never copy this
+# placeholder verbatim.
 
 ,** (Next manual step the tester should perform.)
 

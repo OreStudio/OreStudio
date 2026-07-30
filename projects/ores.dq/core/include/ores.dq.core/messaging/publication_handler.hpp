@@ -123,26 +123,29 @@ public:
             service::publication_service svc(ctx);
             auto entries = svc.list_bundle_publishable_datasets(req->bundle_code);
 
-            // Apply opted_in_datasets whitelist filter when specified.
-            // An empty list means "all datasets" (no filtering).
+            // A bundle's optional members never publish by default -- only its
+            // always-included (non-optional) members do. opted_in_datasets names
+            // which optional members to additively pull in on top of those; it is
+            // not a whitelist over the whole bundle, so a caller opting in to one
+            // large GLEIF dataset still gets every non-optional member (badges,
+            // fpml.* codes, countries, calendars, ...) alongside it.
+            std::vector<std::string> allowed;
             if (!req->params_json.empty()) {
                 auto parsed = rfl::json::read<publish_bundle_params>(req->params_json);
-                if (parsed && !parsed->opted_in_datasets.empty()) {
-                    const auto& allowed = parsed->opted_in_datasets;
-                    entries.erase(std::remove_if(entries.begin(),
-                                                 entries.end(),
-                                                 [&](const auto& e) {
-                                                     return std::find(allowed.begin(),
-                                                                      allowed.end(),
-                                                                      e.dataset_code) ==
-                                                            allowed.end();
-                                                 }),
-                                  entries.end());
-                    BOOST_LOG_SEV(publication_handler_lg(), debug)
-                        << "opted_in_datasets filter applied: " << entries.size()
-                        << " datasets retained";
-                }
+                if (parsed)
+                    allowed = parsed->opted_in_datasets;
             }
+            entries.erase(std::remove_if(entries.begin(),
+                                         entries.end(),
+                                         [&](const auto& e) {
+                                             return e.optional &&
+                                                    std::find(allowed.begin(),
+                                                              allowed.end(),
+                                                              e.dataset_code) == allowed.end();
+                                         }),
+                          entries.end());
+            BOOST_LOG_SEV(publication_handler_lg(), debug)
+                << "optional-member filter applied: " << entries.size() << " datasets retained";
 
             if (entries.empty()) {
                 publish_bundle_response resp;

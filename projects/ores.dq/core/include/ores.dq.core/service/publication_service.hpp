@@ -43,6 +43,11 @@ struct bundle_publishable_dataset {
     std::string dataset_id;
     std::string dataset_code;
     std::string target_subject;
+    // True only for a dataset that is a direct, opt-in ("optional") member
+    // of the bundle being published -- always false for a dependency pulled
+    // in by resolve_dependencies rather than listed in the bundle itself,
+    // since a prerequisite is never something the caller opts in or out of.
+    bool optional = false;
 };
 
 /**

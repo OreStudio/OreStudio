@@ -26,12 +26,12 @@ Remove/retire barclays_system_provision.org and its tangled .ores script (or cle
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Folded into [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission Barclays/NatWest]] -- the two shared too much scope (both retire Barclays connections/references) to stay separate. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Next         | Nothing -- see the task above.         |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 

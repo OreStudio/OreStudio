@@ -38,24 +38,18 @@
 
 DO $$
 BEGIN
-    -- --- LEI hierarchy + business centres (published once, tenant-wide,
-    -- before any operating-company party exists to scope a bundle to) ---
+    -- --- The four-party ACME Corporation LEI hierarchy (published once,
+    -- tenant-wide, before any operating-company party exists to scope a
+    -- bundle to). fpml.business_center is NOT a member here -- it's
+    -- already a non-opt-in member of 'base' (published tenant-wide
+    -- elsewhere in the provisioner), so listing it again here would just
+    -- re-publish the same rows ---
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme_lei_import',
         'Acme Corporation LEI Import',
-        'The four-party ACME Corporation LEI hierarchy plus the business centres LEI-imported parties require. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists.'
+        'The four-party ACME Corporation LEI hierarchy. Published tenant-wide with the {"root_lei": "9695ACMEGROUP0000030"} param, before any operating-company party exists. Depends on fpml.business_center already having been published via the base bundle.'
     );
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'fpml.business_center', 10);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_lei_import', 'acme.lei_parties', 20);
-
-    -- --- Real GLEIF counterparties (small), tenant-wide, so every ACME
-    -- Corporation party can trade against a realistic counterparty set ---
-    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'acme_gleif_counterparties',
-        'Acme Corporation GLEIF Counterparties',
-        'Real GLEIF counterparties (small), published tenant-wide with no params, so every ACME Corporation party can trade against a realistic counterparty set.'
-    );
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'acme_gleif_counterparties', 'gleif.lei_counterparties.small', 10);
 
     -- --- Per-office business units, portfolios, books, accounts, and
     -- account contact informations -- published once each operating

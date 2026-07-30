@@ -26,12 +26,12 @@ Scope remove()/save() for party-level settings (onboarding.party) by party_id as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Fixed and shipped in [[https://github.com/OreStudio/OreStudio/pull/1758][PR #1758]], merged 2026-07-30. Acme readiness scenario confirms onboarding is suppressed for every activated party. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 

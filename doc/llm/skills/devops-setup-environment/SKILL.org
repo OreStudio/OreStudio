@@ -84,11 +84,12 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh build
    #+end_src
 
-9. /Provision the Barclays tenant via the shell/ — run the full
-   Barclays/GLEIF provisioning script from the generated library:
+9. /Provision the Acme Corporation tenant via the shell/ — run the
+   full Acme holding-group provisioning script from the generated
+   library (the system's reference fully-populated test/demo entity):
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores
+   ./projects/ores.compass/compass.sh shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
    #+end_src
 
 10. /Verify/ — bearings clean. Do not start services as part of this

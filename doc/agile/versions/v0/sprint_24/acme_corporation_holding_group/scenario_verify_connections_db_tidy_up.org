@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: E8707C8E-A071-4397-ACCC-C2A82E43C46F
+:END:
+#+title: Test Scenario: Verify connections database tidy-up and Barclays decommission
+#+description: Confirm the login combo shows connection descriptions, the curated Acme staff connections work, and Barclays/NatWest connections are gone
+#+type: test_scenario
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission Barclays/NatWest]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- The database must be freshly provisioned with Acme Corporation
+  (confirm via =compass db status=; if stale, =compass db recreate -y
+  -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=).
+  This scenario's dropdown checks don't depend on live Acme data —
+  only on the saved connections in =connections.db= — but the final
+  login step does need a provisioned tenant.
+- The client must not be logged in yet when this scenario starts —
+  the checks are on the login screen's quick-connect dropdown itself.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission Barclays/NatWest]] |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as leanne.shaw@acme_corporation
+
+- On the login screen's =brave-hopper= quick-connect dropdown, before
+  selecting anything, confirm entries like =brave-hopper:
+  leanne.shaw@acme_corporation= show a role description (e.g.
+  "Country Head, ACME Corporation UK plc") next to the name, not a
+  bare username, and that there are 10 curated Acme staff connections
+  (Country Head/Head of Middle Office/Head of Trading per UK/US/HK
+  office, plus one Senior Trader) alongside =super_admin= and
+  =tenant_admin@acme_corporation=.
+- Select =brave-hopper: leanne.shaw@acme_corporation= and confirm the
+  username field auto-fills as =leanne.shaw@acme_corporation=; log in
+  with password =Secure-Password-123= (all curated connections share
+  this password). Confirm login succeeds and the session lands on
+  ACME Corporation UK plc.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | login failed: Authentication failed: Login tracking information missing |
+
+** Confirm no Barclays/NatWest connections remain
+
+- Log out back to the login screen and scroll the full quick-connect
+  dropdown (all environments, not just =brave-hopper=).
+- Confirm no entry mentions =barclays= or =natwest= anywhere in its
+  name.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-30T13:52:58Z |
+| Branch        | feature/tidy-up-connections-db-retire-barclays |
+| Commit        | fd8ce1aac |
+| Worktree      | brave_hopper |
+
+* Notes
+
+Root cause of the login-failure FAIL, diagnosed 2026-07-30:
+=account_service::login()= requires a row in
+=ores_iam_login_info_tbl=, created for =super_admin=/=tenant_admin= by
+=ores_iam_system_provisioner_create.sql=, but never created by the
+accounts publish-from-dq SQL path used to bulk-create the ~59
+generated Acme staff accounts -- so every curated staff connection
+fails login with "Login tracking information missing". This blocks
+the parent story's own RBAC-exercising acceptance criterion (not just
+this scenario), so it's split out as its own task rather than fixed
+here: [[id:60C58FA5-94C2-49A2-94F1-7620237FB296][Fix: generated Acme staff accounts have no login_info row, can't
+log in]]. Everything else this scenario checks (description field,
+curated connection set, Barclays/NatWest removal) passes.

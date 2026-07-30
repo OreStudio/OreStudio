@@ -26,12 +26,12 @@ The current --source acme path re-implements party activation, onboarding comple
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Investigated the real NATS request surface; plan written. Next: internal-impersonation token minter. |
+| Now          | Shipped in [[https://github.com/OreStudio/OreStudio/pull/1758][PR #1758]], merged 2026-07-30. Acme readiness scenario confirms activation/onboarding/membership/default-party all working via the real request pipeline. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the token minter, then the orchestrator rewrite. |
-| Last touched | 2026-07-26                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 

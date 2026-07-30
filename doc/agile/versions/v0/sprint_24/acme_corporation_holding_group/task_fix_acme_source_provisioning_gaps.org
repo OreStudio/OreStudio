@@ -26,12 +26,12 @@ Get --source acme to fully match the one-click UX its own task description promi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Blocked. Left as a partial stopgap fix, tested by direct SQL/shell verification only (no full Qt click-through). |
-| Waiting on   | [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][Rework Acme provisioning: simulate real per-party setup via internal actor impersonation]] |
-| Next         | Resume once the internal-impersonation rework lands.  |
-| Last touched | 2026-07-26                               |
+| Now          | Superseded: [[id:D9FC5720-C3B2-4280-9512-A0335CEF8D61][the internal-impersonation rework]] (PR #1758) replaced the hand-written SQL orchestration entirely, fixing activation/onboarding/membership/default-party as a side effect -- confirmed by the Acme readiness test scenario. Nothing left to do here. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 

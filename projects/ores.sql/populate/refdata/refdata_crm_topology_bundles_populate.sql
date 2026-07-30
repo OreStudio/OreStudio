@@ -123,11 +123,12 @@ BEGIN
         'driver_currencies'
     );
 
-    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'refdata.crm_topology_bundles',
-        'synthetic.themes.ore_samples_2016',
-        'live_feed'
-    );
+    -- No dependency on a live-feed dataset (e.g. synthetic.themes.ore_samples_2016
+    -- for the 2016 vintage) -- publishing the topology config/driver-pair/derived-
+    -- pair rows here doesn't require a live feed to already be publishing
+    -- successfully, only the driver_currencies reference data above. The CRM
+    -- Cross-Rates Matrix simply shows static/stale prices until whichever feed
+    -- the vintage wires up starts ticking.
 END $$;
 
 -- =============================================================================

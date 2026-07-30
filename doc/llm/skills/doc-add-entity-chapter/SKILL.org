@@ -49,7 +49,7 @@ manual — ending with a chapter ready for human review.
    screenshots yet.
 
 3. /Capture the screenshots/ using the [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] skill:
-   confirm the environment (build, fresh Barclays-provisioned database)
+   confirm the environment (build, fresh Acme-provisioned database)
    before touching placeholders, scaffold a =test_scenario= with one
    step per placeholder, run it through the QA Validation Runner
    (falling back to a manual desktop screenshot for any step blocked by

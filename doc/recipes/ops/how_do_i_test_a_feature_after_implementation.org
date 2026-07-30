@@ -2,7 +2,7 @@
 :ID: BE325E3E-1BAB-4D9D-964E-78333CDB97D7
 :END:
 #+title: How do I test a feature after implementation?
-#+description: Confirm a build and a fresh, Barclays-provisioned database, run all tests, validate schemas, write a test scenario (including CRUD, eventing, and history), and hand the client to the user to execute.
+#+description: Confirm a build and a fresh, Acme-provisioned database, run all tests, validate schemas, write a test scenario (including CRUD, eventing, and history), and hand the client to the user to execute.
 #+type: recipe
 #+level: cross
 #+filetags: :ops:testing:recipe:
@@ -56,17 +56,20 @@ follows.
    #+end_src
 
 3. /Ready the environment/ — confirm the database is recent (recreate
-   only if it's not) and the Barclays Plc tenant is provisioned, per
-   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5. Skip that recipe's step
-   6 (client start) here — step 5 below starts the client itself, with
-   the scenario preloaded, so a separate bare client start would just
-   be extra work to throw away.
+   only if it's not) and the Acme Corporation tenant is provisioned,
+   per [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] steps 1-5. Skip that recipe's
+   step 6 (client start) here — step 5 below starts the client itself,
+   with the scenario preloaded, so a separate bare client start would
+   just be extra work to throw away.
 
    The login credentials for the test scenario's connection step come
    *from the provisioning script that recipe runs* — read the
    =provision system=/=login= lines in
-   [[proj:projects/ores.shell/scripts/library/provisioning/barclays_system_provision.ores][=barclays_system_provision.ores=]] rather than hardcoding them into the
-   scenario doc, since they can change independently of this recipe.
+   [[proj:projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores][=how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=]]
+   rather than hardcoding them into the scenario doc, since they can
+   change independently of this recipe (usernames for generated staff
+   accounts are randomised per run — see [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system
+   with Acme Corporation (holding group)?]]).
 
 ** Writing and running the scenario
 
@@ -191,7 +194,7 @@ tester can tick through steps to a saved =* Results= section.
 
 - [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
 - [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
-- [[id:87246342-8B5C-4345-9BAD-7A2F40985DF4][How do I provision the system with Barclays (GLEIF)?]]
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
 - [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]]
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
 - [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]]

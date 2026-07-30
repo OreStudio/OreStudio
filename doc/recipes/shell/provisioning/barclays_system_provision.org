@@ -9,6 +9,13 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
+Note: [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding
+group)?]] is the system's reference fully-populated test/demo entity
+(parties, business units, portfolios, books, staff accounts with
+photos, GLEIF counterparties) — use it unless you have a specific
+reason to want Barclays' lighter-weight, GLEIF-only tenant instead
+(e.g. a scenario that doesn't need staff/business-unit structure).
+
 Reproduce, from the command line, what an operator does through the
 three Qt provisioning wizards — but sourced from the GLEIF golden copy
 rather than synthetic data. The =ores-shell= block below is tangled

@@ -2171,7 +2171,8 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
             LoginDialog::QuickConnectItem it;
             it.type = LoginDialog::QuickConnectItem::Type::Connection;
             it.name = QString::fromStdString(conn.name);
-            it.subtitle = QString::fromStdString(conn.username);
+            it.subtitle = conn.description.empty() ? QString::fromStdString(conn.username)
+                                                    : QString::fromStdString(conn.description);
             if (conn.environment_id) {
                 for (const auto& tag :
                      connectionManager_->get_tags_for_environment(*conn.environment_id))

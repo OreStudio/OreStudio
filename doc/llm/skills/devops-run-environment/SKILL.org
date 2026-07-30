@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: devops-run-environment
-description: Run the full environment-readying sequence: stop services, recreate the database, start services, provision the Barclays Plc tenant, and start the Qt client.
+description: Run the full environment-readying sequence: stop services, recreate the database, start services, provision the Acme Corporation tenant, and start the Qt client.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -30,8 +30,9 @@ use =devops-setup-environment= instead.
 * How to use this skill
 
 Run [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] end to end. Unless the user asks for a
-different tenant (e.g. the synthetic Acme provisioner), default to the
-Barclays Plc (GLEIF) provisioner.
+different tenant, default to the Acme Corporation holding-group
+provisioner (=--source acme=) — the system's reference fully-populated
+test/demo entity.
 
 * Recipes
 

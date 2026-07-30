@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: FF81C703-6EFE-4B00-8C79-6F1069E1A6BE
+:END:
+#+title: Task: Fix: ores_synthetic_publish_theme_from_dq_fn fails with 'column existing.index_name does not exist'
+#+description: synthetic.themes.realistic_2026 and synthetic.themes.ore_samples_2016 both fail to publish via ores_synthetic_publish_theme_from_dq_fn with a SQL error referencing a missing existing.index_name column, blocking every party's synthetic market-data feed. Owned by Bright Faraday; tracked here so party_provisioning_bundle_plan() can re-add synthetic_realistic_2026 once fixed.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: bright_faraday
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_synthetic_publish_theme_from_dq_fn= must publish a synthetic
+theme (e.g. =synthetic.themes.realistic_2026=,
+=synthetic.themes.ore_samples_2016=) without error, so every party's
+synthetic market-data feed actually starts. Currently every call
+fails with =ERROR: column existing.index_name does not exist=
+(=ores.synthetic.messaging.publish_from_dq_handler= log). As a
+consequence, [[id:9A94B0D4-4244-4A6B-8AFA-26AC69681519][Tidy up the saved connections database and decommission
+Barclays/NatWest]] temporarily removed =synthetic_realistic_2026= from
+the shared =party_provisioning_bundle_plan()= (used by both Acme's and
+Barclays'/generic provisioning) to stop every provisioning run logging
+a hard failure for it — that entry must be restored once this is
+fixed, no other client change needed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- =ores_synthetic_publish_theme_from_dq_fn= publishes
+  =synthetic.themes.realistic_2026= and
+  =synthetic.themes.ore_samples_2016= without the
+  =existing.index_name= error.
+- =synthetic_realistic_2026= is restored to
+  =party_provisioning_bundle_plan()=
+  (=projects/ores.dq/api/include/ores.dq.api/messaging/party_provisioning_plan.hpp=).
+- A full Acme reprovision (=--source acme=) completes with no failed
+  steps and every party's synthetic feed is ticking.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

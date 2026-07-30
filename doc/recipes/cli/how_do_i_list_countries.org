@@ -31,7 +31,7 @@ Omitting it returns no rows — all data is tenant-scoped.
 shell after provisioning, or add it manually:
 
 #+begin_src sh
-export ORES_TENANT=<tenant-uuid>   # e.g. the Barclays UUID from provision output
+export ORES_TENANT=<tenant-uuid>   # e.g. the Acme Corporation UUID from provision output
 #+end_src
 
 ** List all as table (using .env)

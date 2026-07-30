@@ -40,15 +40,22 @@ Launching the Qt client, detached so the terminal stays free; colour keeps paral
    doc already loaded, so the tester can start working through steps
    immediately instead of using Scenario Runner's own Open button.
 
-3. /Always include a connect/login step in the scenario itself/ — every
+3. /Ensure the system is actually ready before opening the client/ —
+   confirm/recreate the database and provision it yourself (see
+   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]), recorded in the scenario's own
+   =* Before you start= section, not left for the tester to sort out.
+   Never hand the tester a scenario against a system you haven't
+   already verified is in the right state.
+
+4. /Always include a connect/login step in the scenario itself/ — every
    =test_scenario= doc opened this way must have, as its *first =* Steps=
    entry* (not just prose in =* Context=, which the Scenario Runner
-   panel doesn't track pass/fail for), a step stating the exact account
-   to log in as and its password (e.g. =tenant_admin@barclays_plc= /
-   =Secure-Password-123=) and which party to select, plus how to get
-   back to that state if the DB was recreated since (the provisioning
-   script to re-run). Never leave the tester to guess credentials or
-   starting state.
+   panel doesn't track pass/fail for), a step naming the specific
+   persona to log in as: the exact account and its password (e.g.
+   =tenant_admin@acme_corporation= / =Secure-Password-123=). This step
+   is pure tester mechanics — it assumes the readiness work from step 3
+   above, not a conditional the tester has to evaluate. Never leave the
+   tester to guess credentials.
 
 4. /Stop/ (pass the same =--colour= the instance was started with):
 

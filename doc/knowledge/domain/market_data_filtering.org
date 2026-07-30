@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:filtering:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-30
 
 * Summary
 
@@ -26,22 +26,20 @@ leaving it as prose.
 * Layperson's mental model
 
 All three senses can be told apart by asking a single question: *what is
-being narrowed, and against what criterion?* A useful, if imperfect,
-household analogy: sense 1 is like sorting the week's mail into "things
-I might actually need to open" versus junk, before opening anything — a
-narrowing of a set of items you already have, based on which of them are
-relevant to what you're about to do. Sense 2 is like slicing a household
-budget spreadsheet by category and month after the fact, to see spending
-patterns — a narrowing of *already-recorded* numbers, for analysis, with
-no bearing on what happens next. Sense 3 is like deciding which of three
-different price quotes for the same repair job to trust — a ranking of
-*competing sources* for a single fact, not a narrowing of a set of
-distinct facts at all. The three operations share nothing structurally
-except the word describing them.
+being narrowed, and against what criterion?* Sense 1 is like sorting the
+week's mail into "things I might actually need to open" versus junk,
+before opening anything — a narrowing of a set of items you already
+have, based on which of them are relevant to what you're about to do.
+Sense 2 is like slicing a household budget spreadsheet by category and
+month after the fact, to see spending patterns — a narrowing of
+*already-recorded* numbers, for analysis, with no bearing on what
+happens next. Sense 3 is like deciding which of three different price
+quotes for the same repair job to trust — a ranking of *competing
+sources* for a single fact, not a narrowing of a set of distinct facts
+at all. The three operations share nothing structurally except the word
+describing them.
 
-* Detail
-
-** Sense 1: narrowing a resolved market data set by configured valuation engines
+* Sense 1: narrowing MDS(T) by configured valuation engines
 
 Given a valuation-scoped market data set $\mathrm{MDS}(T)$ (see
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
@@ -58,11 +56,13 @@ has that trade's engine set to a model that does not consume vol at all
 (a flat, no-smile approximation, say), that surface is a real member of
 $\mathrm{MDS}(T)$ by the requirement/resolution/closure pipeline, yet
 irrelevant to this particular run. This is a narrowing of an
-*already-identified* set, driven by which engines/models are actually
-configured — not by the trade's own structural sensitivities, which
-already had their say in producing $\mathrm{MDS}(T)$ in the first
-place. This is the one sense of the three with a documented, if partial,
-open-source echo: OpenGamma Strata's
+*already-identified* set, driven by which engines and models are
+actually configured — not by the trade's own structural sensitivities,
+which already had their say in producing $\mathrm{MDS}(T)$ in the first
+place.
+
+The one sense of the three with a documented, if partial, open-source
+echo: OpenGamma Strata's
 =com.opengamma.strata.calc.marketdata.MarketDataFilter= interface —
 "encapsulates a rule or set of rules to decide whether a perturbation
 applies to a piece of market data" — operates on a related but not
@@ -72,57 +72,65 @@ perturbation* should be applied to, rather than which pieces a
 (a rule-based narrowing of an already-resolved set) to be worth citing
 as adjacent prior art, without claiming it as an exact match.
 
-** Sense 2: aggregating or filtering stored risk output by dimension
+* Sense 2: filtering stored risk output by dimension
 
 Once computed risk has been produced and denormalised with attributes —
 book, asset, term structure, tenor, shift size, organisational unit, and
 so on — as dimensions, those dimensions can be aggregated or filtered in
 the ordinary OLAP sense familiar from any data warehouse or BI tool:
 "show me total vega, filtered to EUR books, aggregated by tenor bucket."
-This is filtering of *stored output*, produced downstream of a
-valuation having already run, and it has no bearing on, and no
-structural relationship to, resolving market data requirements at
-valuation time at all — it operates on numbers a valuation already
-produced, not on the market data that produced them. Direct source
-searches of OpenGamma Strata's calculation and reporting modules found
-no dedicated OLAP-style risk-dimension filtering abstraction comparable
-to sense 1's =MarketDataFilter=; this is consistent with Strata's scope
-as a calculation *engine* rather than a risk data warehouse, and this
-sense is best understood as belonging to whatever risk-reporting layer
+This is filtering of *stored output*, produced downstream of a valuation
+having already run, and it has no bearing on, and no structural
+relationship to, resolving market data requirements at valuation time at
+all — it operates on numbers a valuation already produced, not on the
+market data that produced them.
+
+Direct source searches of OpenGamma Strata's calculation and reporting
+modules found no dedicated OLAP-style risk-dimension filtering
+abstraction comparable to sense 1's =MarketDataFilter=; this is
+consistent with Strata's scope as a calculation *engine* rather than a
+risk data warehouse. Sense 2 belongs to whatever risk-reporting layer
 consumes a pricing engine's output, not to the market-data-resolution
 layer this document cluster is otherwise concerned with. This document
-does not attempt to force sense 2 into the $\mathrm{MDS}(T)$ set algebra
-used elsewhere in this cluster, because it genuinely does not operate on
-the same kind of object — $\mathrm{MDS}(T)$ is a set of market data
-items; sense 2's subject is a set of already-computed risk numbers, a
-different universe entirely.
+does not force sense 2 into the $\mathrm{MDS}(T)$ set algebra used
+elsewhere in this cluster, because it genuinely does not operate on the
+same kind of object — $\mathrm{MDS}(T)$ is a set of market data items;
+sense 2's subject is a set of already-computed risk numbers, a different
+universe entirely.
 
-** Sense 3: source/IPV curation and quality ranking
+* Sense 3: source/IPV curation and quality ranking
 
 Independent price verification (IPV) processes must limit market data
 collection to what is actually relevant for verification purposes, and,
-where several independent sources report a price for the same
-underlying item, rank and waterfall between them by quality — exchange
-price, then broker quote, then consensus service, then an external
-bank's own indicative price, then a traded price actually executed by
-the firm itself, in roughly that order of trust, scored along axes such
-as independence, executability, accuracy, and coverage, with precedence
-rules that can vary by product, market, and location. This is not, in
-the strict sense used elsewhere in this document cluster, a narrowing of
-a set at all — it is closer to a *selection* function choosing one
-winner among several competing candidate values for a single market
-data identifier, i.e. a ranking-and-choice operation over
-$\{v_1, v_2, \ldots, v_n\}$, the competing values several sources report
-for one identifier, rather than an operation on a set of *identifiers*
-the way senses 1 and the rest of this cluster's set algebra are. Framed
-this way, sense 3 is structurally closer to how a DNS resolver, faced
-with several nameservers configured with different priorities,
-consults them in a defined precedence order and accepts the first
-authoritative answer — a ranking-and-selection process over
-*candidate sources*, not a subset-narrowing operation over a set of
-distinct *items* the way sense 1 is.
+where several independent sources report a price for the same underlying
+item, rank and waterfall between them by quality — exchange price, then
+broker quote, then consensus service, then an external bank's own
+indicative price, then a traded price actually executed by the firm
+itself, in roughly that order of trust, scored along axes such as
+independence, executability, accuracy, and coverage, with precedence
+rules that can vary by product, market, and location.
 
-** Why these three should not be merged into one concept
+This is not a narrowing of a set at all. It is a *selection* function
+choosing one winner among several competing candidate values for a
+single market data identifier: a ranking-and-choice operation over
+$\{v_1, v_2, \ldots, v_n\}$, the competing values several sources
+report for one identifier, rather than an operation on a set of
+*identifiers* the way sense 1 and the rest of this cluster's set
+algebra are.
+
+#+begin_note
+*Aside: for readers who know DNS*
+
+Sense 3 is structurally closest to how a DNS resolver, faced with
+several nameservers configured with different priorities, consults them
+in a defined precedence order and accepts the first authoritative answer
+— a ranking-and-selection process over *candidate sources*, not a
+subset-narrowing operation over a set of distinct *items* the way
+sense 1 is. No single "right" source is assumed; priority order
+determines which answer wins.
+#+end_note
+
+* Discussion: why these three should not be merged
 
 It would be tempting to hunt for a single, unifying formal treatment
 covering all three senses, given they share a name — but doing so would
@@ -142,6 +150,6 @@ collapse them back into one.
 
 * See also
 
-- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — $\mathrm{MDS}(T)$, the set sense 1 narrows.
 - [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] — a related but distinct concept: a snapshot preserves a resolved set's values over time, where filtering narrows the set (or ranks competing values for a member of it) at a point in time.

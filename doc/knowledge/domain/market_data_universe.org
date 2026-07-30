@@ -7,24 +7,23 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:universe:
 #+created: 2026-07-23
-#+updated: 2026-07-23
+#+updated: 2026-07-30
 
 * Summary
 
-The *market data universe* is the set of every market data item that
+The *market data universe* $U$ is the set of every market data item that
 exists in the system at a given moment — every curve, every spot rate,
 every volatility surface point that could, in principle, be looked up by
 a [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data identifier]].
-It is denoted $U$ throughout this document cluster. No single valuation
-ever needs the whole of $U$; what a valuation actually uses is a much
-smaller *market data set* — a subset of $U$, derived from it by
-resolving a population of trades' requirements, expanding the result
-into its full dependency closure, and intersecting with $U$ itself to
-account for the possibility that not everything requested actually
-exists. This document defines $U$ precisely, explains why it is
-deliberately *not* called an "environment" despite that being this
-cluster's original source vocabulary, and works through the set algebra
-by which a valuation-scoped subset is derived from it.
+No single valuation ever needs the whole of $U$; what a valuation actually
+uses is a much smaller *market data set* $\mathrm{MDS}(T)$ — a subset of
+$U$, derived from it by resolving a population of trades' requirements,
+expanding the result into its full dependency closure, and intersecting
+with $U$ itself to account for the possibility that not everything
+requested actually exists. This document defines $U$ precisely, argues
+for the set-notation vocabulary used throughout this cluster for both $U$
+and $\mathrm{MDS}(T)$, and works through the set algebra by which a
+valuation-scoped subset is derived.
 
 * Layperson's mental model
 
@@ -35,32 +34,43 @@ an IP address, the market data universe is the entire routable Internet
 — every machine reachable at every valid IP address, all at once. No
 single web request ever touches more than a vanishingly small fragment
 of that whole; a browser loading one page resolves a handful of domain
-names into a handful of addresses and opens exactly that many
-connections. The rest of the Internet's several billion addressable
-machines are simply irrelevant to that one page load, without the
-Internet itself needing to shrink or reconfigure to make them so. The
-market data universe plays exactly this role for a valuation: it is the
-totality of everything addressable, of which any one valuation touches
-only a small, requirement-derived slice.
+names into a handful of addresses and opens exactly that many connections.
+The rest of the Internet's several billion addressable machines are simply
+irrelevant to that one page load, without the Internet itself needing to
+shrink or reconfigure to make them so. The market data universe plays
+exactly this role for a valuation: it is the totality of everything
+addressable, of which any one valuation touches only a small,
+requirement-derived slice.
 
-This picture also explains why *set* language, rather than
-*environment* language, is the right vocabulary here. An "environment"
-suggests something a valuation is configured to run *inside of* — a
-fixed, walled container assembled ahead of time to hold exactly what
-that valuation needs and nothing more. That is a reasonable way to think
-about what the valuation-scoped subset looks like once it has been
-carved out, but it is a misleading way to think about $U$ itself, which
-is not walled or valuation-specific at all — it is simply everything
-that exists, the way the whole Internet exists regardless of which pages
-any particular browser happens to be loading right now. Treating $U$ as
-a mathematical set that valuation-specific subsets are drawn from, via
-ordinary set operations, keeps that distinction sharp in a way
-"environment" — a word this repository already uses, unrelatedly, for
-deployment/worktree tiers — does not.
+This picture explains why *set* language, rather than *environment*
+language, is the right vocabulary for $U$. An "environment" suggests
+something a valuation is configured to run *inside of* — a fixed, walled
+container assembled ahead of time to hold exactly what that valuation
+needs and nothing more. That is a reasonable description of what
+$\mathrm{MDS}(T)$ looks like once it has been carved out, but it is
+misleading for $U$ itself, which is not walled or valuation-specific at
+all — it is simply everything that exists, the way the whole Internet
+exists regardless of which pages any particular browser happens to be
+loading right now.
 
-* Detail
+The same objection applies to $\mathrm{MDS}(T)$, the valuation-scoped
+subset. Terms like "environment" connote something ambient and configured
+once per run — closer to a deployment's environment variables than to a
+value that varies per trade, per valuation date, and per pricing engine.
+Engine-specific terms like "ORE's today's market" were also considered
+and rejected: they tie the concept to one engine's vocabulary and do not
+generalise to Bloomberg- or Reuters-sourced data, nor to the
+static/instance/dynamic structure the cluster relies on. "Set" was chosen
+because $\mathrm{MDS}(T)$ genuinely is a set — closed under union,
+intersection, and closure, with subset and membership tests that matter
+operationally (does this valuation's requirement set fall inside $U$?).
+The mathematical vocabulary is not a metaphor layered on top but a precise
+description of how these objects behave. The payoff is that most of the
+relationships in this cluster collapse from paragraphs of prose into a
+single line of notation, checkable the way an algebraic identity is
+checkable, rather than merely plausible the way a prose description is.
 
-** Formal definition
+* Formal definition
 
 $U$ is the set of every
 [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data identifier]]
@@ -69,82 +79,81 @@ each identifier addresses. Membership in $U$ is a factual, not a logical,
 question — an identifier is a member of $U$ if and only if the system
 actually has data for it right now, regardless of whether anything has
 asked for it. This is the property that makes $U$ the right place to
-model the [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][hub note's]] "no
-available market data" failure mode as ordinary set membership: a
-[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]] can, entirely
-correctly, produce an identifier that does not happen to be a member of
-$U$ — the requested curve genuinely does not exist, was never loaded, or
-has not yet been published — and that failure is nothing more exotic
-than testing $x \in U$ and finding it false.
+model the "no available market data" failure mode as ordinary set
+membership: a [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]]
+can, entirely correctly, produce an identifier that does not happen to be
+a member of $U$ — the requested curve genuinely does not exist, was never
+loaded, or has not yet been published — and that failure is nothing more
+exotic than testing $x \in U$ and finding it false.
+
+* Discussion
 
 ** Deriving a valuation-scoped market data set
 
-Given a population of trades $T$, the market data set that valuation
-actually needs — as distinct from $U$ itself — is built up in three
-set-algebraic steps, each covered in full by its own document in this
-cluster:
+Given a population of trades $T$, the market data set $\mathrm{MDS}(T)$
+that valuation actually needs is built in three set-algebraic steps. Each
+step is covered in full by its own document; the formula here names all
+of them in sequence so the relationships are visible in one place.
 
 $$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho(\,\mathrm{static}(\tau(T)) \,\cup\, \mathrm{dynamic}(T, d)\,)\bigr) \,\cap\, U$$
 
-Reading this left to right, matching each symbol to the document that
+Reading left to right, with each symbol matched to the document that
 defines it in full:
 
 1. $\mathrm{static}(\tau(T)) \cup \mathrm{dynamic}(T, d)$ — the union of
-   every trade type's static requirement set with every individual
-   trade's dynamic refinement, at valuation date $d$. See
+   every trade type's static requirement set with every individual trade's
+   dynamic refinement, at valuation date $d$. See
    [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]].
    This is a set of logical requirements, not yet a set of identifiers —
    nothing in it is a member of $U$ yet.
-2. $\rho(\cdot)$ — resolution, a function mapping each requirement to
-   exactly one physical identifier. See
-   [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data
-   Configuration]]. Applying $\rho$ to the set from step 1 produces a
-   set of identifiers — candidates for membership in $U$, but not yet
-   confirmed members, and not yet complete (a curve's own dependencies
-   have not been expanded).
+2. $\rho(\cdot)$ — resolution, mapping each requirement to exactly one
+   physical identifier. See
+   [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]].
+   Applying $\rho$ produces a set of identifiers — candidates for
+   membership in $U$, but not yet confirmed members, and not yet complete
+   (each identifier's own dependencies have not been expanded).
 3. $\mathrm{closure}(\cdot)$ — dependency closure, expanding the set from
    step 2 to include everything it transitively depends on. See
    [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency
    Resolution]].
-4. $\cap\, U$ — intersection with the universe itself, which is the
-   step that turns "everything the trades, resolved and expanded, claim
-   to need" into "everything they need that actually exists." Anything
-   produced by steps 1–3 that is not a member of $U$ is silently dropped
-   by this intersection — which is exactly why it must not be the last
-   silent step in a real implementation: a production system needs to
-   surface the *difference* $\mathrm{closure}(\rho(\ldots)) \setminus U$
-   (everything requested but missing) as an explicit error, rather than
-   letting the intersection quietly discard it and proceed to value the
-   trade against an incomplete data set.
+4. $\cap\, U$ — intersection with the universe, turning "everything the
+   trades claim to need, resolved and expanded" into "everything they need
+   that actually exists." Anything produced by steps 1–3 that is not a
+   member of $U$ is excluded by this intersection — which is exactly why
+   it must not be a silent step in a real implementation: a production
+   system needs to surface the difference
+   $\mathrm{closure}(\rho(\ldots)) \setminus U$ (everything requested but
+   missing) as an explicit error, rather than letting the intersection
+   quietly discard it and proceed to value the trade against an incomplete
+   data set.
 
-** A worked example, continuing the DNS analogy
+#+begin_note
+*Worked example: a EUR/USD FX Forward*
 
 Suppose $T$ is a single EUR/USD FX Forward. Its static requirement set
-(fixed by the FX Forward product type, independent of this specific
-trade) is "the EUR discount curve" and "the USD discount curve." Its
-dynamic refinement, given this trade's actual 87-day maturity and
-today's date, narrows each of those to "the 3-month tenor point
-specifically." Resolution ($\rho$) maps each of those two point-level
-requirements to one physical identifier apiece — say
+(fixed by the FX Forward product type) is "the EUR discount curve" and
+"the USD discount curve." Its dynamic refinement, given this trade's
+actual 87-day maturity and today's date, narrows each of those to "the
+3-month tenor point specifically." Resolution ($\rho$) maps each of those
+two point-level requirements to one physical identifier apiece —
 =DISCOUNT/RATE/EUR/3M= and =DISCOUNT/RATE/USD/3M=, following this
 repository's own identifier scheme (see
 [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]).
-Dependency closure then expands each of those two identifiers to include
-whatever instrument quotes were used to bootstrap that curve point in
-the first place — the market data those curves were themselves built
-from. Finally, intersecting with $U$ confirms that every one of those
-expanded identifiers genuinely has data behind it right now; if the EUR
-curve's 3-month point turns out to depend on an instrument quote that
-was never actually loaded into $U$, that gap surfaces here, as a member
-of $\mathrm{closure}(\rho(\ldots))$ that intersection with $U$ excludes.
+Dependency closure then expands each identifier to include whatever
+instrument quotes were used to bootstrap that curve point in the first
+place. Finally, intersecting with $U$ confirms that every expanded
+identifier genuinely has data behind it; if the EUR curve's 3-month point
+depends on an instrument quote that was never loaded into $U$, that gap
+surfaces here as a member of $\mathrm{closure}(\rho(\ldots))$ that
+intersection with $U$ excludes.
 
-The DNS analogue of this entire pipeline is a browser loading one web
-page: the page's =<img>= tags name further domain names (analogous to
-dependency closure — a page's own dependencies must themselves be
-resolved before the page is complete), each of those domain names is
-resolved to an IP address, and the browser only successfully renders the
-image if that address is actually reachable — the network-level
-analogue of intersecting with $U$ and finding the result present.
+In the DNS analogy: a browser loading one page resolves the page's domain
+name to an IP address, then discovers the page has =<img>= tags that
+name further domain names — the analogue of dependency closure. Each of
+those is resolved in turn, and the browser only successfully renders each
+image if that address is actually reachable — the network-level analogue
+of intersecting with $U$ and finding the result present.
+#+end_note
 
 * See also
 

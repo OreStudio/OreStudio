@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:sprint_24:v0:
 #+owner: marco
 #+branch: feature/fix-calendar-rule-exception-soft-fk-target-column
-#+pr:
+#+pr: 1778
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -145,7 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1778][#1778]] | [codegen,refdata] Fix calendar_rule/calendar_exception soft-FK check that failed every INSERT |
 
 * Review
 

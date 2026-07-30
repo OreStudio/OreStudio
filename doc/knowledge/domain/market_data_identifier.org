@@ -259,7 +259,7 @@ defined; recovering an identifier from a bare vendor key is an ingestion
 and reconciliation problem in its own right, addressed separately from
 this document.
 
-* Detail
+* Discussion
 
 ** Why $\pi$ is many-to-one but not invertible
 

@@ -70,9 +70,7 @@ relationships in this cluster collapse from paragraphs of prose into a
 single line of notation, checkable the way an algebraic identity is
 checkable, rather than merely plausible the way a prose description is.
 
-* Detail
-
-** Formal definition
+* Formal definition
 
 $U$ is the set of every
 [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data identifier]]
@@ -87,6 +85,8 @@ can, entirely correctly, produce an identifier that does not happen to be
 a member of $U$ — the requested curve genuinely does not exist, was never
 loaded, or has not yet been published — and that failure is nothing more
 exotic than testing $x \in U$ and finding it false.
+
+* Discussion
 
 ** Deriving a valuation-scoped market data set
 

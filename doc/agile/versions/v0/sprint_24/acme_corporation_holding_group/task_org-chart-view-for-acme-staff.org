@@ -7,41 +7,69 @@
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/acme-staff-org-chart-view
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A new standalone Qt dialog rendering a graphical, card-based org
+chart for the current tenant's staff: one box per account (photo,
+full name, job title), connected by lines to its manager
+(=reports_to_account_id=), auto-laid-out top-down by reporting depth
+-- no manual dragging or saved positions. Reference style: rounded
+cards with a coloured header per top-level branch, circular photo,
+name, job title pill underneath (see attached reference screenshots).
+Opened from a menu action in the Accounts area.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing OrgChartDialog in ores.qt.iam. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Next         | Build tree layout + QGraphicsScene card rendering. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
--
+- A new dialog (opened via a menu action near the Accounts view)
+  renders every account in the current tenant as a card: circular
+  photo (=ImageCache=, falling back to a placeholder when
+  =image_id= is unset), full name, and job title.
+- Cards are connected to their manager's card
+  (=reports_to_account_id=) by lines; accounts with no manager are
+  roots, laid out side by side across the top.
+- Layout is fully automatic (layered by reporting depth, siblings
+  centred under their parent) -- no manual positioning, no saved
+  layout state.
+- Tested against Acme's ~59-account staff hierarchy: renders without
+  overlap, scrolls/pans for a tree too large for the viewport.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Fetch every account for the current tenant (full_name, job_title,
+  image_id, reports_to_account_id) via the existing account list
+  API (mirroring =ClientAccountModel='s fetch).
+- Build the tree in plain C++ (no new domain/service code): group by
+  =reports_to_account_id=, roots = accounts with it unset.
+- Layered layout algorithm: BFS by depth, position siblings left to
+  right, centre each parent over its children's midpoint (simple
+  Reingold-Tilford-style pass, not a general graph-layout library).
+- Render via =QGraphicsScene=/=QGraphicsView=: one card item per
+  account (rounded rect + circular photo pixmap via =ImageCache= +
+  two text labels), one line item per edge.
+- New =OrgChartDialog= in =ores.qt.iam= (mirrors sibling dialogs'
+  structure), wired to a new menu action.
 
 * Notes
 

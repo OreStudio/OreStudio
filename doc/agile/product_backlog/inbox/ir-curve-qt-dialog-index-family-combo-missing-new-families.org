@@ -2,7 +2,7 @@
 :ID: CE133221-9187-4901-8630-3B56AE75277F
 :END:
 #+title: IrCurveGenerationConfigDetailDialog's index_family combo doesn't list the new RFR/IBOR families
-#+description: The static indexFamilyCombo in IrCurveGenerationConfigDetailDialog.cpp is a hand-patched addition (no codegen paste-block seam exists for it), so widening index_family's enum via the org model doesn't propagate to it -- the interactive Qt create flow still only offers the original 6 families (libor/euribor/sofr/estr/sonia/tona), not the 15 added in task C80D94BB.
+#+description: The static indexFamilyCombo in IrCurveGenerationConfigDetailDialog.cpp is a hand-patched addition (no codegen paste-block seam exists for it), so widening index_family's enum via the org model doesn't propagate to it -- the interactive Qt create flow still only offers the original 6 families (libor/euribor/sofr/estr/sonia/tona), not the 16 added in task C80D94BB.
 #+type: capture
 #+level: cross
 #+filetags: :codegen:qt:synthetic:

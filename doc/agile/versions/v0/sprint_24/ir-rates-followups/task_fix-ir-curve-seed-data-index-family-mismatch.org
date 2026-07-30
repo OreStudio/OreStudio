@@ -8,7 +8,7 @@
 #+filetags: :ir-rates-followups:sprint_24:v0:
 #+owner: marco
 #+branch: chore/file-ir-curve-seed-fix-task
-#+pr:
+#+pr: 1771
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -146,7 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1771][#1771]] | [synthetic,refdata] Fix index_name/index_family regression across IR curve themes |
 
 * Review
 

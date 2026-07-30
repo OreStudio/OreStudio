@@ -75,8 +75,9 @@ specific concept.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] —
   start here. Defines what a requirement is, what makes two requirements
   the same, and the static/instance/dynamic three-level structure by which
-  requirement sets are generated. The DNS analogy is developed here in
-  full as the primary layperson model for requirements.
+  requirement sets are generated. Leads with a purchase-specification
+  (requisition) analogy as the primary layperson model; DNS and CIDR
+  appear only as named aside boxes.
 
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] —
   read second. The same entity as a requirement, fully specified: logical

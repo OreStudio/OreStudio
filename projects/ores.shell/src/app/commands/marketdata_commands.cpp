@@ -22,6 +22,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <cli/cli.h>
@@ -29,7 +30,6 @@
 #include <functional>
 #include <optional>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <sstream>
 
 namespace ores::shell::app::commands {
@@ -42,27 +42,6 @@ namespace {
 // Imports can be large market.txt/fixings.txt files; mirror the
 // bundles publish command's generous request timeout.
 constexpr std::chrono::minutes import_timeout(5);
-
-template <typename Response>
-std::optional<Response>
-do_auth_request(std::ostream& out,
-                nats_client& session,
-                const std::string& subject,
-                const std::string& body,
-                std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
-    try {
-        auto reply = session.authenticated_request(subject, body, timeout);
-        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
 
 std::optional<std::string> read_file(const std::string& path) {
     std::ifstream file(path);
@@ -140,7 +119,7 @@ void marketdata_commands::process_import(std::ostream& out,
     out << "Importing market data..." << std::endl;
 
     auto result = do_auth_request<marketdata::messaging::import_market_data_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req), import_timeout);
+        out, session, std::string(req.nats_subject), req, import_timeout);
     if (!result)
         return;
 

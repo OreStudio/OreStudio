@@ -22,11 +22,11 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <iomanip>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -70,14 +70,10 @@ void reports_commands::process_templates(std::ostream& out,
     BOOST_LOG_SEV(lg(), debug) << "Listing report templates for bundle: " << req.bundle_code;
 
     try {
-        auto reply =
-            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
-        auto result = rfl::json::read<dq::messaging::list_dq_report_definition_templates_response>(
-            ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
+        auto result = do_auth_request<dq::messaging::list_dq_report_definition_templates_response>(
+            out, session, std::string(req.nats_subject), req);
+        if (!result)
             return;
-        }
         if (!result->success) {
             fail(out) << "Failed to list report templates: " << result->message << std::endl;
             return;

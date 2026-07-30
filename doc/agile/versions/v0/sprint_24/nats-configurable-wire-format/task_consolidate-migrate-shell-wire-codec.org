@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/consolidate-migrate-shell-wire-codec
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -44,27 +44,127 @@ call. Full breakdown recorded in the write-up task's =* Plan=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                    |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                              |
 
 * Acceptance
 
-- [ ] =do_request=/=do_auth_request= exist in exactly one place, used
+- [X] =do_request=/=do_auth_request= exist in exactly one place, used
   by every command file that previously had its own copy.
-- [ ] That shared helper (and the other direct call sites identified
+- [X] That shared helper (and the other direct call sites identified
   above) route through the injected =wire_codec=.
-- [ ] Existing shell command behaviour is unchanged when the codec is
+- [X] Existing shell command behaviour is unchanged when the codec is
   configured for =json= (today's default).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Consolidated =ores.shell='s ~101 =rfl::json= occurrences across 22
+files onto a single shared helper, and -- prompted mid-task by an
+explicit request to avoid parallel copies -- moved the actual
+encode/decode/transport primitive one layer further down into
+=ores.nats=, so =ores.qt::ClientManager= and =ores.shell= now build
+on literally the same code rather than each having their own thin
+wrapper.
+
+** Two-layer design: ores.nats primitive, ores.shell convention wrapper
+
+- =ores.nats/service/request_helpers.hpp= (new, header-only):
+  =request_and_decode<Response>(session, subject, req)=,
+  =authenticated_request_and_decode<Response>(session, subject, req,
+  timeout)=, and a =Request::nats_subject=/=Request::response_type=-deriving
+  overload (matching the shape =provision_commands.cpp= already
+  used). Each encodes via =default_wire_codec()=, calls
+  =session.request()=/=authenticated_request()=, and decodes via the
+  same codec, returning =rfl::Result<Response>=. Exceptions from the
+  transport propagate uncaught -- this is a pure primitive, agnostic
+  of any particular error-reporting convention.
+- =ores.shell/app/request_helpers.hpp=: =do_request=/=do_auth_request=
+  are now thin wrappers translating that =rfl::Result= into
+  =std::optional= plus a =fail(out)= message -- the convention every
+  shell command already used.
+- =ores.qt::ClientManager=: =process_request()= (the fully
+  unauthenticated overload) now calls
+  =ores::nats::service::request_and_decode()= directly, as do
+  =testConnection()=/=signup()= (their throwaway =nats_client=
+  sessions fit the primitive's shape exactly). The three
+  header-scoped authenticated overloads (=process_authenticated_request=
+  and its workspace variants) keep their own
+  =encode_request=/=decode_response= private helpers, because
+  =send_authenticated_request*= must return raw bytes rather than
+  decode them itself -- decoding has to happen in
+  =ClientManagerExportPortfolio.cpp=/=ClientManagerTradeInstrument.cpp='s
+  own translation units to preserve the MSVC C1202 avoidance those
+  files' doc comments already explain. Both helpers' doc comments now
+  point at =request_and_decode()= as the thing they wrap, so the
+  duplication that remains is documented as deliberate, not
+  overlooked.
+
+** ores.shell migration, file by file
+
+- Nine files had the identical =do_request=/=do_auth_request= template
+  pair copy-pasted verbatim (=account_parties_commands.cpp=,
+  =countries_commands.cpp=, =currencies_commands.cpp=,
+  =rbac_commands.cpp=, =change_reasons_commands.cpp=,
+  =change_reason_categories_commands.cpp=, =accounts_commands.cpp=,
+  =tenants_commands.cpp=, =variability_commands.cpp=): local copies
+  deleted, =#include "ores.shell/app/request_helpers.hpp"= added,
+  call sites' =rfl::json::write(req)= arguments simplified to =req=
+  (the helper now does the encoding).
+- Three more (=bundles_commands.cpp=, =crm_commands.cpp=,
+  =marketdata_commands.cpp=) had only =do_auth_request= (with an
+  extra =timeout= parameter) copy-pasted; migrated the same way.
+- =provision_commands.cpp='s differently-shaped =do_request=
+  (=Request=-derives-subject-and-response-type, plus
+  =timeout=/=authenticated= params) matches the shared header's third
+  overload exactly -- deleted with zero call-site changes needed.
+- Seven files using other direct =rfl::json= patterns, not through
+  any =do_request= variant (=reports_commands.cpp=,
+  =lei_commands.cpp=, =parties_commands.cpp=,
+  =connection_commands.cpp=, =history_diff_renderer.cpp=,
+  =synthetic_commands.cpp=, =workflow_commands.cpp=): each migrated
+  individually onto either the shell's =do_request=/=do_auth_request=
+  (where the existing =out=/=fail()= convention fit) or
+  =ores::nats::service::request_and_decode=/
+  =authenticated_request_and_decode= directly (where the call site
+  used a different return convention -- =std::expected= in
+  =workflow_commands.cpp='s =fetch_steps()=, or silently discarded a
+  malformed response in =connection_commands.cpp='s bootstrap-status
+  check).
+- =application.cpp='s auto-connect bootstrap-status check and
+  auto-login, and =repl.cpp='s logout-on-exit: migrated the same way
+  as the seven direct-pattern files above (=repl.cpp='s logout
+  discards the response entirely, so only needed =encode()=, no
+  decode).
+- Also caught and fixed one manual, non-=do_request= call site inside
+  an otherwise-migrated file: =accounts_commands.cpp='s
+  =process_logout()= hand-rolled =rfl::json::write=/=read= directly
+  against =session.authenticated_request()=, missed by the
+  file-level migration since it didn't go through the local
+  =do_auth_request= copy; now calls =do_auth_request= like every
+  other command in that file.
+- Left deliberately untouched: =synthetic_commands.cpp='s debug-log
+  line (=rfl::json::write(req)= for a human-readable log message, not
+  a wire call), and =ores.shell/src/config/options.cpp=/
+  =login_options.cpp= (config-file I/O, confirmed out of scope by the
+  write-up task's original audit).
+
+Verification: full-repo =compass build --preset linux-clang-debug-make=
+clean; full =compass build rat --preset linux-clang-debug-make= (every
+component's test target) passed with zero failures. Live smoke test:
+brought the environment up (=json=, today's default), logged in as
+=tenant_admin@barclays_plc=, and exercised a representative spread of
+the migrated commands end to end --
+=currencies get=, =countries get=, =lei countries=, =parties list=,
+=roles list=, =reports templates=, =tenants get=, =account-parties
+list= -- all returned correct data. (=permissions list= failed with
+"no service is handling subject" -- a pre-existing, unrelated gap:
+that handler was never registered server-side, confirmed by grepping
+=ores.iam= for the subject; not something this migration introduced
+or could have caused.)
 
 * Notes
 
@@ -92,3 +192,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores.shell='s ~101 =rfl::json= occurrences across 22 files are
+consolidated onto a single shared helper
+(=ores.shell/app/request_helpers.hpp='s =do_request=/=do_auth_request=),
+itself a thin convention wrapper over a new shared primitive in
+=ores.nats/service/request_helpers.hpp=
+(=request_and_decode=/=authenticated_request_and_decode=) that
+=ores::qt::ClientManager= now also calls directly for its
+unauthenticated paths, per an explicit mid-task request to avoid two
+parallel copies of the encode/transport/decode logic. All 13
+=do_request=/=do_auth_request= definitions (18 copies) are gone,
+along with the 7 other direct-pattern files and the =application.cpp=/
+=repl.cpp= stragglers the write-up task's audit named -- plus one
+manual call site the file-level migration would have missed
+(=accounts_commands.cpp='s =process_logout()=). Full-repo build and
+the complete =rat= test run both pass; a live smoke test against a
+running environment (=json=, today's default) exercised eight
+representative migrated commands across both consolidation shapes,
+all returning correct data, with one unrelated pre-existing gap noted
+(=permissions list= -- no server-side handler registered for that
+subject, unconnected to this migration).

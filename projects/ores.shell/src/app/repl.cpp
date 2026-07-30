@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/repl.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/account_parties_commands.hpp"
 #include "ores.shell/app/commands/accounts_commands.hpp"
@@ -49,7 +50,6 @@
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include <iostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app {
 
@@ -136,7 +136,8 @@ void repl::cleanup() {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
         try {
             std::ignore = session_.authenticated_request(
-                "iam.v1.auth.logout", rfl::json::write(iam::messaging::logout_request{}));
+                "iam.v1.auth.logout",
+                ores::nats::default_wire_codec().encode(iam::messaging::logout_request{}));
             BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: " << e.what();

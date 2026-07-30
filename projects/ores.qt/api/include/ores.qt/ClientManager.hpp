@@ -28,6 +28,7 @@
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
+#include "ores.nats/service/request_helpers.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
@@ -430,7 +431,9 @@ public:
      * @brief Process a request that does not require authentication.
      *
      * Serializes the request via the process-wide default wire_codec, sends
-     * it via NATS, and deserializes the response the same way.
+     * it via NATS, and deserializes the response the same way -- via
+     * ores::nats::service::request_and_decode(), the primitive shared with
+     * ores.shell's do_request() helper.
      *
      * @tparam RequestType Request type (must satisfy nats_request concept)
      * @param request The request to send
@@ -441,10 +444,12 @@ public:
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            auto msg = session_.request(RequestType::nats_subject, encode_request(request));
-            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                        msg.data.size());
-            return decode_response<ResponseType>(data);
+            auto result = ores::nats::service::request_and_decode<ResponseType>(
+                session_, RequestType::nats_subject, request);
+            if (!result)
+                return std::unexpected(std::string("Failed to deserialize response: ") +
+                                       result.error().what());
+            return std::move(*result);
         } catch (const ores::nats::service::nats_connect_error&) {
             throw; // Propagate so connect() can map to a user-visible message
         } catch (const std::exception& e) {
@@ -743,9 +748,20 @@ private:
     /**
      * @brief Serializes @p request using the process-wide default wire_codec
      * (see ores::nats::default_wire_codec()), returned as a std::string for
-     * interop with session_.request()/send_authenticated_request*'s existing
+     * interop with send_authenticated_request*'s existing
      * std::string_view-based signatures -- std::string preserves embedded
      * nulls, so this is safe for msgpack's binary output too, not just JSON.
+     *
+     * Only still needed for the header-scoped authenticated path
+     * (send_authenticated_request*, which must return raw bytes rather than
+     * decode them itself -- see exportPortfolio()'s doc comment for why that
+     * TU-isolation matters) and for exportPortfolio()/getTradeInstrument(),
+     * which decode in their own translation unit for the same reason.
+     * process_request(), testConnection(), and signup() call
+     * ores::nats::service::request_and_decode() directly instead -- the
+     * primitive this and decode_response() are themselves thin wrappers
+     * around, and the same one ores.shell's do_request()/do_auth_request()
+     * build on.
      */
     template <typename T>
     static std::string encode_request(const T& request) {
@@ -756,7 +772,8 @@ private:
     /**
      * @brief Deserializes @p raw (a raw NATS response payload) into T using
      * the process-wide default wire_codec, returning std::unexpected with a
-     * formatted message on parse failure.
+     * formatted message on parse failure. See encode_request()'s doc comment
+     * for why this still exists alongside request_and_decode().
      */
     template <typename T>
     static std::expected<T, std::string> decode_response(std::string_view raw) {

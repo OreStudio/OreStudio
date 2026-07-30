@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -40,7 +41,6 @@
 #include <iomanip>
 #include <map>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <sstream>
 
 namespace ores::shell::app::commands {
@@ -74,48 +74,6 @@ std::string format_duration(std::chrono::seconds dur) {
         return std::to_string(hours.count()) + "h " + std::to_string(mins.count()) + "m";
     }
     return std::to_string(mins.count()) + "m";
-}
-
-template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   std::string_view subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        std::string_view subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
 }
 
 } // anonymous namespace
@@ -321,7 +279,7 @@ void accounts_commands::process_list_accounts(std::ostream& out,
     req.limit = pagination.page_size();
 
     auto result = do_auth_request<iam::messaging::get_accounts_response>(
-        out, session, "iam.v1.accounts.list", rfl::json::write(req));
+        out, session, "iam.v1.accounts.list", req);
     if (!result)
         return;
 
@@ -350,8 +308,8 @@ void accounts_commands::process_login(std::ostream& out,
     req.principal = std::move(principal);
     req.password = std::move(password);
 
-    auto result = do_request<iam::messaging::login_response>(
-        out, session, "iam.v1.auth.login", rfl::json::write(req));
+    auto result =
+        do_request<iam::messaging::login_response>(out, session, "iam.v1.auth.login", req);
     if (!result)
         return;
 
@@ -392,7 +350,7 @@ void accounts_commands::process_lock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::lock_account_response>(
-        out, session, "iam.v1.accounts.lock", rfl::json::write(req));
+        out, session, "iam.v1.accounts.lock", req);
     if (!result)
         return;
 
@@ -430,7 +388,7 @@ void accounts_commands::process_unlock_account(std::ostream& out,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::unlock_account_response>(
-        out, session, "iam.v1.accounts.unlock", rfl::json::write(req));
+        out, session, "iam.v1.accounts.unlock", req);
     if (!result)
         return;
 
@@ -465,7 +423,7 @@ void accounts_commands::process_create_account(std::ostream& out,
     req.email = std::move(email);
 
     auto result = do_auth_request<iam::messaging::save_account_response>(
-        out, session, "iam.v1.accounts.save", rfl::json::write(req));
+        out, session, "iam.v1.accounts.save", req);
     if (!result)
         return;
 
@@ -483,10 +441,7 @@ void accounts_commands::process_list_login_info(std::ostream& out, nats_client& 
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
     auto result = do_auth_request<iam::messaging::list_login_info_response>(
-        out,
-        session,
-        "iam.v1.accounts.list-logins",
-        rfl::json::write(iam::messaging::list_login_info_request{}));
+        out, session, "iam.v1.accounts.list-logins", iam::messaging::list_login_info_request{});
     if (!result)
         return;
 
@@ -502,11 +457,8 @@ void accounts_commands::process_logout(std::ostream& out, nats_client& session) 
     }
 
     try {
-        auto reply = session.authenticated_request(
-            "iam.v1.auth.logout", rfl::json::write(iam::messaging::logout_request{}));
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<iam::messaging::logout_response>(data_str);
+        auto result = do_auth_request<iam::messaging::logout_response>(
+            out, session, "iam.v1.auth.logout", iam::messaging::logout_request{});
         if (result && result->success) {
             out << "✓ Logged out successfully." << std::endl;
         } else {
@@ -531,10 +483,7 @@ void accounts_commands::process_bootstrap(std::ostream& out,
     req.email = std::move(email);
 
     auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out,
-        session,
-        iam::messaging::create_initial_admin_request::nats_subject,
-        rfl::json::write(req));
+        out, session, iam::messaging::create_initial_admin_request::nats_subject, req);
     if (!result)
         return;
 
@@ -571,7 +520,7 @@ void accounts_commands::process_list_sessions(std::ostream& out,
     }
 
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
-        out, session, "iam.v1.sessions.list", rfl::json::write(req));
+        out, session, "iam.v1.sessions.list", req);
     if (!result)
         return;
 
@@ -620,10 +569,7 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
-        out,
-        session,
-        "iam.v1.sessions.active",
-        rfl::json::write(iam::messaging::get_active_sessions_request{}));
+        out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
     if (!result)
         return;
 
@@ -669,7 +615,7 @@ void accounts_commands::process_session_stats(std::ostream& out, nats_client& se
     req.end_time = end_date;
 
     auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
-        out, session, "iam.v1.sessions.statistics", rfl::json::write(req));
+        out, session, "iam.v1.sessions.statistics", req);
     if (!result)
         return;
 
@@ -737,7 +683,7 @@ void accounts_commands::process_get_account_history(std::ostream& out,
     req.username = std::move(username);
 
     auto result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", rfl::json::write(req));
+        out, session, "iam.v1.accounts.history", req);
     if (!result)
         return;
 
@@ -768,10 +714,7 @@ void accounts_commands::process_set_default_party(std::ostream& out,
     refdata::messaging::get_parties_request parties_req;
     parties_req.limit = 1000;
     auto parties = do_auth_request<refdata::messaging::get_parties_response>(
-        out,
-        session,
-        refdata::messaging::get_parties_request::nats_subject,
-        rfl::json::write(parties_req));
+        out, session, refdata::messaging::get_parties_request::nats_subject, parties_req);
     if (!parties)
         return;
 
@@ -797,10 +740,7 @@ void accounts_commands::process_set_default_party(std::ostream& out,
     req.party_id = boost::uuids::to_string(party->id);
 
     auto result = do_auth_request<iam::messaging::set_my_default_party_response>(
-        out,
-        session,
-        iam::messaging::set_my_default_party_request::nats_subject,
-        rfl::json::write(req));
+        out, session, iam::messaging::set_my_default_party_request::nats_subject, req);
     if (!result)
         return;
 
@@ -828,7 +768,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     hist_req.username = username;
 
     auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "iam.v1.accounts.history", rfl::json::write(hist_req));
+        out, session, "iam.v1.accounts.history", hist_req);
     if (!history_result)
         return;
 
@@ -873,7 +813,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "-----" << std::endl;
 
     auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "iam.v1.roles.for-account", rfl::json::write(roles_req));
+        out, session, "iam.v1.roles.for-account", roles_req);
     if (!roles_result) {
         out << "  (failed to retrieve roles)" << std::endl;
     } else if (roles_result->roles.empty()) {
@@ -897,7 +837,7 @@ void accounts_commands::process_account_info(std::ostream& out,
     out << "---------------------" << std::endl;
 
     auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "iam.v1.permissions.for-account", rfl::json::write(perms_req));
+        out, session, "iam.v1.permissions.for-account", perms_req);
     if (!perms_result) {
         out << "  (failed to retrieve permissions)" << std::endl;
     } else if (perms_result->permission_codes.empty()) {

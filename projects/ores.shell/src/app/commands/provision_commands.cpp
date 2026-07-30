@@ -33,6 +33,7 @@
 #include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/lexical_cast.hpp>
@@ -43,7 +44,6 @@
 #include <functional>
 #include <ostream>
 #include <regex>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -64,33 +64,6 @@ const std::regex username_regex("^[a-zA-Z][a-zA-Z0-9_]{2,49}$");
 const std::regex email_regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\\.[a-zA-Z]{2,}$");
 const std::regex tenant_code_regex("^[a-z][a-z0-9_]{0,49}$");
 constexpr std::size_t min_password_length = 8;
-
-template <typename Request>
-std::optional<typename Request::response_type>
-do_request(std::ostream& out,
-           nats_client& session,
-           const Request& req,
-           std::chrono::milliseconds timeout = std::chrono::seconds(30),
-           bool authenticated = false) {
-    using Response = typename Request::response_type;
-    try {
-        const auto body = rfl::json::write(req);
-        // The unauthenticated request overload has no timeout knob.
-        auto reply =
-            authenticated ?
-                session.authenticated_request(std::string(req.nats_subject), body, timeout) :
-                session.request(std::string(req.nats_subject), body);
-        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
 
 bool validate_account(std::ostream& out,
                       std::string_view what,

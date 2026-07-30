@@ -22,12 +22,12 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include <algorithm>
 #include <cli/cli.h>
 #include <functional>
 #include <iomanip>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <set>
 
 namespace ores::shell::app::commands {
@@ -43,14 +43,10 @@ fetch_entities(std::ostream& out, nats_client& session, const std::string& count
     req.country_filter = country_filter;
 
     try {
-        auto reply =
-            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
-        auto result = rfl::json::read<dq::messaging::get_lei_entities_summary_response>(
-            ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
+        auto result = do_auth_request<dq::messaging::get_lei_entities_summary_response>(
+            out, session, std::string(req.nats_subject), req);
+        if (!result)
             return std::nullopt;
-        }
         if (!result->success) {
             fail(out) << "Failed to fetch LEI entities: " << result->error_message << std::endl;
             return std::nullopt;

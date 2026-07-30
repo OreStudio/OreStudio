@@ -21,12 +21,12 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <stdexcept>
 
 namespace ores::shell::app::commands {
@@ -45,11 +45,11 @@ auto& anon_lg() {
 
 void check_bootstrap_status(nats_client& session, std::ostream& out) {
     try {
-        auto reply = session.request(iam::messaging::bootstrap_status_request::nats_subject,
-                                     rfl::json::write(iam::messaging::bootstrap_status_request{}));
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<iam::messaging::bootstrap_status_response>(data_str);
+        auto result =
+            ores::nats::service::request_and_decode<iam::messaging::bootstrap_status_response>(
+                session,
+                iam::messaging::bootstrap_status_request::nats_subject,
+                iam::messaging::bootstrap_status_request{});
         if (!result)
             return;
         if (result->is_in_bootstrap_mode) {

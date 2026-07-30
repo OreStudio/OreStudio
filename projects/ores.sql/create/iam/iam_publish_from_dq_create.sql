@@ -106,6 +106,20 @@ begin
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 
+        -- account_service::login() requires a row here (see
+        -- ores_iam_system_provisioner_create.sql for the same pattern on
+        -- super_admin/tenant_admin) -- without it, password login throws
+        -- "Login tracking information missing" for every bulk-created
+        -- account.
+        insert into ores_iam_login_info_tbl (
+            account_id, last_ip, last_attempt_ip,
+            failed_logins, locked, last_login, online
+        ) values (
+            v_account_id, '0.0.0.0', '0.0.0.0',
+            0, 0, '1970-01-01 00:00:00+00', 0
+        )
+        on conflict (account_id) do nothing;
+
         -- Best-effort role assignment by exact role name; a role that
         -- doesn't exist in this tenant's RBAC set is silently skipped
         -- rather than blocking account creation.

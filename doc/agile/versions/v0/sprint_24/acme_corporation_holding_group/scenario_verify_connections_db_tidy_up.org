@@ -84,7 +84,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | login failed: Authentication failed: Login tracking information missing |
 
 ** Confirm no Barclays/NatWest connections remain
@@ -104,10 +104,10 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-07-30T12:35:33Z |
+| Status        | PASSED |
+| Completed at  | 2026-07-30T13:52:58Z |
 | Branch        | feature/tidy-up-connections-db-retire-barclays |
-| Commit        | 1e98f0575 |
+| Commit        | fd8ce1aac |
 | Worktree      | brave_hopper |
 
 * Notes

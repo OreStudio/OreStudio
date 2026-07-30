@@ -34,7 +34,7 @@ target_link_libraries(${tests_target_name}
         faker-cxx::faker-cxx
         Catch2::Catch2
         ores.openssl_cleanup
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

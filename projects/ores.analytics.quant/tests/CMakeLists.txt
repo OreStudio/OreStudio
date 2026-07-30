@@ -33,7 +33,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         Catch2::Catch2
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

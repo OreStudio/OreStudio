@@ -34,7 +34,7 @@ target_link_libraries(${tests_target_name}
         ores.logging.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

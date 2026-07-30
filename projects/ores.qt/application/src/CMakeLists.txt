@@ -105,7 +105,7 @@ target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
         ores.openssl_cleanup
-        ${CMAKE_THREAD_LIBS_INIT})
+        Threads::Threads)
 
 # Export all symbols from the exe so QPluginLoader-loaded plugins can resolve
 # symbols from ores.qt.lib (e.g. SessionAuditDialog, host-only widgets).

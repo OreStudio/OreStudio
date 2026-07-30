@@ -23,63 +23,17 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/history_diff_renderer.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
-
-namespace {
-
-template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   std::string_view subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        std::string_view subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-} // anonymous namespace
 
 void currencies_commands::register_commands(cli::Menu& root_menu,
                                             nats_client& session,
@@ -151,7 +105,7 @@ void currencies_commands::process_get_currencies(std::ostream& out,
     req.limit = pagination.page_size();
 
     auto result = do_auth_request<refdata::messaging::get_currencies_response>(
-        out, session, "refdata.v1.currencies.list", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.list", req);
     if (!result)
         return;
 
@@ -220,7 +174,7 @@ void currencies_commands::process_add_currency(std::ostream& out,
                                   .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<refdata::messaging::save_currency_response>(
-        out, session, "refdata.v1.currencies.save", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.save", req);
     if (!result)
         return;
 
@@ -249,7 +203,7 @@ void currencies_commands::process_delete_currency(std::ostream& out,
     req.iso_codes = {iso_code};
 
     auto result = do_auth_request<refdata::messaging::delete_currency_response>(
-        out, session, "refdata.v1.currencies.delete", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.delete", req);
     if (!result)
         return;
 
@@ -309,7 +263,7 @@ void currencies_commands::process_get_currency_history(std::ostream& out,
     req.iso_code = iso_code;
 
     auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
-        out, session, "refdata.v1.currencies.history", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.history", req);
     if (!result)
         return;
 

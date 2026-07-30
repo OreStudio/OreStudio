@@ -87,6 +87,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/ores.shell.app.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/pagination_context.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/repl.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/request_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/script_runner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/config/login_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/config/options.hpp"

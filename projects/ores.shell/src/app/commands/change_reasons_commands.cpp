@@ -21,62 +21,17 @@
 #include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
 using namespace logging;
 using ores::nats::service::nats_client;
 
-namespace {
-
-template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   const std::string& subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-} // anonymous namespace
 
 void change_reasons_commands::register_commands(cli::Menu& root_menu,
                                                 nats_client& session,
@@ -127,10 +82,7 @@ void change_reasons_commands::process_get_change_reasons(std::ostream& out, nats
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reasons request.";
 
     auto result = do_request<dq::messaging::get_change_reasons_response>(
-        out,
-        session,
-        "dq.v1.change_reasons.list",
-        rfl::json::write(dq::messaging::get_change_reasons_request{}));
+        out, session, "dq.v1.change_reasons.list", dq::messaging::get_change_reasons_request{});
     if (!result)
         return;
 
@@ -168,7 +120,7 @@ void change_reasons_commands::process_add_change_reason(std::ostream& out,
                                   .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<dq::messaging::save_change_reason_response>(
-        out, session, "dq.v1.change_reasons.save", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.save", req);
     if (!result)
         return;
 
@@ -197,7 +149,7 @@ void change_reasons_commands::process_delete_change_reason(std::ostream& out,
     req.codes = {code};
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_response>(
-        out, session, "dq.v1.change_reasons.delete", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.delete", req);
     if (!result)
         return;
 
@@ -225,7 +177,7 @@ void change_reasons_commands::process_get_change_reason_history(std::ostream& ou
     req.code = std::move(code);
 
     auto result = do_auth_request<dq::messaging::get_change_reason_history_response>(
-        out, session, "dq.v1.change_reasons.history", rfl::json::write(req));
+        out, session, "dq.v1.change_reasons.history", req);
     if (!result)
         return;
 

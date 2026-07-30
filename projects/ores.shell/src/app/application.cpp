@@ -21,10 +21,10 @@
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include <iostream>
-#include <rfl/json.hpp>
 #include <sstream>
 
 namespace ores::shell::app {
@@ -66,11 +66,11 @@ bool auto_connect(ores::nats::service::nats_client& session,
 
 void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostream& out) {
     try {
-        auto reply = session.request(iam::messaging::bootstrap_status_request::nats_subject,
-                                     rfl::json::write(iam::messaging::bootstrap_status_request{}));
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<iam::messaging::bootstrap_status_response>(data_str);
+        auto result =
+            ores::nats::service::request_and_decode<iam::messaging::bootstrap_status_response>(
+                session,
+                iam::messaging::bootstrap_status_request::nats_subject,
+                iam::messaging::bootstrap_status_request{});
         if (!result)
             return;
         if (result->is_in_bootstrap_mode) {
@@ -90,10 +90,8 @@ bool auto_login(ores::nats::service::nats_client& session,
         iam::messaging::login_request req;
         req.principal = login_config.username;
         req.password = login_config.password;
-        auto reply = session.request("iam.v1.auth.login", rfl::json::write(req));
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<iam::messaging::login_response>(data_str);
+        auto result = ores::nats::service::request_and_decode<iam::messaging::login_response>(
+            session, "iam.v1.auth.login", req);
         if (!result || !result->success) {
             out << "✗ Auto-login failed: " << (result ? result->message : "parse error")
                 << std::endl;

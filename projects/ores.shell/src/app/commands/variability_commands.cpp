@@ -19,64 +19,19 @@
  */
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"                         // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_table_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
 using namespace ores::logging;
 using ores::nats::service::nats_client;
 
-namespace {
-
-template <typename Response>
-std::optional<Response> do_request(std::ostream& out,
-                                   nats_client& session,
-                                   const std::string& subject,
-                                   const std::string& body) {
-    try {
-        auto reply = session.request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-} // anonymous namespace
 
 void variability_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto variability_menu = std::make_unique<cli::Menu>("variability");
@@ -130,7 +85,7 @@ void variability_commands::process_list_settings(std::ostream& out, nats_client&
         out,
         session,
         "variability.v1.settings.list",
-        rfl::json::write(variability::messaging::list_settings_request{}));
+        variability::messaging::list_settings_request{});
     if (!result)
         return;
 
@@ -168,7 +123,7 @@ void variability_commands::process_save_setting(std::ostream& out,
                                             .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<variability::messaging::save_setting_response>(
-        out, session, "variability.v1.settings.save", rfl::json::write(req));
+        out, session, "variability.v1.settings.save", req);
     if (!result)
         return;
 
@@ -197,7 +152,7 @@ void variability_commands::process_delete_setting(std::ostream& out,
     req.name = std::move(name);
 
     auto result = do_auth_request<variability::messaging::delete_setting_response>(
-        out, session, "variability.v1.settings.delete", rfl::json::write(req));
+        out, session, "variability.v1.settings.delete", req);
     if (!result)
         return;
 
@@ -225,7 +180,7 @@ void variability_commands::process_get_setting_history(std::ostream& out,
     req.name = std::move(name);
 
     auto result = do_auth_request<variability::messaging::get_setting_history_response>(
-        out, session, "variability.v1.settings.history", rfl::json::write(req));
+        out, session, "variability.v1.settings.history", req);
     if (!result)
         return;
 

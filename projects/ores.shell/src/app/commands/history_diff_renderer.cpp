@@ -21,8 +21,8 @@
 #include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include <algorithm>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -61,14 +61,9 @@ void render_history_diff(std::ostream& out,
     req.entity_id = std::move(entity_id);
 
     const auto subject = ores::history::messaging::history_subject_for(req.entity_type);
-    auto reply = session.authenticated_request(subject, rfl::json::write(req));
-    auto data_str =
-        std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-    auto result = rfl::json::read<get_entity_history_response>(data_str);
-    if (!result) {
-        fail(out) << "Failed to parse response" << std::endl;
+    auto result = do_auth_request<get_entity_history_response>(out, session, subject, req);
+    if (!result)
         return;
-    }
 
     if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get history: " << result->message;

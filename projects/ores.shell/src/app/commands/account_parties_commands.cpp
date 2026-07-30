@@ -24,13 +24,13 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -38,25 +38,6 @@ using namespace logging;
 using ores::nats::service::nats_client;
 
 namespace {
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
 
 std::optional<boost::uuids::uuid>
 parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
@@ -98,7 +79,7 @@ void account_parties_commands::process_list(std::ostream& out, nats_client& sess
 
     iam::messaging::get_account_parties_request req;
     auto result = do_auth_request<iam::messaging::get_account_parties_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
@@ -131,7 +112,7 @@ void account_parties_commands::process_add(std::ostream& out,
     refdata::messaging::get_parties_request parties_req;
     parties_req.limit = 1000;
     auto parties = do_auth_request<refdata::messaging::get_parties_response>(
-        out, session, std::string(parties_req.nats_subject), rfl::json::write(parties_req));
+        out, session, std::string(parties_req.nats_subject), parties_req);
     if (!parties)
         return;
 
@@ -157,7 +138,7 @@ void account_parties_commands::process_add(std::ostream& out,
     req.account_parties.push_back(std::move(association));
 
     auto result = do_auth_request<iam::messaging::save_account_party_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

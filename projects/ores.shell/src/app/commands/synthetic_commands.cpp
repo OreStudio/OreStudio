@@ -21,6 +21,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include <chrono>
 #include <cli/cli.h>
@@ -156,14 +157,10 @@ bool synthetic_commands::generate(std::ostream& out,
         << " parties)..." << std::endl;
 
     try {
-        auto reply = session.authenticated_request(
-            std::string(req.nats_subject), rfl::json::write(req), generate_timeout);
-        auto result = rfl::json::read<synthetic::messaging::generate_organisation_response>(
-            ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
+        auto result = do_auth_request<synthetic::messaging::generate_organisation_response>(
+            out, session, std::string(req.nats_subject), req, generate_timeout);
+        if (!result)
             return false;
-        }
         if (!result->success) {
             fail(out) << "Generation failed: " << result->error_message << std::endl;
             return false;

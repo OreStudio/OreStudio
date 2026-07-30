@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/request_helpers.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
@@ -26,7 +27,6 @@
 #include <expected>
 #include <map>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <thread>
 
 namespace ores::shell::app::commands {
@@ -55,10 +55,9 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
     req.workflow_instance_id = instance_id;
 
     try {
-        auto reply =
-            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
-        auto result = rfl::json::read<workflow::messaging::get_workflow_steps_response>(
-            ores::nats::as_string_view(reply.data));
+        auto result = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::get_workflow_steps_response>(
+            session, std::string(req.nats_subject), req);
         if (!result)
             return std::unexpected("Failed to parse response: " + result.error().what());
         return *result;

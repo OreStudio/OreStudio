@@ -22,6 +22,7 @@
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -29,7 +30,6 @@
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -40,27 +40,6 @@ namespace {
 
 std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::to_local_display_string(tp);
-}
-
-template <typename Response>
-std::optional<Response> do_auth_request(std::ostream& out,
-                                        nats_client& session,
-                                        const std::string& subject,
-                                        const std::string& body) {
-    try {
-        auto reply = session.authenticated_request(subject, body);
-        auto data_str =
-            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
-        auto result = rfl::json::read<Response>(data_str);
-        if (!result) {
-            fail(out) << "Failed to parse response" << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
 }
 
 } // anonymous namespace
@@ -136,7 +115,7 @@ void tenants_commands::process_get_tenants(std::ostream& out,
     req.include_deleted = include_deleted;
 
     auto result = do_auth_request<iam::messaging::get_tenants_response>(
-        out, session, "iam.v1.tenants.list", rfl::json::write(req));
+        out, session, "iam.v1.tenants.list", req);
     if (!result)
         return;
 
@@ -179,7 +158,7 @@ void tenants_commands::process_add_tenant(std::ostream& out,
                             .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<iam::messaging::save_tenant_response>(
-        out, session, "iam.v1.tenants.save", rfl::json::write(req));
+        out, session, "iam.v1.tenants.save", req);
     if (!result)
         return;
 
@@ -212,7 +191,7 @@ void tenants_commands::process_tenant_history(std::ostream& out,
     req.id = tenant_id;
 
     auto result = do_auth_request<iam::messaging::get_tenant_history_response>(
-        out, session, "iam.v1.tenants.history", rfl::json::write(req));
+        out, session, "iam.v1.tenants.history", req);
     if (!result)
         return;
 
@@ -278,7 +257,7 @@ void tenants_commands::process_delete_tenant(std::ostream& out,
     req.ids = {tenant_id};
 
     auto result = do_auth_request<iam::messaging::delete_tenant_response>(
-        out, session, "iam.v1.tenants.delete", rfl::json::write(req));
+        out, session, "iam.v1.tenants.delete", req);
     if (!result)
         return;
 
@@ -301,7 +280,7 @@ void tenants_commands::process_complete_provisioning(std::ostream& out, nats_cli
 
     iam::messaging::complete_tenant_provisioning_command req;
     auto result = do_auth_request<iam::messaging::complete_tenant_provisioning_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 

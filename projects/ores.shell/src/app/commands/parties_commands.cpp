@@ -23,12 +23,12 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -94,14 +94,10 @@ void parties_commands::process_list(std::ostream& out,
     req.limit = list_limit;
 
     try {
-        auto reply =
-            session.authenticated_request(std::string(req.nats_subject), rfl::json::write(req));
-        auto result = rfl::json::read<refdata::messaging::get_parties_response>(
-            ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
+        auto result = do_auth_request<refdata::messaging::get_parties_response>(
+            out, session, std::string(req.nats_subject), req);
+        if (!result)
             return;
-        }
 
         std::vector<refdata::domain::party> filtered;
         for (const auto& party : result->parties) {

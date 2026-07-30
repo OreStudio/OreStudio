@@ -28,13 +28,13 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <cli/cli.h>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <unordered_map>
 
 namespace ores::shell::app::commands {
@@ -45,30 +45,6 @@ namespace marketdata_client = ores::marketdata::client;
 namespace marketdata_msg = ores::marketdata::messaging;
 namespace refdata_msg = ores::refdata::messaging;
 
-namespace {
-
-template <typename Response>
-std::optional<Response>
-do_auth_request(std::ostream& out,
-                nats_client& session,
-                const std::string& subject,
-                const std::string& body,
-                std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
-    try {
-        auto reply = session.authenticated_request(subject, body, timeout);
-        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
-
-}
 
 void crm_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("crm");
@@ -93,7 +69,7 @@ resolve_party_id(std::ostream& out, nats_client& session, const std::string& par
     refdata_msg::get_parties_request req;
     req.limit = 1000;
     auto parties = do_auth_request<refdata_msg::get_parties_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
+        out, session, std::string(req.nats_subject), req);
     if (!parties)
         return std::nullopt;
 
@@ -166,7 +142,7 @@ void crm_commands::process_rates(std::ostream& out,
     rates_req.crm_name = crm_name;
     rates_req.reciprocal = reciprocal;
     auto rates_result = do_auth_request<marketdata_msg::get_crm_rates_response>(
-        out, session, std::string(rates_req.nats_subject), rfl::json::write(rates_req));
+        out, session, std::string(rates_req.nats_subject), rates_req);
     if (!rates_result)
         return;
     if (!rates_result->success) {
@@ -182,7 +158,7 @@ void crm_commands::process_rates(std::ostream& out,
     refdata_msg::get_currency_pair_conventions_request conventions_req;
     conventions_req.limit = 10000;
     auto conventions_result = do_auth_request<refdata_msg::get_currency_pair_conventions_response>(
-        out, session, std::string(conventions_req.nats_subject), rfl::json::write(conventions_req));
+        out, session, std::string(conventions_req.nats_subject), conventions_req);
     if (!conventions_result)
         return;
 

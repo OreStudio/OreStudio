@@ -25,12 +25,12 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
+#include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -43,27 +43,6 @@ namespace {
 // wizards' generous request timeout.
 constexpr std::chrono::minutes publish_timeout(5);
 constexpr std::chrono::seconds default_wait_timeout(300);
-
-template <typename Response>
-std::optional<Response>
-do_auth_request(std::ostream& out,
-                nats_client& session,
-                const std::string& subject,
-                const std::string& body,
-                std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
-    try {
-        auto reply = session.authenticated_request(subject, body, timeout);
-        auto result = rfl::json::read<Response>(ores::nats::as_string_view(reply.data));
-        if (!result) {
-            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
-            return std::nullopt;
-        }
-        return *result;
-    } catch (const std::exception& e) {
-        fail(out) << "Request failed: " << e.what() << std::endl;
-        return std::nullopt;
-    }
-}
 
 }
 
@@ -91,7 +70,7 @@ void bundles_commands::process_list(std::ostream& out, nats_client& session) {
 
     dq::messaging::get_dataset_bundles_request req;
     auto result = do_auth_request<dq::messaging::get_dataset_bundles_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req));
+        out, session, std::string(req.nats_subject), req);
     if (!result)
         return;
 
@@ -163,7 +142,7 @@ void bundles_commands::process_publish(std::ostream& out,
     out << "Publishing bundle '" << code << "'..." << std::endl;
 
     auto result = do_auth_request<dq::messaging::publish_bundle_response>(
-        out, session, std::string(req.nats_subject), rfl::json::write(req), publish_timeout);
+        out, session, std::string(req.nats_subject), req, publish_timeout);
     if (!result)
         return;
 

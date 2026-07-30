@@ -611,13 +611,10 @@ LoginResult ClientManager::testConnection(const std::string& host,
 
         // Attempt login
         iam::messaging::login_request request{.principal = username, .password = password};
-        auto msg = temp_session.request(iam::messaging::login_request::nats_subject,
-                                        encode_request(request));
+        auto resp = ores::nats::service::request_and_decode<iam::messaging::login_response>(
+            temp_session, iam::messaging::login_request::nats_subject, request);
         temp_session.disconnect();
 
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        auto resp = decode_response<iam::messaging::login_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->error_message : "Invalid response";
             return {.success = false, .error_message = QString::fromStdString(err)};
@@ -650,13 +647,10 @@ SignupResult ClientManager::signup(const std::string& host,
 
         iam::messaging::signup_request request{
             .principal = username, .password = password, .email = email};
-        auto msg = temp_session.request(iam::messaging::signup_request::nats_subject,
-                                        encode_request(request));
+        auto resp = ores::nats::service::request_and_decode<iam::messaging::signup_response>(
+            temp_session, iam::messaging::signup_request::nats_subject, request);
         temp_session.disconnect();
 
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        auto resp = decode_response<iam::messaging::signup_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->message : "Invalid response";
             return {.success = false, .error_message = QString::fromStdString(err)};

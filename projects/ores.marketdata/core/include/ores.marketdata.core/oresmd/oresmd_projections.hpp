@@ -28,6 +28,19 @@
 namespace ores::marketdata::core {
 
 /**
+ * @brief The three market_series columns a projected ORE key string
+ * (e.g. "FX/RATE/EUR/USD") splits into: series_type, metric, and qualifier.
+ * qualifier absorbs every remaining '/'-delimited segment after the first
+ * two, e.g. "IR_SWAP/RATE/USD/2D/3M/PAR_RATE" splits into
+ * qualifier="USD/2D/3M/PAR_RATE".
+ */
+struct market_series_key {
+    std::string series_type;
+    std::string metric;
+    std::string qualifier;
+};
+
+/**
  * @brief Deterministic projections from a market_data_identifier into ORE's own index
  * name, curve key, and quote key strings, per
  * id:C3E053CA-0D4B-480B-9119-E11530160EC1's "Projection rules" section.
@@ -53,6 +66,18 @@ public:
 
     [[nodiscard]] static std::optional<std::string>
     to_quote_key(const domain::market_data_identifier& identifier);
+
+    /**
+     * @brief The reverse of to_quote_key()/to_curve_key(): splits an already-projected
+     * ORE key string (e.g. "FX/RATE/EUR/USD") into the three columns market_series
+     * stores them under. Returns std::nullopt if @p key has fewer than 3 '/'-delimited
+     * segments. Consolidates what were three separately hand-written, identical
+     * ad-hoc parsers (in ores.synthetic.service's feed_controller.hpp and
+     * ores.marketdata.service's feed_ingest_loop.cpp) into one shared, tested
+     * implementation.
+     */
+    [[nodiscard]] static std::optional<market_series_key>
+    split_market_series_key(const std::string& key);
 };
 
 }

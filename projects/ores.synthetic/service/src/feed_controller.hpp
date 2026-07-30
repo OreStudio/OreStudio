@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -39,7 +40,6 @@
 #include <memory>
 #include <mutex>
 #include <random>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -260,27 +260,6 @@ public:
     }
 
 private:
-    // Split "FX/RATE/EUR/USD" into ("FX", "RATE", "EUR/USD"). Returns false
-    // (and leaves the out-params untouched) if there are fewer than 3 parts.
-    static bool parse_ore_key(const std::string& ore_key,
-                              std::string& series_type,
-                              std::string& metric,
-                              std::string& qualifier) {
-        std::vector<std::string> parts;
-        std::stringstream ss(ore_key);
-        std::string tok;
-        while (std::getline(ss, tok, '/'))
-            parts.push_back(tok);
-        if (parts.size() < 3)
-            return false;
-        series_type = parts[0];
-        metric = parts[1];
-        qualifier = parts[2];
-        for (std::size_t i = 3; i < parts.size(); ++i)
-            qualifier += "/" + parts[i];
-        return true;
-    }
-
     // ISO date part of a observation_datetime, e.g. "2016-02-05" from a
     // timestamp at any time-of-day on that date (observations are always
     // recorded at midnight UTC for date-only vintages, but this tolerates
@@ -365,8 +344,8 @@ private:
                    ".";
         };
 
-        std::string series_type, metric, qualifier;
-        if (!parse_ore_key(ore_key, series_type, metric, qualifier)) {
+        const auto key = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
+        if (!key) {
             error_detail = "Cannot parse ORE key '" + ore_key + "'.";
             return false;
         }
@@ -374,7 +353,7 @@ private:
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-        auto series = md_client.find_series(series_type, metric, qualifier);
+        auto series = md_client.find_series(key->series_type, key->metric, key->qualifier);
         if (!series) {
             error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
             return false;
@@ -486,20 +465,14 @@ private:
     bool resolve_series(const std::string& ore_key, boost::uuids::uuid& out) {
         using namespace ores::marketdata::domain;
 
-        std::vector<std::string> parts;
-        std::stringstream ss(ore_key);
-        std::string tok;
-        while (std::getline(ss, tok, '/'))
-            parts.push_back(tok);
-        if (parts.size() < 3) {
+        const auto key = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
+        if (!key) {
             BOOST_LOG_SEV(lg(), ores::logging::warn) << "Cannot parse ORE key '" << ore_key << "'.";
             return false;
         }
-        const std::string series_type = parts[0];
-        const std::string metric = parts[1];
-        std::string qualifier = parts[2];
-        for (std::size_t i = 3; i < parts.size(); ++i)
-            qualifier += "/" + parts[i];
+        const auto& series_type = key->series_type;
+        const auto& metric = key->metric;
+        const auto& qualifier = key->qualifier;
 
         auto existing = md_client_.list_series(series_type);
         if (!existing) {

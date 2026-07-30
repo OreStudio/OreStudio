@@ -117,3 +117,44 @@ TEST_CASE("discount_vs_projection_gap_resolved_structurally", tags) {
     REQUIRE(oresmd_projections::to_curve_key(projection) !=
             oresmd_projections::to_curve_key(discount));
 }
+
+/*
+ * split_market_series_key() is the reverse of to_quote_key()/to_curve_key(): splits an
+ * already-projected key string back into the three columns market_series stores them
+ * under. Consolidates three previously-duplicated ad-hoc parsers
+ * (ores.synthetic.service's feed_controller.hpp x2, ores.marketdata.service's
+ * feed_ingest_loop.cpp) into one shared, tested implementation.
+ */
+
+TEST_CASE("split_market_series_key_splits_a_simple_fx_key", tags) {
+    const auto key = oresmd_projections::split_market_series_key("FX/RATE/EUR/USD");
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "FX");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "EUR/USD");
+}
+
+TEST_CASE("split_market_series_key_absorbs_every_remaining_segment_into_qualifier", tags) {
+    const auto key = oresmd_projections::split_market_series_key("IR_SWAP/RATE/USD/2D/3M/PAR_RATE");
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "IR_SWAP");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "USD/2D/3M/PAR_RATE");
+}
+
+TEST_CASE("split_market_series_key_round_trips_a_real_projected_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote");
+    const auto projected = oresmd_projections::to_quote_key(id);
+    REQUIRE(projected.has_value());
+    const auto key = oresmd_projections::split_market_series_key(*projected);
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "FX");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "EUR/USD");
+}
+
+TEST_CASE("split_market_series_key_rejects_a_key_with_fewer_than_three_segments", tags) {
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("FX/RATE").has_value());
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("FX").has_value());
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("").has_value());
+}

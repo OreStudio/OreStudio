@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 288DAA6A-D0E0-4118-A10A-D2805DAFAA85
+:END:
+#+title: Compute repositories should query the system tenant, not the caller's
+#+description: host_repository.cpp (and likely batch_repository.cpp/workunit_repository.cpp) filter compute-domain reads/writes by ctx.tenant_id() -- the caller's own session tenant -- even though hosts/batches/workunits are all created under the system tenant, making them invisible to any real tenant session.
+#+type: capture
+#+level: cross
+#+filetags: :compute:tenancy:bug:ores.compute:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every read (and write) query in ~ores.compute/core/src/repository/host_repository.cpp~
+filters by ~ctx.tenant_id()~ -- the calling session's own tenant --
+e.g. ~host_repository.cpp:51-54~: ~where("tenant_id"_c == tid && ...)~
+where ~tid = ctx.tenant_id().to_string()~. Confirmed via direct query
+that every row in ~ores_compute_hosts_tbl~, ~ores_compute_batches_tbl~,
+and ~ores_compute_workunits_tbl~ already lives under the system tenant
+(~ffffffff-ffff-ffff-ffff-ffffffffffff~) regardless of which real
+tenant submitted the batch or which real tenant a compute-wrapper node
+happens to be running for. Since this domain is genuinely tenant-
+agnostic shared infrastructure (a compute grid isn't owned by any one
+business tenant), the repositories should query/write against
+~ores::utility::uuid::tenant_id::system()~ explicitly, not whatever
+tenant the caller's own session happens to be scoped to. Likely the
+same pattern exists in ~batch_repository.cpp~ and
+~workunit_repository.cpp~ -- needs auditing across all three (both
+read and write paths), not just the one file already confirmed.
+
+* Why
+
+Discovered while verifying the Newton remote-deployment end-to-end via
+the Acme test scenario
+([[id:549B8ECF-8D78-4361-8568-E0D332A6E196][Acme end-to-end smoke test against the Newton deployment]]): logged
+in as ~tenant_admin@acme~, the Compute Console showed 0 hosts and a
+submitted batch/workunit never got dispatched to a worker, even though
+the grid was fully populated (5 online hosts) and the workunit itself
+was created successfully. Logging in as ~super_admin~ instead showed
+the hosts correctly -- its session apparently resolves to the system
+tenant already, which is why this bug wasn't caught before: nobody had
+tried the Compute Console as a real business-tenant user against a
+populated grid until this session. A related, already-fixed sibling
+bug (~process_supervisor.cpp~ passing the NATS subject_prefix string
+as ~{tenant_id}~ instead of a real UUID, breaking
+~ores.compute.wrapper~'s own NATS subscription subject for receiving
+dispatched work) is fixed in
+[[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][the Newton deploy task]]; this capture is the *separate*, deeper
+tenant-scoping issue found alongside it, deliberately not fixed in
+that same session per explicit scope decision.
+
+* References
+
+- ~projects/ores.compute/core/src/repository/host_repository.cpp:51,67,81,96~
+- ~projects/ores.controller/core/src/service/process_supervisor.cpp~ (sibling fix, already applied)
+- ~projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp~ (~tenant_id::system()~)
+
+* See also
+
+- [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]] -- the task this was found under.
+- [[id:549B8ECF-8D78-4361-8568-E0D332A6E196][Acme end-to-end smoke test against the Newton deployment]] -- the test scenario that surfaced it.

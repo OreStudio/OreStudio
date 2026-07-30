@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 5B6F80E0-11C9-4A7F-9D0B-EBD50B0A9451
+:END:
+#+title: Task: Roll out per-service containers to the remaining 17 services
+#+description: Apply the proven IAM pilot pattern (parameterised Dockerfile + stage-runtime.sh --service + HEALTHCHECK) to the other 17 service binaries, replace the single-container fleet with one podman pod/compose spec running 18 per-service containers, and verify the full fleet reaches steady state end-to-end (the story's own acceptance: full fleet starts, survives killing/restarting one service container without taking down the others).
+#+type: task
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the proven IAM pilot pattern (parameterised
+~docker/service-runtime.Dockerfile~ + ~stage-runtime.sh --service~ +
+per-service ~HEALTHCHECK~) to the other 17 service binaries, replace
+the single-container fleet with one podman pod/compose spec running
+18 per-service containers wired via the dependency-graph generator and
+podman-events watcher (both separate tasks), and verify the full fleet
+reaches steady state end-to-end -- the story's own original acceptance
+criterion.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- All 18 service binaries run as PID 1 of their own per-service
+  container, not spawned by the controller.
+- The full fleet starts, reaches steady state (all 18/22 containers
+  healthy), and survives killing/restarting one service container
+  without taking down the others.
+- Startup ordering and readiness gating come from the orchestration
+  layer (via the dependency-graph generator task), not from
+  ~process_supervisor~.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

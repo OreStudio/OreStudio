@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/finish-iam-pilot-healthcheck
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,11 +34,11 @@ as a container-native probe) and confirm IAM reaches ~podman ps~
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -50,17 +50,111 @@ as a container-native probe) and confirm IAM reaches ~podman ps~
   reporting healthy once "Service ready." appears in IAM's own log.
 - ~podman ps~ shows the IAM container reaching ~healthy~, standalone,
   with no controller process exec'ing or monitoring it.
-- ~podman logs~ shows IAM's own output directly, confirming no
-  ~--log-to-console~ plumbing is needed for container-native log
-  capture.
+- ~podman logs~ shows IAM's own output -- confirmed to require
+  ~--log-to-console~ after all (see Notes; the original assumption
+  that no extra flag was needed didn't hold up empirically).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Reproduce the "bio read failed" JWT signing failure standalone,
+   without assuming it's the same class of bug as PR #1779's escaped-
+   ~\n~ JWT env-file corruption -- confirm empirically rather than
+   assuming, since the pilot's session predates that fix.
+2. If it is the same root cause, verify the fix (already merged in
+   ~docker/run-pod.sh~/~docker/generate-env.sh~) actually resolves it
+   for IAM standalone, rather than re-deriving a new fix.
+3. Add a ~HEALTHCHECK~ to ~docker/service-runtime.Dockerfile~, tailing
+   IAM's own log for "Service ready." -- chainguard/glibc-dynamic has
+   no shell, so this needs a real binary, not a shell one-liner.
+4. Verify ~podman ps~ shows IAM ~healthy~ standalone, no controller
+   involved.
 
 * Notes
+
+** JWT signing failure was already fixed by PR #1779 -- same root cause, verified empirically
+
+Reproduced IAM standalone in its per-service container (fresh build,
+~docker/stage-runtime.sh --service ores.iam.service~), passing NATS/DB
+config via explicit CLI args (no ~args_template~ row for ~ores.iam.service~
+in this environment's DB, so the controller's own default template's
+substitutions had to be reconstructed by hand) and
+~ORES_IAM_SERVICE_JWT_PRIVATE_KEY~ via ~docker/.env~ plus the ~--env
+"$(cat build/keys/iam-rsa-private.pem)"~ override PR #1779 added to
+~docker/run-pod.sh~.
+
+Result: the JWT key parsed correctly and IAM reached "Service ready."
+-- no "bio read failed" error, confirming this was *not* a distinct
+bug needing its own fix. It's the exact same escaped-~\n~-in-an-env-
+file corruption already root-caused and fixed generically in PR #1779
+(~docker/generate-env.sh~'s quote-stripping plus the ~--env~
+passthrough for this one variable); the per-service pilot's session
+simply predated that fix. Confirmed by first reproducing the original
+failure with the key passed *only* via a plain ~--env-file~ pointing
+at ~docker/.env~'s escaped-~\n~ value (fails, "Invalid tenant ID" was
+actually a red herring encountered first -- see below -- but with the
+~--env~ override alone, in isolation, IAM signs and starts cleanly).
+
+Along the way, hit and fixed two more standalone-specific setup
+issues, neither a real bug in shipped code:
+- ~--tenant system~ (the tenant *code*) is rejected by
+  ~ores.iam.service~'s own CLI parsing with "Invalid UUID string" --
+  this binary's ~--tenant~ only accepts a UUID directly, unlike some
+  other services' tenant resolution. Needed the literal system-tenant
+  UUID (~ffffffff-ffff-ffff-ffff-ffffffffffff~) instead. Not a code
+  bug -- just something the controller's own args_template building
+  handles for the real fleet, that this manual standalone run had to
+  replicate by hand.
+- The Newton-specific storage ~EIO~ finding (PR #1779) reproduces
+  locally too, on this box's own filesystem, once ~--userns=keep-id~
+  remaps the container's uid -- confirms that finding was never
+  Newton-specific, just uid-remap-dependent (a mode-777 dir baked into
+  the image's own overlay layer, written to as a different uid than
+  built it, hits the same ~EIO~ here as on Newton). Host bind-mounting
+  ~/app/log~/~/app/run~ instead (same fix as PR #1779) resolves it.
+
+** Corrected assumption from the design task: ~podman logs~ needs ~--log-to-console~ after all
+
+The design task's acceptance ("podman logs shows IAM's own output
+directly ... confirming no --log-to-console plumbing is needed") was
+untested and turned out wrong: every service logs to a file only
+(~--log-enabled~, no console output) by convention, so ~podman logs~
+captures nothing at all without ~--log-to-console~ also being passed
+-- podman's log driver only captures stdout/stderr, and none of our
+services write there unless told to. Verified: with
+~--log-to-console~ added, ~podman logs~ shows the exact same output as
+the log file, live. Not a blocker for the ~HEALTHCHECK~ itself (which
+reads the log file directly, not ~podman logs~), but worth recording
+as the corrected understanding for future per-service rollout: each
+service's container should pass ~--log-to-console~ if operators are
+expected to use ~podman logs~ day-to-day.
+
+** ~HEALTHCHECK~: a real binary, not a shell script
+
+~cgr.dev/chainguard/glibc-dynamic~ has no shell -- no ~grep~, no
+~test~, nothing to script a log-tail check with, and Docker/podman's
+~HEALTHCHECK CMD~ exec form runs the given program directly rather
+than through a shell regardless. Wrote a small standalone C program
+(~docker/healthcheck.c~), statically linked in its own debian
+~healthcheck-build~ stage (so it carries no runtime dependency on the
+final image's glibc at all), that scans every ~*.log~ file under
+~/app/log~ for the literal string "Service ready." and exits 0/1
+accordingly -- the same marker every service logs via
+~ores.service~'s ~*_runner_impl.hpp~ once it's registered its NATS
+handlers, i.e. the exact string ~wait_for_log_ready~ already polls for
+natively. Copied into ~/app/bin/healthcheck~ in the final stage,
+wired via ~HEALTHCHECK --interval=2s --timeout=2s --start-period=60s
+--retries=3 CMD ["./healthcheck"]~.
+
+One gotcha: podman silently ignores ~HEALTHCHECK~ entirely (with only
+a build-time warning, easy to miss) unless the image is built with
+~--format docker~ -- the default OCI format has no health-check
+concept. Confirmed via ~podman ps~ showing ~(healthy)~ only once
+rebuilt with that flag.
+
+Verified end-to-end: IAM standalone (no controller exec'ing it) reaches
+~Up ... (healthy)~ per ~podman ps~, confirmed via
+~podman inspect --format '{{json .State.Health}}'~ showing 5+
+consecutive passing health-check runs.
 
 * Test Scenarios
 
@@ -86,3 +180,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both acceptance items resolved:
+
+- The "bio read failed" JWT signing failure is fixed -- turned out to
+  be the exact same escaped-~\n~ env-file corruption already root-
+  caused and fixed generically in PR #1779 (merged before this task
+  started), not a distinct bug. Verified empirically standalone: IAM's
+  own service-account JWT signing now succeeds in its per-service
+  container, no source change needed here.
+- ~docker/service-runtime.Dockerfile~ gained a ~HEALTHCHECK~, backed
+  by a small statically-linked C binary (~docker/healthcheck.c~,
+  compiled in its own debian stage) since the final chainguard image
+  has no shell to script a log-grep with. Verified: IAM standalone (no
+  controller exec'ing it) reaches ~Up ... (healthy)~ per ~podman ps~,
+  confirmed via ~podman inspect~ showing repeated passing health-check
+  runs. Requires building with ~podman build --format docker~ --
+  podman silently drops ~HEALTHCHECK~ under the default OCI format.
+
+Also corrected an untested assumption carried over from the design
+task: ~podman logs~ shows nothing without ~--log-to-console~ also
+passed, since every service logs to file only by convention -- not
+"already just works" as originally assumed. See Notes.
+
+Not attempted here, as scoped from the start: the dependency-graph-to-
+orchestration-spec generator, the ~podman events~ DB-mirroring
+watcher, and rollout to the remaining 17 services.

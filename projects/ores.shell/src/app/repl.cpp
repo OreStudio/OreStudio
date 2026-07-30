@@ -47,6 +47,7 @@
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
+#include <chrono>
 #include <cli/cli.h>
 #include <cli/clifilesession.h>
 #include <iostream>
@@ -137,7 +138,8 @@ void repl::cleanup() {
         try {
             std::ignore = session_.authenticated_request(
                 "iam.v1.auth.logout",
-                ores::nats::default_wire_codec().encode(iam::messaging::logout_request{}));
+                ores::nats::default_wire_codec().encode(iam::messaging::logout_request{}),
+                std::chrono::seconds(30));
             BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: " << e.what();

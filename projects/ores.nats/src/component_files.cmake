@@ -49,6 +49,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/jwks.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/nats_client.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/nats_connect_error.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/request_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/retry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/session_expired_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/subscription.hpp"

@@ -26,7 +26,6 @@
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
-#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 

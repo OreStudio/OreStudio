@@ -189,7 +189,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead =#include <rfl/json.hpp>= left after migration | change_reason_categories_commands.cpp, change_reasons_commands.cpp, variability_commands.cpp | Accepted | No remaining =rfl::= usage in these 3 files; removed. |
+| 2 | =repl.cpp= logout call silently switched from the =string_view= =authenticated_request= overload (30s default) to the =span<byte>= overload (10s default) | repl.cpp | Accepted | Passed explicit =std::chrono::seconds(30)= to preserve the prior timeout. |
 
 * Result
 

@@ -510,12 +510,19 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
 
     The heading title becomes ``column``; the PROPERTIES drawer supplies
     ``table``, ``error_message``, and optional boolean flags
-    ``nullable``, ``use_no_tenant``, ``use_system_tenant``. ``referenced_column``
-    defaults to ``id`` (every UUID-keyed entity's PK) -- set it explicitly
-    when the referenced table's key is not ``id`` (e.g. a code-keyed lookup
-    entity like ``calendar``, whose PK column is ``code``).
+    ``nullable``, ``use_no_tenant``, ``use_system_tenant``. ``target_column``
+    -- the only property name the sql_schema_domain_entity_create template
+    actually reads for this -- defaults to ``id`` (every UUID-keyed
+    entity's PK); set it explicitly when the referenced table's key is
+    not ``id`` (e.g. a code-keyed lookup entity like ``calendar``, whose
+    PK column is ``code``). There is deliberately no ``referenced_column``
+    alias: an earlier version of this function produced one, calendar_rule
+    and calendar_exception's models were written against it instead of
+    the real ``target_column`` key, and the template silently ignored it
+    -- their soft-FK checks against ``calendars.code`` never worked
+    despite looking overridden. Keep this a single, unambiguous key.
     """
-    out: dict[str, Any] = {"column": node.title, "referenced_column": "id"}
+    out: dict[str, Any] = {"column": node.title}
     for k, v in node.properties.items():
         out[k.lower()] = _parse_typed(v)
     # Target table's PK column defaults to "id" -- the shape every

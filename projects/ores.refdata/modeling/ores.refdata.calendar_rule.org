@@ -229,7 +229,7 @@ std::nullopt
 ** calendar_code
 :PROPERTIES:
 :table:              ores_refdata_calendars_tbl
-:referenced_column:  code
+:target_column:      code
 :nullable:           false
 :error_message:      Invalid calendar_code: %. No active calendar found with this code.
 :list_by:            true

@@ -8,7 +8,7 @@
 #+filetags: :update-vendored-ore-engine:sprint_24:v0:
 #+owner: marco
 #+branch: feature/update-ore-vendored-package
-#+pr:
+#+pr: 1786
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -120,7 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1786][#1786]] | [data] Update vendored ORE Engine to 1.8.16.0 |
 
 * Review
 

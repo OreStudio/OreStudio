@@ -42,9 +42,17 @@ std::uint32_t gmm_component_service::count_gmm_components() {
     return repo_.get_total_gmm_component_count(ctx_);
 }
 
+
+std::optional<domain::gmm_component>
+gmm_component_service::get_gmm_component_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting GMM component at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
 std::optional<domain::gmm_component>
 gmm_component_service::get_gmm_component(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting GMM component: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting GMM component. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -54,11 +62,11 @@ gmm_component_service::get_gmm_component(const std::string& id) {
 void gmm_component_service::save_gmm_component(const domain::gmm_component& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("GMM Component id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving GMM component: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving GMM component. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved GMM component: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved GMM component. " << "id: " << v.id;
 }
 
 void gmm_component_service::save_gmm_components(
@@ -74,9 +82,9 @@ void gmm_component_service::save_gmm_components(
 }
 
 void gmm_component_service::delete_gmm_component(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing GMM component: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing GMM component. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed GMM component: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed GMM component. " << "id: " << id;
 }
 
 void gmm_component_service::delete_gmm_components(const std::vector<std::string>& ids) {
@@ -85,7 +93,7 @@ void gmm_component_service::delete_gmm_components(const std::vector<std::string>
 
 std::vector<domain::gmm_component>
 gmm_component_service::get_gmm_component_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for GMM component: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for GMM component. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

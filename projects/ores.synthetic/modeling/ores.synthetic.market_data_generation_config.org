@@ -26,16 +26,16 @@ party manages its own configurations and its own generated data.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this configuration.
-
-* Columns
 
 ** party_id
 :PROPERTIES:

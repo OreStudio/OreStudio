@@ -64,7 +64,7 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest market data generation configs, possibly filtered by id.
+     * @brief Reads latest market data generation configs, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::market_data_generation_config> read_latest(context ctx);
@@ -72,8 +72,9 @@ public:
                                                                    const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all market data generation configs, possibly filtered by id.
+     * @brief Reads all market data generation configs, possibly filtered by primary key.
      */
     std::vector<domain::market_data_generation_config> read_all(context ctx, const std::string& id);
 
@@ -84,7 +85,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::market_data_generation_config>

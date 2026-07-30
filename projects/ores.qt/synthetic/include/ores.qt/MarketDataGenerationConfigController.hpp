@@ -27,6 +27,9 @@
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -64,12 +67,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(
@@ -82,6 +87,8 @@ private slots:
     void onOpenVersion(
         const synthetic::domain::market_data_generation_config& market_data_generation_config,
         int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
@@ -90,9 +97,23 @@ private:
     void showHistoryWindow(
         const synthetic::domain::market_data_generation_config& market_data_generation_config);
 
+    /**
+     * @brief Fetches the full typed market data generation config history (the
+     * existing per-entity synthetic::messaging::get_market_data_generation_config_history_request/
+     * synthetic::messaging::get_market_data_generation_config_history_response, unrelated to the
+     * generic history.v1.get subject) and hands it to @p callback on the UI thread. Used to resolve
+     * HistoryDialog's generic (entity_id, version) signals back to a typed market data generation
+     * config, since the generic dialog holds no typed domain data.
+     */
+    void fetchMarketDataGenerationConfigHistory(
+        const QString& entityId,
+        std::function<void(
+            std::expected<std::vector<synthetic::domain::market_data_generation_config>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     MarketDataGenerationConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    ChangeReasonCache* changeReasonCache_;
 };
 
 }

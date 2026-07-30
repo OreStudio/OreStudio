@@ -83,6 +83,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/folder_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/gmm_component_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/eventing/ir_curve_generation_config_changed_event.hpp"

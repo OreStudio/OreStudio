@@ -77,11 +77,11 @@ public:
      */
     std::uint32_t count_process_types();
 
+
     /**
      * @brief Retrieves a single yield curve process type as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param code The code of the yield curve process type.
      * @param version The version to fetch.
      * @return The yield curve process type at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +89,8 @@ public:
     get_process_type_at_version(const std::string& code, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single yield curve process type by its code.
+     * @brief Retrieves a single yield curve process type by its primary key.
      *
-     * @param code The code of the yield curve process type.
      * @return The yield curve process type if found, std::nullopt otherwise.
      */
     std::optional<domain::yield_curve_process_type> get_process_type(const std::string& code);
@@ -113,15 +112,14 @@ public:
     void save_process_types(const std::vector<domain::yield_curve_process_type>& process_types);
 
     /**
-     * @brief Deletes a yield curve process type by its code.
+     * @brief Deletes a yield curve process type by its primary key.
      *
-     * @param code The code of the yield curve process type to delete.
      * @throws std::exception on failure.
      */
     void delete_process_type(const std::string& code);
 
     /**
-     * @brief Deletes yield curve process types by their codes.
+     * @brief Deletes yield curve process types by their primary keys.
      */
     void delete_process_types(const std::vector<std::string>& codes);
 

@@ -41,6 +41,16 @@ MarketDataGenerationConfigDetailDialog::MarketDataGenerationConfigDetailDialog(Q
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 MarketDataGenerationConfigDetailDialog::~MarketDataGenerationConfigDetailDialog() {
@@ -57,6 +67,10 @@ QWidget* MarketDataGenerationConfigDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* MarketDataGenerationConfigDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString MarketDataGenerationConfigDetailDialog::code() const {
+    return QString::fromStdString(boost::uuids::to_string(market_data_generation_config_.id));
 }
 
 void MarketDataGenerationConfigDetailDialog::setupUi() {
@@ -91,6 +105,10 @@ void MarketDataGenerationConfigDetailDialog::setupConnections() {
             &MarketDataGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
             &QLineEdit::textChanged,
+            this,
+            &MarketDataGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->enabledCheck,
+            &QCheckBox::toggled,
             this,
             &MarketDataGenerationConfigDetailDialog::onFieldChanged);
 }
@@ -129,6 +147,7 @@ void MarketDataGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->enabledCheck->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -158,10 +177,6 @@ void MarketDataGenerationConfigDetailDialog::updateConfigFromUi() {
     market_data_generation_config_.modified_by = username_;
 }
 
-void MarketDataGenerationConfigDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
 
 void MarketDataGenerationConfigDetailDialog::onFieldChanged() {
     hasChanges_ = true;
@@ -192,6 +207,7 @@ void MarketDataGenerationConfigDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -232,25 +248,29 @@ void MarketDataGenerationConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Market Data Generation Config saved successfully";
-            QString code = QString::fromStdString(
-                boost::uuids::to_string(self->market_data_generation_config_.id));
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->market_data_generation_configSaved(code);
-            self->notifySaveSuccess(tr("Market Data Generation Config '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Market Data Generation Config saved successfully";
+                    QString code = QString::fromStdString(
+                        boost::uuids::to_string(self->market_data_generation_config_.id));
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->market_data_generation_configSaved(code);
+                    self->notifySaveSuccess(
+                        tr("Market Data Generation Config '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -277,7 +297,8 @@ void MarketDataGenerationConfigDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
@@ -332,5 +353,6 @@ void MarketDataGenerationConfigDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

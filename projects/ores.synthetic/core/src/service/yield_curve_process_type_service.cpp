@@ -42,17 +42,18 @@ std::uint32_t yield_curve_process_type_service::count_process_types() {
     return repo_.get_total_process_type_count(ctx_);
 }
 
+
 std::optional<domain::yield_curve_process_type>
 yield_curve_process_type_service::get_process_type_at_version(const std::string& code,
                                                               std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting yield curve process type at version: " << code
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting yield curve process type at version. "
+                               << "code: " << code << " version: " << version;
     return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::yield_curve_process_type>
 yield_curve_process_type_service::get_process_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting yield curve process type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting yield curve process type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -63,18 +64,19 @@ void yield_curve_process_type_service::save_process_type(
     const domain::yield_curve_process_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Yield Curve Process Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving yield curve process type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving yield curve process type. " << "code: " << v.code;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved yield curve process type: " << v.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved yield curve process type. " << "code: " << v.code;
 }
 
 void yield_curve_process_type_service::save_process_types(
     const std::vector<domain::yield_curve_process_type>& process_types) {
-    for (const auto& e : process_types)
+    for (const auto& e : process_types) {
         if (e.code.empty())
             throw std::invalid_argument("Yield Curve Process Type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << process_types.size() << " yield curve process types";
     auto ts = process_types;
     for (auto& e : ts)
@@ -83,9 +85,9 @@ void yield_curve_process_type_service::save_process_types(
 }
 
 void yield_curve_process_type_service::delete_process_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing yield curve process type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing yield curve process type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed yield curve process type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed yield curve process type. " << "code: " << code;
 }
 
 void yield_curve_process_type_service::delete_process_types(const std::vector<std::string>& codes) {
@@ -94,7 +96,8 @@ void yield_curve_process_type_service::delete_process_types(const std::vector<st
 
 std::vector<domain::yield_curve_process_type>
 yield_curve_process_type_service::get_process_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for yield curve process type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for yield curve process type. "
+                               << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

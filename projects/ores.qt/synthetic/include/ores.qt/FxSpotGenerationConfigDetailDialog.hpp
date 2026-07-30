@@ -79,7 +79,6 @@ signals:
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
-    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -89,6 +88,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();

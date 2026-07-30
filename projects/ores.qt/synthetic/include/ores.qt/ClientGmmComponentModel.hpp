@@ -88,6 +88,7 @@ public:
      */
     const synthetic::domain::gmm_component* getComponent(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

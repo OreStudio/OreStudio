@@ -65,15 +65,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest folders, possibly filtered by id.
+     * @brief Reads latest folders, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::folder> read_latest(context ctx);
     std::vector<domain::folder> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all folders, possibly filtered by id.
+     * @brief Reads all folders, possibly filtered by primary key.
      */
     std::vector<domain::folder> read_all(context ctx, const std::string& id);
 
@@ -84,11 +85,11 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param id The id to look up
      * @param version The version to fetch
      */
     std::optional<domain::folder>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
 
     /**
      * @brief Reads latest folders with pagination support.

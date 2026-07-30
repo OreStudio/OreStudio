@@ -25,6 +25,7 @@
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -75,10 +76,20 @@ public:
      */
     std::uint32_t count_gmm_components();
 
+
     /**
-     * @brief Retrieves a single GMM component by its id.
+     * @brief Retrieves a single GMM component as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the GMM component.
+     * @param version The version to fetch.
+     * @return The GMM component at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::gmm_component> get_gmm_component_at_version(const std::string& id,
+                                                                      std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single GMM component by its primary key.
+     *
      * @return The GMM component if found, std::nullopt otherwise.
      */
     std::optional<domain::gmm_component> get_gmm_component(const std::string& id);
@@ -100,15 +111,14 @@ public:
     void save_gmm_components(const std::vector<domain::gmm_component>& gmm_components);
 
     /**
-     * @brief Deletes a GMM component by its id.
+     * @brief Deletes a GMM component by its primary key.
      *
-     * @param id The id of the GMM component to delete.
      * @throws std::exception on failure.
      */
     void delete_gmm_component(const std::string& id);
 
     /**
-     * @brief Deletes GMM components by their ids.
+     * @brief Deletes GMM components by their primary keys.
      */
     void delete_gmm_components(const std::vector<std::string>& ids);
 

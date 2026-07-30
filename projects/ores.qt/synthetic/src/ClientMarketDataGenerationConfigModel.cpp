@@ -88,6 +88,7 @@ QVariant ClientMarketDataGenerationConfigModel::data(const QModelIndex& index, i
             case Description:
                 return QString::fromStdString(market_data_generation_config.description);
             case Enabled:
+                return market_data_generation_config.enabled ? tr("true") : tr("false");
             case Version:
                 return static_cast<qlonglong>(market_data_generation_config.version);
             case ModifiedBy:
@@ -109,8 +110,15 @@ QVariant ClientMarketDataGenerationConfigModel::data(const QModelIndex& index, i
 QVariant ClientMarketDataGenerationConfigModel::headerData(int section,
                                                            Qt::Orientation orientation,
                                                            int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case Name:
@@ -216,6 +224,22 @@ void ClientMarketDataGenerationConfigModel::fetch_market_data_generation_configs
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .market_data_generation_configs = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->market_data_generation_configs.size()
                     << " market data generation configs, total available: "
@@ -287,6 +311,7 @@ ClientMarketDataGenerationConfigModel::getConfig(int row) const {
         return nullptr;
     return &market_data_generation_configs_[idx];
 }
+
 
 QVariant
 ClientMarketDataGenerationConfigModel::recency_foreground_color(const std::string& code) const {

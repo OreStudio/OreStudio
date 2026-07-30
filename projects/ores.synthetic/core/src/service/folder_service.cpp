@@ -42,14 +42,16 @@ std::uint32_t folder_service::count_folders() {
     return repo_.get_total_folder_count(ctx_);
 }
 
+
 std::optional<domain::folder> folder_service::get_folder_at_version(const std::string& id,
                                                                     std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting folder at version: " << id << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting folder at version. " << "id: " << id
+                               << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::folder> folder_service::get_folder(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting folder: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting folder. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -59,11 +61,11 @@ std::optional<domain::folder> folder_service::get_folder(const std::string& id) 
 void folder_service::save_folder(const domain::folder& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Folder id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving folder: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving folder. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved folder: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved folder. " << "id: " << v.id;
 }
 
 void folder_service::save_folders(const std::vector<domain::folder>& folders) {
@@ -78,9 +80,9 @@ void folder_service::save_folders(const std::vector<domain::folder>& folders) {
 }
 
 void folder_service::delete_folder(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing folder: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing folder. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed folder: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed folder. " << "id: " << id;
 }
 
 void folder_service::delete_folders(const std::vector<std::string>& ids) {
@@ -88,7 +90,7 @@ void folder_service::delete_folders(const std::vector<std::string>& ids) {
 }
 
 std::vector<domain::folder> folder_service::get_folder_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for folder: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for folder. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

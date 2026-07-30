@@ -37,7 +37,7 @@ std::string gmm_component_repository::sql() {
 }
 
 void gmm_component_repository::write(context ctx, const domain::gmm_component& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing GMM component: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing GMM component. " << "id: " << v.id;
     execute_write_query(
         ctx, gmm_component_mapper::map(v), lg(), "Writing GMM component to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::gmm_component> gmm_component_repository::read_latest(context
 
 std::vector<domain::gmm_component> gmm_component_repository::read_latest(context ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest GMM component. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest GMM component. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<gmm_component_entity>> |
@@ -79,12 +79,14 @@ std::vector<domain::gmm_component> gmm_component_repository::read_latest(context
         "Reading latest GMM component by id.");
 }
 
+
 std::vector<domain::gmm_component> gmm_component_repository::read_all(context ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all GMM component versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all GMM component versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<gmm_component_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<gmm_component_entity, domain::gmm_component>(
         ctx,
@@ -94,8 +96,30 @@ std::vector<domain::gmm_component> gmm_component_repository::read_all(context ct
         "Reading all GMM component versions by id.");
 }
 
+std::optional<domain::gmm_component> gmm_component_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading GMM component at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<gmm_component_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<gmm_component_entity, domain::gmm_component>(
+        ctx,
+        query,
+        [](const auto& entities) { return gmm_component_mapper::map(entities); },
+        lg(),
+        "Reading GMM component at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+
 void gmm_component_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing GMM component: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing GMM component. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<gmm_component_entity> |

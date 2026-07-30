@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::synthetic::generators {
 
@@ -35,7 +36,7 @@ generate_synthetic_gmm_component(utility::generation::generation_context& ctx) {
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::gmm_component r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();

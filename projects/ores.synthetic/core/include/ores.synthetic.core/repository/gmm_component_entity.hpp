@@ -41,8 +41,12 @@ struct gmm_component_entity {
     std::string tenant_id;
     int version = 0;
     std::string party_id;
+
     std::string fx_spot_config_id;
+
+
     int component_index = 0;
+
     std::string description;
     double mean = 0.0;
     double stdev = 0.0;

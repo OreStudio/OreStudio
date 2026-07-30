@@ -42,16 +42,16 @@ of each reimplementing the tree-walk itself.
 :hierarchy_name_field: name
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this folder node.
-
-* Columns
 
 ** party_id
 :PROPERTIES:

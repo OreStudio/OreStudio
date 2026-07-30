@@ -86,8 +86,11 @@ QVariant ClientGmmComponentModel::data(const QModelIndex& index, int role) const
             case Description:
                 return QString::fromStdString(gmm_component.description);
             case Mean:
+                return gmm_component.mean;
             case Stdev:
+                return gmm_component.stdev;
             case Weight:
+                return gmm_component.weight;
             case Version:
                 return static_cast<qlonglong>(gmm_component.version);
             case ModifiedBy:
@@ -108,8 +111,15 @@ QVariant ClientGmmComponentModel::data(const QModelIndex& index, int role) const
 
 QVariant
 ClientGmmComponentModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case ComponentIndex:
@@ -216,6 +226,22 @@ void ClientGmmComponentModel::fetch_gmm_components(std::uint32_t offset, std::ui
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .gmm_components = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
                 BOOST_LOG_SEV(lg(), debug)
                     << "Fetched " << result->gmm_components.size()
                     << " GMM components, total available: " << result->total_available_count;
@@ -284,6 +310,7 @@ const synthetic::domain::gmm_component* ClientGmmComponentModel::getComponent(in
         return nullptr;
     return &gmm_components_[idx];
 }
+
 
 QVariant ClientGmmComponentModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

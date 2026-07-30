@@ -34,11 +34,13 @@ until it is genuinely shared by something else, per this story's own
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique yield curve process type code.
@@ -49,12 +51,11 @@ Examples: 'VASICEK', 'COX_INGERSOLL_ROSS', 'HULL_WHITE'.
 std::string("YieldCurveProcessType")
 #+end_src
 
-* Natural keys
-
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Human-readable name for the process type.
@@ -62,8 +63,6 @@ Human-readable name for the process type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Process"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

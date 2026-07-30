@@ -47,21 +47,22 @@ tenant-scoped.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this template entry.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Owning party (legal entity) this entry's configuration belongs to.
@@ -74,6 +75,7 @@ uuid_gen()
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Parent =ir_curve_generation_config= this entry contributes to.
@@ -87,6 +89,7 @@ uuid_gen()
 :type:          integer
 :cpp_type:      int
 :default_value: 0
+:natural_key: true
 :END:
 
 Zero-based ordinal of this entry within its parent's template (short-end
@@ -95,8 +98,6 @@ to long-end).
 #+begin_src cpp :name generator
 faker::number::integer(0, 20)
 #+end_src
-
-* Columns
 
 ** start_tenor_code
 :PROPERTIES:

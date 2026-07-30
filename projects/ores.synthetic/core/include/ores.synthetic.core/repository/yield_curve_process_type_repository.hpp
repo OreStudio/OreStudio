@@ -64,15 +64,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest yield curve process types, possibly filtered by code.
+     * @brief Reads latest yield curve process types, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::yield_curve_process_type> read_latest(context ctx);
     std::vector<domain::yield_curve_process_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
+
     /**
-     * @brief Reads all yield curve process types, possibly filtered by code.
+     * @brief Reads all yield curve process types, possibly filtered by primary key.
      */
     std::vector<domain::yield_curve_process_type> read_all(context ctx, const std::string& code);
 
@@ -83,7 +84,6 @@ public:
      * window. See the "Temporal composite entity versioning" architecture
      * doc.
      * @param ctx Repository context with database connection
-     * @param code The code to look up
      * @param version The version to fetch
      */
     std::optional<domain::yield_curve_process_type>

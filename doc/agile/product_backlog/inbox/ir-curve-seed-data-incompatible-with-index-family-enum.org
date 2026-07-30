@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: F27A0EA4-AB19-424A-B2C5-A82369CDB650
+:END:
+#+title: Realistic-2026 IR curve seed data incompatible with index_family enum
+#+description: provision party fails during synthetic.themes.realistic_2026 publish step
+#+type: capture
+#+level: cross
+#+filetags: :bug:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Commit =df398d5f1= ("Migrate ir_curve_generation_config onto oresmd, add
+curve role") renamed
+=ores_synthetic_ir_curve_generation_configs_tbl.index_name= (free-text,
+e.g. "USD-SOFR") to =index_family=, narrowed by a check constraint to
+exactly six values (=libor=, =euribor=, =sofr=, =estr=, =sonia=, =tona=),
+plus a new =tenor= column. The commit message claims "Migrated every
+remaining index_name consumer ... onto index_family/tenor", but two
+producers of IR curve data were missed:
+
+- =projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=
+  (the =ores_synthetic_publish_theme_from_dq_fn= SECURITY DEFINER
+  function) still selects/inserts a column literally named =index_name=
+  against the renamed table -- fails at runtime with
+  ~column existing.index_name does not exist~.
+- =projects/ores.sql/populate/synthetic/synthetic_ir_curve_configs_realistic_2026_populate.sql=
+  (the "realistic_2026" synthetic theme seed data) still populates the DQ
+  artefact table's =index_name= column with 20 currencies' worth of
+  free-text RFR codes (=USD-SOFR=, =KRW-KOFR=, =ZAR-ZARONIA=,
+  =TWD-TAIBOR-ON=, ...), of which only =SOFR=, =ESTR=, =SONIA=, and
+  ="TONAR" ~= tona= plausibly map onto the new 6-value
+  =index_family= enum -- the other ~14 currencies have no valid mapping
+  at all under the current constraint.
+
+This blocks =provision party ... --dataset-size small= end-to-end: the
+=synthetic.themes.realistic_2026= publish step fails with a Postgres
+"column does not exist" error, aborting the whole provisioning script
+(surfaced while running =devops-setup-environment= against a fresh
+=main= checkout, commit =1bd30c704=).
+
+* Why
+
+Fresh-environment setup (=barclays_system_provision.ores=, the standard
+onboarding script every new worktree/checkout runs) is broken on =main=
+as of this commit -- =provision party= aborts partway through, after
+counterparties and org-structure/risk-reporting steps have already
+succeeded but before market-data/synthetic themes are published. This
+isn't a narrow one-line fix: the seed dataset's index coverage (20
+currencies, mostly RFRs outside the six index_family values the schema
+now allows) is fundamentally wider than what the renamed schema
+supports, so resolving this requires a scope decision -- extend
+index_family's allowed values, or trim/rework the realistic_2026 seed
+data to only the currencies the six supported families actually cover --
+which is why this is filed as a capture for scoping rather than fixed
+inline.
+
+* References
+
+- Failing function: =ores_synthetic_publish_theme_from_dq_fn= in
+  =projects/ores.sql/create/synthetic/synthetic_publish_from_dq_create.sql=
+  (lines ~578-664, every =existing.index_name=/=e.index_name= reference
+  against =ores_synthetic_ir_curve_generation_configs_tbl= and
+  =ores_dq_synthetic_ir_curve_template_entries_artefact_tbl=).
+- Seed data: =projects/ores.sql/populate/synthetic/synthetic_ir_curve_configs_realistic_2026_populate.sql=
+  (the 20-currency =values (...)= list at lines ~137-156).
+- Schema/enum: =projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=
+  (=index_family= check constraint, line ~77).
+- Root-cause commit: =df398d5f1= "[synthetic] Migrate
+  ir_curve_generation_config onto oresmd, add curve role".
+
+* See also
+
+-

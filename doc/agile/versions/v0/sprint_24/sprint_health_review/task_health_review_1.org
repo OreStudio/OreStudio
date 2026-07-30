@@ -1,0 +1,232 @@
+:PROPERTIES:
+:ID: 82D7CA2E-30BF-406D-BAFB-595DD630F502
+:END:
+#+title: Task: Health review 1 — sprint 24 mid-sprint analysis
+#+description: System 2 health review 1 of sprint 24.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_24:v0:
+#+owner: marco
+#+branch: feature/merge-asset-class-folders-into-one-theme-unit
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:64BD5956-3E3F-4365-94CD-78496E725BD6][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a critical System 2 assessment of sprint 24's health at day 9
+(2 days past its planned 7-day close, still marked STARTED with no
+retrospective): goal alignment, sprint load, PR velocity, story/task
+balance, and focus signal.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:64BD5956-3E3F-4365-94CD-78496E725BD6][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- Full analysis written under =* Result=; summary row added to
+  sprint.org's =* Health Review= table.
+
+* Plan
+
+1. Pre-register concerns before gathering evidence (schedule drift,
+   backlog-dump shape of the story list, hotfix count, need for
+   fleet-wide data rather than single-worktree data).
+2. Gather data: full read of =sprint.org=; commit count and PR-merge
+   count since sprint start; fleet-wide =compass fleet -f json= for
+   simultaneous STARTED stories across all 9 active worktrees; a
+   =find= + =grep= sweep of every =story.org= under the sprint
+   directory for State and task count.
+3. Analyse each of the five dimensions against the skill's explicit
+   RAG thresholds.
+4. Write the full analysis here and append a summary row to
+   =sprint.org='s =* Health Review= table.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-07-30 (day 9 of 7)
+
+Pre-registered concerns (written before gathering evidence): sprint's
+planned close was 2026-07-28, and it is now 2 days over with no
+retrospective and =State: STARTED= unchanged; the story list is huge
+(57 stories) with seven identical, untouched "Commission ores.qt.X
+into codegen" placeholders; five hotfixes landed this sprint, a real
+quality signal; and this is a 9-worktree fleet, so focus cannot be
+judged from one worktree alone.
+
+*** Goal alignment
+
+Mission: "Continue commissioning work across components, and improve
+IR generation." Matching every story against these two goals:
+
+| Goal          | Coverage                    | Representative stories (State, tasks)                              | Verdict |
+|---------------+------------------------------+----------------------------------------------------------------------+---------|
+| Commissioning | Weak — literal goal untouched | 7× "Commission ores.qt.X into codegen" — all BACKLOG, 0 tasks each; =codegen_dx_improvements= (STARTED, 4/19 DONE) touches commissioning only indirectly via model-drift fixes | RED |
+| IR generation | Partial                     | =ir-rates-followups= (STARTED, 9/18 DONE) is direct; =ir-curve-bootstrapping-and-republish= (BACKLOG, 1 task) and =rate-display-conventions= (BACKLOG) not yet picked up | AMBER |
+| Neither goal  | 7 of 11 STARTED stories      | =badge_colour_scheme_snags=, =calendar-followups=, =nats-configurable-wire-format=, =offload-services-to-wsl-host=, =split-services-into-per-service-containers=, =migrate-to-oresmd-delete-legacy-schemes=, =compass-quality-of-life-improvements= — all legitimate engineering work, none of it commissioning or IR generation | — |
+
+The two literal "commission into codegen" goal stories have zero
+started work — seven identical placeholder rows sitting in BACKLOG
+all sprint. Meanwhile the majority of active (STARTED) effort — 7 of
+11 concurrently open stories — serves neither stated goal. This is
+not "wishful mapping," it's an absence of mapping: the sprint's
+actual center of gravity is elsewhere (infra/tooling: WSL offload,
+NATS wire format, per-service containers, oresmd migration, compass
+QoL). *Verdict: RED.* Either the mission statement is stale, or the
+sprint has drifted away from it without anyone re-declaring the goal.
+
+*** Sprint load
+
+| Metric                  | Value | Target      | Status |
+|--------------------------+-------+-------------+--------|
+| Commits since 2026-07-21 |   830 | ≤ 1000      | under cap |
+| Elapsed days             |     9 | ≤ 7         | 2 days over |
+| Commits/day average      |  92.2 | —           | — |
+| Projected total if 2 more days needed to actually close | ~1015 | ≤ 1000 | would breach |
+
+Commit volume itself is under the hard cap, but the day budget is
+already blown by 2 days and the sprint is still open — the "≤ 7 days"
+half of the target has already failed, independent of commit count.
+At the current 92/day rate, 2 more days to close pushes the
+projected total past 1000. *Verdict: AMBER* — soft-target breach on
+schedule, count trending toward (not yet over) the cap.
+
+*** PR velocity
+
+| Metric                    | Value              | Notes |
+|----------------------------+---------------------+-------|
+| PRs merged since 2026-07-21|                 105 | within 100–120 target band |
+| Merge rate                 | 11.7/day (105 / 9d) | well above the ≥1/day floor |
+| Open PRs (fleet)           |                   1 | =#1763=, opened today, not stalled |
+| Long-open WIP (>1 day, no activity) | none       | — |
+
+By the letter of the metric this is healthy: rate is strong, total
+sits inside the target band, nothing is stuck. The caveat is that
+100–120 was calibrated for a 7-day sprint and we are on day 9 — the
+same throughput has simply been sustained two days longer than
+planned, meaning the sprint's effective workload has grown mid-flight
+rather than converging. *Verdict: GREEN* on the metric itself, with
+the schedule dependency flagged.
+
+*** Story and task balance
+
+| Story                        | State   | Tasks (DONE/BACKLOG/other) | Notes |
+|-------------------------------+---------+------------------------------+-------|
+| =acme_corporation_holding_group= | STARTED | 7 DONE / 11 BACKLOG / 1 STARTED / 1 BLOCKED / 2 ABANDONED | genuinely mid-flight, not a split candidate |
+| =ir-rates-followups=          | STARTED | 9 DONE / 7 BACKLOG / 2 ABANDONED | half done, real work remains |
+| =codegen_dx_improvements=     | STARTED | 4 DONE / 14 BACKLOG / 1 BLOCKED | early stage despite 19 tasks |
+| =calendar-followups=          | STARTED | 10 DONE / 4 BACKLOG / 1 STARTED | mostly done — split candidate |
+| All 57 stories (repo-wide)    | —       | 21 DONE / 11 STARTED / 25 BACKLOG | DONE ratio 21/57 = 0.37 |
+
+No STARTED story is fully undecomposed (all have tasks), which is
+good. But =calendar-followups= matches the skill's "sprawling story"
+shape: 10 of 15 tasks DONE, only 4 BACKLOG + 1 STARTED remain — worth
+checking its own =* Acceptance= against those 4 remaining tasks and,
+if they're forward-looking extras rather than the core deliverable,
+closing it DONE and splitting the remainder into a new focused story
+per the skill's guidance, rather than carrying the whole thing into
+sprint 25. The repo-wide DONE ratio of 0.37 falls in the 0.3–0.5
+band. *Verdict: AMBER.*
+
+*** Focus signal
+
+| Metric                                  | Value | Verdict |
+|-------------------------------------------+-------+---------|
+| Simultaneously STARTED stories (repo-wide) |    11 | — |
+| Simultaneously STARTED stories (fleet, distinct active worktrees) | 8 | — |
+| Theme coherence                            | wildly divergent | — |
+
+Fleet-wide (=compass fleet -f json=) shows 8 of 9 active worktrees
+each on a different STARTED story: FX Spot Monitor UI, QuantLib
+calendar materialisation, badge colour polish, marketdata model
+drift, oresmd migration, NATS wire-codec consolidation, WSL host
+offload, and Acme commissioning — plus =codegen_dx_improvements= and
+=compass-quality-of-life-improvements= STARTED without a currently
+active worktree. These are not variations on one theme; they span
+UI, market data plumbing, build infra, messaging, and deployment.
+*Verdict: RED* (6+ concurrent STARTED stories, no coherent theme).
+This is exactly the "each 'just one more' story compounds
+context-switching cost" pattern the skill warns about, now at 8–11
+concurrent threads across the fleet.
+
+*** Velocity
+
+| Metric                     | Value | Notes |
+|------------------------------+-------+-------|
+| Stories closed this sprint  |    21 | includes 5 hotfixes closed same-day |
+| Hotfixes landed             |     5 | =cmake-44-remaining-uninitialized-warnings=, =cmake-4-4-uninitialized-variable-warnings=, =fix-badge-tenant-read-scope-regression=, =fix-cmake-thread-libs-init-windows-warning=, =windows_ci_pip_self_upgrade_fix= |
+| Commits/day, PRs/day        | 92.2 / 11.7 | both strong |
+
+Raw throughput is genuinely high, and the team is clearly capable of
+absorbing production issues quickly (5 hotfixes, all closed). But
+volume and speed are not the same as health: high throughput spread
+across 8+ unrelated STARTED stories is compatible with both "the team
+is thriving" and "everyone is context-switching constantly and
+nothing important is finishing" — the DONE ratio (0.37) and the
+untouched literal-goal stories (7 "Commission ores.qt.X" stories, all
+BACKLOG) suggest the latter is at least partly true.
+
+*** Overall verdict
+
+| Dimension              | Verdict |
+|-------------------------+---------|
+| Goal alignment          | RED |
+| Sprint load             | AMBER |
+| PR velocity             | GREEN |
+| Story and task balance  | AMBER |
+| Focus signal            | RED |
+
+*Overall: RED* (two dimensions RED — goal alignment and focus signal
+— is sufficient on its own, and RED on any single critical dimension
+makes the sprint RED regardless of the other three). The single most
+important concern is that the sprint's actual center of gravity has
+drifted away from its stated mission: 7 of 11 concurrently STARTED
+stories serve neither "commissioning" nor "IR generation," while the
+7 stories that are literally that goal ("Commission ores.qt.X into
+codegen") sit completely untouched in BACKLOG. The one fix that would
+most improve sprint health is not more throughput — throughput is
+already strong (PR velocity GREEN, 92 commits/day) — it is reducing
+concurrent STARTED-story count from 8–11 down toward the 1–3 target,
+closing out near-done stories like =calendar-followups= rather than
+carrying them, and either re-committing to the "commission ores.qt.X"
+goal stories or formally re-scoping the sprint mission to match what
+is actually being worked on.

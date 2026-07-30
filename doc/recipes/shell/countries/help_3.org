@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-06-25
+#+updated: 2026-07-30
 
 #+name: help-countries-exit
 #+begin_src ores-shell :exports none
@@ -18,15 +18,20 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-printf 'countries\nhelp\nexit\nexit\n' | ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
+printf 'countries\nhelp\nexit\nexit\n' | ./compass.sh shell 2>&1
 #+end_src
+
+Login credentials default to =ORES_SHELL_LOGIN_USERNAME=/=ORES_SHELL_LOGIN_PASSWORD=
+from =.env= (Acme Corporation's =tenant_admin= — see [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the
+checkout environment with compass?]]) when =-u=/=-p= are omitted; pass
+them explicitly to use a different account.
 
 #+RESULTS:
 #+begin_example
-✓ Connected to nats://localhost:42230
+✓ Connected to nats://localhost:20405
 ✓ Logged in as: tenant_admin
-  Tenant:  (36d4c3c9-195c-46b5-a4d8-b36cb48c8f46)
-ORE Studio Shell REPL v0.0.21
+  Tenant:  (a7fcf7a6-02f7-45c5-8081-5e554cdf84bb)
+ORE Studio Shell REPL v0.0.24
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> countries> Commands available:
@@ -44,8 +49,8 @@ ores-shell> countries> Commands available:
 	Add a country (alpha2 alpha3 numeric name official_name reason_code "commentary")
  - delete <string>
 	Delete a country by alpha-2 code
- - history <string>
-	Get version history for a country by alpha-2 code
+ - history <alpha2_code [--diff] [--version <n>]>
+	Show a country's version history (--diff for a unified diff, --version <n> to pick one)
  - ores-shell
 	(menu)
 countries> Bye!

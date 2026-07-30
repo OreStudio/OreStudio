@@ -801,6 +801,15 @@ ORES_SHELL_NATS_TLS_CERT={nats_tls_cert}
 ORES_SHELL_NATS_TLS_KEY={nats_tls_key}
 
 # ---------------------------------------------------------------------------
+# Shell login defaults (read by `compass shell` when -u/-p are omitted --
+# see cmd_shell in compass.py). Acme Corporation's tenant_admin, the demo
+# entity every environment provisions by default; not a secret, just the
+# well-known shared demo password used throughout doc/recipes.
+# ---------------------------------------------------------------------------
+ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation
+ORES_SHELL_LOGIN_PASSWORD=Secure-Password-123
+
+# ---------------------------------------------------------------------------
 # HTTP server JWT secret (read by C++ make_mapper("HTTP_SERVER"))
 # ---------------------------------------------------------------------------
 ORES_HTTP_SERVER_JWT_SECRET={http_jwt_secret}

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:countries:
 #+created: 2026-05-21
-#+updated: 2026-07-13
+#+updated: 2026-07-30
 
 Get version history for a country, as a flat table by default. Add
 =--diff= for a unified diff instead: unchanged fields as context
@@ -27,5 +27,45 @@ exit
 
 #+begin_src sh :noweb yes :results output :wrap example
 printf 'countries history GB\ncountries history GB --diff\nexit\n' | \
-  ./compass.sh shell -u 'tenant_admin@barclays_plc' -p 'Secure-Password-123' 2>&1
+  ./compass.sh shell 2>&1
 #+end_src
+
+Login credentials default to =ORES_SHELL_LOGIN_USERNAME=/=ORES_SHELL_LOGIN_PASSWORD=
+from =.env= (Acme Corporation's =tenant_admin= — see [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the
+checkout environment with compass?]]) when =-u=/=-p= are omitted; pass
+them explicitly to use a different account.
+
+#+RESULTS:
+#+begin_example
+✓ Connected to nats://localhost:20405
+✓ Logged in as: tenant_admin
+  Tenant:  (a7fcf7a6-02f7-45c5-8081-5e554cdf84bb)
+ORE Studio Shell REPL v0.0.24
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> countries history GB
+
++--------------+--------------+--------------+----------------+------------------------------------------------------+-----------------------------------+---------+
+| Alpha-2 Code | Alpha-3 Code | Numeric Code | Name           | Official Name                                        | Modified By                       | Version |
++--------------+--------------+--------------+----------------+------------------------------------------------------+-----------------------------------+---------+
+| GB           | GBR          | 826          | United Kingdom | United Kingdom of Great Britain and Northern Ireland | ores_brave_hopper_refdata_service | 1       |
++--------------+--------------+--------------+----------------+------------------------------------------------------+-----------------------------------+---------+
+
+
+ores-shell> countries history GB --diff
+--- /dev/null
++++ GB v1 (ores_brave_hopper_refdata_service)
++Alpha2 Code: GB
++Alpha3 Code: GBR
++Numeric Code: 826
++Name: United Kingdom
++Official Name: United Kingdom of Great Britain and Northern Ireland
++Image ID: 69834099-a820-4ead-ba9c-62f585f0d652
++Coding Scheme Code: ISO_3166_1_ALPHA_2
++Modified By: ores_brave_hopper_refdata_service
++Performed By: ores_brave_hopper_refdata_service
++Change Reason Code: system.external_data_import
++Change Commentary: Imported from DQ dataset: ISO 3166 Country Codes
++Recorded At: 2026-07-30 16:07:15Z
+ores-shell> Bye!
+#+end_example

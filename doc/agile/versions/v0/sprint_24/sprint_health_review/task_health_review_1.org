@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sprint_health_review:sprint_24:v0:
 #+owner: marco
-#+branch: feature/merge-asset-class-folders-into-one-theme-unit
+#+branch: feature/sprint-24-health-review-1
 #+pr:
 #+blocked_on:
 #+blocked_since:

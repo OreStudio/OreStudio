@@ -8,7 +8,7 @@
 #+filetags: :market-data:identifiers:oresmd:migration:migrate-to-oresmd-delete-legacy-schemes:sprint_24:v0:
 #+owner: marco
 #+branch: feature/migrate-market-series-qualifier
-#+pr:
+#+pr: 1776
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1776][#1776]] | [marketdata] Consolidate market_series key split parsers into oresmd_projections |
 
 * Review
 

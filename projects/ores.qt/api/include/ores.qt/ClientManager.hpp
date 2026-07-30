@@ -776,7 +776,7 @@ private:
      * error; does not deserialize — that is the caller's responsibility.
      */
     std::string send_authenticated_request(std::string_view subject,
-                                           std::string json_body,
+                                           std::string encoded_body,
                                            std::chrono::milliseconds timeout);
 
     /**
@@ -786,7 +786,7 @@ private:
      * per-window requests do not mutate the shared workspace_context_.
      */
     std::string send_authenticated_request_with_workspace(std::string_view subject,
-                                                          std::string json_body,
+                                                          std::string encoded_body,
                                                           const std::string& workspace_id,
                                                           std::chrono::milliseconds timeout);
 
@@ -796,7 +796,7 @@ private:
      */
     std::string
     send_authenticated_request_with_workspace_ctx(std::string_view subject,
-                                                  std::string json_body,
+                                                  std::string encoded_body,
                                                   const std::string& workspace_id,
                                                   std::vector<std::string> resolution_chain,
                                                   std::chrono::milliseconds timeout);

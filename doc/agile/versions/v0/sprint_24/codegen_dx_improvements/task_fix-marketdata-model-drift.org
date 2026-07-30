@@ -97,6 +97,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | market_series_generator.cpp regen reintroduced the uninitialized asset_class/series_subclass enum bug fixed in PR #1412 (hand-written fix never captured in the .org model) | market_series_generator.cpp | Fixed | Added :name generator blocks cycling both enums deterministically, keyed off idx (65ee06b63). |
 | 2 | market_series_handler.hpp's export_to_storage paste-block called log_handler_entry unqualified; broke when an unrelated handler_helpers-to-wire_codec migration on main moved it into ores::service::messaging | market_series_handler.hpp | Fixed | Qualified the call in the .org paste-block, regenerated (65ee06b63). |
+| 3 | Fix #1 only added a generator block, which feeds synthetic data but not the domain struct itself -- cpp_domain_type_class.hpp.mustache only emits a member initializer when :default_value: is set, so the struct member was still genuinely uninitialized independent of the generator | org_loader.py, market_series.org | Fixed | Added a validate_model check requiring :default_value:/:default: on every non-nullable is_enum column; added :default_value: fx/spot to asset_class/series_subclass (6c69432b2). Checked every is_enum column repo-wide -- only these two entities use it, no other regressions. |
 
 * Result
 

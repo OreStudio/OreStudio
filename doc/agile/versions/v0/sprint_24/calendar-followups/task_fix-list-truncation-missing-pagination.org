@@ -182,13 +182,13 @@ it isn't a uniform "flip a knob" fix for all of them:
   be a no-op (codegen has nothing to emit for their Qt layer).
   Split into
   [[id:9FE837CB-2E33-490C-878C-4B53F6DB79AE][Backfill missing Qt drawer for 5 hand-authored dq Qt entities]].
-- Of the remaining *43 with a real Qt drawer*, attempting to
-  regenerate *14* hit a completely unrelated, pre-existing bug: their
+- Of the remaining *45 with a real Qt drawer*, attempting to
+  regenerate *16* hit a completely unrelated, pre-existing bug: their
   model uses a legacy =* Primary key= heading the current loader
   doesn't parse at all, so =resolve_targets= fails validation on
   *any* address, not just =ores.cpp.qt=, on unmodified =main=. A
   repo-wide grep found 70+ files with this same legacy heading --
-  clearly a systemic issue, not specific to these 14 or to pagination.
+  clearly a systemic issue, not specific to these 16 or to pagination.
   Split into
   [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]]
   rather than attempting a large, unplanned migration under this
@@ -200,7 +200,7 @@ it isn't a uniform "flip a knob" fix for all of them:
 
 ** A false start: template drift conflated with the real fix
 
-First attempt regenerated all 43 non-broken-primary-key entities and
+First attempt regenerated all 45 non-broken-primary-key entities and
 found the diffs mixed the intended pagination change with a lot of
 *unrelated* template-modernisation drift (a =Qt::ToolTipRole=
 =headerData= branch, save-watcher capture-list changes, etc.) --
@@ -265,6 +265,13 @@ sends =request.offset=/=request.limit= to the server and reports the
 server's real =total_available_count= instead of silently capping at
 the server's default 100-row page and reporting that page's size as
 the total.
+
+During PR review, =calendar_type= was flagged as a 30th entity with
+the identical gap: introduced by a concurrently-merged PR after this
+task's detection script had already run, so it was never in the
+original 61-entity list, but it has a real, current-convention
+codegen model with a =** Qt= drawer -- the same mechanical fix
+applied directly, verified via =--diff= first.
 
 The remaining 32 needed a genuine, separately-scoped fix and were
 filed as three follow-up tasks rather than folded into this one:

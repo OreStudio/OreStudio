@@ -1101,6 +1101,34 @@ def validate_model(model: dict[str, Any]) -> list[str]:
                     f"Column '{col.get('name','?')}' missing required property: {required}"
                 )
 
+    # Non-nullable is_enum columns/natural keys get no C++ member initializer
+    # unless :default_value: (or :default:) is set (cpp_domain_type_class.hpp
+    # .mustache only emits `= {{default_value}}` when the property is
+    # present) -- a plain `{{{cpp_type}}} {{name}};` leaves a scoped enum
+    # member uninitialized on default construction, which is undefined
+    # behaviour the moment anything reads it (e.g. rfl::enum_to_string() in
+    # a repository mapper). A :name generator: block only feeds the
+    # synthetic-data generator, not the struct itself, so it does not
+    # substitute for a real default. This exact defect shipped once already
+    # (PR #1412, task_fix_market_series_generator_uninitialized_enums) via a
+    # hand-written generator-only fix that a later regeneration silently
+    # dropped; requiring :default_value: up front closes the whole class of
+    # bug rather than one instance of it.
+    for col in de.get("columns", []) + de.get("natural_keys", []):
+        if (
+            col.get("is_enum")
+            and not col.get("nullable")
+            and "default_value" not in col
+            and "default" not in col
+        ):
+            errors.append(
+                f"Enum column '{col.get('name') or col.get('column')}' has no "
+                ":default_value: -- a non-nullable is_enum column with no default "
+                "gets no C++ member initializer and is left uninitialized on "
+                "default construction. Add :default_value: <enumerator> (see "
+                "ores.marketdata.feed_binding.org's asset_class for the pattern)."
+            )
+
     return errors
 
 

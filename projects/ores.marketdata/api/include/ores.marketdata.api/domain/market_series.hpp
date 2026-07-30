@@ -85,12 +85,12 @@ struct market_series final {
      * @brief Coarse asset class taxonomy: FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
      * CROSS_ASSET.
      */
-    domain::asset_class asset_class;
+    domain::asset_class asset_class = domain::asset_class::fx;
 
     /**
      * @brief Subclass within the asset class (e.g. SPOT, VOLATILITY, YIELD, SPREAD).
      */
-    domain::series_subclass series_subclass;
+    domain::series_subclass series_subclass = domain::series_subclass::spot;
 
     /**
      * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),

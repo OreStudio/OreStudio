@@ -86,10 +86,11 @@ Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 
 ** asset_class
 :PROPERTIES:
-:type:     text
-:cpp_type: domain::asset_class
-:is_enum:  true
-:nullable: false
+:type:          text
+:cpp_type:      domain::asset_class
+:is_enum:       true
+:nullable:      false
+:default_value: fx
 :END:
 
 Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
@@ -112,10 +113,11 @@ Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
 
 ** series_subclass
 :PROPERTIES:
-:type:     text
-:cpp_type: domain::series_subclass
-:is_enum:  true
-:nullable: false
+:type:          text
+:cpp_type:      domain::series_subclass
+:is_enum:       true
+:nullable:      false
+:default_value: spot
 :END:
 
 Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).

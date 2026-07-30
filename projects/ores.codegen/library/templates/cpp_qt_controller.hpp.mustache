@@ -24,6 +24,9 @@
 namespace ores::qt {
 
 class {{domain_entity.entity_pascal}}MdiWindow;
+{{^domain_entity.qt.has_readonly_paginated_list}}
+class {{domain_entity.entity_pascal}}DetailDialog;
+{{/domain_entity.qt.has_readonly_paginated_list}}
 class DetachableMdiSubWindow;
 {{#domain_entity.qt.has_badge_columns}}
 class BadgeCache;
@@ -142,6 +145,14 @@ private:
     void showAddWindow();
 {{/domain_entity.qt.has_parent_relationship}}
     void showDetailWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * {{domain_entity.entity_pascal}}DetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon({{domain_entity.entity_pascal}}DetailDialog* detailDialog);
 {{#domain_entity.qt.has_uuid_primary_key}}
     void showHistoryWindow(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 {{/domain_entity.qt.has_uuid_primary_key}}

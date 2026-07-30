@@ -320,15 +320,15 @@ drop function if exists ores_refdata_validate_calendar_fn;
 
 *** Detail fields
 
-| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_fetch | combo_allow_blank | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | view_group | immutable | combo_blank_label |
-|-------+-------+--------+------+--------+-------------+-------------+-------------+-------------+-------------------+-------------------+---------------------+----------------+--------------------+------------------+---------------------+------------------+-------------+---------------------+------------+-----------+-------------------|
-| code | Code | codeEdit | line_edit | true | true | Enter QuantLib calendar code |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
-| name | Name | nameEdit | line_edit |  | true | Enter calendar name |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
-| calendar_type | Type | calendarTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar_type | ores.qt/LookupFetcher.hpp | fetch_calendar_types | calendarTypeWatcher | code | description | display_order | calendar types | CalendarTypeCombo | General |  |  |
-| country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  | General |  |  |
-| source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
-| is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
-| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo | General |  | No Base Calendar |
+| field | label | widget | type | is_key | is_required | placeholder | flag_source | combo_fetch | combo_allow_blank | combo_domain_type | combo_fetch_include | combo_fetch_fn | combo_watcher_name | combo_code_field | combo_tooltip_field | combo_sort_field | combo_label | combo_setter_pascal | badge_key | view_group | immutable | combo_blank_label |
+|-------+-------+--------+------+--------+-------------+-------------+-------------+-------------+-------------------+-------------------+---------------------+----------------+--------------------+------------------+---------------------+------------------+-------------+---------------------+-----------+------------+-----------+-------------------|
+| code | Code | codeEdit | line_edit | true | true | Enter QuantLib calendar code |  |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| name | Name | nameEdit | line_edit |  | true | Enter calendar name |  |  |  |  |  |  |  |  |  |  |  |  |  | General |  |  |
+| calendar_type | Type | calendarTypeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar_type | ores.qt/LookupFetcher.hpp | fetch_calendar_types | calendarTypeWatcher | code | description | display_order | calendar types | CalendarTypeCombo | calendar_type | General |  |  |
+| country_code | Country | countryCodeCombo | flagged_combo |  |  |  | country | fetch_country_codes | true |  | ores.qt/LookupFetcher.hpp |  |  |  |  |  |  |  |  | General |  |  |
+| source | Source | sourceEdit | line_edit |  | true | quantlib or user |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| is_editable | Editable | isEditableCheck | check_box |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | General | true |  |
+| base_calendar_code | Base Calendar | baseCalendarCodeCombo | dynamic_combo |  |  |  |  |  |  | refdata::domain::calendar | ores.qt/LookupFetcher.hpp | fetch_calendars | calendarBaseCalendarWatcher | code | code | version | calendars | BaseCalendarCodeCombo |  | General |  | No Base Calendar |
 
 *** Columns (Qt model)
 
@@ -541,6 +541,67 @@ path this feature exists for).
     regenerateAction_->setEnabled(!createMode_);
     connect(regenerateAction_, &QAction::triggered,
             this, &CalendarDetailDialog::onRegenerateClicked);
+#+end_src
+
+** Qt: "Browse Holidays" action
+
+A second toolbar action, alongside "Regenerate up to <year>" above,
+that opens a browser onto the calendar's materialised
+[[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_dates]] rows. The
+dialog itself doesn't know how to open that browser window (that's
+the plugin composition root's job, same as any other cross-entity
+navigation) -- it only emits =browseHolidaysRequested(code)=, which
+=CalendarController= relays upward as its own signal of the same
+name. Disabled in create mode for the same reason "Regenerate" is
+(nothing materialised yet for a row that doesn't exist on the server).
+
+#+begin_src cpp :name declaration :implements EC19A4EE-363D-4D41-A33A-D5F85A139C80
+    void browseHolidaysRequested(const QString& code);
+#+end_src
+
+#+begin_src cpp :name declaration :implements F55CB64E-165A-4E15-A50A-5723C0320E97
+    QAction* browseHolidaysAction_{nullptr};
+    void onBrowseHolidaysClicked();
+#+end_src
+
+#+begin_src cpp :name setup_connections_extra :implements B6F2748A-9896-4B9C-BEAC-38436FD1CA79
+    browseHolidaysAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor),
+        tr("Browse Holidays"));
+    browseHolidaysAction_->setToolTip(tr("Browse this calendar's materialised holiday dates"));
+    browseHolidaysAction_->setEnabled(!createMode_);
+    connect(browseHolidaysAction_, &QAction::triggered,
+            this, &CalendarDetailDialog::onBrowseHolidaysClicked);
+#+end_src
+
+#+begin_src cpp :name set_create_mode_extra :implements 9A719585-3AB1-47DE-B0B0-99AFDFE7180E
+    if (browseHolidaysAction_)
+        browseHolidaysAction_->setEnabled(!createMode);
+#+end_src
+
+#+begin_src cpp :name implementation :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732
+void CalendarDetailDialog::onBrowseHolidaysClicked() {
+    emit browseHolidaysRequested(code());
+}
+#+end_src
+
+=CalendarController= relays the dialog's signal as its own, of the
+same name -- the plugin composition root connects
+=CalendarController::browseHolidaysRequested= to whatever opens the
+materialised-dates browser.
+
+#+begin_src cpp :name declaration :implements 66E078FB-D6A6-4DF6-814B-65995D948090
+    /**
+     * @brief Relayed from CalendarDetailDialog's "Browse Holidays" toolbar
+     * action; RefdataPlugin connects this to
+     * CalendarDateController::openForParent(calendarCode).
+     */
+    void browseHolidaysRequested(const QString& calendarCode);
+#+end_src
+
+#+begin_src cpp :name implementation :implements DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF
+    connect(detailDialog, &CalendarDetailDialog::browseHolidaysRequested,
+            this, &CalendarController::browseHolidaysRequested);
 #+end_src
 
 #+begin_src cpp :name implementation :implements EC97923E-BC8D-4A50-9970-CBC5CBD4B732

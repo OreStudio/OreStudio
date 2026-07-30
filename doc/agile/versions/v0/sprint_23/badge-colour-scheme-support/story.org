@@ -33,8 +33,8 @@ grep-only), and migrating =badge_definition=/=badge_severity=/
 *Closed at Sprint 23's end, narrowed to what shipped.* The remaining
 scope split into two Sprint 24 stories by kind of work: concrete UI
 fixes vs. an open-ended coverage audit — see [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme:
-visual polish and self-badging fixes]] and [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge
-adoption across domain entities]].
+visual polish and self-badging fixes]] and [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out
+badge/image/plain-text rendering across domain entities]].
 
 * Status
 

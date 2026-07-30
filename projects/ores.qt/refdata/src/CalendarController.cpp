@@ -163,16 +163,13 @@ void CalendarController::onShowHistory(const refdata::domain::calendar& calendar
     showHistoryWindow(QString::fromStdString(calendar.code));
 }
 
-void CalendarController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar";
-
-    auto* detailDialog = new CalendarDetailDialog(mainWindow_);
+void CalendarController::wireDetailDialogCommon(CalendarDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
+    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CalendarDetailDialog::statusMessage,
@@ -180,6 +177,19 @@ void CalendarController::showAddWindow() {
             &CalendarController::statusMessage);
     connect(
         detailDialog, &CalendarDetailDialog::errorMessage, this, &CalendarController::errorMessage);
+    connect(detailDialog,
+            &CalendarDetailDialog::browseHolidaysRequested,
+            this,
+            &CalendarController::browseHolidaysRequested);
+}
+
+void CalendarController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar";
+
+    auto* detailDialog = new CalendarDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CalendarDetailDialog::calendarSaved,
             this,
@@ -216,20 +226,10 @@ void CalendarController::showDetailWindow(const refdata::domain::calendar& calen
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << calendar.code;
 
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCalendar(calendar);
 
-    connect(detailDialog,
-            &CalendarDetailDialog::statusMessage,
-            this,
-            &CalendarController::statusMessage);
-    connect(
-        detailDialog, &CalendarDetailDialog::errorMessage, this, &CalendarController::errorMessage);
     connect(detailDialog,
             &CalendarDetailDialog::calendarSaved,
             this,
@@ -248,10 +248,6 @@ void CalendarController::showDetailWindow(const refdata::domain::calendar& calen
                 BOOST_LOG_SEV(lg(), info) << "Calendar deleted: " << code.toStdString();
                 self->handleEntityDeleted();
             });
-    connect(detailDialog,
-            &CalendarDetailDialog::browseHolidaysRequested,
-            this,
-            &CalendarController::browseHolidaysRequested);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -372,30 +368,9 @@ void CalendarController::onOpenVersion(const refdata::domain::calendar& calendar
     }
 
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCalendar(calendar);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CalendarDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CalendarController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CalendarDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CalendarController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,23 +487,13 @@ void CalendarController::onRevertVersion(const refdata::domain::calendar& calend
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CalendarDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_calendar = calendar;
     reverted_calendar.version = 0;
     detailDialog->setCalendar(reverted_calendar);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CalendarDetailDialog::statusMessage,
-            this,
-            &CalendarController::statusMessage);
-    connect(
-        detailDialog, &CalendarDetailDialog::errorMessage, this, &CalendarController::errorMessage);
     connect(detailDialog,
             &CalendarDetailDialog::calendarSaved,
             this,

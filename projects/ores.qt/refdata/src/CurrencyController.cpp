@@ -175,17 +175,13 @@ void CurrencyController::onShowHistory(const refdata::domain::currency& currency
     showHistoryWindow(QString::fromStdString(currency.iso_code));
 }
 
-void CurrencyController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency";
-
-    auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
+void CurrencyController::wireDetailDialogCommon(CurrencyDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyDetailDialog::statusMessage,
@@ -193,6 +189,15 @@ void CurrencyController::showAddWindow() {
             &CurrencyController::statusMessage);
     connect(
         detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
+}
+
+void CurrencyController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency";
+
+    auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurrencyDetailDialog::currencySaved,
             this,
@@ -229,21 +234,10 @@ void CurrencyController::showDetailWindow(const refdata::domain::currency& curre
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << currency.iso_code;
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCurrency(currency);
 
-    connect(detailDialog,
-            &CurrencyDetailDialog::statusMessage,
-            this,
-            &CurrencyController::statusMessage);
-    connect(
-        detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
     connect(detailDialog,
             &CurrencyDetailDialog::currencySaved,
             this,
@@ -383,12 +377,7 @@ void CurrencyController::onOpenVersion(const refdata::domain::currency& currency
     }
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     // A single version-nav toolbar (first/prev/next/last) only means
     // something if the dialog has the *full* history to navigate, not
     // just this one version.
@@ -402,23 +391,6 @@ void CurrencyController::onOpenVersion(const refdata::domain::currency& currency
             &CurrencyDetailDialog::revertRequested,
             this,
             &CurrencyController::onRevertVersion);
-
-    connect(detailDialog,
-            &CurrencyDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -535,24 +507,13 @@ void CurrencyController::onRevertVersion(const refdata::domain::currency& curren
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_currency = currency;
     reverted_currency.version = 0;
     detailDialog->setCurrency(reverted_currency);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurrencyDetailDialog::statusMessage,
-            this,
-            &CurrencyController::statusMessage);
-    connect(
-        detailDialog, &CurrencyDetailDialog::errorMessage, this, &CurrencyController::errorMessage);
     connect(detailDialog,
             &CurrencyDetailDialog::currencySaved,
             this,

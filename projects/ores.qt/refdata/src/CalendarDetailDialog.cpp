@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CalendarDetailDialog.hpp"
+#include "ores.qt/BadgeComboHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -125,7 +126,8 @@ void CalendarDetailDialog::setupConnections() {
             this,
             &CalendarDetailDialog::onFieldChanged);
     regenerateAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor), tr("Regenerate"));
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
+        tr("Regenerate"));
     regenerateAction_->setToolTip(tr("Regenerate this calendar's holidays up to a chosen year"));
     regenerateAction_->setEnabled(!createMode_);
     connect(
@@ -145,6 +147,7 @@ void CalendarDetailDialog::setupConnections() {
 void CalendarDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     populateCalendarTypeCombo();
+    setup_badge_combo(this, ui_->calendarTypeCombo, badgeCache(), "calendar_type");
     populateBaseCalendarCodeCombo();
     populateCountryCodeCombo();
 }
@@ -219,6 +222,7 @@ void CalendarDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
     if (regenerateAction_)
         regenerateAction_->setEnabled(!createMode);
+
     if (browseHolidaysAction_)
         browseHolidaysAction_->setEnabled(!createMode);
 }
@@ -256,7 +260,9 @@ void CalendarDetailDialog::populateCalendarTypeCombo() {
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load calendar types: %1").arg(error));
         },
-        []() {},
+        [this]() {
+            setup_badge_combo(this, ui_->calendarTypeCombo, badgeCache(), "calendar_type");
+        },
         QObject::tr("Loading…"),
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },

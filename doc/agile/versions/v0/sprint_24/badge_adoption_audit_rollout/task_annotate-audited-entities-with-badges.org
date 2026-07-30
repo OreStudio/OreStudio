@@ -1,50 +1,125 @@
 :PROPERTIES:
 :ID: 08547F5A-B07C-4429-9EA5-022ACDC882C9
 :END:
-#+title: Task: Annotate audited entities with badge_key and regenerate
-#+description: Consume the coverage audit's list: add badge_key to the identified FK/boolean columns, author any missing badge_definition/badge_mapping rows the audit flagged as needed, and regenerate. Depends on the coverage audit task's output.
+#+title: Task: Implement classified entities in batches
+#+description: Consume the audit/classification task's batched output: for each batch, annotate entities with badge_key or image/flag wiring as classified, author any missing badge_definition/badge_mapping rows or image assets the audit flagged as needed, and regenerate -- one batch at a time rather than all 120 entities in one pass. Depends on the audit/classification task's output.
 #+type: task
 #+level: s1
 #+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
 #+owner: marco
-#+branch: feature/annotate-audited-entities-with-badges
+#+branch: feature/merge-badge-audit-classify-stories
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-21
-#+environment:
+#+updated: 2026-07-30
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Every column the audit flagged as a badge candidate either renders as a badge, or has an explicit, documented reason it doesn't (e.g. too many distinct values for a badge to be useful).
+Every entity the audit/classification task classified as badge or
+image either has that rendering wired and regenerated, or has an
+explicit, documented reason it doesn't (e.g. too many distinct
+values for a badge to be useful). Worked through in the audit's
+batches, not all 120 entities in one pass -- each batch should be its
+own, independently reviewable unit of work.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| State        | STARTED                              |
+| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
+| Now          | Batch 1's 3 ready entities (calendar_type, currency_market_tier, monetary_nature) done. |
+| Waiting on   | New code_domain/badge_definition/badge_mapping data for the other 8 Batch-1 entities and all of Batch 2. |
+| Next         | Author that data, then Batch 2; Batch 3 (plain-text documentation) after. |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- Every 'ready-to-annotate' entry from the audit gets badge_key added to its model and is regenerated.
-- Every 'needs new badge_definition data' entry gets its badge_definition/badge_mapping rows authored, following the established colour-semantic convention (grey=disabled/no, green=good, red=bad, yellow=warning).
-- Any audit entry deliberately skipped has a one-line reason recorded in this task's Result.
-- Zero diff on entities not touched by this task; build clean; existing badge-related tests still pass.
+- Every 'ready-to-annotate' badge entry from the audit gets badge_key
+  added to its model and is regenerated.
+- Every 'ready-to-annotate' image entry gets its image/flag wiring
+  added and is regenerated.
+- Every 'needs new data' entry gets its badge_definition/badge_mapping
+  rows or image assets authored first, following the established
+  colour-semantic convention (grey=disabled/no, green=good, red=bad,
+  yellow=warning) where applicable.
+- Any audit entry deliberately skipped has a one-line reason recorded
+  in this task's Result.
+- Each batch is its own commit (not a separate PR -- explicit
+  instruction to minimise PR count, all batches land in the same PR
+  as the audit/classification analysis); zero diff on entities not
+  touched by that batch; build clean; existing badge/image-related
+  tests still pass after each batch.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Picked up Batch 1. Checking the DB directly showed only 3 of the
+audit's 11 listed entities (=calendar_type=, =currency_market_tier=,
+=monetary_nature=) actually have =code_domain=/=badge_definition=/
+=badge_mapping= rows today; the other 8 need that data authored
+first (same as Batch 2) -- scoped this pass down to the 3 genuinely
+ready ones and corrected the audit task's Batch 1 description.
+
+Self-badging pattern (per precedent =book_status=, task 5BAE2E27):
+each of the 3 entities' own =code= column gets =is_badge:
+true=/=badge_key: <itself>= in its "Columns (Qt model)" table.
+Consumer wiring: =calendar.org='s =calendar_type= field and
+=currency.org='s =monetary_nature=/=market_tier= fields get their
+=badge_key= cell set to point at the corresponding domain
+(=currency.org= already had this from earlier session work;
+=calendar.org= didn't even have a =badge_key= column in its Detail
+fields table header, so that column was added).
+
+Regenerating =calendar='s Qt facet exposed unrelated drift: a
+"Browse Holidays" toolbar action had been hand-added directly to the
+generated =CalendarDetailDialog=/=CalendarController= files in a
+past commit, never modelled in =calendar.org=, and codegen had no
+paste seam to declare a custom dialog signal or relay it through the
+controller -- regenerating would have silently deleted a working
+feature. Root-caused and fixed properly rather than working around
+it:
+
+- Added two new paste seams to the shared =ores.cpp.qt= templates:
+  one in the detail dialog's =signals:= block
+  (=EC19A4EE-363D-4D41-A33A-D5F85A139C80=), one at the end of a new
+  =wireDetailDialogCommon()= controller helper
+  (=DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF=). Documented both in
+  [[id:5BC3D6BB-1FBF-4FE2-91F5-D97021F07911][paste_blocks_in_codegen]]
+  and the =ores.cpp.qt= meta-model.
+- =wireDetailDialogCommon()= is itself new: extracted the
+  cache-wiring/status/error-connect boilerplate that was duplicated
+  identically across all four detail-dialog construction sites
+  (add/edit/history-version/revert) into one generated helper, so
+  future custom-connect seams (like the one above) only need pasting
+  once instead of four times, and the four sites can't drift from
+  each other. Verified equivalent behaviour (two of the four sites
+  moved from lambda-wrapped =emit self->statusMessage(...)= to a
+  direct signal-to-signal =connect=, which Qt treats identically).
+- Modelled "Browse Holidays" properly in =calendar.org= using the new
+  seams instead of leaving it as hand-edited generated code.
+- Regenerated =calendar_type=, =currency_market_tier=,
+  =monetary_nature=, =calendar=, =currency= via
+  =compass codegen entity generate <entity> --address ores.cpp.qt=,
+  diffing each first -- every diff was exactly the expected
+  badge_key/refactor change, no unrelated drift once the seam fix was
+  in place.
+- Fixed two call sites in =RefdataPlugin.cpp= (=MonetaryNatureController=,
+  =CurrencyMarketTierController=) that needed the new =badgeCache_=
+  constructor parameter wired from =ctx_.badge_cache=.
+- Not regenerated: the ~100+ other entities with detail dialogs now
+  differ mechanically from the refactored template (still using the
+  old duplicated-per-site pattern) -- functionally fine, but a future
+  =--diff= on any of them will show this mechanical change until
+  they're next touched. Not done here to keep this PR's diff scoped;
+  flagged as optional follow-up cleanup, not a defect.
+
+Build clean (=ores.qt.exe=, =ores.refdata.core.lib=);
+=ctest -R "refdata|badge"= 4/4 passed.
 
 * Notes
 
@@ -69,6 +144,34 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | drift check failure: templates hand-edited instead of their org source | cpp_qt_controller.{hpp,cpp}.mustache, cpp_qt_detail_dialog.hpp.mustache | Fixed | CI check, not a review comment -- moved the same edits into the tangle sources (ores.cpp.qt.controller_header/impl.org, ores.cpp.qt.detail_dialog_header.org) and re-tangled; verified byte-identical output. |
+| 2 | Stale link display text for retitled story 6AC16489 | fk-lookup-entity-badge-image-policy/story.org, badge_adoption_audit_rollout/task_*.org, badge_colour_scheme_snags/story.org | Fixed | Updated all 6 occurrences (including the two pre-existing, lower-priority ones the bot flagged as out of scope). |
+| 3 | currency_pair classified as both Image and Badge | task_badge-adoption-coverage-audit.org | Fixed | Not a duplicate -- it genuinely has flag icons (base/quote combos) and a badge (classification field). Added a "Both" note clarifying the policy is per-field, not per-entity. |
+| 4 | 108 vs 120 entity-count mismatch | story.org, task_annotate-audited-entities-with-badges.org | Fixed | Updated acceptance/description text to the corrected 120 count. |
+| 5 | Cosmetic: badge_key column not padded to table width | ores.refdata.{monetary_nature,currency_market_tier}.org | Fixed | Re-aligned; regenerated diff confirmed no functional change. |
+| 6 | One more stale-link occurrence (sprint_23, out of scope, optional) | sprint_23/badge-colour-scheme-support/story.org | Fixed | Bot confirmed rounds 1-5 fully resolved; fixed this low-priority extra find anyway since it was trivial. |
 
 * Result
+
+Batch 1 partially shipped: =calendar_type=, =currency_market_tier=,
+=monetary_nature= self-badged and wired into their consumers
+(=calendar=, =currency=); regenerated, built, tested. The remaining 8
+Batch-1 entities and all of Batch 2 need new
+=code_domain=/=badge_definition=/=badge_mapping= data authored before
+they can be annotated -- not a documentation gap, a genuine
+prerequisite discovered mid-implementation and recorded back on the
+audit task. Task stays STARTED; not closing until Batch 1 is fully
+done per its acceptance criteria (revisit acceptance/scope with the
+parent story once the data-authoring approach for the other 8+7
+entities is decided).
+
+As a side effect, fixed a standing codegen gap: there was no way to
+add a custom signal to a generated Qt detail dialog (or relay it
+through its controller) without hand-editing generated code, and the
+four per-window call sites that wire a detail dialog's caches were
+duplicated verbatim. Both fixed with two new paste seams and a shared
+=wireDetailDialogCommon()= helper in the =ores.cpp.qt= templates --
+see Plan for detail. Only the 5 touched entities were regenerated
+against the refactored templates; the rest of the codebase's detail
+dialogs still use the old (functionally equivalent) generated
+pattern until next touched.

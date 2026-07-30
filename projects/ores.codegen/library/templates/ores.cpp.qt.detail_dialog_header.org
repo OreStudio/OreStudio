@@ -33,6 +33,15 @@ for the full mechanism. This header defines one:
   a hand-written helper class's header) — a forward declaration alone
   is not enough for by-value or =unique_ptr<T>= members, so most
   entities will need a real =#include= here.
+- =EC19A4EE-363D-4D41-A33A-D5F85A139C80= — in the dialog's own
+  =signals:=, after the generated =Saved=/=Deleted=/(optional)
+  =revertRequested= signals. Declares a custom dialog signal, e.g. for
+  a toolbar action the dialog can't act on itself. Pair with the
+  controller-side seam that relays it upward
+  (=DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF= in
+  [[id:4E39C3B2-05E2-48B7-84D4-D97304CA25D7][ores.cpp.qt.controller_impl]], via the controller header's own
+  =signals:= seam =66E078FB-D6A6-4DF6-814B-65995D948090= in
+  [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]]).
 
 * Template
 
@@ -162,6 +171,7 @@ signals:
      */
     void revertRequested(const {{domain_entity.qt.domain_class}}& {{domain_entity.qt.item_var}});
 {{/domain_entity.qt.has_version_navigation}}
+<<paste:EC19A4EE-363D-4D41-A33A-D5F85A139C80>>
 
 private slots:
     void onSaveClicked();

@@ -67,6 +67,8 @@ canonical IDs live in [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][org entity meta
 | =18B9ED63-78C2-4259-93AC-CCDFBC88EFBD= | End of =setupToolbar()=, after the generated History action         | [[id:B903843F-9A8D-4B47-BB80-16F701525E3F][ores.cpp.qt.mdi_window_impl]] |
 | =66E078FB-D6A6-4DF6-814B-65995D948090= | In =signals:=, after the generated signals                          | [[id:CA7F5DA4-73D8-418D-BF31-C65E1F2DBCE1][ores.cpp.qt.controller_header]] |
 | =52E70F3B-5903-4359-91FB-B533054A18AC= | End of =showListWindow()=, after the generated signal connections   | [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] |
+| =EC19A4EE-363D-4D41-A33A-D5F85A139C80= | In the dialog's =signals:=, after the generated signals             | [[id:0264FF98-86B8-4C43-AFE5-DF93567C63D2][ores.cpp.qt.detail_dialog_header]] |
+| =DF72DFCF-FD65-4FE5-98BA-CB8168CE0FDF= | End of =wireDetailDialogCommon()=, after the generated connections   | [[id:6FB90527-AAD1-431D-B45E-6A023699050A][ores.cpp.qt.controller_impl]] |
 
 The create-mode and read-only seams run *last*, after the generated
 per-field lock logic — a paste block there can override what the

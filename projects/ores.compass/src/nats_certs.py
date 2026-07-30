@@ -12,6 +12,7 @@ Requires: openssl in PATH.
 """
 
 import argparse
+import ipaddress
 import subprocess
 import tempfile
 from pathlib import Path
@@ -93,7 +94,19 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
                  "-subj", "/CN=nats-server/O=ORE Studio")
         # Write the SAN extension to a temp file so the path is always a real
         # filesystem path (process substitution via <(...) is not portable).
-        san = f"subjectAltName=DNS:localhost,DNS:{hostname},IP:127.0.0.1"
+        # --hostname may be a literal IP (e.g. a remote deploy host's
+        # address) rather than a DNS name -- TLS clients verifying a
+        # connection made to an IP target check the SAN's "IP Address"
+        # entries, not "DNS" entries (RFC 6125/2818), so a DNS-typed SAN
+        # containing dotted-decimal text does not satisfy that check and
+        # the handshake fails with a generic SSL error, not a clear
+        # hostname-mismatch message.
+        try:
+            ipaddress.ip_address(hostname)
+            extra_san = f"IP:{hostname}"
+        except ValueError:
+            extra_san = f"DNS:{hostname}"
+        san = f"subjectAltName=DNS:localhost,{extra_san},IP:127.0.0.1"
         san_file = None
         try:
             with tempfile.NamedTemporaryFile(mode="w", suffix=".cnf", delete=False) as tf:

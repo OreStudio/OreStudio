@@ -38,11 +38,11 @@ assumed.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                  |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -65,6 +65,86 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** Everything the uid-remap fix alone didn't cover
+
+~--userns=keep-id~ (already used by ~docker/run-pod.sh~) plus the
+~ores.nats/service/client.cpp~ fix got the fleet from 2-6/18 to close
+to full, but several more real, distinct bugs surfaced getting all the
+way to 18/18 reproducibly and then to an actual working end-to-end
+scenario. None of these were the corruption this task set out to
+chase down as a separate concern -- there was no such distinct
+corruption bug once the following were fixed:
+
+- *Newton-specific storage EIO*: writing to ~/app/log~/~/app/run~
+  (baked into the image's own overlay layer) hit a genuine ~EIO~ on
+  Newton specifically, not reproducible locally -- fixed by host-bind-
+  mounting those paths (plus ~/app/storage~, added for the same reason
+  once ~ores.http.server~ needed it) instead of relying on the image's
+  own copy.
+- *DB connection exhaustion*: repeated redeploys during this session
+  leaked stale connections faster than Newton's default
+  ~max_connections=100~ could absorb; bumped to 800 and stale
+  connections terminated once.
+- *Stale schema*: Newton's DB predated some recent ~main~ schema
+  changes (~marketdata.feed_bindings.asset_class~ missing); fixed with
+  a full ~compass db recreate~ against Newton.
+- *Missing ~ores.http.server~/~ores.compute.wrapper~ in the staged
+  image*: ~docker/stage-runtime.sh~'s default glob
+  (~ores.*.service~) never matched these two binaries at all (naming
+  convention gap) -- fixed, they're now explicitly included.
+- *~ores.http.server~ advertising the wrong URL*: defaults
+  ~--http-base-url~ to ~http://localhost:{port}~ when not set, and it
+  was never set in this service's DB-driven ~args_template~ -- remote
+  clients got told to reach the HTTP server on their own ~localhost~.
+  Fixed by setting ~--http-base-url http://192.168.1.22:20200~
+  explicitly in that ~args_template~ row (deployment-specific DB data,
+  not a code fix).
+- *podman ~--env-file~ doesn't strip quotes*: the JWT private key's
+  ~.env~ line (~KEY="...\n..."~, quoted to keep an embedded-newline PEM
+  on one line for bash) got the literal surrounding quote characters
+  passed through as part of the value under podman's env-file parser
+  (unlike bash's ~source~, which strips them) -- corrupted the PEM,
+  breaking IAM's own JWT signing. Fixed ~docker/generate-env.sh~ to
+  strip one matching pair of quotes generically, *and* to pass this
+  one variable via ~--env "$(cat build/keys/iam-rsa-private.pem)"~
+  instead of via the env-file at all, since podman's env-file format
+  can't represent a multi-line value regardless of quoting (mirrors
+  what ~compass_services.py~'s ~child_env()~ already does for the
+  native launch path).
+- *NATS server cert SAN wrong type for an IP hostname*:
+  ~compass nats certs --hostname 192.168.1.22~ added it as a ~DNS:~
+  SAN entry, not ~IP Address:~ -- fails strict TLS hostname
+  verification for any client connecting by IP (the Qt client,
+  ~ores.shell~). Fixed ~nats_certs.py~ to detect an IP-shaped hostname
+  and emit the correct SAN type.
+- *Compute dispatch tenant mismatch*: ~process_supervisor.cpp~
+  substituted ~{tenant_id}~ with the NATS ~subject_prefix~ string
+  (not a UUID) when building ~ores.compute.wrapper~'s launch args, so
+  its NATS subscription for dispatched work
+  (~compute.v1.work.assignments.{tenant_id}.{platform}~) never matched
+  what the server actually publishes to. Root-caused and fixed at the
+  source: the whole compute domain (hosts, batches, workunits) is
+  consistently created under the *system* tenant by design, so this
+  now passes ~tenant_id::system()~ explicitly.
+
+** Deliberately not fixed here -- filed as captures instead
+
+- [[id:288DAA6A-D0E0-4118-A10A-D2805DAFAA85][Compute repositories should query the system tenant, not the caller's]]:
+  even with the dispatch fix above, ~host_repository.cpp~ (and likely
+  ~batch_repository.cpp~/~workunit_repository.cpp~) filter reads/writes
+  by the caller's own session tenant rather than the system tenant the
+  data actually lives under -- a real business-tenant login
+  (~tenant_admin@acme~) sees 0 compute hosts/tasks; only ~super_admin~
+  happens to work, since its session resolves to the system tenant
+  already. Bigger fix (read+write paths, 3 repositories), explicitly
+  scoped out of this task.
+- [[id:2220EEEE-34DE-4C13-B1D7-5FEDAE5F0AC4][Vendored ORE engine package missing its own shared libraries]]:
+  ~external/ore/packages/ore-1.8.15.0-x64-linux.tar.gz~ never bundled
+  ~libOREAnalytics.so~/~libQuantExt.so~/~libQuantLib.so.1~, so a
+  dispatched compute job's engine process fails at startup. Confirmed
+  reproducible natively (not container/Newton-specific) -- a packaging
+  gap upstream of this repo, not something to fix blind here.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -74,7 +154,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:549B8ECF-8D78-4361-8568-E0D332A6E196][Acme end-to-end smoke test against the Newton deployment]] | PASSED | Currency CRUD + eventing + history, plus a compute job submitted and run to completion, all against the remote Newton deployment. Surfaced two further real bugs along the way, fixed/captured separately (see Notes). |
 
 * PRs
 
@@ -89,3 +169,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 18 supervised services (22 rows counting ~ores.compute.wrapper~'s
+5 replicas) reach phase ~running~ on Newton, confirmed reproducibly
+across 3+ consecutive container restarts. No distinct
+~process_supervisor~ corruption bug remained once the fixes in Notes
+were applied -- the original PR #1747 partial-success caveat is fully
+resolved.
+
+The local Qt client connects to Newton's remote NATS/DB end-to-end and
+is genuinely usable: the [[id:549B8ECF-8D78-4361-8568-E0D332A6E196][Acme end-to-end smoke test]] scenario passed in
+full, including currency CRUD/eventing/history and a compute job
+submitted and run to completion. Getting the scenario to actually pass
+(not just the fleet reaching ~running~) surfaced several further real
+bugs beyond the acceptance criteria's original scope -- all fixed at
+the source except two genuinely separate, larger issues, filed as
+captures rather than fixed blind in this session (see Notes).
+
+Also set up, as a side effect of testing: two new connections.db
+environment entries (~swift_curie (local)~ and ~swift_curie (Newton)~)
+with the full persona set mirrored from ~prime_origin~, so this
+checkout's Qt client can switch between local and Newton targets going
+forward without re-deriving connection profiles each time.

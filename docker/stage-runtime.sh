@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # Stages only what a service-runtime image needs into build/docker-stage/
-# for the Dockerfile to COPY: either every ores.*.service binary plus the
-# closure of their shared-library dependencies (default — used by the
+# for the Dockerfile to COPY: either every supervised service binary plus
+# the closure of their shared-library dependencies (default — used by the
 # all-in-one controller image), or, with --service <binary-name>, just
 # that one binary plus its own dependency closure (used to build a
 # minimal per-service image). Either way this excludes Qt libs, test
 # binaries, and everything else under publish/ that isn't actually needed
 # at runtime.
+#
+# The default set is every binary_name in
+# ores_controller_service_definitions_tbl -- not just anything matching
+# ores.*.service, since two supervised binaries (ores.http.server,
+# ores.compute.wrapper) don't follow that naming convention and were
+# previously silently missing from the staged image (only discovered when
+# process_supervisor logged "Binary not found" for them on a real deploy).
 set -euo pipefail
 
 service=""
@@ -35,6 +42,11 @@ if [[ -n "$service" ]]; then
     cp -a "$publish/bin/$service" "$stage/bin/"
 else
     cp -a "$publish"/bin/ores.*.service "$stage/bin/"
+    for extra in ores.http.server ores.compute.wrapper; do
+        if [[ -f "$publish/bin/$extra" ]]; then
+            cp -a "$publish/bin/$extra" "$stage/bin/"
+        fi
+    done
 fi
 
 # A single `ldd` call on a binary resolves its FULL transitive closure (the

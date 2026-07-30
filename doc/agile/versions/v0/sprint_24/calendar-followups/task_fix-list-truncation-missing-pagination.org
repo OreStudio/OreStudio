@@ -254,7 +254,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5129143406 | calendar_type has the identical missing-pagination bug, untracked | ores.refdata.calendar_type.org | Accepted | Fixed in 117f89c2c -- added has_pagination and regenerated |
+| 5129143976 | Investigation section's stale 43/14 figures contradict the 45/16 used elsewhere | task_fix-list-truncation-missing-pagination.org | Accepted | Fixed in 117f89c2c |
+| 5129143976 | story.org still says "27 ores.refdata Qt entities" | story.org | Accepted | Fixed in 117f89c2c |
+| 5129143371 | static_cast<uint32_t> on total_available_count could wrap on a negative server value | Client*Model.cpp | Declined | Pre-existing template pattern, already used by has_pagination entities before this PR; out of scope here, flagged for follow-up 836BB4CE |
 
 * Result
 

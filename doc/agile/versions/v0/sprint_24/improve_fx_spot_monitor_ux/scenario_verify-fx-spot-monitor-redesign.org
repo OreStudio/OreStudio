@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: E2EEDBCB-6547-4CDA-B594-FACF0E2693B1
+:END:
+#+title: Test Scenario: Verify FX Spot Monitor color, alignment, JPY decimals, status
+#+description: Open the FX Spot Monitor and confirm the four UI/UX audit fixes: pair labels stay neutral (never tinted by tick direction or connection status), Mid/24h Chg are right-aligned in a monospace font with decimal points stacking, JPY pairs show 3 decimals instead of 5, and live rows no longer repeat the word LIVE.
+#+type: test_scenario
+#+level: s1
+#+filetags: :improve_fx_spot_monitor_ux:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:C19BDAC3-7D44-4D63-8BE9-77DFF18F5533][Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge]] in [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:C19BDAC3-7D44-4D63-8BE9-77DFF18F5533][Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge]] |
+| Parent story  | [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Connect to tenant Barclays Plc
+
+Log in against the =bright_faraday= environment as
+=tenant_admin@barclays_plc= / =Secure-Password-123= and select
+*BARCLAYS PLC*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the FX Spot Monitor and let it tick
+
+Open the FX Spot grid (Market Data menu / Market Simulator) and let
+several rows tick for at least 10-15 seconds so both up and down
+moves are visible.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm pair labels stay a fixed neutral color
+
+Watch several rows tick both up and down, and watch a row transition
+status (e.g. briefly disconnect/reconnect a feed, or just observe
+Pending -> Live at startup). Confirm the currency-pair text (left
+column) never changes color -- only the Mid value should turn
+green/red on ticks.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm Mid/24h Chg are monospace and right-aligned
+
+Confirm the Mid and 24h Chg columns are right-aligned and use a
+monospace/fixed-width font, so the decimal points visually line up
+down the column.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm JPY pairs show 3 decimals
+
+Find a row quoted in JPY (e.g. USD/JPY). Confirm its Mid value shows
+3 decimal places, while non-JPY pairs still show 5.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm no repeated LIVE text
+
+Once several rows are ticking normally, confirm the Status column
+shows just the green dot for live rows, with no "LIVE" text next to
+it. (A row that hasn't ticked yet, or has gone stale/disconnected,
+should still show its own explanatory text.)
+
+# For a multi-client scenario (Clients field above is non-empty),
+# nest steps one level deeper instead, under one sub-heading per
+# client, e.g.:
+#
+#   ** blue
+#   *** Open the counterparty lookup and search
+#   ** red
+#   *** Confirm the notification arrived and the list refreshed
+#
+# Single-client scenarios (the common case) keep steps as direct
+# children of * Steps, as above.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-30T10:03:52Z |
+| Branch        | feature/redesign-fx-spot-monitor-color-alignment-jpy-status |
+| Commit        | 3aa23effd |
+| Worktree      | bright_faraday |
+
+* Notes

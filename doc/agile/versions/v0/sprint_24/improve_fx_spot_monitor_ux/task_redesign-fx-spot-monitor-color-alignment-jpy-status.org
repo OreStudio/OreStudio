@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E2EEDBCB-6547-4CDA-B594-FACF0E2693B1][Verify FX Spot Monitor color, alignment, JPY decimals, status]] | PASSED | All 6 steps PASS. |
 
 * PRs
 
@@ -69,3 +69,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented all four fixes from the Gemini UI/UX audit in
+=FxSpotGridWindow=:
+- Colour reserved exclusively for the Mid value's directional delta.
+  The currency-pair label is now a fixed neutral colour always,
+  regardless of tick direction or connection status (removed
+  =pair_color_for_status= entirely, since nothing needed it once the
+  pair label stopped being tinted by status too).
+- Mid/24h Chg columns use a monospace font under right-alignment so
+  decimal points actually stack -- right-alignment alone doesn't
+  achieve that with a proportional font.
+- JPY-quoted pairs render to 3 decimal places instead of 5.
+- The redundant "LIVE" text is dropped once a row is live; the green
+  status dot alone carries the signal. Stale/Disconnected/Pending
+  keep explanatory text since those states need attention.
+
+Bid/Ask column expansion from the audit's mockup was scoped out: no
+bid/ask data exists in the current feed. 24h Chg population is a
+separate, pre-existing gap (always a placeholder), not touched here.
+
+Verified end-to-end via the linked test scenario against a live
+ticking FX Spot grid (both up/down ticks, a JPY pair, and multiple
+connection-status transitions). All 6 steps PASS.

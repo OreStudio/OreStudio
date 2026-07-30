@@ -28,22 +28,29 @@ literal text "LIVE" on every row instead of a compact status indicator.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-29                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-30                               |
 
 * Acceptance
 
--
+- Currency-pair labels stay a fixed neutral colour, never tinted by
+  tick direction or connection status; colour is reserved for the Mid
+  value's directional delta only.
+- Mid/24h Chg columns are right-aligned in a monospace font so decimal
+  points visually stack.
+- JPY-quoted pairs render to 3 decimal places instead of 5.
+- Live rows no longer repeat the literal text "LIVE" -- the status
+  dot alone is the signal.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C19BDAC3-7D44-4D63-8BE9-77DFF18F5533][Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge]] | STARTED | 2026-07-29 | | Implement the Gemini UI/UX audit's four concrete fixes on FxSpotGridWindow: (1) reserve red/green color to the Mid price delta and 24h Chg columns only, not the whole currency-pair label; (2) right-align all numeric columns so decimals stack for fast vertical scanning; (3) render JPY pairs to 3 decimal places instead of 5, matching standard FX convention; (4) replace the repeated literal 'LIVE' text with a compact status indicator. Bid/Ask column expansion from the mockup is out of scope -- no bid/ask data exists in the current feed. |
+| [[id:C19BDAC3-7D44-4D63-8BE9-77DFF18F5533][Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge]] | DONE | 2026-07-29 | 2026-07-30 | Implement the Gemini UI/UX audit's four concrete fixes on FxSpotGridWindow: (1) reserve red/green color to the Mid price delta and 24h Chg columns only, not the whole currency-pair label; (2) right-align all numeric columns so decimals stack for fast vertical scanning; (3) render JPY pairs to 3 decimal places instead of 5, matching standard FX convention; (4) replace the repeated literal 'LIVE' text with a compact status indicator. Bid/Ask column expansion from the mockup is out of scope -- no bid/ask data exists in the current feed. |
 
 * Decisions
 

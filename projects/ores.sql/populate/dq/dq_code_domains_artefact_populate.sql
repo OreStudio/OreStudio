@@ -83,6 +83,6 @@ values
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'contact_type', 0, 'Contact Type', 'Classification codes for party contact records (billing, legal, operations, settlement).', 63),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'ledger_feed_type', 0, 'Ledger Feed Type', 'Feed automation classification for ledger records (automatic, manual, none).', 64),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'leg_type', 0, 'Leg Type', 'Classification codes for trade leg records (asset swap, CMS, CMS spread, CPI, digital CMS, fixed, floating, OIS, YoY, zero coupon).', 65),
-    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'purpose_type', 0, 'Purpose Type', 'Purpose classification codes for reports (client reporting, internal, regulatory, risk).', 66),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'purpose_type', 0, 'Purpose Type', 'Purpose classification codes for portfolios (client reporting, internal, regulatory, risk).', 66),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'rounding_type', 0, 'Rounding Type', 'Rounding method classification codes for currencies (ceiling, closest, down, floor, up).', 67),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id', 'tenor_anchor', 0, 'Tenor Anchor', 'Anchor classification codes for tenors (IMM roll, near leg, none, spot, today, tomorrow).', 68);

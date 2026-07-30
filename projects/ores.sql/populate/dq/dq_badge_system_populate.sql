@@ -551,16 +551,16 @@ BEGIN
         '#14b8a6', '#ffffff', 'info', 'badge bg-info', 95);
 
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'purpose_type_client_reporting', 'Client Reporting', 'Report generated for client-facing reporting.',
+        'purpose_type_client_reporting', 'Client Reporting', 'Portfolio used for client-facing reporting.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 96);
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'purpose_type_internal', 'Internal', 'Report generated for internal use.',
+        'purpose_type_internal', 'Internal', 'Portfolio used for internal purposes.',
         '#14b8a6', '#ffffff', 'info', 'badge bg-info', 97);
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'purpose_type_regulatory', 'Regulatory', 'Report generated for regulatory submission.',
+        'purpose_type_regulatory', 'Regulatory', 'Portfolio used for regulatory capital and compliance reporting.',
         '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 98);
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'purpose_type_risk', 'Risk', 'Report generated for risk management use.',
+        'purpose_type_risk', 'Risk', 'Portfolio used for risk management purposes.',
         '#8b5cf6', '#ffffff', 'primary', 'badge bg-primary', 99);
 
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -676,7 +676,7 @@ BEGIN
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'purpose_type', 'Purpose Type',
-        'Purpose classification codes for reports (client reporting, internal, regulatory, risk).', 66);
+        'Purpose classification codes for portfolios (client reporting, internal, regulatory, risk).', 66);
 
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'rounding_type', 'Rounding Type',
@@ -1083,7 +1083,7 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'leg_type', 'ZeroCoupon', 'leg_type_zero_coupon');
 
-    -- purpose_type: shown on report_definition's Purpose column.
+    -- purpose_type: shown on portfolio's Purpose column.
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'purpose_type', 'ClientReporting', 'purpose_type_client_reporting');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

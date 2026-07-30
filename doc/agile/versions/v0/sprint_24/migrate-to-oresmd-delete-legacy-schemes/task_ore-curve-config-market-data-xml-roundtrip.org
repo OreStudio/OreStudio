@@ -43,10 +43,13 @@ ORE's XML at all; curve config and market-data quotes do not.
   produces oresmd-keyed domain objects (curve id -> ~ccy~/~tenor~
   derivable via =oresmd_projections::to_curve_key= 's own =Yield/CCY/CCYTENOR=
   shape), export regenerates an equivalent =YieldCurve= segment from
-  those same oresmd-keyed objects, for the segment shapes ORE Studio's
-  own synthetic IR curve generation actually produces (discount +
-  projection curves, direct-quote segments -- not every exotic
-  =YieldCurveSegment= subtype ORE supports).
+  those same oresmd-keyed objects, covering every =YieldCurveSegment=
+  subtype found across the full =external/ore/examples= corpus (Direct,
+  Simple, AverageOIS, TenorBasis, CrossCurrency, FittedBond,
+  DiscountRatio, and any others the survey below finds) -- full depth
+  on the one asset class (IR) oresmd fully represents today, not full
+  breadth across every asset class the corpus also contains (that gap
+  is tracked separately, see =* Notes=).
 - [ ] Market-data quote-string export: given =market_series=/=market_observation=
   rows, generate =market*.txt= lines whose keys are produced via
   =oresmd_projections::to_quote_key=/=to_curve_key=, the exact inverse
@@ -131,10 +134,14 @@ this task does not block on it.
 Add =importer::import_curve_config=/=exporter::export_curve_config=
 (mirroring =import_conventions=/=export_conventions='s existing shape)
 mapping =curveconfiguration='s =YieldCurve= segments to/from an
-oresmd-keyed domain representation, covering the segment shapes ORE
-Studio's synthetic IR generation actually produces (discount and
-projection curves via direct quotes) -- not attempting full coverage
-of every =YieldCurveSegment= subtype ORE's schema supports.
+oresmd-keyed domain representation. Survey every =YieldCurve= segment
+=Type= actually used across =external/ore/examples=' curveconfig.xml
+corpus first (Direct, Simple, AverageOIS, TenorBasis, CrossCurrency,
+FittedBond, DiscountRatio, ...) and cover all of them, not just the
+discount/projection-via-direct-quotes shape ORE Studio's own synthetic
+generation produces -- full round-trip fidelity against real-world
+=curveconfig.xml= files is the acceptance bar, not just against our own
+generated ones.
 
 ** Step 2 -- Market-data quote-string export
 
@@ -159,6 +166,23 @@ functions and the quote-string export round-trip, following this
 story's established "extract pure, testable functions" pattern.
 
 * Notes
+
+While scoping "support every curve config in sample data" against the
+full =external/ore/examples= corpus, found oresmd's current design
+(id:C3E053CA-0D4B-480B-9119-E11530160EC1) only structurally represents
+~7 of the 49 quote types [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][the
+market data catalogue]] documents -- most of the corpus's curve/vol
+types (inflation, commodity vol, correlation, equity vol, credit
+default curves, etc.) have no oresmd representation and no ORES domain
+model at all. That representation gap is real (these are gaps in what
+oresmd can *express*, not just what this task converts) but is
+design-doc-level work well beyond one XML-round-trip task, so it was
+split off into its own story:
+[[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE
+quote-type coverage]], with one task per family. This task stays scoped
+to =YieldCurve= (full segment-subtype depth) plus market-data
+quote-string export, for the asset classes/types oresmd already
+represents.
 
 * Test Scenarios
 

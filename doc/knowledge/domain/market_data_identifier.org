@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:marketdata:identifiers:
 #+created: 2026-07-23
-#+updated: 2026-07-28
+#+updated: 2026-07-30
 
 * Summary
 
@@ -15,241 +15,329 @@ A *market data identifier* is the single, fully-specified description of
 one concrete item in the
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]]. It is
 not a different kind of object from a
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]; a
-requirement is what remains of an identifier once its *physical* fields
-are set aside (and, for a term-structure identifier, once its specific
-point is forgotten too) — the coarser, logical-only view a valuation's
-requirement-generation step actually needs. An identifier is what a
-requirement becomes once every field, logical and physical, is pinned
-down. This document defines the identifier's two field groups, what
-makes two identifiers the same identifier, and — since an identifier is
-expected to carry enough information to be re-expressed in any external
-vendor's own notation (Bloomberg, Reuters, ORE, ...) — what "physical"
-actually has to include for that to be possible, worked through the
-ORE-derived canonical form adopted as the logical starting point.
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]:
+an identifier and the requirement it satisfies share the same logical
+fields; what an identifier adds is a second group of physical fields,
+needed to re-express it in any external vendor's own notation without
+inventing information the identifier itself does not carry. A requirement
+is the projection of an identifier onto its logical fields alone; that
+projection may additionally omit the specific term-structure point, when
+the requirement is stated at curve level rather than point level.
+Projecting an identifier down to its requirement is mechanical — no
+decision is involved, only field discarding. Going the other way is
+[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]]: a genuine
+choice, not a computation on the requirement's fields alone, since several
+identifiers (differing in physical fields, source, or conventions) can
+project onto the same requirement. This document defines the identifier's
+two field groups, what makes two identifiers the same identifier, and the
+one-directional transform — per vendor — that renders a fully-specified
+identifier into a Bloomberg ticker, a Reuters RIC, an ORE =CurveSpec=, or
+any other external notation.
 
 * Layperson's mental model
 
-In the DNS analogy this cluster uses throughout, an identifier plays the
-role of the IP address — the physical, fully-specified reference that a
-network (or a database query, or a NATS subject) can actually act on,
-as opposed to the domain name (the requirement) that describes what is
-wanted without naming any particular physical answer. The one place the
-DNS analogy stops rather than being stretched is the vendor projection
-step: there is no DNS counterpart to "re-express this IP address in a
-second registrar's own notation," the way $T_{\text{vendor}}$ must
-re-express an identifier in Bloomberg's or Reuters' own grammar. The
-CIDR aside below covers that coarseness relationship — why a requirement
-is necessarily less specific than the identifier that satisfies it —
-more precisely than DNS can.
+Think of a market data identifier as a form with two sections. The top
+section — asset class, qualifier, curve role, and (where the data item is
+a single point on a term structure) the specific tenor or surface
+coordinate — describes *what* the data item is in vocabulary any pricing
+system would recognise. This is exactly what a requirement already
+specifies; a requirement *is* this section, possibly with the specific
+point left blank when it asks for a whole term structure rather than one
+point on it. The bottom section holds whatever a specific vendor's own
+notation needs but a logical description never cares about: which source
+produced the value, calendar and day-count conventions, ticker-construction
+hints — whatever Bloomberg's, Reuters', or ORE's own format requires in
+order to reconstruct a usable quote. A requirement is the form with only
+the top half filled in (or with the top half itself partially filled, at
+curve level); an identifier is the form filled in completely.
 
-Think of an identifier as a form with two sections. The top section —
-asset class, qualifier, curve role, and (where relevant) a specific
-tenor or surface point — is exactly what a requirement already
-specifies; a requirement *is* this section on its own, with the bottom
-left blank. The bottom section holds whatever a specific vendor's own
-notation needs but our logical description never cared about: which
-source produced the value, calendar and day-count conventions,
-ticker-construction hints — whatever Bloomberg's, Reuters', or ORE's own
-format requires to be reconstructed. A requirement is the form with only
-the top half filled in; an identifier is the form filled in completely.
-
-Going from identifier to requirement — forgetting the bottom half — is
-mechanical: no decision is involved, just discarding fields. Going the
-other way is not the same operation run backwards. Given only the top
-half filled in, several different bottom halves could complete it (more
-than one source might supply "the EUR discount curve's 3M point"), so
-producing one specific identifier from a requirement is a *choice*, not
-a computation on the requirement's fields alone — that choice is
+Going from identifier to requirement — forgetting the bottom half, and
+possibly the specific point — is mechanical: no decision is involved, just
+discarding fields. Going the other way is not the same operation run
+backwards. Given only the top half filled in, several different bottom
+halves could complete it (more than one source might supply "the EUR
+discount curve's 3M point"), so producing one specific identifier from a
+requirement is a *choice*, not a computation on the requirement's fields
+alone. That choice is
 [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]], covered in its
 own document.
 
-** Aside, for readers who know IP networking
+** Aside: for readers who know DNS
 
 #+begin_note
-*A CIDR analogy*
-
-This two-way asymmetry has a direct parallel in CIDR addressing, if it
-helps: a requirement is like a network prefix (=10.1.0.0/16=, several
-trailing bits left unspecified, covering a whole range of hosts), and an
-identifier is like one fully-specified host address (=10.1.3.47/32=)
-drawn from within that range. Projecting an identifier down to its
-requirement is like applying a subnet mask — mechanical, no decision
-required. Going the other way is not a mask's inverse; it is closer to a
-DHCP lease — an external allocation from a pool, using information (a
-policy, a preference order) the prefix itself does not carry. Skip this
-paragraph entirely if CIDR isn't already familiar; nothing later in this
+This cluster uses DNS as its running analogy throughout. In that framing
+an identifier plays the role of the IP address — the fully-specified
+physical reference that a network (or a database query, or a NATS subject)
+can actually act on, as opposed to the domain name (the requirement) that
+describes what is wanted without naming any particular physical answer.
+The analogy has one clear limit at the identifier level: there is no DNS
+counterpart to re-expressing an IP address in a second registrar's own
+notation. A Bloomberg ticker, a Reuters RIC, and an ORE =CurveSpec= are
+independently designed grammars, each with its own conventions and
+information losses, and producing any one of them from our identifier
+requires vendor-specific physical fields DNS simply has no equivalent for.
+Skip this aside if DNS isn't already familiar; nothing later in this
 document depends on it.
 #+end_note
 
-* Detail
-
-** Two field groups, one entity
-
-Rather than model logical and physical addressing as two different
-kinds of object, an identifier is one entity with two field groups:
-
-- *Logical fields* — asset class, qualifier, curve role, and (for a
-  fully resolved, single-point identifier) the specific tenor or surface
-  coordinate. These are the same fields a
-  [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][requirement]] names.
-- *Physical fields* — whatever else is needed to re-express the
-  identifier in a specific external vendor's own notation without
-  inventing new information: which source supplied it, calendar and
-  day-count conventions, ticker-construction hints, and so on.
-
-A requirement is the *projection* of an identifier onto its logical
-fields alone. Because a projection only ever forgets fields, it is
-many-to-one — several identifiers, differing only in their physical
-fields (different sources, say), can project onto the same requirement —
-and it requires no external decision, only discarding. Resolution, which
-runs in the opposite direction, is neither of those things: it must pick
-one identifier from among however many project onto a given requirement,
-which is a genuine decision, not a computation performable on the
-requirement's fields alone.
+** Aside: for readers who know CIDR
 
 #+begin_note
-*Aspirational: tenor-pinned requirements*
-
-The projection model above treats the specific tenor or surface
-coordinate as the field that most sharply distinguishes an identifier
-from a requirement for term-structure data: a requirement says "the
-EUR discount curve" and resolution adds "...at the 5Y point." In
-practice, however, some valuation models know the exact tenor they
-need at requirement-generation time — a 1Y put option requires the 1Y
-volatility-surface point, not the surface as a whole, and no
-resolution choice is needed for that dimension. Allowing a requirement
-to carry an optional explicit tenor or tenor range would enable
-resolution to produce a more precisely scoped identifier directly for
-those cases, skipping the point-selection step where the call-site
-already knows the answer.
-
-Extending the requirement model in this direction is recognised as a
-desirable refinement but is not yet fully specified, because it
-introduces significant complexity: a requirement may need a range or
-a set of tenors rather than a single point, resolution may need to
-interpolate rather than look up, and the clean binary between "coarser
-requirement" and "fully specified identifier" becomes a spectrum. This
-document notes the aspiration without committing to a shape.
+The coarseness relationship between a requirement and the identifier that
+satisfies it has a direct parallel in CIDR addressing. A curve-level
+requirement is like a network prefix (=10.1.0.0/16=: several trailing bits
+left unspecified, covering a whole range of hosts); a fully-specified
+point-level identifier is like one host address (=10.1.3.47/32=) drawn
+from within that range. Projecting an identifier down to its requirement
+is like applying a subnet mask — mechanical, no decision required. Going
+the other way is not a mask's inverse; it is closer to a DHCP lease — an
+external allocation from a pool, using information (a policy, a preference
+order) the prefix itself does not carry. Skip this aside if CIDR isn't
+already familiar; nothing later in this document depends on it.
 #+end_note
 
-** Identifier identity: what makes two identifiers the same?
+* State of the art
 
-Two market data identifiers are the same identifier exactly when every
-field of their structure agrees — logical fields and physical fields
-both. This is the same identity principle
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]]
-applies to requirements, extended to the identifier's larger field set:
-an identifier's logical fields alone being equal is not sufficient for
-two identifiers to be the same identifier (they might still differ in
-source, or convention); it is, however, sufficient for them to share the
-same requirement, since requirement equality is defined purely over the
-logical fields.
-
-*** The ORE-derived logical identifier scheme
-
-The ORE canonical key — documented in
-[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data
-identifiers]] — provides a concrete realisation of the logical field
-group as a slash-delimited tuple and was adopted wholesale as the
-starting-point canonical form:
-
-: <series_type>/<metric>/<qualifier>[/<point_id>]
-
-where =series_type= names the asset class and curve family (=FX=,
-=DISCOUNT=, =SWAPTION=), =metric= names what is being quoted (=RATE=,
-=RATE_LNVOL=), =qualifier= names the specific instance within that
-family (a currency, a currency pair, a credit name), and the optional
-=point_id= — present only for term-structure series — names a specific
-tenor or surface coordinate. =FX/RATE/EUR/USD= identifies EUR/USD spot;
-=SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM= identifies one specific point on
-the EUR swaption volatility surface.
-
-This tuple covers only the *logical* field group — it says nothing
-about source, convention, or any other physical field. The idealised
-target extends this logical scheme with an explicit physical field
-group, making a canonical identifier self-sufficient for projection
-into any external vendor's notation without relying on out-of-band
-configuration. How exactly to extend the logical tuple with physical
-fields is an open design question this document flags rather than
-settles; see [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd:
-ORE Studio Market Data URI]] for one concrete proposal in that
-direction.
-
-*** Convergence across independently-designed schemes
-
-That the ORE canonical key and OpenGamma Strata's
-=com.opengamma.strata.data.MarketDataId<T>= — two independently
-engineered systems — arrive at the same underlying logical shape (an
-asset-class/type discriminator, a qualifying instance within it, and
-optionally a further single-point coordinate) is the strongest
-available evidence that this shape reflects the concept's irreducible
-form rather than either system's design history. Both are also silent
-on physical fields at their respective base levels — a convergence in
-what they deliberately omit, not just in what they include. The
+The
 [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][comparative analysis of
-external market data identifier schemes]] covers OpenGamma Strata
-alongside RIC, Bloomberg, ORE, MDDL, and FIX in full detail. Neither
-scheme, on its own, says anything about how the physical field group
-ought to be shaped; that question is addressed separately, below.
+external market data identifier schemes]] surveys six independently
+designed systems — Reuters RIC, Bloomberg ticker, ORE canonical key
+(with its =CurveSpec= representation), MDDL, FIX, and OpenGamma Strata's
+=com.opengamma.strata.data.MarketDataId<T>= — in full detail, with
+per-instrument worked examples and a pros/cons table. This section draws
+out the findings from that survey that bear directly on the two-field-group
+design and the vendor-projection relationship defined below.
 
-** Vendor projection: from identifier to external notation
+** What the six schemes reveal
 
-An identifier's physical fields exist for one purpose: so that a
-one-directional transform can render the identifier into a specific
-external vendor's own notation — a Bloomberg ticker, a Reuters RIC, an
-ORE =CurveSpec= — without needing to invent information the identifier
-itself doesn't carry. Call this transform, per vendor, $T_{\text{vendor}}$:
+RIC and Bloomberg are the two most widely deployed vendor notations and
+the primary projection targets any market data system must be able to
+produce. Both are proprietary, with no open specification; both have grown
+organically per asset class, accumulating broker suffixes, yellow-key tags,
+and asset-class-specific conventions that cannot be recovered field-for-field
+from any logical description alone. Neither has a curve-family or curve-role
+concept — the logical distinctions that matter most to a pricing engine
+(discounting vs. projection, log-normal vs. normal vol) are absent from
+both. RIC and Bloomberg are identifiers *within their own vendors'
+namespaces*, not descriptions in a shared logical vocabulary.
 
-$$T_{\text{vendor}}: \mathrm{Identifier} \to \mathrm{VendorKey}$$
+ORE's canonical key is the only openly documented format among the six
+that covers the instrument types a derivatives pricing engine actually
+needs. Its slash-delimited structure — =<series_type>/<metric>/<qualifier>[/<point_id>]= —
+provides a uniform top-level shape across 49 documented types, making
+parsing and validation tractable. The survey also identifies an important
+terminological trap: ORE's internal =CurveSpec= class hierarchy is not a
+peer of the canonical key but a distinct artefact — a C++ representation
+of a resolved curve specification, and a target of vendor projection in
+its own right, not a logical identifier scheme. ORE's own comments
+sometimes call =CurveSpec= a "requirement," which the survey flags as a
+source of confusion worth naming explicitly.
 
-This is deliberately one-directional, and not merely as a scope
-decision — going the other way is a genuinely different, harder problem.
+MDDL and FIX take a different approach: rather than minting new
+identifiers, both wrap existing ones via a scheme-tag field
+(=codeType= in MDDL, =SecurityIDSource= in FIX tag 22). Neither is a
+pricing engine's native format. MDDL — last released in 2007, never
+finalised — contributed vocabulary to ISO 20022 and FIX before going
+dormant. FIX is the only scheme among the six with a dedicated
+market-data wire-message family (request, snapshot, incremental update),
+which is a structurally different role from the others; FIX explicitly
+names RIC and Bloomberg as member schemes, confirming that those two
+dominate the industry's wire identity practice.
+
+OpenGamma Strata's =MarketDataId<T>= is the only scheme here that is a
+type abstraction rather than a string format or wire protocol. The Java
+generic interface carries no base-level field structure — all field
+definitions are pushed to implementing classes (=QuoteId=, =IborIndexId=,
+=CurveId=, and so on) — and it produces no canonical short string and
+carries no wire form.
+
+** Findings relevant to this document
+
+Three findings from the survey directly shape the design described below.
+
+*All six schemes are silent on physical fields at their logical level.* The
+ORE canonical key is purely logical; Strata's interface is purely logical
+by design; RIC and Bloomberg are vendor notations (physical in their own
+namespace) but do not provide a logical field group from which physical
+fields can be recovered. MDDL and FIX wrap external identifiers rather
+than defining their own field structure. The unanimity of this silence
+is not coincidence: it reflects the fact that physical fields are,
+by definition, vendor-specific — no scheme that aspires to vendor
+neutrality can define them, and no vendor scheme needs to expose them
+because it already *is* the vendor.
+
+*ORE and Strata independently converge on the same logical shape.* Both
+arrive at an asset-class/type discriminator, a qualifying instance within
+it, and an optional further single-point coordinate — from different
+engineering traditions, with no shared vocabulary, as confirmed by direct
+inspection of both systems' source code. This convergence is the strongest
+available evidence that this three-part logical shape is irreducible: it
+reflects the concept's minimal necessary structure rather than either
+system's design history. The logical field group adopted below follows
+this shape directly.
+
+*RIC, Bloomberg, and ORE's =CurveSpec= hierarchy are the concrete
+instances of $T_{\text{vendor}}$'s targets.* Each is an independently
+designed grammar that routinely collapses or omits information our
+identifier carries — tenor rounding, day-count assumptions, and
+broker-suffix conventions have no field-for-field correspondence to
+anything in a logical scheme — which is exactly why $T_{\text{vendor}}$
+must be one-directional and why recovering our identifier from a bare
+vendor key is a distinct ingestion problem, not an inverse of
+$T_{\text{vendor}}$.
+
+* Formal definition
+
+** Two field groups
+
+An identifier consists of exactly two field groups:
+
+- *Logical fields* ($L$) — asset class, qualifier, curve role, and (for
+  a single-point identifier on a term structure) the specific tenor or
+  surface coordinate. These fields are shared with the requirement an
+  identifier satisfies; a requirement is defined entirely within this
+  group.
+- *Physical fields* ($P$) — everything else a specific external vendor's
+  own notation requires but a logical description never needs: which
+  source supplied the value, calendar and day-count conventions,
+  ticker-construction hints, and similar vendor-specific metadata.
+
+An identifier is the pair $(L, P)$. A requirement is any element of $L$
+alone (or of $L$ with the specific-point sub-field omitted, for
+curve-level requirements).
+
+** Identity
+
+Two identifiers are the same identifier exactly when every field in both
+groups agrees:
+
+$$(L_1, P_1) = (L_2, P_2) \iff L_1 = L_2 \;\text{and}\; P_1 = P_2$$
+
+Equality of logical fields alone is not sufficient for two identifiers to
+be the same identifier — they might still differ in source or convention
+— but it is sufficient for them to share the same requirement, since
+requirement equality is defined purely over $L$.
+
+** The projection $\pi$
+
+The projection from identifiers to requirements is
+
+$$\pi : (L, P) \mapsto L$$
+
+(discarding $P$; for curve-level requirements, also discarding the
+specific-point sub-field from $L$). $\pi$ is surjective and many-to-one:
+several identifiers, differing only in their physical fields, can project
+onto the same requirement. It requires no external information and admits
+no decision — it is purely a field-discarding map.
+
+Resolution $\rho$ runs in the opposite direction,
+
+$$\rho : \mathrm{Requirement} \to \mathrm{Identifier}$$
+
+but is not $\pi^{-1}$. Given a requirement $r$, there may be many
+identifiers $(L, P)$ with $\pi(L, P) = r$; $\rho$ must pick exactly one,
+using policy information (source preferences, convention choices) that $r$
+itself does not carry. Resolution is a genuine decision, not a
+computation on $r$'s fields.
+
+** Vendor projection $T_{\text{vendor}}$
+
+For each external vendor, there is a one-directional transform
+
+$$T_{\text{vendor}} : \mathrm{Identifier} \to \mathrm{VendorKey}$$
+
+that renders an identifier into that vendor's own notation — a Bloomberg
+ticker, a Reuters RIC, an ORE =CurveSpec= — without inventing information
+the identifier does not carry. This is why physical fields must exist: the
+logical fields alone are insufficient to determine a vendor's
+notation, because vendor grammars depend on source, convention, and
+instrument-type classifications that have no counterpart in a logical
+description.
+
+$T_{\text{vendor}}$ is deliberately one-directional. Its inverse is not
+defined; recovering an identifier from a bare vendor key is an ingestion
+and reconciliation problem in its own right, addressed separately from
+this document.
+
+* Detail
+
+** Why $\pi$ is many-to-one but not invertible
+
+The many-to-one character of $\pi$ is a feature, not a defect: it is
+precisely what allows a valuation to state its needs in logical vocabulary
+("the EUR discount curve's 3M point") without committing to a particular
+source or convention, and what allows the same requirement to be satisfied
+by different identifiers in different configurations — a prime source on
+one desk, a fallback source on another — without the requirement itself
+changing meaning. Several identifiers, all projecting onto the same
+requirement, are all valid answers; which one is chosen is the job of
+resolution, not of the requirement.
+
+That $\pi$ has no inverse is the structural reason resolution must exist
+as a separate concept. Given a requirement $r$, the pre-image
+$\pi^{-1}(r)$ is a set of identifiers (typically more than one), and
+$\rho$ must select from it using information $r$ does not carry. No
+amount of inspection of $r$'s fields alone can determine which element
+of $\pi^{-1}(r)$ is wanted.
+
+** Why $T_{\text{vendor}}$ is one-directional
+
 A vendor's own notation is an independently designed grammar, built for
-that vendor's own purposes, and it routinely collapses or omits
-information our identifier needs: a ticker's suffix conventions, tenor
-rounding, or day-count assumptions may not correspond field-for-field to
-anything in our own scheme, and two different vendors can use two
-different notations for what is, logically, the same point. Recovering
-an identifier from a bare vendor key is therefore not "run $T_{\text{vendor}}$
-backwards"; it is an ingestion/reconciliation problem in its own right —
-deciding, case by case and possibly vendor by vendor, what a given
-external key actually means in our own logical and physical terms. That
-problem is out of scope for this document.
+that vendor's own purposes. It routinely collapses or omits information our
+identifier carries: Bloomberg's yellow-key tag names an asset class but
+hides the curve role; RIC broker suffixes encode the source but in a format
+with no open specification and no field-for-field correspondence to our
+physical field group; ORE's =CurveSpec= hierarchy is structured for ORE's
+own C++ class hierarchy, not for our identifier's field layout. Two vendors
+can use two different notations for what is, logically, the same point.
+Recovering an identifier from a bare vendor key therefore requires
+vendor-specific parsing, semantic mapping, and in some cases a genuine
+choice (what does "=EUSA5==" mean for a curve that our scheme calls
+=DISCOUNT/RATE/EUR=?). That problem is out of scope for this document.
 
-Bloomberg tickers, Reuters RICs, and ORE's =CurveSpec= class hierarchy
-are all instances of the same kind of target — vendor's own grammars,
-independently designed, that $T_{\text{vendor}}$ must be able to produce
-from a fully-specified identifier. The
-[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][comparative analysis of
-external market data identifier schemes]] covers ORE's =CurveSpec= in
-detail alongside RIC, Bloomberg, MDDL, FIX, and OpenGamma Strata; this
-document only fixes the *shape* of the relationship — a one-directional
-projection into a foreign namespace — not any one vendor's specific
-grammar.
+** Why a requirement is permitted to be coarser than the identifier it satisfies
 
-** Why a requirement is permitted to be coarser than the identifier it's satisfied by
+A requirement is deliberately allowed to omit fields an identifier must
+carry. "The EUR discount curve" as a requirement says nothing about which
+source or convention satisfies it, or (at curve level) which specific point
+is needed, while the identifier it resolves to must by construction pick
+out exactly one concrete item in the market data universe. This asymmetry
+is not a defect to eliminate; it is the entire reason a requirement and an
+identifier are worth naming separately even though they are, structurally,
+one entity viewed at two levels of completeness. The narrowing from coarser
+requirement to exactly one precise identifier is
+[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]].
 
-A [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]
-is deliberately allowed to omit fields an identifier must carry — "the
-EUR discount curve" as a requirement says nothing about *which* specific
-source or point satisfies it, while the identifier it resolves to must,
-by construction, pick out exactly one concrete item in the
-[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]]. This
-asymmetry is not a defect to eliminate; it is the entire reason a
-requirement and an identifier are worth naming separately even though
-they are, structurally, one entity viewed at two levels of completeness.
-The [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data
-Configuration]] document covers the mechanism — resolution — by which
-the narrowing from "coarser requirement" to "exactly one precise
-identifier" actually happens.
+** Aspirational: tenor-pinned requirements
+
+#+begin_note
+The projection model above treats the logical field group as containing an
+optional specific-point sub-field (present for point-level requirements
+and identifiers, absent for curve-level requirements). In the current
+model, a requirement carries at most a single explicit tenor or surface
+coordinate.
+
+In practice, some valuation models know the exact tenor they need at
+requirement-generation time — a 1Y put option requires the 1Y
+volatility-surface point, not the surface as a whole, and no resolution
+choice is needed for that dimension. Extending requirements further to
+carry an explicit *tenor range* (not just a single point) would allow
+resolution to produce a more precisely scoped identifier for those cases,
+and would enable interpolation-aware resolution where the call-site already
+knows the bounds. This refinement is recognised as desirable but is not
+yet fully specified: a tenor-range requirement introduces a spectrum
+between "coarser requirement" and "fully specified identifier" rather than
+the current clean binary, and resolution over ranges has its own
+complexity. This document notes the aspiration without committing to a
+shape.
+#+end_note
 
 * See also
 
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; introduces the set-theoretic framing this document assumes.
-- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical-only projection of an identifier.
+- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the logical-only projection of an identifier; the static/instance/dynamic three-level structure by which requirement sets are generated.
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space of every valid identifier.
-- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the resolution mechanism picking exactly one identifier for a requirement.
-- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — comparative analysis of RIC, Bloomberg, ORE canonical key, ORE CurveSpec, MDDL, FIX, and OpenGamma Strata; convergence evidence and vendor-projection targets covered in full.
+- [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the resolution mechanism $\rho$, picking exactly one identifier for a requirement.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — the full comparative analysis of RIC, Bloomberg, ORE canonical key, ORE CurveSpec, MDDL, FIX, and OpenGamma Strata; convergence evidence and vendor-projection targets in full detail.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative per-type dimension inventory for ORE quote keys.
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]] — a proposed extension of the ORE-derived logical identifier with an explicit physical field group, structured tenor/curve-role/instrument-type grammar, and deterministic projection rules into every external vendor scheme.

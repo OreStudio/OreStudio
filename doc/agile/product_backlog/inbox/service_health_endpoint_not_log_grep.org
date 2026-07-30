@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: B24115BF-E7C5-45AF-86A6-31F04C0F9330
+:END:
+#+title: Replace log-grep HEALTHCHECK with an in-process NATS health endpoint
+#+description: The per-service HEALTHCHECK (docker/healthcheck.c) proves the container-native probe model but works by grepping the service's own log file from outside the process -- fragile and duplicative of state the process already has. Every service is already a NATS client, so a request/reply ping subject (or a tiny local socket) each service answers directly would be a more robust, less coupled health signal.
+#+type: capture
+#+level: cross
+#+filetags: :docker:healthcheck:nats:architecture:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Replace the ~docker/healthcheck.c~ log-grep probe with an in-process
+health signal each service answers directly: a NATS request/reply
+subject (e.g. ~ores.{tier}.{instance}.{service}.v1.health~) that
+returns healthy once the service has registered its handlers -- the
+same condition "Service ready." currently marks in the log -- or,
+failing that, a minimal local socket the container's ~HEALTHCHECK~
+connects to. Either way the container-level probe stops depending on
+log file contents and format staying stable, and stops needing a
+separate compiled binary per image just to parse them.
+
+* Why
+
+The current probe (added in the IAM per-service pilot,
+[[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][task]]) proves the
+~HEALTHCHECK~ mechanism works end-to-end, but it's an external process
+reading a log file the service itself already knows the equivalent
+state of in memory -- fragile (a log format/wording change silently
+breaks every container's health probe at once) and duplicative.
+Every service is already a NATS client and already has its own
+notion of "ready"; exposing that directly is a more robust, less
+coupled signal, and removes the need for
+~docker/healthcheck.c~/the extra debian build stage entirely.
+
+* References
+
+- [[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][Finish IAM per-service pilot: JWT signing failure and HEALTHCHECK]] --
+  where the log-grep probe was first built, explicitly as a pragmatic
+  first cut rather than a final design.
+- ~docker/healthcheck.c~
+
+* See also
+
+- [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/holiday-aware-date-picker-widget
 #+pr:
 #+blocked_on: 7FF8A057-F95D-4654-B709-13D74525892B
 #+blocked_since: 2026-07-19
 #+created: 2026-07-08
 #+updated: 2026-07-19
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,7 +47,7 @@ than calling into QuantLib live from the UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:7FF8A057-F95D-4654-B709-13D74525892B][Materialise QuantLib calendar holidays and support calendar adjustments]] landing first. |

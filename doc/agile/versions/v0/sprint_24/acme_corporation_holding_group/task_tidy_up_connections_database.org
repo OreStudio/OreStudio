@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 9A94B0D4-4244-4A6B-8AFA-26AC69681519
+:END:
+#+title: Task: Tidy up the saved connections database for Acme testing
+#+description: Add a description field to each saved connection, add ~10 curated Acme connections (department heads + a representative sample), and remove stale non-Acme connections
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Qt client's saved connections database (=connections.db=, managed
+via the Connections toolbar button) has accumulated stale entries from
+before Acme Corporation replaced Barclays as the reference test
+entity (Barclays, NatWest, etc.), and has no way to label a saved
+connection with who/what it's for — every entry is just a bare
+host/credential pair, so picking the right one for a given persona
+(e.g. "the Head of Desk for FX Rates UK") means remembering usernames
+by hand rather than reading a label.
+
+This task:
+
+1. Adds a =description= field to each saved connection (schema +
+   UI), so a connection can be annotated with something like "Head of
+   Desk, FX Rates UK" instead of just a bare username.
+2. Adds around 10 curated Acme connections: every department head
+   (Head of Desk / Head of Trading / Head of Middle Office / Head of
+   Market Risk / Head of Risk / Country Head / COO, per office) plus a
+   representative sample of individual contributors (a Trader, an
+   Analyst, ...), each with a description identifying the role.
+3. Removes the stale non-Acme connections (Barclays, NatWest, etc.),
+   leaving only =tenant_admin=/=super_admin= plus the new curated
+   Acme set.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- Saved connections support an optional =description= field, editable
+  from the Connections dialog and shown alongside each entry.
+- ~10 curated Acme connections exist, covering every department head
+  (one per office where applicable) plus a representative sample of
+  individual contributors, each with a role-identifying description.
+- Non-Acme connections (Barclays, NatWest, ...) are removed; only
+  =tenant_admin=/=super_admin= and the new curated Acme set remain.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

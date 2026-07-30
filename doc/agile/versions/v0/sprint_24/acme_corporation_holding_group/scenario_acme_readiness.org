@@ -95,7 +95,8 @@ parties list
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | FAIL |
+| Notes  | - can you set the logo in the system party as well; ; [[file:scenario_acme_readiness_step2_20260730_110542.png]]; ; - logo not rendering in details; ; [[file:scenario_acme_readiness_step2_20260730_110627.png]] |
 
 *** Verify business units, portfolios, and books per office
 
@@ -197,7 +198,7 @@ counterparties list --limit 5
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify the CRM cross-rates matrix is ticking
 
@@ -221,7 +222,8 @@ counterparties list --limit 5
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | we did not install CRMs into ACME |
 
 *** Verify IR curves/rates are ticking
 
@@ -237,7 +239,7 @@ counterparties list --limit 5
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Verify each office trades against a realistic counterparty set
 
@@ -251,7 +253,7 @@ counterparties list --limit 5
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** red
 
@@ -275,6 +277,7 @@ counterparties list --limit 5
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
+| Notes  | Split out into a separate persona/RBAC test scenario, run independently of the provisioning-readiness pass this scenario verifies. Candidate login: molly.quinn@acme_corporation (Senior Trader, ACME Corporation UK plc), password Secure-Password-123. |
 
 ** green
 
@@ -294,15 +297,16 @@ counterparties list --limit 5
 | Field  | Value |
 |--------+-------|
 | Status | PENDING |
+| Notes  | Split out into a separate persona/RBAC test scenario, run independently of the provisioning-readiness pass this scenario verifies. Candidate login: lawrence.davis@acme_corporation (Head of Middle Office, ACME Corporation UK plc), password Secure-Password-123. |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  | 2026-07-30T00:32:39Z |
+| Status        | FAILED |
+| Completed at  | 2026-07-30T10:15:16Z |
 | Branch        | feature/simulate-holding-group-provisioning-via-internal-impersonation |
-| Commit        | 47bd2a25c |
+| Commit        | 3e7aaaf2c |
 | Worktree      | brave_hopper |
 
 * Notes

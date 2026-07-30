@@ -37,12 +37,12 @@ distinct from the coverage-audit-and-rollout work split into
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Both tasks implemented, built, and tested; PR for the self-badging task pending. |
-| Waiting on    | Manual QA of the self-badging task (live client, not performed this session). |
-| Next          | Manual QA, then close the story.       |
-| Last touched  | 2026-07-28                               |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-30                               |
 
 * Acceptance
 
@@ -63,6 +63,7 @@ distinct from the coverage-audit-and-rollout work split into
 |------+-------+-------+-----+-------------|
 | [[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]] | DONE | 2026-07-22 | 2026-07-26 | Colour-swatch delegate and picker for Badge Definitions/Severities admin UI; replace the hardcoded Qt fallback constant with a real, reserved badge_definition row. |
 | [[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]] | DONE | 2026-07-28 | 2026-07-28 | Codegen mechanism so a badge-source entity's own code/name column also gets badge_key wired to its own code_domain. |
+| [[id:618B5C64-5C78-4C97-8C14-37E3F3FDBD6B][Close story: badge colour scheme visual polish and self-badging fixes]] | DONE | 2026-07-30 | 2026-07-30 | Both tasks (badge palette swatch rendering + fallback, badge source self-annotation) are DONE; close the story out. |
 
 * Decisions
 
@@ -94,3 +95,9 @@ distinct from the coverage-audit-and-rollout work split into
   across domain entities]].
 - Wt-side badge rendering — carried over as out of scope from the
   parent story (explicit user instruction).
+- A manual QA =* Test Scenarios= pass against a live client for
+  either sibling task -- both shipped with build + unit-test
+  verification only. Closed at explicit instruction rather than left
+  open pending QA; worth a live-client pass later if the swatch
+  rendering/fallback badge/self-badging behaviour is ever in
+  question.

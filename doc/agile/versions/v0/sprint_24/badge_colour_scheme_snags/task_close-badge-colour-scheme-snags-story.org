@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 618B5C64-5C78-4C97-8C14-37E3F3FDBD6B
+:END:
+#+title: Task: Close story: badge colour scheme visual polish and self-badging fixes
+#+description: Both tasks (badge palette swatch rendering + fallback, badge source self-annotation) are DONE; close the story out.
+#+type: task
+#+level: s1
+#+filetags: :badge_colour_scheme_snags:sprint_24:v0:
+#+owner: marco
+#+branch: feature/close-badge-colour-scheme-snags-story
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Both of this story's tasks
+([[id:FFD9EFC2-AB60-4008-BC2A-FED99C7B09AD][Badge palette swatch rendering + data-driven fallback badge]],
+[[id:5BAE2E27-7C8A-4C3E-B65C-5D6F631528C7][Badge sources should badge their own list too]])
+are =DONE=, built, and unit-tested, but neither recorded a manual QA
+=* Test Scenarios= run -- the story's own =* Status= table flags this
+("Waiting on: Manual QA of the self-badging task (live client, not
+performed this session)"). Close the story's bookkeeping now per
+explicit instruction, rather than leave it sitting at 90% indefinitely;
+record the missing manual QA honestly rather than silently closing
+over it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- [X] Both sibling tasks confirmed =DONE=.
+- [X] Story's =* Status=/=* Acceptance= reviewed against actual task
+  outcomes; manual QA gap recorded rather than silently dropped.
+- [X] Story flipped to =DONE=, sprint row updated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Closed the story: both tasks were already =DONE=; flipped the story
+to =DONE= and updated the sprint row. No manual QA
+=* Test Scenarios= run was ever recorded for either sibling task
+despite the story's own =* Status= flagging it as outstanding --
+noted here rather than silently closed over, in case the swatch
+rendering/fallback badge/self-badging behaviour needs a live-client
+pass later.

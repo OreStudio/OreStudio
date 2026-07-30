@@ -207,6 +207,8 @@ void ClientMonetaryNatureModel::fetch_types(std::uint32_t offset, std::uint32_t 
                 }
 
                 refdata::messaging::get_monetary_natures_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -237,11 +239,12 @@ void ClientMonetaryNatureModel::fetch_types(std::uint32_t offset, std::uint32_t 
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->types.size() << " monetary natures";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
+                    << "Fetched " << result->types.size()
+                    << " monetary natures, total available: " << result->total_available_count;
                 return {.success = true,
                         .types = std::move(result->types),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

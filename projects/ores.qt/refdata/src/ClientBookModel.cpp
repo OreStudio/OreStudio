@@ -224,6 +224,8 @@ void ClientBookModel::fetch_books(std::uint32_t offset, std::uint32_t limit) {
                 }
 
                 refdata::messaging::get_books_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -253,11 +255,13 @@ void ClientBookModel::fetch_books(std::uint32_t offset, std::uint32_t limit) {
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->books.size() << " books";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->books.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->books.size()
+                    << " books, total available: " << result->total_available_count;
                 return {.success = true,
                         .books = std::move(result->books),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

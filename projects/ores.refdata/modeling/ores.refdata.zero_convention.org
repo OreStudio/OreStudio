@@ -217,6 +217,7 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         zero_conventions
 :item_var:                zc
 :key_field:               id

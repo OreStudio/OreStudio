@@ -154,6 +154,7 @@ Ordinal position for dropdown/list display.
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:              ores.refdata.api/domain/day_count_fraction_type.hpp
 :domain_class:                refdata::domain::day_count_fraction_type
 :protocol_include:            ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp

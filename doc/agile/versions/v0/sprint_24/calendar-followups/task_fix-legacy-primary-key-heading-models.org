@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9
+:END:
+#+title: Task: Fix legacy Primary key heading blocking codegen regen on 70+ models
+#+description: 70+ codegen entity .org models across the repo declare their primary key using an old, now-unsupported top-level heading (Primary key, with column/type/cpp_type properties) instead of the current convention (a field inside Columns flagged with primary_key true). org_loader.py's load_org_model() only recognises the latter, so any regeneration of these models fails with a Missing primary key error. Discovered while fixing the has_pagination truncation bug: 14 of 43 target entities hit this and were excluded from that task's scope.
+#+type: task
+#+level: s1
+#+filetags: :calendar-followups:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Migrate every codegen entity =.org= model still using the legacy
+=* Primary key= (and =* Natural keys=) top-level heading convention
+to the current shape (a field under =* Columns= flagged
+=:primary_key: true= / =:natural_key: true=, matching
+=ores.refdata.book.org=), so every affected entity becomes
+regeneratable via any codegen address again.
+
+Not calendar-specific -- filed under this story only because it was
+discovered while fixing
+[[id:914B206F-CDB2-4CDC-80BF-0285839E514D][the has_pagination pagination-truncation task]].
+Confirmed to affect entities in =ores.analytics=, =ores.compute=,
+=ores.controller=, =ores.database=, =ores.dq=, =ores.iam=,
+=ores.marketdata=, =ores.reporting=, =ores.scheduler=,
+=ores.synthetic=, =ores.trading=, =ores.workflow=, and
+=ores.workspace= -- effectively repo-wide, not confined to refdata.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- [ ] Full inventory of every =.org= model using the legacy
+  =* Primary key=/=* Natural keys= headings (grep found 70+ files at
+  discovery time; re-derive the current count since more may have
+  been added or migrated since).
+- [ ] Each migrated to declare its primary key as a =** <column>=
+  entry under =* Columns= with =:primary_key: true= (and natural
+  keys similarly with =:natural_key: true=), matching
+  =ores.refdata.book.org='s shape (already-fixed reference: none in
+  this batch, since the fix was reverted mid-session per explicit
+  direction not to hand-patch without discussion first -- this task
+  starts from a clean slate).
+- [ ] Verified per-entity via =--diff= against the entity's current
+  committed generated output for every already-generatable address
+  (=ores.sql.schema=, =ores.cpp.repository=, etc.) showing zero
+  unrelated drift from the migration alone.
+- [ ] For entities that were never successfully regenerable before
+  (model was broken), confirm generation now succeeds and produces
+  syntactically valid, compilable output.
+- [ ] Full local build green; =ctest= green.
+- [ ] The has_pagination task's 14 excluded entities (=badge_definition=,
+  =badge_severity=, =code_domain=, =concurrency_policy=,
+  =dataset_bundle=, =job_definition=, =pricing_engine_type=,
+  =pricing_model_config=, =pricing_model_product=,
+  =pricing_model_product_parameter=, =report_definition=,
+  =report_instance=, =report_type=, =tenant=, =tenant_type=,
+  =workspace=) can now be revisited as a small, separate follow-on
+  once this lands.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

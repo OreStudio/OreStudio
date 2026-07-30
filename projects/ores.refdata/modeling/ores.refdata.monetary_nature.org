@@ -153,6 +153,7 @@ drop function if exists ores_refdata_validate_monetary_nature_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/monetary_nature.hpp
 :domain_class:           refdata::domain::monetary_nature
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp

@@ -211,6 +211,8 @@ void ClientTenorModel::fetch_tenors(std::uint32_t offset, std::uint32_t limit) {
                 }
 
                 refdata::messaging::get_tenors_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -240,11 +242,13 @@ void ClientTenorModel::fetch_tenors(std::uint32_t offset, std::uint32_t limit) {
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->tenors.size() << " tenors";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->tenors.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->tenors.size()
+                    << " tenors, total available: " << result->total_available_count;
                 return {.success = true,
                         .tenors = std::move(result->tenors),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

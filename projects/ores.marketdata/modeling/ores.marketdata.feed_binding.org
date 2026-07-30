@@ -196,6 +196,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:          ores.marketdata.api/domain/feed_binding.hpp
 :domain_class:            ores::marketdata::domain::feed_binding
 :protocol_include:        ores.marketdata.api/messaging/feed_binding_protocol.hpp

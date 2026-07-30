@@ -153,6 +153,7 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/currency_market_tier.hpp
 :domain_class:           refdata::domain::currency_market_tier
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp

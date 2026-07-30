@@ -202,6 +202,7 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/party_id_scheme.hpp
 :domain_class:           refdata::domain::party_id_scheme
 :protocol_include:       ores.refdata.api/messaging/party_id_scheme_protocol.hpp

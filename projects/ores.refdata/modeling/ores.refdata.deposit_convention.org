@@ -193,6 +193,7 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         deposit_conventions
 :item_var:                dc
 :key_field:               id

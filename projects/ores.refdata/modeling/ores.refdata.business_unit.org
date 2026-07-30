@@ -269,6 +269,7 @@ std::string("Active")
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:          ores.refdata.api/domain/business_unit.hpp
 :domain_class:            refdata::domain::business_unit
 :protocol_include:        ores.refdata.api/messaging/business_unit_protocol.hpp

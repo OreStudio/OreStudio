@@ -136,6 +136,7 @@ Number of business days from fixing to value date (usually 0 or 1).
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :collection_name:         overnight_index_conventions
 :item_var:                ni
 :key_field:               id

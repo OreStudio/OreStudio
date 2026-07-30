@@ -154,6 +154,7 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:              ores.refdata.api/domain/contact_type.hpp
 :domain_class:                refdata::domain::contact_type
 :protocol_include:            ores.refdata.api/messaging/contact_type_protocol.hpp

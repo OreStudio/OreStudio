@@ -330,6 +330,7 @@ std::string("WRLD")
 
 ** Qt
 :PROPERTIES:
+:has_pagination:          true
 :domain_include:          ores.refdata.api/domain/book.hpp
 :domain_class:            refdata::domain::book
 :protocol_include:        ores.refdata.api/messaging/book_protocol.hpp

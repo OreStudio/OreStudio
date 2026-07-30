@@ -199,6 +199,8 @@ void ClientFeedBindingModel::fetch_feed_bindings(std::uint32_t offset, std::uint
                 }
 
                 marketdata::messaging::get_feed_bindings_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -229,12 +231,12 @@ void ClientFeedBindingModel::fetch_feed_bindings(std::uint32_t offset, std::uint
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->feed_bindings.size() << " feed bindings";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->feed_bindings.size());
+                    << "Fetched " << result->feed_bindings.size()
+                    << " feed bindings, total available: " << result->total_available_count;
                 return {.success = true,
                         .feed_bindings = std::move(result->feed_bindings),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

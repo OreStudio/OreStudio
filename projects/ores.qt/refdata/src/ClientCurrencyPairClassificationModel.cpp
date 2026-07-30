@@ -212,6 +212,8 @@ void ClientCurrencyPairClassificationModel::fetch_classifications(std::uint32_t 
                 }
 
                 refdata::messaging::get_currency_pair_classifications_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -242,12 +244,12 @@ void ClientCurrencyPairClassificationModel::fetch_classifications(std::uint32_t 
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->classifications.size()
-                                           << " currency pair classifications";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->classifications.size());
+                                           << " currency pair classifications, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .classifications = std::move(result->classifications),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

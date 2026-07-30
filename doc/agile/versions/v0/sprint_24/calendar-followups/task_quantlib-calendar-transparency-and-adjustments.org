@@ -8,7 +8,7 @@
 #+filetags: :calendar-followups:next:product_backlog:
 #+owner: marco
 #+branch: feature/quantlib-calendar-transparency-and-adjustments
-#+pr: 1694
+#+pr: 1766
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-19
@@ -994,6 +994,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1694][#1694]] | [ores.codegen,ores.refdata] Add readonly-paginated-list Qt facet knob + QuantLib calendar materialisation |
+| [[https://github.com/OreStudio/OreStudio/pull/1766][#1766]] | [refdata] Close QuantLib calendar materialisation/adjustments task |
 
 * Review
 

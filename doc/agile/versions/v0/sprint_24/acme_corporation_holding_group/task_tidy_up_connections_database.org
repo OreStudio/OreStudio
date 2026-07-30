@@ -63,9 +63,9 @@ This task:
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Connections db tidied, Barclays/NatWest decommissioned across skills/recipes, verification scenario PASSED. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Shepherd this branch's PR into main.   |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -115,3 +115,31 @@ via its "Verifies task" field.
 | 1 | Barclays decommission incomplete for countries shell recipes | doc/recipes/shell/countries/{add_2,delete_2,get_3,help_3,history_3}.org | Accepted | Fixed in 3306a166c: login now defaults to Acme's tenant_admin via new .env vars; RESULTS refreshed live. |
 
 * Result
+
+All four Goal items delivered: connections gained a =description=
+field (schema + UI, shown in the login quick-connect dropdown), ~10
+curated Acme connections were added across all 8 environments (tagged
+per office), stale Barclays/NatWest connections were removed from the
+shared =connections.db=, and every live recipe/skill/tool default that
+referenced Barclays as the demo entity now references Acme Corporation
+(with the standalone Barclays provisioning recipe intentionally kept,
+not deleted, for lighter-weight GLEIF-only use cases).
+
+Along the way, QA testing surfaced and fixed two real product bugs
+now tracked as their own DONE tasks: generated Acme staff accounts
+missing =login_info= rows (blocked password login entirely), and a
+bundle-publish filter bug where =opted_in_datasets= acted as a
+whitelist over an entire bundle instead of an additive layer on top
+of always-included members (starved Acme -- and Barclays -- of
+badges/fpml codes/countries/calendars whenever any dataset was opted
+in). Acme now also publishes the generic =base= bundle and per-office
+CRM Cross-Rates Matrix topology data. A pre-existing, unrelated bug
+in =ores_synthetic_publish_theme_from_dq_fn= (owned by Bright Faraday)
+was worked around in the shared =party_provisioning_bundle_plan()=
+and filed separately.
+
+Verified end-to-end via full rebuild, db recreate, and Acme
+reprovisioning (zero failed steps), SQL spot-checks (badges, CRM
+topology, login_info counts), and the QA Validation Runner scenario
+(PASSED). PR #1773, one review round (stale =barclays_plc= login in
+five countries recipes), fixed and re-approved.

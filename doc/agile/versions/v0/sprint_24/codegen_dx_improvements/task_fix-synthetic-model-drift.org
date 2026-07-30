@@ -8,7 +8,7 @@
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
 #+branch: feature/fix-synthetic-model-drift
-#+pr:
+#+pr: 1757
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1757][#1757]] | [synthetic] Fix synthetic entity model drift |
 
 * Review
 

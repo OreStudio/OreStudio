@@ -22,6 +22,7 @@
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FeedDialog.hpp"
@@ -80,8 +81,8 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <rfl/json.hpp>
 #include <set>
+#include <span>
 
 namespace ores::qt {
 
@@ -2543,10 +2544,11 @@ namespace {
 // subclass etc. this chart doesn't yet use -- see this function's own caller for the
 // undifferentiated-mix caveat: a curve tick batch has one message per Curve Template entry, all
 // plotted on the same line here, not split out by tenor).
-std::optional<double> extract_tick_value(std::string_view payload) {
-    if (auto fx = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(payload))
+std::optional<double> extract_tick_value(std::span<const std::byte> payload) {
+    const auto& codec = ores::nats::default_wire_codec();
+    if (auto fx = codec.decode<ores::marketdata::domain::fx_spot_tick>(payload))
         return fx->mid;
-    if (auto ir = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(payload))
+    if (auto ir = codec.decode<ores::marketdata::domain::ir_curve_tick>(payload))
         return ir->value;
     return std::nullopt;
 }
@@ -2614,8 +2616,8 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
         auto cit = cacheSubscriptions_.find(source_name);
         if (cit != cacheSubscriptions_.end()) {
             for (const auto& msg : cit->second.snapshot()) {
-                if (auto tick = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(
-                        ores::nats::as_string_view(msg.data)))
+                if (auto tick = ores::nats::default_wire_codec()
+                                    .decode<ores::marketdata::domain::ir_curve_tick>(msg.data))
                     appendCurveTick(tick->point_id, tick->datetime, tick->value);
             }
         }
@@ -2644,7 +2646,7 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
         auto cit = cacheSubscriptions_.find(source_name);
         if (cit != cacheSubscriptions_.end()) {
             for (const auto& msg : cit->second.snapshot()) {
-                if (auto value = extract_tick_value(ores::nats::as_string_view(msg.data)))
+                if (auto value = extract_tick_value(msg.data))
                     tickSamples_.push_back(*value);
             }
         }
@@ -2668,9 +2670,10 @@ void MarketSimulatorWindow::subscribeTickChart(const std::string& source_name) {
             subject, [self, alive, curveMode](ores::nats::message msg) {
                 if (!alive->load(std::memory_order_acquire))
                     return;
-                const std::string_view payload = ores::nats::as_string_view(msg.data);
+                const auto& payload = msg.data;
                 if (curveMode) {
-                    auto tick = rfl::json::read<ores::marketdata::domain::ir_curve_tick>(payload);
+                    auto tick = ores::nats::default_wire_codec()
+                                    .decode<ores::marketdata::domain::ir_curve_tick>(payload);
                     if (!tick)
                         return;
                     const auto point_id = tick->point_id;

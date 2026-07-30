@@ -22,10 +22,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include <chrono>
 #include <memory>
-#include <rfl/json.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -69,13 +69,12 @@ struct token_state {
 
         for (int attempt = 1;; ++attempt) {
             try {
-                const auto req_json = rfl::json::write(ores::iam::messaging::service_login_request{
+                const auto& codec = ores::nats::default_wire_codec();
+                const auto req_bytes = codec.encode(ores::iam::messaging::service_login_request{
                     .username = username, .password = password});
-                const auto reply =
-                    nats.request_sync(service_login_subject, ores::nats::as_bytes(req_json));
+                const auto reply = nats.request_sync(service_login_subject, req_bytes);
 
-                auto resp = rfl::json::read<ores::iam::messaging::service_login_response>(
-                    ores::nats::as_string_view(reply.data));
+                auto resp = codec.decode<ores::iam::messaging::service_login_response>(reply.data);
                 if (!resp || !resp->success || resp->token.empty()) {
                     const auto msg = resp ? resp->message : "parse error";
                     BOOST_LOG_SEV(lg(), error)
@@ -117,8 +116,8 @@ struct token_state {
         const auto reply =
             nats.request_sync(refresh_subject, std::span<const std::byte>{}, headers);
 
-        auto resp = rfl::json::read<ores::iam::messaging::refresh_response>(
-            ores::nats::as_string_view(reply.data));
+        auto resp = ores::nats::default_wire_codec().decode<ores::iam::messaging::refresh_response>(
+            reply.data);
         if (!resp || !resp->success || resp->token.empty()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Token refresh failed for " << username << ", re-authenticating";

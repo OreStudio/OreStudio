@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 581EDA54-D912-43C0-B68B-6CD33C8DFA0B
+:END:
+#+title: Task: Migrate remaining service-to-service hard-coded rfl::json call sites to wire_codec
+#+description: A repo-wide sweep (grep for rfl::json combined with request_sync usage) found service-to-service NATS call sites still hard-coding rfl::json instead of routing through ores::nats::default_wire_codec(), discovered outside every completed task's audited file list: ores.iam.core/service/cache/party_cache.hpp, ores.iam.core/messaging/tenant_handler.hpp, ores.marketdata.client/crm_client.cpp, ores.refdata.client/service/cache/currency_pair_convention_cache.hpp, ores.reporting.core/messaging/report_definition_template_handler.hpp, ores.trading.core/messaging/trade_handler.hpp, plus ClientManagerTradeInstrument.cpp's decode side (parse_trade_instrument, a JSON-specific two-phase parser in ores.qt.headless). Migrate every one onto the common wire_codec encode/decode helpers, then re-run the sweep to confirm it is clean, so a full-environment msgpack switch is safe.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

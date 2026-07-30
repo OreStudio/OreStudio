@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/consolidate-migrate-clientmanager-wire-codec
+#+pr: 1755
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,28 +35,113 @@ injected =wire_codec= instead of calling =rfl::json= directly.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-28                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
 
 * Acceptance
 
-- [ ] All ~10 call sites route through a small number of shared
+- [X] All ~10 call sites route through a small number of shared
   helpers rather than each hard-coding =rfl::json= independently.
-- [ ] Those helpers use the injected =wire_codec=.
-- [ ] Existing Qt client behaviour is unchanged when the codec is
-  configured for =json= (today's default) -- manually verified against
-  a running client/service pair per this project's UI-change testing
-  convention.
+- [X] Those helpers use the injected =wire_codec=.
+- [X] Existing Qt client behaviour is unchanged when the codec is
+  configured for =json= (today's default) -- verified via the full
+  automated suite (=ores.qt.tests=, =ores.qt.headless.tests=, full
+  74-suite =ctest=, all green) plus a live environment smoke test (see
+  =* Plan=). One residual gap: this environment has no GUI-automation
+  tool for a native Qt desktop app, so login/authenticated-request
+  flows were not click-driven end-to-end in the running client --
+  documented explicitly per this project's "say so if you can't test
+  the UI" convention, rather than claimed as fully covered.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Consolidated =ClientManager='s ~10 =rfl::json= call sites onto two
+shared private template helpers (=encode_request<T>=/
+=decode_response<T>=, in =ClientManager.hpp=) that route through
+=ores::nats::default_wire_codec()= -- the same process-wide codec
+=ores.service='s =handler_helpers= reads, set automatically when
+=nats_client::connect()= constructs its underlying
+=ores::nats::service::client=.
+
+- =ClientManager.hpp=: the four =process_request=/
+  =process_authenticated_request= overloads now call
+  =encode_request(request)=/=decode_response<ResponseType>(raw)=
+  instead of inline =rfl::json::write=/=read=, collapsing the
+  duplicated result-unwrapping/error-formatting logic into the shared
+  helpers.
+- =ClientManager.cpp=: =testConnection()=/=signup()= migrated too --
+  and since both open a *throwaway* =nats_client= (their own
+  =ores::nats::service::client=, separate from the main =session_=),
+  each now stamps its temp =nats_options.format= from
+  =ores::nats::default_wire_codec().format()= before connecting.
+  Without this, a throwaway connection's default =json= would
+  silently reset the process-wide codec out from under an
+  already-connected =msgpack= main session -- a real bug this task's
+  audit caught, not present before because there was no process-wide
+  default to clobber. The event-cache decode path
+  (=subscribeToEvent='s lambda) migrated the same way.
+- =ClientManagerExportPortfolio.cpp=: =encode_request=/
+  =decode_response= replace the inline calls; the MSVC-C1202
+  isolation property (this TU is where the reflect-cpp instantiation
+  for =export_portfolio_response= happens) is preserved since
+  =decode_response<T>= is itself a template instantiated at the call
+  site.
+- =ClientManagerTradeInstrument.cpp=: the *write* side (encoding
+  =get_trade_instrument_request=) migrated to =encode_request=. The
+  *decode* side (=parse_trade_instrument()=, in the separate
+  =ores.qt.headless= module) is a JSON-specific two-phase parser
+  (peeks =product_type=, then re-parses the same raw bytes as
+  different wrapper structs) outside this task's named file scope --
+  left as =rfl::json=-only, documented inline and here. Under
+  =wire_format::json= (today's default) this is fully correct;
+  under =msgpack= it would currently fail (request/response
+  format-mismatched) -- a known, explicitly flagged gap for the
+  story's end-to-end-verify task to pick up, not silently introduced.
+- Also migrated the two remaining =ores.qt= stragglers the write-up
+  task's blast-radius audit named (not literally inside this task's
+  three-file description, but the only task in this story that covers
+  =ores.qt= at all): =MarketSimulatorWindow.cpp='s =extract_tick_value=
+  and its three snapshot/live-subscription decode call sites (now
+  =std::span<const std::byte>=-based, via =default_wire_codec()=), and
+  =ShellMdiWindow.cpp='s shell-login encode/decode.
+- =ores.iam.client/client/service_token_provider.cpp= (discovered
+  live, see =* Test Scenarios=): every service authenticates itself
+  at startup via =make_service_token_provider()='s eager
+  =authenticate()= call, which hard-coded =rfl::json::write=/=read=
+  for =service_login_request=/=response= and =refresh_response= --
+  entirely outside any file list any completed task in this story had
+  audited, and a genuinely universal blocker (a =msgpack=-configured
+  process cannot even authenticate itself, let alone serve requests,
+  until this is fixed). Migrated onto
+  =ores::nats::default_wire_codec()=, same shape as every other fix
+  in this story.
+
+Verification: full-repo =compass build --preset linux-clang-debug-make=
+clean (100%, no errors); full =compass build rat --preset
+linux-clang-debug-make= (every component's =test_<component>= target)
+passed with zero failures. Live smoke test #1 (json, today's default):
+started services, provisioned Barclays Plc (GLEIF) end-to-end via
+=ores.shell= (41/41 dataset steps completed, exercising the full NATS
+request/reply/decode/=wire_codec= pipeline server-side), then
+launched the Qt client -- it connects to NATS and renders its main
+window with no crash, confirming the new =ClientManager= code links
+and runs cleanly. Did not click through an interactive login/
+authenticated-request flow in the running client -- no GUI-automation
+tool is available in this environment for a native Qt app; flagged
+explicitly rather than claimed. Live smoke test #2 (msgpack): see
+[[id:E0570F22-B925-4BCF-BB1F-48F74BC04278][the linked test scenario]] --
+manually launched =ores.iam.service --nats-wire-format msgpack=,
+which first failed exactly at the =service_token_provider= blocker
+above (confirming the bug was real, not theoretical), then, after the
+fix, progressed correctly through the self-login round-trip (account
+lookup, session creation, effective-permission computation) under
+msgpack. A json-mode regression check (=ores.shell= login against the
+normally-supervised fleet) confirmed the fix didn't disturb the
+default path.
 
 * Notes
 
@@ -69,18 +154,47 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E0570F22-B925-4BCF-BB1F-48F74BC04278][Service self-authentication round-trips correctly under msgpack wire format]] | PASSED | Live msgpack test; caught and fixed a universal service_token_provider blocker (see Plan) |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1755][#1755]] | [ores.qt] Consolidate and migrate ClientManager to wire_codec |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | send_authenticated_request*'s body parameter still named json_body though it carries wire_codec bytes now | ClientManager.hpp, ClientManager.cpp | Fixed | Renamed to encoded_body across all three overloads and their .cpp definitions |
+|   | encode_request builds a std::string via reinterpret_cast for interop with existing std::string_view-based signatures -- worth revisiting if those signatures ever change to std::span | ClientManager.hpp | Declined | Correct and safe as-is; changing session_.request()/send_authenticated_request*'s signatures is a larger, unrelated refactor |
+|   | No new automated unit test for ClientManager's codec migration itself | ClientManager.hpp | Declined | ClientManager isn't unit-testable without a live NATS session; covered by compass build rat plus the live json/msgpack smoke tests already in this task's Result |
 |   |                 |      |          |       |
 
 * Result
+
+=ClientManager='s ~10 =rfl::json= call sites are consolidated onto
+two shared helpers (=encode_request<T>=/=decode_response<T>=) that
+route through =ores::nats::default_wire_codec()=, plus the two named
+=ores.qt= stragglers (=MarketSimulatorWindow.cpp=,
+=ShellMdiWindow.cpp=). =ClientManagerTradeInstrument.cpp='s decode
+side (=parse_trade_instrument()=) stays =rfl::json=-only, documented
+as an explicit, correct-under-=json= gap for the story's end-to-end
+task. Full-repo build and 74-suite =ctest= pass; a live smoke test
+under =json= confirmed provisioning and client startup work
+end-to-end; a second live smoke test deliberately targeting =msgpack=
+caught and fixed a genuinely universal blocker outside this task's
+original file scope --
+=ores.iam.client::service_token_provider= hard-coded =rfl::json= for
+every service's self-authentication at startup, which would have
+broken *any* =msgpack=-configured process before it could serve a
+single request. Both the fix and its live verification are recorded
+in [[id:E0570F22-B925-4BCF-BB1F-48F74BC04278][a new test scenario]]. A repo-wide
+sweep also surfaced several more service-to-service call sites still
+bypassing =handler_helpers= (=party_cache.hpp=, =tenant_handler.hpp=,
+=crm_client.cpp=, =currency_pair_convention_cache.hpp=,
+=report_definition_template_handler.hpp=, =trade_handler.hpp=) --
+none block today's =json= default, but each needs the same
+=default_wire_codec()= migration before a full-environment =msgpack=
+switch is safe; left for the story's end-to-end-verify task, per its
+own =* Notes= list.

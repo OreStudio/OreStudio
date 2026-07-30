@@ -37,11 +37,11 @@ and decommission Barclays/NatWest]].
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Fixed in ores_iam_publish_accounts_from_dq_fn; verified via db recreate + reprovision (59/59 accounts have login_info) and a live UI retest. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-07-30                               |
 
 * Acceptance

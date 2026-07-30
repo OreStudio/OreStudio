@@ -61,11 +61,11 @@ This task:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Connections db tidied, Barclays/NatWest decommissioned across skills/recipes, verification scenario PASSED. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Shepherd this branch's PR into main.   |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:E8707C8E-A071-4397-ACCC-C2A82E43C46F][Verify connections database tidy-up and Barclays decommission]] | PENDING | |
+| [[id:E8707C8E-A071-4397-ACCC-C2A82E43C46F][Verify connections database tidy-up and Barclays decommission]] | PASSED | |
 
 * PRs
 

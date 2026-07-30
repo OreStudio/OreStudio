@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
 #include "ores.marketdata.client/export.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.client/presentation/currency_pair_rate_formatter.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -64,32 +65,29 @@ struct crm_rate_format_request {
 
 /**
  * @brief Stateless, batch mapper from raw CRM rates + resolved conventions
- * to display-ready strings. No NATS or Qt/Wt dependency. Batched rather
- * than one call per cell -- a CRM matrix can have hundreds of cells per
- * reload, and formatting them as a single pass avoids per-cell call
- * overhead and lets the output vector be sized once.
+ * to CRM-specific display-ready strings (rate + change% + tooltip). No
+ * NATS or Qt/Wt dependency. Batched rather than one call per cell -- a CRM
+ * matrix can have hundreds of cells per reload, and formatting them as a
+ * single pass avoids per-cell call overhead and lets the output vector be
+ * sized once.
+ *
+ * The rate-string formatting itself (tick-snapping, decimal precision) is
+ * not CRM-specific and lives in
+ * ores::refdata::client::presentation::currency_pair_rate_formatter, which
+ * this class delegates to -- CRM's own value-add here is purely the
+ * batching plus the change%/tooltip/status-string logic. See the "Rate
+ * display conventions" story.
  */
 class ORES_MARKETDATA_CLIENT_EXPORT crm_rate_formatter final {
 public:
     /**
      * @brief Formats a batch of CRM rates, one crm_rate_display per input
-     * request, in the same order. Each rate is snapped to its convention's
-     * nearest tick (tick_size * pip_factor) before being rendered at
-     * decimal_places precision; a request with no convention is shown
-     * unsnapped at a fixed default precision. A reversed-convention
-     * request (see crm_rate_format_request::convention_reversed) skips
-     * tick-snapping and instead derives decimal_places that preserve the
-     * same number of significant figures the convention encodes for its
-     * own direction.
+     * request, in the same order. rate_text comes from
+     * currency_pair_rate_formatter::format_rate(); see its own doc for the
+     * tick-snapping/precision/reversed-convention rules.
      */
     static std::vector<crm_rate_display>
     format(const std::vector<crm_rate_format_request>& requests);
-
-private:
-    static std::string
-    format_rate(double rate,
-                const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
-                bool convention_reversed);
 };
 
 }

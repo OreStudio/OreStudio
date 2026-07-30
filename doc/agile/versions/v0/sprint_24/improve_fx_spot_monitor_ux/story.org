@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5
+:END:
+#+title: Story: Improve FX Spot Monitor widget UI/UX
+#+description: Reduce color fatigue, fix numeric alignment, apply JPY 3-decimal convention, and replace the repeated LIVE badge, per a Gemini UI review.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A Gemini UI/UX review of the FX Spot Monitor widget
+([[id:9242195E-21AE-4332-8306-183767046BC3][full audit and mockup]]) identified four concrete issues: (1) colors the
+entire currency-pair label red/green instead of reserving color for
+directional price deltas only, causing "Christmas tree" visual fatigue;
+(2) numeric columns aren't right-aligned, so decimal places don't stack
+for fast vertical scanning; (3) renders every pair to 5 decimal places,
+violating the standard JPY convention of 3 decimals; (4) repeats the
+literal text "LIVE" on every row instead of a compact status indicator.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-07-30                               |
+
+* Acceptance
+
+- Currency-pair labels stay a fixed neutral colour, never tinted by
+  tick direction or connection status; colour is reserved for the Mid
+  value's directional delta only.
+- Mid/24h Chg columns are right-aligned in a monospace font so decimal
+  points visually stack.
+- JPY-quoted pairs render to 3 decimal places instead of 5.
+- Live rows no longer repeat the literal text "LIVE" -- the status
+  dot alone is the signal.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C19BDAC3-7D44-4D63-8BE9-77DFF18F5533][Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge]] | DONE | 2026-07-29 | 2026-07-30 | Implement the Gemini UI/UX audit's four concrete fixes on FxSpotGridWindow: (1) reserve red/green color to the Mid price delta and 24h Chg columns only, not the whole currency-pair label; (2) right-align all numeric columns so decimals stack for fast vertical scanning; (3) render JPY pairs to 3 decimal places instead of 5, matching standard FX convention; (4) replace the repeated literal 'LIVE' text with a compact status indicator. Bid/Ask column expansion from the mockup is out of scope -- no bid/ask data exists in the current feed. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-10 in the product backlog; promoted preserving the UUID.
+
+** What
+
+A Gemini UI/UX review of the FX Spot Monitor widget
+([[id:9242195E-21AE-4332-8306-183767046BC3][full audit and mockup]]) identified four concrete issues: (1) colors the
+entire currency-pair label red/green instead of reserving color for
+directional price deltas only, causing "Christmas tree" visual fatigue;
+(2) numeric columns aren't right-aligned, so decimal places don't stack
+for fast vertical scanning; (3) renders every pair to 5 decimal places,
+violating the standard JPY convention of 3 decimals; (4) repeats the
+literal text "LIVE" on every row instead of a compact status indicator.
+
+** Why
+
+The widget is otherwise functionally correct (confirmed working
+end-to-end with real ticking synthetic feeds in
+[[id:73E7622C-CBD2-48C8-96B9-DEA8AA7C45C6][Seed Basic and Realistic dataset bundles]]) but hard to actually read
+at a glance, which matters for a live-ticking monitor meant to be
+scanned quickly.
+
+** References
+
+- [[id:9242195E-21AE-4332-8306-183767046BC3][FX Spot Monitor UI/UX Audit & Redesign Specification]] (full review + mockup)
+- =projects/ores.qt/mktdata/src/FxSpotChartWindow.cpp=
+
+** See also
+
+- [[id:9A614F60-45C5-4759-AF7D-80F9FBFA1103][Capture: FX Spot chart doesn't refresh on feed binding change]] — a functional bug in the same window, found in the same testing session.

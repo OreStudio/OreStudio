@@ -24,6 +24,8 @@
 #include "ores.marketdata.api/domain/feed_binding.hpp"
 #include "ores.marketdata.client/fx_spot_subscription.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
 #include <QColor>
 #include <QFutureWatcher>
 #include <QLabel>
@@ -33,6 +35,7 @@
 #include <chrono>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -70,6 +73,12 @@ private:
     struct RowState {
         int row = -1;
         std::string ore_key;
+        // Resolved once in buildRows() (direct or reversed lookup against
+        // conventionCache_), not re-resolved on every tick -- applyTick() runs
+        // on the hot path. See currency_pair_rate_formatter::format_rate's
+        // own doc for what convention_reversed means.
+        std::optional<refdata::domain::currency_pair_convention> convention;
+        bool convention_reversed = false;
         double last_mid = 0.0;
         bool ever_ticked = false;
         std::chrono::system_clock::time_point last_tick{};
@@ -119,6 +128,10 @@ private:
     QTimer* staleTimer_;
     QFutureWatcher<LoadResult>* loadWatcher_;
     std::map<std::string, RowState> rows_; // keyed by ore_key
+    // Convention-aware rate formatting (decimal places, tick size), same
+    // cache/formatter pair CrmCrossRatesMatrixMdiWindow uses -- see the "Rate
+    // display conventions" story. Loaded once at construction.
+    std::shared_ptr<refdata::service::cache::currency_pair_convention_cache> conventionCache_;
 };
 
 } // namespace ores::qt

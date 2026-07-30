@@ -58,6 +58,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib
         ores.qt.refdata.lib
         ores.refdata.api.lib
+        ores.refdata.client.lib
         ores.marketdata.api.lib
         ores.marketdata.client.lib
         ores.dq.api.lib

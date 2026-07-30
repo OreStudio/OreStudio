@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: C19BDAC3-7D44-4D63-8BE9-77DFF18F5533
+:END:
+#+title: Task: Redesign FX Spot Monitor: color isolation, alignment, JPY decimals, status badge
+#+description: Implement the Gemini UI/UX audit's four concrete fixes on FxSpotGridWindow: (1) reserve red/green color to the Mid price delta and 24h Chg columns only, not the whole currency-pair label; (2) right-align all numeric columns so decimals stack for fast vertical scanning; (3) render JPY pairs to 3 decimal places instead of 5, matching standard FX convention; (4) replace the repeated literal 'LIVE' text with a compact status indicator. Bid/Ask column expansion from the mockup is out of scope -- no bid/ask data exists in the current feed.
+#+type: task
+#+level: s1
+#+filetags: :improve_fx_spot_monitor_ux:sprint_24:v0:
+#+owner: marco
+#+branch: feature/redesign-fx-spot-monitor-color-alignment-jpy-status
+#+pr: 1763
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:E2EEDBCB-6547-4CDA-B594-FACF0E2693B1][Verify FX Spot Monitor color, alignment, JPY decimals, status]] | PASSED | All 6 steps PASS. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1763][#1763]] | [qt] Redesign FX Spot Monitor: color isolation, alignment, JPY decimals |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Raw QFont("Monospace") has no fallback chain/style hint; use FontUtils::monospace() instead | FxSpotGridWindow.cpp | Accepted | Swapped in the project's existing cross-platform monospace utility. |
+| 2 | is_jpy_quoted() re-parses ore_key on every tick instead of caching once per row | FxSpotGridWindow.cpp | Accepted | Superseded entirely by the convention-aware rework below -- the JPY special case (and the re-parsing) is gone, replaced by a convention resolved once per row in buildRows() and cached on RowState. |
+| 3 | (User, not a bot reviewer) Hardcoding JPY as a special case is wrong -- should use convention-driven formatting, not currency-specific literals | FxSpotGridWindow.cpp | Accepted | Reworked against refdata.currency_pair_convention via a currency_pair_convention_cache loaded the same way CrmCrossRatesMatrixMdiWindow does. No currency code appears anywhere in the file now. |
+| 4 | (User, follow-up) crm_rate_formatter isn't CRM-specific -- the rate-formatting primitive shouldn't be named/homed after one caller | crm_rate_formatter.hpp/.cpp | Accepted | Extracted the tick-snapping/precision logic into a new currency_pair_rate_formatter in ores.refdata.client (commit 856c5a875), which crm_rate_formatter::format() now delegates to. FxSpotGridWindow calls currency_pair_rate_formatter::format_rate() directly. New dedicated test suite added at the new home; existing crm_rate_formatter tests unchanged and still pass (they exercise format() end-to-end). |
+
+* Result
+
+Implemented all four fixes from the Gemini UI/UX audit in
+=FxSpotGridWindow=:
+- Colour reserved exclusively for the Mid value's directional delta.
+  The currency-pair label is now a fixed neutral colour always,
+  regardless of tick direction or connection status (removed
+  =pair_color_for_status= entirely, since nothing needed it once the
+  pair label stopped being tinted by status too).
+- Mid/24h Chg columns use a monospace font under right-alignment so
+  decimal points actually stack -- right-alignment alone doesn't
+  achieve that with a proportional font.
+- JPY-quoted pairs render to 3 decimal places instead of 5.
+- The redundant "LIVE" text is dropped once a row is live; the green
+  status dot alone carries the signal. Stale/Disconnected/Pending
+  keep explanatory text since those states need attention.
+
+Bid/Ask column expansion from the audit's mockup was scoped out: no
+bid/ask data exists in the current feed. 24h Chg population is a
+separate, pre-existing gap (always a placeholder), not touched here.
+
+Verified end-to-end via the linked test scenario against a live
+ticking FX Spot grid (both up/down ticks, a JPY pair, and multiple
+connection-status transitions). All 6 steps PASS.

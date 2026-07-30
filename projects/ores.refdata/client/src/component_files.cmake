@@ -22,6 +22,7 @@ set(files
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/presentation/currency_pair_rate_formatter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/service/cache/currency_pair_convention_cache.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.client/service/cache/currency_pair_convention_cache_registrar.hpp"
 )

@@ -26,6 +26,20 @@
 # (not present in this repo's existing xsd/ before this script existed;
 # this repo has its own equivalent, scripts/validate_ore_examples.sh).
 #
+# Known hand-patches reapplied after every sync (see reapply_known_patches()
+# below and doc/agile/product_backlog/deferred/document_ore_vendor_hand_patches.org):
+# upstream ships FX/RATE/USD/GBP and FX/RATE/USD/CHF spot quotes in 3 files
+# whose value is genuinely the GBP/USD and CHF/USD rate (confirmed against
+# QuantLib's FXSpotQuote convention -- "1 unit of unitCcy = quote * 1 unit
+# of ccy" -- 1.3946 is ~1 GBP in USD, not ~1 USD in GBP), i.e. upstream's
+# own key order is wrong, not an ORE-Studio-specific convention mismatch.
+# Fixed once in PR #1423 (kept, review-confirmed safe: these 3 files each
+# have their own local curveconfig.xml with zero reference to the old
+# key); PR #1423 review found 4 more candidate files where the fix was
+# NOT safe (they resolve the *shared* Input/curveconfig.xml, whose own
+# <SpotRate> is load-bearing on the old key) and reverted those --
+# deliberately NOT reapplied here, left exactly as upstream ships them.
+#
 # Usage:
 #   ./external/ore/tools/update_ore_samples.sh <ore-engine-source-dir> [options]
 #
@@ -113,6 +127,37 @@ ENGINE_VERSION="${ENGINE_VERSION#v}"
 echo "Engine source : ${SRC_DIR}"
 echo "Engine        : ${ENGINE_VERSION} (${ENGINE_COMMIT}, ${ENGINE_COMMIT_DATE})"
 
+# Files where upstream ships a genuinely wrong FX/RATE key order (not an
+# ORE-Studio-specific convention issue -- see the header comment above),
+# and the exact sed fix that PR #1423 confirmed safe for each. Applied
+# after every examples/ sync so a fresh rsync from upstream never
+# silently re-introduces the bug.
+KNOWN_PATCH_FILES=(
+    "external/ore/examples/XvaRisk/Input/market_20160205_eonia_200bp_up.txt"
+    "external/ore/examples/XvaRisk/Input/market_20160205_eur6m_200bp_up.txt"
+    "external/ore/examples/ORE-Python/Notebooks/Example_7/Input/market.txt"
+)
+
+reapply_known_patches() {
+    echo ""
+    echo "--- Reapplying known hand-patches (see this script's header comment) ---"
+    local f path
+    for f in "${KNOWN_PATCH_FILES[@]}"; do
+        path="${REPO_ROOT}/${f}"
+        if [[ ! -f "${path}" ]]; then
+            echo "  WARNING: ${f} not found -- skipped (did it move upstream?)" >&2
+            continue
+        fi
+        # Value is never touched, only the two currency codes in the key
+        # swap places -- matches PR #1423 exactly.
+        sed -i \
+            -e 's|FX/RATE/USD/GBP \([0-9.]*\)|FX/RATE/GBP/USD \1|' \
+            -e 's|FX/RATE/USD/CHF \([0-9.]*\)|FX/RATE/CHF/USD \1|' \
+            "${path}"
+        echo "  patched: ${f}"
+    done
+}
+
 # sync_one <label> <src-subdir> <dest-subdir> <description> <exclude-array-name...>
 sync_one() {
     local label="$1" src_sub="$2" dest_sub="$3" description="$4"; shift 4
@@ -133,6 +178,12 @@ sync_one() {
     for f in "${exclude_names[@]}"; do
         rsync_args+=(--exclude "/${f}")
     done
+    # This directory's own docs (written once by hand, not sourced from
+    # upstream) -- MUST also be excluded from --delete, not just from the
+    # manifest's own file-count/hash below, or the very first re-sync
+    # after adding one of these silently deletes it (found the hard way:
+    # README.md/methodology.txt vanished on this script's own second run).
+    rsync_args+=(--exclude "/manifest.json" --exclude "/README.md" --exclude "/methodology.txt")
 
     mkdir -p "${dest}"
     rsync "${rsync_args[@]}" "${src}/" "${dest}/"
@@ -142,10 +193,15 @@ sync_one() {
         return
     fi
 
+    if [[ "${label}" == "Examples" ]]; then
+        reapply_known_patches
+    fi
+
     local file_count top_level_json tree_hash
     file_count="$(find "${dest}" -type f -not -name "manifest.json" -not -name "README.md" -not -name "methodology.txt" | wc -l)"
-    top_level_json="$(find "${dest}" -mindepth 1 -maxdepth 1 -printf '%f\n' \
+    top_level_json="$(find "${dest}" -mindepth 1 -maxdepth 1 \
         -not -name "manifest.json" -not -name "README.md" -not -name "methodology.txt" \
+        -printf '%f\n' \
         | sort | python3 -c '
 import json, sys
 print(json.dumps(sorted(l.strip() for l in sys.stdin)))
@@ -180,7 +236,7 @@ EOF
 }
 
 sync_one "Examples" "Examples" "external/ore/examples" \
-    "Provenance for external/ore/examples/ -- a verbatim sync of the ORE Engine fork's own Examples/ directory (minus its pytest test-harness files, see external/ore/tools/update_ore_samples.sh's header comment for the exclude list), not hand-edited or hand-curated." \
+    "Provenance for external/ore/examples/ -- a sync of the ORE Engine fork's own Examples/ directory (minus its pytest test-harness files, see external/ore/tools/update_ore_samples.sh's header comment for the exclude list), with exactly 3 known upstream-bug hand-patches reapplied automatically after every sync (KNOWN_PATCH_FILES in that same script -- upstream ships a genuinely wrong FX/RATE key order in these files; see the script's header comment and doc/agile/product_backlog/deferred/document_ore_vendor_hand_patches.org for why). No other manual edits anywhere in this tree." \
     "${EXCLUDE_EXAMPLES_FILES[@]}"
 
 sync_one "XSD schemas" "xsd" "external/ore/xsd" \

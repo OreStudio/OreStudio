@@ -5,7 +5,7 @@
   "engine_version": "1.8.16.0-3-g3b62ba248",
   "engine_commit": "3b62ba248e36ea92f408f0d863ede09639074836",
   "engine_commit_date": "2026-06-11T12:45:15+02:00",
-  "synced_at": "2026-07-30T20:59:45Z",
+  "synced_at": "2026-07-30T22:18:33Z",
   "synced_by": "external/ore/tools/update_ore_samples.sh",
   "file_count": 26,
   "top_level_entries": ["baselTrafficLightconfig.xsd", "calendaradjustment.xsd", "check.cmd", "check.sh", "collateralbalance.xsd", "conventions.xsd", "counterparty.xsd", "creditsimulation.xsd", "currencyconfig.xsd", "curveconfig.xsd", "historicalreturnconfig.xsd", "iborfallbackconfig.xsd", "input.xsd", "instruments.xsd", "nettingsetdefinitions.xsd", "ore.xsd", "ore_types.xsd", "pricingengines.xsd", "referencedata.xsd", "scriptlibrary.xsd", "sensitivity.xsd", "simmcalibration.xsd", "simulation.xsd", "stress.xsd", "todaysmarket.xsd", "xsd_bindings.xjb"],

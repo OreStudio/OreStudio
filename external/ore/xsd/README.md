@@ -1,14 +1,14 @@
 # ORE XML Schemas
 
-A verbatim, unmodified sync of the ORE Engine fork's own `xsd/`
-directory -- the XSD schemas ORE's own input XML (and this repo's
-vendored `external/ore/examples/`) validate against.
+A sync of the ORE Engine fork's own `xsd/` directory -- the XSD schemas
+ORE's own input XML (and this repo's vendored `external/ore/examples/`)
+validate against.
 
 Kept in lockstep with `external/ore/examples/` (both synced from the
 same engine commit in one invocation) -- a schema/example version
 mismatch produces spurious validation failures unrelated to either side
-actually being wrong. See `external/ore/examples/methodology.txt` for
-the full sync methodology (this directory doesn't repeat it).
+actually being wrong. See `external/ore/methodology.txt` for the full
+sync methodology (this directory doesn't repeat it).
 
 ## Quick Start
 
@@ -26,12 +26,15 @@ the full sync methodology (this directory doesn't repeat it).
 
 ## Regenerating
 
-Never hand-edit any `.xsd` file here. See
-`external/ore/examples/README.md`/`methodology.txt` for the full sync +
-validate methodology (one script call syncs both directories together).
+Never hand-edit any `.xsd` file here. See `external/ore/methodology.txt`
+for the full sync + validate methodology (one script call syncs both
+directories together), and remember to also re-run
+`projects/ores.codegen/scripts/xsdcpp_generate_ore.sh` afterwards --
+`projects/ores.ore`'s generated C++ domain types are schema-derived.
 
 ## Related Files
 
 - Sync script: `external/ore/tools/update_ore_samples.sh`
 - Validation: `scripts/validate_ore_examples.sh`
 - Examples (synced in lockstep): `external/ore/examples/`
+- Codegen consumer: `projects/ores.codegen/scripts/xsdcpp_generate_ore.sh`

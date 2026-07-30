@@ -38,10 +38,25 @@ more that were investigated and deliberately left unfixed because
 their =curveconfig.xml= load-bears the old key) and drop the local
 patch once upstream lands it. Flagged during PR #1423 review.
 
+* Resolution
+
+RESOLVED: =external/ore/tools/update_ore_samples.sh= (the new sync
+script written for the ORE Engine 1.8.16.0 version bump) now reapplies
+these exact 3 patches automatically after every sync
+(=KNOWN_PATCH_FILES=/=reapply_known_patches()= in that script) --
+verified live: a full re-sync from a fresh upstream checkout silently
+reintroduced the bug once, was caught before commit, and the
+auto-reapply was added and confirmed idempotent across two more
+re-syncs. No longer a manual "remember to reapply" step for a human --
+documented in the script's own header comment and in
+=external/ore/methodology.txt=/=external/ore/examples/methodology.txt=
+too, for anyone reading without running the script first.
+
 * References
 
 - PR #1423
 - =external/ore/methodology.txt=
+- =external/ore/tools/update_ore_samples.sh= (the automated fix)
 - =doc/agile/versions/v0/sprint_22/synthetic-data-collections/story.org=
   (Decisions section has the full file-by-file breakdown)
 

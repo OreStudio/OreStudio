@@ -153,3 +153,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria met. Shipped
+=calendar_adjustment_export_service= (=ores.refdata.core=): given a
+set of calendar codes (or none, meaning every active =source='user'=
+calendar), walks each one's =base_calendar_code= chain via a
+cycle-guarded recursive DFS -- a forest, not a general DAG, so no
+=boost::graph= dependency was needed -- and returns a base-first list
+of transient =calendar_adjustment= DTOs assembled from each
+calendar's own row plus its =calendar_exception= rows, skipping
+=source='quantlib'= links since ORE resolves those natively. Exposed
+via =refdata.v1.calendar_adjustments.export= (request/response,
+handler, registrar), mirroring the existing per-entity handler shape
+exactly, unguarded like other list/get endpoints. No new persisted
+table or entity -- =calendar_adjustment= stays exactly the existing
+domain struct/ORE-XML-mapper pair, used purely as an export-time DTO.
+
+Deliberately out of scope: the actual ORE-run export feature
+(conventions.xml/curve-config assembly, or whatever form it
+eventually takes) that would call this service and write the
+resulting XML to disk -- no such feature exists in the codebase yet.
+This task shipped the refdata-side assembly piece only, ready for
+that future feature to call.

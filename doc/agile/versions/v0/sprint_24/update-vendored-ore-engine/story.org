@@ -46,6 +46,8 @@ without manual steps or silent regressions.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:CECBE7BB-0C9E-43EF-B344-B87FE4BC208B][Refresh ORE Engine binary package, examples, and XSD to 1.8.16.0]] | DONE | 2026-07-30 | 2026-07-30 | Rebuild the ore engine self-contained, sync examples/xsd, automate hand-patch preservation. |
+| [[id:8DBD1BAE-EC77-4008-99CB-3C08C20CB575][Verify compute grid package SHA256 on download]] | BACKLOG | | | ores.compute.wrapper should verify a downloaded engine package's checksum against a known-good SHA256 before extracting/running it. |
+| [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] | BACKLOG | | | New ores.compute.client package_publisher shared by ores.shell and ores.qt; retarget AppProvisionerWizard to per-platform uploads on the seed's own key shape; vendor the ORE binary into the build. |
 
 * Decisions
 

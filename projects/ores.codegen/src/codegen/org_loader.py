@@ -1101,10 +1101,13 @@ def validate_model(model: dict[str, Any]) -> list[str]:
                     f"Column '{col.get('name','?')}' missing required property: {required}"
                 )
 
-    # Non-nullable is_enum columns/natural keys get no C++ member initializer
-    # unless :default_value: (or :default:) is set (cpp_domain_type_class.hpp
-    # .mustache only emits `= {{default_value}}` when the property is
-    # present) -- a plain `{{{cpp_type}}} {{name}};` leaves a scoped enum
+    # Non-nullable is_enum columns/natural keys/primary-key fields get no
+    # C++ member initializer unless :default_value: is set specifically
+    # (cpp_domain_type_class.hpp.mustache only emits `= {{default_value}}`
+    # from that exact property -- there is no {{#default}} fallback, so
+    # :default: alone does NOT satisfy this despite the two keys being used
+    # interchangeably elsewhere in this file for SQL-side vs C++-side
+    # defaults) -- a plain `{{{cpp_type}}} {{name}};` leaves a scoped enum
     # member uninitialized on default construction, which is undefined
     # behaviour the moment anything reads it (e.g. rfl::enum_to_string() in
     # a repository mapper). A :name generator: block only feeds the
@@ -1114,12 +1117,16 @@ def validate_model(model: dict[str, Any]) -> list[str]:
     # hand-written generator-only fix that a later regeneration silently
     # dropped; requiring :default_value: up front closes the whole class of
     # bug rather than one instance of it.
-    for col in de.get("columns", []) + de.get("natural_keys", []):
+    _enum_check_fields = (
+        de.get("columns", [])
+        + de.get("natural_keys", [])
+        + de.get("primary_key", {}).get("columns", [])
+    )
+    for col in _enum_check_fields:
         if (
             col.get("is_enum")
             and not col.get("nullable")
             and "default_value" not in col
-            and "default" not in col
         ):
             errors.append(
                 f"Enum column '{col.get('name') or col.get('column')}' has no "

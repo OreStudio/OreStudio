@@ -166,7 +166,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No blocking issues on the initial diff | (none) | N/A | First review pass, no fixable findings. |
+| 2 | run-pod.sh still passes JWT key via --env-file only, contradicting PR description | docker/run-pod.sh | Accepted | Added an explicit --env passthrough reading the real PEM file, mirroring compass_services.py's child_env(). |
+| 3 | Same JWT key gap, independently confirmed with root-cause detail (escaped \n can't parse as PEM) | docker/run-pod.sh | Accepted | Same fix as #2. |
+| 4 | stage-runtime.sh comment overstates the fix as DB-driven; silent skip on missing extra binary | docker/stage-runtime.sh | Accepted | Reworded comment to describe the actual glob+allow-list implementation; missing extra binary now logs a warning instead of silently skipping. |
 
 * Result
 

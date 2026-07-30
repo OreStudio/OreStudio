@@ -8,12 +8,13 @@
 # binaries, and everything else under publish/ that isn't actually needed
 # at runtime.
 #
-# The default set is every binary_name in
-# ores_controller_service_definitions_tbl -- not just anything matching
-# ores.*.service, since two supervised binaries (ores.http.server,
-# ores.compute.wrapper) don't follow that naming convention and were
-# previously silently missing from the staged image (only discovered when
-# process_supervisor logged "Binary not found" for them on a real deploy).
+# The default set is the ores.*.service glob plus an explicit allow-list
+# for the two supervised binaries that don't follow that naming convention
+# (ores.http.server, ores.compute.wrapper) -- not derived from
+# ores_controller_service_definitions_tbl itself, so a future supervised
+# binary named outside both patterns can still go silently missing (as
+# these two did, only discovered when process_supervisor logged
+# "Binary not found" for them on a real deploy).
 set -euo pipefail
 
 service=""
@@ -45,6 +46,8 @@ else
     for extra in ores.http.server ores.compute.wrapper; do
         if [[ -f "$publish/bin/$extra" ]]; then
             cp -a "$publish/bin/$extra" "$stage/bin/"
+        else
+            echo "Warning: $publish/bin/$extra not found -- skipping" >&2
         fi
     done
 fi

@@ -77,9 +77,21 @@ podman run -d --rm --pod "$pod_name" --name "ores-nats-${label}" \
     "$nats_image" --config "$nats_config" >/dev/null
 
 echo "=== Starting services container ==="
+# ORES_IAM_SERVICE_JWT_PRIVATE_KEY's docker/.env value only ever has escaped
+# '\n' (not real newlines), which OpenSSL's PEM parser can't read -- podman's
+# --env-file format has no way to represent a real multi-line value. Pass it
+# separately, straight from the real PEM file; --env after --env-file wins
+# for the same key. Mirrors compass_services.py's child_env() for the
+# native launch path.
+jwt_key_file="$root/build/keys/iam-rsa-private.pem"
+jwt_key_args=()
+if [[ -f "$jwt_key_file" ]]; then
+    jwt_key_args=(--env "ORES_IAM_SERVICE_JWT_PRIVATE_KEY=$(cat "$jwt_key_file")")
+fi
 podman run -d --rm --pod "$pod_name" --name "ores-services-${label}" \
     --user "$(id -u):$(id -g)" \
     --env-file docker/.env \
+    "${jwt_key_args[@]}" \
     -v "$certs_volume:$keys_dir:ro" \
     "$services_image" >/dev/null
 

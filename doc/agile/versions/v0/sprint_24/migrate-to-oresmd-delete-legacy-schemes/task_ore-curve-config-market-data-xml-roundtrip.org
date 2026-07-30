@@ -30,11 +30,11 @@ ORE's XML at all; curve config and market-data quotes do not.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] |
-| Now          | Landscape surveyed; plan below awaiting sign-off. |
-| Waiting on   | Plan sign-off.                        |
-| Next         | Begin Step 1 (curve-config import/export) once approved. |
+| Now          | Abandoned in favour of the proper follow-on story. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing -- see =* Result=.             |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -208,3 +208,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned before implementation. Landscape survey (see =* Plan=/=* Notes=)
+found two compounding problems that make this task the wrong vehicle
+to finish in:
+
+- Scoping "support every curve config in sample data" against the real
+  =external/ore/examples= corpus surfaced that oresmd's design
+  represents only ~7 of the 49 ORE quote types the market data
+  catalogue documents -- a design-doc-level gap, split into its own
+  story, [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to
+  full ORE quote-type coverage]], with one task per family.
+- Even narrowed to =YieldCurve= alone, most segment subtypes
+  (=Simple=-Deposit/FRA/Future/BMA, =TenorBasis=, =CrossCurrency=,
+  =ZeroSpread=) reference quote types (=MM/RATE=, =FRA/RATE=,
+  =BASIS_SWAP/BASIS_SPREAD=, =CC_BASIS_SWAP/BASIS_SPREAD=,
+  =ZERO/YIELD_SPREAD=, ...) that are exactly the gap the new story's
+  IR-coverage task is meant to close -- a genuinely oresmd-keyed
+  curve-config round-trip is blocked on that task landing first, not
+  something this task could finish independently.
+
+With the sprint closing, the right move is to abandon this task rather
+than force a narrowed, partially-oresmd-keyed slice through, and pick
+the work back up properly via the new story once its IR-coverage task
+(and however many of the others are needed) has landed. No code was
+written; only the agile docs (this task, the sibling story split, the
+sprint/story tables) are part of this task's history. The
+=feature/ore-curve-config-market-data-xml-roundtrip= branch's doc
+commits land via a docs-only PR rather than being discarded, since they
+correctly capture the investigation and the story split that came out
+of it.

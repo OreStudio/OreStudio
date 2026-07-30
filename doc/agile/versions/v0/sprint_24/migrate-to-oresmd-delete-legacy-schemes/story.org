@@ -74,11 +74,15 @@ Per-field migration:
   coexistence instead of colliding on a flat string.
 - [[id:4089A9E7-0B60-4E04-A996-AF614D9C1382][Normalize floating-rate index reference data]] is either superseded/closed or explicitly
   reconciled with this migration, not left as a competing scheme.
-- =oresmd= identifiers can round-trip through ORE's own
-  =curveconfig.xml=/=todaysmarket.xml=/market-data-quote file formats,
-  not just ORE Studio's internal consumers -- =oresmd= producing the
-  right key strings is necessary but not sufficient for a real ORE run
-  without this.
+- ~~=oresmd= identifiers can round-trip through ORE's own
+  =curveconfig.xml=/=todaysmarket.xml=/market-data-quote file formats~~
+  -- descoped: the task attempting this was abandoned once scoping
+  against the real corpus showed it depends on closing oresmd's
+  quote-type representation gap first, now tracked as its own story
+  ([[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE
+  quote-type coverage]]). This story's remaining acceptance is the
+  internal-consumer migration (=ore_key=, =market_series=,
+  =ir_curve_generation_config=), which is complete.
 
 * Tasks
 
@@ -89,7 +93,7 @@ Per-field migration:
 | [[id:05D5C710-7C9E-4CE1-859D-95B19E605F9B][Migrate fx_spot_generation_config.ore_key onto oresmd]] | DONE | 2026-07-29 | 2026-07-29 | Switch ore_key's generation source from the currency-pair derivation to oresmd's FX projection rule, verify against existing rows, then delete the old derivation code. |
 | [[id:9DB7786E-C9BE-467F-A2B9-5A9AFCFD6B45][Migrate ir_curve_generation_config onto oresmd, add curve role]] | DONE | 2026-07-29 | 2026-07-30 | Replace index_name with oresmd's index_family (backed by overnight_index_convention/ibor_index_convention) plus tenor, add the missing role field, and rebuild curve_feed_controller's collision check on the full oresmd field set so discount/projection coexistence works. Close Normalize floating-rate index reference data as superseded once this lands. |
 | [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Migrate market_series qualifier/point_id generation onto oresmd]] | DONE | 2026-07-30 | 2026-07-30 | Generate market_series.qualifier and market_observation.point_id from oresmd fields at every write path instead of free text; column shapes stay as-is. Once every consumer reads/writes through oresmd, delete the legacy free-text generation paths across all three migrations. |
-| [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and market-data XML round-trip via oresmd]] | STARTED | 2026-07-30 | | Add import_curve_config/export_curve_config for ORE's curveconfig.xml, todaysmarket.xml mapping, and market-data quote-string import/export, all keyed through oresmd -- new capability, since only currency config, calendar adjustments, conventions, and portfolio/trades round-trip through ORE's XML today. |
+| [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][Build ORE curve-config and market-data XML round-trip via oresmd]] | ABANDONED | 2026-07-30 | 2026-07-30 | Abandoned: scoping against the real corpus found oresmd represents ~7 of 49 ORE quote types (split into [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][its own story]]) and most YieldCurve segment subtypes need that gap closed first. Revisit via the new story once its IR-coverage task lands. |
 
 * Decisions
 

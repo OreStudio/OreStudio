@@ -31,21 +31,22 @@ No audit trail columns — volume makes them impractical.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this fixing row.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this fixing.
@@ -60,6 +61,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Reference to =ores_marketdata_market_series_tbl(id)= — identifies the fixing index.
@@ -68,6 +70,7 @@ Reference to =ores_marketdata_market_series_tbl(id)= — identifies the fixing i
 :PROPERTIES:
 :type:     date
 :cpp_type: std::chrono::year_month_day
+:natural_key: true
 :END:
 
 Calendar date on which the index was fixed. Also the hypertable partition column.
@@ -75,8 +78,6 @@ Calendar date on which the index was fixed. Also the hypertable partition column
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
 #+end_src
-
-* Columns
 
 ** value
 :PROPERTIES:

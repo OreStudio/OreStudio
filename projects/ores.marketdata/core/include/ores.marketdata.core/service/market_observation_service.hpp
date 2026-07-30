@@ -77,6 +77,7 @@ public:
      */
     std::uint32_t count_market_observations();
 
+
     /**
      * @brief Lists market observations filtered by series_id, with pagination.
      *
@@ -98,9 +99,8 @@ public:
 
 
     /**
-     * @brief Retrieves a single market observation by its id.
+     * @brief Retrieves a single market observation by its primary key.
      *
-     * @param id The id of the market observation.
      * @return The market observation if found, std::nullopt otherwise.
      */
     std::optional<domain::market_observation> get_market_observation(const std::string& id);
@@ -123,15 +123,14 @@ public:
     save_market_observations(const std::vector<domain::market_observation>& market_observations);
 
     /**
-     * @brief Deletes a market observation by its id.
+     * @brief Deletes a market observation by its primary key.
      *
-     * @param id The id of the market observation to delete.
      * @throws std::exception on failure.
      */
     void delete_market_observation(const std::string& id);
 
     /**
-     * @brief Deletes market observations by their ids.
+     * @brief Deletes market observations by their primary keys.
      */
     void delete_market_observations(const std::vector<std::string>& ids);
 

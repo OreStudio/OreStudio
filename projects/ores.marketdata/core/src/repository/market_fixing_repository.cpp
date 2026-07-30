@@ -37,7 +37,7 @@ std::string market_fixing_repository::sql() {
 }
 
 void market_fixing_repository::write(context ctx, const domain::market_fixing& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market fixing: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
     execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Writing market fixing to database.");
 }
@@ -65,7 +65,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
 
 std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_fixing_entity>> |
@@ -79,9 +79,10 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
         "Reading latest market fixing by id.");
 }
 
+
 std::vector<domain::market_fixing> market_fixing_repository::read_all(context ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_fixing_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -95,8 +96,9 @@ std::vector<domain::market_fixing> market_fixing_repository::read_all(context ct
         "Reading all market fixing versions by id.");
 }
 
+
 void market_fixing_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market fixing: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_fixing_entity> |

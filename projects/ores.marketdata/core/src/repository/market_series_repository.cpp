@@ -38,7 +38,7 @@ std::string market_series_repository::sql() {
 }
 
 void market_series_repository::write(context ctx, const domain::market_series& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market series: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing market series. " << "id: " << v.id;
     execute_write_query(
         ctx, market_series_mapper::map(v), lg(), "Writing market series to database.");
 }
@@ -66,7 +66,7 @@ std::vector<domain::market_series> market_series_repository::read_latest(context
 
 std::vector<domain::market_series> market_series_repository::read_latest(context ctx,
                                                                          const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market series. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market series. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_series_entity>> |
@@ -80,12 +80,14 @@ std::vector<domain::market_series> market_series_repository::read_latest(context
         "Reading latest market series by id.");
 }
 
+
 std::vector<domain::market_series> market_series_repository::read_all(context ctx,
                                                                       const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market series versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market series versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_series_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<market_series_entity, domain::market_series>(
         ctx,
@@ -95,8 +97,29 @@ std::vector<domain::market_series> market_series_repository::read_all(context ct
         "Reading all market series versions by id.");
 }
 
+std::optional<domain::market_series> market_series_repository::read_at_version(
+    context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading market series at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<market_series_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<market_series_entity, domain::market_series>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_series_mapper::map(entities); },
+        lg(),
+        "Reading market series at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void market_series_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market series: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market series. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_series_entity> |

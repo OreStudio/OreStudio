@@ -42,9 +42,17 @@ std::uint32_t market_series_service::count_market_series() {
     return repo_.get_total_market_series_count(ctx_);
 }
 
+
+std::optional<domain::market_series>
+market_series_service::get_market_series_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting market series at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
 std::optional<domain::market_series>
 market_series_service::get_market_series(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market series: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting market series. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -54,11 +62,11 @@ market_series_service::get_market_series(const std::string& id) {
 void market_series_service::save_market_series(const domain::market_series& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Series id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market series: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving market series. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market series: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved market series. " << "id: " << v.id;
 }
 
 void market_series_service::save_market_series(
@@ -74,9 +82,9 @@ void market_series_service::save_market_series(
 }
 
 void market_series_service::delete_market_series(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market series: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market series. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed market series: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed market series. " << "id: " << id;
 }
 
 void market_series_service::delete_market_series(const std::vector<std::string>& ids) {
@@ -85,7 +93,7 @@ void market_series_service::delete_market_series(const std::vector<std::string>&
 
 std::vector<domain::market_series>
 market_series_service::get_market_series_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market series: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market series. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

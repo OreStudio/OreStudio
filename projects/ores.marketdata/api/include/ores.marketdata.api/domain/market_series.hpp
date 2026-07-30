@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::marketdata::domain {
 
@@ -84,12 +85,12 @@ struct market_series final {
      * @brief Coarse asset class taxonomy: FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
      * CROSS_ASSET.
      */
-    domain::asset_class asset_class;
+    domain::asset_class asset_class = domain::asset_class::fx;
 
     /**
      * @brief Subclass within the asset class (e.g. SPOT, VOLATILITY, YIELD, SPREAD).
      */
-    domain::series_subclass series_subclass;
+    domain::series_subclass series_subclass = domain::series_subclass::spot;
 
     /**
      * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),
@@ -124,6 +125,16 @@ struct market_series final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for market_series, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const market_series&) {
+    return "ores.marketdata.market_series";
+}
 
 }
 

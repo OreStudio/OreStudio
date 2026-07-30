@@ -64,15 +64,16 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest market observations, possibly filtered by id.
+     * @brief Reads latest market observations, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::market_observation> read_latest(context ctx);
     std::vector<domain::market_observation> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all market observations, possibly filtered by id.
+     * @brief Reads all market observations, possibly filtered by primary key.
      */
     std::vector<domain::market_observation> read_all(context ctx, const std::string& id);
 

@@ -30,21 +30,22 @@ Every ORE market data key follows the skeleton =TYPE / METRIC / QUALIFIER=;
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this market series.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Party that owns this market series.
@@ -59,6 +60,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
@@ -67,6 +69,7 @@ ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
@@ -75,33 +78,65 @@ Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
 =EUR-EURIBOR-3M=, or an empty string for scalars).
 
-* Columns
-
 ** asset_class
 :PROPERTIES:
-:type:     text
-:cpp_type: domain::asset_class
-:is_enum:  true
-:nullable: false
+:type:          text
+:cpp_type:      domain::asset_class
+:is_enum:       true
+:nullable:      false
+:default_value: fx
 :END:
 
 Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
 =INFLATION=, =BOND=, =CROSS_ASSET=.
 
+#+begin_src cpp :name generator
+// Cycled deterministically (not left uninitialized) -- an unset enum here
+// previously fed rfl::enum_to_string() a garbage value, flagged by the
+// nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
+// task_fix_market_series_generator_uninitialized_enums).
+[idx]{
+    static constexpr domain::asset_class classes[] = {
+        domain::asset_class::fx,        domain::asset_class::rates,
+        domain::asset_class::credit,    domain::asset_class::equity,
+        domain::asset_class::commodity, domain::asset_class::inflation,
+        domain::asset_class::bond,      domain::asset_class::cross_asset};
+    return classes[static_cast<std::size_t>(idx) % std::size(classes)];
+}()
+#+end_src
+
 ** series_subclass
 :PROPERTIES:
-:type:     text
-:cpp_type: domain::series_subclass
-:is_enum:  true
-:nullable: false
+:type:          text
+:cpp_type:      domain::series_subclass
+:is_enum:       true
+:nullable:      false
+:default_value: spot
 :END:
 
 Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).
+
+#+begin_src cpp :name generator
+// Cycled deterministically -- see the asset_class generator above for why.
+[idx]{
+    static constexpr domain::series_subclass subclasses[] = {
+        domain::series_subclass::spot,         domain::series_subclass::forward,
+        domain::series_subclass::volatility,   domain::series_subclass::yield,
+        domain::series_subclass::basis,        domain::series_subclass::fra,
+        domain::series_subclass::xccy,         domain::series_subclass::spread,
+        domain::series_subclass::index_credit, domain::series_subclass::recovery,
+        domain::series_subclass::swap,         domain::series_subclass::capfloor,
+        domain::series_subclass::seasonality,  domain::series_subclass::price,
+        domain::series_subclass::correlation};
+    return subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)];
+}()
+#+end_src
 
 ** is_scalar
 :PROPERTIES:
@@ -242,7 +277,7 @@ separate =market_series_export_protocol.hpp=.
 #+begin_src cpp :name export_to_storage :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     void export_to_storage(ores::nats::message msg, const std::string& http_base_url) {
         [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(market_series_handler_lg(), msg);
+            ores::service::messaging::log_handler_entry(market_series_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());

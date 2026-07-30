@@ -127,6 +127,8 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+      - name: Install codegen dependencies
+        run: pip install -r projects/ores.codegen/requirements.txt
       - name: Check every component_files.cmake is up to date
         # Every component's CMakeLists.txt include()s a generated
         # component_files.cmake instead of using file(GLOB_RECURSE ...)

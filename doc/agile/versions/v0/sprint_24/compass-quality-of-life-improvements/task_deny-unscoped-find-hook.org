@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 6A77C68E-EB6C-432F-801A-5825AE44E16C
+:END:
+#+title: Task: Deny unscoped find invocations via PreToolUse hook
+#+description: Block find invocations rooted at a filesystem-wide directory, surfaced when an unscoped find scan touched the whole machine while researching ORE index conventions.
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements:sprint_24:v0:
+#+owner: marco
+#+branch: chore/deny-unscoped-find-hook
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend the existing PreToolUse hook mechanism to also deny find commands rooted at a filesystem-wide directory, so a targeted search stays targeted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- A new deny_unscoped_find_hook.py denies filesystem-root-rooted finds (no subpath) while allowing relative and narrower absolute paths; wired into .claude/settings.json's PreToolUse hooks alongside the existing piped-compass hook; unit tests cover both deny and allow cases, including find-as-prose-word false positives.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added =projects/ores.compass/src/deny_unscoped_find_hook.py=, a
+second =PreToolUse= hook alongside the existing piped-compass hook
+(same fail-open-if-missing guard). Denies a =find= invocation whose
+first non-flag path argument is exactly one of =/=, =/home=, =/usr=,
+=/etc=, =/var=, =/proc=, =/sys=, =/root=, =/opt=, =/boot=, =/dev=,
+=/mnt=, =/tmp= (no subpath); relative paths and any narrower absolute
+path pass through untouched. =find= is only recognised as a command
+word at the very start of the command string or directly after a
+shell operator (=;=, =&=, =|=, =(=) -- not bare whitespace -- since
+matching on bare whitespace would also catch "find" used as an
+ordinary English word inside an unrelated argument (caught live: a
+=compass add task --description= string mentioning "...an unscoped
+find / scanned the whole machine..." tripped an earlier draft of the
+regex). 13 unit tests cover both deny/allow cases and that false-
+positive class specifically. Wired into =.claude/settings.json= via
+=doc/llm/claude_code_settings.org='s =hooks-pretooluse= noweb block,
+alongside the existing hook entry.

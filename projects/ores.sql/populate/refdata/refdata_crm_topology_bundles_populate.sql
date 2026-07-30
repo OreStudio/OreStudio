@@ -21,13 +21,11 @@
 /**
  * CRM Topology Bundles Seed Population Script
  *
- * Registers the refdata.crm_topology_bundles dataset (a second member
- * of the marketdata.reference_vintage_2016_02_05 bundle, alongside
- * marketdata.fx_driver_rates -- so a party gets both in the same atomic
- * publish, per the CRM story's own architecture decision that a party's
- * CRM topology and the feed data it depends on must never be published
- * out of step) and seeds three named CRMs per party, matching real FX
- * desk tiering:
+ * Registers the refdata.crm_topology_bundles dataset (its own standalone
+ * bundle, 'crm_topology' -- deliberately independent of any synthetic-data
+ * vintage/theme bundle, so a party gets a working CRM Cross-Rates Matrix
+ * regardless of which theme's feed, if any, is currently running) and
+ * seeds three named CRMs per party, matching real FX desk tiering:
  *
  * - "majors": pivot USD, the 8 major driver pairs as spanning-tree
  *   edges, plus the complete C(8,2)=28 combinatorial set of enabled
@@ -44,16 +42,11 @@
  *   has its own independent topology, so sharing a currency pair across
  *   two CRMs means two separate driver-pair rows, not a reused one).
  *
- * Explicit dataset dependencies (ores_dq_dataset_dependencies_upsert_fn)
- * record that this dataset presupposes marketdata.fx_driver_rates (the
- * currencies) and synthetic.themes.ore_samples_2016 (the live feeds
- * that give those currencies fresh, not just seeded, rates) -- currently
- * documentation/introspection only (the bundle publish workflow orders
- * by each bundle member's own display_order, not by walking this
- * dependency graph), but still real, queryable metadata, and this
- * dataset's own member position (order 2, after fx_driver_rates at
- * order 1) in marketdata.reference_vintage_2016_02_05 achieves the
- * actual ordering that matters for this specific bundle today.
+ * The explicit dataset dependency (ores_dq_dataset_dependencies_upsert_fn)
+ * on marketdata.fx_driver_rates records that this dataset presupposes
+ * those currencies existing -- no dependency on any synthetic theme's
+ * live feed: publishing topology config doesn't require a feed to
+ * already be running, only the driver-currency reference data.
  *
  * This script is idempotent.
  */
@@ -134,21 +127,13 @@ END $$;
 -- =============================================================================
 -- Bundle Membership
 --
--- Second member of marketdata.reference_vintage_2016_02_05, after
--- marketdata.fx_driver_rates (order 1) -- same atomic publish, so a
--- party's CRM topology and the driver-rate data it depends on are never
--- published out of step.
+-- Its own standalone bundle (dq_dataset_bundle_populate.sql's
+-- 'crm_topology'), not a member of any vintage bundle -- see that
+-- registration's comment for why: a party gets a working CRM Cross-Rates
+-- Matrix regardless of which synthetic-data theme/vintage it publishes,
+-- and adding/retiring a vintage bundle never has to remember to carry
+-- CRM topology along with it.
 -- =============================================================================
-
-DO $$
-BEGIN
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'marketdata.reference_vintage_2016_02_05',
-        'refdata.crm_topology_bundles',
-        2,
-        false
-    );
-END $$;
 
 -- =============================================================================
 -- Artefact Seed Data

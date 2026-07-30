@@ -194,5 +194,9 @@ BEGIN
     -- --- Synthetic Data: Uniform Volatility Demo Bundle Members ---
 
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic_uniform_demo', 'synthetic.themes.uniform_demo', 10);
+
+    -- --- CRM Cross-Rates Matrix Topology Bundle Members ---
+
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'crm_topology', 'refdata.crm_topology_bundles', 10);
 END $$;
 

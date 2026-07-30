@@ -122,18 +122,6 @@ BEGIN
         1,
         false
     );
-
-    -- CRM cross-rates topology (majors/exotics/scandies), same dataset
-    -- already wired into the older marketdata.reference_vintage_2016_02_05
-    -- bundle -- added here too so any tenant provisioning the 2026 vintage
-    -- (e.g. Acme, per-office) also gets a working CRM Cross-Rates Matrix
-    -- instead of relying on the superseded 2016 bundle.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'marketdata.reference_vintage_2026_05_05',
-        'refdata.crm_topology_bundles',
-        2,
-        false
-    );
 END $$;
 
 -- =============================================================================

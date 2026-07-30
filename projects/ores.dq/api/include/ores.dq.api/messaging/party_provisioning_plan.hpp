@@ -41,17 +41,30 @@ struct party_bundle_publish_step {
  * synthetic_realistic_2026) never requires a client code change in either
  * provisioner, only a new row in dq_dataset_bundle_member_populate.sql.
  *
- * synthetic_realistic_2026 is TEMPORARILY excluded: its only dataset,
- * synthetic.themes.realistic_2026, fails at publish time via
- * ores_synthetic_publish_theme_from_dq_fn ("column existing.index_name
- * does not exist") -- see task tracking this fix. Re-add it here once
- * that's resolved; no other change needed, per the "new row only" design
- * above.
+ * Both synthetic_realistic_2026 and synthetic_ore_samples_2016 are
+ * published -- publishing a theme's *configuration* is safe and cheap
+ * even though only one theme's *feeds* should ever run at a time (see
+ * MarketSimulatorWindow's Start-at-Root theme prompt, which refuses to
+ * cascade a start across themes for exactly that reason): a freshly
+ * provisioned party can immediately test either current-regime pricing
+ * (2026) or legacy ORE Samples pricing (2016) without a re-provision,
+ * once feed-starting and workspace-scoped ORE Samples pricing land.
+ * synthetic_uniform_demo is not included by default -- it's a deliberately
+ * minimal demo/exercise archetype, not something every party needs out of
+ * the box; publish it separately (e.g. via ores.shell) when wanted.
+ *
+ * crm_topology is independent of any vintage/theme bundle above -- see
+ * its own registration's comment (dq_dataset_bundle_populate.sql) for why
+ * -- so the CRM Cross-Rates Matrix works regardless of which of the above
+ * ever actually starts ticking.
  */
 inline const std::vector<party_bundle_publish_step>& party_provisioning_bundle_plan() {
     static const std::vector<party_bundle_publish_step> plan{
         {"risk_management", "organisation structure and risk reporting"},
+        {"synthetic_realistic_2026", "synthetic market data configuration (2026)"},
+        {"synthetic_ore_samples_2016", "synthetic market data configuration (legacy ORE Samples)"},
         {"marketdata.reference_vintage_2026_05_05", "FX driver rates"},
+        {"crm_topology", "CRM Cross-Rates Matrix topology"},
     };
     return plan;
 }

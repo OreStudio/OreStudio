@@ -20,22 +20,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Fix =calendar_rule=/=calendar_exception='s soft-FK check against
+=ores_refdata_calendars_tbl= so a =calendar_rule=/=calendar_exception=
+row can actually be inserted -- every INSERT currently fails with
+=column "id" does not exist= (=calendars= has no =id= column, its PK
+is =code=).
+
+Reported by =prime_origin= (branch =feature/migrate-market-series-qualifier=)
+via a fresh, from-clean =compass db recreate=, which correctly proved
+this isn't stale-DB drift. Their suggested fix (hand-edit the
+generated SQL's =id = NEW.calendar_code= to =code = NEW.calendar_code=)
+was the wrong layer to fix it at -- that file is codegen output
+(=sql_schema_domain_entity_create.mustache=, driven by each entity's
+=* Foreign keys= drawer), so a hand-edit would be silently clobbered
+by the next regeneration. The real bug: both =.org= models already
+had an override (=:referenced_column: code=), but the template only
+ever reads =:target_column:= -- a property-name mismatch that made
+the override a complete no-op. This traces back to an earlier session
+on the parent =7FF8A057= materialisation task, whose own PR review
+round claimed this exact issue "Fixed... verified triggers regenerate
+correctly" -- that verification was against a local DB that hadn't
+been recreated since, so the broken fix went undetected until
+=prime_origin='s from-clean reproduction surfaced it for real.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
 
--
+- [X] =calendar_rule=/=calendar_exception='s generated insert-trigger
+  soft-FK check reads =code=, not =id=, from =ores_refdata_calendars_tbl=.
+- [X] Fixed at the correct layer (the =.org= models' property name),
+  not by hand-editing generated SQL, so a future regeneration doesn't
+  silently reintroduce the bug.
+- [X] Root cause (the =referenced_column=/=target_column= property-name
+  mismatch in =org_loader.py=) fixed too, not just its two symptomatic
+  call sites, so no other entity can fall into the same trap.
+- [X] Verified against a freshly-recreated DB (=compass db recreate=),
+  not a stale local schema -- the exact gap that let this ship broken
+  the first time.
 
 * Plan
 
@@ -43,7 +74,61 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Root cause: two differently-named keys, only one of which the template reads
+
+=org_loader.py='s =_soft_fk_validation_node_to_dict()= produced *two*
+dict keys from a soft-FK heading: a default =referenced_column: "id"=
+baked into the function's return literal, and a separately
+=setdefault='d =target_column: "id"=. Setting =:referenced_column:=
+in an =.org= model's properties drawer overwrites the first key --
+but =sql_schema_domain_entity_create.mustache= only ever renders
+=\{\{target_column\}\}=, so that override is invisible to the
+template. =counterparty.org=/=party.org= (the only other soft-FK
+overrides in the repo) happened to use the correct name,
+=:target_column:=, and work fine; =calendar_rule=/=calendar_exception=
+are the only two written against the dead, unread key.
+
+** Fix: one property name, not two
+
+- =org_loader.py=: removed the dead ='referenced_column': "id"= key
+  from the function's base dict entirely (kept only the real,
+  template-consumed =target_column=, still defaulting to =id=), and
+  rewrote the docstring to explicitly warn that there is deliberately
+  no =referenced_column= alias, naming this exact incident as why.
+- =calendar_rule.org=/=calendar_exception.org=: changed
+  =:referenced_column: code= to =:target_column: code=.
+- Regenerated both entities' =ores.sql.schema= facet (=compass codegen
+  entity generate <entity> --address ores.sql.schema=), verified via
+  =--diff= first that each showed exactly the expected one-line
+  =id = NEW.calendar_code= -> =code = NEW.calendar_code= change and
+  nothing else.
+
+** Verification had to go through a real DB rebuild, not just a green ctest
+
+This bug's entire history is a stale-DB false negative: the original
+review round that claimed it "Fixed" never actually re-created the
+database after regenerating, so its own passing verification was
+against the *old*, unfixed trigger function (=create or replace
+function= doesn't retroactively fix a function that was never
+re-applied). This session's own earlier full-suite runs on this
+branch's ancestor commits show the same trap: =ores.refdata.core.tests=
+passed cleanly multiple times even though the checked-in SQL was
+broken, because the local Postgres schema hadn't been rebuilt since
+before the regression. Fixed the fix properly this time by explicitly
+running =compass db recreate -y -k= before re-testing, not just
+re-running =ctest= against whatever schema happened to already be
+loaded.
+
 * Notes
+
+One =ores.refdata.core.tests= run mid-verification failed with no
+Catch2 summary at all (no crash message, no coredump found via
+=coredumpctl=) after completing ~160 of ~175 cases -- looked like a
+transient/contention issue (it landed right after a =db
+recreate=+service-restart cycle), not a real regression: an immediate
+rerun passed 100%, and the full-suite run afterwards (with services
+back up normally) was clean too. Flagging in case it recurs
+elsewhere, not treating it as resolved-and-understood.
 
 * Test Scenarios
 
@@ -69,3 +154,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four acceptance criteria met. =calendar_rule=/=calendar_exception=
+inserts work correctly again: fixed the property-name mismatch at its
+root (=org_loader.py=), corrected both entities' =.org= models to use
+the real, template-consumed =:target_column:= key instead of the dead
+=:referenced_column:=, and regenerated their SQL facet (a clean,
+one-line diff each, exactly as expected).
+
+Critically, verified against a *freshly recreated* database
+(=compass db recreate -y -k=), not merely a green =ctest= run against
+whatever schema happened to already be loaded -- that exact gap
+(stale local Postgres schema masking a broken trigger function) is
+what let this ship broken the first time and go undetected through
+an entire session's worth of "passing" tests on this branch's
+ancestor commits.
+
+Verified: full local build clean (=linux-clang-debug-make=); =ctest=
+72/74 passed, excluding the two pre-existing, already-captured
+=ores.iam= failures unrelated to this change; =ores.refdata.core.tests=
+specifically green on both an isolated rerun and the full-suite run,
+against the rebuilt DB.

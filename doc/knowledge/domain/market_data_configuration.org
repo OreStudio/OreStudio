@@ -20,74 +20,114 @@ performs that mapping — the object one actually names, versions, and
 switches between when the same requirement must resolve differently for
 different purposes (a trader's intraday view versus an official
 end-of-day valuation, for instance). This document defines resolution
-formally as a total function, explains why totality is the property
-that makes a valuation reproducible at all, and works through the two
+formally as a total function, explains why totality is the property that
+makes a valuation reproducible at all, and works through the two
 independently engineered systems — ORE and OpenGamma Strata — that
 converge on "configuration," not "profile," as the name for this
-concept, despite the source material this cluster distils having used
-the latter.
+concept, and on an ordered rule set as its internal structure.
 
 * Layperson's mental model
 
-Continuing this cluster's running analogy: if a
-[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]] is
-a domain name and a
-[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][market data identifier]] is
-an IP address, a market data configuration is a *DNS resolver
-configuration* — the specific, named set of nameservers and lookup
-rules a machine is pointed at, which determines which IP address a
-given domain name actually resolves to on that machine, right now. A
-laptop configured to use its home ISP's DNS resolver and the same
-laptop configured to use a corporate VPN's internal resolver can
-legitimately resolve the very same domain name to two different
-addresses — nothing about the domain name changed; what changed is
-*which resolver's rules were applied*. Swapping which market data
-configuration a valuation uses is exactly this kind of change: the
-requirement "the EUR discount curve" does not change meaning, but which
-concrete curve object it resolves to can, entirely legitimately, depend
-on which configuration is in force.
+A sound engineer working a weekly live show saves two channel-strip
+presets for the main vocal microphone: "Live" (wide EQ, natural
+compression shaped for the room's acoustics) and "Broadcast" (brighter
+top end, heavier limiting for the transmission chain). On show night they
+select "Live"; when the same performance is also being recorded for
+streaming they select "Broadcast." The microphone signal — the input —
+does not change at all. What changes is the preset selected, and that
+preset determines how the input is processed into an output. Crucially,
+once a preset is chosen and the show begins, switching mid-performance
+would produce an inconsistent result; a fixed preset, held constant
+through the whole performance, is what lets the recording be trusted as a
+coherent document of the evening.
 
-The property that makes any of this trustworthy — for DNS as much as
-for market data — is that a *single* resolver configuration, asked the
-same question at the same moment, must always give the same answer.
-A resolver that sometimes returned one IP address and sometimes another
-for the identical domain name, with no configuration change in between,
-would be useless; nothing built on top of it could ever be trusted or
-reproduced. This is precisely the property this document formalises
-below as the *totality* of the resolution function.
+A market data configuration works the same way. The requirement — "the
+EUR discount curve" — is the input signal: fixed, named, independent of
+what eventually satisfies it. The configuration is the active preset: the
+named, ordered set of rules that determines which physical curve object
+that requirement resolves to on this run. A "Trader Intraday"
+configuration might resolve "the EUR discount curve" to a curve refreshed
+every fifteen minutes from live feeds; an "End of Day Official"
+configuration might resolve the same requirement to a curve snapshotted
+from the official 5pm fixing. The requirement did not change; what changed
+is which preset was in force, and that is sufficient to produce a
+different resolved identifier. Just as no recording can be trusted if the
+engineer switched presets mid-performance, no valuation can be audited or
+reproduced if the active configuration changed mid-run.
 
-* Why "configuration," not "profile"
+#+begin_note
+*Aside: for readers who know DNS*
+
+A market data configuration is a *DNS resolver configuration* — the
+specific, named set of nameservers and lookup rules a machine is pointed
+at, which determines which IP address a given domain name actually
+resolves to on that machine, right now. A laptop configured to use its
+home ISP's DNS resolver and the same laptop configured to use a corporate
+VPN's internal resolver can legitimately resolve the very same domain
+name to two different addresses — nothing about the domain name changed;
+what changed is *which resolver's rules were applied*. Swapping which
+market data configuration a valuation uses is exactly this kind of
+change: the requirement "the EUR discount curve" does not change meaning,
+but which concrete curve object it resolves to can, entirely legitimately,
+depend on which configuration is in force.
+
+The property that makes any of this trustworthy — for DNS as much as for
+market data — is that a *single* resolver configuration, asked the same
+question at the same moment, must always give the same answer. A resolver
+that sometimes returned one IP address and sometimes another for the
+identical domain name, with no configuration change in between, would be
+useless; nothing built on top of it could ever be trusted or reproduced.
+This is precisely the property formalised below as the *totality* of the
+resolution function.
+#+end_note
+
+* State of the art
+
+Two independently engineered systems were checked directly, and both
+converge on the same model. Each provides two findings: what to call the
+concept, and how it is structured internally.
+
+** Naming: "configuration," not "profile"
 
 This document deliberately does not use "profile" for the object that
-determines $\rho$, even though that is the word this cluster's original
-source material uses. Two independently engineered, unrelated systems
-were checked directly, and both converge on a different word:
-
-- ORE's =ore::data::MarketConfiguration= and
-  =ore::data::TodaysMarketParameters= classes
-  (=OREData/ored/marketdata/todaysmarketparameters.hpp=) are documented
-  as: "The Market Configuration bundles configurations for each of the
-  market objects and assigns a configuration ID. Several Market
-  Configurations can be specified and held in a market object in
-  parallel." An application selects the market configuration ID it
-  wants at the point it queries a term structure — structurally exactly
-  $\rho$, parameterised by which named configuration is in force.
-- OpenGamma Strata's =com.opengamma.strata.calc.marketdata.MarketDataConfig=
-  class is documented as "Configuration required for building
-  non-observable market data, for example curves or surfaces... a map
-  of arbitrary objects, keyed by their type and a name," consumed by
-  =com.opengamma.strata.calc.marketdata.MarketDataFactory= — the
-  component whose Javadoc describes it as the thing that, "given the
-  requirements, ... will determine whether any raw market data is
-  needed," using =MarketDataConfig= "to provide additional information"
-  when it does.
-
+determines $\rho$, even though that is the word the cluster's original
+source material uses. ORE's =ore::data::MarketConfiguration= and
+=ore::data::TodaysMarketParameters= classes
+(=OREData/ored/marketdata/todaysmarketparameters.hpp=) are documented as:
+"The Market Configuration bundles configurations for each of the market
+objects and assigns a configuration ID. Several Market Configurations can
+be specified and held in a market object in parallel." OpenGamma Strata's
+=com.opengamma.strata.calc.marketdata.MarketDataConfig= class is
+documented as "Configuration required for building non-observable market
+data, for example curves or surfaces... a map of arbitrary objects, keyed
+by their type and a name," consumed by
+=com.opengamma.strata.calc.marketdata.MarketDataFactory=, the component
+whose Javadoc describes it as the thing that, "given the requirements,
+will determine whether any raw market data is needed," using
+=MarketDataConfig= "to provide additional information" when it does.
 Neither ORE nor Strata's engineers had access to the source notes this
-cluster started from, and both nonetheless reached for "configuration"
-rather than "profile" for the same structural role. Two independent
-confirmations outweigh one document's informal word choice; this
-cluster follows the field's actual convention rather than the
-originating notes' own vocabulary.
+cluster started from, and both reached for "configuration" rather than
+"profile" for the same structural role. Two independent confirmations
+outweigh one document's informal word choice; this cluster follows the
+field's actual convention.
+
+** Structure: ordered rules, not a flat lookup table
+
+Both implementations share a further structural property: resolution is
+not a flat lookup table from requirement to identifier, but an *ordered*
+set of rules applied in sequence until one matches. ORE's
+=MarketConfiguration= permits several configurations to be held "in
+parallel," with an application specifying which one applies at the point
+of query. Strata's =MarketDataConfig= achieves the same effect by keying
+its internal map on both a type and a name, letting a more specific
+configuration entry take precedence over a more general default when both
+could apply — the shape of "try progressively more specific rules until
+one produces an answer, then fall through to the general default" common
+to both. Two independent systems converging on "ordered rules" rather
+than "flat table" is evidence that the rule-ordering structure reflects a
+genuine requirement of the problem — specifically, that resolution must be
+able to express "try this more specific rule first; fall through if it
+does not match" — not merely a convenient implementation choice.
 
 * Formal definition
 
@@ -102,56 +142,56 @@ mapping each element of a set of market data requirements to exactly one
 The identifiers $\rho$ produces are candidates for membership in the
 [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]] $U$
 but are not yet confirmed members — that confirmation comes later, via
-the $\cap\, U$ step in the full pipeline. The critical word is *total*:
-$\rho$ must be defined for every requirement it is asked about — it
-cannot decline to answer, or return more than one candidate and leave
-the caller to pick. It need not be *injective* (two different
-requirements are permitted to resolve to the same physical identifier
-— "the discount curve" and "the OIS curve," for a currency where those
-happen to coincide, may both resolve to one identifier) nor *surjective*
-(almost all of $\mathrm{Identifiers}$ is irrelevant to any one
-requirement set and is simply never in $\rho$'s image for that set).
-What totality buys is reproducibility: re-running the same valuation
-against the same configuration must yield the same resolved identifiers
-every time, or nothing downstream — snapshotting, audit, re-pricing a
-historical trade — can be trusted. A $\rho$ that is not total, or that
-is not deterministic given a fixed configuration, cannot support this
-guarantee.
+the $\cap\, U$ step in the full pipeline. The critical property is
+*totality*: $\rho$ must be defined for every requirement it is asked
+about — it cannot decline to answer, or return more than one candidate
+and leave the caller to pick.
 
-* Detail
+$\rho$ need not be *injective*: two different requirements are permitted
+to resolve to the same physical identifier — "the discount curve" and
+"the OIS curve," for a currency where those happen to coincide, may both
+resolve to one identifier. Nor need it be *surjective*: almost all of
+$\mathrm{Identifiers}$ is irrelevant to any one requirement set and is
+simply never in $\rho$'s image for that set. What totality buys is
+*reproducibility*: re-running the same valuation against the same
+configuration must yield the same resolved identifiers every time, or
+nothing downstream — snapshotting, audit, re-pricing a historical trade
+— can be trusted. A $\rho$ that is not total, or that is not
+deterministic given a fixed configuration, cannot support this guarantee.
 
-** The resolver as an ordered set of rules
+#+begin_note
+*Worked example: the same requirement, two configurations*
 
-Both ORE and Strata's implementations share a further structural
-property worth making explicit: resolution is not, in practice, a flat
-lookup table from requirement to identifier, but an *ordered* set of
-rules, applied in sequence until one matches. ORE's =MarketConfiguration=
-permits several configurations to be held "in parallel," with an
-application specifying which one applies at the point of query — a
-coarser-grained version of the same idea Strata's =MarketDataConfig=
-achieves by keying its internal map on both a type and a name, letting a
-more specific configuration entry take precedence over a more general
-default when both could apply. This ordered-rule-set structure is the
-DNS analogue of a resolver trying a search-domain suffix list in
-order — =example.= before =example.com.= before falling through to an
-external resolver — rather than a single flat table: the *shape* of
-"try progressively more general rules until one produces an answer" is
-common to both domains, even though the specific rules obviously differ
-completely.
+The requirement is "the EUR discount curve." Under a "Trader Intraday"
+market data configuration, $\rho$ resolves this to a curve object
+refreshed every fifteen minutes from live instrument feeds —
+=DISCOUNT/RATE/EUR/LIVE=. Under an "End of Day Official" configuration,
+the same requirement resolves to a curve snapshotted from the 5pm
+official fixing: =DISCOUNT/RATE/EUR/EOD=. The requirement is identical
+in both cases; the configuration in force is the sole determinant of
+which physical identifier is produced. A valuation run under "Trader
+Intraday" and one run under "End of Day Official" can therefore
+legitimately produce different prices for the same trade without either
+being wrong — provided each records which configuration was active, so
+the result can be reproduced and audited under the same configuration
+later.
+#+end_note
+
+* Discussion
 
 ** Configuration identity and versioning
 
 A market data configuration, to be useful for reproducibility, must
-itself be named and versioned — not just applied silently and
-forgotten. This is the same requirement this repository's own
+itself be named and versioned — not just applied silently and forgotten.
+This is the same requirement this repository's own
 [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]]
-document already establishes for the adjacent (but distinct — see
-below) concept of valuation-model configuration: "a reproducible
-valuation requires the conjunction of... a market data snapshot...
-[and] a pricing configuration snapshot." A market data configuration
-needs the identical treatment: which named, versioned configuration
-was $\rho$ evaluated under, at the moment a valuation ran, is part of
-what must be recorded for that valuation to be reproducible later. See
+document already establishes for the adjacent (but distinct) concept of
+valuation-model configuration: "a reproducible valuation requires the
+conjunction of... a market data snapshot... [and] a pricing configuration
+snapshot." A market data configuration needs the identical treatment:
+which named, versioned configuration was $\rho$ evaluated under, at the
+moment a valuation ran, is part of what must be recorded for that
+valuation to be reproducible later. See
 [[id:CEC7844C-B3AE-4858-BF67-71F511007F82][Market Data Snapshot]] for
 how the *result* of applying $\rho$ under a given configuration is
 itself materialised and preserved.
@@ -161,24 +201,23 @@ itself materialised and preserved.
 This repository already has an
 [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][existing knowledge document]]
 named "Pricing Configuration," and the two concepts are adjacent enough
-to be worth explicitly distinguishing rather than left to be confused.
-Pricing Configuration governs *how a resolved value is used* once
-obtained — which valuation model prices a given product type, which
-smile surface interpolation applies, which Greeks are computed and how.
-Market Data Configuration governs an earlier, logically prior step:
-*which concrete value a requirement resolves to in the first place*,
-before any pricing model has been chosen or applied to it at all. A
-single EUR discount curve requirement might resolve, under one market
-data configuration, to an OIS-discounted curve, and under another, to a
-LIBOR-discounted legacy curve — entirely independently of which
-valuation model a trader's pricing configuration later applies to price
-a swap off of whichever curve was resolved.
+to be worth explicitly distinguishing. Pricing Configuration governs
+*how a resolved value is used* once obtained — which valuation model
+prices a given product type, which smile surface interpolation applies,
+which Greeks are computed and how. Market Data Configuration governs an
+earlier, logically prior step: *which concrete value a requirement
+resolves to in the first place*, before any pricing model has been chosen
+or applied to it at all. A single EUR discount curve requirement might
+resolve, under one market data configuration, to an OIS-discounted curve,
+and under another, to a LIBOR-discounted legacy curve — entirely
+independently of which valuation model a trader's pricing configuration
+later applies to price a swap off of whichever curve was resolved.
 
 * See also
 
-- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub.
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — $\rho$'s domain.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — $\rho$'s codomain.
-- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from after $\cap\, U$ confirms membership.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from after $\cap\, U$ confirms membership; the full pipeline formula.
 - [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency Resolution]] — the step immediately following resolution.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the adjacent, distinct concept this document is careful not to be confused with.

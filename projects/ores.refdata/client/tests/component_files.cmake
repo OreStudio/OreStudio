@@ -18,5 +18,6 @@
 #
 set(files
     "currency_pair_convention_cache_tests.cpp"
+    "currency_pair_rate_formatter_tests.cpp"
     "main.cpp"
 )

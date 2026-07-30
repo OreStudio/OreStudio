@@ -20,11 +20,11 @@
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
-#include "ores.marketdata.client/presentation/crm_rate_formatter.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
+#include "ores.refdata.client/presentation/currency_pair_rate_formatter.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -488,8 +488,9 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
     if (midItem) {
         const QString arrow =
             first ? QString{} : (up ? QStringLiteral("↑ ") : QStringLiteral("↓ "));
-        const auto rateText = marketdata::client::presentation::crm_rate_formatter::format_rate(
-            mid, rs.convention, rs.convention_reversed);
+        const auto rateText =
+            refdata::client::presentation::currency_pair_rate_formatter::format_rate(
+                mid, rs.convention, rs.convention_reversed);
         midItem->setText(arrow + QString::fromStdString(rateText));
         midItem->setForeground(dirColor);
     }

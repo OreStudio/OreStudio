@@ -19,7 +19,10 @@
  */
 #include "ores.qt/FxSpotGenerationConfigMdiWindow.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include <QFutureWatcher>
@@ -128,7 +131,28 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
+    tableView_->setIconSize(single_flag_icon_size());
 
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::icon_text_left,
+            cs::icon_text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+            cs::text_left,
+        },
+        tableView_);
+    tableView_->setItemDelegate(delegate);
 
     initializeTableSettings(
         tableView_, model_, "FxSpotGenerationConfigListWindow", {}, {900, 400}, 1);
@@ -163,6 +187,7 @@ void FxSpotGenerationConfigMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -180,7 +205,7 @@ void FxSpotGenerationConfigMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading FX spot generation configs";
     clearStaleIndicator();
     emit statusChanged(tr("Loading FX spot generation configs..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void FxSpotGenerationConfigMdiWindow::onDataLoaded() {
@@ -360,7 +385,8 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
@@ -387,5 +413,6 @@ void FxSpotGenerationConfigMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

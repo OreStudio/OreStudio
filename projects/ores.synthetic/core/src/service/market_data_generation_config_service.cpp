@@ -43,17 +43,18 @@ std::uint32_t market_data_generation_config_service::count_market_data_generatio
     return repo_.get_total_market_data_generation_config_count(ctx_);
 }
 
+
 std::optional<domain::market_data_generation_config>
 market_data_generation_config_service::get_market_data_generation_config_at_version(
     const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config at version: " << id
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config at version. "
+                               << "id: " << id << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::market_data_generation_config>
 market_data_generation_config_service::get_market_data_generation_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting market data generation config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -64,11 +65,11 @@ void market_data_generation_config_service::save_market_data_generation_config(
     const domain::market_data_generation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Data Generation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving market data generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving market data generation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved market data generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved market data generation config. " << "id: " << v.id;
 }
 
 void market_data_generation_config_service::save_market_data_generation_configs(
@@ -86,9 +87,9 @@ void market_data_generation_config_service::save_market_data_generation_configs(
 
 void market_data_generation_config_service::delete_market_data_generation_config(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed market data generation config: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed market data generation config. " << "id: " << id;
 }
 
 void market_data_generation_config_service::delete_market_data_generation_configs(
@@ -99,7 +100,8 @@ void market_data_generation_config_service::delete_market_data_generation_config
 std::vector<domain::market_data_generation_config>
 market_data_generation_config_service::get_market_data_generation_config_history(
     const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for market data generation config. "
+                               << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

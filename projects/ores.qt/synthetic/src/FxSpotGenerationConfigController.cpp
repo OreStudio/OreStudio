@@ -22,14 +22,19 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FxSpotGenerationConfigDetailDialog.hpp"
-#include "ores.qt/FxSpotGenerationConfigHistoryDialog.hpp"
 #include "ores.qt/FxSpotGenerationConfigMdiWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.synthetic.api/eventing/fx_spot_generation_config_changed_event.hpp"
+#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -162,6 +167,7 @@ void FxSpotGenerationConfigController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new FX spot generation config requested";
     showAddWindow();
 }
+
 
 void FxSpotGenerationConfigController::onShowHistory(
     const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config) {
@@ -308,11 +314,16 @@ void FxSpotGenerationConfigController::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << boost::uuids::to_string(fx_spot_generation_config.id);
 
-    auto* historyDialog = new FxSpotGenerationConfigHistoryDialog(
-        fx_spot_generation_config.id, code, clientManager_, mainWindow_);
+    const QString entityId =
+        QString::fromStdString(boost::uuids::to_string(fx_spot_generation_config.id));
+    auto* historyDialog = new HistoryDialog(
+        std::string(entity_type_of(synthetic::domain::fx_spot_generation_config{})),
+        entityId.toStdString(),
+        clientManager_,
+        mainWindow_);
 
     connect(historyDialog,
-            &FxSpotGenerationConfigHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<FxSpotGenerationConfigController>(this)](const QString& message) {
                 if (!self)
@@ -320,7 +331,7 @@ void FxSpotGenerationConfigController::showHistoryWindow(
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &FxSpotGenerationConfigHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<FxSpotGenerationConfigController>(this)](const QString& message) {
                 if (!self)
@@ -328,13 +339,23 @@ void FxSpotGenerationConfigController::showHistoryWindow(
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &FxSpotGenerationConfigHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &FxSpotGenerationConfigController::onRevertVersion);
+            [self = QPointer<FxSpotGenerationConfigController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &FxSpotGenerationConfigHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &FxSpotGenerationConfigController::onOpenVersion);
+            [self = QPointer<FxSpotGenerationConfigController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -345,6 +366,7 @@ void FxSpotGenerationConfigController::showHistoryWindow(
     historyWindow->setWindowTitle(QString("FX Spot Generation Config History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -427,6 +449,101 @@ void FxSpotGenerationConfigController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void FxSpotGenerationConfigController::fetchFxSpotGenerationConfigHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<synthetic::domain::fx_spot_generation_config>,
+                                     QString>)> callback) {
+    synthetic::messaging::get_fx_spot_generation_config_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<synthetic::domain::fx_spot_generation_config>, QString>;
+
+    QPointer<FxSpotGenerationConfigController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void FxSpotGenerationConfigController::onOpenHistoryVersion(const QString& entityId,
+                                                            int versionNumber) {
+    QPointer<FxSpotGenerationConfigController> self = this;
+    fetchFxSpotGenerationConfigHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<synthetic::domain::fx_spot_generation_config>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void FxSpotGenerationConfigController::onRevertHistoryVersion(const QString& entityId,
+                                                              int versionNumber) {
+    QPointer<FxSpotGenerationConfigController> self = this;
+    fetchFxSpotGenerationConfigHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<synthetic::domain::fx_spot_generation_config>, QString>
+                result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void FxSpotGenerationConfigController::onRevertVersion(
     const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config) {
     BOOST_LOG_SEV(lg(), info) << "Reverting FX spot generation config to version: "
@@ -483,6 +600,28 @@ void FxSpotGenerationConfigController::onRevertVersion(
 
 EntityListMdiWindow* FxSpotGenerationConfigController::listWindow() const {
     return listWindow_;
+}
+
+void FxSpotGenerationConfigController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

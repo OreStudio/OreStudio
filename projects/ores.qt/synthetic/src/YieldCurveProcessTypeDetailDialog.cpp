@@ -110,6 +110,10 @@ void YieldCurveProcessTypeDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &YieldCurveProcessTypeDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &YieldCurveProcessTypeDetailDialog::onFieldChanged);
 }
 
 void YieldCurveProcessTypeDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -250,24 +254,27 @@ void YieldCurveProcessTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Yield Curve Process Type saved successfully";
-            QString code = QString::fromStdString(self->process_type_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->process_typeSaved(code);
-            self->notifySaveSuccess(tr("Yield Curve Process Type '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Yield Curve Process Type saved successfully";
+                    QString code = QString::fromStdString(self->process_type_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->process_typeSaved(code);
+                    self->notifySaveSuccess(tr("Yield Curve Process Type '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

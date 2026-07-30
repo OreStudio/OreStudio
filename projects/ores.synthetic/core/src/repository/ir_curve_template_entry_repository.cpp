@@ -38,7 +38,7 @@ std::string ir_curve_template_entry_repository::sql() {
 
 void ir_curve_template_entry_repository::write(context ctx,
                                                const domain::ir_curve_template_entry& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing IR curve template entry: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing IR curve template entry. " << "id: " << v.id;
     execute_write_query(ctx,
                         ir_curve_template_entry_mapper::map(v),
                         lg(),
@@ -72,7 +72,7 @@ ir_curve_template_entry_repository::read_latest(context ctx) {
 
 std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve template entry. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve template entry. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
@@ -86,9 +86,10 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::string& 
         "Reading latest IR curve template entry by id.");
 }
 
+
 std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve template entry versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve template entry versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -104,7 +105,7 @@ ir_curve_template_entry_repository::read_all(context ctx, const std::string& id)
 
 std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repository::read_at_version(
     context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading IR curve template entry at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading IR curve template entry at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_template_entry_entity>> |
@@ -126,7 +127,7 @@ std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repositor
 
 
 void ir_curve_template_entry_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<ir_curve_template_entry_entity> |

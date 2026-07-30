@@ -27,21 +27,22 @@ separately as =gmm_component= rows. Scoped to a tenant and a party.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this configuration.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Owning party (legal entity) this configuration belongs to.
@@ -54,6 +55,7 @@ uuid_gen()
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Parent =market_data_generation_config= this sub-config belongs to.
@@ -66,6 +68,7 @@ uuid_gen()
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Base currency ISO code of the FX spot pair (soft FK to currencies).
@@ -78,6 +81,7 @@ std::string("EUR")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Quote currency ISO code of the FX spot pair (soft FK to currencies).
@@ -85,8 +89,6 @@ Quote currency ISO code of the FX spot pair (soft FK to currencies).
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
-
-* Columns
 
 ** source_name
 :PROPERTIES:

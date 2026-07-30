@@ -38,7 +38,7 @@ std::string ir_curve_generation_config_repository::sql() {
 
 void ir_curve_generation_config_repository::write(context ctx,
                                                   const domain::ir_curve_generation_config& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing IR curve generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing IR curve generation config. " << "id: " << v.id;
     execute_write_query(ctx,
                         ir_curve_generation_config_mapper::map(v),
                         lg(),
@@ -73,7 +73,7 @@ ir_curve_generation_config_repository::read_latest(context ctx) {
 
 std::vector<domain::ir_curve_generation_config>
 ir_curve_generation_config_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve generation config. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
@@ -88,9 +88,11 @@ ir_curve_generation_config_repository::read_latest(context ctx, const std::strin
         "Reading latest IR curve generation config by id.");
 }
 
+
 std::vector<domain::ir_curve_generation_config>
 ir_curve_generation_config_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve generation config versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve generation config versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -109,7 +111,7 @@ std::optional<domain::ir_curve_generation_config>
 ir_curve_generation_config_repository::read_at_version(context ctx,
                                                        const std::string& id,
                                                        std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading IR curve generation config at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading IR curve generation config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<ir_curve_generation_config_entity>> |
@@ -131,7 +133,7 @@ ir_curve_generation_config_repository::read_at_version(context ctx,
 
 
 void ir_curve_generation_config_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<ir_curve_generation_config_entity> |

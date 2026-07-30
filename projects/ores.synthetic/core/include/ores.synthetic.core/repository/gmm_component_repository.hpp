@@ -24,7 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -62,17 +64,31 @@ public:
     /**@}*/
 
     /**
-     * @brief Reads latest GMM components, possibly filtered by id.
+     * @brief Reads latest GMM components, possibly filtered by primary key.
      */
     /**@{*/
     std::vector<domain::gmm_component> read_latest(context ctx);
     std::vector<domain::gmm_component> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+
     /**
-     * @brief Reads all GMM components, possibly filtered by id.
+     * @brief Reads all GMM components, possibly filtered by primary key.
      */
     std::vector<domain::gmm_component> read_all(context ctx, const std::string& id);
+
+    /**
+     * @brief Reads a single GMM component as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::gmm_component>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
 
     /**
      * @brief Reads latest GMM components with pagination support.

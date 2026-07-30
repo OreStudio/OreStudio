@@ -38,7 +38,7 @@ std::string fx_spot_generation_config_repository::sql() {
 
 void fx_spot_generation_config_repository::write(context ctx,
                                                  const domain::fx_spot_generation_config& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX spot generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX spot generation config. " << "id: " << v.id;
     execute_write_query(ctx,
                         fx_spot_generation_config_mapper::map(v),
                         lg(),
@@ -72,7 +72,7 @@ fx_spot_generation_config_repository::read_latest(context ctx) {
 
 std::vector<domain::fx_spot_generation_config>
 fx_spot_generation_config_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX spot generation config. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX spot generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_spot_generation_config_entity>> |
@@ -86,9 +86,11 @@ fx_spot_generation_config_repository::read_latest(context ctx, const std::string
         "Reading latest FX spot generation config by id.");
 }
 
+
 std::vector<domain::fx_spot_generation_config>
 fx_spot_generation_config_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all FX spot generation config versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all FX spot generation config versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_spot_generation_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -106,7 +108,7 @@ std::optional<domain::fx_spot_generation_config>
 fx_spot_generation_config_repository::read_at_version(context ctx,
                                                       const std::string& id,
                                                       std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading FX spot generation config at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading FX spot generation config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fx_spot_generation_config_entity>> |
@@ -128,7 +130,7 @@ fx_spot_generation_config_repository::read_at_version(context ctx,
 
 
 void fx_spot_generation_config_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<fx_spot_generation_config_entity> |

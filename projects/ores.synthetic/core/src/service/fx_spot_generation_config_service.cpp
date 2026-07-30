@@ -47,14 +47,14 @@ std::uint32_t fx_spot_generation_config_service::count_fx_spot_generation_config
 std::optional<domain::fx_spot_generation_config>
 fx_spot_generation_config_service::get_fx_spot_generation_config_at_version(const std::string& id,
                                                                             std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::fx_spot_generation_config>
 fx_spot_generation_config_service::get_fx_spot_generation_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX spot generation config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -65,11 +65,11 @@ void fx_spot_generation_config_service::save_fx_spot_generation_config(
     const domain::fx_spot_generation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("FX Spot Generation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving FX spot generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving FX spot generation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved FX spot generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved FX spot generation config. " << "id: " << v.id;
 }
 
 void fx_spot_generation_config_service::save_fx_spot_generation_configs(
@@ -86,9 +86,9 @@ void fx_spot_generation_config_service::save_fx_spot_generation_configs(
 }
 
 void fx_spot_generation_config_service::delete_fx_spot_generation_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed FX spot generation config: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed FX spot generation config. " << "id: " << id;
 }
 
 void fx_spot_generation_config_service::delete_fx_spot_generation_configs(
@@ -98,7 +98,7 @@ void fx_spot_generation_config_service::delete_fx_spot_generation_configs(
 
 std::vector<domain::fx_spot_generation_config>
 fx_spot_generation_config_service::get_fx_spot_generation_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX spot generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX spot generation config. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

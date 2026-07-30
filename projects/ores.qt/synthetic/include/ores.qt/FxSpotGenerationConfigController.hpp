@@ -27,6 +27,9 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -66,12 +69,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void
@@ -84,6 +89,8 @@ private slots:
     void
     onOpenVersion(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config,
                   int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
@@ -91,6 +98,19 @@ private:
     showDetailWindow(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
     void showHistoryWindow(
         const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
+
+    /**
+     * @brief Fetches the full typed FX spot generation config history (the
+     * existing per-entity synthetic::messaging::get_fx_spot_generation_config_history_request/
+     * synthetic::messaging::get_fx_spot_generation_config_history_response, unrelated to the
+     * generic history.v1.get subject) and hands it to @p callback on the UI thread. Used to resolve
+     * HistoryDialog's generic (entity_id, version) signals back to a typed FX spot generation
+     * config, since the generic dialog holds no typed domain data.
+     */
+    void fetchFxSpotGenerationConfigHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<synthetic::domain::fx_spot_generation_config>,
+                                         QString>)> callback);
 
     ChangeReasonCache* changeReasonCache_;
     FxSpotGenerationConfigMdiWindow* listWindow_;

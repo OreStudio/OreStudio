@@ -47,14 +47,14 @@ std::uint32_t ir_curve_generation_config_service::count_ir_curve_generation_conf
 std::optional<domain::ir_curve_generation_config>
 ir_curve_generation_config_service::get_ir_curve_generation_config_at_version(
     const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve generation config at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve generation config at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::ir_curve_generation_config>
 ir_curve_generation_config_service::get_ir_curve_generation_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve generation config. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -65,11 +65,11 @@ void ir_curve_generation_config_service::save_ir_curve_generation_config(
     const domain::ir_curve_generation_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Generation Config id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve generation config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved IR curve generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved IR curve generation config. " << "id: " << v.id;
 }
 
 void ir_curve_generation_config_service::save_ir_curve_generation_configs(
@@ -86,9 +86,9 @@ void ir_curve_generation_config_service::save_ir_curve_generation_configs(
 }
 
 void ir_curve_generation_config_service::delete_ir_curve_generation_config(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed IR curve generation config: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed IR curve generation config. " << "id: " << id;
 }
 
 void ir_curve_generation_config_service::delete_ir_curve_generation_configs(
@@ -98,7 +98,8 @@ void ir_curve_generation_config_service::delete_ir_curve_generation_configs(
 
 std::vector<domain::ir_curve_generation_config>
 ir_curve_generation_config_service::get_ir_curve_generation_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve generation config. "
+                               << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

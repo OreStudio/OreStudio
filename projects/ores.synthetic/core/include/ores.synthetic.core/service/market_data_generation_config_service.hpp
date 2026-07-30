@@ -77,11 +77,11 @@ public:
      */
     std::uint32_t count_market_data_generation_configs();
 
+
     /**
      * @brief Retrieves a single market data generation config as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the market data generation config.
      * @param version The version to fetch.
      * @return The market data generation config at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +89,8 @@ public:
     get_market_data_generation_config_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single market data generation config by its id.
+     * @brief Retrieves a single market data generation config by its primary key.
      *
-     * @param id The id of the market data generation config.
      * @return The market data generation config if found, std::nullopt otherwise.
      */
     std::optional<domain::market_data_generation_config>
@@ -116,15 +115,14 @@ public:
         const std::vector<domain::market_data_generation_config>& market_data_generation_configs);
 
     /**
-     * @brief Deletes a market data generation config by its id.
+     * @brief Deletes a market data generation config by its primary key.
      *
-     * @param id The id of the market data generation config to delete.
      * @throws std::exception on failure.
      */
     void delete_market_data_generation_config(const std::string& id);
 
     /**
-     * @brief Deletes market data generation configs by their ids.
+     * @brief Deletes market data generation configs by their primary keys.
      */
     void delete_market_data_generation_configs(const std::vector<std::string>& ids);
 

@@ -47,14 +47,14 @@ std::uint32_t ir_curve_template_entry_service::count_ir_curve_template_entries()
 std::optional<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry_at_version(const std::string& id,
                                                                         std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry at version: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry at version. " << "id: " << id
                                << " version: " << version;
     return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting IR curve template entry. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -65,11 +65,11 @@ void ir_curve_template_entry_service::save_ir_curve_template_entry(
     const domain::ir_curve_template_entry& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Template Entry id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve template entry: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving IR curve template entry. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved IR curve template entry: " << v.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved IR curve template entry. " << "id: " << v.id;
 }
 
 void ir_curve_template_entry_service::save_ir_curve_template_entries(
@@ -86,9 +86,9 @@ void ir_curve_template_entry_service::save_ir_curve_template_entries(
 }
 
 void ir_curve_template_entry_service::delete_ir_curve_template_entry(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed IR curve template entry: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed IR curve template entry. " << "id: " << id;
 }
 
 void ir_curve_template_entry_service::delete_ir_curve_template_entries(
@@ -98,7 +98,7 @@ void ir_curve_template_entry_service::delete_ir_curve_template_entries(
 
 std::vector<domain::ir_curve_template_entry>
 ir_curve_template_entry_service::get_ir_curve_template_entry_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve template entry: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for IR curve template entry. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

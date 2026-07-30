@@ -38,7 +38,7 @@ std::string market_data_generation_config_repository::sql() {
 
 void market_data_generation_config_repository::write(
     context ctx, const domain::market_data_generation_config& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing market data generation config: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing market data generation config. " << "id: " << v.id;
     execute_write_query(ctx,
                         market_data_generation_config_mapper::map(v),
                         lg(),
@@ -73,7 +73,7 @@ market_data_generation_config_repository::read_latest(context ctx) {
 
 std::vector<domain::market_data_generation_config>
 market_data_generation_config_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data generation config. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest market data generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
@@ -88,9 +88,11 @@ market_data_generation_config_repository::read_latest(context ctx, const std::st
         "Reading latest market data generation config by id.");
 }
 
+
 std::vector<domain::market_data_generation_config>
 market_data_generation_config_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all market data generation config versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all market data generation config versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -109,8 +111,8 @@ std::optional<domain::market_data_generation_config>
 market_data_generation_config_repository::read_at_version(context ctx,
                                                           const std::string& id,
                                                           std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading market data generation config at version. id: " << id
-                               << " version: " << version;
+    BOOST_LOG_SEV(lg(), debug) << "Reading market data generation config at version. "
+                               << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<market_data_generation_config_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
@@ -130,7 +132,7 @@ market_data_generation_config_repository::read_at_version(context ctx,
 }
 
 void market_data_generation_config_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<market_data_generation_config_entity> |

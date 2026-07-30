@@ -77,11 +77,11 @@ public:
      */
     std::uint32_t count_folders();
 
+
     /**
      * @brief Retrieves a single folder as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the folder.
      * @param version The version to fetch.
      * @return The folder at that version if found, std::nullopt otherwise.
      */
@@ -89,9 +89,8 @@ public:
                                                         std::uint32_t version);
 
     /**
-     * @brief Retrieves a single folder by its id.
+     * @brief Retrieves a single folder by its primary key.
      *
-     * @param id The id of the folder.
      * @return The folder if found, std::nullopt otherwise.
      */
     std::optional<domain::folder> get_folder(const std::string& id);
@@ -113,15 +112,14 @@ public:
     void save_folders(const std::vector<domain::folder>& folders);
 
     /**
-     * @brief Deletes a folder by its id.
+     * @brief Deletes a folder by its primary key.
      *
-     * @param id The id of the folder to delete.
      * @throws std::exception on failure.
      */
     void delete_folder(const std::string& id);
 
     /**
-     * @brief Deletes folders by their ids.
+     * @brief Deletes folders by their primary keys.
      */
     void delete_folders(const std::vector<std::string>& ids);
 

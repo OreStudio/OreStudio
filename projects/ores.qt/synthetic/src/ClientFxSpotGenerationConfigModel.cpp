@@ -135,8 +135,15 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
 QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
                                                        Qt::Orientation orientation,
                                                        int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case BaseCurrencyCode:
@@ -255,6 +262,22 @@ void ClientFxSpotGenerationConfigModel::fetch_fx_spot_generation_configs(std::ui
                             .fx_spot_generation_configs = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .fx_spot_generation_configs = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 

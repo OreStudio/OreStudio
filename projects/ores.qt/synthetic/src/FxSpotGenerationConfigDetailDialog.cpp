@@ -46,6 +46,11 @@ FxSpotGenerationConfigDetailDialog::FxSpotGenerationConfigDetailDialog(QWidget* 
     // for this entity, wrap it in a HierarchyTreeWidget, and insert that
     // widget into this dialog's layout (e.g. a dedicated tab). Left empty
     // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 FxSpotGenerationConfigDetailDialog::~FxSpotGenerationConfigDetailDialog() {
@@ -62,6 +67,10 @@ QWidget* FxSpotGenerationConfigDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* FxSpotGenerationConfigDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString FxSpotGenerationConfigDetailDialog::code() const {
+    return QString::fromStdString(boost::uuids::to_string(fx_spot_generation_config_.id));
 }
 
 void FxSpotGenerationConfigDetailDialog::setupUi() {
@@ -106,8 +115,16 @@ void FxSpotGenerationConfigDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->ticksPerHourEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->processTypeEdit,
             &QLineEdit::textChanged,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->enabledCheck,
+            &QCheckBox::toggled,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->vintageSourceEdit,
@@ -140,6 +157,8 @@ void FxSpotGenerationConfigDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
     if (createMode) {
         fx_spot_generation_config_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            fx_spot_generation_config_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -157,6 +176,7 @@ void FxSpotGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->priceSourceEdit->setReadOnly(readOnly);
     ui_->gmmInitialPriceEdit->setReadOnly(readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
+    ui_->enabledCheck->setEnabled(!readOnly);
     ui_->vintageSourceEdit->setReadOnly(readOnly);
     ui_->vintageDateEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -206,10 +226,6 @@ void FxSpotGenerationConfigDetailDialog::updateConfigFromUi() {
     fx_spot_generation_config_.modified_by = username_;
 }
 
-void FxSpotGenerationConfigDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
 
 void FxSpotGenerationConfigDetailDialog::onFieldChanged() {
     hasChanges_ = true;
@@ -226,26 +242,9 @@ bool FxSpotGenerationConfigDetailDialog::validateInput() {
     const QString quote_currency_code_val = ui_->quoteCurrencyEdit->text().trimmed();
     const QString price_source_val = ui_->priceSourceEdit->text().trimmed();
     const QString process_type_val = ui_->processTypeEdit->text().trimmed();
-    const QString gmm_initial_price_val = ui_->gmmInitialPriceEdit->text().trimmed();
-    const QString vintage_source_val = ui_->vintageSourceEdit->text().trimmed();
-    const QString vintage_date_val = ui_->vintageDateEdit->text().trimmed();
-
-    // price_source is a discriminator: "fixed" requires an initial price and
-    // no vintage; "vintage" requires both vintage fields and no initial
-    // price. Matches the DB check constraint.
-    bool price_mode_valid = false;
-    if (price_source_val == "fixed") {
-        price_mode_valid = !gmm_initial_price_val.isEmpty() &&
-                           gmm_initial_price_val.toDouble() > 0 && vintage_source_val.isEmpty() &&
-                           vintage_date_val.isEmpty();
-    } else if (price_source_val == "vintage") {
-        price_mode_valid =
-            (gmm_initial_price_val.isEmpty() || gmm_initial_price_val.toDouble() == 0) &&
-            !vintage_source_val.isEmpty() && !vintage_date_val.isEmpty();
-    }
 
     return true && !base_currency_code_val.isEmpty() && !quote_currency_code_val.isEmpty() &&
-           !process_type_val.isEmpty() && price_mode_valid;
+           !price_source_val.isEmpty() && !process_type_val.isEmpty();
 }
 
 void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
@@ -261,6 +260,7 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -300,25 +300,28 @@ void FxSpotGenerationConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "FX Spot Generation Config saved successfully";
-            QString code = QString::fromStdString(
-                boost::uuids::to_string(self->fx_spot_generation_config_.id));
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->fx_spot_generation_configSaved(code);
-            self->notifySaveSuccess(tr("FX Spot Generation Config '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "FX Spot Generation Config saved successfully";
+                    QString code = QString::fromStdString(
+                        boost::uuids::to_string(self->fx_spot_generation_config_.id));
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->fx_spot_generation_configSaved(code);
+                    self->notifySaveSuccess(tr("FX Spot Generation Config '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -398,5 +401,6 @@ void FxSpotGenerationConfigDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

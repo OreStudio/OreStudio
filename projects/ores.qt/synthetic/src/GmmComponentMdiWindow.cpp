@@ -126,7 +126,9 @@ void GmmComponentMdiWindow::setupTable() {
     initializeTableSettings(tableView_,
                             model_,
                             "GmmComponentListWindow",
-                            {ClientGmmComponentModel::Description},
+                            {
+                                ClientGmmComponentModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -152,6 +154,7 @@ void GmmComponentMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -169,7 +172,7 @@ void GmmComponentMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading GMM components";
     clearStaleIndicator();
     emit statusChanged(tr("Loading GMM components..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void GmmComponentMdiWindow::onDataLoaded() {
@@ -345,7 +348,8 @@ void GmmComponentMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
@@ -370,5 +374,6 @@ void GmmComponentMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

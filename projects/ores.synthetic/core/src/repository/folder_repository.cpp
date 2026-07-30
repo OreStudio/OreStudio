@@ -39,7 +39,7 @@ std::string folder_repository::sql() {
 }
 
 void folder_repository::write(context ctx, const domain::folder& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing folder: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing folder. " << "id: " << v.id;
     execute_write_query(ctx, folder_mapper::map(v), lg(), "Writing folder to database.");
 }
 
@@ -64,7 +64,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::folder> folder_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest folder. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest folder. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<folder_entity>> |
@@ -78,8 +78,9 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx, const st
         "Reading latest folder by id.");
 }
 
+
 std::vector<domain::folder> folder_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all folder versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all folder versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<folder_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id) |
@@ -95,7 +96,7 @@ std::vector<domain::folder> folder_repository::read_all(context ctx, const std::
 
 std::optional<domain::folder>
 folder_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading folder at version. id: " << id
+    BOOST_LOG_SEV(lg(), debug) << "Reading folder at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<folder_entity>> |
@@ -114,8 +115,9 @@ folder_repository::read_at_version(context ctx, const std::string& id, std::uint
     return entities.front();
 }
 
+
 void folder_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing folder: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing folder. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<folder_entity> |

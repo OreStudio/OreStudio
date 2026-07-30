@@ -80,6 +80,7 @@ public:
      */
     const synthetic::domain::market_data_generation_config* getConfig(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */

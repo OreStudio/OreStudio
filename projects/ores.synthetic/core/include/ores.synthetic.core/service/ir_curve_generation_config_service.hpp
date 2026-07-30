@@ -82,7 +82,6 @@ public:
      * @brief Retrieves a single IR curve generation config as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the IR curve generation config.
      * @param version The version to fetch.
      * @return The IR curve generation config at that version if found, std::nullopt otherwise.
      */
@@ -90,9 +89,8 @@ public:
     get_ir_curve_generation_config_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single IR curve generation config by its id.
+     * @brief Retrieves a single IR curve generation config by its primary key.
      *
-     * @param id The id of the IR curve generation config.
      * @return The IR curve generation config if found, std::nullopt otherwise.
      */
     std::optional<domain::ir_curve_generation_config>
@@ -117,15 +115,14 @@ public:
         const std::vector<domain::ir_curve_generation_config>& ir_curve_generation_configs);
 
     /**
-     * @brief Deletes a IR curve generation config by its id.
+     * @brief Deletes a IR curve generation config by its primary key.
      *
-     * @param id The id of the IR curve generation config to delete.
      * @throws std::exception on failure.
      */
     void delete_ir_curve_generation_config(const std::string& id);
 
     /**
-     * @brief Deletes IR curve generation configs by their ids.
+     * @brief Deletes IR curve generation configs by their primary keys.
      */
     void delete_ir_curve_generation_configs(const std::vector<std::string>& ids);
 

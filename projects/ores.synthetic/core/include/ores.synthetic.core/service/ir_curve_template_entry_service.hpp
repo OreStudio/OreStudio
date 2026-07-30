@@ -82,7 +82,6 @@ public:
      * @brief Retrieves a single IR curve template entry as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *
-     * @param id The id of the IR curve template entry.
      * @param version The version to fetch.
      * @return The IR curve template entry at that version if found, std::nullopt otherwise.
      */
@@ -90,9 +89,8 @@ public:
     get_ir_curve_template_entry_at_version(const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Retrieves a single IR curve template entry by its id.
+     * @brief Retrieves a single IR curve template entry by its primary key.
      *
-     * @param id The id of the IR curve template entry.
      * @return The IR curve template entry if found, std::nullopt otherwise.
      */
     std::optional<domain::ir_curve_template_entry>
@@ -117,15 +115,14 @@ public:
         const std::vector<domain::ir_curve_template_entry>& ir_curve_template_entries);
 
     /**
-     * @brief Deletes a IR curve template entry by its id.
+     * @brief Deletes a IR curve template entry by its primary key.
      *
-     * @param id The id of the IR curve template entry to delete.
      * @throws std::exception on failure.
      */
     void delete_ir_curve_template_entry(const std::string& id);
 
     /**
-     * @brief Deletes IR curve template entries by their ids.
+     * @brief Deletes IR curve template entries by their primary keys.
      */
     void delete_ir_curve_template_entries(const std::vector<std::string>& ids);
 

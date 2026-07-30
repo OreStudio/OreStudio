@@ -26,21 +26,22 @@ their weights are normalised at generation time. Party- and tenant-scoped.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
 :END:
 
 Surrogate UUID uniquely identifying this GMM component.
-
-* Natural keys
 
 ** party_id
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Owning party (legal entity) this component's configuration belongs to.
@@ -53,6 +54,7 @@ uuid_gen()
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
+:natural_key: true
 :END:
 
 Parent =fx_spot_generation_config= this component contributes to.
@@ -66,6 +68,7 @@ uuid_gen()
 :type:          integer
 :cpp_type:      int
 :default_value: 0
+:natural_key: true
 :END:
 
 Zero-based ordinal of this component within its parent's mixture.
@@ -73,8 +76,6 @@ Zero-based ordinal of this component within its parent's mixture.
 #+begin_src cpp :name generator
 faker::number::integer(0, 4)
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:

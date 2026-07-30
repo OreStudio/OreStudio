@@ -204,6 +204,8 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->sigmaEdit->setReadOnly(readOnly);
     ui_->initialRateEdit->setReadOnly(readOnly);
     ui_->fixedLegPaymentFrequencyEdit->setReadOnly(readOnly);
+    ui_->enabledCheck->setEnabled(!readOnly);
+    ui_->autoStartCheck->setEnabled(!readOnly);
     ui_->priceSourceEdit->setReadOnly(readOnly);
     ui_->vintageSourceEdit->setReadOnly(readOnly);
     ui_->vintageDateEdit->setReadOnly(readOnly);
@@ -347,25 +349,28 @@ void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "IR Curve Generation Config saved successfully";
-            QString code = QString::fromStdString(
-                boost::uuids::to_string(self->ir_curve_generation_config_.id));
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->ir_curve_generation_configSaved(code);
-            self->notifySaveSuccess(tr("IR Curve Generation Config '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "IR Curve Generation Config saved successfully";
+                    QString code = QString::fromStdString(
+                        boost::uuids::to_string(self->ir_curve_generation_config_.id));
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->ir_curve_generation_configSaved(code);
+                    self->notifySaveSuccess(tr("IR Curve Generation Config '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

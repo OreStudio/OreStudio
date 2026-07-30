@@ -404,12 +404,20 @@ public:
                     add_step("Step 3: Publishing group-level staff", "starting", 0);
                     dq::messaging::publish_bundle_params groupParams;
                     groupParams.party_id = boost::uuids::to_string(holding->id);
-                    publish_bundle(client,
-                                   "acme_group",
-                                   username,
-                                   dq::messaging::build_params_json(groupParams),
-                                   add_step,
-                                   progress("acme_group"));
+                    // Aborts on failure, like Step 2 -- unlike Step 1's best-
+                    // effort base-bundle publish, this one is directly
+                    // responsible for the Group CEO account every office's
+                    // Country Head reports to; letting it fail silently would
+                    // just reproduce the "three disconnected per-office
+                    // trees" bug this dataset exists to fix, with no error
+                    // surfaced anywhere in the step log.
+                    if (!publish_bundle(client,
+                                        "acme_group",
+                                        username,
+                                        dq::messaging::build_params_json(groupParams),
+                                        add_step,
+                                        progress("acme_group")))
+                        { reply(nats_, msg, resp); return; }
 
                     add_step("acme_group.staff_photos", "starting", 0);
                     attach_staff_photos(client, *ctx_expected, tenant_id_str, "acme_group", username);

@@ -1,7 +1,7 @@
 [
   {
     "company_code": "acme_group",
-    "id": "b089efd2-d970-56ba-a92e-313a0abe6689",
+    "id": "d5124a10-9284-5243-a017-07abf0dc5a60",
     "username": "adrian.vance",
     "email": "adrian.vance@acmecorp.com",
     "full_name": "Adrian Vance",
@@ -18,7 +18,7 @@
     "country_code": null,
     "postal_code": null,
     "phone": null,
-    "photo_key": "acme_staff_photo:male_age25_european_01"
+    "photo_key": "acme_staff_photo:male_age20_european_01"
   },
   {
     "company_code": "acme_uk",

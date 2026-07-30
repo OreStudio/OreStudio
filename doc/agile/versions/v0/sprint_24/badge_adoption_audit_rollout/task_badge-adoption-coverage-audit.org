@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 712AA40D-67D2-4234-ABD2-1D006F63673B
 :END:
-#+title: Task: Audit badge adoption coverage across domain_entity models
-#+description: Only 10 of 108 domain_entity models use badge_key today. Audit candidates: any column that is a foreign key (soft or real) to an entity already used as a badge source elsewhere (we know both ends), and any boolean column (is_sweepable is the established pattern). Produce a list of candidate columns/entities not yet badged, cross-referenced against existing code_domain/badge_definition rows (already-covered vs needs-new-badge-definition), to drive follow-up annotation work -- this task is the audit/list, not annotating all of them.
+#+title: Task: Audit and classify entities: badge, image, or plain text
+#+description: Only 10 of 108 domain_entity models use badge_key today, and no entity has ever had its rendering treatment (colour badge vs image/flag vs plain text) decided against a documented criterion -- it's been ad hoc per entity (badge_definition renders as a swatch, currencies render as flags, everything else is plain text, by convention-following rather than policy). Inventory every FK-like/code/lookup domain_entity model, classify each into one of the three treatments with documented reasoning, state the policy/criteria driving the classification, and split the result into implementation batches (ready-to-annotate vs needs-new-badge-definition/image-data) -- this task is the audit/classification/policy, not implementing it.
 #+type: task
 #+level: s1
 #+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-21
+#+updated: 2026-07-30
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A written list of every domain_entity column that is a plausible badge candidate (FK to an already-badged entity, or boolean) but currently lacks badge_key, split into 'code_domain/badge_definition already exists, just needs badge_key' vs 'needs new badge_definition rows authored too'.
+Merges what were two separate stories'
+audit work (badge-adoption coverage, and badge-vs-image-vs-plain-text
+classification -- see parent story's =* Decisions= for the merge
+rationale) into one pass over the entity catalogue:
+
+1. Inventory every FK-like/code/lookup =domain_entity= model (not
+   just the ones already suspected to need =badge_key=) -- reference-
+   data codes, DQ badge-adjacent entities (=badge_severity=,
+   =code_domain=), currencies, and any others of the same shape.
+2. Classify each into exactly one of: colour badge (like
+   =badge_definition=), image/flag (like currencies), or plain text/
+   neither. Document the *reasoning*, not just the verdict, and state
+   the general policy/criteria this classification follows so future
+   entities don't need the question re-litigated.
+3. For entities classified as badge or image, further split into
+   ready-to-annotate (a =code_domain=/=badge_definition= or image
+   asset already exists) vs needs-new-data (new badge_definition rows
+   or image assets must be authored first).
+4. Group the final candidate list into batches sized for the
+   implementation task to work through incrementally.
 
 * Status
 
@@ -31,13 +50,24 @@ A written list of every domain_entity column that is a plausible badge candidate
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-07-15                               |
+| Last touched | 2026-07-30                               |
 
 * Acceptance
 
-- Enumerate all domain_entity FK/soft-FK columns pointing at an entity already referenced via badge_key elsewhere, and all boolean columns, across all 108 models.
-- Cross-reference each candidate against existing code_domain rows to split the list into ready-to-annotate vs needs-new-badge-definition-data.
-- Written up in this task's Result as a concrete, actionable list (entity, column, code_domain, ready|needs-data) -- not fixed in this task.
+- Enumerate all domain_entity FK/soft-FK columns pointing at an entity
+  already referenced via badge_key elsewhere, all boolean columns
+  (=is_sweepable= is the established pattern), and any other FK-like/
+  code/lookup entity in the system, across all 108 models -- not just
+  the ones already suspected of needing a badge.
+- Every enumerated entity/column is classified as colour badge,
+  image/flag, or plain text/neither, with the reasoning documented.
+- A stated policy/criteria doc captures what drives the
+  classification, so it's not re-litigated per entity going forward.
+- The classified list is cross-referenced against existing
+  code_domain/badge_definition/image-asset data to split into
+  ready-to-annotate vs needs-new-data, then grouped into batches.
+- Written up in this task's Result as a concrete, actionable,
+  batched list -- not implemented in this task.
 
 * Plan
 

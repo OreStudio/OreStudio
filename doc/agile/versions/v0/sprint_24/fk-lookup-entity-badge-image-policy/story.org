@@ -33,12 +33,12 @@ right treatment automatically instead of by convention-following.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-25                               |
+| Next          | Nothing.                                |
+| Last touched  | 2026-07-30                               |
 
 * Acceptance
 
@@ -65,6 +65,17 @@ right treatment automatically instead of by convention-following.
 |      |       |       |     |             |
 
 * Decisions
+
+** Merged into the badge-adoption-audit story
+
+Abandoned in favour of merging this scope into
+[[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Audit and roll out badge adoption across domain entities]]
+(retitled to reflect the merged scope), at explicit user request:
+rolling out =badge_key= adoption and classifying badge-vs-image-vs-
+plain-text are the same underlying question, and running them as
+separate stories risked badging entities that should really be
+images/flags. See that story's own =* Decisions= for the merge
+rationale.
 
 * Out of scope
 

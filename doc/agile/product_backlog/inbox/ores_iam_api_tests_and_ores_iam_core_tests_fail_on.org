@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 5991D23F-5589-4A9F-BBA5-D60D6AE63822
+:END:
+#+title: ores.iam.api.tests and ores.iam.core.tests fail on main, pre…
+#+description: ores.iam.api.tests and ores.iam.core.tests fail on main, pre-existing and unrelated to calendar/pagination work. generate_single_account asserts password_hash is non-empty and fails; generate_multiple_accounts crashes with free() invalid pointer / SIGABRT inside account_generator.cpp, looks like real memory corruption not flakiness. Separately ores.iam.core.tests account/account_role/account_party repository tests fail with Invalid image_id FK violations on inserts that used to work. Reproduced twice, isolated via ctest -R ores.iam, on a branch that touches zero ores.iam files, cut fresh from origin/main after PR 1758 Rework Acme provisioning via internal actor impersonation merged -- that PR touched ores.iam and is the most recent change to the component, worth checking first. Needs investigation: is this a real regression from 1758, or pre-existing flakiness surfaced now. account_generator.cpp password hashing and image_id assignment logic are the two most likely spots.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

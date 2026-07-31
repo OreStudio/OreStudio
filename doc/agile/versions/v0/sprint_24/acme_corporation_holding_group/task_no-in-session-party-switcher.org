@@ -7,41 +7,93 @@
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/no-in-session-party-switcher
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A logged-in user with access to more than one party (e.g.
+=tenant_admin=, granted cross-entity access to all four Acme parties)
+can switch which party's data is in view without logging out and back
+in. =PartyPickerDialog= and =ClientManager::selectParty()= already
+exist and are already used once, at login time -- this just needs a
+menu action to reopen that same flow mid-session.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Verified via QA scenario, all steps PASSED. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-30                               |
+| Next         | Push, open PR.                         |
+| Last touched | 2026-07-31                               |
 
 * Acceptance
 
--
+- A "Switch Party..." action appears under *File > Current User*,
+  enabled only when the logged-in account has more than one
+  available party.
+- Clicking it reopens =PartyPickerDialog= (the same dialog shown at
+  login) and, on selection, re-scopes the session to that party (a
+  fresh JWT via a new =switch_party= NATS request -- see Plan for why
+  this isn't just =select_party= reused).
+- Newly opened windows after a switch reflect the new party's data.
+  Already-open windows are not force-refreshed (documented, not a
+  bug -- see Plan).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Investigated first: is there really no party-switcher at all, or
+  just no *in-session* one? Found =PartyPickerDialog= is fully built
+  and already used once -- at login time, in =LoginDialog.cpp=, when
+  an account has multiple parties. The actual gap is narrower than
+  first described: no way to *reopen* that flow once already logged
+  in.
+- =ClientManager= now caches the =available_parties=/=default_party_id=
+  it already computes during =login()=, exposed via
+  =availableParties()=/=defaultPartyId()= -- captured once at login,
+  not re-fetched afterward (documented caveat: a party grant made
+  mid-session won't appear until the next login).
+- Added a =partyChanged()= signal, emitted from =selectParty()= on
+  success, for any window that wants to react; none currently listen.
+- New =MainWindow::onSwitchPartyTriggered()= mirrors
+  =LoginDialog='s own party-selection block almost verbatim: builds
+  the same =PartyPickerDialog= (now with an =is_switch= flag) from
+  the cached party list + =connectionManager_='s recent-parties,
+  calls =switchParty()= on accept, records the selection as a recent
+  party.
+- Discovered mid-implementation that reusing =selectParty()= mid-session
+  does not work: the server's =select_party= handler only accepts a
+  narrowly-scoped, single-use JWT with =audience == "select_party_only"=,
+  minted exclusively by the login flow. A normal, already-authenticated
+  session token carries an empty audience and is rejected
+  (=unexpected token audience: =). This is a deliberate security
+  design, not a bug, so a genuinely separate =switch_party= NATS
+  endpoint was added (=account_handler.hpp=, near-duplicate of
+  =select_party='s body, accepting any token except the login-only
+  one) rather than relaxing =select_party='s check.
+- The status-bar confirmation and the persistent party indicator
+  (=partyStatusWidget_=) both needed fixing after first-round manual
+  testing: the confirmation used Qt's default =statusBar()= accessor
+  instead of the app's actual =ui_->statusbar=, and =party_name_= (the
+  source the persistent chip reads from) was only ever set at login,
+  never on switch. Both fixed in =MainWindow::onSwitchPartyTriggered()=.
+- Deliberately did *not* build a "refresh every open window" system --
+  that would mean auditing and wiring every party-scoped window in
+  the app, a much larger change than the actual gap reported. Instead,
+  already-open windows simply keep showing the previous party's data
+  until closed and reopened (a status-bar message says so explicitly
+  after a switch). Revisit if this proves insufficient in practice.
 
 * Notes
 
@@ -54,7 +106,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:09F2ECA0-D558-4BDA-A1C5-C8C05DF60A5B][Verify in-session party switching]] | PASSED | |
 
 * PRs
 
@@ -66,6 +118,31 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Switching into an unprovisioned/inactive party is silent -- onSwitchPartyTriggered() never checks lastPartySetupRequired()/lastPartySetupWarning() the way LoginDialog does after selectParty() | projects/ores.qt/application/src/MainWindow.cpp | Accepted | Fixed: added the same post-switch checks as the login flow (showPartyProvisioningWizard() / MessageBoxHelper::warning()). |
 
 * Result
+
+Added a "Switch Party..." action under *File > Current User*, enabled
+only when the logged-in account has more than one available party
+(=tenant_admin=, with cross-entity access to all four Acme parties,
+is the reference case). Selecting it reopens =PartyPickerDialog= (the
+same dialog shown at login) and re-scopes the session to the chosen
+party via a fresh JWT.
+
+Ended up needing a genuinely new server-side capability rather than
+just a UI wire-up: =select_party='s handler is deliberately
+single-use, gated on a login-only token audience, so a new
+=switch_party= NATS endpoint (=iam.v1.accounts.switch-party=) was
+added -- same membership check and token-issuance logic as
+=select_party=, near-duplicate implementation rather than a shared
+helper (safer given no interactive compile-test loop available while
+building it). =ClientManager= gained a matching =switchParty()=
+method and a =partyChanged()= signal.
+
+Manual QA (=scenario_verify_switch_party.org=) caught two follow-up
+UI bugs after the endpoint itself was confirmed working server-side:
+the switch confirmation message never appeared (wrong status-bar
+accessor) and there was no way to see which party was currently
+active (the existing persistent =partyStatusWidget_= chip wasn't
+being refreshed on switch, only at login). Both fixed; full retest
+after a DB recreate + Acme reprovision passed all four steps.

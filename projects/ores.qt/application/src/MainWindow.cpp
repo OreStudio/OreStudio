@@ -32,6 +32,7 @@
 #include "ores.qt/MasterPasswordDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
+#include "ores.qt/PartyPickerDialog.hpp"
 #include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
@@ -507,6 +508,9 @@ MainWindow::MainWindow(QWidget* parent,
     auto* currentUserMenu = ui_->menuFile->addMenu(tr("Current &User"));
     currentUserMenu->addAction(ui_->ActionMyAccount);
     currentUserMenu->addAction(ui_->ActionMySessions);
+    currentUserMenu->addSeparator();
+    switchPartyAction_ = currentUserMenu->addAction(tr("&Switch Party..."));
+    connect(switchPartyAction_, &QAction::triggered, this, &MainWindow::onSwitchPartyTriggered);
 
     // Pre-create the shared &Reference Data menu. NOT inserted directly —
     // RefdataPlugin returns it from create_menus() to control bar position.
@@ -893,6 +897,9 @@ void MainWindow::updateMenuState() {
     // File menu items requiring authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
     ui_->ActionMySessions->setEnabled(isLoggedIn);
+    if (switchPartyAction_)
+        switchPartyAction_->setEnabled(isLoggedIn && clientManager_
+                                       && clientManager_->availableParties().size() > 1);
 
     // Telemetry items requiring authentication
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
@@ -1162,6 +1169,62 @@ void MainWindow::onMyAccountTriggered() {
     mdiArea_->addSubWindow(myAccountWindow_);
     allDetachableWindows_.append(myAccountWindow_);
     myAccountWindow_->show();
+}
+
+void MainWindow::onSwitchPartyTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Switch Party triggered";
+
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    const auto& parties = clientManager_->availableParties();
+    if (parties.size() <= 1)
+        return;
+
+    std::vector<boost::uuids::uuid> recentIds;
+    if (connectionManager_) {
+        try {
+            for (const auto& rp : connectionManager_->get_recent_parties())
+                recentIds.push_back(rp.party_id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to load recent parties: " << e.what();
+        }
+    }
+
+    // Same call site pattern as LoginDialog's own party-selection step --
+    // this is that same dialog, just reopened mid-session instead of
+    // during login.
+    PartyPickerDialog partyDialog(
+        parties, recentIds, clientManager_, imageCache_, this, /*is_switch=*/true);
+    if (partyDialog.exec() != QDialog::Accepted)
+        return;
+
+    if (connectionManager_) {
+        try {
+            connectionManager_->record_party_selection(partyDialog.selectedPartyId(),
+                                                        partyDialog.selectedPartyName().toStdString());
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to record recent party: " << e.what();
+        }
+    }
+
+    party_name_ = clientManager_->currentPartyName();
+    updateStatusBarFields();
+
+    BOOST_LOG_SEV(lg(), info) << "Switched party: " << party_name_.toStdString();
+    ui_->statusbar->showMessage(
+        tr("Switched to %1. Already-open windows keep showing the previous "
+           "party's data -- close and reopen them to see %1's.")
+            .arg(party_name_),
+        8000);
+
+    // Same post-switch checks as the login flow -- a switch can land on a
+    // party that still needs onboarding, or one carrying a non-fatal warning.
+    if (clientManager_->lastPartySetupRequired()) {
+        showPartyProvisioningWizard();
+    } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {
+        MessageBoxHelper::warning(this, "Party Setup", clientManager_->lastPartySetupWarning());
+    }
 }
 
 void MainWindow::onMySessionsTriggered() {

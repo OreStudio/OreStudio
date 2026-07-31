@@ -49,11 +49,19 @@ class ORES_QT_API PartyPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
+    /**
+     * @param is_switch When false (the default -- login-time party
+     * selection), accepting the dialog calls ClientManager::selectParty().
+     * When true (reopened mid-session via a "Switch Party" action),
+     * accepting it calls ClientManager::switchParty() instead -- see that
+     * pair's own doc comments for why they're different calls.
+     */
     explicit PartyPickerDialog(const std::vector<PartyInfo>& parties,
                                const std::vector<boost::uuids::uuid>& recent_ids,
                                ClientManager* clientManager,
                                ImageCache* imageCache,
-                               QWidget* parent = nullptr);
+                               QWidget* parent = nullptr,
+                               bool is_switch = false);
 
     boost::uuids::uuid selectedPartyId() const;
     QString selectedPartyName() const;
@@ -81,6 +89,7 @@ private:
 
 private:
     ClientManager* clientManager_;
+    bool is_switch_;
     ImageCache* imageCache_;
     std::vector<PartyInfo> parties_;
     std::vector<boost::uuids::uuid> recent_ids_;

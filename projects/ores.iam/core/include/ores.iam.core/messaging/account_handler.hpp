@@ -919,6 +919,197 @@ public:
         }
     }
 
+    /**
+     * @brief Re-scopes an already-logged-in session to a different party.
+     *
+     * Intentionally a near-duplicate of select_party() above rather than a
+     * shared helper -- the only real difference is which token audience is
+     * accepted (any normal, already-authenticated session token, instead of
+     * select_party's single-use "select_party_only"), and the two are kept
+     * fully independent so a future change to one's validation rules can
+     * never accidentally weaken the other's. See switch_party_request's own
+     * doc comment (account_protocol.hpp) for why this is a separate subject
+     * rather than a relaxed select_party.
+     */
+    void switch_party(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
+        auto req = decode<switch_party_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            auto token = acct_extract_bearer_token(msg);
+            if (token.empty()) {
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Missing authorization token"});
+                return;
+            }
+
+            auto claims_result = signer_.validate(token);
+            if (!claims_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: JWT validation failed";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+            // Reject only the login-pending, single-use token -- a normal,
+            // already-authenticated session token has an empty audience
+            // (jwt_claims::audience is only ever set to a non-empty value
+            // for that one special case, in auth_handler.hpp), not the
+            // literal string "authenticated".
+            if (claims_result->audience == "select_party_only") {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: rejecting single-use select_party_only token -- "
+                       "use select_party to complete initial login instead";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
+                return;
+            }
+
+            boost::uuids::string_generator sg;
+            auto account_id = sg(claims_result->subject);
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "switch_party: account=" << claims_result->subject
+                << " requested_party=" << req->party_id;
+
+            const auto tenant_id_str = claims_result->tenant_id.value_or("");
+            if (tenant_id_str.empty()) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "switch_party: token has no tenant_id";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: missing tenant"});
+                return;
+            }
+            auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+            if (!tid_result) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: invalid tenant_id in token: " << tenant_id_str;
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: malformed tenant"});
+                return;
+            }
+            const auto ctx = ctx_.with_tenant(*tid_result, claims_result->username.value_or(""));
+
+            boost::uuids::uuid requested_party_id;
+            try {
+                requested_party_id = sg(req->party_id);
+            } catch (const std::exception&) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: invalid party_id: " << req->party_id;
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid party_id format"});
+                return;
+            }
+            repository::account_party_repository ap_repo(ctx);
+            auto parties = ap_repo.read_latest_by_account(account_id);
+
+            BOOST_LOG_SEV(account_handler_lg(), debug)
+                << "switch_party: account has " << parties.size() << " party membership(s)";
+
+            bool is_member = false;
+            for (const auto& ap : parties) {
+                if (ap.party_id == requested_party_id) {
+                    is_member = true;
+                    break;
+                }
+            }
+
+            if (!is_member) {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: party " << req->party_id
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "User is not a member of requested party"});
+                return;
+            }
+
+            auto visible =
+                acct_compute_visible_party_ids(*party_cache_, tenant_id_str, requested_party_id);
+
+            security::jwt::jwt_claims new_claims;
+            new_claims.subject = claims_result->subject;
+            new_claims.issued_at = std::chrono::system_clock::now();
+            new_claims.expires_at =
+                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
+            new_claims.username = claims_result->username;
+            new_claims.email = claims_result->email;
+            new_claims.tenant_id = tenant_id_str;
+            new_claims.party_id = boost::uuids::to_string(requested_party_id);
+            // Carry the session identifiers forward so logout can end
+            // the session record created at login.
+            new_claims.session_id = claims_result->session_id;
+            new_claims.session_start_time = claims_result->session_start_time;
+            for (const auto& vid : visible)
+                new_claims.visible_party_ids.push_back(boost::uuids::to_string(vid));
+
+            auto new_token = signer_.create_token(new_claims).value_or("");
+
+            std::string t_name;
+            std::string p_name;
+            try {
+                auto tid = sg(tenant_id_str);
+                t_name = acct_lookup_tenant_name(ctx, tid);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                             "party switch: "
+                                                          << e.what();
+            }
+            const bool onboarding_complete = acct_is_party_onboarding_complete(
+                ctx, tenant_id_str, boost::uuids::to_string(requested_party_id));
+            const bool party_setup_required = !onboarding_complete;
+            std::string party_setup_warning;
+            if (const auto p =
+                    acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
+                p_name = p->full_name;
+                if (party_setup_required) {
+                    BOOST_LOG_SEV(account_handler_lg(), info)
+                        << "switch_party: party_setup_required=true for party "
+                        << boost::uuids::to_string(requested_party_id);
+                } else if (p->status == "Inactive") {
+                    party_setup_warning =
+                        "Party setup completed, but the party is still marked Inactive.";
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "switch_party: onboarding.party complete but party "
+                        << boost::uuids::to_string(requested_party_id) << " still Inactive";
+                }
+            } else {
+                BOOST_LOG_SEV(account_handler_lg(), warn)
+                    << "switch_party: party not found in cache for party "
+                    << boost::uuids::to_string(requested_party_id);
+            }
+
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  select_party_response{.success = true,
+                                        .message = "Party switched",
+                                        .token = new_token,
+                                        .username = claims_result->username.value_or(""),
+                                        .tenant_name = t_name,
+                                        .party_name = p_name,
+                                        .party_setup_required = party_setup_required,
+                                        .party_setup_warning = party_setup_warning});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
+        }
+    }
+
     void history(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<get_account_history_request>(msg);

@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 09F2ECA0-D558-4BDA-A1C5-C8C05DF60A5B
+:END:
+#+title: Test Scenario: Verify in-session party switching
+#+description: Confirm the new Switch Party menu action lets a multi-party account (e.g. tenant_admin) change which party's data is in view without logging out and back in.
+#+type: test_scenario
+#+level: s1
+#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F11B1928-D1C6-4ECD-944B-66BF646727A9][Fix: no way to switch party within a session]] in [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- The database must be freshly provisioned via =--source acme= —
+  confirm via =compass db status=, recreating only if stale:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps, in particular
+  "Step 7: Granting cross-entity access" -- =tenant_admin= needs
+  access to all four Acme parties for this scenario.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F11B1928-D1C6-4ECD-944B-66BF646727A9][Fix: no way to switch party within a session]] |
+| Parent story  | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PASSED                                |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+Log in with account =tenant_admin@acme_corporation= and password
+=Secure-Password-123=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm Switch Party is available
+
+- Open *File > Current User*.
+- A "Switch Party..." item appears below My Account/My Sessions,
+  enabled (not greyed out) -- =tenant_admin= has cross-entity access
+  to all four Acme parties, so this must be clickable.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Switch to a different party
+
+- Click *Switch Party...*.
+- The same party-picker dialog shown at login opens, listing all
+  four Acme parties (the holding company plus UK/US/HK).
+- Select a party other than the one currently active (check the
+  current party name, e.g. in a window title or status area, before
+  switching) and confirm.
+- A status-bar message confirms the switch, naming the newly
+  selected party.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm newly opened windows reflect the new party
+
+- Open a party-scoped window you have not already opened this
+  session (e.g. *Market Data > Cross-Rates Matrix*, or *Reference
+  Data > Business Units*).
+- Its content matches the party just switched to, not the original
+  login-time party -- confirms the new JWT/session context from
+  Switch Party is actually being used for new requests, not just
+  cosmetic.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-31T00:30:15Z |
+| Branch        | feature/no-in-session-party-switcher |
+| Commit        | 3af08571b |
+| Worktree      | brave_hopper |
+
+* Notes

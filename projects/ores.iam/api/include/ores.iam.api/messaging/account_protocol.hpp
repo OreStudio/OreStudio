@@ -188,6 +188,26 @@ struct select_party_request {
     std::string party_id;
 };
 
+/**
+ * @brief Re-scopes an *already-logged-in* session to a different party.
+ *
+ * Deliberately a separate subject/handler from select_party rather than a
+ * relaxed version of it: select_party only accepts a narrowly-scoped,
+ * single-use token (audience "select_party_only") issued exclusively by
+ * the login flow, by design -- see account_handler.hpp's select_party for
+ * why. switch_party accepts a normal, already-authenticated session token
+ * instead (any token that is NOT that single-use one), so an account with
+ * access to more than one party (e.g. a tenant admin with cross-entity
+ * access) can change which party's data is in view mid-session without
+ * logging out and back in. Same party-membership check and new-token
+ * issuance as select_party otherwise.
+ */
+struct switch_party_request {
+    using response_type = struct select_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.switch-party";
+    std::string party_id;
+};
+
 struct select_party_response {
     bool success = false;
     std::string message;

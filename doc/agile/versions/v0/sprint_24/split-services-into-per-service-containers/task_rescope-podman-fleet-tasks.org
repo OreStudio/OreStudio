@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: F6C2D87F-E21E-44C2-AA1D-E01A863C3426
+:END:
+#+title: Task: Re-scope podman-fleet tasks after the pivot to systemd
+#+description: Roll out per-service containers to the remaining 17 services and Mirror podman events both predate the story's pivot to systemd (native + Quadlet) as the single orchestration substrate; abandon the rollout task (superseded by the Quadlet generator task) and narrow the podman-events watcher to remote/Quadlet hosts only, blocked on the Quadlet generator landing.
+#+type: task
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch: feature/rescope-podman-fleet-tasks
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story's task list still had two BACKLOG tasks written against the
+original podman-pod/compose orchestration plan, before the story's
+Goal pivoted to systemd (native units locally, Quadlet units on
+remote/podman hosts) as the single orchestration substrate. Re-scope
+both so the backlog matches the current design instead of describing
+work that's already superseded or whose scope has narrowed:
+
+- "Roll out per-service containers to the remaining 17 services" --
+  its whole plan (one podman pod/compose spec running 18 containers)
+  is now the Quadlet generator task's job, reading the same
+  service_definition/service_dependency graph. Abandon it rather than
+  leave a dead task in the backlog.
+- "Mirror podman events into service_instance/service_event tables" --
+  still valid, but only for remote/Quadlet-managed hosts now; local
+  dev runs native systemd units with no podman involved at all. Narrow
+  its description/goal accordingly and mark it blocked on the Quadlet
+  generator task landing (nothing to watch until then).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- Roll out per-service containers to the remaining 17 services is
+  marked ABANDONED, with a Notes entry explaining the supersession and
+  linking to the Quadlet generator task.
+- Mirror podman events' description/Goal is narrowed to remote/Quadlet
+  hosts, and its #+blocked_on/Status row point at the Quadlet
+  generator task.
+- The story's =* Tasks= table rows for both match the updated task
+  docs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Re-scoped both podman-fleet tasks to match the story's pivot to
+systemd:
+
+- "Roll out per-service containers to the remaining 17 services"
+  marked ABANDONED, with a Notes entry pointing at the Quadlet
+  generator task ([[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][34E28952]]) as
+  its superseding replacement.
+- "Mirror podman events into service_instance/service_event tables"
+  narrowed to remote/Quadlet hosts only (local dev now runs native
+  systemd units, no podman involved), and marked blocked on the
+  Quadlet generator task landing (~#+blocked_on~ set, Status row
+  updated).
+- story.org's =* Tasks= table rows synced for both.
+
+No code changes -- doc-only backlog housekeeping.

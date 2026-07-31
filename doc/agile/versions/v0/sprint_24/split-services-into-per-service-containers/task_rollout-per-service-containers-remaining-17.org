@@ -33,11 +33,11 @@ criterion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded -- see Notes.                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing -- superseded.                 |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -60,6 +60,19 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+ABANDONED 2026-07-31: this task's plan (one podman pod/compose spec
+running 18 per-service containers, wired via a separate podman
+orchestration layer) predates the story's pivot to systemd as the
+single orchestration substrate (see story.org's Goal, and the
+dependency-graph-generator task's scope expansion). Rolling out
+per-service containers to the remaining 17 services is now the
+[[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]]'s job: it reads the same
+~service_definition~/~service_dependency~ tables the plain-systemd
+generator already does and renders Quadlet ~.container~ units --
+already-parameterised (~docker/service-runtime.Dockerfile~'s ~ARG
+SERVICE_NAME~) -- for every service, not just IAM. No separate manual
+pod/compose rollout is needed.
 
 * Test Scenarios
 

@@ -36,22 +36,27 @@ std::string tenant_status_repository::sql() {
     return generate_create_table_sql<tenant_status_entity>(lg());
 }
 
-void tenant_status_repository::write(context ctx, const domain::tenant_status& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant status. " << "status: " << v.status;
-    execute_write_query(
-        ctx, tenant_status_mapper::map(v), lg(), "Writing tenant status to database.");
+void tenant_status_repository::write(context ctx, const domain::tenant_status& status) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenant status to database: " << status.status;
+    auto entity = tenant_status_mapper::map(status);
+    entity.tenant_id = ctx.tenant_id().to_string();
+    execute_write_query(ctx, entity, lg(), "Writing tenant status to database.");
 }
 
-void tenant_status_repository::write(context ctx, const std::vector<domain::tenant_status>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant statuses. Count: " << v.size();
-    execute_write_query(
-        ctx, tenant_status_mapper::map(v), lg(), "Writing tenant statuses to database.");
+void tenant_status_repository::write(context ctx,
+                                     const std::vector<domain::tenant_status>& statuses) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenant statuses to database. Count: " << statuses.size();
+    auto entities = tenant_status_mapper::map(statuses);
+    for (auto& entity : entities) {
+        entity.tenant_id = ctx.tenant_id().to_string();
+    }
+    execute_write_query(ctx, entities, lg(), "Writing tenant statuses to database.");
 }
 
 std::vector<domain::tenant_status> tenant_status_repository::read_latest(context ctx) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("status"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<tenant_status_entity, domain::tenant_status>(
         ctx,
@@ -63,8 +68,9 @@ std::vector<domain::tenant_status> tenant_status_repository::read_latest(context
 
 std::vector<domain::tenant_status>
 tenant_status_repository::read_latest(context ctx, const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant status. " << "status: " << status;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant status. Status: " << status;
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
                        where("status"_c == status && "valid_to"_c == max.value());
 
@@ -76,13 +82,12 @@ tenant_status_repository::read_latest(context ctx, const std::string& status) {
         "Reading latest tenant status by status.");
 }
 
-
 std::vector<domain::tenant_status> tenant_status_repository::read_all(context ctx,
                                                                       const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant status versions. " << "status: " << status;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant status versions. Status: " << status;
+
     const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
-                       where("status"_c == status) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+                       where("status"_c == status) | order_by("version"_c.desc());
 
     return execute_read_query<tenant_status_entity, domain::tenant_status>(
         ctx,
@@ -92,76 +97,21 @@ std::vector<domain::tenant_status> tenant_status_repository::read_all(context ct
         "Reading all tenant status versions by status.");
 }
 
-std::optional<domain::tenant_status> tenant_status_repository::read_at_version(
-    context ctx, const std::string& status, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenant status at version. " << "status: " << status
-                               << " version: " << version;
-    const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
-                       where("status"_c == status && "version"_c == version) | sqlgen::limit(1);
-
-    const auto entities = execute_read_query<tenant_status_entity, domain::tenant_status>(
-        ctx,
-        query,
-        [](const auto& entities) { return tenant_status_mapper::map(entities); },
-        lg(),
-        "Reading tenant status at version.");
-
-    if (entities.empty())
-        return std::nullopt;
-    return entities.front();
-}
-
 void tenant_status_repository::remove(context ctx, const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant status. " << "status: " << status;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenant status from database: " << status;
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_status_entity> |
                        where("status"_c == status && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing tenant status from database.");
 }
 
-std::vector<domain::tenant_status>
-tenant_status_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant statuses with offset: " << offset
-                               << " and limit: " << limit;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("status"_c) |
-                       sqlgen::offset(offset) | sqlgen::limit(limit);
-
-    return execute_read_query<tenant_status_entity, domain::tenant_status>(
-        ctx,
-        query,
-        [](const auto& entities) { return tenant_status_mapper::map(entities); },
-        lg(),
-        "Reading latest tenant statuses with pagination.");
-}
-
-std::uint32_t tenant_status_repository::get_total_status_count(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenant status count";
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-
-    struct count_result {
-        long long count;
-    };
-
-    const auto query = sqlgen::select_from<tenant_status_entity>(sqlgen::count().as<"count">()) |
-                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
-
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
-    ensure_success(r, lg());
-
-    const auto count = static_cast<std::uint32_t>(r->count);
-    BOOST_LOG_SEV(lg(), debug) << "Total active tenant status count: " << count;
-    return count;
-}
-
-void tenant_status_repository::remove(context ctx, const std::vector<std::string>& statuss) {
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+void tenant_status_repository::remove(context ctx, const std::vector<std::string>& statuses) {
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_status_entity> |
-                       where("status"_c.in(statuss) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing tenant statuses.");
+                       where("status"_c.in(statuses) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "batch removing tenant_statuses");
 }
-
 
 }

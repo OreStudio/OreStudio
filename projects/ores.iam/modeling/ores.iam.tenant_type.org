@@ -26,24 +26,23 @@ categorise tenants for different purposes.
 :component: iam
 :END:
 
-* Columns
-
-** type
+* Primary key
 :PROPERTIES:
-:type:      text
-:cpp_type:  std::string
-:primary_key: true
+:column:   type
+:type:     text
+:cpp_type: std::string
 :END:
 
 Unique type code.
 
 Examples: 'organisation', 'platform'.
 
+* Natural keys
+
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:natural_key: true
 :END:
 
 Human-readable name for the type.
@@ -51,6 +50,8 @@ Human-readable name for the type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Tenant"
 #+end_src
+
+* Columns
 
 ** description
 :PROPERTIES:
@@ -132,9 +133,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant_type.hpp
+:domain_include:         ores.iam/domain/tenant_type.hpp
 :domain_class:           iam::domain::tenant_type
-:protocol_include:       ores.iam.api/messaging/tenant_type_protocol.hpp
+:protocol_include:       ores.iam/messaging/tenant_type_protocol.hpp
 :collection_name:        tenant_types
 :item_var:               tenant_type
 :key_field:              type
@@ -154,7 +155,6 @@ faker::number::integer(1, 100)
 :settings_group:         TenantTypeListWindow
 :window_title:           Tenant Types
 :icon:                   Tag
-:has_change_reason_cache: true
 :END:
 
 *** Detail fields

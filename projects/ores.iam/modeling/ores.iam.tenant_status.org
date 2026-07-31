@@ -26,24 +26,23 @@ tenant access and capabilities.
 :component: iam
 :END:
 
-* Columns
-
-** status
+* Primary key
 :PROPERTIES:
-:type:      text
-:cpp_type:  std::string
-:primary_key: true
+:column:   status
+:type:     text
+:cpp_type: std::string
 :END:
 
 Unique status code.
 
 Examples: 'active', 'suspended', 'terminated'.
 
+* Natural keys
+
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:natural_key: true
 :END:
 
 Human-readable name for the status.
@@ -51,6 +50,8 @@ Human-readable name for the status.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Status"
 #+end_src
+
+* Columns
 
 ** description
 :PROPERTIES:
@@ -132,9 +133,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.iam.api/domain/tenant_status.hpp
+:domain_include:         ores.iam/domain/tenant_status.hpp
 :domain_class:           iam::domain::tenant_status
-:protocol_include:       ores.iam.api/messaging/tenant_status_protocol.hpp
+:protocol_include:       ores.iam/messaging/tenant_status_protocol.hpp
 :collection_name:        tenant_statuses
 :item_var:               tenant_status
 :key_field:              status
@@ -153,7 +154,7 @@ faker::number::integer(1, 100)
 :history_message_type:   get_tenant_status_history_request
 :settings_group:         TenantStatusListWindow
 :window_title:           Tenant Statuses
-:icon:                   CheckmarkCircle
+:icon:                   CircleCheck
 :END:
 
 *** Detail fields

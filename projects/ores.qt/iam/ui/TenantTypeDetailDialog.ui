@@ -28,9 +28,13 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex"><number>0</number></property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <widget class="QWidget" name="generalTab">
-      <attribute name="title"><string>General</string></attribute>
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
         <widget class="QGroupBox" name="basicInfoGroup">
@@ -39,7 +43,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelType">
+           <widget class="QLabel" name="label_codeEdit">
             <property name="text">
              <string>Type:</string>
             </property>
@@ -50,13 +54,10 @@
             <property name="placeholderText">
              <string>Enter tenant type code</string>
             </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelName">
+           <widget class="QLabel" name="label_nameEdit">
             <property name="text">
              <string>Name:</string>
             </property>
@@ -70,7 +71,7 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelDescription">
+           <widget class="QLabel" name="label_descriptionEdit">
             <property name="text">
              <string>Description:</string>
             </property>
@@ -114,7 +115,9 @@
       </layout>
      </widget>
      <widget class="QWidget" name="provenanceTab">
-      <attribute name="title"><string>Provenance</string></attribute>
+      <attribute name="title">
+       <string>Provenance</string>
+      </attribute>
       <layout class="QVBoxLayout" name="provenanceTabLayout">
        <item>
         <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>

@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: F346D281-9AE2-46C5-9FCC-5744A40B86CF
+:END:
+#+title: Task: Implement Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema
+#+description: Initial task for: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema
+#+type: task
+#+level: s1
+#+filetags: :revert-pr-1788-iam-model-drift:sprint_24:v0:
+#+owner: marco
+#+branch: feature/implement-revert-pr-1788-iam-model-drift
+#+pr: 1794
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4432B38B-F93F-4ADE-9F4A-F7DA34B01B66][Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Revert merge commit =7645312a2= (PR #1788, "Fix iam entity model
+drift") on =main= to restore a working database schema.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4432B38B-F93F-4ADE-9F4A-F7DA34B01B66][Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] |
+| Now          | Fix verified locally.                  |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                                    |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- =git revert -m 1 7645312a2= applies without manual conflicts.
+- DB recreate succeeds against the reverted schema.
+- PR opened against main.
+
+* Plan
+
+- =main= tip is =95a10b4e8= (PR #1789 merged after #1788). #1789
+  touches unrelated files (party-switcher, qt), no overlap with the
+  IAM files changed by #1788 — confirmed via
+  =git diff --stat 25bfafce5 95a10b4e8 -- '*iam*'= showing only
+  #1788's own changes.
+- Revert with =-m 1= to keep the mainline parent (the pre-#1788
+  state), since 7645312a2 is a merge commit.
+
+* Notes
+
+Root cause: PR #1788 ("Fix iam entity model drift", merge commit
+=7645312a2=, tip =b8f5a3d18=) broke the database schema on =main=.
+=main= had moved on since (=95a10b4e8=, PR #1789), but that PR
+touches unrelated files (party-switcher) with no overlap against the
+IAM files changed by #1788, so a clean =git revert -m 1 7645312a2=
+applied with no conflicts.
+
+Verified: =compass db recreate -y -k= succeeded against the reverted
+schema; full =compass build= succeeded (after clearing stale PCH
+files left over from an unrelated system clang upgrade).
+
+Follow-up: jolly_knuth's original task/PR for the IAM model-drift fix
+should be reopened and redone correctly before landing again.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1794][#1794]] | [iam] Revert PR #1788: fix broken DB schema on main |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | claude-review bot 1: revert traced as genuine, no dropped work, cross-PR compatible, no dangling refs. No changes requested. | (repo-wide) | Accepted — informational | Non-blocking note: dangling doc comments in ClientTenantTypeModel.hpp pre-date this revert, not introduced by it. |
+| 2 | claude-review bot 2: revert diff confirms zero drift vs pre-#1788 baseline, no dangling refs. No changes requested. | ores.sql/create/iam/*.sql | Accepted — informational | Flags 2 items to carry into the redo follow-up: clock_timestamp()->current_timestamp fix, and security definer/search_path hardening on iam trigger functions. |
+
+* Result

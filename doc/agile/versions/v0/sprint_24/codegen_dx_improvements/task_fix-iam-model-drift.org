@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
-#+branch: feature/fix-iam-model-drift
-#+pr: 1788
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment: jolly_knuth
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,11 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -89,52 +89,12 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1788][#1788]] | [iam] Fix iam entity model drift |
+|    |       |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | account_party_junction.org still missing :subcomponent: api -- PR description/task doc claimed it was fixed but the diff shows it wasn't (lost during a git checkout revert of the model file alongside the excluded regen output) | ores.iam.account_party_junction.org | Fixed | Re-added the ** Flags :subcomponent: api block. |
-| 2 | Commit message says account_contact_information regenerated with zero diff, but AccountContactInformationController.{hpp,cpp} shows a real (safe) diff -- a wireDetailDialogCommon() refactor from template drift, confirmed non-behavioural by two independent reviewers | AccountContactInformationController.{hpp,cpp} | Acknowledged | Wording was imprecise (zero-diff applied to domain/repository/messaging, not the Qt controller); no code change needed, diff already verified safe. |
-| 3 | No test case added for the new account_type_generator | generators_tests.cpp | Declined | Minor/non-blocking per reviewer; every other generator in this task's scope already has coverage carried over from before, account_type is a first-time regen with no prior test to preserve. |
-| 4 | Unused #include <unordered_set> in generated generator .cpp files | account_type/tenant_status/tenant_type_generator.cpp | Declined | Pre-existing template-wide boilerplate, confirmed identical across ores.dq generators; not specific to this PR. |
-| 5 | "DO NOT regenerate" exclusion is prose-only, no automated codegen guard | tenant.org, account_party_junction.org | Declined | Pre-existing pattern (matches party.org's own treatment from the refdata task); out of scope for this drift-fix task. |
+|   |                 |      |          |       |
 
 * Result
-
-=account_contact_information= was already current, zero-diff. Four
-entities (=account_type=, =tenant=, =tenant_status=, =tenant_type=)
-needed legacy =* Primary key=/=* Natural keys= migration to field-level
-flags -- none had ever successfully regenerated before. The
-=account_party= junction was missing =:subcomponent: api=, falling
-back to the legacy monolithic output path (same class of bug fixed for
-dq's =dataset_bundle_member= in PR #1777) -- fixed.
-
-Two entities were excluded from full regeneration entirely, mirroring
-=party='s hand-maintained-SQL treatment in the refdata drift-fix task:
-
-- =tenant=: =tenant_handler.hpp=/=tenant_repository.hpp= hand-implement
-  the full tenant-provisioning workflow, Acme one-click onboarding
-  (orchestrating parties/business units/portfolios/books/accounts via
-  internal actor impersonation), and hostname-based tenant lookup used
-  by login routing. None of it modeled, none of it reproducible by
-  current templates.
-- =account_party= (junction): =account_party_handler.hpp=
-  hand-implements workflow-step command handling for
-  =provision_tenant=, plus a deliberately custom stamp function that
-  must NOT use the generic =stamp()= helper (=party_id= means something
-  different for this one entity than everywhere else in the codebase).
-
-Both models now carry an explicit "DO NOT regenerate" note. Also fixed
-along the way: a stale =faker::company::name()= call (renamed to
-=companyName()= upstream), stale pre-split =ores.iam/...= include paths
-and an invalid Qt =Icon= value on three entities, and a missing
-=:has_change_reason_cache:= flag that broke =tenant_type='s Qt
-controller construction (same generic mechanism fixed for dq's
-=badge_severity= in PR #1777).
-
-=compass build= and full =rat= green; codegen unit test suite (98
-tests) green.
-
-Task-ID: 1BC20E52-EF45-4F24-B8E3-E72A7E5EDAD9

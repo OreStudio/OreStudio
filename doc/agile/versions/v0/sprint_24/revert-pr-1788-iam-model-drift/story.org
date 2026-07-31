@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 4432B38B-F93F-4ADE-9F4A-F7DA34B01B66
+:END:
+#+title: Story: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema
+#+description: PR #1788 broke the database schema on main; revert merge commit 7645312a2 to restore a good state.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:sprint_24:v0:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore =main= to a good state. PR #1788 ([[https://github.com/OreStudio/OreStudio/pull/1788][Fix iam entity model drift]],
+merge commit =7645312a2=, tip commit =b8f5a3d18=) broke the database
+schema. Revert the merge cleanly so downstream work on =main= is
+unblocked again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Reverting merge commit 7645312a2 on a hotfix branch off main. |
+| Waiting on    | Nothing.                               |
+| Next          | Open PR, get it merged to unblock main. |
+| Last touched  | 2026-07-31                               |
+
+* Acceptance
+
+- =git revert -m 1 7645312a2= applied cleanly (no manual conflict resolution).
+- Local build/DB schema recreation succeeds on the reverted tree.
+- PR merged to main; main is green again.
+- jolly_knuth's underlying task/PR is flagged so the drift fix can be redone correctly later.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7379D045-CE63-4571-AF2F-D438E8FE43AF][Scaffold story: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | STARTED | 2026-07-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F346D281-9AE2-46C5-9FCC-5744A40B86CF][Implement Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | STARTED | 2026-07-31 | | Initial task for: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema |
+
+* Decisions
+
+- Reviewers flagged two items to preserve when the IAM model-drift
+  fix is redone: the =clock_timestamp()= -> =current_timestamp= fix
+  in the account_type/tenant_status/tenant_type insert triggers
+  (avoids same-transaction multi-write collisions), and the
+  =security definer set search_path = public, pg_temp= hardening on
+  those same trigger functions (matches the pattern used elsewhere,
+  e.g. =refdata_book_statuses_create.sql=).
+
+* Out of scope
+
+- Redoing the IAM model-drift fix correctly — tracked separately;
+  jolly_knuth's original task should be reopened for this.

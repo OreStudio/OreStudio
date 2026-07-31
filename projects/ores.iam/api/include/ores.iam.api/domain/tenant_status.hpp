@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_DOMAIN_TENANT_STATUS_HPP
-#define ORES_IAM_API_DOMAIN_TENANT_STATUS_HPP
+#ifndef ORES_IAM_DOMAIN_TENANT_STATUS_HPP
+#define ORES_IAM_DOMAIN_TENANT_STATUS_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
-#include <string_view>
 
 namespace ores::iam::domain {
 
@@ -61,17 +61,12 @@ struct tenant_status final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order = 0;
+    int display_order;
 
     /**
      * @brief Username of the person who last modified this tenant status.
      */
     std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
@@ -86,20 +81,15 @@ struct tenant_status final {
     std::string change_commentary;
 
     /**
+     * @brief Username of the account that performed this operation.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
-
-/**
- * @brief Dispatch-key identifier for tenant_status, e.g. for the
- * generic history-diff request and action registries. Single source
- * of truth: every call site spells entity_type_of(value) regardless
- * of which entity it holds.
- */
-[[nodiscard]] constexpr std::string_view entity_type_of(const tenant_status&) {
-    return "ores.iam.tenant_status";
-}
 
 }
 

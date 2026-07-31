@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CORE_REPOSITORY_TENANT_TYPE_ENTITY_HPP
-#define ORES_IAM_CORE_REPOSITORY_TENANT_TYPE_ENTITY_HPP
+#ifndef ORES_IAM_REPOSITORY_TENANT_TYPE_ENTITY_HPP
+#define ORES_IAM_REPOSITORY_TENANT_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
-#include <ostream>
 #include <string>
 
 namespace ores::iam::repository {
@@ -38,12 +37,11 @@ struct tenant_type_entity {
     constexpr static const char* tablename = "ores_iam_tenant_types_tbl";
 
     sqlgen::PrimaryKey<std::string> type;
+    std::string tenant_id;
     int version = 0;
-
     std::string name;
-
     std::string description;
-    int display_order = 0;
+    int display_order;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

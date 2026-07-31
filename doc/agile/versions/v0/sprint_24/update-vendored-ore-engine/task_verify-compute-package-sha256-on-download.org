@@ -8,7 +8,7 @@
 #+filetags: :update-vendored-ore-engine:sprint_24:v0:
 #+owner: marco
 #+branch: feature/verify-compute-package-sha256-on-download
-#+pr:
+#+pr: 1790
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1790][#1790]] | [compute] Verify compute grid package SHA256 on download |
 
 * Review
 

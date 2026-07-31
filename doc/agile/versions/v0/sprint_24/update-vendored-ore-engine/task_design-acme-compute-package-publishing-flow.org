@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 0F768B80-184A-44C7-B725-A594A873AB4A
+:END:
+#+title: Task: Design and build ACME compute package publishing (client lib, shell, Qt)
+#+description: New ores.compute.client package_publisher shared by ores.shell and ores.qt; retarget AppProvisionerWizard to per-platform uploads on the seed's own key shape; vendor the ORE binary into the build.
+#+type: task
+#+level: s1
+#+filetags: :update-vendored-ore-engine:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+There is exactly one way to publish a compute app engine package (the seed's per-triplet key shape), implemented once and shared between ores.shell (a new manual publish command, run after ACME core provisioning) and ores.qt (a new standalone Upload Engines dialog, ready to slot into the future Acme wizard). The system is ready to run compute jobs once ACME publishing (core provisioning plus this package publish step) is done.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- A new ores.compute.client component provides a package_publisher usable identically from ores.shell and ores.qt: resolves platform_id, computes local SHA256, uploads to the canonical {app_name}/{version}/{app_name}-{version}-{platform_code}.tar.gz key (the only key shape -- the wizard's legacy packages/{app_version_id} shape is retired), verifies the server-returned SHA256, then upserts app/app_version/app_version_platform via the existing save_app_request/save_app_version_request. AppProvisionerWizard is retargeted to this shared publisher with one upload per selected platform. A new ores.shell command performs the same publish non-interactively, reading the binary from a new publish/vendor-packages/ directory populated at build time from external/ore/packages/. A new standalone ores.qt Upload Engines dialog does the same interactively.
+
+* Plan
+
+Depends on the sibling task
+[[id:8DBD1BAE-EC77-4008-99CB-3C08C20CB575][Verify compute grid package SHA256 on download]]'s server-side
+hashing (=handle_put= returning =sha256=) -- do that one first.
+
+Discovered while scoping this: =AppProvisionerWizard= already does
+most of this end-to-end today (=save_app_request=/
+=save_app_version_request= over NATS, direct =QNetworkAccessManager=
+HTTP PUT for the binary) -- so this is a *retarget and share*, not a
+build-from-scratch. Current gaps this task closes: (a) the wizard
+uses the "legacy" =packages/{app_version_id}= key and applies one
+=package_uri= to every selected platform (a known, already-commented
+shortcut in the code); (b) no non-interactive equivalent exists for
+=ores.shell=; (c) no SHA256 anywhere in the flow (task 8DBD1BAE).
+
+1. New =ores.compute.client= component (mirrors =ores.refdata.client=/
+   =ores.iam.client=). =package_publisher= class:
+   - Resolve =platform_id= from =platform_code= via the existing
+     =list_platforms_request=.
+   - Compute local SHA256 of the file.
+   - Canonical key: =compute_storage::package_key(app_name, version,
+     platform_code, ".tar.gz")= -- the ONLY shape going forward.
+   - Upload via =ores.storage.client='s transfer helper (or an
+     equivalent usable from both a headless shell command and a Qt
+     dialog wanting progress reporting -- decide during
+     implementation whether one implementation serves both, or a
+     thin per-caller wrapper around a shared core upload+verify
+     step).
+   - Compare the server-returned SHA256 (from the sibling task) against
+     the local one; fail loudly on mismatch.
+   - =save_app_request= (idempotent upsert by name) then
+     =save_app_version_request= with =platforms=[{platform_id,
+     package_uri, sha256}]=.
+2. Vendor the binary: new =publish/vendor-packages/= directory,
+   CMake-copied from =external/ore/packages/= at build time (mirrors
+   the =deploy_skills=/=deploy_settings= target pattern) -- ships
+   with every build, findable via a path relative to the running
+   executable, same trick already used for =user_manual.qch=.
+3. Retarget =AppProvisionerWizard::PackageUploadPage= to the shared
+   =package_publisher=, looping over every selected platform (one
+   upload each) instead of the current single-URI-for-all shortcut.
+4. =ores.shell=: new manual command performing the same publish
+   non-interactively (app name/version/platform/file as arguments,
+   defaulting the file to =publish/vendor-packages/=), intended to be
+   run once after ACME's own "core" party/org provisioning completes
+   -- not auto-folded into =provision party --source acme=.
+5. =ores.qt=: new standalone "Upload Engines" dialog using the same
+   publisher. No Acme-specific wizard exists yet (task F9D8112C,
+   still BACKLOG) to embed this into, so build it reachable
+   standalone for now (e.g. from the Compute Console), designed to
+   slot into that wizard's "select ACME" step once built.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: 8DBD1BAE-EC77-4008-99CB-3C08C20CB575
+:END:
+#+title: Task: Verify compute grid package SHA256 on download
+#+description: ores.compute.wrapper should verify a downloaded engine package's checksum against a known-good SHA256 before extracting/running it.
+#+type: task
+#+level: s1
+#+filetags: :update-vendored-ore-engine:sprint_24:v0:
+#+owner: marco
+#+branch: feature/verify-compute-package-sha256-on-download
+#+pr: 1790
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_compute_app_version_platforms_tbl= (see
+=projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp=)
+has no checksum column at all today, and
+=ores.compute.wrapper='s download path
+(=projects/ores.compute/wrapper/src/app/application.cpp:497=,
+=net::http_client::download(make_url(cfg.http_base_url,
+evt.package_uri), pkg_archive)=) never verifies the bytes it fetches
+against anything -- it downloads, extracts, and runs the engine package
+purely on trust. Add a =sha256= column to
+=ores_compute_app_version_platforms_tbl=, populate it from each
+package's own manifest (see =external/ore/packages/manifest.json='s
+=packages[].sha256= field, already recorded for exactly this reason --
+see =external/ore/tools/package_ore.sh=), thread it through
+=ores_compute_app_version_platforms_upsert_fn=/the seed script
+(=compute_ore_app_seed.sql=), and have the wrapper hash the downloaded
+archive and compare before extracting -- refuse to run and report a
+clear error on mismatch, rather than silently executing a corrupted or
+tampered package.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- =ores_compute_app_version_platforms_tbl= gains a =sha256= column
+  (via the codegen =.org= model, not hand-edited SQL).
+- =storage_routes::handle_put= computes the SHA256 of the uploaded
+  body server-side and returns it in the response (the trust anchor:
+  the server is the only party that sees the final bytes on disk, so
+  a client-claimed hash is not sufficient).
+- =ores.compute.wrapper= hashes the downloaded package archive and
+  compares it against =evt.package_sha256= (threaded through the
+  workunit dispatch message) before extracting -- refuses with a
+  clear error on mismatch, rather than silently running a corrupted
+  or tampered package.
+- Companion design work (a new =ores.compute.client= package-publish
+  library, the =ores.shell=/=ores.qt= publishing UX, and vendoring the
+  binary into the build) is scoped as its own sibling task -- this
+  task is the SHA256 plumbing only: schema, server-side hashing, and
+  wrapper-side verification.
+
+* Plan
+
+Design agreed with the user (see the parent story's own Decisions for
+the fuller publish-flow design this task is one piece of):
+
+1. Extend =ores.compute.app_version_platform_junction.org= with a
+   =sha256= column (text, matching =package_uri='s own
+   nullable=false pattern -- an app_version_platform row isn't
+   meaningfully complete without one now that publishing always goes
+   through the storage API's own hash computation).
+2. Regenerate the entity (domain, repository, JSON I/O -- this
+   junction has no Qt/NATS-messaging surface generated, matching its
+   current shape).
+3. =projects/ores.http/core/src/routes/storage_routes.cpp='s
+   =handle_put=: compute SHA256 of the request body as part of
+   writing it to disk (single pass, no second read), return it in the
+   ={"success":true,"sha256":"..."}= response body.
+4. =projects/ores.compute/api/include/ores.compute.api/messaging/work_protocol.hpp=:
+   add =package_sha256= alongside the existing =package_uri= field on
+   the workunit dispatch message.
+5. Wherever that dispatch message is built server-side (trace from
+   =package_uri='s own assignment), thread the new
+   =app_version_platform.sha256= column through to the new field.
+6. =ores.compute.wrapper/src/app/application.cpp=: after
+   =net::http_client::download(...)= succeeds, hash =pkg_archive= and
+   compare against =evt.package_sha256=; on mismatch, fail the
+   workunit with a clear, specific error (not a generic download
+   failure) rather than proceeding to extract/run.
+7. =compute_ore_app_seed.sql=: seed the real sha256 for the current
+   package (from =external/ore/packages/manifest.json='s
+   =packages[].sha256=) alongside the existing =engine_version=/
+   =package_uri= literals.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1790][#1790]] | [compute] Verify compute grid package SHA256 on download |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | EVP_MD_CTX leaks if EVP_DigestInit_ex fails after EVP_MD_CTX_new succeeds | sha256.cpp | Fixed | Free the raw pointer before throwing, since a throwing constructor never runs its own destructor. |
+| 2 | Hash verification only runs on cold-cache download | application.cpp | Declined (informational) | Matches pre-existing caching behaviour (packages were already only downloaded once); flagged as a reasonable, acknowledged tradeoff, not a defect in this PR. |
+| 3 | Seeded SHA256 is a hand-maintained constant, must be kept in sync manually | compute_ore_app_seed.sql | Declined (informational) | Intended fail-safe behaviour; the operational fragility is exactly what the sibling task (automating hash computation at publish time) is scoped to fix. |
+| 4 | pull_work_response/work_handler::pull has no SHA256 coverage | work_handler.hpp | Declined (informational) | Pre-existing, unrelated dead code path -- not touched by this PR, no wrapper code calls it. |
+
+* Result
+
+Added a =sha256= column to =ores_compute_app_version_platforms_tbl=
+(SQL create + junction =.org= model, hand-applied to the C++ layer
+since this junction's codegen output had already drifted well beyond
+this task's scope -- filenames, field set, and types no longer match
+what a fresh regen would produce; a full realignment is a separate,
+future concern, not folded into this task). =storage_routes::handle_put=
+now hashes the uploaded body server-side (new reusable
+=ores::utility::crypto::sha256= helper, backed by OpenSSL EVP, with a
+streaming file-hashing overload for the wrapper side) and returns it
+in the response. =work_assignment_event= carries a new
+=package_sha256= field, threaded through from
+=app_version_platform.sha256= at dispatch
+(=workunit_handler.hpp=). =ores.compute.wrapper= hashes the downloaded
+package archive and refuses to extract/run on mismatch, with a
+specific error message. =compute_ore_app_seed.sql= seeds the real
+sha256 from =external/ore/packages/manifest.json=. Verified via a full
+=db recreate= (schema + seed apply cleanly) and via
+=ores.utility.tests= (new =crypto_sha256_tests.cpp=, including a
+known-answer test against a public SHA256 test vector) plus a full
+build of every touched library/executable
+(=ores.utility=, =ores.http.core=, =ores.compute.api/core/wrapper=).
+
+* Promoted from capture
+
+Captured 2026-07-30 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=ores_compute_app_version_platforms_tbl= (see
+=projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp=)
+has no checksum column at all today, and
+=ores.compute.wrapper='s download path
+(=projects/ores.compute/wrapper/src/app/application.cpp:497=,
+=net::http_client::download(make_url(cfg.http_base_url,
+evt.package_uri), pkg_archive)=) never verifies the bytes it fetches
+against anything -- it downloads, extracts, and runs the engine package
+purely on trust. Add a =sha256= column to
+=ores_compute_app_version_platforms_tbl=, populate it from each
+package's own manifest (see =external/ore/packages/manifest.json='s
+=packages[].sha256= field, already recorded for exactly this reason --
+see =external/ore/tools/package_ore.sh=), thread it through
+=ores_compute_app_version_platforms_upsert_fn=/the seed script
+(=compute_ore_app_seed.sql=), and have the wrapper hash the downloaded
+archive and compare before extracting -- refuse to run and report a
+clear error on mismatch, rather than silently executing a corrupted or
+tampered package.
+
+** Why
+
+A compute node currently has no way to detect a truncated download, a
+corrupted upload, or (worst case) a tampered package before running
+untrusted third-party financial-calculation code with the wrapper's
+own privileges. Surfaced while building
+=external/ore/tools/package_ore.sh=, which already computes and
+records each package's sha256 in
+=external/ore/packages/manifest.json= for human/tooling provenance --
+but nothing downstream (the DB seed, the wrapper) actually consumes it
+to verify anything at run time.
+
+** References
+
+- =projects/ores.compute/wrapper/src/app/application.cpp:497= (the unverified download call)
+- =projects/ores.compute/api/include/ores.compute.api/domain/app_version_platform.hpp= (no checksum column)
+- =projects/ores.sql/populate/compute/compute_ore_app_seed.sql= (where =package_uri= is seeded; =sha256= would be seeded alongside it)
+- =external/ore/tools/package_ore.sh= / =external/ore/packages/manifest.json= (already computes+records sha256 per package, just not consumed downstream)

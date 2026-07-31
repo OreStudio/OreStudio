@@ -42,7 +42,8 @@ app_version_platform_repository::list_for_version(database::context ctx,
     const std::string sql = "SELECT avp.app_version_id::text,"
                             "       avp.platform_id::text,"
                             "       p.code,"
-                            "       avp.package_uri"
+                            "       avp.package_uri,"
+                            "       avp.sha256"
                             "  FROM ores_compute_app_version_platforms_tbl avp"
                             "  JOIN ores_compute_platforms_tbl p"
                             "    ON p.id = avp.platform_id"
@@ -62,6 +63,7 @@ app_version_platform_repository::list_for_version(database::context ctx,
         avp.platform_id = boost::lexical_cast<boost::uuids::uuid>(row[1].value_or(""));
         avp.platform_code = row[2].value_or("");
         avp.package_uri = row[3].value_or("");
+        avp.sha256 = row[4].value_or("");
         r.push_back(std::move(avp));
     }
     return r;
@@ -98,17 +100,18 @@ void app_version_platform_repository::replace_for_version(
         ores::database::repository::execute_parameterized_command(
             ctx,
             "INSERT INTO ores_compute_app_version_platforms_tbl"
-            " (tenant_id, app_version_id, platform_id, package_uri,"
+            " (tenant_id, app_version_id, platform_id, package_uri, sha256,"
             "  modified_by, performed_by,"
             "  change_reason_code, change_commentary,"
             "  valid_from, valid_to)"
-            " VALUES ($1::uuid, $2::uuid, $3::uuid, $4,"
-            "         $5, $6, $7, $8,"
+            " VALUES ($1::uuid, $2::uuid, $3::uuid, $4, $5,"
+            "         $6, $7, $8, $9,"
             "         now(), ores_utility_infinity_timestamp_fn())",
             {tenant_id_str,
              app_version_id,
              platform_id_str,
              row.package_uri,
+             row.sha256,
              modified_by,
              performed_by,
              change_reason_code,

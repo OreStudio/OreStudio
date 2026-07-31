@@ -54,6 +54,7 @@ struct work_assignment_event {
     std::string workunit_id;
     std::string app_version_id; // identifies the cached package
     std::string package_uri;    // engine bundle (.tar.gz) to download and cache
+    std::string package_sha256; // expected SHA256 of the downloaded package bundle
     std::string input_uri;      // job input data (HTTP GET)
     std::string config_uri;     // job config passed through to engine (HTTP GET)
     std::string output_uri;     // pre-assigned upload location for result (HTTP PUT)

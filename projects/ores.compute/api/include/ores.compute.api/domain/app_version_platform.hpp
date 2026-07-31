@@ -62,6 +62,12 @@ struct app_version_platform final {
      * @brief URI of the per-platform packaged bundle in object storage.
      */
     std::string package_uri;
+
+    /**
+     * @brief SHA256 checksum of the per-platform packaged bundle, computed
+     * server-side by the storage API when the bundle was uploaded.
+     */
+    std::string sha256;
 };
 
 }

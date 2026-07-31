@@ -23,7 +23,7 @@ without manual steps or silent regressions.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
@@ -46,6 +46,8 @@ without manual steps or silent regressions.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:CECBE7BB-0C9E-43EF-B344-B87FE4BC208B][Refresh ORE Engine binary package, examples, and XSD to 1.8.16.0]] | DONE | 2026-07-30 | 2026-07-30 | Rebuild the ore engine self-contained, sync examples/xsd, automate hand-patch preservation. |
+| [[id:8DBD1BAE-EC77-4008-99CB-3C08C20CB575][Verify compute grid package SHA256 on download]] | DONE | 2026-07-31 | 2026-07-31 | ores.compute.wrapper should verify a downloaded engine package's checksum against a known-good SHA256 before extracting/running it. |
+| [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] | BACKLOG | | | New ores.compute.client package_publisher shared by ores.shell and ores.qt; retarget AppProvisionerWizard to per-platform uploads on the seed's own key shape; vendor the ORE binary into the build. |
 
 * Decisions
 
@@ -72,6 +74,16 @@ story even started work (caught live during this same task). Automation
 is strictly better than documentation here since the fix is small,
 mechanical, and safe to reapply unconditionally (a no-op if upstream
 ever fixes it at the source).
+
+** app_version_platform's codegen output had already drifted from its =.org= model
+
+Regenerating the entity from =ores.compute.app_version_platform_junction.org=
+would have renamed files, added several unrelated audit columns, and
+silently dropped the hand-added =platform_code= denormalisation still
+used by =workunit_handler.hpp= -- pre-existing drift unrelated to the
+SHA256 column. Added the =sha256= column by hand instead, matching the
+existing hand-maintained style; a full codegen realignment for this
+entity is separate follow-up work, not folded into this story.
 
 * Out of scope
 

@@ -1,38 +1,72 @@
 :PROPERTIES:
 :ID: 22287ABA-E21F-4B52-87A0-AB887C618203
 :END:
-#+title: Task: Generate podman-compose/systemd ordering from service_dependency
-#+description: A small generator step that reads the DB-driven service_definition/service_dependency tables and emits podman-compose depends_on (or podman generate systemd After=/Requires=) directives, so startup ordering stays data-driven instead of hand-maintained in a static compose/systemd file once services split into one container each.
+#+title: Task: Generate per-environment systemd units (native + Quadlet) from service_dependency
+#+description: A generator that reads the DB-driven service_definition/service_dependency tables and emits systemd unit files for both supported deployment modes -- plain systemd template units (native binaries, --user scope, EnvironmentFile pointing at that environment's .env) for local dev machines, and Quadlet .container units (podman) for remote hosts like Newton -- with After=/Requires= for ordering and a per-environment .target aggregating NATS + every service so a whole environment starts/stops as one unit (e.g. `systemctl --user start ores@swift_curie.target`). Supersedes process_supervisor/ores.controller.service entirely, which is decommissioned once this lands.
 #+type: task
 #+level: s1
 #+filetags: :split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-orchestration-spec-from-dependency-graph
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Read ~service_definition~/~service_dependency~ from the DB and emit
-the equivalent ordering directives for the orchestration layer chosen
-for the per-service rollout (podman-compose ~depends_on~, or
-~podman generate systemd~'s ~After=~/~Requires=~), so the dependency
-graph that currently drives ~process_supervisor~'s topological launch
-order in-process stays data-driven instead of becoming a hand-
-maintained static file once each service is its own container.
+Systemd becomes the single orchestration substrate for both supported
+deployment modes, replacing ~process_supervisor~/
+~ores.controller.service~ entirely (confirmed to have no
+responsibilities beyond process supervision -- no other NATS handlers
+exist on the controller, so nothing else needs preserving):
+
+- *Local (plain systemd, dev machines)*: one systemd *template* unit
+  per service binary (e.g. ~ores.iam.service@.service~), instantiated
+  per environment via ~%i~ (e.g. ~ores.iam.service@swift_curie~).
+  ~ExecStart=~ points directly at that environment's
+  ~build/output/<preset>/publish/bin/<binary>~; ~EnvironmentFile=~
+  points at that environment's own ~.env~. User-level (~systemctl
+  --user~), not system-level -- matches every other per-checkout dev
+  convention (ports, NATS subject prefix, DB name all already keyed by
+  environment label). ~ores.compute.wrapper@swift_curie~ instantiated
+  5x for its hot replicas (all independent, all subscribing to the
+  same NATS queue group -- no leader/passive concept needed).
+- *Remote/podman (Newton)*: the same dependency graph rendered as
+  Quadlet ~.container~ units instead (still systemd under the hood),
+  wrapped the same way in a per-environment ~.target~; bash+SSH
+  tooling renders and copies the units to the remote host's
+  ~~/.config/containers/systemd/~ and runs
+  ~systemctl --user daemon-reload && start~ there.
+- *Both modes*: a single generator reads ~service_definition~/
+  ~service_dependency~ once and renders ~After=~/~Requires=~ between
+  the generated units for whichever backend is targeted -- one source
+  of truth, two renderers. A per-environment ~.target~
+  (~ores@<env>.target~) aggregates NATS + every service instance via
+  ~Wants=~/~After=~, so ~systemctl --user start/stop ores@<env>.target~
+  starts/stops an entire environment (e.g. "swift_curie") in one
+  command. ~systemctl --user status ores@<env>.target~ shows the
+  aggregate status of every unit in that environment "for free" (real
+  systemd units, no bespoke status tooling needed); likewise
+  ~journalctl --user -u 'ores.*@swift_curie*'~ (or a single service's
+  own unit name) gives standard log access with no extra plumbing.
+- *Readiness gating*: add ~sd_notify(READY=1)~ to ~ores.service~'s
+  runner right where it already logs "Service ready." (small,
+  idiomatic, no new dependency) so systemd's own ~After=~ waits for
+  actual readiness in both modes, not just process-start; the podman
+  side's ~--sdnotify=healthy~ reuses the ~HEALTHCHECK~ from the IAM
+  pilot task.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,13 +76,32 @@ maintained static file once each service is its own container.
 * Acceptance
 
 - A generator reads ~service_definition~/~service_dependency~ and
-  produces a valid ordering spec for the chosen orchestration
-  mechanism, without hand-editing.
+  renders both: (a) plain systemd template units for native/local use,
+  and (b) Quadlet ~.container~ units for podman/remote use -- from the
+  same DB read, no hand-editing either output.
+- ~systemctl --user start ores@<env>.target~ starts NATS plus every
+  service for that environment, in dependency order, confirmed via a
+  real multi-service startup (at minimum IAM before one of its
+  dependents) that ~ores.iam.service@<env>~ is genuinely ~active
+  (running)~ before a dependent unit starts, not just process-launched.
+  ~stop~ on the same target stops the whole environment.
 - Changing a dependency edge in the DB and re-running the generator
-  changes the emitted ordering accordingly, with no code change.
-- The generated spec is verified against a real multi-service startup
-  (at minimum IAM before one of its dependents), confirming the
-  emitted ordering is actually honoured by podman/systemd.
+  changes the emitted ordering in both outputs, with no code change.
+- ~ores.compute.wrapper@<env>~ runs as 5 concurrent hot instances via
+  systemd template instantiation, verified via ~systemctl --user
+  status 'ores.compute.wrapper@*'~.
+- ~ores.service~'s runner emits ~sd_notify(READY=1)~ at the same point
+  it logs "Service ready.", and a dependent unit's ~After=~ genuinely
+  waits for that (not just for the process to start) -- verified by
+  introducing an artificial startup delay in a dependency and
+  confirming the dependent doesn't start early.
+- ~ores.controller.service~ and ~process_supervisor~ are removed from
+  the build/deploy path (decommissioned, not just unused).
+- ~systemctl --user status ores@<env>.target~ shows every service in
+  that environment and its state; ~journalctl --user -u
+  <unit-name>~ (single service) and a target-wide equivalent both
+  show that service's real log output, with no separate log-file
+  convention needed on top of what systemd already captures.
 
 * Plan
 

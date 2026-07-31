@@ -47,11 +47,11 @@ like, what values are possible).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] |
-| Now          | Dimensions settled and written up in the parent story's § "Classification dimensions". |
+| Now          | Done.                                   |
 | Waiting on   | Nothing.                               |
-| Next         | Design the tool that computes each dimension per entity; hand off to the refdata pilot task. |
+| Next         | Pilot task builds the tool against these dimensions. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -290,3 +290,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Before drafting any dimensions, synced the variability metamodel
+family against the actual code generator — the taxonomy could not be
+trusted otherwise. That sync grew substantially beyond the original
+scope (tracked in full in the Notes above) and produced, as durable
+artefacts:
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]: stale citations fixed, missing =masd.qt=
+  features added, a real drift (=security_definer=) removed, address
+  resolution split out to [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] (its correct conceptual home),
+  restructured with an explicit argumentative spine, and every
+  historical/editorial self-reference removed.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Profiles": the MASD /profile/ concept
+  instantiated for ORE Studio — 5 named profiles superseding the
+  non-orthogonal =ENTITY_ORG_SHAPE_PRESETS=, each anchored to a real
+  entity ([[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][simple-lookup]]/country, [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][fk-scoped-child]]/book,
+  [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][self-referencing-hierarchy]]/counterparty, [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][fully-featured-lookup]]/currency,
+  [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][readonly-timeseries]]/market_observation).
+- A canonical detail page for all 28 real features ([[id:82394CFF-712C-45FF-84A5-6ED17A990568][Variability
+  Features]]), cross-linked from every profile's assignments table.
+- A new =profile=/=feature= compass doc type pair, so this catalogue is
+  scaffolded the same way every other physical-space doc is, not
+  hand-authored.
+- All 9 codegen entity meta-model segment pages audited against
+  source; the SQL segment page's genuine gap fixed.
+- Systemic drift fixed in the TS/facet/archetype catalogue
+  ([[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]], [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]) against the generated
+  =ores.*= graph.
+
+On top of that verified ground truth, all acceptance criteria for this
+task are met: the classification dimensions are settled and written up
+in the story's § "Classification dimensions", each with its computation
+method stated concretely enough to implement, cross-checked against
+every source the task's Goal named. The pilot task now has real ground
+truth — including a verified reference specimen (=currency=) and known
+profile matches — to build and spot-check the tool against.

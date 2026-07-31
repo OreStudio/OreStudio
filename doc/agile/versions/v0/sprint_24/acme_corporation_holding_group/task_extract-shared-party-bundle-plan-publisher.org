@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/extract-shared-party-bundle-plan-publisher
+#+pr: 1796
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Extract one shared helper that publishes every bundle in party_provisioning_bund
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -39,9 +39,19 @@ Extract one shared helper that publishes every bundle in party_provisioning_bund
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added a shared, templated =publish_party_provisioning_plan()= helper
+to =ores.dq.api/messaging/party_provisioning_plan.hpp=, alongside the
+existing =party_provisioning_bundle_plan()=. It is templated over the
+publish and wait operations rather than a shared base class, since
+=provision_acme= (ores.iam.core, via =internal_request_client=) and
+=ores.shell='s =provision party= (via =nats_client=) reach NATS through
+unrelated client abstractions with no common type to write one
+non-template implementation against — the part that was genuinely
+duplicated was the plan-iteration loop, not the transport. Both
+=tenant_handler.hpp= and =provision_commands.cpp= were rewired to call
+the shared helper, passing lambdas that adapt their own
+publish/wait-for-workflow-instance calls, removing the two
+hand-written copies of the loop.
 
 * Notes
 
@@ -60,12 +70,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1796][#1796]] | [dq,iam,shell] Extract shared party-bundle-plan publisher |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Market-data loop's return value discarded, so a failure fell through to attach_staff_photos instead of skipping to the next office | tenant_handler.hpp | Fixed | Now `continue`s on failure, matching the sibling office.bundle_code publish above. |
+| 2 | Failure message regressed from human-readable step.label to raw bundle_code | provision_commands.cpp | Fixed | Track current_step_label via on_step, same pattern as tenant_handler.hpp's current_mkt_step. |
+| 3 | No direct unit test for the new shared helper | party_provisioning_plan.hpp | Fixed | Added messaging_party_provisioning_plan_tests.cpp: on_step ordering, success path, publish-failure short-circuit, wait-failure short-circuit. |
+| 4 | Unused <optional> include | party_provisioning_plan.hpp | Fixed | Removed. |
+| 5 | Implicit on_step/wait ordering dependency worth a comment | tenant_handler.hpp, provision_commands.cpp | Fixed | Added a one-line comment at each current_*_step declaration. |
+| 6 | Pre-existing step_num/5 off-by-one display bug (predates this refactor) | provision_commands.cpp | Declined | Out of scope for this PR; pre-existing bug untouched by this change, not introduced by it. |
 
 * Result
+
+Extracted =publish_party_provisioning_plan()= into
+=ores.dq.api/messaging/party_provisioning_plan.hpp= as a template
+parameterised over the publish/wait operations, and rewired both
+=ores.iam.core/messaging/tenant_handler.hpp= (Acme's per-office
+server-side publish) and =ores.shell/app/commands/provision_commands.cpp=
+(=provision party=) to call it. No duplicated bundle-iteration logic
+remains in either caller.
+
+Verified via the =acme_bank_system_provision.ores= recipe (full
+=--source acme= provisioning run, exercising the
+=ores.iam.core=-side path) and a manual =provision party= run (shell
+side) — both completed successfully. Unit test suites for the three
+touched components all pass: =ores.dq.api.tests= (267 assertions/46
+cases), =ores.iam.core.tests= (184 assertions/91 cases),
+=ores.shell.tests= (80 assertions/26 cases).

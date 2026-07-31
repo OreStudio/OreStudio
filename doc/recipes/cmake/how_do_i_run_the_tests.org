@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:testing:recipe:
 #+created: 2026-05-18
-#+updated: 2026-07-17
+#+updated: 2026-07-31
 
 For the test-logging knobs and output layout, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
 
@@ -38,7 +38,15 @@ For one component's tests, use the =test_<component>= target:
 ./compass.sh build test_ores.accounts.tests --preset linux-clang-debug-make
 #+end_src
 
-Replace =ores.accounts.tests= with the component you want.
+Replace =ores.accounts.tests= with the component you want. The
+target name is =test_<component_full_name>.tests= — e.g. for
+=projects/ores.dq/api= the target is =test_ores.dq.api.tests=, for
+=projects/ores.iam/core= it's =test_ores.iam.core.tests=. If unsure,
+list the available targets:
+
+#+begin_src sh :results verbatim
+cmake --build build/output/linux-clang-debug-make --target help | grep test_
+#+end_src
 
 ** Enabling test logging
 

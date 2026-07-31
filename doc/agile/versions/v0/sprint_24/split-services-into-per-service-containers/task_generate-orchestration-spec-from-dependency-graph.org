@@ -223,7 +223,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | render_wrapper_units emits no After=/Requires=, so ores.compute.wrapper replicas race NATS/deps on boot | projects/ores.compass/src/systemd_generate.py | Fixed | Threaded deps_on into render_wrapper_units, same after_line construction as render_singleton_unit. |
+| 2 | Stale-unit cleanup glob (*-<env>*.service) not anchored, could delete another environment's units if one env name is a prefix of another's | projects/ores.compass/src/systemd_generate.py | Fixed | Replaced glob with an anchored regex on the exact -<env>.service / -<env>-N.service / -<env>.target suffix. |
+| 3 | story.org row still describes the abandoned '%i' template-unit design (ores@<env>.target) | doc/agile/.../story.org | Fixed | Updated wording to concrete units / ores-<env>.target. |
+| 4 | ores.wt.service's sd_notify(READY=1) fires before WServer::start() actually binds the HTTP listener | projects/ores.service/.../wt_service_runner.hpp, projects/ores.wt.service/src/main.cpp | Fixed | wt_setup_fn now takes a ready callback, invoked by main.cpp only after server.start() succeeds. |
+| 5 | ExecStart=/bin/sh -c '...' interpolates DB-sourced values with no shell escaping | projects/ores.compass/src/systemd_generate.py | Declined | Values are admin/migration-controlled (service_definition table), not runtime user input; low practical risk today, flagged for follow-up if that trust boundary ever changes. |
 
 * Result
 

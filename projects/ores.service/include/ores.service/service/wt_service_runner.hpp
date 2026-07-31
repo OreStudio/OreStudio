@@ -68,11 +68,14 @@ void run_wt_impl(ores::nats::service::client& nats,
     auto work_guard = boost::asio::make_work_guard(io_ctx);
     std::thread io_thread([&io_ctx]() { io_ctx.run(); });
 
-    BOOST_LOG_SEV(lg, info) << "Service ready.";
-    notify_systemd_ready();
-
     // Phase 3: hand control to Wt; blocks until WServer::waitForShutdown().
-    wt_setup_fn();
+    // wt_setup_fn calls the ready callback itself, once WServer::start() has
+    // actually bound the HTTP listener -- notifying systemd here, before Wt
+    // has started, would claim readiness before the service accepts requests.
+    wt_setup_fn([]() {
+        BOOST_LOG_SEV(lg, info) << "Service ready.";
+        notify_systemd_ready();
+    });
 
     // Phase 4: Wt has shut down — stop the background NATS/heartbeat thread.
     work_guard.reset();
@@ -100,14 +103,18 @@ void run_wt_impl(ores::nats::service::client& nats,
  *  3. Calls @p register_fn(nats, ctx, verifier) to register NATS subscriptions.
  *  4. Calls @p on_started(io_ctx) if provided (e.g. to co_spawn heartbeat).
  *  5. Runs io_context on a background thread for NATS callbacks and heartbeat.
- *  6. Calls @p wt_setup_fn() — blocks until WServer::waitForShutdown() returns.
+ *  6. Calls @p wt_setup_fn(ready) — starts the Wt server, invokes @p ready
+ *     once WServer::start() has bound the HTTP listener, then blocks until
+ *     WServer::waitForShutdown() returns.
  *  7. Stops the background io_context thread and drains NATS.
  *
  * @param nats        Connected NATS client.
  * @param ctx         Database context.
  * @param name        Service name for log messages.
  * @param register_fn Callable: (client&, context, optional<jwt_authenticator>)
- * @param wt_setup_fn Callable: () -> void; starts and blocks on Wt server.
+ * @param wt_setup_fn Callable: (ready) -> void; starts the Wt server, calls
+ *                    @p ready once it is actually accepting requests, then
+ *                    blocks on WServer::waitForShutdown().
  * @param on_started  Optional: called after registration, before wt_setup_fn.
  */
 template <typename RegisterFn, typename WtSetupFn>
@@ -153,7 +160,9 @@ void run_wt(ores::nats::service::client& nats,
  * @param nats        Connected NATS client.
  * @param name        Service name for log messages.
  * @param register_fn Callable: (client&, optional<jwt_authenticator>)
- * @param wt_setup_fn Callable: () -> void; starts and blocks on Wt server.
+ * @param wt_setup_fn Callable: (ready) -> void; starts the Wt server, calls
+ *                    @p ready once it is actually accepting requests, then
+ *                    blocks on WServer::waitForShutdown().
  * @param on_started  Optional: called after registration, before wt_setup_fn.
  */
 template <typename RegisterFn, typename WtSetupFn>

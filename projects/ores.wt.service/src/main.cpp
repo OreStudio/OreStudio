@@ -173,7 +173,7 @@ int run(int argc, char* argv[]) {
         [](auto& n, auto v) {
             return ores::wt::service::messaging::registrar::register_handlers(n, std::move(v));
         },
-        [&]() {
+        [&](auto&& ready) {
             boost_log_sink wt_sink;
             Wt::WServer server(argv[0]);
             server.setServerConfiguration(wt_argc, wt_argv.data());
@@ -181,6 +181,7 @@ int run(int argc, char* argv[]) {
             server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
 
             if (server.start()) {
+                ready();
                 BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
                 Wt::WServer::waitForShutdown();
                 server.stop();

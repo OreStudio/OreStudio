@@ -32,6 +32,7 @@ that checkout's own .env (ORES_ENV_NAME, ORES_PRESET, ...).
 import argparse
 import filecmp
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -211,7 +212,7 @@ WantedBy={target_name}
     return unit
 
 
-def render_wrapper_units(def_row, checkout_root, env_name, target_name):
+def render_wrapper_units(def_row, deps_on, checkout_root, env_name, target_name):
     """ores.compute.wrapper's N hot replicas: N concrete units (not one
     template instantiated N ways), each with a literal replica index,
     host_id and work_dir baked in at generation time -- this checkout's
@@ -224,6 +225,10 @@ def render_wrapper_units(def_row, checkout_root, env_name, target_name):
     bin_dir = f"{checkout_root}/build/output/${{ORES_PRESET}}/publish/bin"
     env_file = f"{checkout_root}/.env"
     keys_dir = f"{checkout_root}/build/keys/nats"
+
+    after = [_unit_basename("nats-server", env_name) + ".service"] + \
+        [_unit_basename(d, env_name) + ".service" for d in deps_on]
+    after_line = " ".join(after)
 
     units = []
     hostname = socket.gethostname()
@@ -241,6 +246,8 @@ def render_wrapper_units(def_row, checkout_root, env_name, target_name):
         unit += f"""
 [Unit]
 Description=ORE Studio {def_row['service_name']} hot replica {replica} (environment {env_name})
+After={after_line}
+Requires={after_line}
 PartOf={target_name}
 StartLimitIntervalSec=60
 StartLimitBurst=5
@@ -335,7 +342,7 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
         deps_on = deps.get(d["service_name"], [])
         if d["desired_replicas"] > 1:
             for name, content in render_wrapper_units(
-                    d, checkout_root, env_name, target_name):
+                    d, deps_on, checkout_root, env_name, target_name):
                 write(name, content)
         else:
             write(_unit_basename(d["service_name"], env_name) + ".service",
@@ -388,8 +395,11 @@ def cmd_deploy(project_root: Path, env: dict, args) -> int:
     # header AND this environment's own name suffix -- never touch another
     # environment's deployed units) that are no longer among the freshly
     # rendered set, e.g. after a service is disabled/renamed in the DB.
-    for dest in sorted(dest_dir.glob(f"*-{env_name}*.service")) + \
-            sorted(dest_dir.glob(f"*-{env_name}.target")):
+    stale_re = re.compile(
+        rf"-{re.escape(env_name)}(-\d+)?\.service$|-{re.escape(env_name)}\.target$")
+    for dest in sorted(dest_dir.iterdir()):
+        if not dest.is_file() or not stale_re.search(dest.name):
+            continue
         if dest.name in src_names:
             continue
         if dest.read_text(encoding="utf-8").startswith(UNIT_HEADER):

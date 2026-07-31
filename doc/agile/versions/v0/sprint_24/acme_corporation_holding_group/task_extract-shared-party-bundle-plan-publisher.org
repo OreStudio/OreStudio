@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
 #+branch: feature/extract-shared-party-bundle-plan-publisher
-#+pr:
+#+pr: 1796
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1796][#1796]] | [dq,iam,shell] Extract shared party-bundle-plan publisher |
 
 * Review
 

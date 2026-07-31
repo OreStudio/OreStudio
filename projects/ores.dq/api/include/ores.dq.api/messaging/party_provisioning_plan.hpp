@@ -20,6 +20,11 @@
 #ifndef ORES_DQ_API_MESSAGING_PARTY_PROVISIONING_PLAN_HPP
 #define ORES_DQ_API_MESSAGING_PARTY_PROVISIONING_PLAN_HPP
 
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -67,6 +72,53 @@ inline const std::vector<party_bundle_publish_step>& party_provisioning_bundle_p
         {"crm_topology", "CRM Cross-Rates Matrix topology"},
     };
     return plan;
+}
+
+/**
+ * @brief Publishes every bundle in @p plan for @p party_id, the "publish +
+ * wait for completion" loop that provision_acme (ores.iam.core, driven via
+ * internal_request_client) and ores.shell's "provision party" command
+ * (driven via nats_client) each hand-wrote their own copy of.
+ *
+ * Not a shared class -- internal_request_client's own doc comment
+ * explains why: its request()/wait_for_workflow_instance() are
+ * client-type-coupled to how each side reaches NATS (a direct
+ * ores::nats::service::client vs. ores.shell's session/connection
+ * plumbing), so there is no common base type to write one non-template
+ * implementation against. Templating on the two operations instead lets
+ * each caller supply its own request/wait mechanism while sharing the
+ * actual plan-iteration logic (the part that was really duplicated).
+ *
+ * @param publish (bundle_code, params_json) -> publish response, or
+ *        std::nullopt if the caller already reported the failure and the
+ *        loop should stop without calling @p wait for that step.
+ * @param wait (instance_id, expected_dataset_count) -> true if the
+ *        workflow completed; false if the caller already reported the
+ *        failure/timeout and the loop should stop.
+ * @param on_step called with each step just before it is published, so
+ *        callers can surface their own step-by-step progress.
+ * @return true if every step in @p plan published and completed.
+ */
+template <typename PublishFn, typename WaitFn>
+bool publish_party_provisioning_plan(
+    const std::vector<party_bundle_publish_step>& plan,
+    const boost::uuids::uuid& party_id,
+    PublishFn&& publish,
+    WaitFn&& wait,
+    const std::function<void(const party_bundle_publish_step&)>& on_step = {}) {
+    for (const auto& step : plan) {
+        if (on_step)
+            on_step(step);
+
+        publish_bundle_params params;
+        params.party_id = boost::uuids::to_string(party_id);
+        auto resp = publish(step.bundle_code, build_params_json(params));
+        if (!resp)
+            return false;
+        if (!wait(resp->instance_id, static_cast<std::size_t>(resp->datasets_dispatched)))
+            return false;
+    }
+    return true;
 }
 
 }

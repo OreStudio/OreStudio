@@ -595,37 +595,44 @@ void provision_commands::process_party(std::ostream& out,
     // definitions -- reports reference the book/portfolio tree, so they
     // publish together) replaces the old organisation bundle plus the
     // hand-written report-definition-templates RPC loop.
+    // The plan-iteration loop itself (publish + wait per bundle) is shared
+    // with provision_acme (ores.iam.core) -- see
+    // publish_party_provisioning_plan()'s doc comment for why it's a
+    // template rather than a shared class.
     const auto& plan = dq::messaging::party_provisioning_bundle_plan();
-    for (std::size_t i = 0; i < plan.size(); ++i) {
-        const auto& step = plan[i];
-        out << "[" << (i + 2) << "/5] Publishing " << step.label << "..." << std::endl;
-
-        dq::messaging::publish_bundle_request req;
-        req.bundle_code = step.bundle_code;
-        req.mode = dq::domain::publication_mode::upsert;
-        req.published_by = username;
-        req.atomic = true;
-        dq::messaging::publish_bundle_params params;
-        params.party_id = boost::uuids::to_string(party->id);
-        req.params_json = dq::messaging::build_params_json(params);
-        auto published = do_request(out, session, req, publish_timeout, true);
-        if (!published)
-            return;
-        if (!published->success) {
-            fail(out) << "Failed to publish " << step.label << ": " << published->error_message
-                      << std::endl;
-            return;
-        }
-        out << "  Dispatched " << published->datasets_dispatched
-            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-        if (!workflow_commands::wait_for_instance(
-                out,
-                session,
-                published->instance_id,
-                *wait_timeout,
-                static_cast<std::size_t>(published->datasets_dispatched)))
-            return;
-    }
+    std::size_t step_num = 2;
+    bool ok = dq::messaging::publish_party_provisioning_plan(
+        plan,
+        party->id,
+        [&](const std::string& bundle_code,
+            const std::string& params_json) -> std::optional<dq::messaging::publish_bundle_response> {
+            dq::messaging::publish_bundle_request req;
+            req.bundle_code = bundle_code;
+            req.mode = dq::domain::publication_mode::upsert;
+            req.published_by = username;
+            req.atomic = true;
+            req.params_json = params_json;
+            auto published = do_request(out, session, req, publish_timeout, true);
+            if (!published)
+                return std::nullopt;
+            if (!published->success) {
+                fail(out) << "Failed to publish " << bundle_code << ": " << published->error_message
+                          << std::endl;
+                return std::nullopt;
+            }
+            out << "  Dispatched " << published->datasets_dispatched
+                << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+            return published;
+        },
+        [&](const std::string& instance_id, std::size_t expected) {
+            return workflow_commands::wait_for_instance(
+                out, session, instance_id, *wait_timeout, expected);
+        },
+        [&](const auto& step) {
+            out << "[" << step_num++ << "/5] Publishing " << step.label << "..." << std::endl;
+        });
+    if (!ok)
+        return;
 
     // Phase 5: activate the party. Hard failure by design — a
     // completed run must mean a provisioned party (the wizard merely

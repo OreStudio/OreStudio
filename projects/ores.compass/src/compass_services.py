@@ -98,6 +98,7 @@ class Ctx:
                                 f"nats://localhost:{self.nats_port}")
         self.nats_prefix = env.get("ORES_NATS_SUBJECT_PREFIX",
                                    f"ores.dev.{self.label}")
+        self.nats_wire_format = env.get("ORES_NATS_WIRE_FORMAT", "msgpack")
         self.nats_config = project_root / f"build/config/nats-{self.label}.conf"
         self.nats_pid_file = (project_root / "build/nats" / self.label
                               / "nats-server.pid")
@@ -335,7 +336,8 @@ def _cmd_start(ctx, args):
             ["--log-enabled", "--log-level", args.log_level,
              "--log-directory", "../log",
              "--nats-url", ctx.nats_url,
-             "--nats-subject-prefix", ctx.nats_prefix]
+             "--nats-subject-prefix", ctx.nats_prefix,
+             "--nats-wire-format", ctx.nats_wire_format]
             + _tls_args(ctx, "ores.controller.service"))
     ok = _wait_for_log(ctx, "ores.controller.service",
                        "All services started", 120)

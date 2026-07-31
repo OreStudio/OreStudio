@@ -81,6 +81,7 @@ private:
                                                               "--log-replica-index {replica_index} "
                                                               "--nats-url {nats_url} "
                                                               "--nats-subject-prefix {nats_prefix} "
+                                                              "--nats-wire-format {nats_wire_format} "
                                                               "{nats_tls_args}";
 
     using process_key = std::pair<std::string, int>; // (service_name, replica_index)

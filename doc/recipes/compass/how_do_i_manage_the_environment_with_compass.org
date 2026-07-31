@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :compass:env:provision:credentials:recipe:
 #+created: 2026-06-02
-#+updated: 2026-07-12
+#+updated: 2026-07-30
 
 =compass env= is the *Provision* pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][developer toolkit]]: it sets the
 checkout up so the system can run. It owns the =.env= at the checkout
@@ -80,6 +80,29 @@ per-service credential block is sub-grouped by service (=[iam]=,
 =[refdata]=, …) so it's easy to scan. Secret values (passwords, the JWT
 key, =PGPASSWORD=) are masked by default; =--show-secrets= reveals them.
 
+** Switch the NATS wire payload format — =ORES_NATS_WIRE_FORMAT=
+
+=.env= carries =ORES_NATS_WIRE_FORMAT=, read once at process startup by
+every service, the Qt client, and =ores.shell= to decide how NATS
+message payloads are serialised: =msgpack= (default, compact binary,
+native byte support — no base64 inflation for image/blob fields) or
+=json= (human-readable). See
+[[proj:doc/knowledge/architecture/nats_wire_format.org][=doc/knowledge/architecture/nats_wire_format.org=]] for the full
+payload-vs-envelope architecture this decides.
+
+#+begin_src sh :results verbatim
+# Edit .env directly, then restart every running service (the value is
+# read once at startup — no live reload):
+# ORES_NATS_WIRE_FORMAT=json
+./projects/ores.compass/compass.sh services stop
+./projects/ores.compass/compass.sh services start
+#+end_src
+
+Every service in the environment must agree — this is a whole-environment
+choice, not a per-service or per-message one. =env configure= preserves
+an existing value on re-run (defaults new environments to =msgpack=), so a
+=--force= re-init or a fresh checkout won't silently flip you back.
+
 ** Show / record the env-format version — =compass env version=
 
 The =.env='s shape is versioned by =ORES_ENV_VERSION=, checked before
@@ -120,3 +143,5 @@ generated =.env= round-trips through =compass db recreate=.
 - [[id:CB7713BA-544A-43CD-AEB3-30C2157CBBCC][How do I add a domain service?]] — edit the registry that =env configure=
   reads, then =env version new= + re-init.
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure).
+- [[proj:doc/knowledge/architecture/nats_wire_format.org][NATS wire format: payload, envelope, and multi-protocol support]] —
+  the architecture behind =ORES_NATS_WIRE_FORMAT=.

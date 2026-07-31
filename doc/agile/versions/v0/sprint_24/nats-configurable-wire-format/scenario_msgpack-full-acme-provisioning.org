@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 2D3E3350-34EE-422B-B8C9-2DB00E20BFB6
+:END:
+#+title: Test Scenario: Acme Corporation holding-group provisioning round-trips correctly under msgpack wire format
+#+description: Manually verify the full Acme Corporation holding-group provisioning flow (bootstrap, tenant provisioning, per-party server-side orchestration including staff photo uploads) completes correctly end-to-end when the environment's wire format is switched to msgpack.
+#+type: test_scenario
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] in [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Set =ORES_NATS_WIRE_FORMAT=msgpack= (and =ORES_SHELL_NATS_WIRE_FORMAT=msgpack=)
+  in =.env=, then bring the environment up fresh under that setting:
+  =compass services stop=, =compass db recreate -y -k=,
+  =compass services start=. Confirm =compass services status= shows
+  every service =running= (not just the controller) before proceeding
+  -- a service still on an un-migrated launcher will silently start in
+  =json= mode instead of failing loudly, so a clean start alone doesn't
+  prove the format took effect; step 1 below confirms it did.
+- The database must be freshly recreated (bootstrap mode, no tenant
+  provisioned yet) -- this scenario performs the provisioning itself,
+  it does not assume Acme already exists.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] |
+| Parent story  | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]]   |
+| Target dialog | N/A -- CLI/service-level scenario, no Qt dialog under test |
+| Clients       |                                          |
+| State         | PASSED                                |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Confirm wire format actually took effect
+
+- Tail any service's log (e.g.
+  =build/output/<preset>/publish/log/ores.iam.service.0.log=) and
+  check the =Command line arguments= line includes
+  =--nats-wire-format msgpack= (or the =Configuration= line's
+  ="format":"msgpack"=). If any service still shows =json=, the
+  environment did not actually pick up =ORES_NATS_WIRE_FORMAT= --
+  stop here and investigate before proceeding (see the
+  =process-supervisor-config-passthrough-gap= backlog capture for the
+  known launcher layers this can go wrong in).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Bootstrap and provision the Acme Corporation system tenant
+
+- Run =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  (=compass shell= resolves NATS connection and wire-format flags from
+  =.env= automatically).
+- Confirms: the script's =provision system= step creates the
+  =super_admin= account, logs in, and provisions the
+  =acme_corporation= tenant, printing
+  =✓ System provisioned. Tenant 'Acme Corporation' ...= with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the full holding-group orchestration completes
+
+- Continue watching the same script run: after =login
+  tenant_admin@acme_corporation ...=, the =provision tenant --source
+  acme= step drives the server-side orchestration (LEI import,
+  per-party dataset-bundle publish for the UK/US/HK entities, staff
+  account creation, staff photo uploads, synthetic market data, CRM
+  topology, cross-entity access).
+- Confirms: every dispatched step reports =completed=, no
+  =failed=/=error= lines appear, and the script ends with
+  =✓ Acme Corporation holding group provisioned.= followed by
+  =Script complete: 6 commands executed.=
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm staff photo uploads succeeded specifically
+
+- Within the same run's output, locate the =*.staff_photos:
+  completed (1)= lines (one per entity: =acme_group=, =acme_uk=,
+  =acme_us=, =acme_hk=).
+- Confirms: image-batch payloads (the flow this story's investigation
+  originally started from) round-trip correctly under =msgpack= --
+  =reflect-cpp='s =msgpack= writer packs the raw bytes natively, no
+  base64 involved.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Restore json and confirm the regression path still starts
+
+- Set =ORES_NATS_WIRE_FORMAT=json= and
+  =ORES_SHELL_NATS_WIRE_FORMAT=json= back in =.env=, then
+  =compass services stop=, =compass db recreate -y -k=,
+  =compass services start=.
+- Confirms: =compass services status= again shows every service
+  =running= (same count as the msgpack run), confirming the fix to
+  the launcher layers didn't regress the default =json= path.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-07-31T16:09:07Z |
+| Branch        | feature/e2e-verify-msgpack-wire-format |
+| Commit        | 28ef42138 |
+| Worktree      | solid_dirac |
+
+* Notes
+
+First pass failed at "Confirm wire format actually took effect": every
+service logged =format:json= despite =.env= being set to =msgpack=.
+Root-caused and fixed across five independent launcher layers (see the
+parent task's =* Plan= and the =process-supervisor-config-passthrough-gap=
+backlog capture) before re-running this scenario to a full pass.

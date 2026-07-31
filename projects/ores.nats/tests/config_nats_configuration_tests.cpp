@@ -75,12 +75,12 @@ TEST_CASE("nats_configuration_url_and_prefix_together", tags) {
     CHECK(result.subject_prefix == "ores.staging.node2");
 }
 
-TEST_CASE("nats_configuration_wire_format_defaults_to_json", tags) {
+TEST_CASE("nats_configuration_wire_format_defaults_to_msgpack", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto result = parse({});
 
-    CHECK(result.format == ores::nats::wire_format::json);
+    CHECK(result.format == ores::nats::wire_format::msgpack);
 }
 
 TEST_CASE("nats_configuration_wire_format_msgpack", tags) {

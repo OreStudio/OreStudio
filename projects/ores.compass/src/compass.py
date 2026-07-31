@@ -6244,6 +6244,7 @@ def cmd_shell(argv):
         "ORES_SHELL_NATS_TLS_CA": "--nats-tls-ca",
         "ORES_SHELL_NATS_TLS_CERT": "--nats-tls-cert",
         "ORES_SHELL_NATS_TLS_KEY": "--nats-tls-key",
+        "ORES_SHELL_NATS_WIRE_FORMAT": "--nats-wire-format",
     }
     for key, flag in flag_for.items():
         if env.get(key):

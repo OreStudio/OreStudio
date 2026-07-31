@@ -20,6 +20,7 @@
 #ifndef ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 #define ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/domain/wire_format.hpp"
 #include <string>
 
@@ -64,10 +65,20 @@ struct nats_options final {
     /**
      * @brief Wire format used to serialize every NATS message body this
      * process sends and decode every one it receives, decided once at
-     * startup (env: ORES_NATS_WIRE_FORMAT). Defaults to json, preserving
-     * pre-existing behaviour for any process that doesn't set it.
+     * startup (env: ORES_NATS_WIRE_FORMAT).
+     *
+     * Defaults to the process's *current* default_wire_codec() rather than
+     * a hardcoded literal, so that any caller who default-constructs a
+     * nats_options without explicitly setting format -- e.g. ores.qt's
+     * ClientManager, which builds its own options ad hoc per connection
+     * rather than going through nats_configuration's CLI/env resolution --
+     * inherits whatever was already resolved at startup instead of silently
+     * reverting to the compiled-in default. This makes client::client()'s own
+     * set_default_wire_codec(wire_codec(opts.format)) call an idempotent
+     * no-op for any caller that didn't deliberately override format,
+     * instead of a footgun that resets the global on every reconnect.
      */
-    ores::nats::wire_format format = ores::nats::wire_format::json;
+    ores::nats::wire_format format = ores::nats::default_wire_codec().format();
 };
 
 }

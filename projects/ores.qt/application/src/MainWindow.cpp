@@ -1217,6 +1217,14 @@ void MainWindow::onSwitchPartyTriggered() {
            "party's data -- close and reopen them to see %1's.")
             .arg(party_name_),
         8000);
+
+    // Same post-switch checks as the login flow -- a switch can land on a
+    // party that still needs onboarding, or one carrying a non-fatal warning.
+    if (clientManager_->lastPartySetupRequired()) {
+        showPartyProvisioningWizard();
+    } else if (!clientManager_->lastPartySetupWarning().isEmpty()) {
+        MessageBoxHelper::warning(this, "Party Setup", clientManager_->lastPartySetupWarning());
+    }
 }
 
 void MainWindow::onMySessionsTriggered() {

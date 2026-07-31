@@ -2,15 +2,15 @@
 :ID: F4BD29A9-0DAE-4662-B381-CCAD9122AFA7
 :END:
 #+title: Task: Mirror podman events into service_instance/service_event tables
-#+description: A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working once containers (not process_supervisor) own the actual process lifecycle.
+#+description: A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working on remote/Quadlet podman hosts (local dev now runs native systemd units with no podman involved at all). Depends on the Quadlet generator task landing first.
 #+type: task
 #+level: s1
 #+filetags: :split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 34E28952-57DD-446F-91B3-1ED02E3B7F7B
+#+blocked_since: 2026-07-31
 #+created: 2026-07-31
 #+updated: 2026-07-31
 #+environment:
@@ -24,30 +24,36 @@ Build a thin watcher process consuming ~podman events --format json~
 and mirroring container start/stop/health-status transitions into the
 existing ~service_instance~/~service_event~ DB tables, so today's
 audit trail (currently written by ~process_supervisor~ itself on every
-launch/exit) keeps working once containers -- not
-~process_supervisor~ -- own the actual process lifecycle.
+launch/exit) keeps working on remote/Quadlet podman hosts, where
+containers -- not ~process_supervisor~ -- own the actual process
+lifecycle. Local dev machines run native systemd units (see the
+dependency-graph-generator task) with no podman involved at all, so
+this watcher only applies to remote/Quadlet-managed hosts (e.g.
+Newton).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Waiting on   | [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]] landing -- nothing to watch until remote hosts actually run Quadlet-managed podman containers. |
+| Next         | Begin implementation once the Quadlet generator lands. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
 
-- Starting/stopping a per-service container updates
-  ~service_instance~'s phase/pid accordingly, with no
-  ~process_supervisor~ involvement.
+- Starting/stopping a per-service container on a remote/Quadlet host
+  (e.g. Newton) updates ~service_instance~'s phase/pid accordingly,
+  with no ~process_supervisor~ involvement.
 - ~service_event~ gains a start/stop/exit row for every observed
-  transition, matching today's granularity.
+  transition on those hosts, matching today's granularity.
 - The watcher survives its own restart without losing or duplicating
   events (idempotent on replay of any events it may have already
   processed).
+- Local dev environments (native systemd units, no podman) are
+  unaffected -- this watcher never runs there.
 
 * Plan
 

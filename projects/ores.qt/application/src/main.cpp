@@ -18,6 +18,8 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/domain/wire_format.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -101,6 +103,25 @@ int main(int argc, char* argv[]) {
     const QString buildInfo =
         QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
     splash.setMessage(buildInfo);
+
+    // Wire format: no CLI flag (unlike every server-side service) --
+    // resolved solely from ORES_NATS_WIRE_FORMAT, defaulting to
+    // default_wire_codec()'s own built-in default (msgpack) if unset.
+    // Must happen before any NATS connection is attempted (i.e.
+    // before MainWindow/ClientManager are constructed), since
+    // ClientManager stamps every nats_options::format from
+    // default_wire_codec() at connect time.
+    const QString wireFormat = QString::fromLatin1(qgetenv("ORES_NATS_WIRE_FORMAT"));
+    if (!wireFormat.isEmpty()) {
+        if (const auto parsed = ores::nats::parse_wire_format(wireFormat.toStdString()); parsed) {
+            ores::nats::set_default_wire_codec(ores::nats::wire_codec(*parsed));
+            BOOST_LOG_SEV(lg, info) << "Wire format: " << wireFormat.toStdString();
+        } else {
+            BOOST_LOG_SEV(lg, warn)
+                << "Invalid ORES_NATS_WIRE_FORMAT: '" << wireFormat.toStdString()
+                << "' (expected 'json' or 'msgpack'); leaving the built-in default in place.";
+        }
+    }
 
     // Master password: CLI arg wins, then fall back to
     // ORES_CONNECTIONS_MASTER_PASSWORD env var. Never logged.

@@ -78,6 +78,12 @@ notes back as a =*** Result= child heading directly under it.
   =process-supervisor-config-passthrough-gap= backlog capture for the
   known launcher layers this can go wrong in).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Bootstrap and provision the Acme Corporation system tenant
 
 - Run =compass shell -f
@@ -88,6 +94,12 @@ notes back as a =*** Result= child heading directly under it.
   =super_admin= account, logs in, and provisions the
   =acme_corporation= tenant, printing
   =✓ System provisioned. Tenant 'Acme Corporation' ...= with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm the full holding-group orchestration completes
 
@@ -102,6 +114,12 @@ notes back as a =*** Result= child heading directly under it.
   =✓ Acme Corporation holding group provisioned.= followed by
   =Script complete: 6 commands executed.=
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm staff photo uploads succeeded specifically
 
 - Within the same run's output, locate the =*.staff_photos:
@@ -111,6 +129,12 @@ notes back as a =*** Result= child heading directly under it.
   originally started from) round-trip correctly under =msgpack= --
   =reflect-cpp='s =msgpack= writer packs the raw bytes natively, no
   base64 involved.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Restore json and confirm the regression path still starts
 
@@ -122,14 +146,20 @@ notes back as a =*** Result= child heading directly under it.
   =running= (same count as the msgpack run), confirming the fix to
   the launcher layers didn't regress the default =json= path.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-07-31 |
+| Completed at  | 2026-07-31T16:09:07Z |
 | Branch        | feature/e2e-verify-msgpack-wire-format |
-| Commit        | (working tree -- see task PR) |
+| Commit        | 28ef42138 |
 | Worktree      | solid_dirac |
 
 * Notes

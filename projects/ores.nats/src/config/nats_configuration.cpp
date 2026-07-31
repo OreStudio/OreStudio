@@ -58,7 +58,7 @@ boost::program_options::options_description nats_configuration::make_options_des
         value<std::string>()->default_value(""),
         "Path to client private key for mTLS (<service>.key). "
         "Env: ORES_NATS_TLS_KEY.")(nats_wire_format_arg.c_str(),
-                                   value<std::string>()->default_value("json"),
+                                   value<std::string>()->default_value("msgpack"),
                                    "Wire format for NATS message bodies: json or msgpack, "
                                    "decided once at process startup. "
                                    "Env: ORES_NATS_WIRE_FORMAT.");

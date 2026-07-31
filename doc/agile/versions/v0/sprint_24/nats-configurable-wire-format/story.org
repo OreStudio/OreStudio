@@ -109,12 +109,20 @@ plus stragglers in =ores.qt=, 101 across 22 files in =ores.shell=;
 =ores.cli= confirmed out of scope) and the =wire_codec= type's shape
 are recorded in that task's =* Plan=.
 
-** Config: ORES_NATS_WIRE_FORMAT, default json, fail-fast on unrecognised value
+** Config: ORES_NATS_WIRE_FORMAT, default msgpack, fail-fast on unrecognised value
 
 Decided in the [[id:D7D9EF5E-0299-47C4-A4FD-E64B284DF8DA][wire_codec build task]]. The =--nats-wire-format=
 option (env =ORES_NATS_WIRE_FORMAT=, same per-service prefix
-convention as the existing =nats-tls-*= options) defaults to =json=,
-preserving today's behaviour for any process that doesn't set it. An
+convention as the existing =nats-tls-*= options) defaulted to =json=
+while every layer was being migrated, preserving pre-existing
+behaviour for any process that didn't set it. With the
+[[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][end-to-end verification task]] confirming every layer round-trips
+correctly under =msgpack= (server-to-server, Qt client, and shell
+client, including image-carrying flows), the default was flipped to
+=msgpack= at this story's close -- the whole point of making the
+format configurable was to stop paying =json='s base64 tax on binary
+payloads by default, not just to make it possible to opt in per
+environment. An
 unrecognised value throws =std::invalid_argument= at startup rather
 than silently falling back -- misconfiguration is a fail-fast error,
 not a silent default. =ores.nats.lib= links =reflectcpp::reflectcpp=

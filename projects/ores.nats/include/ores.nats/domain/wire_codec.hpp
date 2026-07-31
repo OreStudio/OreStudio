@@ -130,10 +130,10 @@ ORES_NATS_EXPORT void set_default_wire_codec(wire_codec codec);
 
 /**
  * @brief Returns the process-wide default wire_codec (see
- * set_default_wire_codec()). Defaults to wire_format::json before any
- * client is constructed, matching the pre-existing behaviour for any
- * caller that runs before startup config is applied (e.g. free-standing
- * unit tests).
+ * set_default_wire_codec()). Defaults to wire_format::msgpack before any
+ * client is constructed, matching every process's own resolved startup
+ * default for any caller that runs before startup config is applied
+ * (e.g. free-standing unit tests).
  */
 [[nodiscard]] ORES_NATS_EXPORT const wire_codec& default_wire_codec();
 

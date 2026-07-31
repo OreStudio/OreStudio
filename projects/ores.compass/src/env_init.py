@@ -453,10 +453,10 @@ def run(argv, project_root: Path) -> int:
 
     # NATS wire payload format: json or msgpack, decided once at process
     # startup (see ores::nats::wire_format). Preserve an existing choice on
-    # re-run; default to json for fresh environments.
+    # re-run; default to msgpack for fresh environments.
     nats_wire_format = (os.environ.get("ORES_NATS_WIRE_FORMAT")
                         or existing.get("ORES_NATS_WIRE_FORMAT")
-                        or "json")
+                        or "msgpack")
 
     # Ports: scan sibling environments to find the next free base_port slot,
     # then override with any value already in .env (pre-assigned by env
@@ -695,9 +695,9 @@ ORES_NATS_MONITOR_URL={nats_monitor_url}
 ORES_NATS_SUBJECT_PREFIX={nats_prefix}
 ORES_NATS_STORE_DIR={nats_store_dir}
 # Wire payload encoding for every NATS request/reply and publish/subscribe:
-# json (default, human-readable) or msgpack (compact binary, native byte
-# support -- no base64 inflation for image/blob fields). Decided once per
-# process at startup; see doc/knowledge/architecture/nats_wire_format.org.
+# msgpack (default, compact binary, native byte support -- no base64
+# inflation for image/blob fields) or json (human-readable). Decided once
+# per process at startup; see doc/knowledge/architecture/nats_wire_format.org.
 ORES_NATS_WIRE_FORMAT={nats_wire_format}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
 # Run `compass nats certs` to generate them.

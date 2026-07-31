@@ -98,7 +98,7 @@ class Ctx:
                                 f"nats://localhost:{self.nats_port}")
         self.nats_prefix = env.get("ORES_NATS_SUBJECT_PREFIX",
                                    f"ores.dev.{self.label}")
-        self.nats_wire_format = env.get("ORES_NATS_WIRE_FORMAT", "json")
+        self.nats_wire_format = env.get("ORES_NATS_WIRE_FORMAT", "msgpack")
         self.nats_config = project_root / f"build/config/nats-{self.label}.conf"
         self.nats_pid_file = (project_root / "build/nats" / self.label
                               / "nats-server.pid")

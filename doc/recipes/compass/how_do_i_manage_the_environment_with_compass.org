@@ -84,23 +84,23 @@ key, =PGPASSWORD=) are masked by default; =--show-secrets= reveals them.
 
 =.env= carries =ORES_NATS_WIRE_FORMAT=, read once at process startup by
 every service, the Qt client, and =ores.shell= to decide how NATS
-message payloads are serialised: =json= (default, human-readable) or
-=msgpack= (compact binary, native byte support — no base64 inflation
-for image/blob fields). See
+message payloads are serialised: =msgpack= (default, compact binary,
+native byte support — no base64 inflation for image/blob fields) or
+=json= (human-readable). See
 [[proj:doc/knowledge/architecture/nats_wire_format.org][=doc/knowledge/architecture/nats_wire_format.org=]] for the full
 payload-vs-envelope architecture this decides.
 
 #+begin_src sh :results verbatim
 # Edit .env directly, then restart every running service (the value is
 # read once at startup — no live reload):
-# ORES_NATS_WIRE_FORMAT=msgpack
+# ORES_NATS_WIRE_FORMAT=json
 ./projects/ores.compass/compass.sh services stop
 ./projects/ores.compass/compass.sh services start
 #+end_src
 
 Every service in the environment must agree — this is a whole-environment
 choice, not a per-service or per-message one. =env configure= preserves
-an existing value on re-run (defaults new environments to =json=), so a
+an existing value on re-run (defaults new environments to =msgpack=), so a
 =--force= re-init or a fresh checkout won't silently flip you back.
 
 ** Show / record the env-format version — =compass env version=

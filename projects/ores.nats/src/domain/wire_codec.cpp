@@ -24,7 +24,7 @@ namespace ores::nats {
 namespace {
 
 wire_codec& mutable_default_wire_codec() {
-    static wire_codec instance(wire_format::json);
+    static wire_codec instance(wire_format::msgpack);
     return instance;
 }
 

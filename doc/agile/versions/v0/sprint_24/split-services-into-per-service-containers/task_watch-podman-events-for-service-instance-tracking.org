@@ -24,17 +24,18 @@ Build a thin watcher process consuming ~podman events --format json~
 and mirroring container start/stop/health-status transitions into the
 existing ~service_instance~/~service_event~ DB tables, so today's
 audit trail (currently written by ~process_supervisor~ itself on every
-launch/exit) keeps working on remote/Quadlet podman hosts -- not
-~process_supervisor~ -- own the actual process lifecycle there. Local
-dev machines run native systemd units (see the dependency-graph-
-generator task) with no podman involved at all, so this watcher only
-applies to remote/Quadlet-managed hosts (e.g. Newton).
+launch/exit) keeps working on remote/Quadlet podman hosts, where
+containers -- not ~process_supervisor~ -- own the actual process
+lifecycle. Local dev machines run native systemd units (see the
+dependency-graph-generator task) with no podman involved at all, so
+this watcher only applies to remote/Quadlet-managed hosts (e.g.
+Newton).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]] landing -- nothing to watch until remote hosts actually run Quadlet-managed podman containers. |
@@ -43,14 +44,16 @@ applies to remote/Quadlet-managed hosts (e.g. Newton).
 
 * Acceptance
 
-- Starting/stopping a per-service container updates
-  ~service_instance~'s phase/pid accordingly, with no
-  ~process_supervisor~ involvement.
+- Starting/stopping a per-service container on a remote/Quadlet host
+  (e.g. Newton) updates ~service_instance~'s phase/pid accordingly,
+  with no ~process_supervisor~ involvement.
 - ~service_event~ gains a start/stop/exit row for every observed
-  transition, matching today's granularity.
+  transition on those hosts, matching today's granularity.
 - The watcher survives its own restart without losing or duplicating
   events (idempotent on replay of any events it may have already
   processed).
+- Local dev environments (native systemd units, no podman) are
+  unaffected -- this watcher never runs there.
 
 * Plan
 

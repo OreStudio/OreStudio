@@ -8,7 +8,7 @@
 #+filetags: :split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
 #+branch: feature/rescope-podman-fleet-tasks
-#+pr:
+#+pr: 1798
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1798][#1798]] | [agile] Re-scope podman-fleet tasks after the pivot to systemd |
 
 * Review
 

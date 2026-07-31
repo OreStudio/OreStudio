@@ -48,12 +48,12 @@ task.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Design doc done; 5 implementation tasks remain. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Start the wire_codec foundation task.  |
-| Last touched  | 2026-07-28                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-07-31                               |
 
 * Acceptance
 
@@ -87,7 +87,7 @@ task.
 | [[id:7E1FE4CF-3FFD-4977-8ED8-2D7D51461BDA][Migrate ores.service messaging handler_helpers to wire_codec]] | DONE | 2026-07-29 | 2026-07-29 | Update reply() and decode() in ores.service/messaging/handler_helpers.hpp to route through an injected wire_codec instead of a hard-coded rfl::json call. This is the server-side choke point almost every service handler already goes through, so this single change flips every service's request/response handling in one pass. Audit for any service-to-service NATS calls that bypass these two helpers and migrate or document them separately. |
 | [[id:12674934-6F8E-40C9-A8D7-ED29B0ADF322][Consolidate and migrate ores.qt ClientManager to wire_codec]] | DONE | 2026-07-29 | 2026-07-30 | ClientManager.hpp/.cpp plus ClientManagerExportPortfolio.cpp and ClientManagerTradeInstrument.cpp currently have around ten separate call sites hard-coding rfl::json (process_authenticated_request variants, send_authenticated_request variants, login, signup, event-cache decode, exportPortfolio, trade_instrument). Consolidate these into one or two shared private helpers first, reducing duplication as a side effect, then have those route through an injected wire_codec instead of rfl::json directly. |
 | [[id:926379AF-B17C-4700-AF89-6AD1EB006281][Consolidate and migrate ores.shell request helpers to wire_codec]] | DONE | 2026-07-30 | 2026-07-30 | The do_request/do_auth_request template helper is copy-pasted independently into thirteen shell command .cpp files (18 definitions, 60 call sites), plus 7 more files using other direct rfl::json patterns (101 occurrences across 22 files total). De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly. |
-| [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] | BACKLOG | | | With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe. |
+| [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] | DONE | 2026-07-31 | 2026-07-31 | With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe. |
 | [[id:581EDA54-D912-43C0-B68B-6CD33C8DFA0B][Migrate remaining service-to-service hard-coded rfl::json call sites to wire_codec]] | DONE | 2026-07-30 | 2026-07-30 | A repo-wide sweep (grep for rfl::json combined with request_sync usage) found service-to-service NATS call sites still hard-coding rfl::json instead of routing through ores::nats::default_wire_codec(), discovered outside every completed task's audited file list: ores.iam.core/service/cache/party_cache.hpp, ores.iam.core/messaging/tenant_handler.hpp, ores.marketdata.client/crm_client.cpp, ores.refdata.client/service/cache/currency_pair_convention_cache.hpp, ores.reporting.core/messaging/report_definition_template_handler.hpp, ores.trading.core/messaging/trade_handler.hpp, plus ClientManagerTradeInstrument.cpp's decode side (parse_trade_instrument, a JSON-specific two-phase parser in ores.qt.headless). Migrate every one onto the common wire_codec encode/decode helpers, then re-run the sweep to confirm it is clean, so a full-environment msgpack switch is safe. |
 
 * Decisions

@@ -46,6 +46,8 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 15 | 2026-07-28 | ORES_COMPILER_CACHE now defaults to ccache instead of sccache (btrfs reflink caching, story 03831B51); removed the stale SCCACHE_DIR/SCCACHE_CACHE_SIZE block from the generated .env, which version 10 said was removed but the template kept writing |
 | 16 | 2026-07-29 | Add ORES_CONNECTIONS_MASTER_PASSWORD (blank by default) for ores.qt's connections.db master-password auto-unlock, story 5B1B987E |
 | 17 | 2026-07-30 | Added ORES_SHELL_LOGIN_USERNAME/ORES_SHELL_LOGIN_PASSWORD so compass shell defaults to Acme's tenant_admin when -u/-p are omitted |
+| 18 | 2026-07-30 | Added ORES_NATS_WIRE_FORMAT for the json/msgpack NATS wire-codec choice, story 1A815B1E-904E-460C-A2FB-31D9E3B392E2 |
+| 19 | 2026-07-31 | Added ORES_SHELL_NATS_WIRE_FORMAT mirroring the other per-service ORES_SHELL_NATS_* overrides so compass shell threads --nats-wire-format like it does --nats-url/--nats-tls-* |
 
 * See also
 

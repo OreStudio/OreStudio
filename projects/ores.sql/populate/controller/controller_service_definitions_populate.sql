@@ -27,7 +27,15 @@
  * NATS domain services (args_template = NULL): use the built-in default:
  *   --log-enabled --log-level {log_level} --log-directory {log_dir}
  *   --log-replica-index {replica_index}
- *   --nats-url {nats_url} --nats-subject-prefix {nats_prefix} {nats_tls_args}
+ *   --nats-url {nats_url} --nats-subject-prefix {nats_prefix}
+ *   --nats-wire-format {nats_wire_format} {nats_tls_args}
+ *
+ * Every custom args_template below must also include
+ * --nats-wire-format {nats_wire_format} alongside --nats-url/--nats-subject-prefix
+ * -- easy to forget since it's not needed for basic connectivity, but any
+ * row missing it silently defaults that service to json regardless of
+ * ORES_NATS_WIRE_FORMAT in .env. See the process-supervisor-config-passthrough-gap
+ * backlog capture for the full story.
  *
  * HTTP/WT/wrapper services have a custom args_template.  Ports use template
  * variables {http_port} and {wt_port} resolved by the controller from the
@@ -63,6 +71,7 @@ begin
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' --nats-wire-format {nats_wire_format}'
                 ' {nats_tls_args}'
                 ' --nats-monitor-url http://localhost:8221',
                 'Service telemetry and health monitoring'),
@@ -75,6 +84,7 @@ begin
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' --nats-wire-format {nats_wire_format}'
                 ' {nats_tls_args}'
                 ' --work-dir ../var/ore-service/work'
                 ' --http-base-url http://localhost:{http_port}',
@@ -87,6 +97,7 @@ begin
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' --nats-wire-format {nats_wire_format}'
                 ' {nats_tls_args}'
                 ' --port {http_port} --storage-dir ../storage',
                 'HTTP API gateway'),
@@ -96,6 +107,7 @@ begin
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' --nats-wire-format {nats_wire_format}'
                 ' {nats_tls_args}'
                 ' -- --http-address 0.0.0.0 --docroot . --http-port {wt_port}',
                 'Web UI server (Wt framework)'),
@@ -107,6 +119,7 @@ begin
                 '--log-enabled --log-level {log_level} --log-directory {log_dir}'
                 ' --log-replica-index {replica_index}'
                 ' --nats-url {nats_url} --nats-subject-prefix {nats_prefix}'
+                ' --nats-wire-format {nats_wire_format}'
                 ' {nats_tls_args}'
                 ' --host-id {host_id} --tenant-id {tenant_id}'
                 ' --work-dir {work_dir} --http-base-url http://localhost:{http_port}',

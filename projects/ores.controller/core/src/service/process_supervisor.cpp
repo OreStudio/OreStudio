@@ -23,6 +23,7 @@
 #include "ores.controller.core/repository/service_event_repository.hpp"
 #include "ores.controller.core/repository/service_instance_repository.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.nats/domain/wire_format.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/executable.hpp"
 #include "ores.service/service/exit_codes.hpp"
@@ -180,6 +181,7 @@ std::vector<std::string> process_supervisor::build_args(const api::domain::servi
 
     replace_all(tmpl, "{nats_url}", nats_.url);
     replace_all(tmpl, "{nats_prefix}", nats_.subject_prefix);
+    replace_all(tmpl, "{nats_wire_format}", ores::nats::to_string(nats_.format));
     // {tenant_id}: the compute grid (hosts, workunits, batches) is entirely
     // system-tenant scoped by design, regardless of which real tenant a
     // client is using -- confirmed by every existing row in

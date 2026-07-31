@@ -1,0 +1,278 @@
+:PROPERTIES:
+:ID: 9E3EC9E2-742F-4830-839D-99EF2C2BC626
+:END:
+#+title: Five independent layers manually re-thread every NATS config knob from .env to each service; environment_mapper_factory's per-app-only prefix is the root cause
+#+description: A new pure-passthrough .env config knob (ORES_NATS_WIRE_FORMAT) had to be manually fixed in FIVE independent places before every service actually received it: compass_services.py's controller-launch argv, process_supervisor's default_args_template (C++), five custom args_template rows in controller_service_definitions_populate.sql, ores.qt's (unaudited) client launch, and compass shell's own flag_for mapping + a missing .env mirror variable. Root cause confirmed by reading environment_mapper_factory.cpp: each service's config parser only maps ORES_<APP_NAME>_*-prefixed env vars, with no generic ORES_NATS_* fallback -- so CLI-arg threading is currently the *only* channel for domain services (a deliberate, already-documented design, not a bug), while the controller and ores.shell instead rely on their own per-app .env mirror blocks (ORES_CONTROLLER_SERVICE_NATS_*/ORES_SHELL_NATS_*), which is why shell's fix needed a new mirrored .env variable rather than an argv change. Target end state (explicit end goal): extend environment_mapper_factory with a shared ORES_NATS_*-fallback tier so every service reads config directly from environment with zero CLI argv-threading, collapsing the process_supervisor/SQL-template layers entirely -- both because it removes this whole bug class today, and because it previews the container-native (podman) shape every service will have once ores.controller's spawn-a-child-process architecture is decommissioned.
+#+type: capture
+#+level: cross
+#+filetags: :controller:process-supervisor:config:tech-debt:environment:podman:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+process_supervisor::build_args() forwards controller config to spawned
+services via explicit CLI-arg template substitution, not environment
+inheritance -- and =compass_services.py='s own hand-built launch args for
+the controller and Qt client have the identical problem in a second,
+independent place. Fixing =ORES_NATS_WIRE_FORMAT= took *two* separate
+one-line additions (one in C++'s =default_args_template=, one in Python's
+controller launch args) because both layers manually re-list every NATS
+config value instead of letting each service parse =.env=/CLI/its own
+environment the same way every service's own =boost::program_options=
+config layer already does. The services (and the controller/compass
+launcher) should read =.env= variables directly wherever the value is a
+pure passthrough with no controller-side transformation, instead of this
+two-tier manual re-threading through explicit argv templates at both the
+Python launcher and the C++ supervisor.
+
+* Why
+
+Every new pure-passthrough =.env= config knob currently needs manual
+code changes in *three* separate places to actually reach every
+controller-launched service, with no error if any is missed -- it
+silently falls back to the child's CLI default. Verifying msgpack
+end-to-end for the nats-configurable-wire-format story hit all three,
+one after another, each looking like "the fix", each still showing
+=format:json= in the service log afterwards:
+
+1. =process_supervisor::default_args_template= (C++) -- the
+   NATS-domain-services default template used when a service's DB
+   row has =args_template = NULL=.
+2. =compass_services.py='s own hand-built controller-launch argv
+   (Python) -- a second, independent place that also manually
+   re-lists =--nats-url=/=--nats-subject-prefix=/etc, for the
+   controller process itself (which =process_supervisor= doesn't
+   spawn -- =compass services start= launches it directly).
+3. =controller_service_definitions_populate.sql='s five *custom*
+   =args_template= rows (=ores.telemetry.service=, =ores.ore.service=,
+   =ores.http.server=, =ores.wt.service=, =ores.compute.wrapper=) --
+   each one overrides the default template entirely for its own
+   reasons (custom ports, work dirs, Wt's =--= arg separator), so
+   fixing (1) does nothing for any service listed here; each row
+   needed the identical =--nats-wire-format {nats_wire_format}=
+   addition individually.
+
+This is a genuinely confusing failure mode to debug: the fix is
+correct each time, the build succeeds each time, yet the symptom
+(=format:json= in the log) is unchanged after restarting services,
+because a *different* service (or the controller itself) is still
+hitting one of the other two un-fixed layers. There is no single
+place that lists "every place NATS config reaches a process" --
+discovering the second and third layers required grep-hunting through
+Python launcher code and DB seed SQL after the C++ fix visibly didn't
+work. Investigate whether this class of bug recurs for other config
+knobs, and whether it's worth hardening (e.g. a smoke test asserting
+every =.env=-sourced =nats_options= field reaches every
+controller-launched service across all three layers, or moving to
+direct environment inheritance for pure-passthrough values while
+keeping explicit args only for controller-computed values like TLS
+cert paths and host ids -- at minimum, a single doc enumerating all
+three layers so the next person doesn't have to rediscover them one
+failed restart at a time). Note: once the project migrates services
+to podman/containers, =ores.controller= is planned to be
+decommissioned -- so this may not be worth deep investment beyond
+documenting the risk, unless the migration is still some way off.
+
+* Current architecture in detail (why it's this complicated)
+
+*CORRECTION after further investigation*: the paragraph originally here
+speculated that Boost.Process v2 might not be inheriting the
+controller's environment into spawned children, and that CLI-arg
+threading was therefore redundant with environment inheritance. That
+speculation was wrong, and the codebase already documents the real
+design explicitly (=.env='s own generated comment, next to the
+controller's mirrored NATS vars): *"Only the controller needs this: it
+launches every other service directly with these same values as CLI
+args ... so they never read NATS_* from the environment themselves."*
+This is deliberate, not a bug in the spawning mechanism.
+
+The actual mechanism: every service's config parser
+(=projects/ores.*/service/src/config/parser.cpp=, one per service)
+builds a =boost::program_options= description, parses =argv=, then
+layers environment variables on top via
+=ores::utility::program_options::environment_mapper_factory::make_mapper("<APP_NAME>")=
++ =boost::program_options::parse_environment(od, name_mapper)=. Critically,
+=environment_mapper_factory::make_mapper()= (=projects/ores.utility/src/program_options/environment_mapper_factory.cpp=)
+only recognises env vars matching the exact prefix =ORES_<APP_NAME>_*= --
+there is *no generic fallback* to a shared =ORES_NATS_*= namespace. So
+=ores.iam.service= (app name =IAM_SERVICE=) only ever reads
+=ORES_IAM_SERVICE_NATS_URL=-style vars from its environment, never the
+plain =ORES_NATS_URL= that =.env= actually defines. Since =.env= does
+*not* generate a per-service mirror of every NATS variable for every
+domain service (only for the controller and =ores.shell=, which each
+have their own =ORES_CONTROLLER_SERVICE_NATS_*=/=ORES_SHELL_NATS_*=
+mirror blocks), the *only* way shared NATS config reaches a domain
+service is via CLI flags the controller explicitly constructs and
+passes at spawn time. Environment inheritance genuinely cannot work for
+these processes under the current env-var-naming scheme, full stop --
+this is not an open question, it's confirmed by reading
+=environment_mapper_factory.cpp= directly.
+
+Layers 1 and 5 below (controller, =ores.shell=) are different: *they*
+each have their own =ORES_<APP>_NATS_*= mirror block in generated
+=.env=, so *for them specifically*, environment inheritance genuinely
+does work once the mirror var exists -- which is exactly why fixing
+=ORES_SHELL_NATS_WIRE_FORMAT= (Layer 5) meant adding a new mirrored
+=.env= variable (bumping the =.env=-format version) rather than editing
+an argv template. Layers 2/3 (process_supervisor, the custom SQL
+templates) have no such per-service mirror and *must* use explicit CLI
+flags, because that's the only channel that exists for those services.
+
+The upstream complexity is therefore genuinely five independent code
+paths, each with its own mechanism for getting a NATS value from
+=.env= into a running process:
+
+- *Layer 1 -- compass_services.py's controller launch* (Python). "compass
+  services start" is the human/CI entry point: it parses =.env= into a
+  dict (=load_env()=), builds a =Ctx= with derived fields (label, ports,
+  URLs, tls flag), and launches =nats-server= then =ores.controller.service=
+  directly via =subprocess.Popen(..., env=ctx.child_env())=.
+  =child_env()= does =os.environ.copy()= then =e.update(self.env)= -- so
+  the controller process's OS environment *does* contain every =.env=
+  variable, including =ORES_NATS_WIRE_FORMAT=. And yet the controller's
+  own launch args (a hand-built Python list) *also* explicitly pass
+  =--nats-url=/=--nats-subject-prefix=/etc as CLI flags -- entirely
+  redundant with what the controller would already resolve from its own
+  environment via the exact same env-mapper mechanism every other service
+  uses. This redundancy is presumably historical (or defensive), but it
+  means every new NATS knob needs a matching line added here too, or it's
+  simply missing from the controller's own resolved config -- which is
+  exactly what happened with =ORES_NATS_WIRE_FORMAT= until fixed.
+
+- *Layer 2 -- process_supervisor's spawning of every other service* (C++,
+  =projects/ores.controller.core/service/process_supervisor.cpp=). The
+  controller, once running, is itself responsible for spawning every
+  domain service, http/wt server, and compute-wrapper replica, entirely
+  via explicit CLI argv (=default_args_template=) -- this is correct and
+  necessary as designed, not a bug: these services have no per-service
+  =ORES_<SERVICE>_NATS_*= mirror in =.env=, so CLI args are the *only*
+  channel. =--nats-wire-format {nats_wire_format}= needed adding here
+  because the template simply never had that placeholder, same as every
+  other NATS flag it does carry.
+
+- *Layer 3 -- controller_service_definitions_populate.sql's custom
+  =args_template= rows*. Five services (=ores.telemetry.service=,
+  =ores.ore.service=, =ores.http.server=, =ores.wt.service=,
+  =ores.compute.wrapper=) don't use =process_supervisor='s
+  =default_args_template= at all -- each has its own fully-custom template
+  string seeded into =ores_controller_service_definitions_tbl= (for
+  legitimate reasons: custom ports, work dirs, the Wt =--= arg
+  separator). Fixing Layer 2's default template does *nothing* for any of
+  these five; each one needed the identical
+  =--nats-wire-format {nats_wire_format}= substring added to its own SQL
+  row individually. This is the least discoverable layer: it lives in
+  seed data, not application code, and only takes effect on the *next*
+  =compass db recreate= (a running environment's DB rows from before the
+  SQL change are untouched until reseeded).
+
+- *Layer 4 (not yet audited) -- ores.qt='s client launch*. Unlike every
+  server-side service, =compass_services.py='s Qt-client launch args
+  (=client_args=, used by "compass client start") pass *no* =--nats-url=/
+  =--nats-subject-prefix=/=--nats-wire-format= flags at all. Given Layer
+  2's finding (no generic =ORES_NATS_*= env fallback exists), this is
+  suspicious -- either the Qt client has its own per-app
+  =ORES_QT_NATS_*= mirror block in =.env= (not confirmed), or its
+  auto-connect path resolves NATS config through a different,
+  non-=nats_configuration.cpp= mechanism entirely (it is Qt/
+  =ClientManager= code, not a service parser). Not yet audited whether
+  =ORES_NATS_WIRE_FORMAT= reaches the Qt client at all; likely needs the
+  same per-app-mirror-variable treatment Layer 5 got if it doesn't
+  already have one.
+
+- *Layer 5 -- compass shell's launch args* (Python,
+  =compass.py='s =cmd_shell=). A fifth, independent =flag_for= dict
+  mapping =ORES_SHELL_NATS_*= (a per-shell mirror block =.env= already
+  generates, matching the controller's own =ORES_CONTROLLER_SERVICE_NATS_*=
+  mirror) to CLI flags -- missing =ORES_SHELL_NATS_WIRE_FORMAT= entirely,
+  both the mirror variable in =env_init.py='s generated =.env= and the
+  =flag_for= entry mapping it to =--nats-wire-format=. Unlike Layers 2/3,
+  this *is* an env-inheritance-eligible case (the mirror variable exists
+  for every other NATS knob) -- it was simply never extended to cover
+  wire format, requiring both a new =.env=-format version bump and a new
+  =flag_for= line.
+
+** Why this matters beyond one config knob
+
+There is currently no single place that documents, let alone enforces,
+"every value in =ores::nats::config::nats_options= (or any other shared
+config struct) must reach every service through all five layers above."
+Each layer was hand-written independently, at different times, uses a
+different mechanism (per-app env mirror vs. bare CLI argv), and none of
+them fail loudly when a value is missing -- the service just silently
+falls back to its CLI default. This is exactly the kind of gap that
+will recur for the *next* new process-wide config knob, not just this
+one, and the fix required touching Python launcher code, C++ supervisor
+code, and seed SQL, in three different languages/files, to land one
+config knob correctly everywhere.
+
+* Target end state
+
+Per explicit direction: *services should just read from the process
+environment*, full stop -- eliminating the CLI-argv-templating layers
+(2 and 3) entirely, not merely extending them with one more flag each
+time a knob is added. Given =environment_mapper_factory= only maps
+=ORES_<APP_NAME>_*=-prefixed vars (confirmed above -- no generic
+=ORES_NATS_*= fallback exists), reaching this end state requires an
+actual code change to the mapping mechanism itself, not just relying on
+=child_env()= already populating the process environment (it does, but
+today's per-app-prefix scheme means that's not enough on its own). Two
+ways to get there, in ascending order of intrusiveness:
+
+1. *Extend =environment_mapper_factory= (or each service parser's setup)
+   with a second, fallback mapper*: try =ORES_<APP_NAME>_<OPTION>= first
+   (today's behaviour, still wins so per-service overrides keep
+   working), then fall back to a shared =ORES_<OPTION>= (no app prefix)
+   for options registered by shared modules like =nats_configuration=
+   (=ORES_NATS_URL=, =ORES_NATS_SUBJECT_PREFIX=, =ORES_NATS_WIRE_FORMAT=,
+   =ORES_NATS_TLS_*=). =boost::program_options= supports layering
+   multiple =parse_environment= calls into the same =variables_map=, so
+   this is additive, not a rewrite. Once in place, =.env='s existing
+   generic =ORES_NATS_*= block (which every process already inherits via
+   =child_env()=/the controller's own environment) becomes sufficient on
+   its own for every domain service, collapsing process_supervisor's
+   NATS-flag substitution and the five custom SQL =args_template= rows'
+   NATS flags to nothing -- CLI args would then be reserved only for
+   genuinely per-process/replica, controller-computed values with no
+   =.env= representation at all (=host_id=, per-replica
+   =work_dir=/=log_dir=/=replica_index=, derived TLS cert/key paths).
+   This removes Layers 2 and 3 as sources of this bug class entirely.
+2. Alternatively, generate a full per-service =ORES_<SERVICE>_NATS_*=
+   mirror block for *every* domain service in =env_init.py= (the pattern
+   Layers 1/5 already use for the controller and shell) and have
+   =process_supervisor=/the SQL templates stop passing NATS flags,
+   relying on inheritance the same way Layer 5 now does. This avoids
+   touching =environment_mapper_factory= but multiplies =.env='s size by
+   the service count for values that are, by design, identical across
+   every service (todays's whole reason shared NATS options exist as one
+   un-prefixed block in the first place) -- (1) is the cleaner fix.
+
+This is doubly worth doing because *the entire process-supervisor
+architecture is transitional*: once the project moves services to
+podman/containers, =ores.controller= and its whole spawn-a-child-process
+argv-templating design are planned to be decommissioned. A
+container-based deployment would give each service its full environment
+directly (an env file / secret mount / compose environment block) with
+no argv-templating step in between at all -- which is precisely option
+(1)'s end state, arrived at for free by the container runtime rather
+than by fixing =process_supervisor=. So the practical choice is: land
+option (1) now (a small, contained change to the env-mapper layer) so
+today's process-based deployment already behaves the container-native
+way, or accept the current five-layer fragility as a known, documented,
+*bounded* risk until the podman migration lands and makes the whole
+problem moot. Given that context, deep investment in
+=process_supervisor='s architecture itself (new tests, bigger refactors)
+is probably not worthwhile -- but option (1) is a small, high-value
+change that is also directly useful groundwork for (and a preview of)
+the target container-native shape, regardless of how soon the podman
+migration actually lands.
+
+* References
+
+-
+
+* See also
+
+-

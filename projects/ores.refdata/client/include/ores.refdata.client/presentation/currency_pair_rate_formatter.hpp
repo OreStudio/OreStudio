@@ -71,8 +71,8 @@ public:
      */
     [[nodiscard]] static std::string
     format_rate(double rate,
-               const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
-               bool convention_reversed) {
+                const std::optional<ores::refdata::domain::currency_pair_convention>& convention,
+                bool convention_reversed) {
         if (!convention)
             return to_fixed_string(rate, default_decimal_places);
 
@@ -118,8 +118,9 @@ private:
     /// own direction/magnitude). rate is the reciprocal value being
     /// rendered, so 1/rate recovers the direct-direction magnitude the
     /// convention assumes.
-    [[nodiscard]] static int reciprocal_decimal_places(
-        double rate, const ores::refdata::domain::currency_pair_convention& convention) {
+    [[nodiscard]] static int
+    reciprocal_decimal_places(double rate,
+                              const ores::refdata::domain::currency_pair_convention& convention) {
         if (rate <= 0.0)
             return default_decimal_places;
 

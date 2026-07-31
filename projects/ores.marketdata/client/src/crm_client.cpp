@@ -47,9 +47,8 @@ crm_client::rates(const std::string& party_id, const std::string& crm_name, bool
             headers[std::string(ores::nats::headers::authorization)] =
                 std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
 
-        const auto reply = nats_.request_sync(messaging::get_crm_rates_request::nats_subject,
-                                              bytes,
-                                              std::move(headers));
+        const auto reply = nats_.request_sync(
+            messaging::get_crm_rates_request::nats_subject, bytes, std::move(headers));
         auto resp = codec.decode<messaging::get_crm_rates_response>(reply.data);
         if (!resp || !resp->success) {
             result.error = resp ? resp->message : "parse error (malformed or error reply)";

@@ -496,7 +496,8 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
     auto result = list_publishable_datasets(member_ids, resolve_dependencies);
     for (auto& entry : result) {
         try {
-            auto it = optional_by_id.find(boost::lexical_cast<boost::uuids::uuid>(entry.dataset_id));
+            auto it =
+                optional_by_id.find(boost::lexical_cast<boost::uuids::uuid>(entry.dataset_id));
             entry.optional = it != optional_by_id.end() && it->second;
         } catch (const std::exception&) {
             entry.optional = false;

@@ -20,8 +20,8 @@
 #include "ores.qt/PortfolioExplorerTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <functional>
 
 namespace ores::qt {
@@ -76,8 +76,8 @@ void PortfolioExplorerTreeModel::load(const std::vector<refdata::domain::party>&
 
     auto name_of = [&](const std::string& pid) {
         const auto it = party_by_id.find(pid);
-        return it != party_by_id.end() ? QString::fromStdString(it->second.full_name)
-                                       : QString::fromStdString(pid);
+        return it != party_by_id.end() ? QString::fromStdString(it->second.full_name) :
+                                         QString::fromStdString(pid);
     };
     // A party's effective parent is its parent_party_id, but only when that
     // parent is itself part of the working set -- otherwise (parent outside
@@ -115,9 +115,11 @@ void PortfolioExplorerTreeModel::load(const std::vector<refdata::domain::party>&
                 const auto books_it = books_by_party.find(pid);
                 static const std::vector<refdata::domain::portfolio> no_portfolios;
                 static const std::vector<refdata::domain::book> no_books;
-                const auto& party_portfolios =
-                    portfolios_it != portfolios_by_party.end() ? portfolios_it->second : no_portfolios;
-                const auto& party_books = books_it != books_by_party.end() ? books_it->second : no_books;
+                const auto& party_portfolios = portfolios_it != portfolios_by_party.end() ?
+                                                   portfolios_it->second :
+                                                   no_portfolios;
+                const auto& party_books =
+                    books_it != books_by_party.end() ? books_it->second : no_books;
 
                 build_subtree(party_node.get(), party_portfolios, party_books, std::nullopt);
 

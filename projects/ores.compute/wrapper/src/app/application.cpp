@@ -491,10 +491,10 @@ void process_assignment(ores::nats::service::client& nats,
             const auto actual_sha256 =
                 ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
             if (actual_sha256 != evt.package_sha256) {
-                throw std::runtime_error(
-                    "Package SHA256 mismatch for " + evt.app_version_id + ": expected " +
-                    evt.package_sha256 + ", got " + actual_sha256 +
-                    " -- refusing to run a corrupted or tampered package");
+                throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
+                                         ": expected " + evt.package_sha256 + ", got " +
+                                         actual_sha256 +
+                                         " -- refusing to run a corrupted or tampered package");
             }
 
             fs::create_directories(pkg_cache_dir);
@@ -718,8 +718,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 durable_name,
                 queue_group,
                 [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
-                    const auto evt = ores::nats::default_wire_codec()
-                                         .decode<compute::messaging::work_assignment_event>(msg.data);
+                    const auto evt =
+                        ores::nats::default_wire_codec()
+                            .decode<compute::messaging::work_assignment_event>(msg.data);
                     if (!evt) {
                         BOOST_LOG_SEV(lg(), error)
                             << "Failed to decode work_assignment_event: " << evt.error().what();

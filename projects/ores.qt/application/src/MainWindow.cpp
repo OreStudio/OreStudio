@@ -898,8 +898,8 @@ void MainWindow::updateMenuState() {
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
     ui_->ActionMySessions->setEnabled(isLoggedIn);
     if (switchPartyAction_)
-        switchPartyAction_->setEnabled(isLoggedIn && clientManager_
-                                       && clientManager_->availableParties().size() > 1);
+        switchPartyAction_->setEnabled(isLoggedIn && clientManager_ &&
+                                       clientManager_->availableParties().size() > 1);
 
     // Telemetry items requiring authentication
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
@@ -1201,8 +1201,8 @@ void MainWindow::onSwitchPartyTriggered() {
 
     if (connectionManager_) {
         try {
-            connectionManager_->record_party_selection(partyDialog.selectedPartyId(),
-                                                        partyDialog.selectedPartyName().toStdString());
+            connectionManager_->record_party_selection(
+                partyDialog.selectedPartyId(), partyDialog.selectedPartyName().toStdString());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to record recent party: " << e.what();
         }
@@ -1212,11 +1212,10 @@ void MainWindow::onSwitchPartyTriggered() {
     updateStatusBarFields();
 
     BOOST_LOG_SEV(lg(), info) << "Switched party: " << party_name_.toStdString();
-    ui_->statusbar->showMessage(
-        tr("Switched to %1. Already-open windows keep showing the previous "
-           "party's data -- close and reopen them to see %1's.")
-            .arg(party_name_),
-        8000);
+    ui_->statusbar->showMessage(tr("Switched to %1. Already-open windows keep showing the previous "
+                                   "party's data -- close and reopen them to see %1's.")
+                                    .arg(party_name_),
+                                8000);
 
     // Same post-switch checks as the login flow -- a switch can land on a
     // party that still needs onboarding, or one carrying a non-fatal warning.
@@ -2234,8 +2233,8 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
             LoginDialog::QuickConnectItem it;
             it.type = LoginDialog::QuickConnectItem::Type::Connection;
             it.name = QString::fromStdString(conn.name);
-            it.subtitle = conn.description.empty() ? QString::fromStdString(conn.username)
-                                                    : QString::fromStdString(conn.description);
+            it.subtitle = conn.description.empty() ? QString::fromStdString(conn.username) :
+                                                     QString::fromStdString(conn.description);
             if (conn.environment_id) {
                 for (const auto& tag :
                      connectionManager_->get_tags_for_environment(*conn.environment_id))

@@ -20,8 +20,8 @@
 #include "ores.qt/OrgExplorerTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.refdata.api/domain/regulatory_book_type_constants.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <functional>
 
 namespace ores::qt {
@@ -75,8 +75,8 @@ void OrgExplorerTreeModel::load(const std::vector<refdata::domain::party>& parti
 
     auto name_of = [&](const std::string& pid) {
         const auto it = party_by_id.find(pid);
-        return it != party_by_id.end() ? QString::fromStdString(it->second.full_name)
-                                       : QString::fromStdString(pid);
+        return it != party_by_id.end() ? QString::fromStdString(it->second.full_name) :
+                                         QString::fromStdString(pid);
     };
     // A party's effective parent is its parent_party_id, but only when that
     // parent is itself part of the working set -- otherwise (parent outside
@@ -114,8 +114,10 @@ void OrgExplorerTreeModel::load(const std::vector<refdata::domain::party>& parti
                 const auto books_it = books_by_party.find(pid);
                 static const std::vector<refdata::domain::business_unit> no_units;
                 static const std::vector<refdata::domain::book> no_books;
-                const auto& party_units = units_it != units_by_party.end() ? units_it->second : no_units;
-                const auto& party_books = books_it != books_by_party.end() ? books_it->second : no_books;
+                const auto& party_units =
+                    units_it != units_by_party.end() ? units_it->second : no_units;
+                const auto& party_books =
+                    books_it != books_by_party.end() ? books_it->second : no_books;
 
                 build_unit_subtree(party_node.get(), party_units, party_books, std::nullopt);
 
@@ -137,7 +139,8 @@ void OrgExplorerTreeModel::load(const std::vector<refdata::domain::party>& parti
                         book_node->kind = OrgTreeNode::Kind::Book;
                         book_node->book = b;
                         book_node->parent = unassigned_node.get();
-                        book_node->row_in_parent = static_cast<int>(unassigned_node->children.size());
+                        book_node->row_in_parent =
+                            static_cast<int>(unassigned_node->children.size());
                         unassigned_node->children.push_back(std::move(book_node));
                     }
 

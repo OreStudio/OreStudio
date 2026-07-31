@@ -66,8 +66,7 @@ TEST_CASE("currency_pair_rate_formatter derives reciprocal-preserving precision 
     // request renders the reciprocal JPY/AUD rate.
     auto convention = make_convention(0.01, 1.0, 2);
     convention.pair_code = "AUD/JPY";
-    REQUIRE(currency_pair_rate_formatter::format_rate(0.0120481928, convention, true) ==
-            "0.01205");
+    REQUIRE(currency_pair_rate_formatter::format_rate(0.0120481928, convention, true) == "0.01205");
 }
 
 TEST_CASE("currency_pair_rate_formatter derives reciprocal precision correctly when "

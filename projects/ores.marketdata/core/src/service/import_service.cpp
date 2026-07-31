@@ -133,8 +133,8 @@ fetch_known_currency_pairs(ores::nats::service::nats_client& auth_nats) {
             req.limit = page_size;
             const auto& codec = ores::nats::default_wire_codec();
             const auto reply = auth_nats.authenticated_request(req.nats_subject, codec.encode(req));
-            auto resp = codec.decode<ores::refdata::messaging::get_currency_pairs_response>(
-                reply.data);
+            auto resp =
+                codec.decode<ores::refdata::messaging::get_currency_pairs_response>(reply.data);
             if (!resp || !resp->success) {
                 BOOST_LOG_SEV(import_helpers_lg(), warn)
                     << "Failed to fetch currency pairs for FX quote convention checking; "

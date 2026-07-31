@@ -27,8 +27,8 @@ namespace {
 
 QDate to_qdate(const std::chrono::year_month_day& ymd) {
     return QDate(static_cast<int>(ymd.year()),
-                static_cast<int>(static_cast<unsigned>(ymd.month())),
-                static_cast<int>(static_cast<unsigned>(ymd.day())));
+                 static_cast<int>(static_cast<unsigned>(ymd.month())),
+                 static_cast<int>(static_cast<unsigned>(ymd.day())));
 }
 
 // One calendar's non-business dates within [from, to], paged from the

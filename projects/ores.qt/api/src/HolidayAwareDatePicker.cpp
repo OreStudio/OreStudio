@@ -55,9 +55,9 @@ HolidayAwareDatePicker::HolidayAwareDatePicker(QWidget* parent)
     calendarWidget_ = calendarWidget();
     if (calendarWidget_) {
         connect(calendarWidget_,
-               &QCalendarWidget::currentPageChanged,
-               this,
-               &HolidayAwareDatePicker::onCalendarPageChanged);
+                &QCalendarWidget::currentPageChanged,
+                this,
+                &HolidayAwareDatePicker::onCalendarPageChanged);
         if (auto* view = calendarWidget_->findChild<QAbstractItemView*>()) {
             view->setMouseTracking(true);
             view->viewport()->installEventFilter(this);
@@ -137,31 +137,31 @@ void HolidayAwareDatePicker::loadWindow(const QDate& from, const QDate& to) {
 
     auto* watcher = new QFutureWatcher<std::expected<calendar_holiday_map, QString>>(this);
     connect(watcher,
-           &QFutureWatcher<std::expected<calendar_holiday_map, QString>>::finished,
-           this,
-           [this, watcher, from, to, generation]() {
-               watcher->deleteLater();
+            &QFutureWatcher<std::expected<calendar_holiday_map, QString>>::finished,
+            this,
+            [this, watcher, from, to, generation]() {
+                watcher->deleteLater();
 
-               // setCalendarCodes() ran again while this fetch was in
-               // flight -- its result is for a calendar set that no
-               // longer applies; discard it rather than merging stale
-               // data back into holidays_.
-               if (generation != generation_)
-                   return;
+                // setCalendarCodes() ran again while this fetch was in
+                // flight -- its result is for a calendar set that no
+                // longer applies; discard it rather than merging stale
+                // data back into holidays_.
+                if (generation != generation_)
+                    return;
 
-               const auto result = watcher->result();
-               if (!result) {
-                   BOOST_LOG_SEV(lg(), warn)
-                       << "Failed to load calendar holidays: " << result.error().toStdString();
-                   emit errorMessage(result.error());
-                   return;
-               }
-               for (auto it = result->constBegin(); it != result->constEnd(); ++it)
-                   holidays_[it.key()] = it.value();
-               loadedFrom_ = loadedFrom_.isValid() ? std::min(from, loadedFrom_) : from;
-               loadedTo_ = loadedTo_.isValid() ? std::max(to, loadedTo_) : to;
-               applyHighlights();
-           });
+                const auto result = watcher->result();
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Failed to load calendar holidays: " << result.error().toStdString();
+                    emit errorMessage(result.error());
+                    return;
+                }
+                for (auto it = result->constBegin(); it != result->constEnd(); ++it)
+                    holidays_[it.key()] = it.value();
+                loadedFrom_ = loadedFrom_.isValid() ? std::min(from, loadedFrom_) : from;
+                loadedTo_ = loadedTo_.isValid() ? std::max(to, loadedTo_) : to;
+                applyHighlights();
+            });
     watcher->setFuture(QtConcurrent::run(
         [cm, codes, from, to]() { return fetch_calendar_holidays(cm, codes, from, to); }));
 }
@@ -205,9 +205,10 @@ bool HolidayAwareDatePicker::eventFilter(QObject* watched, QEvent* event) {
         const QDate cellDate = cellDateAt(helpEvent->pos());
         auto it = holidays_.constFind(cellDate);
         if (cellDate.isValid() && it != holidays_.constEnd()) {
-            QToolTip::showText(helpEvent->globalPos(),
-                               tr("Non-business day for: %1").arg(it.value().join(QStringLiteral(", "))),
-                               qobject_cast<QWidget*>(watched));
+            QToolTip::showText(
+                helpEvent->globalPos(),
+                tr("Non-business day for: %1").arg(it.value().join(QStringLiteral(", "))),
+                qobject_cast<QWidget*>(watched));
             return true;
         }
         QToolTip::hideText();

@@ -36,14 +36,15 @@ auto& lg() {
 
 internal_impersonation_service::internal_impersonation_service(
     ores::security::jwt::jwt_authenticator signer, visible_party_ids_fn visible_party_ids)
-    : signer_(std::move(signer)), visible_party_ids_(std::move(visible_party_ids)) {}
+    : signer_(std::move(signer))
+    , visible_party_ids_(std::move(visible_party_ids)) {}
 
 std::string internal_impersonation_service::mint_token(const context& ctx,
-                                                        const std::string& tenant_id,
-                                                        const boost::uuids::uuid& account_id,
-                                                        const boost::uuids::uuid& party_id,
-                                                        const std::string& username,
-                                                        std::chrono::seconds ttl) {
+                                                       const std::string& tenant_id,
+                                                       const boost::uuids::uuid& account_id,
+                                                       const boost::uuids::uuid& party_id,
+                                                       const std::string& username,
+                                                       std::chrono::seconds ttl) {
     auto claims = ores::security::jwt::jwt_claims::with_ttl(ttl);
     claims.subject = boost::uuids::to_string(account_id);
     claims.username = username;
@@ -63,9 +64,8 @@ std::string internal_impersonation_service::mint_token(const context& ctx,
         return {};
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Minted internal impersonation token: account "
-                              << claims.subject << ", party " << *claims.party_id
-                              << ", ttl " << ttl.count() << "s";
+    BOOST_LOG_SEV(lg(), info) << "Minted internal impersonation token: account " << claims.subject
+                              << ", party " << *claims.party_id << ", ttl " << ttl.count() << "s";
     return *token;
 }
 

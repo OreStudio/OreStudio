@@ -40,11 +40,11 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <boost/uuid/nil_generator.hpp>
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -578,8 +578,8 @@ public:
                 } catch (const std::exception&) {
                     reply(nats_,
                           msg,
-                          update_account_response{.success = false,
-                                                  .message = "Invalid reports_to_account_id format"});
+                          update_account_response{
+                              .success = false, .message = "Invalid reports_to_account_id format"});
                     return;
                 }
             }

@@ -68,8 +68,8 @@ public:
      * cache's only constructor requires one). Production wiring passes a
      * lambda closing over the shared party_cache instance.
      */
-    using visible_party_ids_fn =
-        std::function<std::vector<boost::uuids::uuid>(const std::string&, const boost::uuids::uuid&)>;
+    using visible_party_ids_fn = std::function<std::vector<boost::uuids::uuid>(
+        const std::string&, const boost::uuids::uuid&)>;
 
     /**
      * @param signer            Same JWT signer the service's real auth handlers

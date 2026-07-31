@@ -413,8 +413,8 @@ void PartyPickerDialog::onOkClicked() {
         return;
     }
 
-    const bool ok = is_switch_ ? clientManager_->switchParty(selectedId_, selectedName_)
-                               : clientManager_->selectParty(selectedId_, selectedName_);
+    const bool ok = is_switch_ ? clientManager_->switchParty(selectedId_, selectedName_) :
+                                 clientManager_->selectParty(selectedId_, selectedName_);
     if (!ok) {
         MessageBoxHelper::critical(this,
                                    "Party Selection Failed",

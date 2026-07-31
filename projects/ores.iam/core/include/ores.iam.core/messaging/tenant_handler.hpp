@@ -48,10 +48,10 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
 #include <algorithm>
 #include <chrono>
 #include <optional>
+#include <rfl/json.hpp>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
@@ -286,7 +286,8 @@ public:
         provision_acme_tenant_response resp;
         resp.success = true;
         auto add_step = [&](std::string step, std::string action, std::uint64_t count = 1) {
-            BOOST_LOG_SEV(tenant_handler_lg(), info) << "provision_acme: " << step << ": " << action;
+            BOOST_LOG_SEV(tenant_handler_lg(), info)
+                << "provision_acme: " << step << ": " << action;
             resp.steps.push_back(provision_acme_tenant_step{
                 .step = std::move(step), .action = std::move(action), .record_count = count});
         };
@@ -320,14 +321,14 @@ public:
 
             boost::uuids::string_generator sg;
             const auto account_id = sg(claims->subject);
-            const auto caller_party_id = (claims->party_id && !claims->party_id->empty())
-                ? sg(*claims->party_id)
-                : boost::uuids::nil_uuid();
+            const auto caller_party_id = (claims->party_id && !claims->party_id->empty()) ?
+                                             sg(*claims->party_id) :
+                                             boost::uuids::nil_uuid();
             const auto username = claims->username.value_or("");
 
             auto mint = [&](const boost::uuids::uuid& party_id) {
-                return impersonation_.mint_token(*ctx_expected, tenant_id_str, account_id, party_id,
-                                                 username);
+                return impersonation_.mint_token(
+                    *ctx_expected, tenant_id_str, account_id, party_id, username);
             };
             // Impersonation tokens are deliberately short-lived (see
             // internal_impersonation_service::mint_token()); every client
@@ -335,11 +336,13 @@ public:
             // TTL, so each is wired to re-mint for the same party on
             // expiry rather than fail once the token goes stale mid-wait.
             auto make_client = [&](const boost::uuids::uuid& party_id) {
-                return internal_request_client(nats_, mint(party_id),
-                                               [&mint, party_id] { return mint(party_id); });
+                return internal_request_client(
+                    nats_, mint(party_id), [&mint, party_id] { return mint(party_id); });
             };
             auto progress = [&](const std::string& step) {
-                return [&, step](const std::string& line) { add_step(step, line, 0); };
+                return [&, step](const std::string& line) {
+                    add_step(step, line, 0);
+                };
             };
 
             // Step 1: the generic 'base' bundle (countries, currencies,
@@ -361,12 +364,12 @@ public:
                 internal_request_client client = make_client(caller_party_id);
                 add_step("Step 1: Publishing base reference data", "starting", 0);
                 publish_bundle(client,
-                              "base",
-                              username,
-                              R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})",
-                              add_step,
-                              progress("base"),
-                              std::chrono::seconds{600});
+                               "base",
+                               username,
+                               R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})",
+                               add_step,
+                               progress("base"),
+                               std::chrono::seconds{600});
             }
 
             // Step 2: the four-party Acme Corporation LEI hierarchy --
@@ -380,8 +383,10 @@ public:
                                     username,
                                     lei_import_params(),
                                     add_step,
-                                    progress("acme_lei_import")))
-                    { reply(nats_, msg, resp); return; }
+                                    progress("acme_lei_import"))) {
+                    reply(nats_, msg, resp);
+                    return;
+                }
             }
 
             // Step 3: the holding company -- activation, logo, onboarding,
@@ -396,8 +401,13 @@ public:
                 } else {
                     internal_request_client client = make_client(holding->id);
                     add_step("Step 3: Activating Acme Corporation Plc", "starting", 0);
-                    finish_party(client, *ctx_expected, tenant_id_str, account_id, username,
-                                *holding, /*set_default=*/true);
+                    finish_party(client,
+                                 *ctx_expected,
+                                 tenant_id_str,
+                                 account_id,
+                                 username,
+                                 *holding,
+                                 /*set_default=*/true);
                     add_step("Step 3: Activating Acme Corporation Plc", "completed");
 
                     add_step("Step 3: Publishing group-level staff", "starting", 0);
@@ -415,11 +425,14 @@ public:
                                         username,
                                         dq::messaging::build_params_json(groupParams),
                                         add_step,
-                                        progress("acme_group")))
-                        { reply(nats_, msg, resp); return; }
+                                        progress("acme_group"))) {
+                        reply(nats_, msg, resp);
+                        return;
+                    }
 
                     add_step("acme_group.staff_photos", "starting", 0);
-                    attach_staff_photos(client, *ctx_expected, tenant_id_str, "acme_group", username);
+                    attach_staff_photos(
+                        client, *ctx_expected, tenant_id_str, "acme_group", username);
                     add_step("acme_group.staff_photos", "completed");
                 }
             }
@@ -455,8 +468,13 @@ public:
                     continue;
                 add_step(label, "completed");
 
-                finish_party(client, *ctx_expected, tenant_id_str, account_id, username, *party,
-                            /*set_default=*/false);
+                finish_party(client,
+                             *ctx_expected,
+                             tenant_id_str,
+                             account_id,
+                             username,
+                             *party,
+                             /*set_default=*/false);
                 add_step(office.code + ".onboarding", "completed");
 
                 // Market data: the same synthetic FX/IR feed and driver-rate
@@ -586,8 +604,8 @@ private:
     // Finds a party by full_name via the real refdata.v1.parties.list
     // request (paginated up to 1000, matching accounts_commands.cpp's
     // process_set_default_party -- there is no server-side filter-by-name).
-    static std::optional<ores::refdata::domain::party>
-    find_party(internal_request_client& client, const std::string& full_name) {
+    static std::optional<ores::refdata::domain::party> find_party(internal_request_client& client,
+                                                                  const std::string& full_name) {
         ores::refdata::messaging::get_parties_request req;
         req.limit = 1000;
         auto resp = client.request(req);
@@ -673,7 +691,9 @@ private:
             ctx,
             "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
             "AND valid_to = ores_utility_infinity_timestamp_fn()",
-            {"acme." + office_code + ".accounts"}, tenant_handler_lg(), "attach_staff_photos");
+            {"acme." + office_code + ".accounts"},
+            tenant_handler_lg(),
+            "attach_staff_photos");
         if (dataset.empty())
             return;
 
@@ -681,7 +701,9 @@ private:
             ctx,
             "SELECT username, photo_key FROM ores_dq_accounts_artefact_tbl "
             "WHERE dataset_id = $1::uuid AND photo_key IS NOT NULL",
-            {dataset.front()}, tenant_handler_lg(), "attach_staff_photos");
+            {dataset.front()},
+            tenant_handler_lg(),
+            "attach_staff_photos");
         if (rows.empty())
             return;
 
@@ -711,9 +733,9 @@ private:
             update_req.default_party_id =
                 a.default_party_id ? boost::uuids::to_string(*a.default_party_id) : "";
             update_req.job_title = a.job_title;
-            update_req.reports_to_account_id = a.reports_to_account_id.is_nil()
-                ? ""
-                : boost::uuids::to_string(a.reports_to_account_id);
+            update_req.reports_to_account_id = a.reports_to_account_id.is_nil() ?
+                                                   "" :
+                                                   boost::uuids::to_string(a.reports_to_account_id);
             update_req.image_id = boost::uuids::to_string(*image_id);
             update_req.change_reason_code = "system.external_data_import";
             update_req.change_commentary = "Attached staff photo during Acme provisioning";
@@ -740,7 +762,8 @@ private:
             changed = true;
         }
         if (!party.image_id) {
-            auto image_id = copy_template_image(client, ctx, tenant_id, "acme_party_logo", username);
+            auto image_id =
+                copy_template_image(client, ctx, tenant_id, "acme_party_logo", username);
             if (image_id) {
                 party.image_id = image_id;
                 changed = true;
@@ -814,30 +837,35 @@ private:
                 ctx,
                 "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
                 "AND valid_to = ores_utility_infinity_timestamp_fn()",
-                {"acme." + office_code + ".accounts"}, tenant_handler_lg(),
+                {"acme." + office_code + ".accounts"},
+                tenant_handler_lg(),
                 "grant_cross_entity_access");
             if (dataset.empty())
                 return std::vector<std::string>{};
-            auto usernames = role
-                ? execute_parameterized_string_query(
-                      ctx,
-                      "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
-                      "$1::uuid AND business_unit_code = $2 AND role = $3",
-                      {dataset.front(), business_unit_code, *role}, tenant_handler_lg(),
-                      "grant_cross_entity_access")
-                : execute_parameterized_string_query(
-                      ctx,
-                      "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
-                      "$1::uuid AND business_unit_code = $2",
-                      {dataset.front(), business_unit_code}, tenant_handler_lg(),
-                      "grant_cross_entity_access");
+            auto usernames =
+                role ? execute_parameterized_string_query(
+                           ctx,
+                           "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
+                           "$1::uuid AND business_unit_code = $2 AND role = $3",
+                           {dataset.front(), business_unit_code, *role},
+                           tenant_handler_lg(),
+                           "grant_cross_entity_access") :
+                       execute_parameterized_string_query(
+                           ctx,
+                           "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
+                           "$1::uuid AND business_unit_code = $2",
+                           {dataset.front(), business_unit_code},
+                           tenant_handler_lg(),
+                           "grant_cross_entity_access");
             std::vector<std::string> account_ids;
             for (const auto& u : usernames) {
                 auto acct = execute_parameterized_string_query(
                     ctx,
                     "SELECT id::text FROM ores_iam_accounts_tbl WHERE tenant_id = $1::uuid "
                     "AND username = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
-                    {tenant_id, u}, tenant_handler_lg(), "grant_cross_entity_access");
+                    {tenant_id, u},
+                    tenant_handler_lg(),
+                    "grant_cross_entity_access");
                 if (!acct.empty())
                     account_ids.push_back(acct.front());
             }
@@ -856,7 +884,8 @@ private:
                 "WHERE NOT EXISTS (SELECT 1 FROM ores_iam_account_parties_tbl WHERE "
                 "tenant_id = $2::uuid AND account_id = $1::uuid AND party_id = $3::uuid AND "
                 "valid_to = ores_utility_infinity_timestamp_fn())",
-                {account_id, tenant_id, party_id}, tenant_handler_lg(),
+                {account_id, tenant_id, party_id},
+                tenant_handler_lg(),
                 "grant_cross_entity_access");
         };
 
@@ -865,7 +894,7 @@ private:
                 continue;
             for (const auto* desk : {"ir_swaps", "fx_rates"})
                 for (const auto& account_id :
-                    account_ids_for(office.code, office.code + "." + desk, "Desk Head"))
+                     account_ids_for(office.code, office.code + "." + desk, "Desk Head"))
                     grant(account_id, london->party_id);
         }
 

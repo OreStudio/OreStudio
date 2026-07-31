@@ -44,8 +44,8 @@ void validate_index_family(ores::database::context ctx,
                            const std::string& currency_code,
                            const std::string& index_family) {
     auto upper = index_family;
-    std::transform(upper.begin(), upper.end(), upper.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    std::transform(
+        upper.begin(), upper.end(), upper.begin(), [](unsigned char c) { return std::toupper(c); });
     const auto id = currency_code + "-" + upper;
 
     refdata::repository::overnight_index_convention_repository overnight_repo;
@@ -58,7 +58,8 @@ void validate_index_family(ores::database::context ctx,
 
     throw std::invalid_argument(
         "Invalid (currency_code, index_family): no overnight_index_convention or "
-        "ibor_index_convention found with id '" + id + "'.");
+        "ibor_index_convention found with id '" +
+        id + "'.");
 }
 
 }

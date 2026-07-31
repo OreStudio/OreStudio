@@ -318,10 +318,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              queue_group,
                              [dbm](ores::nats::message msg) { dbm->list(std::move(msg)); }));
 
-    subs.push_back(
-        nats.queue_subscribe(get_dataset_bundle_members_by_bundle_request::nats_subject,
-                             queue_group,
-                             [dbm](ores::nats::message msg) { dbm->list_by_bundle(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_dataset_bundle_members_by_bundle_request::nats_subject,
+        queue_group,
+        [dbm](ores::nats::message msg) { dbm->list_by_bundle(std::move(msg)); }));
 
     // =========================================================================
     // Dataset Dependencies

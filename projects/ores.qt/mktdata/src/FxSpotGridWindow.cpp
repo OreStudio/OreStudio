@@ -20,10 +20,10 @@
 #include "ores.qt/FxSpotGridWindow.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.qt.headless/FontUtils.hpp"
 #include "ores.refdata.client/presentation/currency_pair_rate_formatter.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -262,7 +262,9 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
         const auto tenantId = clientManager_->currentTenantId();
         auto conventionCache = conventionCache_;
         auto* cacheWatcher = new QFutureWatcher<QString>(this);
-        connect(cacheWatcher, &QFutureWatcher<QString>::finished, this,
+        connect(cacheWatcher,
+                &QFutureWatcher<QString>::finished,
+                this,
                 [self, cacheWatcher, tenantId]() {
                     const auto error = cacheWatcher->result();
                     cacheWatcher->deleteLater();
@@ -279,8 +281,8 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
                     // convention filled in retroactively.
                     for (auto& [key, rs] : self->rows_) {
                         if (auto* item = self->table_->item(rs.row, ColPair)) {
-                            const auto resolved = resolve_convention(
-                                *self->conventionCache_, tenantId, item->text());
+                            const auto resolved =
+                                resolve_convention(*self->conventionCache_, tenantId, item->text());
                             rs.convention = resolved.convention;
                             rs.convention_reversed = resolved.reversed;
                         }

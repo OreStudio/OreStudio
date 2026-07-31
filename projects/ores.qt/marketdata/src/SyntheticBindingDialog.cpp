@@ -44,11 +44,11 @@ namespace {
 // Mirrors ir_curve_feed.cpp's own index_display_suffix() (also duplicated client-side in
 // IrCurveEditor.cpp/MarketSimulatorWindow.cpp for the same reason: service-layer code isn't
 // linkable from Qt) to build the same market_series qualifier ir_curve_feed uses.
-std::string
-index_display_suffix(const synthetic::domain::ir_curve_generation_config& cfg) {
+std::string index_display_suffix(const synthetic::domain::ir_curve_generation_config& cfg) {
     auto family = cfg.index_family;
-    std::transform(family.begin(), family.end(), family.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
     if (cfg.tenor.empty())
         return family;
     return family + "-" + cfg.tenor;
@@ -159,8 +159,7 @@ void SyntheticBindingDialog::loadConfigs() {
                 // "RATES/YIELD/" is exactly what ir_curve_feed.cpp's own
                 // find_series("RATES", "YIELD", qualifier) call looks the series up under --
                 // this must match that exactly, not just the bare qualifier.
-                const auto qualifier =
-                    cfg.currency_code + "/" + index_display_suffix(cfg);
+                const auto qualifier = cfg.currency_code + "/" + index_display_suffix(cfg);
                 const auto ore_key = "RATES/YIELD/" + qualifier;
                 configs.push_back(
                     {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});

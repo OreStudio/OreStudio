@@ -49,8 +49,9 @@ crm_rate_formatter::format(const std::vector<crm_rate_format_request>& requests)
     for (const auto& request : requests) {
         const auto& item = *request.item;
         crm_rate_display display;
-        display.rate_text = refdata::client::presentation::currency_pair_rate_formatter::
-            format_rate(item.rate, request.convention, request.convention_reversed);
+        display.rate_text =
+            refdata::client::presentation::currency_pair_rate_formatter::format_rate(
+                item.rate, request.convention, request.convention_reversed);
 
         if (item.status == "stale") {
             display.tooltip_text = "Stale - " + item.as_of;

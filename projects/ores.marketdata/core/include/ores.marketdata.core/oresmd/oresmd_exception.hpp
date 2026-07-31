@@ -38,7 +38,7 @@ namespace ores::marketdata::core {
  * Linux (ELF's weak-symbol merging is more permissive).
  */
 class ORES_MARKETDATA_CORE_EXPORT oresmd_exception : public virtual std::exception,
-                                                      public virtual boost::exception {
+                                                     public virtual boost::exception {
 public:
     explicit oresmd_exception(std::string_view message = "")
         : message_(message) {}

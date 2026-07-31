@@ -64,8 +64,7 @@ void write_zz_country_sentinel(scoped_database_helper& h,
 // way are safe to use as deterministic, weekday-independent test fixtures
 // (unlike a fixed month/day, whose weekday -- and thus business-day status
 // -- depends on which year "next year" happens to be at test-run time).
-std::chrono::year_month_day
-nth_monday_of_june(std::chrono::year y, unsigned occurrence) {
+std::chrono::year_month_day nth_monday_of_june(std::chrono::year y, unsigned occurrence) {
     using namespace std::chrono;
     const year_month_weekday ymw{y, June, weekday_indexed{Monday, occurrence}};
     return year_month_day{sys_days{ymw}};

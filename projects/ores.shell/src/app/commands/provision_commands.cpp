@@ -320,8 +320,7 @@ void provision_commands::process_tenant(std::ostream& out,
         // counterparty import (its own internal wait budget: 10 minutes)
         // and the subsequent best-effort Barclays-logo poll (up to 8
         // minutes) -- give it generous headroom over that combined budget.
-        auto provisioned =
-            do_request(out, session, provision_req, std::chrono::minutes(25), true);
+        auto provisioned = do_request(out, session, provision_req, std::chrono::minutes(25), true);
         if (!provisioned)
             return;
         if (!provisioned->success) {

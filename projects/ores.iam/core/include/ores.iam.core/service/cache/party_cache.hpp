@@ -123,8 +123,8 @@ public:
                 ores::refdata::messaging::read_parties_for_cache_request::nats_subject,
                 bytes,
                 std::move(headers));
-            auto resp = codec.decode<ores::refdata::messaging::read_parties_for_cache_response>(
-                reply.data);
+            auto resp =
+                codec.decode<ores::refdata::messaging::read_parties_for_cache_response>(reply.data);
             if (!resp || !resp->success) {
                 const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
                 BOOST_LOG_SEV(party_cache_lg(), warn)

@@ -365,9 +365,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                 ores::scheduler::messaging::schedule_jobs_batch_request::nats_subject,
                 codec.encode(batch_req));
 
-            auto resp =
-                codec.decode<ores::scheduler::messaging::schedule_jobs_batch_response>(
-                    reply_msg.data);
+            auto resp = codec.decode<ores::scheduler::messaging::schedule_jobs_batch_response>(
+                reply_msg.data);
             if (!resp) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to parse batch schedule response for tenant "
                                            << tenant_id_str << "; skipping.";

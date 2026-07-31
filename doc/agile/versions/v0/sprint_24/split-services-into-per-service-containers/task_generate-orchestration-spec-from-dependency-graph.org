@@ -228,6 +228,7 @@ via its "Verifies task" field.
 | 3 | story.org row still describes the abandoned '%i' template-unit design (ores@<env>.target) | doc/agile/.../story.org | Fixed | Updated wording to concrete units / ores-<env>.target. |
 | 4 | ores.wt.service's sd_notify(READY=1) fires before WServer::start() actually binds the HTTP listener | projects/ores.service/.../wt_service_runner.hpp, projects/ores.wt.service/src/main.cpp | Fixed | wt_setup_fn now takes a ready callback, invoked by main.cpp only after server.start() succeeds. |
 | 5 | ExecStart=/bin/sh -c '...' interpolates DB-sourced values with no shell escaping | projects/ores.compass/src/systemd_generate.py | Declined | Values are admin/migration-controlled (service_definition table), not runtime user input; low practical risk today, flagged for follow-up if that trust boundary ever changes. |
+| 6 | story.org's decommission-task row and task_decommission-controller-service.org's description still say "template units" after the pivot to concrete units | doc/agile/.../story.org, doc/agile/.../task_decommission-controller-service.org | Fixed | Reworded both to "concrete units", matching the fixed row from #3. |
 
 * Result
 

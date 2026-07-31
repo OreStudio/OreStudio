@@ -2,7 +2,7 @@
 :ID: 83B67002-6BEB-4AF8-9652-0CEEB597C7F4
 :END:
 #+title: Task: Decommission ores.controller.service and process_supervisor
-#+description: Remove ores.controller.service and process_supervisor from the build and deploy path entirely, now that systemd's own template units (plain systemd locally, Quadlet on remote/podman hosts) supersede its process-supervision responsibilities. Confirmed the controller has no NATS handlers or responsibilities beyond process supervision, so nothing else needs preserving. Delete the component's source, its CMake wiring, and any deploy-time references; update docs that mention it. Depends on both the plain-systemd generator and the Quadlet generator landing and being verified first.
+#+description: Remove ores.controller.service and process_supervisor from the build and deploy path entirely, now that systemd's own concrete units (plain systemd locally, Quadlet on remote/podman hosts) supersede its process-supervision responsibilities. Confirmed the controller has no NATS handlers or responsibilities beyond process supervision, so nothing else needs preserving. Delete the component's source, its CMake wiring, and any deploy-time references; update docs that mention it. Depends on both the plain-systemd generator and the Quadlet generator landing and being verified first.
 #+type: task
 #+level: s1
 #+filetags: :systemd:split-services-into-per-service-containers:sprint_24:v0:

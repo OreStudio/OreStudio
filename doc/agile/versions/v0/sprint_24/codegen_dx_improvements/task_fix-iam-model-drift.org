@@ -40,11 +40,11 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -98,3 +98,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=account_contact_information= was already current, zero-diff. Four
+entities (=account_type=, =tenant=, =tenant_status=, =tenant_type=)
+needed legacy =* Primary key=/=* Natural keys= migration to field-level
+flags -- none had ever successfully regenerated before. The
+=account_party= junction was missing =:subcomponent: api=, falling
+back to the legacy monolithic output path (same class of bug fixed for
+dq's =dataset_bundle_member= in PR #1777) -- fixed.
+
+Two entities were excluded from full regeneration entirely, mirroring
+=party='s hand-maintained-SQL treatment in the refdata drift-fix task:
+
+- =tenant=: =tenant_handler.hpp=/=tenant_repository.hpp= hand-implement
+  the full tenant-provisioning workflow, Acme one-click onboarding
+  (orchestrating parties/business units/portfolios/books/accounts via
+  internal actor impersonation), and hostname-based tenant lookup used
+  by login routing. None of it modeled, none of it reproducible by
+  current templates.
+- =account_party= (junction): =account_party_handler.hpp=
+  hand-implements workflow-step command handling for
+  =provision_tenant=, plus a deliberately custom stamp function that
+  must NOT use the generic =stamp()= helper (=party_id= means something
+  different for this one entity than everywhere else in the codebase).
+
+Both models now carry an explicit "DO NOT regenerate" note. Also fixed
+along the way: a stale =faker::company::name()= call (renamed to
+=companyName()= upstream), stale pre-split =ores.iam/...= include paths
+and an invalid Qt =Icon= value on three entities, and a missing
+=:has_change_reason_cache:= flag that broke =tenant_type='s Qt
+controller construction (same generic mechanism fixed for dq's
+=badge_severity= in PR #1777).
+
+=compass build= and full =rat= green; codegen unit test suite (98
+tests) green.
+
+Task-ID: 1BC20E52-EF45-4F24-B8E3-E72A7E5EDAD9

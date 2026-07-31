@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_GENERATORS_TENANT_STATUS_GENERATOR_HPP
-#define ORES_IAM_GENERATORS_TENANT_STATUS_GENERATOR_HPP
+#ifndef ORES_IAM_API_GENERATORS_TENANT_STATUS_GENERATOR_HPP
+#define ORES_IAM_API_GENERATORS_TENANT_STATUS_GENERATOR_HPP
 
 #include "ores.iam.api/domain/tenant_status.hpp"
 #include "ores.iam.api/export.hpp"

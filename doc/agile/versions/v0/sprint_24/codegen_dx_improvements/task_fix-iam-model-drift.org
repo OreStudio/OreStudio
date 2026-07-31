@@ -95,7 +95,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | account_party_junction.org still missing :subcomponent: api -- PR description/task doc claimed it was fixed but the diff shows it wasn't (lost during a git checkout revert of the model file alongside the excluded regen output) | ores.iam.account_party_junction.org | Fixed | Re-added the ** Flags :subcomponent: api block. |
+| 2 | Commit message says account_contact_information regenerated with zero diff, but AccountContactInformationController.{hpp,cpp} shows a real (safe) diff -- a wireDetailDialogCommon() refactor from template drift, confirmed non-behavioural by two independent reviewers | AccountContactInformationController.{hpp,cpp} | Acknowledged | Wording was imprecise (zero-diff applied to domain/repository/messaging, not the Qt controller); no code change needed, diff already verified safe. |
+| 3 | No test case added for the new account_type_generator | generators_tests.cpp | Declined | Minor/non-blocking per reviewer; every other generator in this task's scope already has coverage carried over from before, account_type is a first-time regen with no prior test to preserve. |
+| 4 | Unused #include <unordered_set> in generated generator .cpp files | account_type/tenant_status/tenant_type_generator.cpp | Declined | Pre-existing template-wide boilerplate, confirmed identical across ores.dq generators; not specific to this PR. |
+| 5 | "DO NOT regenerate" exclusion is prose-only, no automated codegen guard | tenant.org, account_party_junction.org | Declined | Pre-existing pattern (matches party.org's own treatment from the refdata task); out of scope for this drift-fix task. |
 
 * Result
 

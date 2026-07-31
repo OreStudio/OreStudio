@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/process/signals.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/service/systemd_notify.hpp"
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/error_code.hpp>
@@ -63,6 +64,7 @@ boost::asio::awaitable<void> run_signing(boost::asio::io_context& io_ctx,
         on_started(io_ctx);
 
     BOOST_LOG_SEV(lg, info) << "Service ready.";
+    notify_systemd_ready();
     BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
     co_await signals.async_wait(boost::asio::use_awaitable);
 

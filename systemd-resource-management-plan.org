@@ -1,0 +1,669 @@
+:PROPERTIES:
+:ID: D21CDC47-5EDD-4245-80CE-C557164085BC
+:END:
+#+title: Plan: systemd resource management and per-environment isolation
+#+description: Design note for converging compass onto systemd for service and Claude lifecycle, adding per-environment cgroup slices with resource limits, and the optional move to PID 1 ownership. Written after the 2026-07-31 machine lockup.
+#+type: design
+#+level: cross
+#+filetags: :compass:systemd:infrastructure:design:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+options: toc:t num:nil
+
+* Context
+
+On 2026-07-31 the machine had to be rebooted: every process was killed
+under memory pressure. This document is the plan that came out of
+diagnosing it.
+
+The trigger was not a single runaway process. It is that *nothing on
+this box is resource-constrained*, and that two separate process
+lifecycle mechanisms are running side by side — the PID-file launcher in
+=compass services= and the newly generated =ores@%i.target= systemd
+units — with only the second of them cgroup-aware.
+
+The goal of this plan is that =compass= becomes the single wrapper for
+process lifecycle across the fleet: =compass services start=, =compass
+claude=, =compass services status= all place work in the right cgroup,
+with the right limits, and report per-environment.
+
+** Machine baseline
+
+| Property        | Value                                              |
+|-----------------+----------------------------------------------------|
+| CPU             | 8 cores                                            |
+| RAM             | 31 GiB                                             |
+| Swap            | 8 GiB (=/dev/sda2=, prio 100) + 64 GiB (=/dev/sdb3=) |
+| systemd         | 261, unified cgroup hierarchy (=cgroup2fs=)          |
+| =systemd-oomd=    | active + enabled                                   |
+| =/mnt/development= | btrfs, =compress=zstd:3=, POSIX ACLs available       |
+| polkit          | active                                             |
+| Worktrees       | 9 under =/mnt/development/OreStudio=, ~18 GiB each   |
+| Units loaded    | 208 in =user@1000.service=                           |
+
+* Findings
+
+These are the observations the plan is built on. Each was verified on
+the machine on 2026-07-31.
+
+** compass services is entirely cgroup-unaware
+
+=compass_services.py= contains *zero* references to systemd. It starts
+processes with:
+
+#+begin_src python
+proc = subprocess.Popen([f"./{binary}"] + args, cwd=str(ctx.bin_dir),
+                        env=ctx.child_env(),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        start_new_session=True)
+pid_file.write_text(f"{proc.pid}\n")
+#+end_src
+
+=start_new_session=True= creates a new *session and process group*. It
+does *not* change the cgroup. Every service started this way inherits
+the cgroup of whatever launched =compass=:
+
+- launched from Emacs  → accounted to =emacs.service=
+- launched from a =compass claude= session → accounted to that Claude
+  scope, and killed when the Claude session exits
+- launched from a plain shell → accounted to =session-N.scope=
+
+This is precisely the disease =compass claude= was written to cure, still
+live for services. It is the single most important thing to fix.
+
+** The generated systemd units are correct but not deployed by compass
+
+=systemd_generate.py= renders =ores@.target= plus 23 unit templates per
+environment into an output directory, then *prints* installation
+instructions:
+
+#+begin_src sh
+mkdir -p ~/.config/systemd/user
+cp <out_dir>/*.service <out_dir>/*.target ~/.config/systemd/user
+systemctl --user daemon-reload
+systemctl --user start ores@<env>.target
+#+end_src
+
+The copy and reload are manual. The units themselves are well formed:
+=%i= is the environment name, every service is =PartOf=ores@%i.target= and
+=WantedBy=ores@%i.target=, and =ores@%i.target= =Wants= all 23. The
+per-environment grouping already exists in the unit graph; nothing
+consumes it yet.
+
+** Claude sessions share one flat slice
+
+=compass_claude.py= launches into =app-claude.slice= with the unit name
+=claude-<env>-<pid>=. That makes each session a sibling of
+=emacs.service= under =app.slice=, which was the right first move. But:
+
+- all sessions sit *directly* under one flat =app-claude.slice=, so there
+  is no per-environment grouping
+- =app-claude.slice= sets =MemoryAccounting= / =CPUAccounting= only. There
+  is *no* =MemoryMax= anywhere on this machine
+
+Without a =MemoryMax= on some ancestor cgroup, kernel OOM is a *global*
+decision: it scores every process on the box and kills the worst. A
+long-lived Emacs daemon with a large RSS is a prime candidate. This is
+the mechanism behind the reboot.
+
+** systemd-oomd is enabled but effectively inert
+
+=systemd-oomd= is running, but =user.slice= carries the defaults:
+
+: ManagedOOMSwap=auto
+: ManagedOOMMemoryPressure=auto
+: ManagedOOMMemoryPressureLimit=0
+
+Nothing opts in to pressure-based killing, so oomd is not making
+decisions for us.
+
+** 72 GiB of swap is an interactivity hazard
+
+With 64 GiB of low-priority swap, a runaway build or service thrashes
+for minutes before anything dies, and the machine is unusable
+throughout. Fast, contained death is preferable to a system-wide stall.
+
+** Dash-truncated slice drop-ins work (verified)
+
+A drop-in at =app-claude-.slice.d/= applies to every
+=app-claude-<env>.slice=. Verified:
+
+#+begin_src sh
+# /run/systemd/system/app-claude-.slice.d/99-test.conf → MemoryHigh=1G, CPUWeight=77
+$ systemd-run --slice=app-claude-swift_curie.slice /bin/true
+$ systemctl show app-claude-swift_curie.slice -p MemoryHigh -p CPUWeight
+CPUWeight=77
+MemoryHigh=1073741824
+#+end_src
+
+Slice nesting from the name also works, including with underscores in
+environment names:
+
+#+begin_src sh
+$ systemd-run --slice=app-claude-brave_hopper.slice ...
+0::/app.slice/app-claude.slice/app-claude-brave_hopper.slice/run-p2618-i12526.service
+#+end_src
+
+systemd creates the intermediate slices automatically. One template
+drop-in therefore covers all nine environments with no per-environment
+unit files.
+
+** Unit count is the real scaling pressure
+
+23 units per environment × 9 environments = 207 units if every fleet
+runs. The user manager currently reports 208 loaded units. This is
+independent of Claude and will only grow as the service catalogue does.
+
+** The build lock caps the wrong resource
+
+=compass build= already has host-wide admission control — =flock= on
+=/tmp/ores-build.lock.{a,b,c}=, with a job count attached to each slot:
+
+#+begin_src python
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 2), ("c", 2))
+#+end_src
+
+Three concurrent builds at =-j3=, =-j2=, =-j2= — *7 compiler jobs*, not the
+6 that "-j3, -j2, -j1" suggests. The mechanism itself is good: it is
+host-wide rather than per-checkout, it is non-destructively probeable
+(=_build_lock_slot_free=), it records holder identity, and it tails a
+per-slot log.
+
+The problem is *what* it caps. Seven jobs on 8 cores is defensible on
+CPU grounds. But each template-heavy C++ translation unit in this
+codebase costs on the order of 1–3 GiB, and link steps considerably
+more, so seven concurrent jobs is plausibly 10–20 GiB of transient
+memory — on a 31 GiB machine that also carries Emacs, several Claude
+sessions and potentially multiple service fleets. Job count is a proxy
+for CPU; the resource that took the machine down was memory.
+
+Two secondary observations:
+
+- The slots are advisory and only compass honours them. A raw
+  =cmake --build= or an IDE build bypasses them entirely.
+- =cmd_build='s docstring is stale: it describes "one of two host-wide
+  lock slots" and "at most two environments on this machine build at
+  once", from before slot =c= was added.
+
+** su does not create a session on this machine (verified)
+
+Relevant because "one user account per environment" was considered and
+rejected:
+
+#+begin_src sh
+$ su -s /bin/bash postgres -c 'cat /proc/self/cgroup'
+0::/user.slice/user-1000.slice/session-3.scope   # still the caller's scope
+XDG_RUNTIME_DIR=<unset>
+#+end_src
+
+=pam_systemd= is present in =/etc/pam.d/common-session=, but =su= does not
+register a new logind session. A Claude launched via =su claude-a= would
+run as that UID but remain inside =user-1000.slice=, so the blast radius
+would be unchanged. Separate user accounts would have required
+=machinectl shell= (needs =systemd-container=, not installed) or
+=systemd-run --uid=.
+
+* Goals and non-goals
+
+** Goals
+
+1. A runaway environment cannot take down Emacs, the machine, or another
+   environment's fleet.
+2. =compass services start= places services in a per-environment cgroup
+   with limits, not in whatever cgroup happened to invoke it.
+3. =compass= gives a per-environment picture — status, resource usage,
+   process tree — without the operator writing =systemctl= filters.
+4. Compilation bursts (=-j3=) are not artificially throttled on an
+   otherwise idle machine.
+5. Build concurrency is bounded by memory, not only by job count, and an
+   overrunning build is killed by its own cgroup rather than by pushing
+   the machine into swap.
+
+** Non-goals
+
+- *Separate user accounts per environment.* Explicitly out of scope.
+  Filesystem isolation is a nice-to-have, not a requirement, and the
+  cost (per-user Claude authentication, GPG signing keys, =safe.directory=
+  churn, split ccache) is not justified by it.
+- *True namespaced =systemctl=.* Making a bare =systemctl --user list-units=
+  show only one environment's units requires one manager per UID, and
+  there is exactly one =systemd --user= per UID. A per-environment *view*
+  through compass is accepted as sufficient. Full namespacing, if ever
+  wanted, arrives via the sprint-24
+  =split-services-into-per-service-containers= work, which gives each
+  environment its own PID namespace and its own init.
+- *Hard CPU quotas.* See the =CPUWeight= decision below.
+
+* Design decisions
+
+** DD-1: CPUWeight, not CPUQuota
+
+=CPUQuota= is an absolute cap and applies even on an idle machine — it
+would directly penalise =-j3= build bursts, which is the one thing we do
+not want. =CPUWeight= is proportional and only takes effect under
+contention: one environment building alone still gets all 8 cores;
+three building at once share fairly.
+
+*Decision:* use =CPUWeight= everywhere. Set no =CPUQuota=.
+
+** DD-2: MemoryHigh for pressure, MemoryMax for containment
+
+- =MemoryHigh= is a soft limit: exceeding it triggers reclaim and
+  throttling, not death. A fat C++ link that briefly exceeds it gets
+  slow, not killed.
+- =MemoryMax= is a hard limit and is the load-bearing setting: it makes
+  the OOM kill fire *inside* that cgroup, so only the offending
+  environment dies. Without it, kernel OOM is global.
+
+*Decision:* set both, with =MemoryHigh= comfortably below =MemoryMax=.
+
+** DD-3: Bound swap per environment
+
+=MemorySwapMax= caps how far an environment can thrash before its own
+cgroup OOM fires. Given 64 GiB of low-priority swap, this converts a
+multi-minute system-wide stall into a fast, local kill.
+
+*Decision:* =MemorySwapMax=2G= per environment slice.
+
+** DD-4: Limits are not partitioned across all nine environments
+
+31 GiB does not divide nine ways — 3.4 GiB per environment is not enough
+for a single C++ link, let alone a running fleet. Limits are sized for
+*3–4 concurrently active environments*; they make concurrency safe, not
+unlimited. Running all nine fleets at once is not a supported mode and
+does not need to be, because =ores@%i.target= is already per-environment.
+
+** DD-5: Root is required only at the margins
+
+Almost all of this is unprivileged. See §"Privilege requirements".
+
+** DD-6: PID 1 ownership is deferred, not rejected
+
+Moving units out of =user@1000.service= and into PID 1 is the only way to
+survive a =systemd --user= restart. It is real and it works without new
+user accounts, but it is a larger change and it is not what caused the
+reboot. It is captured as WS-6 and should be taken only if the unit
+count keeps biting after WS-1..WS-5 land.
+
+* Workstreams
+
+** WS-1: Per-environment Claude slices with limits
+
+*Files:* =projects/ores.compass/src/compass_claude.py=,
+=projects/ores.compass/src/systemd/app-claude.slice= (+ new drop-in
+source).
+
+*Change 1 — nest each session in a per-environment slice.* In
+=compass_claude.py=, =_SLICE_NAME= is currently a module constant. Make it
+a function of the environment:
+
+#+begin_src python
+_SLICE_ROOT = "app-claude"
+
+def _slice_name(env_name: str) -> str:
+    return f"{_SLICE_ROOT}-{env_name}.slice"
+#+end_src
+
+and in =run()=, replace =f"--slice={_SLICE_NAME}"= with
+=f"--slice={_slice_name(env_name)}"=. =env_name= is already computed there
+by the existing =_env_name(project_root)=. systemd creates
+=app-claude.slice= and =app-claude-<env>.slice= implicitly, so no
+per-environment unit file is needed.
+
+*Change 2 — add the limits drop-in.* New checked-in source at
+=projects/ores.compass/src/systemd/app-claude-.slice.d/50-limits.conf=,
+deployed to =~/.config/systemd/user/app-claude-.slice.d/50-limits.conf=:
+
+#+begin_src conf
+[Slice]
+MemoryAccounting=yes
+CPUAccounting=yes
+IOAccounting=yes
+TasksAccounting=yes
+
+# Soft ceiling: reclaim and throttle, survives a fat LTO link.
+MemoryHigh=6G
+# Hard ceiling: cgroup-local OOM. This is what keeps a runaway
+# environment from reaching Emacs.
+MemoryMax=9G
+# 64 GiB of low-priority swap on this box; bound the thrash.
+MemorySwapMax=2G
+
+# Proportional, so -j3 bursts are unaffected on an idle machine.
+CPUWeight=100
+IOWeight=50
+TasksMax=4096
+
+ManagedOOMMemoryPressure=kill
+ManagedOOMMemoryPressureLimit=50%
+#+end_src
+
+*Change 3 — extend =_ensure_slice_deployed()=.* It currently syncs a
+single file with =filecmp.cmp=. Generalise it to sync a small manifest of
+=(source, destination)= pairs, so the drop-in ships alongside the slice
+and one =daemon-reload= covers both. Keep the existing "no redundant
+reload when content is unchanged" behaviour.
+
+*Verification:*
+
+#+begin_src sh
+compass claude --version
+systemctl --user show app-claude-swift_curie.slice -p MemoryMax -p CPUWeight
+systemd-cgls --user-unit app-claude.slice
+#+end_src
+
+** WS-2: Converge compass services onto systemd
+
+This is the core change and the largest. =compass services= must stop
+being a PID-file launcher and become a thin, friendly front end over
+=systemctl --user ... ores@<env>.target=.
+
+*File:* =projects/ores.compass/src/compass_services.py=.
+
+| Subcommand                | Today                                          | Target                                                       |
+|---------------------------+------------------------------------------------+--------------------------------------------------------------|
+| =services start=            | =Popen= + PID files in =publish/run/=              | =systemctl --user start ores@<env>.target=                     |
+| =services stop=             | =_terminate()= walks PID files, SIGTERM→SIGKILL  | =systemctl --user stop ores@<env>.target= (=PartOf= cascades)   |
+| =services status=           | =_check()= per PID file                          | =systemctl --user list-dependencies ores@<env>.target=         |
+| =services clear-logs=       | unchanged                                      | unchanged                                                    |
+| orphan detection           | =_find_orphans()=, =_verify_no_orphans()=          | *obsolete* — a cgroup cannot be escaped; delete once migrated |
+
+*Notes on the migration:*
+
+- Prefer =list-dependencies= over a =list-units 'ores.*@<env>*'= glob. It
+  reads the =Wants= graph, so it stays correct as =compass systemd
+  generate= adds services; it picks up the =ores.compute.wrapper@%i-1..5=
+  instances that a naive glob misses; and it works when nothing is
+  running. =list-units= only shows *loaded* units, so on a fresh boot a
+  glob shows nothing at all.
+- =Type=notify= with =NotifyAccess=all= is already set on the generated
+  units, so =systemctl start= blocks until services are genuinely ready.
+  The bespoke =_wait_for_listen()= / =_wait_for_log()= readiness polling
+  becomes redundant for anything covered by a unit.
+- =Restart=always= / =RestartSec=2= are already in the generated units, so
+  crash recovery comes for free and the PID-file liveness checks go away.
+- The Qt client (=compass client start=) is an interactive GUI process and
+  is *not* a good fit for a =Type=notify= service. Leave it on the =Popen=
+  path for now, but move it into the environment's slice via
+  =systemd-run --user --scope --slice=app-claude-<env>.slice= so it is
+  still accounted and contained.
+- *Keep the PID-file path behind a fallback* (=--legacy=, or automatic when
+  =_has_user_systemd()= is false), mirroring how =compass claude= already
+  degrades to an unscoped =exec=. Do not delete it in the same change
+  that adds the systemd path.
+
+*Migration order.* Do not flip everything at once:
+
+1. Add the systemd path alongside the existing one, selected by a flag.
+2. Run both for a few days on one environment; compare =services status=
+   output.
+3. Make systemd the default, keep =--legacy= as the escape hatch.
+4. Delete the PID-file code and the orphan machinery once no environment
+   has used =--legacy= for a sprint.
+
+** WS-3: compass deploys the generated units
+
+*File:* =projects/ores.compass/src/systemd_generate.py=.
+
+=cmd_generate= currently prints installation instructions. Add a
+=compass systemd deploy= (or =--deploy= on =generate=) that does the work,
+reusing the sync-if-changed pattern already proven in
+=compass_claude.py::_ensure_slice_deployed=:
+
+1. Render units to the output directory (unchanged).
+2. Compare each against =~/.config/systemd/user/= with =filecmp.cmp(...,
+   shallow=False)=.
+3. Copy only what differs; skip =daemon-reload= entirely if nothing
+   changed.
+4. Report what was added, updated, and removed.
+
+Also remove stale units for services deleted from
+=ores_controller_service_definitions_tbl=, otherwise the user manager
+accumulates orphaned unit files — which is part of how it reached 208.
+
+** WS-4: The per-environment picture
+
+*File:* =projects/ores.compass/src/compass_services.py= (or a new
+=compass_systemd.py= if that file is getting long — it is already 698
+lines).
+
+Three views, all deriving the environment from =ORES_ENV_NAME= in the
+checkout's =.env=, the same way =compass_claude.py::_env_name= does:
+
+| Command                  | Implementation                                                        |
+|--------------------------+-----------------------------------------------------------------------|
+| =compass services status=  | =systemctl --user list-dependencies ores@<env>.target=                  |
+| =compass services tree=    | =systemd-cgls= on =app-claude-<env>.slice= — real processes and hierarchy |
+| =compass services top=     | =systemd-cgtop --user= filtered to the environment's slices             |
+
+All should forward unrecognised arguments verbatim, as =compass claude=
+already does, so =compass services status --all= keeps working.
+
+This is the piece that satisfies "I want to see only my environment's
+services". It is a *view*, not isolation: a bare =systemctl --user
+list-units= still shows all 208 units, and nothing prevents one
+environment from stopping another's fleet. That is accepted (see
+Non-goals).
+
+** WS-5: Protect Emacs and the interactive session
+
+*Files:* new drop-ins; partly requires root.
+
+Unprivileged — =~/.config/systemd/user/emacs.service.d/50-protect.conf=:
+
+#+begin_src conf
+[Service]
+MemoryMin=1G
+MemoryLow=2G
+CPUWeight=10000
+#+end_src
+
+Requires root — =/etc/systemd/system/user-1000.slice.d/50-marco.conf=:
+
+#+begin_src conf
+[Slice]
+CPUWeight=10000
+IOWeight=1000
+MemoryMin=3G
+#+end_src
+
+*Important caveat:* =MemoryMin= and =MemoryLow= are *clamped by ancestors*.
+Protection set on =emacs.service= has no effect unless =user@1000.service=
+and =user-1000.slice= pass a budget down. Do not assume this took —
+verify with:
+
+#+begin_src sh
+systemctl show emacs.service -p MemoryMin -p MemoryLow
+systemd-cgtop --user
+#+end_src
+
+Also consider opting =user.slice= into oomd explicitly rather than
+leaving it at =auto=.
+
+** WS-6: PID 1 ownership (deferred)
+
+*Only if the unit count keeps causing problems after WS-1..WS-5.*
+
+There is exactly one =systemd --user= per UID, so restarting it takes
+down Emacs, pipewire, all 22 service templates and every Claude scope
+together. The fix that does *not* need new user accounts is to move
+units out of the user manager and into PID 1, still running as =marco=.
+Verified working:
+
+#+begin_src sh
+systemd-run --uid=marco --gid=marco \
+     --slice=claude-swift_curie.slice \
+     --unit=claude-swift_curie-$$ \
+     --pty --same-dir --setenv=TERM="$TERM" \
+     -p MemoryHigh=6G -p MemoryMax=9G -p CPUWeight=100 \
+     "$(command -v claude)"
+#+end_src
+
+Notes:
+
+- Use a transient *service* with =--pty=, *not* =--scope=. A scope adopts
+  the *calling* process — which is root — so =--uid= would not apply.
+- polkit is active, so a rule in =/etc/polkit-1/rules.d/= can grant marco
+  =org.freedesktop.systemd1.manage-units= for =claude-*= and =ores-*= units,
+  avoiding a sudo prompt on every launch.
+- Trade-off: management moves from =systemctl --user= to =systemctl=, and
+  the unit story is split across two managers. =compass= would hide this,
+  but it is still two mechanisms.
+- Before doing any of this, note that =systemctl --user daemon-reexec=
+  re-executes the manager binary *while preserving all units and state*.
+  If the user manager is merely wedged rather than broken, that is the
+  repair — not a restart. This may remove the motivation for WS-6
+  entirely.
+
+** WS-7: Build admission control and job slots
+
+*File:* =projects/ores.compass/src/compass.py= (=BUILD_LOCK_SLOTS=,
+=cmd_build=, =_acquire_build_lock=).
+
+*Change 1 — reduce to two slots.*
+
+#+begin_src python
+BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))   # was (("a", 3), ("b", 2), ("c", 2))
+#+end_src
+
+5 jobs instead of 7, leaving real headroom on an 8-core box for Emacs,
+the interactive session, and any running fleet. Two concurrent builds
+also matches the original design intent that the (stale) docstring still
+describes.
+
+*Change 2 — put builds in a cgroup with a memory limit.* This is the
+change that actually matters. Wrap the cmake invocation the same way
+=compass claude= wraps the =claude= binary:
+
+#+begin_src sh
+systemd-run --user --scope -q --collect \
+    --unit=build-<env>-<slot>-<pid> \
+    --slice=app-build-<env>.slice \
+    cmake --build ... -j<jobs>
+#+end_src
+
+with a matching =app-build-.slice.d/50-limits.conf= drop-in carrying
+=MemoryHigh= / =MemoryMax= / =MemorySwapMax= / =CPUWeight=, deployed by the
+same manifest introduced in WS-1.
+
+Once this is in place the failure mode changes qualitatively: an
+overrunning build is killed by *its own* cgroup OOM instead of pushing
+the whole machine into swap. =-j= then becomes a throughput tuning knob
+rather than the machine's only safety mechanism, and the slot count can
+be revisited on evidence rather than caution.
+
+*Change 3 — fix the stale docstring* in =cmd_build= to describe the
+actual slot count and the new cgroup behaviour.
+
+*Change 4 (optional) — make the slot count adaptive.* Rather than a
+hardcoded tuple, derive it from =nproc= and =MemTotal=, e.g. slots sized so
+that =sum(jobs) <= nproc - 3= and each slot's =MemoryMax= is a fixed share
+of RAM. Worth doing only once real peak numbers exist; a smaller
+hardcoded tuple is the right immediate step.
+
+*Verification:*
+
+#+begin_src sh
+compass build --status                       # should show two slots
+systemd-cgls --user-unit app-build.slice     # during a build
+systemctl --user show app-build-swift_curie.slice -p MemoryMax
+#+end_src
+
+* Privilege requirements
+
+The answer to "do we need root for this work?" is *almost entirely no*.
+
+| Work                                                   | Root? |
+|--------------------------------------------------------+-------|
+| WS-1 per-environment slices and limits (=~/.config/systemd/user/=) | No    |
+| WS-2 =compass services= on =systemctl --user=               | No    |
+| WS-3 unit deployment                                   | No    |
+| WS-4 per-environment views                             | No    |
+| WS-5 =emacs.service= drop-in                             | No    |
+| WS-7 build slots and build slice                       | No    |
+| WS-5 =user-1000.slice= drop-in (ancestor budget)         | *Yes* |
+| WS-6 PID 1 units and polkit rule                       | *Yes* |
+
+Everything that fixes the reboot is unprivileged. Only the ancestor
+memory-protection budget and the deferred PID 1 work need root.
+
+=marco= already has a =manager= class logind session at boot (=user@1000.service=
+is up without an interactive login), so lingering appears to be enabled
+and does not need setting up.
+
+* Sequencing
+
+Workstream numbers are identifiers, not an ordering. Do them in this
+order:
+
+1. *WS-7 change 1* — drop slot =c=. A one-line change, immediately
+   reduces peak memory by roughly two concurrent compilations.
+2. *WS-1* — small, self-contained, unprivileged, and the change that
+   most directly prevents a repeat of the reboot.
+3. *WS-5* (unprivileged half) — one drop-in file.
+4. *WS-4* — the per-environment picture. Small, and immediately useful
+   for observing whether WS-1 and WS-7 are doing anything.
+5. *WS-7* remainder — builds into their own limited slice, reusing the
+   deployment manifest from WS-1.
+6. *WS-3* — deployment, needed before WS-2 can be trusted.
+7. *WS-2* — the large one. Staged migration as described.
+8. *WS-5* (root half) once someone can run it, then verify propagation.
+9. *WS-6* only if still needed.
+
+* Acceptance
+
+- =compass claude= launches into =app-claude-<env>.slice=, and
+  =systemctl --user show= on that slice reports a non-infinite
+  =MemoryMax=.
+- =compass services start= results in service processes whose
+  =/proc/<pid>/cgroup= is under the environment's slice, *regardless of
+  whether it was invoked from Emacs, a Claude session, or a bare shell*.
+- =compass services status= shows exactly the current environment's
+  fleet, including when nothing is running.
+- Deliberately exhausting memory in one environment kills only that
+  environment. Emacs and the other fleets survive. *This must be tested
+  explicitly*, ideally with a =MemoryMax= temporarily lowered so the test
+  is quick and safe.
+- =compass build --status= reports two slots, and a running build appears
+  under =app-build-<env>.slice= in =systemd-cgls=.
+- No =compass= subcommand requires root for normal operation.
+
+* Open questions
+
+- What =MemoryHigh= / =MemoryMax= values are actually right? 6G/9G is a
+  starting estimate, not a measurement. Run =systemd-cgtop --user= across
+  a normal working day first and set them from observed peaks. Note
+  that if builds keep running inside the Claude session's cgroup rather
+  than their own (WS-7 change 2), a =-j3= build can consume most of a
+  9 GiB budget on its own — which is an argument for landing WS-7
+  change 2 before tightening WS-1's numbers.
+- Should the build slots stay a fixed count once builds are
+  memory-capped? If an overrunning build dies alone, the slot mechanism
+  is only protecting throughput, and the right number may be higher than
+  2 again. Decide on measurements, not before.
+- Should the build slot count and the =MemoryMax= be linked, so that
+  taking slot =a= (=-j3=) also grants a larger memory budget than slot =b=
+  (=-j2=)? Attractive in principle; adds a second dimension to reason
+  about. Probably not worth it initially.
+- Should the fleet's services share one slice per environment with the
+  Claude session, or sit in a sibling slice? Sharing means a runaway
+  service can OOM the Claude session that started it; separating means
+  two budgets to size. Leaning towards separate
+  (=app-claude-<env>.slice= and =app-ores-<env>.slice=) under a common
+  =app-<env>.slice= parent that carries the real limit.
+- Does =compass services stop= need to handle the case where a fleet was
+  started by the legacy path and stopped by the systemd path, or is
+  "stop the way you started" an acceptable constraint during migration?
+
+* See also
+
+- [[file:doc/recipes/compass/how_do_i_launch_claude_in_a_systemd_scope.org][How do I launch Claude Code inside a systemd scope?]]
+- =projects/ores.compass/src/compass_claude.py= — the scoped-launch precedent
+- =projects/ores.compass/src/compass_services.py= — the PID-file launcher to be replaced
+- =projects/ores.compass/src/systemd_generate.py= — the unit generator
+- =projects/ores.compass/src/systemd/app-claude.slice= — current slice source
+- =projects/ores.compass/src/compass.py= — =BUILD_LOCK_SLOTS=, =cmd_build=,
+  the existing host-wide build admission control
+- Sprint 24 story: =split-services-into-per-service-containers= — the
+  longer-term path to true per-environment namespacing

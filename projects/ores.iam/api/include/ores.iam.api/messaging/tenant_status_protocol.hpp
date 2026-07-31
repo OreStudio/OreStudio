@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
-#define ORES_IAM_API_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
+#ifndef ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
+#define ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/tenant_status.hpp"
-#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -29,26 +28,17 @@ namespace ores::iam::messaging {
 
 struct get_tenant_statuses_request {
     using response_type = struct get_tenant_statuses_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_statuses.list";
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.list";
 };
 
 struct get_tenant_statuses_response {
     std::vector<ores::iam::domain::tenant_status> statuses;
-    int total_available_count = 0;
-    bool success = false;
-    std::string message;
 };
 
 struct save_tenant_status_request {
     using response_type = struct save_tenant_status_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_statuses.save";
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.save";
     ores::iam::domain::tenant_status data;
-
-    static save_tenant_status_request from(ores::iam::domain::tenant_status v) {
-        return {.data = std::move(v)};
-    }
 };
 
 struct save_tenant_status_response {
@@ -58,8 +48,8 @@ struct save_tenant_status_response {
 
 struct delete_tenant_status_request {
     using response_type = struct delete_tenant_status_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_statuses.delete";
-    std::vector<std::string> statuss;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.delete";
+    std::string status;
 };
 
 struct delete_tenant_status_response {
@@ -69,14 +59,14 @@ struct delete_tenant_status_response {
 
 struct get_tenant_status_history_request {
     using response_type = struct get_tenant_status_history_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant_statuses.history";
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.history";
     std::string status;
 };
 
 struct get_tenant_status_history_response {
-    std::vector<ores::iam::domain::tenant_status> history;
     bool success = false;
     std::string message;
+    std::vector<ores::iam::domain::tenant_status> history;
 };
 
 }

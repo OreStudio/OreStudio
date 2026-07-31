@@ -20,8 +20,10 @@
 #include "ores.qt/TenantTypeMdiWindow.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -42,7 +44,6 @@ TenantTypeMdiWindow::TenantTypeMdiWindow(ClientManager* clientManager,
     , tableView_(nullptr)
     , model_(nullptr)
     , proxyModel_(nullptr)
-    , paginationWidget_(nullptr)
     , reloadAction_(nullptr)
     , addAction_(nullptr)
     , editAction_(nullptr)
@@ -51,10 +52,13 @@ TenantTypeMdiWindow::TenantTypeMdiWindow(ClientManager* clientManager,
 
     setupUi();
     setupConnections();
+
+    // Initial load
     reload();
 }
 
 void TenantTypeMdiWindow::setupUi() {
+    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     setupToolbar();
@@ -63,9 +67,6 @@ void TenantTypeMdiWindow::setupUi() {
 
     setupTable();
     layout->addWidget(tableView_);
-
-    paginationWidget_ = new PaginationWidget(this);
-    layout->addWidget(paginationWidget_);
 }
 
 void TenantTypeMdiWindow::setupToolbar() {
@@ -118,69 +119,39 @@ void TenantTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientTenantTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-
     initializeTableSettings(tableView_,
                             model_,
-                            "TenantTypeListWindow",
-                            {
-                                ClientTenantTypeModel::Description,
-                            },
-                            {900, 400},
+                            ClientTenantTypeModel::kSettingsGroup,
+                            ClientTenantTypeModel::defaultHiddenColumns(),
+                            ClientTenantTypeModel::kDefaultWindowSize,
                             1);
 }
 
 void TenantTypeMdiWindow::setupConnections() {
     connect(model_, &ClientTenantTypeModel::dataLoaded, this, &TenantTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientTenantTypeModel::loadError, this, &TenantTypeMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             &TenantTypeMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked, this, &TenantTypeMdiWindow::onDoubleClicked);
-
-    connect(
-        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
-            model_->set_page_size(size);
-            model_->refresh();
-        });
-
-    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
-        const auto total = model_->total_available_count();
-        if (total > 0 && total <= 1000) {
-            model_->set_page_size(total);
-            paginationWidget_->reset_page();
-            model_->refresh();
-        }
-    });
-
-    connect(
-        paginationWidget_,
-        &PaginationWidget::page_requested,
-        this,
-        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
-
-    connectModel(model_);
 }
 
 void TenantTypeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading tenant types";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading tenant types..."));
-    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
+    model_->refresh();
 }
 
 void TenantTypeMdiWindow::onDataLoaded() {
-    const auto loaded = model_->rowCount();
-    const auto total = model_->total_available_count();
-    emit statusChanged(tr("Loaded %1 of %2 tenant types").arg(loaded).arg(total));
-
-    paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
-                                            total <= 1000);
+    emit statusChanged(tr("Loaded %1 tenant types").arg(model_->rowCount()));
 }
 
 void TenantTypeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
@@ -296,22 +267,20 @@ void TenantTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making delete request for " << codes.size() << " tenant types";
-
-        iam::messaging::delete_tenant_type_request request;
-        request.types = codes;
-        auto response_result =
-            self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            }
-            return results;
-        }
+            << "Making batch delete request for " << codes.size() << " tenant types";
 
         for (const auto& code : codes) {
+            iam::messaging::delete_tenant_type_request request;
+            request.type = code;
+            auto response_result =
+                self->clientManager_->process_authenticated_request(std::move(request));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for " << code;
+                results.push_back({code, {false, "Failed to communicate with server"}});
+                continue;
+            }
+
             results.push_back({code, {response_result->success, response_result->message}});
         }
 
@@ -342,8 +311,7 @@ void TenantTypeMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->load_page(self->paginationWidget_->current_offset(),
-                                self->paginationWidget_->page_size());
+        self->model_->refresh();
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
@@ -368,6 +336,5 @@ void TenantTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
-
 
 }

@@ -32,9 +32,7 @@ domain::tenant_type tenant_type_mapper::map(const tenant_type_entity& v) {
     domain::tenant_type r;
     r.version = v.version;
     r.type = v.type.value();
-
     r.name = v.name;
-
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
@@ -53,9 +51,7 @@ tenant_type_entity tenant_type_mapper::map(const domain::tenant_type& v) {
     tenant_type_entity r;
     r.type = v.type;
     r.version = v.version;
-
     r.name = v.name;
-
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

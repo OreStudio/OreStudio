@@ -21,4 +21,5 @@
 drop rule if exists ores_iam_account_types_delete_rule on "ores_iam_account_types_tbl";
 drop trigger if exists ores_iam_account_types_insert_trg on "ores_iam_account_types_tbl";
 drop function if exists ores_iam_account_types_insert_fn;
-drop table if exists "ores_iam_account_types_tbl";
+drop function if exists ores_iam_validate_account_type_fn;
+drop table if exists ores_iam_account_types_tbl cascade;

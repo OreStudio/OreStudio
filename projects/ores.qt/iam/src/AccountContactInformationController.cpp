@@ -188,13 +188,21 @@ void AccountContactInformationController::onShowHistory(
     showHistoryWindow(accountContactInformation);
 }
 
-void AccountContactInformationController::wireDetailDialogCommon(
-    AccountContactInformationDetailDialog* detailDialog) {
+void AccountContactInformationController::showAddWindow(boost::uuids::uuid accountId) {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new account contact information";
+
+    auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    if (!accountId.is_nil()) {
+        iam::domain::account_contact_information prefilled;
+        prefilled.account_id = accountId;
+        detailDialog->setInformation(prefilled);
+    }
+    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &AccountContactInformationDetailDialog::statusMessage,
@@ -204,20 +212,6 @@ void AccountContactInformationController::wireDetailDialogCommon(
             &AccountContactInformationDetailDialog::errorMessage,
             this,
             &AccountContactInformationController::errorMessage);
-}
-
-void AccountContactInformationController::showAddWindow(boost::uuids::uuid accountId) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new account contact information";
-
-    auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
-    if (!accountId.is_nil()) {
-        iam::domain::account_contact_information prefilled;
-        prefilled.account_id = accountId;
-        detailDialog->setInformation(prefilled);
-    }
-    detailDialog->setCreateMode(true);
-
     connect(detailDialog,
             &AccountContactInformationDetailDialog::accountContactInformationSaved,
             this,
@@ -256,10 +250,22 @@ void AccountContactInformationController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << accountContactInformation.email;
 
     auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setInformation(accountContactInformation);
 
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::statusMessage,
+            this,
+            &AccountContactInformationController::statusMessage);
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::errorMessage,
+            this,
+            &AccountContactInformationController::errorMessage);
     connect(detailDialog,
             &AccountContactInformationDetailDialog::accountContactInformationSaved,
             this,
@@ -408,9 +414,30 @@ void AccountContactInformationController::onOpenVersion(
     }
 
     auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
     detailDialog->setInformation(accountContactInformation);
     detailDialog->setReadOnly(true);
+
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::statusMessage,
+            this,
+            [self = QPointer<AccountContactInformationController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::errorMessage,
+            this,
+            [self = QPointer<AccountContactInformationController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -534,13 +561,25 @@ void AccountContactInformationController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AccountContactInformationDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setImageCache(imageCache_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
     auto reverted_accountContactInformation = accountContactInformation;
     reverted_accountContactInformation.version = 0;
     detailDialog->setInformation(reverted_accountContactInformation);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::statusMessage,
+            this,
+            &AccountContactInformationController::statusMessage);
+    connect(detailDialog,
+            &AccountContactInformationDetailDialog::errorMessage,
+            this,
+            &AccountContactInformationController::errorMessage);
     connect(detailDialog,
             &AccountContactInformationDetailDialog::accountContactInformationSaved,
             this,

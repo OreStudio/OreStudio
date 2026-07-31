@@ -22,20 +22,6 @@ Tenants are identified by:
 - code: Unique text code for stable referencing (e.g., 'system', 'acme')
 - hostname: Unique hostname for tenant routing during login
 
-DO NOT regenerate this entity's messaging/repository/service facets
-(=ores.cpp.nats-handler=/=ores.cpp.protocol=/=ores.cpp.repository=/
-=ores.cpp.service=) -- =tenant_handler.hpp=/=tenant_repository.hpp= are
-extensively hand-maintained: the full tenant-provisioning workflow
-(=complete_tenant_provisioning_command=), Acme one-click onboarding
-(=provision_acme_tenant_command=, orchestrating parties/business
-units/portfolios/books/accounts through internal actor impersonation),
-and hostname-based tenant lookup (=read_latest_by_hostname=, used by
-login routing). None of this is modeled here yet; regenerating clobbers
-it with a generic CRUD-only stack. Only the SQL/domain/generator facets
-are safe to regenerate (verified: no behavioural diff beyond output-path
-modernisation). Mirrors =party='s hand-maintained-SQL treatment in the
-refdata drift-fix task.
-
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -44,25 +30,24 @@ refdata drift-fix task.
 :has_tenant_id: true
 :END:
 
-* Columns
-
-** id
+* Primary key
 :PROPERTIES:
-:type:      uuid
-:cpp_type:  boost::uuids::uuid
+:column:          id
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
 :skip_uuid_check: true
-:primary_key: true
 :END:
 
 UUID uniquely identifying this tenant.
 
 The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records.
 
+* Natural keys
+
 ** code
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:natural_key: true
 :END:
 
 Unique code for stable referencing.
@@ -72,6 +57,8 @@ Examples: 'system', 'acme', 'demo'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_tenant"
 #+end_src
+
+* Columns
 
 ** name
 :PROPERTIES:
@@ -83,7 +70,7 @@ std::string(faker::word::noun()) + "_tenant"
 Human-readable display name for the tenant.
 
 #+begin_src cpp :name generator
-std::string(faker::company::companyName())
+std::string(faker::company::name())
 #+end_src
 
 ** type

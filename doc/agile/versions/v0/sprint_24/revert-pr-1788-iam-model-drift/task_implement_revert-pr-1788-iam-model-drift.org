@@ -8,7 +8,7 @@
 #+filetags: :revert-pr-1788-iam-model-drift:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-revert-pr-1788-iam-model-drift
-#+pr:
+#+pr: 1794
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1794][#1794]] | [iam] Revert PR #1788: fix broken DB schema on main |
 
 * Review
 

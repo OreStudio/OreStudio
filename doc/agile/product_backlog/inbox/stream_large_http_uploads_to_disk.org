@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: EA916A96-0F86-42EF-BC26-CB1E7857B3EC
+:END:
+#+title: Stream large HTTP upload bodies to disk instead of buffering
+#+description: Route-specific http::file_body streaming for the storage PUT endpoint, so large binary uploads (compute engine packages) don't buffer the whole body into a std::string in memory.
+#+type: capture
+#+level: cross
+#+filetags: :http:storage:compute:performance:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores.http.server='s generic per-connection loop
+(=http_session::run()=, =projects/ores.http/api/src/net/http_session.cpp=)
+reads every incoming request via a plain
+=http::request_parser<http::string_body>=, shared by every JSON API
+route and by =storage_routes='s PUT/GET/DELETE storage endpoints alike.
+That means a large binary upload (a compute engine package, tens of
+MB) gets fully buffered into a =std::string= before =storage_routes::handle_put=
+writes it to disk -- correct, but not memory-efficient. The idiomatic
+fix is route-specific streaming: give the storage PUT/GET endpoints
+their own =http::file_body=-based read/write path that streams
+straight to/from disk without ever holding the whole object in RAM,
+mirroring what =ores.storage::net::http_client::get= already does
+client-side for downloads (streams into an =http::file_body= response).
+This needs the router/=http_request= abstraction (currently
+content-agnostic, body typed as =std::string=) to grow a way for a
+specific route to opt into a different body type, which is a real
+design change, not a one-line fix.
+
+* Why
+
+Discovered while fixing the ACME compute package publishing flow (task
+0F768B80-184A-44C7-B725-A594A873AB4A): uploading the ~57MB vendored
+ORE engine package failed with a "Broken pipe" error because Beast's
+default =body_limit= for a plain parser is 1MB. The immediate fix
+raised =http_server_options::max_body_size= to 256MB so the upload is
+merely *accepted*, but that's a bound on how much can be buffered in
+memory per upload, not a fix for the buffering itself. At compute
+publishing's actual scale (a handful of admin-triggered engine
+publishes, not concurrent high-throughput traffic) a bounded in-memory
+buffer is an acceptable interim trade-off, but the buffering approach
+won't scale gracefully if uploads grow larger or more frequent, and
+streaming to disk is the more correct long-term shape for this
+endpoint regardless.
+
+* References
+
+- =projects/ores.http/api/src/net/http_session.cpp= (=http_session::run()=)
+- =projects/ores.http/api/include/ores.http.api/net/http_server_options.hpp=
+  (=max_body_size=)
+- =projects/ores.http/core/src/routes/storage_routes.cpp= (=handle_put=/=handle_get=)
+- =projects/ores.storage/src/net/http_client.cpp= (client-side =file_body=
+  streaming already in place for GET)
+
+* See also
+
+- [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Task: Design and build ACME compute package publishing (client lib, shell, Qt)]]

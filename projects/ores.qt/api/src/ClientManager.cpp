@@ -288,6 +288,12 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                           .business_center_code = QString::fromStdString(ps.business_center_code)});
         }
 
+        // Cached for later in-session party switching (Switch Party menu
+        // action) -- see availableParties()/defaultPartyId() doc comments
+        // for the "captured at login, not re-fetched" caveat.
+        available_parties_ = available_parties;
+        default_party_id_ = default_party_id;
+
         arm_refresh_timer(response.access_lifetime_s);
 
         // Discover HTTP base URL via authenticated NATS service discovery.
@@ -430,10 +436,48 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id, const QStrin
         arm_refresh_timer(result->access_lifetime_s);
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString()
                                   << (result->party_setup_required ? " (setup required)" : "");
+        emit partyChanged();
         return true;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "selectParty failed: " << e.what();
+        return false;
+    }
+}
+
+bool ClientManager::switchParty(const boost::uuids::uuid& party_id, const QString& party_name) {
+    BOOST_LOG_SEV(lg(), info) << "Switching party: " << party_name.toStdString();
+
+    try {
+        iam::messaging::switch_party_request request{.party_id = boost::uuids::to_string(party_id)};
+        auto result = process_authenticated_request(std::move(request));
+
+        if (!result || !result->success) {
+            BOOST_LOG_SEV(lg(), warn) << "switchParty: server rejected party switch";
+            return false;
+        }
+
+        if (!result->token.empty()) {
+            auto auth = session_.auth();
+            ores::nats::service::nats_client::login_info updated_auth = auth;
+            updated_auth.jwt = result->token;
+            if (!result->party_name.empty())
+                updated_auth.tenant_name = result->party_name;
+            session_.set_auth(updated_auth);
+        }
+
+        current_party_id_ = party_id;
+        current_party_name_ = party_name;
+        last_party_setup_required_ = result->party_setup_required;
+        last_party_setup_warning_ = QString::fromStdString(result->party_setup_warning);
+        arm_refresh_timer(result->access_lifetime_s);
+        BOOST_LOG_SEV(lg(), info) << "Party switched: " << party_name.toStdString()
+                                  << (result->party_setup_required ? " (setup required)" : "");
+        emit partyChanged();
+        return true;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "switchParty failed: " << e.what();
         return false;
     }
 }

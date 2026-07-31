@@ -144,6 +144,7 @@ private slots:
     void onAboutTriggered();
     void onMyAccountTriggered();
     void onMySessionsTriggered();
+    void onSwitchPartyTriggered();
     void onDetachAllTriggered();
     void onDetachableWindowCreated(DetachableMdiSubWindow* window);
     void onDetachableWindowDestroyed(DetachableMdiSubWindow* window);
@@ -247,6 +248,7 @@ private:
     DetachableMdiSubWindow* shellWindow_{nullptr};
     DetachableMdiSubWindow* mySessionsWindow_{nullptr};
     DetachableMdiSubWindow* myAccountWindow_{nullptr};
+    QAction* switchPartyAction_{nullptr};
     DetachableMdiSubWindow* aboutSubWindow_{nullptr};
     DetachableMdiSubWindow* helpViewerWindow_{nullptr};
 

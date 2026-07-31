@@ -390,6 +390,27 @@ public:
     }
 
     /**
+     * @brief Every party this session's account is associated with, as
+     * captured at login time -- for re-opening PartyPickerDialog to
+     * switch party mid-session, so a multi-party account (e.g.
+     * tenant_admin) isn't stuck with whichever party login happened to
+     * select. Not re-fetched from the server afterwards, so a party
+     * grant made after login won't appear here until the next login.
+     */
+    const std::vector<PartyInfo>& availableParties() const {
+        return available_parties_;
+    }
+
+    /**
+     * @brief The account's stored default party from login, if any (nil
+     * if unset). See availableParties() for the same "captured at login,
+     * not re-fetched" caveat.
+     */
+    boost::uuids::uuid defaultPartyId() const {
+        return default_party_id_;
+    }
+
+    /**
      * @brief Returns true if the currently selected party is the system party.
      */
     bool isSystemParty() const {
@@ -423,9 +444,23 @@ public:
     }
 
     /**
-     * @brief Select a party for the current session.
+     * @brief Select a party immediately after login.
+     *
+     * Only valid on the special, single-use token the login flow issues
+     * before a party is chosen -- calling this again later, on a normal
+     * session token, is rejected by the server. Use switchParty() to
+     * change party mid-session instead.
      */
     bool selectParty(const boost::uuids::uuid& party_id, const QString& party_name);
+
+    /**
+     * @brief Change which party the current session is scoped to,
+     * mid-session (i.e. after login/party selection already completed).
+     *
+     * See selectParty()'s doc comment and switch_party_request's own
+     * (account_protocol.hpp) for why this is a separate call.
+     */
+    bool switchParty(const boost::uuids::uuid& party_id, const QString& party_name);
 
     /**
      * @brief Process a request that does not require authentication.
@@ -698,6 +733,16 @@ public:
 signals:
     void connected();
     void loggedIn();
+    /**
+     * @brief Emitted after selectParty() successfully re-scopes the
+     * session to a different party (whether during the login flow's own
+     * party picker, or a later in-session switch). Party-scoped windows
+     * that want to stay current should reload their data when this fires;
+     * MainWindow itself does not force-refresh every open window, so a
+     * window that doesn't listen simply keeps showing the previous
+     * party's data until closed and reopened.
+     */
+    void partyChanged();
     void disconnected();
     void reconnecting();
     void reconnected();
@@ -856,6 +901,8 @@ private:
     boost::uuids::uuid current_party_id_;
     QString current_party_name_;
     QString current_party_category_;
+    std::vector<PartyInfo> available_parties_;
+    boost::uuids::uuid default_party_id_;
     bool last_party_setup_required_ = false;
     QString last_party_setup_warning_;
 

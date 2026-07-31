@@ -39,9 +39,11 @@ PartyPickerDialog::PartyPickerDialog(const std::vector<PartyInfo>& parties,
                                      const std::vector<boost::uuids::uuid>& recent_ids,
                                      ClientManager* clientManager,
                                      ImageCache* imageCache,
-                                     QWidget* parent)
+                                     QWidget* parent,
+                                     bool is_switch)
     : QDialog(parent)
     , clientManager_(clientManager)
+    , is_switch_(is_switch)
     , imageCache_(imageCache)
     , parties_(parties)
     , recent_ids_(recent_ids) {
@@ -411,7 +413,9 @@ void PartyPickerDialog::onOkClicked() {
         return;
     }
 
-    if (!clientManager_->selectParty(selectedId_, selectedName_)) {
+    const bool ok = is_switch_ ? clientManager_->switchParty(selectedId_, selectedName_)
+                               : clientManager_->selectParty(selectedId_, selectedName_);
+    if (!ok) {
         MessageBoxHelper::critical(this,
                                    "Party Selection Failed",
                                    "The server rejected the party selection. Please try again.");

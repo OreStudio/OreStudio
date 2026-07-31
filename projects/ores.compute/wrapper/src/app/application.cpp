@@ -28,6 +28,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.utility/crypto/sha256.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect_pipe.hpp>
@@ -486,6 +487,15 @@ void process_assignment(ores::nats::service::client& nats,
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
             net::http_client::download(make_url(cfg.http_base_url, evt.package_uri), pkg_archive);
+
+            const auto actual_sha256 =
+                ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
+            if (actual_sha256 != evt.package_sha256) {
+                throw std::runtime_error(
+                    "Package SHA256 mismatch for " + evt.app_version_id + ": expected " +
+                    evt.package_sha256 + ", got " + actual_sha256 +
+                    " -- refusing to run a corrupted or tampered package");
+            }
 
             fs::create_directories(pkg_cache_dir);
             ores::compute::wrapper::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);

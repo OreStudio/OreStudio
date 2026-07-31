@@ -149,6 +149,7 @@ public:
                         .workunit_id = wu_id_str,
                         .app_version_id = av_id_str,
                         .package_uri = avp.package_uri,
+                        .package_sha256 = avp.sha256,
                         .input_uri = req->workunit.input_uri,
                         .config_uri = req->workunit.config_uri,
                         .output_uri =

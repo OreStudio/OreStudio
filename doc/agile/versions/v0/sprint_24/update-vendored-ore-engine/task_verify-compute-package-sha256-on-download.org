@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :update-vendored-ore-engine:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/verify-compute-package-sha256-on-download
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,11 +43,11 @@ tampered package.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -128,6 +128,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added a =sha256= column to =ores_compute_app_version_platforms_tbl=
+(SQL create + junction =.org= model, hand-applied to the C++ layer
+since this junction's codegen output had already drifted well beyond
+this task's scope -- filenames, field set, and types no longer match
+what a fresh regen would produce; a full realignment is a separate,
+future concern, not folded into this task). =storage_routes::handle_put=
+now hashes the uploaded body server-side (new reusable
+=ores::utility::crypto::sha256= helper, backed by OpenSSL EVP, with a
+streaming file-hashing overload for the wrapper side) and returns it
+in the response. =work_assignment_event= carries a new
+=package_sha256= field, threaded through from
+=app_version_platform.sha256= at dispatch
+(=workunit_handler.hpp=). =ores.compute.wrapper= hashes the downloaded
+package archive and refuses to extract/run on mismatch, with a
+specific error message. =compute_ore_app_seed.sql= seeds the real
+sha256 from =external/ore/packages/manifest.json=. Verified via a full
+=db recreate= (schema + seed apply cleanly) and via
+=ores.utility.tests= (new =crypto_sha256_tests.cpp=, including a
+known-answer test against a public SHA256 test vector) plus a full
+build of every touched library/executable
+(=ores.utility=, =ores.http.core=, =ores.compute.api/core/wrapper=).
 
 * Promoted from capture
 

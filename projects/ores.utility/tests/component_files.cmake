@@ -19,6 +19,7 @@
 set(files
     "convert_base32_converter_tests.cpp"
     "convert_base64_converter_tests.cpp"
+    "crypto_sha256_tests.cpp"
     "domain_hierarchy_tests.cpp"
     "faker_internet_tests.cpp"
     "faker_totp_tests.cpp"

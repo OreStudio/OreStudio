@@ -32,6 +32,7 @@ create table if not exists "ores_compute_app_version_platforms_tbl" (
     "app_version_id"      uuid not null,
     "platform_id"         uuid not null,
     "package_uri"         text not null,
+    "sha256"              text not null,
     "modified_by"         text not null,
     "performed_by"        text not null,
     "change_reason_code"  text not null,

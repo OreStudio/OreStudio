@@ -77,6 +77,24 @@ matching their own ORES_PLATFORM_TRIPLET at dispatch time.
 std::string(faker::internet::url())
 #+end_src
 
+** sha256
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+SHA256 checksum of the per-platform packaged bundle, computed
+server-side by the storage API when the bundle was uploaded.
+
+Verified by ores.compute.wrapper against the downloaded archive before
+extraction, to detect a truncated download, a corrupted upload, or a
+tampered package.
+
+#+begin_src cpp :name generator
+std::string(faker::crypto::sha256())
+#+end_src
+
 * SQL
 
 ** Flags
@@ -94,6 +112,11 @@ std::string(faker::internet::url())
 :END:
 
 * C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
 
 ** Domain includes
 
@@ -122,6 +145,7 @@ std::string(faker::internet::url())
 | app_version_id | App Version |
 | platform_id    | Platform    |
 | package_uri    | Package URI |
+| sha256         | SHA256      |
 | modified_by    | Modified By |
 | version        | Version     |
 

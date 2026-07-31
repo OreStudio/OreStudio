@@ -20,6 +20,7 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.utility/crypto/sha256.hpp"
 #include <filesystem>
 #include <fstream>
 #include <set>
@@ -130,7 +131,8 @@ asio::awaitable<http_response> storage_routes::handle_put(const http_request& re
 
     try {
         write_file(path, req.body);
-        co_return http_response::json(R"({"success":true})");
+        const auto sha256 = ores::utility::crypto::sha256::hex_digest(req.body);
+        co_return http_response::json(R"({"success":true,"sha256":")" + sha256 + R"("})");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "PUT error: " << e.what();
         co_return http_response::internal_error(e.what());

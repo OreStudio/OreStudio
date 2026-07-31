@@ -26,6 +26,7 @@
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/service/systemd_notify.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/use_future.hpp>
@@ -68,6 +69,7 @@ void run_wt_impl(ores::nats::service::client& nats,
     std::thread io_thread([&io_ctx]() { io_ctx.run(); });
 
     BOOST_LOG_SEV(lg, info) << "Service ready.";
+    notify_systemd_ready();
 
     // Phase 3: hand control to Wt; blocks until WServer::waitForShutdown().
     wt_setup_fn();

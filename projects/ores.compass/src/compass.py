@@ -6423,6 +6423,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "services":
         import compass_services
         sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "systemd":
+        import systemd_generate
+        sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "client":
         import compass_services
         sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 34E28952-57DD-446F-91B3-1ED02E3B7F7B
+:END:
+#+title: Task: Generate Quadlet (podman) units for remote hosts from the same dependency graph
+#+description: Extend the systemd-units generator (systemd_generate.py) with a second renderer that reads the same service_definition/service_dependency tables and emits Quadlet .container units for podman/remote hosts (e.g. Newton), reusing the After=/Requires= ordering already derived for the plain-systemd path -- one source of truth, two renderers. Wrap the units in a per-environment .target the same way. Add bash+SSH tooling to render and copy the units to the remote host's ~/.config/containers/systemd/ and run systemctl --user daemon-reload && start there. The podman side's --sdnotify=healthy reuses the HEALTHCHECK from the IAM pilot task (PR #1787). Depends on the plain-systemd generator work landing first.
+#+type: task
+#+level: s1
+#+filetags: :systemd:podman:split-services-into-per-service-containers:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

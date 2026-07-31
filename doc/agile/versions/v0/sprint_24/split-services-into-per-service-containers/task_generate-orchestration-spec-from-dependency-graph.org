@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 22287ABA-E21F-4B52-87A0-AB887C618203
 :END:
-#+title: Task: Generate per-environment systemd units (native + Quadlet) from service_dependency
-#+description: A generator that reads the DB-driven service_definition/service_dependency tables and emits systemd unit files for both supported deployment modes -- plain systemd template units (native binaries, --user scope, EnvironmentFile pointing at that environment's .env) for local dev machines, and Quadlet .container units (podman) for remote hosts like Newton -- with After=/Requires= for ordering and a per-environment .target aggregating NATS + every service so a whole environment starts/stops as one unit (e.g. `systemctl --user start ores@swift_curie.target`). Supersedes process_supervisor/ores.controller.service entirely, which is decommissioned once this lands.
+#+title: Task: Generate per-environment plain-systemd units from service_dependency
+#+description: A generator that reads the DB-driven service_definition/service_dependency tables and emits concrete, per-environment systemd units (native binaries, --user scope, EnvironmentFile pointing at that environment's .env) for local dev machines, with After=/Requires= for ordering and a per-environment .target aggregating NATS + every service so a whole environment starts/stops as one unit (e.g. `systemctl --user start ores-swift_curie.target`). Deliberately not systemd *template* units ('%i') -- an earlier design using '%i' hit a real systemd specifier-expansion bug when resolving a compound-instance dependency; see the task's Notes. Scope narrowed to the local/plain-systemd path only: Quadlet (podman/remote) rendering is tracked separately as "Generate Quadlet (podman) units for remote hosts", and decommissioning process_supervisor/ores.controller.service as "Decommission ores.controller.service and process_supervisor" -- both follow once this lands.
 #+type: task
 #+level: s1
 #+filetags: :split-services-into-per-service-containers:sprint_24:v0:
@@ -20,88 +20,110 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Systemd becomes the single orchestration substrate for both supported
-deployment modes, replacing ~process_supervisor~/
-~ores.controller.service~ entirely (confirmed to have no
-responsibilities beyond process supervision -- no other NATS handlers
-exist on the controller, so nothing else needs preserving):
+Systemd becomes the local orchestration substrate for the native/dev
+deployment mode (Quadlet/podman for remote hosts and decommissioning
+~process_supervisor~/~ores.controller.service~ are tracked separately
+-- see "Out of scope" below):
 
-- *Local (plain systemd, dev machines)*: one systemd *template* unit
-  per service binary (e.g. ~ores.iam.service@.service~), instantiated
-  per environment via ~%i~ (e.g. ~ores.iam.service@swift_curie~).
-  ~ExecStart=~ points directly at that environment's
-  ~build/output/<preset>/publish/bin/<binary>~; ~EnvironmentFile=~
-  points at that environment's own ~.env~. User-level (~systemctl
-  --user~), not system-level -- matches every other per-checkout dev
-  convention (ports, NATS subject prefix, DB name all already keyed by
-  environment label). ~ores.compute.wrapper@swift_curie~ instantiated
-  5x for its hot replicas (all independent, all subscribing to the
-  same NATS queue group -- no leader/passive concept needed).
-- *Remote/podman (Newton)*: the same dependency graph rendered as
-  Quadlet ~.container~ units instead (still systemd under the hood),
-  wrapped the same way in a per-environment ~.target~; bash+SSH
-  tooling renders and copies the units to the remote host's
-  ~~/.config/containers/systemd/~ and runs
-  ~systemctl --user daemon-reload && start~ there.
-- *Both modes*: a single generator reads ~service_definition~/
-  ~service_dependency~ once and renders ~After=~/~Requires=~ between
-  the generated units for whichever backend is targeted -- one source
-  of truth, two renderers. A per-environment ~.target~
-  (~ores@<env>.target~) aggregates NATS + every service instance via
-  ~Wants=~/~After=~, so ~systemctl --user start/stop ores@<env>.target~
-  starts/stops an entire environment (e.g. "swift_curie") in one
-  command. ~systemctl --user status ores@<env>.target~ shows the
-  aggregate status of every unit in that environment "for free" (real
-  systemd units, no bespoke status tooling needed); likewise
-  ~journalctl --user -u 'ores.*@swift_curie*'~ (or a single service's
-  own unit name) gives standard log access with no extra plumbing.
+- One *concrete* systemd unit per (service, environment) pair (e.g.
+  ~ores.iam.service-swift_curie.service~), fully resolved at
+  generation time from that environment's own ~.env~ -- not a
+  template unit instantiated via systemd's ~%i~ specifier. An earlier
+  design used ~%i~, including a compound instance name for
+  ~ores.compute.wrapper~'s 5 hot replicas, and hit a real systemd
+  specifier-expansion bug when resolving a dependency on that compound
+  instance; see the Notes below for the full incident and why concrete
+  units were chosen instead. ~ExecStart=~ points directly at that
+  environment's ~build/output/<preset>/publish/bin/<binary>~;
+  ~EnvironmentFile=~ points at that environment's own ~.env~.
+  User-level (~systemctl --user~), not system-level -- matches every
+  other per-checkout dev convention (ports, NATS subject prefix, DB
+  name all already keyed by environment label, and now the unit names
+  themselves). ~ores.compute.wrapper~ gets 5 concrete units
+  (~-1~ through ~-5~) for its hot replicas, each with a literal
+  replica index/host-id/work-dir baked in (all independent, all
+  subscribing to the same NATS queue group -- no leader/passive
+  concept needed).
+- The generator reads ~service_definition~/~service_dependency~ once
+  and renders ~After=~/~Requires=~ between the generated units. A
+  per-environment ~.target~ (~ores-<env>.target~) aggregates NATS +
+  every service instance via ~Wants=~, so ~systemctl --user
+  start/stop ores-<env>.target~ starts/stops an entire environment
+  (e.g. "swift_curie") in one command. ~systemctl --user status
+  ores-<env>.target~ shows the aggregate status of every unit in that
+  environment "for free" (real systemd units, no bespoke status
+  tooling needed); likewise ~journalctl --user -u
+  'ores*-swift_curie*'~ (or a single service's own unit name) gives
+  standard log access with no extra plumbing.
+- =compass systemd generate= renders the units; =compass systemd
+  deploy= actually installs them into ~~/.config/systemd/user/~ and
+  reloads the user manager, so the generator is usable end-to-end
+  without manual copy/reload steps.
 - *Readiness gating*: add ~sd_notify(READY=1)~ to ~ores.service~'s
   runner right where it already logs "Service ready." (small,
   idiomatic, no new dependency) so systemd's own ~After=~ waits for
-  actual readiness in both modes, not just process-start; the podman
-  side's ~--sdnotify=healthy~ reuses the ~HEALTHCHECK~ from the IAM
-  pilot task.
+  actual readiness, not just process-start.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
 
 - A generator reads ~service_definition~/~service_dependency~ and
-  renders both: (a) plain systemd template units for native/local use,
-  and (b) Quadlet ~.container~ units for podman/remote use -- from the
-  same DB read, no hand-editing either output.
-- ~systemctl --user start ores@<env>.target~ starts NATS plus every
+  renders concrete, per-environment systemd units for native/local
+  use, with no hand-editing of the output. VERIFIED: 25 units
+  generated for swift_curie (19 singleton services, 5
+  ~ores.compute.wrapper~ replicas, NATS, target).
+- =compass systemd deploy= installs the generated units into
+  ~~/.config/systemd/user/~ (sync-if-changed, reload only when
+  something changed) with no manual copy/reload step required.
+  VERIFIED live.
+- ~systemctl --user start ores-<env>.target~ starts NATS plus every
   service for that environment, in dependency order, confirmed via a
-  real multi-service startup (at minimum IAM before one of its
-  dependents) that ~ores.iam.service@<env>~ is genuinely ~active
-  (running)~ before a dependent unit starts, not just process-launched.
-  ~stop~ on the same target stops the whole environment.
+  real multi-service startup that ~ores.iam.service-<env>~ is
+  genuinely ~active (running)~ (its own ~sd_notify(READY=1)~ received)
+  before ~ores.refdata.service-<env>~ (one of its dependents) starts,
+  not just process-launched -- confirmed via journal timestamps.
+  ~stop~ on the same target stops the whole environment. VERIFIED
+  live: full 25-unit fleet started in one command, stopped cleanly.
 - Changing a dependency edge in the DB and re-running the generator
-  changes the emitted ordering in both outputs, with no code change.
-- ~ores.compute.wrapper@<env>~ runs as 5 concurrent hot instances via
-  systemd template instantiation, verified via ~systemctl --user
-  status 'ores.compute.wrapper@*'~.
+  changes the emitted ordering, with no code change.
+- ~ores.compute.wrapper-<env>-1~ through ~-5~ run as 5 concurrent hot
+  instances, verified via ~systemctl --user list-units
+  'ores.compute.wrapper-<env>-*'~ -- all ~active (running)~
+  simultaneously.
 - ~ores.service~'s runner emits ~sd_notify(READY=1)~ at the same point
   it logs "Service ready.", and a dependent unit's ~After=~ genuinely
-  waits for that (not just for the process to start) -- verified by
-  introducing an artificial startup delay in a dependency and
-  confirming the dependent doesn't start early.
-- ~ores.controller.service~ and ~process_supervisor~ are removed from
-  the build/deploy path (decommissioned, not just unused).
-- ~systemctl --user status ores@<env>.target~ shows every service in
+  waits for that (not just for the process to start) -- verified via
+  real IAM -> refdata journal timestamps (see above); the artificial
+  startup-delay variant of this check was not additionally run.
+- ~systemctl --user status ores-<env>.target~ shows every service in
   that environment and its state; ~journalctl --user -u
   <unit-name>~ (single service) and a target-wide equivalent both
   show that service's real log output, with no separate log-file
   convention needed on top of what systemd already captures.
+
+* Out of scope
+
+- Quadlet/podman rendering for remote hosts (Newton) -- tracked as
+  "Generate Quadlet (podman) units for remote hosts from the same
+  dependency graph".
+- Decommissioning ~ores.controller.service~/~process_supervisor~ --
+  tracked as "Decommission ores.controller.service and
+  process_supervisor", to follow once both the plain-systemd and
+  Quadlet paths are verified.
+- The broader resource-management/cgroup-limits work (per-environment
+  Claude slices, compass services onto systemctl, build admission
+  control) -- tracked in the sibling story "Systemd resource
+  management and per-environment isolation".
 
 * Plan
 
@@ -110,6 +132,75 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+** RESOLVED: switched from systemd template units ('%i') to concrete per-environment units
+
+While verifying this task on 2026-07-31, live testing wedged the
+=systemctl --user= manager (spinning CPU, unresponsive) *twice*,
+requiring two session-wide restarts. Three distinct bugs were found
+and fixed in sequence; only the third was the actual root cause of
+the wedge. Recorded here in full so the investigation isn't repeated.
+
+1. *Quoting collision (real bug, not the wedge cause).*
+   =render_wrapper_unit='s =ExecStart=/bin/sh -c '{shell_cmd}'= wrapped
+   the command in an *outer single-quoted* string, but the embedded
+   Python one-liner computing =host_id= also used single quotes
+   internally. Systemd's ExecStart parser splits on *any* single
+   quote it sees, with no nesting/escaping, silently truncating the
+   command -- =ores.compute.wrapper@<env>-N= exited immediately with
+   status 2. Fixed en route to the real fix below (moot once the
+   wrapper stopped being a shell one-liner at all -- see point 3).
+2. *No restart-storm limit (contributing factor, not the wedge
+   cause).* =Restart=always=/=RestartSec=2= with no
+   =StartLimitIntervalSec=/=StartLimitBurst= meant bug #1 became an
+   infinite restart loop, not a bounded one. Fixed: every generated
+   unit now carries =StartLimitIntervalSec=60=/=StartLimitBurst=5=, so
+   a genuinely broken unit lands in =failed= after 5 restarts/minute.
+   Good practice regardless of what caused the wedge.
+3. *The actual root cause, confirmed independently of any live
+   manager state.* =render_target='s =Wants== line and
+   =render_wrapper_unit='s compound instance name both relied on
+   systemd's =%i= template-instancing specifier, including a
+   *compound* instance name (=<env>-<replica>=, e.g.
+   ="swift_curie-1"=) for the 5 =ores.compute.wrapper= replicas.
+   Resolving a =Wants== dependency on that compound-instance unit hit
+   a real systemd specifier-expansion bug: the instance's own =-N=
+   suffix got re-appended onto itself, snowballing into a
+   pathologically long, corrupted unit name
+   (=ores.compute.wrapper@env-5-5-5-5-...-5.service=, hundreds of
+   repeats, "Argument list too long" in the journal). Confirmed with
+   =systemd-analyze --user verify= alone -- a command that spawns its
+   own *private, throwaway* manager instance and touches nothing
+   live -- which hit the identical corruption using systemd's own
+   synthetic =%i= placeholder (="test_instance"=) for verifying a
+   template with no instance given. That ruled out every "don't touch
+   the manager while X" theory: the bug is in resolving the unit
+   files' own content, not in command sequencing or timing.
+
+   *Fix*: stopped using systemd template units (=%i=) entirely.
+   =systemd_generate.py= now renders *concrete*, fully-resolved units
+   -- one file per (service, environment) pair, e.g.
+   =ores.iam.service-swift_curie.service=,
+   =ores.compute.wrapper-swift_curie-1.service= .. =-5.service=, target
+   =ores-swift_curie.target= -- with the environment, preset, and (for
+   the wrapper) replica index/host-id/work-dir all baked in as
+   literals at generation time. Nothing left for systemd to expand or
+   re-expand, so the whole bug class is structurally impossible now,
+   not just less likely. Verified end-to-end after the rewrite:
+   =systemd-analyze --user verify= on the full generated set (exit 0,
+   no output), then every unit started individually, then the full
+   fleet via =systemctl --user start ores-swift_curie.target= in one
+   command (25 units, IAM's =sd_notify(READY=1)= genuinely gating
+   =ores.refdata.service='s start per journal timestamps), then a
+   clean =stop=, manager healthy throughout.
+
+   *Trade-off accepted*: units are no longer shared across
+   environments -- each checkout now runs its own =compass systemd
+   generate && compass systemd deploy=. Acceptable: every other
+   per-checkout convention (ports, DB name, NATS prefix) already works
+   this way, and =compass systemd deploy='s cleanup step only ever
+   touches this environment's own =*-<env>*= units, never another
+   checkout's.
 
 * Test Scenarios
 
@@ -135,3 +226,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =compass systemd generate=/=compass systemd deploy=
+(=projects/ores.compass/src/systemd_generate.py=), rendering concrete,
+per-environment systemd units from ~service_definition~/
+~service_dependency~ -- one file per (service, environment) pair, no
+~%i~ templating -- plus ~sd_notify(READY=1)~ wired into
+~ores.service~'s three runner variants
+(=domain_service_runner_impl.hpp=, =signing_service_runner_impl.hpp=,
+=wt_service_runner.hpp=) via a new =ores.service/service/systemd_notify=
+helper.
+
+All narrowed acceptance criteria verified live against swift_curie: 25
+units generated and deployed; every unit started individually
+(including the 5 ~ores.compute.wrapper~ replicas); the full fleet
+started in one command via ~ores-swift_curie.target~ with real
+dependency ordering (IAM's ~sd_notify~ genuinely gating
+~ores.refdata.service~'s start, confirmed via journal timestamps); a
+clean ~stop~; the manager healthy throughout the final verification
+pass. =systemd-analyze --user verify= on the full generated set: exit
+0, no output.
+
+Two real bugs were found and fixed during verification (a shell
+quoting collision, and systemd's own ~$VAR~ expansion intercepting
+shell-only variables), and a third issue -- the actual root cause of a
+systemd specifier-expansion bug that wedged the ~systemctl --user~
+manager twice during testing -- led to abandoning template units
+(~%i~) in favour of the concrete-unit design landed here. Full
+incident writeup in the Notes above.
+
+Local build clean (=linux-clang-debug-make=); =ctest= 73/74 suites
+passed (99%), 428393/428426 assertions passed. The one failing suite
+(=ores.ore.core.tests=, FX exotic-mapper quant tests, 18/478 cases) is
+unrelated to this change -- nothing here touches the quant/analytics
+domain -- and pre-dates this branch.
+
+Out of scope, tracked as follow-up tasks/story: Quadlet/podman
+rendering, ~ores.controller.service~/~process_supervisor~
+decommissioning, and the broader per-environment resource-management
+work (new story "Systemd resource management and per-environment
+isolation").

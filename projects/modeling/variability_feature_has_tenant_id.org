@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: A7223BE6-4D0F-47CE-8E31-9D896D970CB3
+:END:
+#+title: Feature: has_tenant_id
+#+description: Tenant-scoping: emits a tenant_id uuid not null column and matching domain field, isolating rows by tenant.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:has_tenant_id:= |
+| Bundle | structural ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) |
+| Type | bool |
+| Default | true |
+
+* Effect
+
+Tells the generator to emit a =tenant_id uuid not null= column and matching domain-struct field, isolating the entity's rows by tenant.
+
+* Structural consequence
+
+Yes — adds a =tenant_id= column/field. Omit only for genuinely global entities (currencies, countries).
+
+* Used by
+
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]]
+- [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]]
+- [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
+- [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+- [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]]
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:masd:physical_model:technical_space:codegen:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-07-31
 
 This document is the index of ORE Studio's [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical space]] — the concrete
 instantiation of the MASD [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]] hierarchy across every language
@@ -41,17 +41,35 @@ shows /who owns what/; the TS model shows /how it is generated/.
 
 * ORE Studio technical spaces
 
+Facet/archetype counts below are read directly off the =ores physical-space
+graph= node docs (=ores.cpp.org=, =ores.sql.org=, =ores.cmake.org=,
+=ores.doc.org=) — the generated ground truth — not hand-counted; re-derive
+them the same way if this table ever needs re-verifying.
+
 | Technical Space | Codegen | [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facets]] | Archetypes | Detail |
 |-----------------+---------+--------+------------+--------|
-| [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]]             | ✓       | 9      | 57         | Domain, generator, repository, messaging, service, Qt, component, model types, table |
-| [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]             | ✓       | 3      | ~26        | Schema DDL, service users, reference data population |
-| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][CMake]]           | ✓       | 1      | 8          | Component build targets (root, src variants, tests, modeling) |
-| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Assets]]          | ✓       | 1      | 4          | Qt Designer forms, PlantUML ER diagram, shell service vars |
-| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Doc]]             | ✓       | 1      | 20         | Agile docs, knowledge docs, skills, recipes, runbooks, entity models |
+| [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++]]             | ✓       | 15*    | 58*        | Component, domain, enum, field-group, generator, 4× NATS, presentation, protocol, Qt, repository, service, service-app |
+| [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL]]             | ✓       | 3      | 20         | Schema DDL, service users, reference data population |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][CMake]]           | ✓       | 2      | 7          | Component build targets (root/src/tests/modeling), service variant |
+| [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Doc]]             | ✓       | 4      | 28         | Agile, knowledge, modeling (entity docs), template scaffolds |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Emacs Lisp]]      | —       | —      | —          | =ores.lisp=, =ores.compass= — manually authored |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Python]]          | —       | —      | —          | =ores.codegen= — the generator itself |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][JavaScript]]      | —       | —      | —          | =ores.org-js= — agile dashboard |
 | [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][XML / FPML]]      | —       | —      | —          | =ores.fpml= — FPML financial product data |
+
+*=ores.cpp.presentation= (2 archetypes) is functionally real — confirmed
+generating =<entity>_history_field_mapper.hpp/cpp= — but is not listed in
+=ores.cpp.org='s own Facets table, so it is unreachable by the graph
+traversal that node doc says codegen uses (root → TS → facet →
+archetype). This is a gap in the generated physical-space graph itself,
+not just documentation; flagged here rather than silently omitted or
+silently included in the un-starred total. Needs a fix in
+=ores.cpp.org= (or whatever regenerates it) to add the missing row.
+
+*Assets is retired as a standalone TS* — its former templates were absorbed
+into =ores.cpp.qt=, =ores.plantuml=, and =ores.shell=; see [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical
+Spaces]] § "Assets Technical Space (retired)" for where each one now lives.
+Removed from this table rather than left as a row with stale counts.
 
 * Physical Metamodel in ORE Studio
 
@@ -59,7 +77,9 @@ The [[id:787A7429-71D5-4295-829B-A9B56275B1F8][PMM]] is instantiated by two comp
 
 - The [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — each facet node's Archetypes table maps a
   [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] name to the Mustache templates that belong to it; read directly
-  by =generator.py= (no intermediate JSON).
+  by =codegen/core.py= (no intermediate JSON; see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+  Model]] § "The test" for the =src/generator.py= → =codegen/*.py= file
+  split).
 - =projects/ores.codegen/library/templates/= — the archetype catalogue,
   where each =.mustache= file is one archetype within a facet. The
   directory layout mirrors the TS→Part→Facet hierarchy.

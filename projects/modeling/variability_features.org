@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 82394CFF-712C-45FF-84A5-6ED17A990568
+:END:
+#+title: Variability Features
+#+description: Index of authored MASD features — the canonical detail page for each, grouped by bundle.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+* Summary
+
+Index of every authored MASD feature in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] §
+"Projection configuration: how an existing artefact family is shaped".
+Each feature is its own document —
+identity (bundle, type, default), effect, structural consequence, and
+which [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] fix its value — so no other document restates a
+feature's effect; they link here. Grouped by bundle below, matching the
+Variability Model's own bundle tables.
+
+* Features
+
+** Structural ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]])
+
+- [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]]
+- [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]]
+
+** =ores.sql.schema=
+
+- [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]]
+- [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]]
+- [[id:3E6A84D4-50B5-420E-909F-D3763823A89B][extra_checks]]
+- [[id:CBA5E1E2-AFD9-4968-8878-9C6825839890][extra_delete_sets]]
+- [[id:F96D0CE0-0CFA-4250-9633-A1B6980E041B][soft_fk_validations]]
+- [[id:311F35DA-C2A0-425B-B226-7FDEF492A989][fk_copy_validations]]
+- [[id:57D55D45-AA9A-48CD-8A23-A4738368279B][text_code_validations]]
+- [[id:A34AC026-6173-4FE3-932E-C7E1C7266C99][party_id_from_book_id]]
+- [[id:DDB365AA-E27A-42EA-84E2-1B316106363E][party_id_from_session]]
+- [[id:D466F848-C158-4CCE-9BE1-4F1614504032][tablename]]
+
+** =ores.cpp.qt=
+
+- [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] (master switch)
+- [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]]
+- [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]]
+- [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]]
+- [[id:9D8D1849-D721-47D1-B477-95058D1FAC32][has_explorer_api]]
+- [[id:A12F591B-DF0E-4112-8457-550FA9323DDF][parent_entity_singular]]
+- [[id:74EB0234-97F3-459C-8806-5A979B9E5A22][has_csv_xml_io]]
+- [[id:9D8F9705-CC94-4AC6-A9E2-399ADD23BC44][has_export_macro]]
+- [[id:5A843D4A-2FF7-4410-8B70-A29FD01622FD][has_version_navigation]]
+- [[id:03B0BC19-6E54-4D1C-8E2B-08484A9AB3A0][has_readonly_paginated_list]]
+- [[id:75B418EA-E1D1-46AB-8FB3-02C76C1EC020][has_parent_scoped_list]]
+- [[id:C8455D8F-0CD3-4AE5-92EA-C9A88C29973A][parent_key_field]]
+- [[id:60FB16A9-F3CD-46B3-92B3-0E836CED0B0E][parent_key_param]]
+
+** =licence=
+
+- [[id:517ECD5B-D168-4A1D-AE35-C21B334B5185][cpp_license]]
+- [[id:C8129304-F3B1-4111-8033-145BC1B632DC][sql_license]]
+- [[id:E5C090C8-3532-427B-AE1B-8D52160A80DF][cmake_license]]
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundles this index groups by.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — named combinations of these features.

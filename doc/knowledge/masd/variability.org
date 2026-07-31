@@ -7,8 +7,31 @@
 #+level: cross
 #+filetags: :masd:variability:codegen:profiles:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-07-31
 #+startup: inlineimages
+
+This page occupies a deliberately narrow place in the documentation as
+a whole: it is the glossary, not the record. Everything below is drawn
+from MASD and its Dogen reference implementation as a methodology in
+the abstract, independent of any product that happens to adopt it, and
+the discipline that governs what may appear here follows directly from
+that: a sentence belongs on this page only if it would remain true were
+ORE Studio to be rewritten from scratch in an entirely different
+generator, on an entirely different stack. Nothing here, in
+particular, may name an actual feature, an actual file, or an actual
+configuration value drawn from ORE Studio's own code generator — the
+moment a claim depends on how /this/ product happens to have
+instantiated the concept, it has left the territory this page covers
+and belongs instead in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]], the sibling document
+where the concrete feature catalogue is kept, where the =ores.*=
+activation graph is described in its real, present-day shape, and
+where the citations into the code generator's actual source live —
+and, consequently, where drift between what the documentation claims
+and what the generator actually does is noticed and corrected. A
+reader who wants to know what a /feature/ or a /profile/ /is/, in the
+sense the methodology gives those words, should read on here; a reader
+who wants to know what ORE Studio's own features and profiles /are/,
+concretely, should turn to that sibling document instead.
 
 MASD separates /what to generate/ (the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][logical]] and [[id:787A7429-71D5-4295-829B-A9B56275B1F8][physical]] models) from /how
 it is configured/ (the variability model). In MASD the word /variability/ is
@@ -44,6 +67,44 @@ MASD builds on Feature Modelling, simplified:
 #+caption: Figure 38 (Dogen): a fragment of the feature bundles defined within the LMM. Source: [[https://mcraveiro.github.io/dogen/docs/domain_architecture.html][Domain Architecture]].
 #+attr_html: :alt A fragment of MASD feature bundles.
 [[proj:assets/images/masd/masd_variability_value.png]]
+
+* Distinguishing a feature from a computed predicate
+
+Not every value a generator's templates branch on is a feature, and
+the distinction matters more than it first appears: conflating the two
+is precisely what causes a variability model to rot into an
+unreliable, half-duplicated shadow of the logical model it is supposed
+to stay independent of. The operational test is mechanical, not a
+matter of judgement. A /feature/ is a configuration point the model's
+author sets and the generator merely /reads through/, unchanged, to
+decide how to render an otherwise-fixed logical entity — nobody
+computes its value; a human chooses it. A /computed, or structural,
+predicate/, by contrast, is a value the generator itself derives from
+other facts already present in the logical model — some combination of
+the entity's own attributes, keys, or types — and no human ever
+authors it directly; it is a /consequence/ of structure, not a choice
+about projection, and so belongs to the logical model, not the
+variability model.
+
+The test survives a subtlety that trips up a naive reading of it: a
+feature whose effect is to add a field, a column, or a class member to
+the generated output can still look structural, because what it
+produces plainly is. It is not, and the distinction is not about what
+a feature produces but about how its value came to be. Structure is
+measured strictly by what appears in the generated type system — the
+classes, structs, fields, and methods a facet emits — and a feature is
+never itself one of those things: authoring a feature's value produces
+no field, method, or class named after the feature anywhere in the
+generated code. It is only an internal signal the generator consults
+to decide whether to branch into the template logic that emits some
+structural element, nothing more. That decision, and every feature
+like it, is non-structural variability, full stop, whether it goes on
+to add a field to the type system or only changes template behaviour
+that never touches the type system at all, such as a naming convention
+or a cosmetic default. The resulting field or column, once emitted, is
+of course a structural fact about that particular entity — but the
+fact and the feature that decided it belong to two different models:
+the fact is logical, the feature is variability.
 
 * Profiles
 

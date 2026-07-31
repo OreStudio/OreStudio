@@ -7,232 +7,141 @@
 #+level: cross
 #+filetags: :modeling:masd:variability:codegen:profiles:
 #+created: 2026-06-07
-#+updated: 2026-07-16
+#+updated: 2026-07-31
 
-This document describes how [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD variability]] is instantiated in ORE
-Studio's code generator. For the underlying concepts — features, profiles,
-configuration scopes, and the Variability Metamodel (VMM) — see
-[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]]. For the templates that variability acts on, see [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] and the
-per-TS documents ([[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]], [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]],
-[[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]).
+Within [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], the /Variability Metamodel/ (VMM) is the fourth of the
+methodology's four metamodels — alongside the [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Metamodel]], the
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Metamodel]], and the [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][Codec Metamodel]] — and it is the one concerned
+specifically with *non-structural* variability: the dimension of a code
+generator's behaviour along which a fixed logical model can still be
+projected in more than one way, because some aspect of the projection
+was left as a choice for the model's author rather than fixed by the
+model's shape. Where the Physical Metamodel defines the full space of
+/which artefacts could exist/ — the complete TS→Part→Facet→Archetype
+geometry, fixed for the product — the VMM decides, for a given entity,
+which of those possible artefacts actually /do/ exist (an archetype can
+be switched off entirely) and, for each one that does, /how/ it is
+rendered. Both are non-structural: neither changes the entity's logical
+shape, only whether and how that fixed shape is projected. This
+document describes how that abstract metamodel is instantiated
+concretely in ORE Studio's own code generator — which features exist,
+what each one does, and how the two responsibilities the VMM assigns
+to any of its instantiations (enabling parts of the physical space, and
+configuring how an enabled part is projected) are actually discharged
+here. For the underlying, product-agnostic concepts the instantiation
+below draws on — feature, feature bundle, profile, binding point,
+configuration scope — see [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]], which stays deliberately silent on
+anything specific to this product. For the templates that variability
+acts upon, see [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] and the per-TS documents ([[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]], [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL
+Technical Space]], [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical Spaces]]).
 
-* What variability is — and is not
+* Non-structural variability in ORE Studio
 
-MASD reserves /variability/ for *non-structural* variability:
-configuration that does *not* change the object graph, only how a fixed
-graph is projected into physical artefacts. Structural differences —
-different entities, attributes, keys, types — are the job of the
-*logical model*, not the variability model. Keeping the two apart is the
-single most important discipline in this document; conflating them is
-what makes a variability model rot into a second, shadow copy of the
-entity model.
+This document is the catalogue: the concrete answer to which features
+ORE Studio's code generator actually recognises, what each one does,
+and how the two responsibilities [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] assigns to any VMM
+instantiation — activation and projection configuration — are
+discharged here specifically. For the abstract distinction between
+non-structural variability and structure, and for the mechanical test
+that tells a genuine feature apart from a value the generator merely
+computes, see [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] § "Distinguishing a feature from a computed
+predicate"; that distinction is the single most important discipline
+this document follows, and is not restated here.
 
-The VMM has *two* responsibilities, and this document is organised around
-them:
+ORE Studio discharges the VMM's two responsibilities as follows:
 
 1. *Physical-space activation* — enabling and disabling regions of the
    physical space: which facets (and therefore which templates) are
    generated for a given model. ORE Studio realises this with the
    [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] (root → technical space → facet →
-   archetype), which superseded the retired =facet_catalogue.org=
-   monolith.
+   archetype).
 2. *Projection configuration* — tuning /how/ an enabled projection
    renders a fixed entity: naming, extensions, and feature toggles. ORE
-   Studio realises this with a catalogue of *authored knobs* on the
-   model — the =sql.*=, =qt.*= and licence features below.
+   Studio realises this with a catalogue of *authored features* on the
+   model — the =ores.sql.schema=, =ores.cpp.qt= and licence features below.
 
-An earlier version of this document covered only responsibility (1) and
-concluded that ORE Studio "does not represent features." That was wrong:
-the features are responsibility (2) — the authored knobs — and they had
-simply not been catalogued. The bulk of this document is that catalogue.
+Both responsibilities are authored the same way, mechanically: as
+key-value pairs in an org-mode /property drawer/ — the =:PROPERTIES:
+... :END:= block org-mode allows immediately under any heading, holding
+metadata that is distinct from, and never rendered as part of, that
+heading's own prose body. ORE Studio's entity model files use this
+mechanism pervasively, and everywhere this document shows a
+=:some_property: value= line, it is this mechanism it is pointing at.
+A model file's top-level heading carries the property drawer that
+activation reads — its =ores.*= bindings, introduced below — and each
+facet-specific section of the same file, its =SQL= heading, its =Qt=
+heading, carries its own property drawer of the projection-configuration
+features that facet's own templates read. =org_loader.py= parses these
+drawers directly when it loads a model; a feature's authored value lives
+nowhere else in the file, and nowhere else in the toolchain.
 
-** The test: authored knob vs computed predicate
+* Telling variability from structure
 
-Templates branch on a large number of mustache section tags. Only some
-of them are variability. The mechanical test — verifiable by reading
-=src/generator.py= — is:
+Applying the abstract test to a concrete generator requires knowing
+where to look, and it is worth being precise about that: the operative
+source is =projects/ores.codegen/src/codegen/core.py=, =org_loader.py=,
+and the =library/templates/*.mustache= templates themselves. What
+actually distinguishes a feature from a computed predicate, though, is
+not which file happens to consult its value — it is the direction the
+value travels. A feature's value flows from the model's author to the
+generator unchanged, a plain read-through with no computation in
+between; a computed predicate's value flows the other way, derived by
+the generator from other facts the entity already carries, with no
+human choice involved at all. That distinction does not always show up
+as a Python accessor a reader can grep for, which is itself worth
+knowing before hunting for one: several features are never touched by
+name in =core.py= or =org_loader.py=, and are read instead purely by
+Mustache's own dotted-path section lookup, direct off the parsed
+model — =domain_entity.qt.has_change_reason_cache=, for instance,
+resolves entirely inside the template, with no corresponding
+Python-side =.get()= call to find. A computed predicate, by contrast,
+always shows up as a derivation in the source: =table['has_tenant_in_pk']=
+is set from =has_tenant_id= together with a check on =system_scope=,
+and =field['is_uuid']= is set from the column's own declared type — in
+both cases the generator is computing something from facts the entity
+already has, not consulting a choice its author made. Predicates of
+this kind are catalogued separately, under [[*Excluded: structural
+predicates][Excluded: structural predicates]], precisely so a reader
+is never tempted to read one of them as configuration.
 
-- A *feature* (variability) is a knob the *model file authors* and the
-  generator *reads through* (=section.get('flag')=). Nobody computes it;
-  a human sets it to tune the projection.
-- A *structural predicate* (not variability) is a value the generator
-  *computes* from other, already-known facts about the entity
-  (=table['has_tenant_in_pk'] = has_tenant_id and not
-  sql_section.get('system_scope')...=, =field['is_uuid'] = type ==
-  'uuid'=). It is a /consequence/ of the structure, not a choice about
-  projection. These belong to the logical model and are listed under
-  [[*Excluded: structural predicates][Excluded: structural predicates]] so they are never mistaken for
-  configuration.
+The pair =:has_tenant_id:= and =:has_workspace_id:= (documented on
+[[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) is the case where this test is easiest to apply
+wrongly, and working through it in full is instructive precisely
+because of that. Both properties look exactly like computed predicates
+at first glance: setting either one causes a real =tenant_id=/
+=workspace_id= column to appear in the generated table, and a reader
+who equates "produces a column" with "is structural" will file them
+under Excluded without checking further. That equation is exactly the
+mistake the abstract test exists to prevent — structure is measured by
+where a value came from, not by what it goes on to produce. Read
+against the generator's actual source, both properties are read
+straight off the model's frontmatter, with nothing more than a default
+applied (=bool(table.get('has_tenant_id', True))=); no other fact about
+the entity feeds into that value. They are therefore genuine, authored
+features by the test's own definition, however structural their
+consequence looks, and are documented on Keys and columns rather than
+under Excluded. The instructive contrast is =has_tenant_in_pk=, which
+looks similar on the surface but fails the test in exactly the way
+=has_tenant_id= passes it: its value is computed from =has_tenant_id=
+together with other already-known facts, never authored directly, and
+it is correctly excluded as a result.
 
-The test above is necessary but, read alone, invites a mistake: a
-knob whose effect is to add a field or column — =:has_tenant_id:=,
-say — looks structural, because what it produces (a =tenant_id=
-column) plainly is. It is not. Structure is measured strictly by what
-appears in the generated type system: the classes, structs, fields,
-and methods a facet emits. A knob is never itself one of those
-things — authoring =:has_tenant_id: true= in an entity model's Flags
-drawer produces no field, method, or class named =has_tenant_id=
-anywhere in the generated code. It is an internal variable the
-generator reads (=domain_entity.get('has_tenant_id', False)= in
-=core.py=) to decide *whether* to branch into the template logic that
-emits a =tenant_id= column, nothing more. That decision, and every
-knob like it, is non-structural variability, full stop — whether it
-goes on to add a field to the type system (=:has_tenant_id:=) or only
-changes template behaviour that never touches the type system at all
-(a naming convention, a cosmetic default). The resulting field or
-column, once emitted, is of course a structural fact about that
-particular entity — but the fact and the knob that decided it belong
-to different models: the fact is logical, the knob is variability.
+* Activation: an authored feature at facet granularity
 
-=:has_tenant_id:= and =:has_workspace_id:= (documented on [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
-columns]]) are exactly this case, and were previously misclassified
-below as computed structural predicates — checked against
-=core.py=/=org_loader.py=, both are read straight from the model's
-frontmatter, with a default applied (=bool(table.get('has_tenant_id',
-True))=), not derived from any other fact about the entity. They are
-genuine features and are removed from the exclusion table below.
-=has_tenant_in_pk=, by contrast, /is/ correctly excluded: it is
-computed from =has_tenant_id= together with other already-known
-facts, never authored directly.
+An entity's =ores.*= property-drawer bindings are a genuinely authored
+feature, no different in kind from anything the projection-configuration
+catalogue below defines — an entity's author declares which technical spaces, facets, or
+individual archetypes apply to it. Everything about how that
+declaration is then resolved at build time — CLI address syntax, the
+target-set/supported-set intersection, model-type filtering, and which
+facets exist under which technical space — is physical-space addressing
+mechanism, not itself an authored per-entity choice, and is documented
+in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "Address resolution: the physical-space graph and
+element-scope binding".
 
-* Part 1 — Physical-space activation (the ores.* graph)
+** The supported set ($S_e$)
 
-ORE Studio does not maintain a formal VMM data structure for activation.
-Instead, the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under
-=projects/ores.codegen/library/templates/= serves as the *Profile
-Metamodel (PMM)*: one node per technical space (=ores.cpp.org=, ...),
-fanning out to facet nodes (=ores.cpp.qt.org=, ...), each carrying an
-=* Archetypes= table mapping every archetype to its output path and
-profile membership.
-
-*Historical note:* this activation catalogue previously lived as a
-single flat file, =facet_catalogue.org=, parsed directly by
-=generator.py= via =_load_profiles_from_org()=. That file and function
-were retired once the ores.* graph above fully absorbed its content
-(story: [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system]]). The =--profile= CLI flag
-that named those legacy profiles has since been removed outright (task
-B11) — =--address= against the =ores.*= graph is now the only
-selector. The "Profile catalogue" table below is kept as a historical
-map from each retired profile name to its current facet address, for
-readers translating old commands or docs.
-
-There is no feature graph and no inheritance chain in the activation
-layer. The simplicity is deliberate: ORE Studio's physical space is small
-enough that a flat catalogue is maintainable and legible for both humans
-and LLMs.
-
-** Model types — the scope filter
-
-In MASD's VMM, feature values are set at product / component / element
-scope. In ORE Studio the primary scope filter for activation is the
-*model type* — a tag that classifies each model file and controls which
-facet's archetypes can apply to it. A facet's =model_types= list acts as
-the filter: only a model whose type appears in that list is a valid
-target for the facet.
-
-Model type is derived from the filename suffix (JSON route) or the
-=#+type:= frontmatter field (org-mode route):
-
-| Model type       | Filename suffix          | Org frontmatter type           | What it represents |
-|------------------+--------------------------+--------------------------------+--------------------|
-| =domain_entity=  | =*_domain_entity.json=   | =ores.codegen.entity=          | Bi-temporal C++ entity with full SQL + C++ stack |
-| =schema=         | =*_entity.json=          | =ores.codegen.entity=          | SQL-only schema entity (legacy JSON route) |
-| =junction=       | =*_junction.json=        | =ores.codegen.junction=        | SQL junction (many-to-many) table |
-| =component=      | —                        | =ores.codegen.component=       | Component scaffold (CMakeLists, stubs, export macros) |
-| =field_group=    | —                        | =ores.codegen.field_group=     | Nested value struct (no DB mapping) |
-| =enum=           | —                        | =ores.codegen.lookup_entity=   | C++ enum class with string conversion |
-| =service_registry= | —                      | =ores.codegen.service_registry= | DB service registration (users, grants, accounts) |
-| =data=           | —                        | —                              | PlantUML ER diagrams |
-
-This filter prevents, for instance, the =component= scaffold facet from
-inadvertently running against entity models, and the =domain= facet from
-running against SQL-only table models.
-
-** Profile catalogue (historical)
-
-All profiles defined in the (now-retired) =facet_catalogue.org= as of
-its last state, and later exposed as the deprecated =--profile= CLI
-shim (removed by task B11) — see the historical note above. Each name
-below maps 1:1 to the current facet address of the same purpose (e.g.
-=domain= → =ores.cpp.domain=, =sql= → =ores.sql.schema=; see
-the facet catalogue in [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for the full current mapping).
-The =all=/=all-cpp=/=non-temporal= composite aliases have no single
-address equivalent — use the relevant technical-space or root address
-(=ores.cpp=, =ores=) instead:
-
-| Profile | Model types | Templates | Description |
-|---------+-------------+-----------+-------------|
-| =domain= | schema, domain_entity | 7 | Domain struct (header-only), JSON I/O, libfort table adapter |
-| =generator= | schema, domain_entity | 2 | Test data generator (sample-value builder) |
-| =non-temporal-domain= | domain_entity | 3 | Non-temporal domain class + JSON I/O |
-| =repository= | schema, domain_entity | 6 | ORM entity, mapper, CRUD repository (temporal) |
-| =non-temporal-repository= | domain_entity | 6 | Read-only repository layer (non-temporal) |
-| =service= | schema, domain_entity | 2 | NATS entity service class |
-| =protocol= | domain_entity, schema | 1 | NATS messaging protocol types (header-only) |
-| =nats-eventing= | domain_entity, schema | 1 | NATS domain changed-event struct |
-| =nats-handler= | domain_entity, schema | 1 | NATS message handler class (header-only) |
-| =qt= | domain_entity | 12 | Qt MDI window, dialogs, controller, client model, =.ui= forms |
-| =sql= | domain_entity, junction, schema, table | 7 | SQL DDL: create, drop, notify trigger, junction, artefact |
-| =non-temporal-sql= | domain_entity | 1 | SQL schema for non-temporal (simple) tables |
-| =enum= | enum | 1 | C++ =enum class= with =to_string= / =from_string= |
-| =field-group= | field_group | 1 | Plain C++ value struct header |
-| =component= | component | 10 | Component scaffold: CMakeLists, export macros, stubs, tests |
-| =component-api= | component | 10 | API sub-project scaffold |
-| =component-core= | component | 10 | Core sub-project scaffold |
-| =component-service= | component | 19 | Service sub-project: executable entry point, full service wiring |
-| =service-registry= | service_registry | 5 | DB service registration: users, grants, IAM accounts, roles |
-| =plantuml= | schema, data | 1 | PlantUML ER diagram |
-| =all= | domain_entity | 0 | Composite: all facets for a bi-temporal domain entity |
-| =all-cpp= | schema, domain_entity | 0 | Composite: all C++ facets (domain + repo + service + protocol + generator) |
-| =non-temporal= | domain_entity | 0 | Composite: all artefacts for non-temporal entities |
-
-Profiles with 0 templates are *composite aliases* — they exist as named
-shortcuts for CLI use. The generator resolves them by running the
-constituent profiles in sequence. The alias itself carries no templates;
-the resolution logic is in =src/generator.py=.
-
-** Address activation
-
-Generation is scoped at invocation time via the CLI's =--address=:
-
-#+begin_src sh
-./projects/ores.codegen/codegen.sh generate \
-  --component refdata \
-  --address ores.cpp.domain
-#+end_src
-
-Omitting =--address= generates the entity's full supported set (every
-facet its model type and =ores.*= drawer overrides admit); giving an
-address restricts the run to the facets under that physical-space
-subtree. See [[*Element-scope activation — the supported/target set model]] below
-for the full address hierarchy, specificity resolution rules, and
-target/supported-set semantics.
-
-*Component scope* is handled by =src/codegen/manifest.py=: the manifest
-maps component names to their model discovery roots (=models_dir= for
-legacy JSON models; =modeling_dir= for org-mode model files). It does
-not assign a default address — that is always either omitted (full
-supported set) or given explicitly by the developer, a [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]], or a
-compass recipe.
-
-*Product scope* — a MASD concept meaning activation applies across the
-whole product — is expressed by a technical-space or root address
-(=ores.cpp=, =ores=) and by [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-facet
-invocations into a single command.
-
-*Element scope* — individual entities can enable or disable specific technical
-spaces, facets, or archetypes via =ores.*= properties in their =:PROPERTIES:=
-drawer. See [[*Element-scope activation — the supported/target set model]] for the full
-address hierarchy, specificity resolution rules, and examples.
-
-** Element-scope activation — the supported/target set model
-
-Physical space is a *set of sets*: technical-space → facet → archetype. Two named sets govern
-what generates for each entity in each run:
-
-*** Supported set (S_e)
-
-The *supported set* S_e is what entity =e= is capable of generating. It is declared in the
+The *supported set* $S_e$ is what entity $e$ is capable of generating. It is declared in the
 entity's =:PROPERTIES:= drawer via =ores.*= properties, following Dogen's convention
 (=:masd.cpp.enabled:=, =:masd.csharp.enabled:=):
 
@@ -244,9 +153,11 @@ entity's =:PROPERTIES:= drawer via =ores.*= properties, following Dogen's conven
 :END:
 #+end_src
 
-The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=:
+The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled=
+— see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] § "Address" for what an address is and how it addresses
+a point in physical space:
 
-| Address | Scope | Effect on S_e |
+| Address | Scope | Effect on $S_e$ |
 |---------+-------+---------------|
 | =:ores.sql.enabled: false= | technical space | removes all SQL facets |
 | =:ores.cpp.enabled: false= | technical space | removes all C++ facets |
@@ -254,65 +165,35 @@ The address hierarchy is =ores.{technical_space}[.{facet}[.{archetype}]].enabled
 | =:ores.cpp.domain.class_header.enabled: false= | archetype | removes one archetype |
 
 *Specificity resolution*: more-specific addresses override less-specific ones (depth-first).
-=:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= → S_e = all C++ except Qt — mirrors
+=:ores.cpp.enabled: true= + =:ores.cpp.qt.enabled: false= $\to S_e =$ all C++ except Qt — mirrors
 Dogen's property resolution exactly.
 
-Entities with no =ores.*= properties: S_e = all archetypes matching the model-types filter
-(backward-compatible; existing models need no change).
+Entities with no =ores.*= properties: $S_e$ is every archetype the
+model-type filter admits — see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] for how a CLI invocation's
+target set is resolved against $S_e$ to decide what actually generates
+in a given run.
 
-*** Target set (T) and generation set
+* Projection configuration: how an existing artefact family is shaped
 
-The *target set* T is what to generate in this particular run. Default: T = S_e. The optional
-CLI =--address= argument overrides T:
+Once a facet is activated, its projection is tuned by *features* —
+authored configuration points the model file sets and the generator
+reads through. They are grouped into [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][feature bundles]], one per facet
+(plus a cross-facet licence bundle). Each bundle is a cohesive
+"variability entity": a named set of features that configure one
+projection, corresponding one-to-one with the facet whose rendering it
+tunes — the =ores.sql.schema= bundle below configures exactly what the
+=ores.sql.schema= facet produces, and likewise for =ores.cpp.qt=. The
+=licence= bundle is the one exception, and deliberately so: licence
+decoration is not tied to any single facet's own semantics, so it
+stays a cross-facet bundle rather than living inside one.
 
-#+begin_src sh
-# T = S_e — generate everything the entity supports
-./projects/ores.codegen/codegen.sh generate --component refdata
-
-# T = all sql archetypes
-./projects/ores.codegen/codegen.sh generate --component refdata --address sql
-
-# T = all cpp.qt archetypes
-./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
-#+end_src
-
-=--profile= is removed. The entity's =ores.*= binding IS the profile definition; =--address=
-is a generation-time filter, never an expansion.
-
-*What generates* for entity =e= = *T ∩ S_e*.
-- T ∩ S_e = ∅: warning "=<entity>=: nothing to generate for address =<addr>=="; run continues.
-- =--address= value unknown (not in facet catalogue): error.
-
-*** Technical-space to facet map
-
-The TS→facet map now lives in each technical space's own =* Facets=
-table in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] (e.g. =ores.cpp.org=,
-=ores.sql.org=); this table reflects the mapping as it stood in the
-retired =facet_catalogue.org=:
-
-| Technical space | Member facets |
-|-----------------+---------------|
-| =sql= | =sql=, =non-temporal-sql= |
-| =cpp= | =domain=, =generator=, =repository=, =service=, =protocol=, =nats-eventing=, =nats-handler=, =qt=, =non-temporal-domain=, =non-temporal-repository= |
-
-All supported/target set logic lives in =codegen/physical_space.py= — isolated from dispatch
-code and covered by a dedicated test suite (=tests/test_physical_space.py=). This is
-deliberately complex logic; it must not be diffused across multiple modules.
-
-* Part 2 — Projection configuration (the feature catalogue)
-
-This is the part the previous document omitted. Once a facet is
-activated, its projection is tuned by *features* — authored knobs the
-model file sets and the generator reads through. They are grouped into
-*feature bundles*, one per facet (plus a cross-facet licence bundle).
-Each bundle is a cohesive "variability entity": a named set of features
-that configure one projection.
-
-The features below are exactly those that pass the [[*The test: authored knob vs computed predicate][authored-knob test]] —
-every one is read (never computed) in =src/generator.py=, and none of them
-adds or removes a logical attribute. Where a knob has a structural
-/consequence/ (e.g. tenant-scoping changes a column's nullability) it is
-flagged; those are candidates to migrate into the logical model proper.
+Every feature below passes [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] § "Distinguishing a feature from
+a computed predicate" — each is read, never computed, in the generator
+(§ "Telling variability from structure" above names which files), and none
+of them adds or removes a logical attribute on its own account. Where a
+feature has a structural /consequence/ (e.g. tenant-scoping changes a
+column's nullability) it is flagged; those are candidates to migrate
+into the logical model proper.
 
 ** Bundle: =licence= (cross-facet decoration)
 
@@ -326,73 +207,98 @@ cannot change the object graph.
 | =sql_license= | template/string | SQL facets | Licence comment block at the top of generated SQL |
 | =cmake_license= | template/string | Build facet | Licence comment block at the top of generated CMake |
 
-** Bundle: =masd.sql= (SQL projection configuration)
+** Bundle: =ores.sql.schema= (SQL projection configuration)
 
 Authored on the model's =sql= section; all read through in
-=generator.py= (never computed). These tune the generated DDL, triggers
-and rules for a fixed entity.
+=codegen/core.py=/=org_loader.py= (never computed). These tune the
+generated DDL, triggers and rules for a fixed entity. Full narrative,
+worked examples, and the tenant-scoping-is-a-policy note: [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity
+meta-model — SQL]] § "Projection configuration (variability)" — this
+table is the cross-facet index only.
 
-| Feature | Type | Default | Effect |
-|---------+------+---------+--------|
-| =system_scope= | bool | false | Table is system-tenant-scoped: =tenant_id= defaults to the system tenant and the insert trigger forces it. *Structural consequence:* changes the =tenant_id= column default. |
-| =nullable_tenant_id= | bool | false | =tenant_id= is nullable (system records carry NULL); selects the nullable-tenant validation and index variants. *Structural consequence:* changes =tenant_id= nullability. |
-| =security_definer= | bool | false | Emit =SECURITY DEFINER set search_path= on the trigger function. |
-| =extra_checks= | collection<string> | ∅ | Additional =CHECK= constraints to emit on the table. |
-| =extra_delete_sets= | collection<string> | ∅ | Extra =SET= clauses in the soft-delete rule. |
-| =soft_fk_validations= | collection<struct> | ∅ | Soft foreign-key validations to emit in the insert trigger. |
-| =fk_copy_validations= | collection<struct> | ∅ | FK validations that also copy/denormalise fields from the referenced row. |
-| =text_code_validations= | collection<struct> | ∅ | FK validations against a text lookup column. |
-| =party_id_from_book_id= | struct | absent | Derive and validate =party_id= / =portfolio_id= from =book_id= in the trigger. |
-| =party_id_from_session= | bool | false | Set =party_id= from the session GUC =app.current_party_id=. |
-| =tablename= | string | derived | Override the generated table name. |
+| Feature | Type | Default |
+|---------+------+---------|
+| =system_scope= | bool | false |
+| =nullable_tenant_id= | bool | false |
+| =extra_checks= | collection<string> | ∅ |
+| =extra_delete_sets= | collection<string> | ∅ |
+| =soft_fk_validations= | collection<struct> | ∅ |
+| =fk_copy_validations= | collection<struct> | ∅ |
+| =text_code_validations= | collection<struct> | ∅ |
+| =party_id_from_book_id= | struct | absent |
+| =party_id_from_session= | bool | false |
+| =tablename= | string | derived |
 
-*Tenant-scoping is a policy, not three booleans.* =system_scope= and
-=nullable_tenant_id= are mutually exclusive with the default
-(standard-tenant) mode; together they form a single enumerated feature —
-tenant-scoping policy ∈ {standard, system, nullable}. They are the
-clearest example of structural-leaning configuration: authored as knobs,
-but with consequences on the schema shape. If they migrate anywhere, it
-is into the logical model as a tenant-scoping attribute.
+** Bundle: =ores.cpp.qt= (Qt projection configuration)
 
-** Bundle: =masd.qt= (Qt projection configuration)
+Authored on the model's =qt= section, read through in =codegen/core.py=
+and, for several knobs, directly by Mustache's dotted-path section lookup
+in the =library/templates/cpp_qt_*.mustache= templates (no explicit Python
+=.get()= call at all — see § "The test" above). These configure the Qt
+projection — window chrome, presentation and binding — without touching
+the domain object graph. (The many /computed/ =qt.*= values —
+=detail_fields=, =required_fields=, =has_badge_columns=, =domain_class=,
+=metadata_start_row=, the =is_*= widget predicates — are *not* features;
+see [[*Excluded: structural predicates][Excluded]].) Full narrative, the silent-omission failure mode, and a
+worked example: [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — C++ Qt]] — this table is the
+cross-facet index only.
 
-Authored on the model's =qt= section, read through in =generator.py=.
-These configure the Qt projection — window chrome, presentation and
-binding — without touching the domain object graph. (The many /computed/
-=qt.*= values — =detail_fields=, =required_fields=, =has_badge_columns=,
-=domain_class=, =metadata_start_row=, the =is_*= widget predicates — are
-*not* features; see [[*Excluded: structural predicates][Excluded]].)
+| Feature | Type | Default |
+|---------+------+---------|
+| =has_pagination= | bool | false |
+| =has_uuid_primary_key= | bool | false |
+| =has_change_reason_cache= | bool | false |
+| =has_explorer_api= | bool | false |
+| =parent_entity_singular= | string | (unset) |
+| =has_csv_xml_io= | bool | false |
+| =has_export_macro= | bool | false |
+| =has_version_navigation= | bool | false |
+| =has_readonly_paginated_list= | bool | false |
+| =has_parent_scoped_list= | bool | false |
+| =parent_key_field=/=parent_key_param= | string | required if =has_parent_scoped_list= |
+| =window_title=/=icon=/=settings_group=/=collection_name=/=key_field=/=columns= | string/collection | derived |
+| naming/binding knobs | string | derived |
 
-| Feature | Type | Default | Effect |
-|---------+------+---------+--------|
-| =has_pagination= | bool | false | Emit pagination controls in the list view |
-| =has_uuid_primary_key= | bool | (set) | Client treats the PK as a uuid for id handling |
-| =has_change_reason_cache= | bool | false | Controller constructor accepts a =ChangeReasonCache*= parameter; each detail-dialog creation site (add, edit, open-version, revert) calls =setChangeReasonCache= before wiring the dialog. Set to =true= for entities whose detail dialogs require a reason for every mutation. |
-| =has_explorer_api= | bool | false | Controller exposes public =openAdd()=, =openEdit(entity)=, =openHistory(entity)= so a sibling explorer window (e.g. a tree mixing this entity with another) can drive it from outside, instead of only reacting to its own list/detail windows. |
-| =parent_entity_singular= | string | (unset) | Only meaningful with =has_explorer_api=. Names another entity as this one's parent (e.g. book's parent is portfolio). Adds =openAddWithParent(boost::uuids::uuid parent<Pascal>Id)= and prefills that field when the add dialog opens nested under a parent explorer node. Assumes a =parent_<entity>_id= uuid column already exists on the domain entity. |
-| =window_title= | string | derived | MDI sub-window title |
-| =icon= | string | derived | Window / menu icon resource |
-| =settings_group= | string | derived | =QSettings= group for persisted view state |
-| =collection_name= | string | derived | Display name of the entity collection |
-| =key_field= | string | derived | Field used as the user-facing key in the GUI |
-| =columns= | collection | derived | Which columns the Qt views surface |
-| naming/binding knobs | string | derived | =item_var=, =domain_include=, =protocol_include= and the request-class names that bind the projection to the domain and protocol types |
+** Scaffold-only features (not generation-time features)
+
+=projects/ores.codegen/src/doc_generate.py='s =compass add entity_org
+--shape=/=--entity-<knob>= flags use a feature vocabulary
+(=ENTITY_ORG_KNOBS=) that only partly matches the feature catalogue above.
+Checked against =core.py=/=org_loader.py=/=library/templates/*.mustache=:
+
+- =has_parent_scoping= is read nowhere outside
+  =library/templates/doc_entity_org.org.mustache= itself — it only decides
+  which example boilerplate the scaffold pre-populates into a freshly
+  created model file, and has no effect at generation time on an entity
+  once authored. It is not a feature in the sense this document defines.
+- =has_foreign_keys=, =has_parent_id=, =has_insert_trigger_validations= as
+  literal boolean feature names are likewise not read as such by the
+  generator: =foreign_keys= and =insert_trigger= are structural
+  sections/lists derived from what the model author actually writes under
+  the =Foreign keys=/=Insert trigger= headings, not flags a generated
+  entity toggles independently of that content. The scaffold flags of the
+  same name only control which example heading/section the scaffold
+  writes into the new file.
+
+Not yet reconciled into a single vocabulary; tracked by
+[[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]].
 
 ** Excluded: structural predicates
 
 The following are the values templates branch on that are *not*
-variability. Every one is *computed* by =generator.py= from other,
+variability. Every one is *computed* by =codegen/core.py= from other,
 already-known facts about the entity — reflecting the structure of
 the types the facets will generate, not a choice about how to project
 them — so each is a structural fact, not a configuration choice. They
 are listed here so they are never re-imported into the variability
 model; their home is the logical model. =has_tenant_id=,
-=has_workspace_id=, and =has_display_order= — genuine authored
-features, all read verbatim from frontmatter with no derivation from
-other facts — do *not* belong on this list and were removed from it;
+=has_workspace_id=, and =has_display_order= are genuine authored
+features — all read verbatim from frontmatter with no derivation from
+other facts — and so do *not* belong on this list;
 =has_tenant_id=/=has_workspace_id= are documented on [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and
-columns]]. See § "The test: authored knob vs computed predicate"
-above. =has_image_id= and =has_coding_scheme= are split-personality:
+columns]]. See [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] § "Distinguishing a feature from a computed
+predicate" for the test applied here. =has_image_id= and
+=has_coding_scheme= are split-personality:
 for =domain_entity=/=table= models (the row below) they are genuinely
 computed in =core.py=; for =lookup_entity= models the *same-named*
 frontmatter key is instead read verbatim in =org_loader.py=
@@ -409,7 +315,67 @@ predicate. Which one applies depends on the model's metatype.
 | Scope predicates | =system_tenant_validation=, =use_system_tenant=, =use_no_tenant= | tenant scope of the entity |
 | Derived projection values | =detail_fields=, =required_fields=, =required_dynamic_combo_fields=, =domain_class=, =key_widget=, =metadata_start_row= | columns / fields of the entity |
 
-* Model files — the logical element
+* Profiles: naming a recurring configuration point
+
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] defines a /profile/ as "a bundle of configuration points
+that can be bound to logical elements... named after the ability they
+confer," composing Base → Component → Element scope. This entity's own
+=ores.*= facet address instantiates this at the activation half of the
+VMM. Profiles instantiate the other half: named bundles of *feature
+values* — the =ores.sql.schema=/=ores.cpp.qt= features above plus [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys
+and columns]]'s =has_tenant_id=/=has_workspace_id= — bound at element
+scope when authoring a new entity.
+
+This supersedes =projects/ores.codegen/src/doc_generate.py='s
+=ENTITY_ORG_SHAPE_PRESETS= (the =compass add entity_org --shape=
+presets: =simple-text-key=, =fk-scoped=, =hierarchical-composite=,
+=richest=, =timeseries=). That scheme sampled 5 points from the feature
+space and named each after whichever reference entity happened to sit
+there — the samples were never mutually exclusive (a self-referencing
+hierarchy and CSV/XML export + version navigation can genuinely
+co-occur; the old scheme just never sampled that combination) and two
+of the five features it toggled (=has_parent_scoping=, boolean-shaped
+=has_insert_trigger_validations=) turned out not to be real
+generation-time features at all (§ "Scaffold-only features" above).
+
+** The axes
+
+Rather than named archetypes, a profile is a point along independent
+axes — pick one value per axis, freely, with no exclusivity between
+axes. Each axis has a small, closed vocabulary:
+
+| Axis | Values | Composed from |
+|------+--------+----------------|
+| Tenancy scope | global / tenant / tenant-workspace | =has_tenant_id=, =has_workspace_id= ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) |
+| SQL tenant-scoping policy | standard / system-scoped / nullable-tenant | =system_scope=, =nullable_tenant_id= (=ores.sql.schema=; already an enumerated feature per the note above, not two independent booleans) |
+| Key shape | text-natural-key / uuid-surrogate-key | =has_uuid_primary_key= (=ores.cpp.qt=) |
+| Qt richness tier | none / basic / standard / rich | =has_qt= off, or on plus an increasing set of =has_change_reason_cache=/=has_pagination=/=has_csv_xml_io=/=has_version_navigation=/=has_explorer_api=/=has_export_macro= (=ores.cpp.qt=) |
+| List mode | full-crud / readonly-paginated | =has_readonly_paginated_list= (=ores.cpp.qt=) |
+| Parent relationship | none / explorer-child / parent-scoped-list | =parent_entity_singular=+=has_explorer_api=, or =has_parent_scoped_list=+=parent_key_field=+=parent_key_param= (=ores.cpp.qt=; the two are mutually exclusive with each other but each independent of every other axis here — =has_parent_scoped_list= is only meaningful paired with =readonly-paginated= above, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]) |
+
+Full effect of every feature referenced above: the =ores.sql.schema=/=ores.cpp.qt=
+bundle tables and their linked segment pages ([[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model
+— SQL]], [[id:483EBF89-6151-480E-8801-FC1ABB284A17][Codegen entity meta-model — C++ Qt]]) — this section names axis
+values, it does not redefine what they do. The axes are a conceptual
+map of the space for a human reader; the concrete profile docs below
+express their assignments as literal feature names, not axis labels —
+no translation layer between what a profile says and what a parser
+would read.
+
+** Profiles
+
+Each [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][profile]] is its own document, anchored to a real commissioned
+entity: [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] is the routing index. The catalogue is
+deliberately not exhaustive — a profile is added only once a genuinely
+new combination recurs across more than one entity; a profile
+catalogue with one member per row is just a list of entities wearing a
+costume.
+
+* Appendix
+
+Reference material: not part of the argument above, consulted as needed.
+
+** Model files — the logical element
 
 Each model file is ORE Studio's equivalent of a MASD /logical element/ —
 the entity that projects into physical artefacts via the generator. Two
@@ -426,36 +392,36 @@ authoring routes exist:
   and its org-roam cross-references in a single file — aligned with the
   [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] literate approach.
 
-The feature bundles of Part 2 are authored *on the model file* — in the
-=sql= / =qt= sections (JSON route) or the corresponding org headings
-(org-mode route). They travel with the element, which is why their
-natural scope is the element.
+The feature bundles catalogued above are authored *on the model file*
+— in the =sql= / =qt= sections (JSON route) or the corresponding org
+headings (org-mode route). They travel with the element, which is why
+their natural scope is the element.
 
-* Mapping from MASD VMM to ORE Studio
+** Mapping from MASD VMM to ORE Studio
 
 | MASD concept | MASD definition | ORE Studio equivalent |
 |--------------+-----------------+-----------------------|
-| Feature | Single configurable property (e.g. =masd.cpp.hash.enabled=) | An authored knob on the model: a =sql.*= / =qt.*= / licence feature (Part 2) |
-| Feature bundle | Cohesive group of features | =licence= / =masd.sql= / =masd.qt= bundles (Part 2) |
-| Profile | Named bundle of feature values + activation | Split: activation is an =ores.*= graph archetype entry (Part 1); feature values are authored per element (Part 2) |
+| Feature | Single configurable property (e.g. Dogen's generic =masd.cpp.hash.enabled=) | An authored feature on the model: a =ores.sql.schema= / =ores.cpp.qt= / licence feature |
+| Feature bundle | Cohesive group of features | =licence= / =ores.sql.schema= / =ores.cpp.qt= bundles |
+| Profile | Named bundle of feature values + activation | Split: activation is an =ores.*= facet address; feature values are authored per element |
 | Base profile | Product-wide defaults | A technical-space or root address (=ores.cpp=, =ores=) (activation only) |
 | Component profile | Per-component overrides | Component manifest (=manifest.py=) + explicit CLI invocation |
-| Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation (Part 1 element scope); authored =sql.*=/=qt.*= features for projection configuration (Part 2) |
-| VMM | Meta-model of the full configuration space | =ores.*= physical-space graph (activation) + the feature catalogue in Part 2 (configuration) |
+| Element profile | Per-element overrides | Individual model file: =ores.*= property-drawer bindings for activation; authored =ores.sql.schema=/=ores.cpp.qt= features for projection configuration |
+| VMM | Meta-model of the full configuration space | =ores.*= physical-space graph (activation) + the feature catalogue (configuration) |
 | Configuration scope | Product / Component / Element | Activation: explicit per invocation. Configuration: features are authored at element scope |
 
 The key difference from full MASD variability remains: ORE Studio has no
 intermediate /feature graph/ with inheritance and resolution. Activation
-selects templates directly (Part 1); features are flat knobs read at
-render time (Part 2). This keeps the system simple to maintain and to
-hand to an LLM, at the cost of the fine-grained, scoped per-feature
+selects templates directly; features are flat, read at render time with
+no scoped resolution chain. This keeps the system simple to maintain and
+to hand to an LLM, at the cost of the fine-grained, scoped per-feature
 resolution that a full VMM enables.
 
 * See also
 
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the MASD variability concept: features, profiles, VMM.
 - [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — the MASD facet concept the profiles activate.
-- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the applied overview, including the full ORE Studio facet catalogue.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — address resolution (CLI syntax, target/supported-set intersection, the technical-space-to-facet map) and the full ORE Studio facet catalogue.
 - [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] — TS/Part/Facet/Archetype index.
 - [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]] — C++ profile-to-facet mapping.
 - [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — SQL profile-to-facet mapping.

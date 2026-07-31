@@ -58,6 +58,8 @@ TYPE_TO_TEMPLATE = {
     "facet_group": "doc_facet_group.org.mustache",
     "technical_space": "doc_technical_space.org.mustache",
     "archetype": "doc_archetype.org.mustache",
+    "profile": "doc_profile.org.mustache",
+    "feature": "doc_feature.org.mustache",
 }
 
 # entity_org --shape presets: knob bundles sampled from a known-good
@@ -159,7 +161,7 @@ PARENTLESS_TYPES = {
     "capture", "memory", "release_notes", "investigation", "runbook",
     "entity_org", "field_group", "junction", "lookup_entity",
     "service_registry", "dataset_overview",
-    "facet", "facet_group", "technical_space", "archetype",
+    "facet", "facet_group", "technical_space", "archetype", "profile", "feature",
 }
 
 
@@ -468,6 +470,11 @@ def main(argv=None):
         if not args.title:
             args.title = "Service registry"
 
+    # profile and feature docs live in projects/modeling alongside
+    # variability_model.org.
+    if args.type in ("profile", "feature") and not args.parent_dir:
+        args.parent_dir = "projects/modeling"
+
     # facet and facet_group docs live with the templates they tangle.
     if args.type in ("facet", "facet_group") and not args.parent_dir:
         args.parent_dir = "projects/ores.codegen/library/templates"
@@ -751,6 +758,8 @@ def main(argv=None):
     # - junction:      <parent-dir>/ores.<component>.<slug>_junction.org
     # - lookup_entity: <parent-dir>/ores.<component>.<slug>_lookup_entity.org
     # - service_registry: <parent-dir>/service_registry.org
+    # - profile:   <parent-dir>/variability_<slug>.org
+    # - feature:   <parent-dir>/variability_feature_<slug>.org
     # - story / sprint / version: <parent-dir>/<slug>/<type>.org
     #   (these are composition nodes; they hold children)
     if args.type == "task":
@@ -795,6 +804,16 @@ def main(argv=None):
     elif args.type == "dataset_overview":
         out_dir = parent_dir
         out_file = out_dir / "dataset_overview.org"
+    elif args.type == "profile":
+        # Flat file, prefixed so it sorts and greps alongside
+        # variability_model.org, its conceptual parent.
+        out_dir = parent_dir
+        out_file = out_dir / f"variability_{args.slug}.org"
+    elif args.type == "feature":
+        # Same flat, prefixed convention as profile, one namespace level
+        # deeper so feature and profile docs don't collide by slug.
+        out_dir = parent_dir
+        out_file = out_dir / f"variability_feature_{args.slug}.org"
     elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",
                        "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The

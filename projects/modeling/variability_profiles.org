@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7
+:END:
+#+title: Variability Profiles
+#+description: Index of named element-scope MASD profiles — reusable variability-feature bundles a model binds to instead of authoring each feature individually.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+* Summary
+
+A /profile/ ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Profiles: naming a recurring configuration point") is a
+named, reusable bundle of variability-feature values a model file binds
+to instead of authoring each feature individually — guaranteeing a fixed,
+known-good combination with no ad hoc variation. Each profile is its
+own document, anchored to a real commissioned entity, with a literal
+=Feature | Value= assignments table any future parser can read directly.
+This page is the routing index; each row below links to the full
+profile doc. Not exhaustive by design — a profile is added only once a
+combination recurs across more than one entity, never invented in the
+abstract.
+
+* Profiles
+
+| Profile | Reference entity | Description |
+|---------+-------------------+-------------|
+| [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] | =country= | Text natural key, tenant-scoped, standard Qt tier, no relationships. |
+| [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]] | =book= | UUID surrogate key, tenant+workspace scope, basic Qt, explorer-child of a parent entity. |
+| [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]] | =counterparty= | UUID surrogate key, standard Qt tier, self-referencing =has_parent_id= tree. |
+| [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]] | =currency= | Text natural key, rich Qt tier: CSV/XML import-export, version navigation. |
+| [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]] | =market_observation= | No Qt, TimescaleDB hypertable, write-heavy measurement stream. |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles every profile composes from, and the concept this index instantiates.
+- [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the structural metamodel counterpart; a profile fixes variability, never structure.

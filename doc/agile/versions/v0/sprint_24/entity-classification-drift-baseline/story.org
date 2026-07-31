@@ -49,27 +49,45 @@ across the other ~19 components. The pilot validates the dimensions and the
 tool's accuracy cheaply; only once it is trusted on refdata does it get
 pointed at everything else.
 
-** Candidate classification dimensions
+** Classification dimensions (settled)
 
-To be confirmed/refined during the work, seeded from the checklist above:
+Grounded in the verified feature/profile catalogue ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio
+Variability Model]], [[id:82394CFF-712C-45FF-84A5-6ED17A990568][Variability Features]], [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]]) synced
+before this list was finalised — see the parent task's Notes for the
+full sync history. Each dimension states what it measures and, where
+applicable, exactly what the tool reads to compute it:
 
-- Component (=ores.refdata=, =ores.iam=, =ores.dq=, ... — all components,
-  not just the 6 the old matrix covers)
-- Tenancy scope (per-tenant / per-party / per-workspace / global)
-- Meta-type (domain entity vs auxiliary/lookup type)
-- Model format / legacy status (current =domain_entity= convention vs
-  legacy =lookup_entity= vs legacy top-level =Primary key= heading vs no
-  model at all)
-- Per-layer coverage (SQL, C++ domain, repository, service, messaging/JSON
-  IO, Qt, HTTP, CLI, Shell, Wt, manual chapter)
-- Codegen regen drift (does regenerating the model reproduce the checked-in
-  files byte-for-byte, or has the template moved on since last regen)
-- Hand-crafted vs paste-block discipline (are manual customisations captured
-  via paste markers, or raw edits to generated files that a regen would
-  clobber)
-- Compound vs single natural/primary key
-- Variability knob presence
-- Per-layer test coverage
+- *Component* — =ores.refdata=, =ores.iam=, =ores.dq=, ... (every
+  component with codegen models, not a fixed subset).
+- *Meta-type* — the model type the entity's =#+type:=/filename suffix
+  declares (=domain_entity=, =lookup_entity=/=enum=, =junction=,
+  =field_group=, =component=, =service_registry=; see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
+  "Model types").
+- *Profile match* — does the entity's actual feature-value combination
+  match one of the 5 named [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] exactly? If not, a feature-by-feature
+  diff against its nearest profile (by Hamming distance over the shared
+  feature set) — this is the dimension that turns "27 loose knobs" into
+  a single comparable signal per entity, and surfaces genuinely novel
+  combinations worth naming as a new profile rather than left as drift.
+- *Individual feature values* — for entities with no close profile
+  match, the raw value of every feature in the [[id:82394CFF-712C-45FF-84A5-6ED17A990568][catalogue]] (tenancy
+  scope via =has_tenant_id=/=has_workspace_id=, key shape via
+  =has_uuid_primary_key=, Qt surface via the =ores.cpp.qt= bundle, SQL
+  tenant-scoping policy via =system_scope=/=nullable_tenant_id=, etc.).
+- *Model format / legacy status* — current =domain_entity=/org-mode
+  convention vs legacy =lookup_entity= vs the legacy top-level =Primary
+  key= heading ([[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][task]]) vs no model at all (hand-written, uncatalogued).
+- *Per-layer coverage* — SQL, C++ domain, repository, service,
+  messaging/JSON IO, Qt, HTTP, CLI, Shell, Wt, manual chapter: does the
+  archetype's expected output path exist on disk for this entity.
+- *Codegen regen drift* — does regenerating the model reproduce the
+  checked-in files byte-for-byte, or has the template moved on since
+  the entity was last regenerated.
+- *Hand-crafted vs paste-block discipline* — do manual customisations
+  live inside a documented paste-block marker ([[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]), or as raw
+  edits to generated files a regen would silently clobber.
+- *Compound vs single natural/primary key*.
+- *Per-layer test coverage*.
 
 * Status
 

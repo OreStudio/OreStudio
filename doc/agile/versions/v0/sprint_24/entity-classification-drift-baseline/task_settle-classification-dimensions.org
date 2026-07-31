@@ -49,9 +49,9 @@ like, what values are possible).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] |
-| Now          | Surveying prior art and codegen meta-model to draft the dimension list. |
+| Now          | Dimensions settled and written up in the parent story's § "Classification dimensions". |
 | Waiting on   | Nothing.                               |
-| Next         | Draft dimensions, cross-check exhaustively, write up computation rules. |
+| Next         | Design the tool that computes each dimension per entity; hand off to the refdata pilot task. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance

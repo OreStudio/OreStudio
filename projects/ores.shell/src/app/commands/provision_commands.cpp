@@ -601,6 +601,10 @@ void provision_commands::process_party(std::ostream& out,
     // template rather than a shared class.
     const auto& plan = dq::messaging::party_provisioning_bundle_plan();
     std::size_t step_num = 2;
+    std::string current_step_label;
+    // on_step always runs immediately before its matching publish call
+    // (guaranteed by the helper's loop body), so publish can safely rely
+    // on current_step_label set just above.
     bool ok = dq::messaging::publish_party_provisioning_plan(
         plan,
         party->id,
@@ -616,8 +620,8 @@ void provision_commands::process_party(std::ostream& out,
             if (!published)
                 return std::nullopt;
             if (!published->success) {
-                fail(out) << "Failed to publish " << bundle_code << ": " << published->error_message
-                          << std::endl;
+                fail(out) << "Failed to publish " << current_step_label << ": "
+                          << published->error_message << std::endl;
                 return std::nullopt;
             }
             out << "  Dispatched " << published->datasets_dispatched
@@ -629,6 +633,7 @@ void provision_commands::process_party(std::ostream& out,
                 out, session, instance_id, *wait_timeout, expected);
         },
         [&](const auto& step) {
+            current_step_label = step.label;
             out << "[" << step_num++ << "/5] Publishing " << step.label << "..." << std::endl;
         });
     if (!ok)

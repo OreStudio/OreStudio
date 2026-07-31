@@ -24,7 +24,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <functional>
-#include <optional>
 #include <string>
 #include <vector>
 

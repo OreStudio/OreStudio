@@ -474,13 +474,17 @@ public:
                 // fixes a latent inconsistency: previously a failed bundle
                 // here was logged but the loop kept going to the next
                 // bundle, unlike every other step in this handler, which
-                // aborts on failure; now it aborts here too.
+                // aborts on failure; now it skips to the next office too,
+                // matching the office.bundle_code publish above.
                 auto mkt_plan = dq::messaging::party_provisioning_bundle_plan();
                 std::erase_if(mkt_plan, [](const auto& step) {
                     return step.bundle_code == "risk_management";
                 });
                 std::string current_mkt_step;
-                dq::messaging::publish_party_provisioning_plan(
+                // on_step always runs immediately before its matching
+                // publish/wait pair (guaranteed by the helper's loop body),
+                // so wait can safely rely on current_mkt_step set just above.
+                if (!dq::messaging::publish_party_provisioning_plan(
                     mkt_plan,
                     party->id,
                     [&](const std::string& bundle_code, const std::string& params_json)
@@ -509,7 +513,8 @@ public:
                     [&](const auto& step) {
                         current_mkt_step = step.bundle_code;
                         add_step(office.code + "." + step.bundle_code, "starting", 0);
-                    });
+                    }))
+                    continue;
 
                 const auto photo_label = office.code + ".staff_photos";
                 add_step(photo_label, "starting", 0);

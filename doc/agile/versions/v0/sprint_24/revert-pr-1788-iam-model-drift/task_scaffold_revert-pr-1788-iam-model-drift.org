@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the story, tasks, and sprint wiring for this hotfix.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4432B38B-F93F-4ADE-9F4A-F7DA34B01B66][Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -69,3 +69,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolding rode PR #1794 alongside the actual revert (no separate
+scaffold PR was raised) since this was an emergency hotfix.

@@ -24,11 +24,11 @@ unblocked again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Reverting merge commit 7645312a2 on a hotfix branch off main. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Open PR, get it merged to unblock main. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-07-31                               |
 
 * Acceptance
@@ -42,8 +42,8 @@ unblocked again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7379D045-CE63-4571-AF2F-D438E8FE43AF][Scaffold story: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | STARTED | 2026-07-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F346D281-9AE2-46C5-9FCC-5744A40B86CF][Implement Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | STARTED | 2026-07-31 | | Initial task for: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema |
+| [[id:7379D045-CE63-4571-AF2F-D438E8FE43AF][Scaffold story: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | DONE | 2026-07-31 | 2026-07-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F346D281-9AE2-46C5-9FCC-5744A40B86CF][Implement Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema]] | DONE | 2026-07-31 | 2026-07-31 | Initial task for: Hotfix: Revert PR #1788 (IAM model drift) — broken DB schema |
 
 * Decisions
 

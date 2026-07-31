@@ -47,6 +47,15 @@ unblocked again.
 
 * Decisions
 
+- Reviewers flagged two items to preserve when the IAM model-drift
+  fix is redone: the =clock_timestamp()= -> =current_timestamp= fix
+  in the account_type/tenant_status/tenant_type insert triggers
+  (avoids same-transaction multi-write collisions), and the
+  =security definer set search_path = public, pg_temp= hardening on
+  those same trigger functions (matches the pattern used elsewhere,
+  e.g. =refdata_book_statuses_create.sql=).
+
 * Out of scope
 
--
+- Redoing the IAM model-drift fix correctly — tracked separately;
+  jolly_knuth's original task should be reopened for this.

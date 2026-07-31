@@ -21,6 +21,19 @@ Junction table linking IAM accounts to parties. Each account can be
 associated with one or more parties, controlling which parties a user
 can act on behalf of.
 
+DO NOT regenerate this entity's messaging facet
+(=ores.cpp.nats-handler=/=ores.cpp.protocol=/=ores.cpp.service=) --
+=account_party_handler.hpp= is extensively hand-maintained: workflow-step
+command handling (idempotency, =X-Tenant-Id= header) for =provision_tenant=,
+plus a deliberately custom =stamp_account_party()= that does NOT use the
+generic =stamp()= helper (see its own doc comment -- =party_id= means
+something different for this one entity than everywhere else in the
+codebase, and the generic helper's reflection-based field matching would
+silently clobber client-supplied associations). None of this is modeled
+here yet; regenerating clobbers it with an empty, unwired protocol/handler.
+Only the SQL/domain/repository facets are safe to regenerate. Mirrors
+=party='s hand-maintained-SQL treatment in the refdata drift-fix task.
+
 * Left
 :PROPERTIES:
 :column:        account_id

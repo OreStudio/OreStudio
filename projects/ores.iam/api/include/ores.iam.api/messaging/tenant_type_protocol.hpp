@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_TENANT_TYPE_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_TENANT_TYPE_PROTOCOL_HPP
+#ifndef ORES_IAM_API_MESSAGING_TENANT_TYPE_PROTOCOL_HPP
+#define ORES_IAM_API_MESSAGING_TENANT_TYPE_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/tenant_type.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -28,17 +29,26 @@ namespace ores::iam::messaging {
 
 struct get_tenant_types_request {
     using response_type = struct get_tenant_types_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant-types.list";
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_tenant_types_response {
     std::vector<ores::iam::domain::tenant_type> types;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_tenant_type_request {
     using response_type = struct save_tenant_type_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant-types.save";
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.save";
     ores::iam::domain::tenant_type data;
+
+    static save_tenant_type_request from(ores::iam::domain::tenant_type v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_tenant_type_response {
@@ -48,8 +58,8 @@ struct save_tenant_type_response {
 
 struct delete_tenant_type_request {
     using response_type = struct delete_tenant_type_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant-types.delete";
-    std::string type;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.delete";
+    std::vector<std::string> types;
 };
 
 struct delete_tenant_type_response {
@@ -59,14 +69,14 @@ struct delete_tenant_type_response {
 
 struct get_tenant_type_history_request {
     using response_type = struct get_tenant_type_history_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenant-types.history";
+    static constexpr std::string_view nats_subject = "iam.v1.tenant_types.history";
     std::string type;
 };
 
 struct get_tenant_type_history_response {
+    std::vector<ores::iam::domain::tenant_type> history;
     bool success = false;
     std::string message;
-    std::vector<ores::iam::domain::tenant_type> history;
 };
 
 }

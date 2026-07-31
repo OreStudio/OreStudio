@@ -27,23 +27,24 @@ with passwords, while service accounts authenticate via sessions only.
 :component: iam
 :END:
 
-* Primary key
+* Columns
+
+** type
 :PROPERTIES:
-:column:   type
-:type:     text
-:cpp_type: std::string
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
 :END:
 
 Unique type code.
 
 Examples: 'user', 'service', 'algorithm', 'llm'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:natural_key: true
 :END:
 
 Human-readable name for the type.
@@ -51,8 +52,6 @@ Human-readable name for the type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Account"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -134,9 +133,9 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.iam/domain/account_type.hpp
+:domain_include:         ores.iam.api/domain/account_type.hpp
 :domain_class:           iam::domain::account_type
-:protocol_include:       ores.iam/messaging/account_type_protocol.hpp
+:protocol_include:       ores.iam.api/messaging/account_type_protocol.hpp
 :collection_name:        account_types
 :item_var:               account_type
 :key_field:              type

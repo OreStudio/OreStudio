@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_24:v0:entity-classification-drift-baseline:
 #+owner: marco
 #+branch: feature/settle-classification-dimensions
-#+pr:
+#+pr: 1799
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -281,7 +281,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1799][#1799]] | [modeling] Sync variability metamodel, add profile/feature catalogue |
 
 * Review
 

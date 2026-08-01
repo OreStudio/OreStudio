@@ -336,11 +336,12 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
 
     app_toolbar->addSeparator();
 
-    auto* upload_engines_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Publish, color_constants::icon_color),
-        tr("Upload Engines"),
-        this);
-    connect(upload_engines_action, &QAction::triggered, this, &ComputeConsoleWindow::on_upload_engines);
+    auto* upload_engines_action =
+        new QAction(IconUtils::createRecoloredIcon(Icon::Publish, color_constants::icon_color),
+                    tr("Upload Engines"),
+                    this);
+    connect(
+        upload_engines_action, &QAction::triggered, this, &ComputeConsoleWindow::on_upload_engines);
     app_toolbar->addAction(upload_engines_action);
 
     auto* top_pane = new QWidget(this);

@@ -35,8 +35,8 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -96,9 +96,9 @@ UploadEnginesDialog::UploadEnginesDialog(ClientManager* clientManager,
     layout->addWidget(buttons);
 
     connect(app_combo_,
-           QOverload<int>::of(&QComboBox::currentIndexChanged),
-           this,
-           &UploadEnginesDialog::on_app_selected);
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &UploadEnginesDialog::on_app_selected);
     connect(browse_btn_, &QPushButton::clicked, this, &UploadEnginesDialog::on_browse);
     connect(upload_btn_, &QPushButton::clicked, this, &UploadEnginesDialog::on_upload);
 
@@ -168,9 +168,8 @@ void UploadEnginesDialog::reload_versions() {
         if (v.app_id != app.id)
             continue;
         app_versions_.push_back(v);
-        version_combo_->addItem(
-            QString("%1 / %2").arg(QString::fromStdString(v.wrapper_version),
-                                   QString::fromStdString(v.engine_version)));
+        version_combo_->addItem(QString("%1 / %2").arg(QString::fromStdString(v.wrapper_version),
+                                                       QString::fromStdString(v.engine_version)));
     }
 }
 
@@ -192,7 +191,9 @@ void UploadEnginesDialog::on_upload() {
         platform_idx >= static_cast<int>(platforms_.size()) || file_edit_->text().isEmpty() ||
         reason_combo_->currentIndex() < 0) {
         MessageBoxHelper::warning(
-            this, tr("Incomplete"), tr("Select an application, version, platform, file, and reason."));
+            this,
+            tr("Incomplete"),
+            tr("Select an application, version, platform, file, and reason."));
         return;
     }
 
@@ -228,7 +229,8 @@ void UploadEnginesDialog::on_upload() {
     // published platform on save.
     compute::messaging::list_app_version_platforms_request existing_req;
     existing_req.app_version_id = boost::uuids::to_string(version.id);
-    const auto existing_resp = client_manager_->process_authenticated_request(std::move(existing_req));
+    const auto existing_resp =
+        client_manager_->process_authenticated_request(std::move(existing_req));
     if (!existing_resp || !existing_resp->success) {
         QApplication::restoreOverrideCursor();
         upload_btn_->setEnabled(true);
@@ -244,8 +246,7 @@ void UploadEnginesDialog::on_upload() {
     }
 
     std::vector<compute::domain::app_version_platform> platform_rows = existing_resp->platforms;
-    std::erase_if(platform_rows,
-                 [&](const auto& p) { return p.platform_code == platform.code; });
+    std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform.code; });
 
     compute::domain::app_version_platform row;
     row.app_version_id = version.id;
@@ -290,7 +291,7 @@ void UploadEnginesDialog::on_upload() {
 
     status_label_->setText(tr("Uploaded %1 (sha256=%2).")
                                .arg(QString::fromStdString(result.package_uri),
-                                   QString::fromStdString(result.sha256)));
+                                    QString::fromStdString(result.sha256)));
 }
 
 }

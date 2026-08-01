@@ -48,9 +48,9 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QWizardPage>
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -296,12 +296,12 @@ public:
         std::vector<compute::domain::compute_platform> result;
         result.reserve(selected_list_->count());
         for (int i = 0; i < selected_list_->count(); ++i) {
-            const auto id_str = selected_list_->item(i)->data(Qt::UserRole).toString().toStdString();
-            const auto it = std::find_if(all_platforms_.begin(),
-                                         all_platforms_.end(),
-                                         [&](const auto& p) {
-                                             return boost::uuids::to_string(p.id) == id_str;
-                                         });
+            const auto id_str =
+                selected_list_->item(i)->data(Qt::UserRole).toString().toStdString();
+            const auto it =
+                std::find_if(all_platforms_.begin(), all_platforms_.end(), [&](const auto& p) {
+                    return boost::uuids::to_string(p.id) == id_str;
+                });
             if (it != all_platforms_.end())
                 result.push_back(*it);
         }
@@ -428,9 +428,8 @@ public:
     bool isComplete() const override {
         if (rows_.empty() || uploading_)
             return false;
-        return std::all_of(rows_.begin(), rows_.end(), [](const auto& r) {
-            return !r.sha256.empty();
-        });
+        return std::all_of(
+            rows_.begin(), rows_.end(), [](const auto& r) { return !r.sha256.empty(); });
     }
 
     /**
@@ -493,8 +492,8 @@ private slots:
             table_->item(i, StatusColumn)->setText(tr("Uploading…"));
             qApp->processEvents();
             try {
-                const auto result =
-                    publisher.publish(app_name_, engine_version_, row.platform_code, row.local_file);
+                const auto result = publisher.publish(
+                    app_name_, engine_version_, row.platform_code, row.local_file);
                 row.package_uri = result.package_uri;
                 row.sha256 = result.sha256;
                 table_->item(i, StatusColumn)->setText(tr("Uploaded"));
@@ -505,7 +504,8 @@ private slots:
                     ->setText(tr("Failed: %1").arg(QString::fromStdString(e.what())));
             }
             ++done;
-            progress_bar_->setValue(static_cast<int>(100 * done / std::max<std::size_t>(1, rows_.size())));
+            progress_bar_->setValue(
+                static_cast<int>(100 * done / std::max<std::size_t>(1, rows_.size())));
         }
 
         QApplication::restoreOverrideCursor();
@@ -644,9 +644,9 @@ public:
             for (const auto& row : pkg_page->rows()) {
                 lines << tr("  Package (%1): %2")
                              .arg(QString::fromStdString(row.platform_code),
-                                 row.package_uri.empty() ?
-                                     tr("(not uploaded)") :
-                                     QString::fromStdString(row.package_uri));
+                                  row.package_uri.empty() ?
+                                      tr("(not uploaded)") :
+                                      QString::fromStdString(row.package_uri));
             }
             lines << QString{};
         } else {

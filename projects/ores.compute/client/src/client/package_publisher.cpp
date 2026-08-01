@@ -29,16 +29,15 @@ package_publisher::package_publisher(std::string http_base_url)
     : transfer_(std::move(http_base_url)) {}
 
 package_publish_result package_publisher::publish(const std::string& app_name,
-                                                   const std::string& version,
-                                                   const std::string& platform_code,
-                                                   const std::filesystem::path& local_file,
-                                                   const std::string& ext) {
+                                                  const std::string& version,
+                                                  const std::string& platform_code,
+                                                  const std::filesystem::path& local_file,
+                                                  const std::string& ext) {
     const auto local_sha256 = ores::utility::crypto::sha256::hex_digest_of_file(local_file);
     const auto key = net::compute_storage::package_key(app_name, version, platform_code, ext);
 
-    const auto response =
-        transfer_.upload_returning_response(std::string(net::compute_storage::bucket), key,
-                                            local_file);
+    const auto response = transfer_.upload_returning_response(
+        std::string(net::compute_storage::bucket), key, local_file);
 
     const auto parsed = boost::json::parse(response);
     const auto& obj = parsed.as_object();
@@ -48,10 +47,9 @@ package_publish_result package_publisher::publish(const std::string& app_name,
 
     const auto server_sha256 = std::string(sha256_field->as_string());
     if (server_sha256 != local_sha256) {
-        throw std::runtime_error(
-            "package_publisher: SHA256 mismatch for " + local_file.string() + ": local " +
-            local_sha256 + ", server " + server_sha256 +
-            " -- the server did not receive the bytes we sent");
+        throw std::runtime_error("package_publisher: SHA256 mismatch for " + local_file.string() +
+                                 ": local " + local_sha256 + ", server " + server_sha256 +
+                                 " -- the server did not receive the bytes we sent");
     }
 
     return package_publish_result{

@@ -90,7 +90,7 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
 }
 
 std::string http_client::put_returning_body(const std::string& url,
-                                             const std::filesystem::path& src) {
+                                            const std::filesystem::path& src) {
     const auto parts = parse_url(url);
 
     asio::io_context ioc;

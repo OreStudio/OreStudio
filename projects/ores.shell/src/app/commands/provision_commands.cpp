@@ -607,8 +607,8 @@ void provision_commands::process_party(std::ostream& out,
     bool ok = dq::messaging::publish_party_provisioning_plan(
         plan,
         party->id,
-        [&](const std::string& bundle_code,
-            const std::string& params_json) -> std::optional<dq::messaging::publish_bundle_response> {
+        [&](const std::string& bundle_code, const std::string& params_json)
+            -> std::optional<dq::messaging::publish_bundle_response> {
             dq::messaging::publish_bundle_request req;
             req.bundle_code = bundle_code;
             req.mode = dq::domain::publication_mode::upsert;

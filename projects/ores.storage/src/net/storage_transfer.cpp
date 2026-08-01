@@ -98,8 +98,8 @@ void storage_transfer::upload(const std::string& bucket,
 }
 
 std::string storage_transfer::upload_returning_response(const std::string& bucket,
-                                                         const std::string& key,
-                                                         const fs::path& src_file) {
+                                                        const std::string& key,
+                                                        const fs::path& src_file) {
     const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
     const auto bytes = fs::file_size(src_file);
     BOOST_LOG_SEV(lg(), debug) << "Uploading: bucket=" << bucket << " key=" << key

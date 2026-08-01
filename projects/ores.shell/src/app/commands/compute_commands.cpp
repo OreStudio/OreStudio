@@ -30,9 +30,9 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cli/cli.h>
 #include <cstdlib>
 #include <ostream>
@@ -44,16 +44,16 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-constexpr std::string_view default_reason_code = dq::domain::change_reason_constants::codes::new_record;
+constexpr std::string_view default_reason_code =
+    dq::domain::change_reason_constants::codes::new_record;
 
 std::string default_http_base_url() {
     const char* port = std::getenv("ORES_HTTP_PORT");
     return std::string("http://localhost:") + (port ? port : "20600");
 }
 
-std::optional<compute::domain::app> find_app_by_name(std::ostream& out,
-                                                      nats_client& session,
-                                                      const std::string& name) {
+std::optional<compute::domain::app>
+find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {
     compute::messaging::list_apps_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -66,12 +66,11 @@ std::optional<compute::domain::app> find_app_by_name(std::ostream& out,
     return std::nullopt;
 }
 
-std::optional<compute::domain::app_version>
-find_app_version(std::ostream& out,
-                 nats_client& session,
-                 const boost::uuids::uuid& app_id,
-                 const std::string& engine_version,
-                 const std::string& wrapper_version) {
+std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
+                                                             nats_client& session,
+                                                             const boost::uuids::uuid& app_id,
+                                                             const std::string& engine_version,
+                                                             const std::string& wrapper_version) {
     compute::messaging::list_app_versions_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -89,8 +88,8 @@ find_app_version(std::ostream& out,
 // no platforms published yet) -- callers must abort on nullopt rather than
 // treat it as "start fresh", or a transient RPC failure here silently
 // wipes every previously published platform on the next save.
-std::optional<std::vector<compute::domain::app_version_platform>>
-existing_platforms(std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
+std::optional<std::vector<compute::domain::app_version_platform>> existing_platforms(
+    std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
     compute::messaging::list_app_version_platforms_request req;
     req.app_version_id = boost::uuids::to_string(app_version_id);
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -131,15 +130,14 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 void compute_commands::process_publish_package(std::ostream& out,
                                                nats_client& session,
                                                const std::vector<std::string>& args) {
-    auto parsed = parse_args(args,
-                             {{.name = "file", .requires_value = true, .default_value = ""},
-                              {.name = "wrapper-version",
-                               .requires_value = true,
-                               .default_value = "1.0.0"},
-                              {.name = "min-ram-mb", .requires_value = true, .default_value = "0"},
-                              {.name = "http-base-url",
-                               .requires_value = true,
-                               .default_value = default_http_base_url()}});
+    auto parsed =
+        parse_args(args,
+                   {{.name = "file", .requires_value = true, .default_value = ""},
+                    {.name = "wrapper-version", .requires_value = true, .default_value = "1.0.0"},
+                    {.name = "min-ram-mb", .requires_value = true, .default_value = "0"},
+                    {.name = "http-base-url",
+                     .requires_value = true,
+                     .default_value = default_http_base_url()}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -168,8 +166,8 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     auto file = parsed->flag("file");
     if (file.empty())
-        file = "publish/vendor-packages/" + app_name + "-" + engine_version + "-" +
-              platform_code + ".tar.gz";
+        file = "publish/vendor-packages/" + app_name + "-" + engine_version + "-" + platform_code +
+               ".tar.gz";
 
     if (!std::filesystem::exists(file)) {
         fail(out) << "Package file not found: " << file << std::endl;
@@ -218,13 +216,12 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     auto app_resp = do_request(out, session, app_req, std::chrono::seconds(30), true);
     if (!app_resp || !app_resp->success) {
-        fail(out) << "Failed to save app: "
-                  << (app_resp ? app_resp->message : "no response") << std::endl;
+        fail(out) << "Failed to save app: " << (app_resp ? app_resp->message : "no response")
+                  << std::endl;
         return;
     }
 
-    auto existing_version =
-        find_app_version(out, session, app.id, engine_version, wrapper_version);
+    auto existing_version = find_app_version(out, session, app.id, engine_version, wrapper_version);
 
     compute::domain::app_version ver;
     ver.id = existing_version ? existing_version->id : boost::uuids::random_generator()();
@@ -262,8 +259,7 @@ void compute_commands::process_publish_package(std::ostream& out,
         }
         platform_rows = std::move(*fetched);
     }
-    std::erase_if(platform_rows,
-                 [&](const auto& p) { return p.platform_code == platform_code; });
+    std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform_code; });
     platform_rows.push_back(row);
 
     compute::messaging::save_app_version_request ver_req;

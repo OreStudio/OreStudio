@@ -142,11 +142,14 @@ split into Rates, Credit, and FX trading desks, alongside a Risk
 Management division and Middle Office and Market Risk cost centres —
 the follow-the-sun pattern the previous section introduced, expressed
 concretely. ACME Corporation UK plc's Global Markets division goes
-further, with EMEA, Americas, and APAC business areas beneath it, each
-carrying its own regional desks — the London entity is where Acme's
-global trading footprint is broadest, reflecting a UK head office
-coordinating trading across time zones rather than each region
-booking in total isolation.
+further, with EMEA, Americas, and APAC business areas beneath it —
+the London entity is where Acme's global trading footprint is
+broadest, reflecting a UK head office coordinating trading across
+time zones rather than each region booking in total isolation. Today
+only the EMEA business area is actually staffed; the Americas and
+APAC business areas exist as structural placeholders for that
+footprint to grow into, with desks defined but no accounts or books
+under them yet.
 
 Every desk owns one book, sitting beneath a physical portfolio scoped
 to that desk; every operating company's business units, portfolios,
@@ -154,8 +157,7 @@ and books carry the =company_code= that ties them back to their
 owning legal entity, since each of the four entities needs its own
 independent organisational structure. Open the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] window on a
 freshly provisioned Acme Corporation tenant and the hierarchy above is
-what you see, four levels deep and fully populated — no placeholder
-rows, no manual setup.
+what you see, four levels deep and fully populated.
 
 #+caption[The Parties window]: The Parties window on a freshly provisioned Acme Corporation tenant: all four legal entities (Acme Corporation Plc and its three operating companies), each flagged by its business centre, alongside the tenant's own system party.
 [[proj:assets/images/acme_corporation_parties_window.png]]
@@ -183,28 +185,33 @@ leadership and the caveat about what this buys you today.
 
 *** Front office: the trading desks
 
-Each operating company runs three desks under its Global Markets
-division — Rates, Credit, and FX — the instrument classes a
-follow-the-sun trading floor is built around. A *Head of Desk* leads
-each one (nine across the three operating companies, three desks
-apiece), with a *Senior Trader* and a *Junior Trader* beneath them
-(nine of each). The desk is where risk is actually taken: traders
-price and execute, the Head of Desk carries overall accountability
-for the desk's book, and every position they book carries the desk's
-=owner_unit_id=, tying it to this business unit for both day-to-day
-P&L attribution and regulatory desk-level reporting. Every front
-office account — Head of Desk, Senior Trader, and Junior Trader
-alike — holds the =Trading= role, which grants read access to
-reference data and the ability to create, modify, archive, and delete
-the workspaces a trader actually works in (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and
-Roles]] for the full permission profile).
+Each operating company's staffed trading floor runs three desks —
+Rates, Credit, and FX — the instrument classes a follow-the-sun
+trading floor is built around (ACME Corporation UK plc's Americas and
+APAC business areas define four further desks structurally, but
+carry no staff yet, per the note above). A *Head of Desk* leads each
+staffed desk (nine across the three operating companies), with a
+*Senior Trader* and a *Junior Trader* beneath them (nine of each), and
+a single *Head of Trading* per operating company (three total) above
+all three desk heads, reporting in turn to the Country Head. The desk
+is where risk is actually taken: traders price and execute, the Head
+of Desk carries overall accountability for the desk's book, and every
+position they book carries the desk's =owner_unit_id=, tying it to
+this business unit for both day-to-day P&L attribution and regulatory
+desk-level reporting. Every front office account — Head of Trading,
+Head of Desk, Senior Trader, and Junior Trader alike — holds the
+=Trading= role, which grants read access to reference data and the
+ability to create, modify, archive, and delete the workspaces a
+trader actually works in (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] for the full
+permission profile).
 
 *** Middle office: processing what the desk books
 
 Middle Office sits alongside the trading desks as its own
 =COST_CENTRE=-typed business unit, not folded into the same branch of
 the tree as the desks it processes for. A *Head of Middle Office*
-leads each operating company's function (three total), supported by
+leads each operating company's function (three total), reporting to
+the *COO* rather than to the trading side at all, and supported by
 *Senior Analyst* and *Junior Analyst* accounts drawn from the same
 shared pool the Market Risk function below also staffs. Middle
 Office's job is operational, not directional: confirming trades,
@@ -220,39 +227,43 @@ capability to others; the analysts beneath them hold the read-only
 *** Market risk: independent measurement
 
 Market Risk is Middle Office's structural sibling, not its
-subordinate — its own =COST_CENTRE=, reporting alongside Middle
-Office rather than through it, precisely so that a desk's risk cannot
-be measured by anyone who also processes that desk's trades. A *Head
-of Market Risk* leads each operating company's function (three
-total), again supported by Senior and Junior Analysts. Where Middle
+subordinate — its own =COST_CENTRE=, reporting through a separate
+*Head of Risk* rather than through the COO, precisely so that a
+desk's risk cannot be measured by anyone in the same reporting line
+that processes that desk's trades. A *Head of Market Risk* leads each
+operating company's function (three total), reporting to the Head of
+Risk, again supported by Senior and Junior Analysts. Where Middle
 Office confirms /that/ a trade happened, Market Risk measures /what
 it means/: monitoring exposure against limits, running the sensitivity
 and P&L-attribution queries the desk-level =owner_unit_id= tagging
 described above exists to support, and flagging breaches
 independently of the desk being measured. Role assignment mirrors
-Middle Office exactly — =Operations= for the Head of Market Risk,
-=Viewer= for the analysts beneath them — because both functions are
-maintaining and reading shared data rather than taking positions;
-what keeps them independent of each other and of the desks is the
-organisational hierarchy's separate branches, not a difference in
-which role they hold.
+Middle Office exactly — =Operations= for both the Head of Risk and
+the Head of Market Risk, =Viewer= for the analysts beneath them —
+because both functions are maintaining and reading shared data rather
+than taking positions; what keeps them independent of each other and
+of the desks is the organisational hierarchy's separate branches, not
+a difference in which role they hold.
 
 *** Leadership: country heads and the group centre
 
-Above the three departments sits each operating company's own
-leadership: a *Country Head* (three total) with overall accountability
-for that legal entity, and a *COO* (three total) covering
-country-level operations and risk oversight. Above the operating
+Each operating company's three departments do not report to their
+Country Head directly — each sits under its own intermediate head,
+and it is those three who report to the Country Head: the *Head of
+Trading* for the desks, the *COO* for Middle Office, and the *Head of
+Risk* for Market Risk (three of each, nine accounts total). The
+*Country Head* (three total) carries overall accountability for the
+legal entity these nine roll up into. Above the three operating
 companies sits a single *Group Chief Executive Officer* at the
 holding-company level, the one account with no =company_code= of its
 own and every Country Head reporting to them — the root of the
 fifty-eight-account tree the next section renders as an org chart.
-Leadership accounts — Group CEO, COO, and Country Head alike — hold
-the =Operations= role, the same broad-but-not-administrative profile
-Middle Office and Market Risk leadership hold: read, write, and
-delete on reference data, and visibility into accounts, without the
-tenant-wide =TenantAdmin= or =SuperAdmin= capability that provisioning
-itself required.
+Leadership accounts — Group CEO, Country Head, COO, and Head of Risk
+alike — hold the =Operations= role, the same broad-but-not-
+administrative profile Middle Office and Market Risk staff hold:
+read, write, and delete on reference data, and visibility into
+accounts, without the tenant-wide =TenantAdmin= or =SuperAdmin=
+capability that provisioning itself required.
 
 *** What this does and does not enforce
 
@@ -293,11 +304,13 @@ exploring party-scoped access without a separate credential to look
 up per account.
 
 Reporting lines run true to the departmental structure: a trader
-reports to their Head of Desk, an analyst to their Head of Middle
-Office or Head of Market Risk, each of those to their Country Head,
-and each Country Head to the Group Chief Executive Officer, so the
-whole fifty-eight-account structure is one connected tree rather than
-three disconnected regional trees. Rather than tracing that tree
+reports to their Head of Desk, who reports to their Head of Trading;
+an analyst reports to their Head of Middle Office (under the COO) or
+Head of Market Risk (under the Head of Risk); every one of those
+intermediate heads reports to their Country Head, and each Country
+Head to the Group Chief Executive Officer — so the whole
+fifty-eight-account structure is one connected tree rather than three
+disconnected regional trees. Rather than tracing that tree
 by hand through each account's detail dialog, open it at a glance from
 /User Accounts > Org Chart/: a maximisable window that lays every
 account out top-down as a card — photo, name, job title, office —

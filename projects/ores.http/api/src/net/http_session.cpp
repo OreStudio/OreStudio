@@ -57,8 +57,10 @@ asio::awaitable<void> http_session::run() {
 
     try {
         for (;;) {
-            http::request<http::string_body> req;
-            co_await http::async_read(stream_, buffer_, req, asio::use_awaitable);
+            http::request_parser<http::string_body> parser;
+            parser.body_limit(options_.max_body_size);
+            co_await http::async_read(stream_, buffer_, parser, asio::use_awaitable);
+            auto req = parser.release();
 
             BOOST_LOG_SEV(lg(), debug) << "Received request: " << req.method_string() << " "
                                        << req.target() << " from " << remote_address_;

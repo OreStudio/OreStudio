@@ -24,6 +24,7 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <fstream>
+#include <limits>
 #include <stdexcept>
 
 namespace ores::compute::wrapper::net {
@@ -68,21 +69,28 @@ void http_client::download(const std::string& url, const std::filesystem::path& 
 
     http::write(stream, req);
 
-    beast::flat_buffer buf;
-    http::response<http::string_body> res;
-    http::read(stream, buf, res);
-
-    if (res.result_int() < 200 || res.result_int() >= 300) {
-        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
-                                 std::to_string(res.result_int()));
-    }
-
-    // Write to destination
+    // A plain http::response<string_body> read (the previous
+    // implementation) uses Beast's default 1MB body_limit, which a
+    // multi-MB compute engine package blows straight through
+    // ("body limit exceeded"). Stream to file via a response_parser with
+    // an unbounded limit instead -- same fix as
+    // ores.storage::net::http_client::get(), and avoids buffering the
+    // whole package in memory as a bonus.
     std::filesystem::create_directories(dest.parent_path());
-    std::ofstream f(dest, std::ios::binary | std::ios::trunc);
-    if (!f)
+    http::response_parser<http::file_body> parser;
+    parser.body_limit(std::numeric_limits<std::uint64_t>::max());
+    beast::error_code open_ec;
+    parser.get().body().open(dest.string().c_str(), beast::file_mode::write, open_ec);
+    if (open_ec)
         throw std::runtime_error("http_client: cannot open for writing: " + dest.string());
-    f.write(res.body().data(), static_cast<std::streamsize>(res.body().size()));
+
+    beast::flat_buffer buf;
+    http::read(stream, buf, parser);
+
+    if (parser.get().result_int() < 200 || parser.get().result_int() >= 300) {
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
+                                 std::to_string(parser.get().result_int()));
+    }
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);

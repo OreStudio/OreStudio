@@ -86,6 +86,11 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
 }
 
 void http_client::put(const std::string& url, const std::filesystem::path& src) {
+    put_returning_body(url, src);
+}
+
+std::string http_client::put_returning_body(const std::string& url,
+                                             const std::filesystem::path& src) {
     const auto parts = parse_url(url);
 
     asio::io_context ioc;
@@ -117,6 +122,8 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);
+
+    return res.body();
 }
 
 }

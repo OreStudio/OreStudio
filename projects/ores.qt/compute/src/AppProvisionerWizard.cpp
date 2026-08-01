@@ -25,32 +25,30 @@
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
-#include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMessageBox>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QSpinBox>
+#include <QTableWidget>
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QWizardPage>
-#include <boost/lexical_cast.hpp>
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -253,6 +251,7 @@ public:
     void initializePage() override {
         available_list_->clear();
         selected_list_->clear();
+        all_platforms_.clear();
 
         compute::messaging::list_platforms_request req;
         const auto resp = client_manager_->process_authenticated_request(std::move(req));
@@ -262,6 +261,7 @@ public:
         for (const auto& p : resp->platforms) {
             if (!p.is_active)
                 continue;
+            all_platforms_.push_back(p);
             auto* item = new QListWidgetItem(QString::fromStdString(p.display_name));
             item->setData(Qt::UserRole, QString::fromStdString(boost::uuids::to_string(p.id)));
             available_list_->addItem(item);
@@ -285,6 +285,27 @@ public:
         for (int i = 0; i < selected_list_->count(); ++i)
             names << selected_list_->item(i)->text();
         return names;
+    }
+
+    /**
+     * @brief Full platform records (id, code, display_name) for every
+     * platform currently in the "selected" list, in list order -- what
+     * PackageUploadPage needs to build one upload per platform.
+     */
+    std::vector<compute::domain::compute_platform> selected_platforms() const {
+        std::vector<compute::domain::compute_platform> result;
+        result.reserve(selected_list_->count());
+        for (int i = 0; i < selected_list_->count(); ++i) {
+            const auto id_str = selected_list_->item(i)->data(Qt::UserRole).toString().toStdString();
+            const auto it = std::find_if(all_platforms_.begin(),
+                                         all_platforms_.end(),
+                                         [&](const auto& p) {
+                                             return boost::uuids::to_string(p.id) == id_str;
+                                         });
+            if (it != all_platforms_.end())
+                result.push_back(*it);
+        }
+        return result;
     }
 
 private slots:
@@ -321,76 +342,115 @@ private:
     QPushButton* remove_btn_;
     QPushButton* add_all_btn_;
     QPushButton* rem_all_btn_;
+    std::vector<compute::domain::compute_platform> all_platforms_;
 };
 
 // ── Page 4: Package upload ────────────────────────────────────────────────────
 
+/**
+ * @brief One upload per selected platform via the shared
+ * ores.compute.client package_publisher -- the canonical
+ * {app_name}/{version}/{app_name}-{version}-{platform_code}.tar.gz key,
+ * replacing the retired single-URI-for-all-platforms shortcut.
+ */
 class PackageUploadPage : public QWizardPage {
 public:
-    explicit PackageUploadPage(const std::string& httpBaseUrl,
-                               const boost::uuids::uuid& app_version_id,
-                               QWidget* parent = nullptr)
+    enum Column { PlatformColumn, FileColumn, BrowseColumn, StatusColumn, ColumnCount };
+
+    explicit PackageUploadPage(const std::string& httpBaseUrl, QWidget* parent = nullptr)
         : QWizardPage(parent)
-        , http_base_url_(httpBaseUrl)
-        , app_version_id_(app_version_id) {
-        BOOST_LOG_SEV(page_lg(), info)
-            << "PackageUploadPage constructed with http_base_url='"
-            << (http_base_url_.empty() ? "(empty)" : http_base_url_) << "'";
+        , http_base_url_(httpBaseUrl) {
         setTitle(tr("Package"));
-        setSubTitle(tr("Upload the wrapper+engine bundle for this version."));
+        setSubTitle(tr("Upload the engine bundle for each selected platform."));
 
         auto* layout = new QVBoxLayout(this);
 
-        // File browser row
-        auto* browse_row = new QHBoxLayout;
-        file_path_edit_ = new QLineEdit(this);
-        file_path_edit_->setReadOnly(true);
-        file_path_edit_->setPlaceholderText(tr("No file selected"));
-        browse_btn_ = new QPushButton(tr("Browse…"), this);
-        browse_row->addWidget(file_path_edit_);
-        browse_row->addWidget(browse_btn_);
-        layout->addLayout(browse_row);
+        table_ = new QTableWidget(this);
+        table_->setColumnCount(ColumnCount);
+        table_->setHorizontalHeaderLabels({tr("Platform"), tr("File"), QString{}, tr("Status")});
+        table_->horizontalHeader()->setSectionResizeMode(FileColumn, QHeaderView::Stretch);
+        table_->verticalHeader()->setVisible(false);
+        table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        table_->setSelectionMode(QAbstractItemView::NoSelection);
+        layout->addWidget(table_);
 
-        // Upload button + progress
         auto* upload_row = new QHBoxLayout;
-        upload_btn_ = new QPushButton(tr("Upload"), this);
-        upload_btn_->setEnabled(false);
+        upload_btn_ = new QPushButton(tr("Upload All"), this);
         progress_bar_ = new QProgressBar(this);
         progress_bar_->setRange(0, 100);
-        progress_bar_->setValue(0);
         progress_bar_->setVisible(false);
         upload_row->addWidget(upload_btn_);
         upload_row->addWidget(progress_bar_, 1);
         layout->addLayout(upload_row);
 
-        status_label_ = new QLabel(this);
-        layout->addWidget(status_label_);
+        connect(upload_btn_, &QPushButton::clicked, this, &PackageUploadPage::on_upload_all);
+    }
 
-        layout->addSpacing(12);
+    void initializePage() override {
+        auto* wiz = qobject_cast<AppProvisionerWizard*>(wizard());
+        if (!wiz)
+            return;
 
-        // URI field
-        auto* uri_form = new QFormLayout;
-        uri_edit_ = new QLineEdit(this);
-        uri_edit_->setPlaceholderText(tr("Auto-filled after upload, or enter manually"));
-        uri_form->addRow(tr("Package URI *"), uri_edit_);
-        layout->addLayout(uri_form);
-        layout->addStretch();
+        app_name_ = wiz->app_identity_page_->name().toStdString();
+        engine_version_ = wiz->version_details_page_->engine_version().toStdString();
 
-        connect(browse_btn_, &QPushButton::clicked, this, &PackageUploadPage::on_browse);
-        connect(upload_btn_, &QPushButton::clicked, this, &PackageUploadPage::on_upload);
-        connect(uri_edit_, &QLineEdit::textChanged, this, &PackageUploadPage::completeChanged);
+        const auto platforms = wiz->platforms_page_->selected_platforms();
+
+        rows_.clear();
+        table_->setRowCount(static_cast<int>(platforms.size()));
+        for (int i = 0; i < static_cast<int>(platforms.size()); ++i) {
+            const auto& p = platforms[i];
+
+            Row row;
+            row.platform_id = p.id;
+            row.platform_code = p.code;
+            rows_.push_back(std::move(row));
+
+            auto* platform_item = new QTableWidgetItem(QString::fromStdString(p.display_name));
+            platform_item->setFlags(platform_item->flags() & ~Qt::ItemIsEditable);
+            table_->setItem(i, PlatformColumn, platform_item);
+
+            auto* file_item = new QTableWidgetItem(tr("No file selected"));
+            file_item->setFlags(file_item->flags() & ~Qt::ItemIsEditable);
+            table_->setItem(i, FileColumn, file_item);
+
+            auto* browse_btn = new QPushButton(tr("Browse…"), table_);
+            connect(browse_btn, &QPushButton::clicked, this, [this, i]() { on_browse(i); });
+            table_->setCellWidget(i, BrowseColumn, browse_btn);
+
+            auto* status_item = new QTableWidgetItem(tr("Pending"));
+            status_item->setFlags(status_item->flags() & ~Qt::ItemIsEditable);
+            table_->setItem(i, StatusColumn, status_item);
+        }
+        emit completeChanged();
     }
 
     bool isComplete() const override {
-        return !uri_edit_->text().trimmed().isEmpty() && !uploading_;
+        if (rows_.empty() || uploading_)
+            return false;
+        return std::all_of(rows_.begin(), rows_.end(), [](const auto& r) {
+            return !r.sha256.empty();
+        });
     }
 
-    QString package_uri() const {
-        return uri_edit_->text().trimmed();
+    /**
+     * @brief One completed upload result per selected platform -- what
+     * AppProvisionerWizard::submit() turns into app_version_platform rows.
+     */
+    struct Row {
+        boost::uuids::uuid platform_id{};
+        std::string platform_code;
+        std::string local_file;
+        std::string package_uri;
+        std::string sha256;
+    };
+
+    const std::vector<Row>& rows() const {
+        return rows_;
     }
 
 private slots:
-    void on_browse() {
+    void on_browse(int row) {
         const QString path =
             QFileDialog::getOpenFileName(this,
                                          tr("Select Engine Package"),
@@ -398,107 +458,80 @@ private slots:
                                          tr("Package Files (*.tar.gz *.zip);;All Files (*)"));
         if (path.isEmpty())
             return;
-        file_path_edit_->setText(path);
-        upload_btn_->setEnabled(true);
-        status_label_->clear();
-
-        // Derive URI immediately so user can proceed without uploading
-        // if the package is already on the server. Always .tar.gz — the
-        // wrapper assumes tar.gz format when extracting.
-        const QString id = QString::fromStdString(boost::uuids::to_string(app_version_id_));
-        const QString uri = QString::fromStdString(
-            ores::compute::net::compute_storage::package_path(id.toStdString(), ""));
-        if (uri_edit_->text().isEmpty())
-            uri_edit_->setText(uri);
+        rows_[row].local_file = path.toStdString();
+        rows_[row].package_uri.clear();
+        rows_[row].sha256.clear();
+        table_->item(row, FileColumn)->setText(path);
+        table_->item(row, StatusColumn)->setText(tr("Ready"));
+        emit completeChanged();
     }
 
-    void on_upload() {
-        if (file_path_edit_->text().isEmpty())
-            return;
-
-        BOOST_LOG_SEV(page_lg(), info)
-            << "on_upload invoked; http_base_url='"
-            << (http_base_url_.empty() ? "(empty)" : http_base_url_) << "', file='"
-            << file_path_edit_->text().toStdString() << "'";
-
-        const QString http_base = QString::fromStdString(http_base_url_);
-        if (http_base.isEmpty()) {
-            BOOST_LOG_SEV(page_lg(), error)
-                << "HTTP base URL not configured; aborting package upload";
+    void on_upload_all() {
+        if (http_base_url_.empty()) {
             MessageBoxHelper::warning(
                 this,
                 tr("No Server URL"),
-                tr("HTTP base URL is not configured. Cannot upload package."));
-            return;
-        }
-
-        const QString id = QString::fromStdString(boost::uuids::to_string(app_version_id_));
-        QUrl url(http_base);
-        url.setPath(QString::fromStdString(
-            ores::compute::net::compute_storage::package_path(id.toStdString(), "")));
-
-        auto* file = new QFile(file_path_edit_->text(), this);
-        if (!file->open(QIODevice::ReadOnly)) {
-            MessageBoxHelper::critical(
-                this, tr("File Error"), tr("Cannot open: %1").arg(file_path_edit_->text()));
-            file->deleteLater();
+                tr("HTTP base URL is not configured. Cannot upload packages."));
             return;
         }
 
         uploading_ = true;
         upload_btn_->setEnabled(false);
-        progress_bar_->setValue(0);
         progress_bar_->setVisible(true);
-        status_label_->setText(tr("Uploading…"));
+        progress_bar_->setValue(0);
+        emit completeChanged();
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+
+        compute::client::package_publisher publisher(http_base_url_);
+        int done = 0;
+        for (int i = 0; i < static_cast<int>(rows_.size()); ++i) {
+            auto& row = rows_[i];
+            if (row.local_file.empty()) {
+                table_->item(i, StatusColumn)->setText(tr("Skipped (no file)"));
+                continue;
+            }
+            table_->item(i, StatusColumn)->setText(tr("Uploading…"));
+            qApp->processEvents();
+            try {
+                const auto result =
+                    publisher.publish(app_name_, engine_version_, row.platform_code, row.local_file);
+                row.package_uri = result.package_uri;
+                row.sha256 = result.sha256;
+                table_->item(i, StatusColumn)->setText(tr("Uploaded"));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(page_lg(), error)
+                    << "Upload failed for platform " << row.platform_code << ": " << e.what();
+                table_->item(i, StatusColumn)
+                    ->setText(tr("Failed: %1").arg(QString::fromStdString(e.what())));
+            }
+            ++done;
+            progress_bar_->setValue(static_cast<int>(100 * done / std::max<std::size_t>(1, rows_.size())));
+        }
+
+        QApplication::restoreOverrideCursor();
+        uploading_ = false;
+        upload_btn_->setEnabled(true);
+        progress_bar_->setVisible(false);
         emit completeChanged();
 
-        auto* nm = new QNetworkAccessManager(this);
-        QNetworkRequest req(url);
-        req.setHeader(QNetworkRequest::ContentTypeHeader, QByteArray("application/octet-stream"));
-
-        auto* reply = nm->put(req, file);
-
-        connect(reply, &QNetworkReply::uploadProgress, this, [this](qint64 sent, qint64 total) {
-            if (total <= 0)
-                return;
-            progress_bar_->setValue(static_cast<int>(100 * sent / total));
-        });
-
-        connect(reply, &QNetworkReply::finished, this, [this, reply, file, nm, id]() {
-            reply->deleteLater();
-            file->deleteLater();
-            nm->deleteLater();
-
-            uploading_ = false;
-            upload_btn_->setEnabled(true);
-            progress_bar_->setVisible(false);
-
-            if (reply->error() != QNetworkReply::NoError) {
-                const QString detail = reply->errorString();
-                status_label_->setText(tr("Upload failed: %1").arg(detail));
-                MessageBoxHelper::critical(this, tr("Upload Failed"), detail);
-                emit completeChanged();
-                return;
-            }
-
-            uri_edit_->setText(QString::fromStdString(
-                ores::compute::net::compute_storage::package_path(id.toStdString(), "")));
-            status_label_->setText(tr("Upload complete."));
-            emit completeChanged();
-        });
+        if (!isComplete()) {
+            MessageBoxHelper::warning(
+                this,
+                tr("Upload Incomplete"),
+                tr("Not every selected platform has an uploaded package yet."));
+        }
     }
 
 private:
     std::string http_base_url_;
-    const boost::uuids::uuid& app_version_id_;
+    std::string app_name_;
+    std::string engine_version_;
     bool uploading_{false};
 
-    QLineEdit* file_path_edit_;
-    QPushButton* browse_btn_;
+    QTableWidget* table_;
     QPushButton* upload_btn_;
     QProgressBar* progress_bar_;
-    QLabel* status_label_;
-    QLineEdit* uri_edit_;
+    std::vector<Row> rows_;
 };
 
 // ── Page 5: Audit ─────────────────────────────────────────────────────────────
@@ -527,7 +560,12 @@ public:
 
     void initializePage() override {
         reason_combo_->clear();
-        const auto reasons = change_reason_cache_->getReasonsForNew("common");
+        // "system" is the category with applies_to_new reasons (e.g.
+        // system.new_record) -- "common" is amend-only (see
+        // AppDetailDialog/WorkunitDetailDialog's createMode_ ? "system" :
+        // "common" convention). This wizard only ever creates, so it's
+        // always "system", never conditional.
+        const auto reasons = change_reason_cache_->getReasonsForNew("system");
         for (const auto& r : reasons) {
             reason_combo_->addItem(QString::fromStdString(r.description),
                                    QString::fromStdString(r.code));
@@ -603,7 +641,13 @@ public:
                          .arg(ver_page->wrapper_version(), ver_page->engine_version());
             lines << tr("  Platforms: %1").arg(plt_page->selected_platform_names().join(", "));
             lines << tr("  Min RAM: %1 MB").arg(ver_page->min_ram_mb());
-            lines << tr("  Package: %1").arg(pkg_page->package_uri());
+            for (const auto& row : pkg_page->rows()) {
+                lines << tr("  Package (%1): %2")
+                             .arg(QString::fromStdString(row.platform_code),
+                                 row.package_uri.empty() ?
+                                     tr("(not uploaded)") :
+                                     QString::fromStdString(row.package_uri));
+            }
             lines << QString{};
         } else {
             lines << tr("<i>(No version — can be added later)</i>");
@@ -652,7 +696,7 @@ AppProvisionerWizard::AppProvisionerWizard(ClientManager* clientManager,
     app_identity_page_ = new AppIdentityPage(this);
     version_details_page_ = new VersionDetailsPage(this);
     platforms_page_ = new PlatformsPage(clientManager, this);
-    package_upload_page_ = new PackageUploadPage(http_base_url_, app_version_id_, this);
+    package_upload_page_ = new PackageUploadPage(http_base_url_, this);
     audit_page_ = new AuditPage(changeReasonCache, this);
     app_provisioner_review_page_ = new AppProvisionerReviewPage(this);
 
@@ -671,7 +715,11 @@ bool AppProvisionerWizard::submit() {
 
     const std::string reason_code = audit_page_->reason_code();
     const std::string commentary = audit_page_->commentary();
-    const std::string username = client_manager_->storedUsername();
+    // storedUsername() is the raw login string (e.g.
+    // "tenant_admin@acme_corporation", used for re-auth); modified_by/
+    // performed_by need the resolved bare account username the DB's
+    // ores_iam_validate_account_username_fn() actually accepts.
+    const std::string username = client_manager_->currentUsername();
 
     // ── Save app ──────────────────────────────────────────────────────────────
     compute::domain::app app;
@@ -717,21 +765,16 @@ bool AppProvisionerWizard::submit() {
         ver.change_reason_code = reason_code;
         ver.change_commentary = commentary;
 
-        // Build junction rows from the selected platforms. The wizard carries
-        // a single uploaded package URI; apply it to every platform for now.
-        // Per-platform uploads are planned as a follow-up once the detail
-        // dialog grows a per-triplet upload row.
-        const auto package_uri = package_upload_page_->package_uri().toStdString();
+        // One package_uri/sha256 per platform, from the per-platform uploads
+        // performed on PackageUploadPage.
         std::vector<compute::domain::app_version_platform> platform_rows;
-        for (const auto& pid : platforms_page_->selected_platform_ids()) {
+        for (const auto& uploaded : package_upload_page_->rows()) {
             compute::domain::app_version_platform row;
             row.app_version_id = app_version_id_;
-            try {
-                row.platform_id = boost::lexical_cast<boost::uuids::uuid>(pid);
-            } catch (...) {
-                continue;
-            }
-            row.package_uri = package_uri;
+            row.platform_id = uploaded.platform_id;
+            row.platform_code = uploaded.platform_code;
+            row.package_uri = uploaded.package_uri;
+            row.sha256 = uploaded.sha256;
             platform_rows.push_back(std::move(row));
         }
 

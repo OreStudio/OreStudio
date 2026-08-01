@@ -68,6 +68,7 @@ set(files
     "ServiceDashboardController.cpp"
     "ServiceDashboardMdiWindow.cpp"
     "TransferProgressDelegate.cpp"
+    "UploadEnginesDialog.cpp"
     "WorkunitDetailDialog.cpp"
 )
 
@@ -124,5 +125,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ServiceDashboardController.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ServiceDashboardMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TransferProgressDelegate.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/UploadEnginesDialog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/WorkunitDetailDialog.hpp"
 )

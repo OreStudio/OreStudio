@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: D2264377-DD1B-44B5-9650-D59E7D696C4F
+:END:
+#+title: Test Scenario: Verify ACME compute package publishing
+#+description: Verifies the shared package_publisher upload+verify flow via the shell's compute publish-package command, AppProvisionerWizard's per-platform upload page, and the standalone Upload Engines dialog, including that publishing an additional platform preserves previously published ones.
+#+type: test_scenario
+#+level: s1
+#+filetags: :update-vendored-ore-engine:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] in [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- The database must be freshly provisioned with the Acme Corporation
+  holding-group tenant — confirm via =compass db status=, recreating
+  only if stale: =compass db recreate -y -k=, =compass services
+  start=, then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- Login credentials for this scenario: =tenant_admin@acme_corporation=
+  / =Secure-Password-123= (from the provisioning script's own
+  =login= line — re-check that script if credentials appear to have
+  changed).
+- The vendored ORE package for =x64-linux= is already built into
+  =publish/vendor-packages/= (populated by the =vendor_compute_packages=
+  CMake target) — its raw source lives at
+  =external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz=.
+  This scenario re-uses that same file for the =arm64-osx= and
+  =x64-windows= uploads too (there is no real macOS/Windows build to
+  hand); the platform code, not the file's actual contents, is what's
+  under test here.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] |
+| Parent story  | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]]   |
+| Target dialog | =AppProvisionerWizard= (Package page) and =UploadEnginesDialog= — Menu: Compute Console > Apps tab; "App" toolbar action opens the wizard, "Upload Engines" toolbar action opens the standalone dialog |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@acme_corporation
+
+- Start the client, log in with =tenant_admin@acme_corporation= /
+  =Secure-Password-123=.
+- No specific party selection is required — compute apps/versions are
+  system-level, not tenant-scoped.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Publish first platform via shell CLI
+
+- In a terminal, open an interactive shell: =compass shell=, then log
+  in with the same credentials as above (=login
+  tenant_admin@acme_corporation Secure-Password-123=).
+- Run:
+  #+begin_src text
+  compute publish-package TEST_ENGINE 1.0.0 x64-linux --file external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz
+  #+end_src
+- Confirms: output shows =Uploaded: packages/TEST_ENGINE/1.0.0/TEST_ENGINE-1.0.0-x64-linux.tar.gz (sha256=...)=
+  followed by =Published TEST_ENGINE 1.0.0 (x64-linux) successfully.=
+  with no errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | ores-shell> compute publish-package TEST_ENGINE 1.0.0 x64-linux --file /mnt/development/OreStudio/ores_dev_brave_hopper/external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz; Uploaded: /api/v1/storage/compute/packages/TEST_ENGINE/1.0.0/TEST_ENGINE-1.0.0-x64-linux.tar.gz (sha256=44188963c2c2eb0014b7edc760f2a17224aa65fa2d1f228a6cc3214adafbdf8a); Published TEST_ENGINE 1.0.0 (x64-linux) successfully.; |
+
+** Publish second platform, same version
+
+- Still in the shell session, run:
+  #+begin_src text
+  compute publish-package TEST_ENGINE 1.0.0 arm64-osx --file external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz
+  #+end_src
+- Confirms: succeeds the same way, resolving the *same* =TEST_ENGINE=
+  app and =1.0.0= app_version (idempotent upsert by name/version) and
+  adding an =arm64-osx= row rather than creating a duplicate app/version.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | ores-shell> compute publish-package TEST_ENGINE 1.0.0 arm64-osx --file /mnt/development/OreStudio/ores_dev_brave_hopper/external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz; Uploaded: /api/v1/storage/compute/packages/TEST_ENGINE/1.0.0/TEST_ENGINE-1.0.0-arm64-osx.tar.gz (sha256=44188963c2c2eb0014b7edc760f2a17224aa65fa2d1f228a6cc3214adafbdf8a); Published TEST_ENGINE 1.0.0 (arm64-osx) successfully. |
+
+** Verify both platforms preserved after merge
+
+- In the Qt client, open Compute Console (menu: Compute) > Apps tab.
+- Double-click the =TEST_ENGINE= row, then its =1.0.0= version row to
+  open =AppVersionDetailDialog=.
+- Confirms: the platforms list shows *both* =x64-linux= and
+  =arm64-osx= with distinct =package_uri=/=sha256= values — this is
+  the regression check for the bug where a second =publish-package=
+  call used to wipe out the first platform's row (=save_app_version_request=
+  replaces every platform row for the version wholesale; the fix
+  fetches and merges existing platforms before saving).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create app via wizard, two platforms
+
+- In Compute Console's Apps tab, click the "App" toolbar action to
+  open =AppProvisionerWizard=.
+- Application page: name =WIZARD_ENGINE=.
+- Version page: check "Register a version now", wrapper version
+  =1.0.0=, engine version =2.0.0=, min RAM =512=.
+- Platforms page: move both =x64-linux= and =x64-windows= to
+  "Selected".
+- Package page: for *each* platform row, click "Browse…" and select
+  =external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz=,
+  then click "Upload All".
+- Confirms: both rows' Status column reads "Uploaded"; "Next" becomes
+  enabled only once both platforms have uploaded.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Review and submit the wizard
+
+- On the Review page, confirms: two "Package (...)" lines are shown,
+  one per platform, each with a real =package_uri= (not "(not
+  uploaded)").
+- Select a change reason, click "Create".
+- Confirms: the wizard closes without an error dialog, and
+  =WIZARD_ENGINE= now appears in the Apps tab list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Upload an additional platform via standalone dialog
+
+- In Compute Console's Apps tab, click "Upload Engines" to open
+  =UploadEnginesDialog=.
+- Select Application =WIZARD_ENGINE=, Version =1.0.0 / 2.0.0=,
+  Platform =arm64-osx=.
+- Browse to
+  =external/ore/packages/ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz=,
+  select a change reason, click "Upload".
+- Confirms: the status label shows "Uploaded ..." with a package URI
+  and sha256, no error dialog.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Verify all three platforms preserved
+
+- Reopen =WIZARD_ENGINE='s =1.0.0 / 2.0.0= version detail dialog from
+  the Apps tab.
+- Confirms: all *three* platforms (=x64-linux=, =x64-windows= from the
+  wizard, plus =arm64-osx= from the standalone dialog) are listed with
+  distinct package URIs — the same merge-preserving behaviour as Step
+  3, now exercised through =UploadEnginesDialog='s independent fetch/
+  merge/save path.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-01T00:00:46Z |
+| Branch        | feature/design-acme-compute-package-publishing-flow |
+| Commit        | 36c124946 |
+| Worktree      | bright_faraday |
+
+* Notes

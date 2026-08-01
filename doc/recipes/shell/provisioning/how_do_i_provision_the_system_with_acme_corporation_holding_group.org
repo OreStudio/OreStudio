@@ -41,11 +41,36 @@ database is fresh (=compass db recreate -y -k= → bootstrap mode).
 =connect= takes the endpoint from =$ORES_NATS_URL= and inherits the
 subject prefix and TLS context the shell was started with.
 
+Also publishes the vendored ORE engine package (see [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build
+ACME compute package publishing (client lib, shell, Qt)]]) as its own
+step, still logged in as =super_admin= so the app/version lands under
+the *system* tenant — the scope every tenant's compute jobs dispatch
+against, not one tenant's own scope — so the system is ready to run
+compute jobs the moment this script finishes, no separate manual
+=compute publish-package= step required. The app name/engine
+version/platform triplet here must match whatever
+=compute_ore_app_seed.sql= currently seeds and whatever
+=external/ore/tools/package_ore.sh= last vendored into
+=publish/vendor-packages/= — bump all three together when refreshing
+the vendored engine.
+
+=--file= is =build/output/${ORES_PRESET}/publish/vendor-packages/...=,
+not a bare =publish/vendor-packages/...=, even though the running
+=ores.shell= binary itself lives right next to that directory —
+=compass shell -f= launches it with the *repository root* as its
+working directory (see =cmd_shell='s =subprocess.run(cmd,
+cwd=PROJECT_ROOT, ...)= in =projects/ores.compass/src/compass.py=),
+not the binary's own =publish/= directory, so a path relative to the
+binary would silently fail to resolve. =${ORES_PRESET}= expands the
+same way =$ORES_NATS_URL= already does above, from whatever preset
+=.env= has configured for this checkout.
+
 #+name: acme-corporation-system-provision
 #+begin_src ores-shell :exports none
 connect $ORES_NATS_URL
 
 provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
+compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
 logout
 
 login tenant_admin@acme_corporation Secure-Password-123

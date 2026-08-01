@@ -223,7 +223,14 @@ cat > "${PKG_DIR}/manifest.json" <<EOF
 EOF
 
 TARBALL="${STAGE}/${PKG_NAME}.tar.gz"
-( cd "${STAGE}" && tar czf "${TARBALL}" "${PKG_NAME}" )
+# Flat layout, no wrapping directory: ores.compute.wrapper's
+# read_manifest() looks for manifest.json directly at the extraction
+# root (see projects/ores.compute/wrapper/src/app/application.cpp),
+# and manifest.json's own "executable" field is a bare filename with no
+# directory prefix -- packing "${PKG_NAME}" itself (the previous
+# behaviour) archives everything one level too deep and the wrapper
+# can never find manifest.json.
+( cd "${PKG_DIR}" && tar czf "${TARBALL}" . )
 echo ""
 echo "Built: ${TARBALL} ($(du -h "${TARBALL}" | cut -f1))"
 
@@ -264,7 +271,19 @@ if [[ "${SKIP_SAMPLE_TEST}" -eq 0 ]]; then
         exit 1
     fi
 
-    EXE_ABS="$(cd "${PKG_DIR}" && pwd)/${PKG_NAME}"
+    # Extract the actual TARBALL just built, rather than running out of
+    # PKG_DIR directly -- otherwise this "self-test" never notices a
+    # packing bug in the tarball itself (exactly how the flat-vs-wrapped
+    # layout bug above went undetected).
+    EXTRACT_DIR="${STAGE}/extracted"
+    mkdir -p "${EXTRACT_DIR}"
+    tar xzf "${TARBALL}" -C "${EXTRACT_DIR}"
+    if [[ ! -f "${EXTRACT_DIR}/manifest.json" ]]; then
+        echo "ERROR: manifest.json not found at the root of the extracted tarball -- packing is wrapping everything in an extra directory again." >&2
+        exit 1
+    fi
+
+    EXE_ABS="${EXTRACT_DIR}/${PKG_NAME}"
     if ( cd "${JOB_DIR}" && "${EXE_ABS}" Input/ore.xml >"${STAGE}/run.log" 2>&1 ); then
         echo "OK: sample run exited 0."
     else

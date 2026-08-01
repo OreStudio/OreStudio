@@ -86,6 +86,20 @@ public:
                 const std::filesystem::path& src_file);
 
     /**
+     * @brief Upload a local file to storage via HTTP PUT, returning the
+     * server's response body.
+     *
+     * Same as upload(), but surfaces the response body (e.g. so a caller
+     * can read a server-computed checksum out of a JSON response) instead
+     * of discarding it.
+     *
+     * @throws std::runtime_error on HTTP or I/O failure.
+     */
+    std::string upload_returning_response(const std::string& bucket,
+                                          const std::string& key,
+                                          const std::filesystem::path& src_file);
+
+    /**
      * @brief Download an object from storage via HTTP GET.
      *
      * @param bucket     Source storage bucket name.

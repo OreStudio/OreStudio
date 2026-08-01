@@ -28,6 +28,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/OrgDocViewerWindow.hpp"
+#include <QApplication>
 #include <QColor>
 #include <QDateTime>
 #include <QDialogButtonBox>
@@ -268,20 +269,34 @@ void QaValidationRunnerWidget::captureScreenshot(const QString& baseName,
 
     // Deferred, not an immediate grab: this slot runs synchronously from
     // the button click that triggered it, while the QA Runner (or the
-    // step-detail subwindow) is still the foreground MDI subwindow. A
-    // short delay gives the tester a chance to switch to the subwindow
-    // under test first, same idea as an OS screenshot tool's countdown.
+    // step-detail subwindow) is still the foreground window. A short
+    // delay gives the tester a chance to switch to the window under
+    // test first, same idea as an OS screenshot tool's countdown.
     //
-    // Rendered via QWidget::grab() on the app's own top-level window,
-    // not QScreen::grabWindow(0) on the root window -- the latter reads
-    // the X11 root pixmap directly, which is black under a compositing
+    // Rendered via QWidget::grab() on a top-level window, not
+    // QScreen::grabWindow(0) on the root window -- the latter reads the
+    // X11 root pixmap directly, which is black under a compositing
     // XWayland setup like WSLg (the composited frame lives in the
     // Wayland/RDP layer, never written back to the root drawable).
     // grab() sidesteps the window system entirely by having Qt render
     // the widget tree itself, and as a side effect only ever captures
-    // this app's own window, never another app's.
-    QPointer<QWidget> topLevel = window();
-    QTimer::singleShot(1500, this, [topLevel, directory, baseName, onDone]() {
+    // this app's own windows, never another app's.
+    //
+    // Resolved at fire time via qApp->activeWindow(), not window()
+    // captured now: window() is always *this widget's own* top-level
+    // (the MainWindow, since the Runner lives inside its MDI area),
+    // which would silently miss any window the tester detaches out of
+    // it (e.g. Compute Console and everything opened from it --
+    // AppProvisionerWizard, UploadEnginesDialog, detail dialogs opened
+    // via show_detail_as_window's Qt::Window flag -- these are
+    // independent top-level windows, invisible to a MainWindow-only
+    // grab). Falls back to this widget's own top-level if nothing is
+    // active when the timer fires (e.g. focus moved outside the app).
+    QPointer<QWidget> fallback = window();
+    QTimer::singleShot(1500, this, [fallback, directory, baseName, onDone]() {
+        QWidget* topLevel = qApp->activeWindow();
+        if (!topLevel)
+            topLevel = fallback;
         if (!topLevel) {
             onDone(QString());
             return;

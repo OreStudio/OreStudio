@@ -54,6 +54,20 @@ public:
      */
     static void put(const std::string& url, const std::filesystem::path& src);
 
+    /**
+     * @brief Uploads a local file via HTTP PUT, returning the response body.
+     *
+     * Same wire behaviour as put(), but returns the server's response body
+     * instead of discarding it -- e.g. so callers can read a server-computed
+     * checksum out of a JSON response.
+     *
+     * @param url  Full URL of the destination (http://host:port/path)
+     * @param src  Local path of the file to upload
+     * @return     The response body.
+     * @throws std::runtime_error on connection, HTTP, or I/O failure
+     */
+    static std::string put_returning_body(const std::string& url, const std::filesystem::path& src);
+
 private:
     struct url_parts {
         std::string host;

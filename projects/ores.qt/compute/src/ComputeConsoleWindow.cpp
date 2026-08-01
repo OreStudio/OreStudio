@@ -27,12 +27,14 @@
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/BatchDetailDialog.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.qt/TransferProgressDelegate.hpp"
+#include "ores.qt/UploadEnginesDialog.hpp"
 #include "ores.qt/WorkunitDetailDialog.hpp"
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -60,11 +62,15 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
+ComputeConsoleWindow::ComputeConsoleWindow(QMainWindow* mainWindow,
+                                           QMdiArea* mdiArea,
+                                           ClientManager* clientManager,
                                            ChangeReasonCache* changeReasonCache,
                                            BadgeCache* badgeCache,
                                            QWidget* parent)
     : QWidget(parent)
+    , main_window_(mainWindow)
+    , mdi_area_(mdiArea)
     , client_manager_(clientManager)
     , change_reason_cache_(changeReasonCache)
     , badge_cache_(badgeCache)
@@ -328,6 +334,15 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
     });
     app_toolbar->addAction(refresh_apps);
 
+    app_toolbar->addSeparator();
+
+    auto* upload_engines_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::Publish, color_constants::icon_color),
+        tr("Upload Engines"),
+        this);
+    connect(upload_engines_action, &QAction::triggered, this, &ComputeConsoleWindow::on_upload_engines);
+    app_toolbar->addAction(upload_engines_action);
+
     auto* top_pane = new QWidget(this);
     auto* top_vl = new QVBoxLayout(top_pane);
     top_vl->setContentsMargins(0, 0, 0, 0);
@@ -509,19 +524,22 @@ void ComputeConsoleWindow::on_tasks_error(const QString& message, const QString&
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Open a DetailDialogBase-derived widget as a proper top-level window.
- *
- * DetailDialogBase is a QWidget (not a QDialog), designed to live inside a
- * DetachableMdiSubWindow.  When opened directly from ComputeConsoleWindow we
- * have no MDI area, so we set Qt::Window to get a real window frame and
- * connect closeRequested → close() so the "Close" button works.
+ * Dock a DetailDialogBase-derived widget into the main window's MDI area via
+ * DetachableMdiSubWindow -- the same convention every other entity dialog in
+ * the app uses (see AppController::showAddDialog()), rather than popping it
+ * up as an independent top-level window.
  */
-static void show_detail_as_window(DetailDialogBase* dlg, const QString& title) {
-    dlg->setWindowFlags(Qt::Window);
-    dlg->setWindowTitle(title);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    QObject::connect(dlg, &DetailDialogBase::closeRequested, dlg, &QWidget::close);
-    dlg->show();
+void ComputeConsoleWindow::show_detail_as_window(DetailDialogBase* dlg, const QString& title) {
+    auto* window = new DetachableMdiSubWindow(main_window_);
+    window->setAttribute(Qt::WA_DeleteOnClose);
+    window->setWidget(dlg);
+    window->setWindowTitle(title);
+
+    connect(dlg, &DetailDialogBase::closeRequested, window, &QWidget::close);
+
+    mdi_area_->addSubWindow(window);
+    window->resize(dlg->sizeHint());
+    window->show();
 }
 
 // ── Interaction ───────────────────────────────────────────────────────────────
@@ -574,12 +592,28 @@ void ComputeConsoleWindow::on_tab_changed(int /*index*/) {}
 void ComputeConsoleWindow::on_new_application() {
     auto* wizard =
         new AppProvisionerWizard(client_manager_, change_reason_cache_, http_base_url_, this);
+    // Matches every other provisioning wizard in the app (see
+    // MainWindow::showSystemProvisionerWizard): QWizard is a QDialog, so
+    // its native window is transient-for-parent regardless of
+    // Qt::NonModal, which many Wayland compositors (WSLg included)
+    // restrict input on while mapped. Qt::Window makes it a genuinely
+    // independent top-level window like every other window in the app.
+    wizard->setWindowFlags(Qt::Window);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
     connect(wizard, &AppProvisionerWizard::provisioned, this, [this]() {
         app_model_->refresh();
         app_version_model_->refresh();
     });
     wizard->open();
+}
+
+void ComputeConsoleWindow::on_upload_engines() {
+    auto* dialog =
+        new UploadEnginesDialog(client_manager_, change_reason_cache_, http_base_url_, this);
+    // See on_new_application()'s Qt::Window comment -- same reasoning.
+    dialog->setWindowFlags(Qt::Window);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->open();
 }
 
 void ComputeConsoleWindow::on_new_app_version() {
@@ -823,8 +857,13 @@ void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& inde
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
     dlg->setHttpBaseUrl(http_base_url_);
-    dlg->setVersion(*version);
+    // setCreateMode() must precede setVersion(): setVersion() gates its
+    // loadAssignedPlatforms() fetch on !createMode_, which defaults to
+    // true, so calling it before setCreateMode(false) silently skipped
+    // loading the version's platforms/packages for every existing version
+    // opened this way.
     dlg->setCreateMode(false);
+    dlg->setVersion(*version);
     connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
         app_version_model_->refresh();
     });

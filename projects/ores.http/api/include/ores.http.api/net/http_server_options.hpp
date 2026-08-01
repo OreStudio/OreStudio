@@ -53,6 +53,15 @@ struct http_server_options final {
     std::chrono::seconds request_timeout{30};
 
     /**
+     * @brief Maximum accepted request body size, in bytes.
+     *
+     * Beast's default body_limit for a plain (non-parser) http::read is
+     * 1MB, far below the size of a compute engine package upload
+     * (tens of MB) -- storage_routes' PUT handler needs this raised.
+     */
+    std::uint64_t max_body_size = 256 * 1024 * 1024;
+
+    /**
      * @brief Whether to enable SSL/TLS.
      */
     bool enable_ssl = false;

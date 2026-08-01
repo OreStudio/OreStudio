@@ -580,6 +580,7 @@ User={os.getuid()}
 Group={os.getgid()}
 Volume={_quadlet_host_dir(checkout_root, "log", def_row['service_name'], env_name, replica)}:/app/log
 Volume={_quadlet_host_dir(checkout_root, "run", def_row['service_name'], env_name, replica)}:/app/run
+Volume={keys_dir}:{keys_dir}:ro
 EnvironmentFile={env_file}
 Exec={args}
 Notify=healthy
@@ -714,12 +715,23 @@ def cmd_quadlet(project_root: Path, env: dict, args) -> int:
 def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     """Copy generated Quadlet units into ~/.config/containers/systemd/
     (locally, or on a remote host over SSH with --host) and reload/start.
-    Mirrors cmd_deploy's sync-if-changed pattern. Ensures the IAM JWT
-    podman secret exists (podman secret create --replace, idempotent) so
-    the generated unit's Secret= reference resolves -- podman secrets are
-    the multiline-safe equivalent of the plain-systemd path's $(cat
-    pem-file) shell re-export, since Quadlet unit files have no shell
-    around them to run that re-export in."""
+    Mirrors cmd_deploy's sync-if-changed and stale-unit-removal pattern.
+    Ensures the IAM JWT podman secret exists (podman secret create
+    --replace, idempotent) so the generated unit's Secret= reference
+    resolves -- podman secrets are the multiline-safe equivalent of the
+    plain-systemd path's $(cat pem-file) shell re-export, since Quadlet
+    unit files have no shell around them to run that re-export in.
+
+    --host is deliberately "copy the already-rendered units and start
+    them," not a full remote-provisioning step: it does NOT create the
+    bind-mount host directories (_quadlet_host_dir's build/quadlet-log/
+    build/quadlet-run) or the IAM JWT podman secret on the target host,
+    and the rendered User=/Group=/Volume= paths are baked in from this
+    (rendering) machine's own uid/gid/checkout path, not the remote
+    deploying user's. Building/staging/provisioning a remote host
+    properly is the sibling offload-to-WSL-host story's job (see this
+    task's Goal) -- --host here only carries a checkout that already has
+    matching users/paths/secrets set up by hand."""
     env_name = env.get("ORES_ENV_NAME", "")
     if not env_name:
         print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
@@ -738,15 +750,33 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
         return subprocess.run(cmd_args, check=False)
 
     jwt_key_file = project_root / "build/keys/iam-rsa-private.pem"
-    if jwt_key_file.is_file() and not host:
-        secret_name = _quadlet_jwt_secret_name(env_name)
-        subprocess.run(
-            ["podman", "secret", "create", "--replace", secret_name,
-             str(jwt_key_file)], check=False, capture_output=True)
+    if jwt_key_file.is_file():
+        if host:
+            print(f"warning: --host does not provision the IAM JWT podman "
+                  f"secret on {host} -- create "
+                  f"{_quadlet_jwt_secret_name(env_name)} there by hand "
+                  "before starting any IAM unit.", file=sys.stderr)
+        else:
+            secret_name = _quadlet_jwt_secret_name(env_name)
+            result = subprocess.run(
+                ["podman", "secret", "create", "--replace", secret_name,
+                 str(jwt_key_file)], check=False, capture_output=True,
+                text=True)
+            if result.returncode != 0:
+                print(f"warning: failed to create podman secret "
+                      f"{secret_name}: {result.stderr.strip()} -- any "
+                      "IAM unit's Secret= reference will fail to resolve "
+                      "at start time.", file=sys.stderr)
 
     src_names = sorted(p.name for p in src_dir.glob("*"))
 
     if host:
+        print(f"warning: --host does not create the bind-mount host "
+              f"directories (build/quadlet-log/, build/quadlet-run/) on "
+              f"{host}, and the rendered User=/Group=/Volume= paths are "
+              "baked in from this machine's own uid/gid/checkout path, "
+              "not the remote user's -- see cmd_quadlet_deploy's "
+              "docstring.", file=sys.stderr)
         dest = f"{host}:.config/containers/systemd/"
         subprocess.run(["ssh", host, "mkdir", "-p",
                          ".config/containers/systemd"], check=True)
@@ -763,7 +793,8 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     dest_dir = Path.home() / ".config" / "containers" / "systemd"
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    added, updated = [], []
+    src_name_set = set(src_names)
+    added, updated, removed = [], [], []
     for name in src_names:
         src = src_dir / name
         dest = dest_dir / name
@@ -775,15 +806,33 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
             shutil.copyfile(src, dest)
             added.append(name)
 
-    if added or updated:
+    # Same stale-unit removal as cmd_deploy: header + env-name(-quadlet)
+    # suffix gated, so a service disabled/removed from the DB doesn't
+    # leave a dangling .container unit (or stale .target Wants=) behind.
+    stale_re = re.compile(
+        rf"-{re.escape(env_name)}-quadlet(-\d+)?\.container$|"
+        rf"-{re.escape(env_name)}-quadlet\.target$")
+    for dest in sorted(dest_dir.iterdir()):
+        if not dest.is_file() or not stale_re.search(dest.name):
+            continue
+        if dest.name in src_name_set:
+            continue
+        if dest.read_text(encoding="utf-8").startswith(UNIT_HEADER):
+            dest.unlink()
+            removed.append(dest.name)
+
+    if added or updated or removed:
         subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
 
-    print(f"Added: {len(added)}, updated: {len(updated)}")
+    print(f"Added: {len(added)}, updated: {len(updated)}, "
+          f"removed: {len(removed)}")
     for name in added:
         print(f"  + {name}")
     for name in updated:
         print(f"  ~ {name}")
-    if not (added or updated):
+    for name in removed:
+        print(f"  - {name}")
+    if not (added or updated or removed):
         print("Nothing changed; skipped daemon-reload.")
     return 0
 

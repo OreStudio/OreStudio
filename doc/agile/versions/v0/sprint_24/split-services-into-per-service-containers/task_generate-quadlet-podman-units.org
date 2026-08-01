@@ -193,7 +193,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | render_quadlet_wrapper_units missing the keys_dir volume mount, so ores.compute.wrapper replicas can't reach their NATS TLS cert/key | projects/ores.compass/src/systemd_generate.py | Fixed | Added Volume={keys_dir}:{keys_dir}:ro, matching render_quadlet_singleton_unit. Verified live: wrapper replica-1 connected to NATS via mTLS. Also fixed a pre-existing, unrelated Dockerfile bug this surfaced (strip glob didn't match ores.compute.wrapper/ores.http.server). |
+| 2 | quadlet-deploy --host doesn't provision the remote side (host dirs, IAM JWT secret, uid/gid baked from the render machine) | projects/ores.compass/src/systemd_generate.py | Fixed (documented, not auto-provisioned) | Added explicit warnings printed at deploy time plus a docstring explanation; full remote provisioning stays out of scope per the task's established boundary (sibling offload-to-WSL-host story's job). |
+| 3 | Secret-creation failures silently discarded | projects/ores.compass/src/systemd_generate.py | Fixed | Now checks the return code and prints a warning with stderr on failure. |
+| 4 | quadlet-deploy's local path never removes stale units (parity gap vs cmd_deploy) | projects/ores.compass/src/systemd_generate.py | Fixed | Added the same header+env-suffix-gated stale-unit removal as cmd_deploy, adapted for the -quadlet suffix. |
 
 * Result
 

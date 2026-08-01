@@ -166,11 +166,12 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(paymentFrequencyController_.get());
 
     legTypeController_ = std::make_unique<LegTypeController>(ctx_.main_window,
-                                                             ctx_.mdi_area,
-                                                             ctx_.client_manager,
-                                                             ctx_.username,
-                                                             ctx_.badge_cache,
-                                                             this);
+                                                              ctx_.mdi_area,
+                                                              ctx_.client_manager,
+                                                              ctx_.change_reason_cache,
+                                                              ctx_.username,
+                                                              ctx_.badge_cache,
+                                                              this);
     connectControllerSignals(legTypeController_.get());
 
     roundingTypeController_ = std::make_unique<RoundingTypeController>(ctx_.main_window,

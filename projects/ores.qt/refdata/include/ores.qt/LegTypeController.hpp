@@ -37,6 +37,7 @@ class LegTypeMdiWindow;
 class LegTypeDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing leg type windows and operations.
@@ -60,6 +61,7 @@ public:
     LegTypeController(QMainWindow* mainWindow,
                       QMdiArea* mdiArea,
                       ClientManager* clientManager,
+                      ChangeReasonCache* changeReasonCache,
                       const QString& username,
                       BadgeCache* badgeCache,
                       QObject* parent = nullptr);
@@ -113,6 +115,7 @@ private:
         std::function<void(std::expected<std::vector<refdata::domain::leg_type>, QString>)>
             callback);
 
+    ChangeReasonCache* changeReasonCache_;
     BadgeCache* badgeCache_;
     LegTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

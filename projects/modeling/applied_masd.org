@@ -340,9 +340,13 @@ The entity author's own choice of which facets apply — the *supported
 set*, $S_e$, declared via =ores.*= properties on the entity's model — is
 the one part of this mechanism that is a genuinely authored feature; it
 is catalogued alongside the rest of the feature catalogue in
-[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]. Everything below this point is
-resolution mechanism a developer invokes, not a choice an entity author
-authors.
+[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]], including the specificity-resolution
+rule that governs how a partial =ores.*= binding is resolved into a
+full $S_e$ (more-specific overrides less-specific, depth-first) — that
+rule is about authoring one entity's own $S_e$ correctly, not about
+addressing mechanism, so it stays there rather than being restated
+here. Everything below this point is resolution mechanism a developer
+invokes, not a choice an entity author authors.
 
 *** Model types — the scope filter
 

@@ -28,11 +28,11 @@ Variability Model's own bundle tables.
 
 ** =ores.sql.schema=
 
+- [[id:F6ECC504-CBF4-4120-85D4-7B930C7BFBF0][has_parent_id]]
 - [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]]
 - [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]]
 - [[id:3E6A84D4-50B5-420E-909F-D3763823A89B][extra_checks]]
 - [[id:CBA5E1E2-AFD9-4968-8878-9C6825839890][extra_delete_sets]]
-- [[id:F96D0CE0-0CFA-4250-9633-A1B6980E041B][soft_fk_validations]]
 - [[id:311F35DA-C2A0-425B-B226-7FDEF492A989][fk_copy_validations]]
 - [[id:57D55D45-AA9A-48CD-8A23-A4738368279B][text_code_validations]]
 - [[id:A34AC026-6173-4FE3-932E-C7E1C7266C99][party_id_from_book_id]]

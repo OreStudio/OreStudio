@@ -218,11 +218,11 @@ table is the cross-facet index only.
 
 | Feature | Type | Default |
 |---------+------+---------|
+| =has_parent_id= | bool | false |
 | =system_scope= | bool | false |
 | =nullable_tenant_id= | bool | false |
 | =extra_checks= | collection<string> | ∅ |
 | =extra_delete_sets= | collection<string> | ∅ |
-| =soft_fk_validations= | collection<struct> | ∅ |
 | =fk_copy_validations= | collection<struct> | ∅ |
 | =text_code_validations= | collection<struct> | ∅ |
 | =party_id_from_book_id= | struct | absent |

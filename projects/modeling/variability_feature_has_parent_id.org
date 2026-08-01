@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: F6ECC504-CBF4-4120-85D4-7B930C7BFBF0
+:END:
+#+title: Feature: has_parent_id
+#+description: Self-referencing soft foreign key: generates a recursive-CTE hierarchy function for the entity.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:has_parent_id:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Tells the =ores.sql.schema= facet to generate a
+=<product>_<component>_<entity_plural>_hierarchy_fn(p_tenant_id,
+p_root_id, p_from_root)= recursive-CTE function that walks the
+entity's self-referencing tree, so consumers never hand-write their
+own recursive query. See [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model — SQL]] § "Hierarchy:
+has_parent_id" for the worked =counterparty= example and what the
+generated function does and does not cover.
+
+* Structural consequence
+
+None directly on the entity's own columns — the function is generated
+independently of whether the self-referencing FK column exists. Two
+*other* properties become meaningful once this feature is set,
+=:parent_id_column:= and =:hierarchy_name_field:=, but both are
+themselves structural (they name real columns), not features; see
+[[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model — SQL]].
+
+* Used by
+
+- [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

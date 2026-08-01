@@ -29,7 +29,13 @@ parent at all).
 [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][counterparty]] — a party-like entity that can have a parent counterparty
 (a self-referencing soft foreign key), rendered as a tree via SQL's
 =has_parent_id= hierarchy function and the Qt hierarchy-tree paste
-seam.
+seam. Adopting this profile also requires authoring two structural
+properties this table deliberately omits, because they are not
+features: =:parent_id_column:= (the self-referencing FK column name,
+e.g. =parent_counterparty_id=) and =:hierarchy_name_field:= (the
+display-label column, e.g. =full_name=) — see [[id:729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27][Codegen entity meta-model
+— SQL]] § "Hierarchy: has_parent_id" for why both are structural, not
+variability.
 
 * Assignments
 
@@ -40,9 +46,7 @@ here is left to the model's own choice:
 |------+-------|
 | [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
 | [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
-| =has_parent_id= | true |
-| =parent_id_column= | (set, e.g. =parent_counterparty_id=) |
-| =hierarchy_name_field= | (set, e.g. =full_name=) |
+| [[id:F6ECC504-CBF4-4120-85D4-7B930C7BFBF0][has_parent_id]] | true |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |
 | [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |

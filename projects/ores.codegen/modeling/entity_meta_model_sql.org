@@ -2,7 +2,7 @@
 :ID: 729E44CA-6AB7-4ADB-BA54-B1AD5A12DD27
 :END:
 #+title: Codegen entity meta-model — SQL
-#+description: The * SQL section of an entity model: table naming, the has_parent_id hierarchy knob, and the masd.sql variability feature bundle (tenant-scoping policy, extra checks, soft-FK validations). Generates the bi-temporal table DDL, insert triggers, and notify triggers via the ores.sql.schema facet.
+#+description: The * SQL section of an entity model: table naming, the has_parent_id hierarchy knob, and the ores.sql.schema variability feature bundle (tenant-scoping policy, extra checks, tenant-scoping FK validations). Generates the bi-temporal table DDL, insert triggers, and notify triggers via the ores.sql.schema facet.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
@@ -135,11 +135,11 @@ column being generated; it composes independently either way.
 * Projection configuration (variability)
 
 Every property below is, in [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD Variability]] terms, a *feature*
-(=masd.sql= bundle) — authored on the model's =sql= section and read
+(=ores.sql.schema= bundle) — authored on the model's =sql= section and read
 through in =codegen/core.py=/=org_loader.py=, never computed. None of
 them changes the entity's logical shape, only the generated DDL,
 triggers, and rules. Full classification and cross-facet index: [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
-Studio Variability Model]] § "Bundle: masd.sql" — this section is the
+Studio Variability Model]] § "Bundle: ores.sql.schema" — this section is the
 narrative home for these knobs; that page indexes them.
 
 | Feature | Type | Default | Effect |
@@ -148,7 +148,6 @@ narrative home for these knobs; that page indexes them.
 | =:nullable_tenant_id:= | bool | false | =tenant_id= is nullable (system records carry NULL); selects the nullable-tenant validation and index variants. *Structural consequence:* changes =tenant_id= nullability. |
 | =:extra_checks:= | collection<string> | ∅ | Additional =CHECK= constraints to emit on the table. |
 | =:extra_delete_sets:= | collection<string> | ∅ | Extra =SET= clauses in the soft-delete rule. |
-| =:soft_fk_validations:= | collection<struct> | ∅ | Soft foreign-key validations to emit in the insert trigger. |
 | =:fk_copy_validations:= | collection<struct> | ∅ | FK validations that also copy/denormalise fields from the referenced row. |
 | =:text_code_validations:= | collection<struct> | ∅ | FK validations against a text lookup column. |
 | =:party_id_from_book_id:= | struct | absent | Derive and validate =party_id=/=portfolio_id= from =book_id= in the trigger. |
@@ -162,7 +161,7 @@ anywhere, it is into the logical model as a tenant-scoping attribute
 (they lean structural despite being authored as knobs).
 
 =SECURITY DEFINER= on insert/validate triggers is *not* a feature —
-checked against =library/templates/sql_service_db_grants.mustache=, it
+checked against =library/templates/sql_schema_domain_entity_create.mustache=, it
 is emitted unconditionally today, matching [[id:897A7156-504D-4581-AD4C-026D643C0838][the evaluation checklist]]'s
 mandatory rule. It is mentioned here only so nobody goes looking for a
 =:security_definer:= knob that no longer exists.
@@ -220,4 +219,4 @@ between each.
 - [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the column declarations this section's DDL is built from.
 - [[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]] — the shared paste-block mechanism.
 - [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — MASD's formal vocabulary for =:tablename:=/=:has_parent_id:= as configuration points.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the =masd.sql= bundle's classification and cross-facet index; this page is the narrative home for those knobs.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the =ores.sql.schema= bundle's classification and cross-facet index; this page is the narrative home for those knobs.

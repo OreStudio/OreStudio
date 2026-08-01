@@ -3232,12 +3232,14 @@ def cmd_add(argv):
               "  profile: scaffolds projects/modeling/variability_<slug>.org — a\n"
               "    named element-scope MASD profile (one fixed variability-axis\n"
               "    combination, anchored to a reference entity); see ORE Studio\n"
-              "    Variability Model -- Part 3 -- Profiles.\n"
+              "    Variability Model -- 'Profiles: naming a recurring\n"
+              "    configuration point'.\n"
               "  feature: scaffolds projects/modeling/\n"
               "    variability_feature_<slug>.org — the canonical detail page for\n"
               "    one MASD feature (identity, effect, structural consequence,\n"
               "    which profiles use it); see ORE Studio Variability Model --\n"
-              "    Part 2 -- Projection configuration.\n"
+              "    'Projection configuration: how an existing artefact family is\n"
+              "    shaped'.\n"
               "  remaining flags are passed through to ores.codegen "
               "(see 'How do I create a new doc?').")
         return 0

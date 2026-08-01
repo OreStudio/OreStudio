@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_24:v0:
 #+created: 2026-07-30
-#+updated: 2026-07-30
+#+updated: 2026-08-01
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,12 +23,12 @@ without manual steps or silent regressions.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.            |
-| Last touched  | 2026-07-30                               |
+| Last touched  | 2026-08-01                               |
 
 * Acceptance
 
@@ -47,7 +47,7 @@ without manual steps or silent regressions.
 |------+-------+-------+-----+-------------|
 | [[id:CECBE7BB-0C9E-43EF-B344-B87FE4BC208B][Refresh ORE Engine binary package, examples, and XSD to 1.8.16.0]] | DONE | 2026-07-30 | 2026-07-30 | Rebuild the ore engine self-contained, sync examples/xsd, automate hand-patch preservation. |
 | [[id:8DBD1BAE-EC77-4008-99CB-3C08C20CB575][Verify compute grid package SHA256 on download]] | DONE | 2026-07-31 | 2026-07-31 | ores.compute.wrapper should verify a downloaded engine package's checksum against a known-good SHA256 before extracting/running it. |
-| [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] | BACKLOG | | | New ores.compute.client package_publisher shared by ores.shell and ores.qt; retarget AppProvisionerWizard to per-platform uploads on the seed's own key shape; vendor the ORE binary into the build. |
+| [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build ACME compute package publishing (client lib, shell, Qt)]] | DONE | 2026-07-31 | 2026-08-01 | New ores.compute.client package_publisher shared by ores.shell and ores.qt; retarget AppProvisionerWizard to per-platform uploads on the seed's own key shape; vendor the ORE binary into the build. |
 
 * Decisions
 
@@ -84,6 +84,21 @@ used by =workunit_handler.hpp= -- pre-existing drift unrelated to the
 SHA256 column. Added the =sha256= column by hand instead, matching the
 existing hand-maintained style; a full codegen realignment for this
 entity is separate follow-up work, not folded into this story.
+
+** Package publishing is fetch-then-merge, never a bare replace, for per-platform junction rows
+
+=save_app_version_request= replaces every =app_version_platform= row
+for a version wholesale by design (it's the same request whether the
+caller is adding a platform or editing an existing one, and there's no
+per-row upsert semantics in the protocol). That means every caller
+publishing a *single* platform at a time -- =ores.shell='s
+=publish-package= and =ores.qt='s =UploadEnginesDialog= -- must fetch
+the version's currently-published platforms first, replace only the
+one being republished, and send the full merged set back. Getting this
+wrong is silent data loss (a working platform's package_uri/sha256
+vanishes) rather than a visible error, so both call sites do the
+fetch-merge-save dance rather than trusting the request to be
+additive.
 
 * Out of scope
 

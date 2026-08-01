@@ -97,6 +97,23 @@ void storage_transfer::upload(const std::string& bucket,
                                << " duration=" << ms << "ms";
 }
 
+std::string storage_transfer::upload_returning_response(const std::string& bucket,
+                                                         const std::string& key,
+                                                         const fs::path& src_file) {
+    const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
+    const auto bytes = fs::file_size(src_file);
+    BOOST_LOG_SEV(lg(), debug) << "Uploading: bucket=" << bucket << " key=" << key
+                               << " bytes=" << bytes;
+    const auto t0 = std::chrono::steady_clock::now();
+    const auto body = http_client::put_returning_body(url, src_file);
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
+    BOOST_LOG_SEV(lg(), debug) << "Upload complete: bucket=" << bucket << " key=" << key
+                               << " duration=" << ms << "ms";
+    return body;
+}
+
 void storage_transfer::download(const std::string& bucket,
                                 const std::string& key,
                                 const fs::path& dest_file) {

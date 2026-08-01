@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :update-vendored-ore-engine:sprint_24:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/design-acme-compute-package-publishing-flow
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ There is exactly one way to publish a compute app engine package (the seed's per
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9468ACFD-8A99-430E-8E8E-6A828EF48C04][Update vendored ORE Engine to 1.8.16.0]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:D2264377-DD1B-44B5-9650-D59E7D696C4F][Verify ACME compute package publishing]] | PASSED | Ran to completion after fixing 7 real bugs surfaced by the run itself (see * Result). |
 
 * PRs
 
@@ -116,3 +116,66 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped as designed in * Plan, all five steps:
+
+1. New =ores.compute.client= component: =package_publisher= (upload +
+   client/server SHA256 verification), shared unchanged by both callers
+   below.
+2. =publish/vendor-packages/= populated at build time from
+   =external/ore/packages/= via a new =vendor_compute_packages= CMake
+   target.
+3. =AppProvisionerWizard::PackageUploadPage= retargeted to one upload
+   per selected platform via the shared publisher (was: one URI applied
+   to every platform).
+4. =ores.shell='s =compute publish-package= command: non-interactive
+   publish, defaulting the file to =publish/vendor-packages/=.
+5. New standalone =ores.qt= =UploadEnginesDialog=, reachable from
+   Compute Console's Apps tab ("Upload Engines"), for publishing against
+   an app/version/platform that already exists.
+
+Also fixed, all discovered while running the manual test scenario
+against a real build rather than assumed correct:
+
+- =save_app_version_request= replaces every platform row for a version
+  wholesale, so a second =publish-package= call for a different
+  platform used to silently wipe out the first platform's row. Both
+  the shell command and =UploadEnginesDialog= now fetch existing
+  platforms first and merge before saving.
+- =ores.http.server= read every request (including large binary
+  uploads) through Beast's default 1MB body limit, so the ~57MB ORE
+  package upload failed with "Broken pipe". Raised via a new
+  =http_server_options::max_body_size= (256MB); a follow-up capture
+  (EA916A96-0F86-42EF-BC26-CB1E7857B3EC) tracks the more idiomatic
+  disk-streaming fix as separate work.
+- =ComputeConsoleWindow='s detail dialogs (App/AppVersion/Batch/
+  WorkUnit) popped up as independent top-level windows via a local
+  =show_detail_as_window= hack instead of docking into the main
+  window's MDI area like every other entity dialog in the app.
+  =ComputeConsoleWindow= now takes =mainWindow=/=mdiArea= and docks via
+  =DetachableMdiSubWindow=, matching =AppController='s convention.
+  =AppProvisionerWizard=/=UploadEnginesDialog= (both wizard/dialog-type
+  windows) instead get the app's existing =Qt::Window= wizard
+  convention (same reasoning as =SystemProvisionerWizard= et al.).
+- =AppVersionDetailDialog='s platforms/packages silently failed to load
+  for any existing version: the call site set the version
+  (=setVersion()=, which gates its platform fetch on =!createMode_=)
+  before =setCreateMode(false)=, so it always ran against the default
+  =createMode_ == true=.
+- =AppProvisionerWizard='s Audit page queried change reasons in the
+  =common= category, which has zero =applies_to_new= reasons (amend-only)
+  -- should be =system=, matching the =createMode_ ? "system" : "common"=
+  convention already used by =AppDetailDialog=/=WorkunitDetailDialog=.
+- Both new Qt call sites used =ClientManager::storedUsername()= (the
+  raw login string, e.g. "tenant_admin@acme_corporation") for
+  =modified_by=/=performed_by= instead of =currentUsername()= (the
+  resolved bare account username), tripping
+  =ores_iam_validate_account_username_fn='s check.
+- =QaValidationRunnerWidget='s screenshot capture always grabbed its
+  own top-level window (the MainWindow), so any window a tester
+  detached out of Compute Console was invisible to a screenshot. Now
+  resolves =qApp->activeWindow()= at capture time instead.
+
+Filed two backlog captures for follow-up: NATS protocol-message shape
+normalisation/inventory (5E934799-3E38-4C36-8BE6-7CDCC64DD958), and
+streaming large HTTP uploads to disk (EA916A96-0F86-42EF-BC26-CB1E7857B3EC).

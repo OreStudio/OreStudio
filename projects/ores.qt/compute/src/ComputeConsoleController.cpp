@@ -51,7 +51,8 @@ void ComputeConsoleController::showConsole() {
 
     BOOST_LOG_SEV(lg(), info) << "Opening compute console";
 
-    consoleWindow_ = new ComputeConsoleWindow(clientManager_, changeReasonCache_, badgeCache_);
+    consoleWindow_ = new ComputeConsoleWindow(
+        mainWindow_, mdiArea_, clientManager_, changeReasonCache_, badgeCache_);
     consoleWindow_->setHttpBaseUrl(http_base_url_);
 
     connect(consoleWindow_,

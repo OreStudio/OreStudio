@@ -80,6 +80,29 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/bin)
 # Linux and Windows (no platform-specific subdirectory logic required).
 set(ORES_PLUGIN_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+# Vendors compute engine packages (e.g. the ORE binary tarball) into the
+# publish tree so an ACME publish (ores.shell/ores.qt) always finds them at
+# a path relative to the running executable, without a developer needing to
+# run a separate deploy step first -- same "ship with every build" trick as
+# user_manual.qch, but as an ALL-build custom target since it has no owning
+# executable target of its own to hang a POST_BUILD command off.
+set(ORES_VENDOR_PACKAGES_DIRECTORY ${ORES_PUBLISH_DIRECTORY}/vendor-packages)
+# Matches engine package archives (name-version-platform_triplet.tar.gz, per
+# ores.compute.api's compute_storage::package_key convention) but not the
+# sibling job-input sample archives in the same directory (e.g.
+# TA002_IR_Swap.tar.gz), which carry no platform triplet in their name.
+file(GLOB ORES_VENDOR_PACKAGE_ARCHIVES
+    "${CMAKE_SOURCE_DIR}/external/ore/packages/*-x64-linux.tar.gz"
+    "${CMAKE_SOURCE_DIR}/external/ore/packages/*-arm64-osx.tar.gz"
+    "${CMAKE_SOURCE_DIR}/external/ore/packages/*-x64-windows.tar.gz")
+add_custom_target(vendor_compute_packages ALL
+    COMMENT "Vendoring compute engine packages to ${ORES_VENDOR_PACKAGES_DIRECTORY}" VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ORES_VENDOR_PACKAGES_DIRECTORY}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${ORES_VENDOR_PACKAGE_ARCHIVES}
+        ${ORES_VENDOR_PACKAGES_DIRECTORY}/
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 # use, i.e. don't skip the full RPATH for the build tree
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 

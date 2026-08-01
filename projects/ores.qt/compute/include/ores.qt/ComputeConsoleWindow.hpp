@@ -32,6 +32,8 @@
 #include "ores.qt/HostDisplayNameCache.hpp"
 #include <QAction>
 #include <QFutureWatcher>
+#include <QMainWindow>
+#include <QMdiArea>
 #include <QSortFilterProxyModel>
 #include <QSplitter>
 #include <QTabWidget>
@@ -75,7 +77,9 @@ private:
     }
 
 public:
-    explicit ComputeConsoleWindow(ClientManager* clientManager,
+    explicit ComputeConsoleWindow(QMainWindow* mainWindow,
+                                  QMdiArea* mdiArea,
+                                  ClientManager* clientManager,
                                   ChangeReasonCache* changeReasonCache,
                                   BadgeCache* badgeCache,
                                   QWidget* parent = nullptr);
@@ -114,6 +118,7 @@ private slots:
     void on_tab_changed(int index);
     void on_auto_refresh_toggled(bool checked);
     void on_new_application();
+    void on_upload_engines();
     void on_new_app_version();
     void on_new_batch();
     void on_new_work_unit();
@@ -126,6 +131,7 @@ private slots:
 
 private:
     void setup_ui();
+    void show_detail_as_window(class DetailDialogBase* dlg, const QString& title);
     QWidget* make_tasks_tab();
     QWidget* make_apps_tab();
     QWidget* make_hosts_tab();
@@ -139,6 +145,8 @@ private:
     static constexpr int kHostsTab = 2;
     static constexpr int kTransfersTab = 3;
 
+    QMainWindow* main_window_;
+    QMdiArea* mdi_area_;
     ClientManager* client_manager_;
     ChangeReasonCache* change_reason_cache_;
     BadgeCache* badge_cache_;

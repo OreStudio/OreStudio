@@ -43,6 +43,8 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.history.api.lib
         ores.iam.api.lib
+        ores.compute.api.lib
+        ores.compute.client.lib
         ores.dq.api.lib
         ores.marketdata.api.lib
         ores.marketdata.client.lib

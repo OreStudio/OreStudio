@@ -57,6 +57,7 @@ target_link_libraries(${lib_target_name}
         ores.qt.api.lib
         ores.qt.mktdata.lib
         ores.compute.api.lib
+        ores.compute.client.lib
         ores.scheduler.api.lib
         ores.reporting.api.lib
         ores.workflow.core.lib

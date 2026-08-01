@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 56A3540C-26F8-4A2E-9DE1-616E8D402156
+:END:
+#+title: Re-shoot manual screenshots showing Barclays as Acme Corporation
+#+description: Five manual chapters (Tenants, Accounts and Roles, Connecting, Parties, Counterparties) have real UI screenshots captured against the old Barclays Plc demo tenant; re-shoot them against Acme Corporation now that it is the system's reference entity, and update the tied prose/captions to match.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:manual:screenshots:acme_corporation:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Five manual chapters carry real UI screenshots captured against the
+=barclays_plc= tenant, back when Barclays Plc was the system's
+reference/demo entity: =chapter_tenants.org= (Tenants window, showing
+the =barclays_plc= tenant row), =chapter_accounts_and_roles.org=
+(New Account — Parties tab, assigning to =BARCLAYS PLC=),
+=chapter_connecting.org= (logging in as
+=tenant_admin@barclays_plc=), =chapter_parties.org= (Party History
+dialog for =BARCLAYS BANK PLC=), and =chapter_counterparties.org=
+(prose mentioning "Barclays' counterparties"). Now that
+[[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] is the system's reference entity (see the story
+below), re-shoot each of these against a freshly provisioned Acme
+Corporation tenant, following [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual
+chapter?]], and update each caption/prose reference to match the new
+image (e.g. =acme_corporation= tenant code, =tenant_admin@acme_corporation=,
+an Acme legal entity in place of =BARCLAYS PLC=/=BARCLAYS BANK PLC=).
+
+* Why
+
+The [[id:3630BEB2-A5CE-42FD-85ED-22496B3DBCA7][Write user manual chapter: Acme Corporation as the system's
+test/demo entity]] task deliberately left these five chapters
+untouched — their screenshots are real UI captures, so editing the
+prose without re-shooting the image would leave a caption describing
+something the picture doesn't show. This capture is that deferred
+re-shoot, so the whole manual is consistent about which entity is the
+system's reference/demo tenant.
+
+* References
+
+- =doc/manual/user_guide/chapter_tenants.org=
+- =doc/manual/user_guide/chapter_accounts_and_roles.org=
+- =doc/manual/user_guide/chapter_connecting.org=
+- =doc/manual/user_guide/chapter_parties.org=
+- =doc/manual/user_guide/chapter_counterparties.org=
+
+* See also
+
+- [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] — the chapter and entity replacing Barclays as the reference tenant.
+- [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] — the parent story.
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — the recipe this work follows.

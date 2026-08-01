@@ -1,0 +1,393 @@
+:PROPERTIES:
+:ID: E3387565-DC9B-45BA-B98D-437ED80CEAED
+:END:
+#+title: Acme Corporation
+#+description: Acme Corporation, ORE Studio's realistic reference/demo entity: the holding-group structure, business units, portfolios, books, and staff, plus provisioning it from the shell or the Qt wizard.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:acme_corporation:refdata:user_guide:
+#+created: 2026-07-31
+#+updated: 2026-08-01
+
+#+startup: inlineimages
+@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{screenshot} @@@@html:Every screenshot @@in this manual, and every worked
+example in every other chapter, needs somewhere to point. This chapter
+introduces the entity that gives them one: Acme Corporation, a
+synthetic four-legal-entity holding group standing in for a real
+global investment bank, provisioned with a single command and ready
+to explore the moment it lands. It sets out what Acme Corporation is,
+the organisational model its holding-group structure is built from,
+the structure itself, the departments that populate it and why they
+are kept separate, and how to provision it yourself.
+
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
+** Overview
+
+The chapter advances the argument that understanding Acme Corporation
+means first knowing what it is, then the organisational model its
+structure is built from, then the structure itself, then the
+departments within it, and finally how to stand it up — and it
+proceeds in that order. It begins by establishing the premise in
+[[*What is Acme Corporation][What is Acme Corporation]]. From there [[*The organisational model: parties, business units, portfolios, and books][The organisational model:
+parties, business units, portfolios, and books]] sets out the two
+hierarchies — organisational and portfolio — that every party's
+structure is built from, the premise the rest of the chapter assumes.
+Building on that model, [[*The holding-group structure][The holding-group structure]] walks Acme's
+four legal entities and the trading floor each one carries,
+[[*Departments and segregation of duties][Departments and segregation of duties]] explains why a trading floor is
+never a single undifferentiated team, and [[*Staff and accounts][Staff and accounts]]
+introduces the people who staff those desks and the org-chart view
+that renders their reporting lines. Finally [[*Provisioning Acme Corporation][Provisioning Acme
+Corporation]] shows how to stand the whole entity up yourself, from the
+Qt wizard or the shell, before the [[*Conclusion][Conclusion]] draws these steps
+together.
+
+** What is Acme Corporation
+
+Acme Corporation is ORE Studio's reference entity: a synthetic
+four-legal-entity investment-bank holding group, fully populated with
+business units, portfolios, books, and staff, provisioned in one
+command and ready to explore the moment it lands. Every screenshot in
+this manual and every worked example in every other chapter needs a
+populated system to point at, and Acme Corporation is that system —
+a fully populated organisational structure to walk through rather
+than a single flat party.
+
+"Acme" is the archetypal fictional-company name — from the Acme
+Corporation, the mail-order supplier of absurdly over-engineered
+products in Looney Tunes' /Road Runner/ cartoons, now a byword for
+any generic placeholder business. Reusing it here signals plainly, to
+anyone browsing the data, that Acme Corporation is a synthetic
+reference/demo entity, not a real institution — the same signal
+=slovaris=, ORE Studio's other synthetic dataset, sends for its own
+domain. But the resemblance stops there. =Slovaris= is a fully
+self-contained fictional universe, deliberately isolated from the
+system's real reference data. Acme Corporation takes the opposite
+approach: it is designed to integrate. Its four legal entities carry
+LEIs that are fake but well-formed — real, checksum-valid (ISO 17442
+/ mod-97) 20-character codes built on GLEIF's reserved =9695=
+pre-LOU test prefix, which GLEIF explicitly sets aside for
+non-production use and will never assign to a real entity — stored
+in exactly the same =refdata_party_identifiers_tbl= rows a real
+GLEIF-imported LEI occupies, so nothing in the schema or the UI needs
+to special-case a "fake" identifier. Acme's counterparties, in turn,
+are not synthetic at all: they are the real, GLEIF-imported
+counterparty universe — Deutsche Bank, Barclays, and every other
+institution the GLEIF registry supplies — so Acme's own trades can
+reference real-world institutions exactly as a production tenant's
+would.
+
+With the premise established — a synthetic house trading real
+counterparties — the rest of the chapter turns to the model that
+gives Acme's own structure its shape.
+
+** The organisational model: parties, business units, portfolios, and books
+
+ORE Studio organises trading activity around two hierarchies that
+share a common root but serve different audiences. The first is
+/organisational/: a party — a legal entity or organisational
+subdivision — owns a tree of business units, typed and geographically
+anchored, that mirrors the bank's actual reporting lines. A division
+sits above business areas, which sit above trading desks and cost
+centres, each carrying a business-centre code (=GBLO= for London,
+=USNY= for New York, and so on) that ties it to a physical trading
+location. This hierarchy is what risk and middle office read: which
+desk, in which jurisdiction, is accountable for a given position.
+
+The second hierarchy is /portfolio/: books, the atomic unit to which
+every trade is booked, sit beneath physical portfolios that aggregate
+their risk and P&L, which in turn can sit beneath virtual portfolios —
+reporting overlays with no organisational meaning of their own, used
+to build cross-desk or cross-region views such as "Global Rates"
+spanning both London and New York. This is the hierarchy traders and
+front office read: not who is accountable, but how risk rolls up for
+management reporting. The two hierarchies are independent but linked
+at the book level — every book carries both an owning business unit
+and a parent portfolio — which is precisely how a bank practises
+"follow the sun" trading without a single book ever appearing to move
+between cities: London's book and New York's book are two separate
+books, each owned by its own desk, reconciled at end of day through
+an interbook trade, and reunited only in a virtual portfolio's
+consolidated view.
+
+Both hierarchies are scoped to a party within a tenant, following the
+same tenant isolation and party-visibility rules set out in the
+[[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter. Acme Corporation's four legal entities are four
+such parties, each the root of its own pair of hierarchies — which is
+exactly the shape the next section walks in concrete terms.
+
+** The holding-group structure
+
+Acme Corporation comprises four legal entities: Acme Corporation Plc,
+the group holding company, and three regional operating companies —
+ACME Corporation UK plc, ACME Corporation US Inc, and ACME Corporation
+HK Ltd — each booking business in its own jurisdiction (London, New
+York, and Hong Kong respectively). Every entity carries its own
+checksum-valid, =9695=-prefixed LEI, and the three operating companies
+are children of the holding company in the party hierarchy: a real
+corporate shape built from fake-but-valid identifiers.
+
+#+begin_example
+Acme Corporation Plc              (party, root — group holding company)
+  ├─ ACME Corporation UK plc      (party — booking entity, GBLO)
+  ├─ ACME Corporation US Inc      (party — booking entity, USNY)
+  └─ ACME Corporation HK Ltd      (party — booking entity, HKHK)
+#+end_example
+
+Each operating company carries its own trading floor, modelled on a
+global investment bank's Markets division: a Global Markets division
+split into Rates, Credit, and FX trading desks, alongside a Risk
+Management division and Middle Office and Market Risk cost centres —
+the follow-the-sun pattern the previous section introduced, expressed
+concretely. ACME Corporation UK plc's Global Markets division goes
+further, with EMEA, Americas, and APAC business areas beneath it, each
+carrying its own regional desks — the London entity is where Acme's
+global trading footprint is broadest, reflecting a UK head office
+coordinating trading across time zones rather than each region
+booking in total isolation.
+
+Every desk owns one book, sitting beneath a physical portfolio scoped
+to that desk; every operating company's business units, portfolios,
+and books carry the =company_code= that ties them back to their
+owning legal entity, since each of the four entities needs its own
+independent organisational structure. Open the [[id:4B7C2E9A-1F6D-4A83-9C5E-6D8B3A7F2E1C][Parties]] window on a
+freshly provisioned Acme Corporation tenant and the hierarchy above is
+what you see, four levels deep and fully populated — no placeholder
+rows, no manual setup.
+
+#+caption[The Parties window]: The Parties window on a freshly provisioned Acme Corporation tenant: all four legal entities (Acme Corporation Plc and its three operating companies), each flagged by its business centre, alongside the tenant's own system party.
+[[proj:assets/images/acme_corporation_parties_window.png]]
+
+With the corporate shell and its trading floors in place, the chapter
+turns from structure to why a trading floor is divided the way it is.
+
+** Departments and segregation of duties
+
+A trading floor is never a single undifferentiated team, and Acme
+Corporation's structure exists to make that concrete rather than
+abstract. Each operating company separates three functions that
+never report through one another: the desks that take positions,
+Middle Office, which processes and reconciles what the desks book,
+and Market Risk, which independently measures and monitors the
+resulting exposure. This three-way split — front office takes risk,
+middle office processes it, risk management measures it — is the
+standard shape of a bank's control environment: no single function
+both takes a position and marks or monitors it, so no single
+individual's error or misconduct can go unchecked by construction of
+the org chart alone. The rest of this section walks each department
+in turn — what it does, who staffs it, and which of ORE Studio's
+seeded roles its accounts hold — before the following section on
+leadership and the caveat about what this buys you today.
+
+*** Front office: the trading desks
+
+Each operating company runs three desks under its Global Markets
+division — Rates, Credit, and FX — the instrument classes a
+follow-the-sun trading floor is built around. A *Head of Desk* leads
+each one (nine across the three operating companies, three desks
+apiece), with a *Senior Trader* and a *Junior Trader* beneath them
+(nine of each). The desk is where risk is actually taken: traders
+price and execute, the Head of Desk carries overall accountability
+for the desk's book, and every position they book carries the desk's
+=owner_unit_id=, tying it to this business unit for both day-to-day
+P&L attribution and regulatory desk-level reporting. Every front
+office account — Head of Desk, Senior Trader, and Junior Trader
+alike — holds the =Trading= role, which grants read access to
+reference data and the ability to create, modify, archive, and delete
+the workspaces a trader actually works in (see [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and
+Roles]] for the full permission profile).
+
+*** Middle office: processing what the desk books
+
+Middle Office sits alongside the trading desks as its own
+=COST_CENTRE=-typed business unit, not folded into the same branch of
+the tree as the desks it processes for. A *Head of Middle Office*
+leads each operating company's function (three total), supported by
+*Senior Analyst* and *Junior Analyst* accounts drawn from the same
+shared pool the Market Risk function below also staffs. Middle
+Office's job is operational, not directional: confirming trades,
+reconciling positions, and keeping the books the desks feed clean and
+current — the unglamorous processing work that has to happen
+correctly for every downstream report to mean anything. The Head of
+Middle Office holds the =Operations= role — read, write, and delete
+on reference data, plus the ability to view accounts — reflecting a
+function that maintains shared data rather than takes risk or grants
+capability to others; the analysts beneath them hold the read-only
+=Viewer= role.
+
+*** Market risk: independent measurement
+
+Market Risk is Middle Office's structural sibling, not its
+subordinate — its own =COST_CENTRE=, reporting alongside Middle
+Office rather than through it, precisely so that a desk's risk cannot
+be measured by anyone who also processes that desk's trades. A *Head
+of Market Risk* leads each operating company's function (three
+total), again supported by Senior and Junior Analysts. Where Middle
+Office confirms /that/ a trade happened, Market Risk measures /what
+it means/: monitoring exposure against limits, running the sensitivity
+and P&L-attribution queries the desk-level =owner_unit_id= tagging
+described above exists to support, and flagging breaches
+independently of the desk being measured. Role assignment mirrors
+Middle Office exactly — =Operations= for the Head of Market Risk,
+=Viewer= for the analysts beneath them — because both functions are
+maintaining and reading shared data rather than taking positions;
+what keeps them independent of each other and of the desks is the
+organisational hierarchy's separate branches, not a difference in
+which role they hold.
+
+*** Leadership: country heads and the group centre
+
+Above the three departments sits each operating company's own
+leadership: a *Country Head* (three total) with overall accountability
+for that legal entity, and a *COO* (three total) covering
+country-level operations and risk oversight. Above the operating
+companies sits a single *Group Chief Executive Officer* at the
+holding-company level, the one account with no =company_code= of its
+own and every Country Head reporting to them — the root of the
+fifty-eight-account tree the next section renders as an org chart.
+Leadership accounts — Group CEO, COO, and Country Head alike — hold
+the =Operations= role, the same broad-but-not-administrative profile
+Middle Office and Market Risk leadership hold: read, write, and
+delete on reference data, and visibility into accounts, without the
+tenant-wide =TenantAdmin= or =SuperAdmin= capability that provisioning
+itself required.
+
+*** What this does and does not enforce
+
+It is worth being precise about what the structure above buys you
+today and what it does not. The organisational hierarchy and the job
+titles just walked through are real, queryable structure — a Head of
+Market Risk's account genuinely sits in a different business unit
+from the Head of Desk they monitor, and that separation is visible in
+the data and in the org chart. What it is not, yet, is a
+per-desk access-control boundary: the =Trading=, =Operations=, and
+=Viewer= roles above are seeded at the tenant level, not scoped to an
+individual desk or business unit, so two Heads of Desk on different
+desks hold the identical =Trading= role and the identical
+capabilities — a login does not currently gain or lose capability by
+virtue of which specific business unit its account happens to sit
+under, only by which role it holds. The organisational separation
+Acme's structure demonstrates is the model a future desk-scoped RBAC
+extension would enforce; today it documents who is accountable for
+what and groups accounts into the right tenant-wide role for their
+function, without yet gating action by desk membership.
+
+With the departmental shape established, the chapter turns to the
+people who actually staff it.
+
+** Staff and accounts
+
+The fifty-eight accounts the previous section walked by department
+share a common identity pattern regardless of which one they belong
+to. Every account's name is generated from the office's own locale —
+British names for London, American names for New York,
+Cantonese-appropriate names for Hong Kong — rather than a single
+Western default stamped across all three, and every account carries a
+profile picture drawn from a tagged face dataset, loosely matched to
+the generated name's apparent gender and the office's predominant
+ethnicity mix. Every generated account shares one fixed demo
+password, so any of the fifty-eight is immediately usable for
+exploring party-scoped access without a separate credential to look
+up per account.
+
+Reporting lines run true to the departmental structure: a trader
+reports to their Head of Desk, an analyst to their Head of Middle
+Office or Head of Market Risk, each of those to their Country Head,
+and each Country Head to the Group Chief Executive Officer, so the
+whole fifty-eight-account structure is one connected tree rather than
+three disconnected regional trees. Rather than tracing that tree
+by hand through each account's detail dialog, open it at a glance from
+/User Accounts > Org Chart/: a maximisable window that lays every
+account out top-down as a card — photo, name, job title, office —
+connected to its manager, with a distinct colour per operating company
+and the currently logged-in account's own card highlighted.
+
+#+caption[The Org Chart window]: The Org Chart window scrolled to the Group CEO and the full ACME Corporation US Inc branch beneath its Country Head, each card showing photo, name, job title, and office, connected down to the trading floor's traders and analysts.
+[[proj:assets/images/acme_corporation_org_chart_window.png]]
+
+A multi-party account — =tenant_admin=, for instance, which carries
+cross-entity access to all four legal entities — is not locked to
+whichever party it logged in against. The party picker in the
+top-level toolbar switches the in-session party context without
+logging out, so moving from ACME Corporation UK plc's books to ACME
+Corporation US Inc's is a menu selection, not a re-login.
+
+With the people in place, the chapter closes with how to bring this
+entity into being on your own installation.
+
+** Provisioning Acme Corporation
+
+Acme Corporation is the fastest way to get a fully populated ORE
+Studio installation: one command, no manual party-by-party setup.
+It is provisioned the same way any tenant is — through the platform
+administrator's tenant-creation wizard, or the equivalent shell
+command — with one difference: rather than the Manual path, where you
+build up parties, business units, and staff one wizard screen at a
+time, selecting /Acme Corporation (full sample bank)/ hands the
+entire holding-group build to the server. One command imports the
+four-entity LEI hierarchy, publishes every entity's business units,
+portfolios, books, and accounts dataset, and activates the tenant —
+no repeated per-party logins, no client-side orchestration to
+babysit. The choice sits on the tenant-creation wizard's Welcome
+page, reached via /System > Administration > Tenants > Onboard/: a
+simple radio choice between /Acme Corporation (full sample bank)/ and
+/Manual setup/ — see the [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter for the full wizard
+walkthrough, including the Manual path for setting up your own
+organisation instead.
+
+The same choice is available from the shell, for scripted or
+repeatable provisioning: bootstrap the platform, then provision the
+tenant with =--source acme=.
+
+#+begin_src sh
+provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
+logout
+
+login tenant_admin@acme_corporation Secure-Password-123
+provision tenant --source acme
+logout
+#+end_src
+
+This follows exactly the shell provisioning sequence the
+[[id:B5C2C54E-6DD3-45A1-9C6A-2527D87D86BC][Provisioning from the Shell]] chapter sets out — system, then tenant,
+with the logout between stages that refreshes the session's view of
+the newly active tenant — and the full worked example, runnable
+end to end against a fresh installation, is documented as its own
+recipe: [[https://github.com/OreStudio/OreStudio/blob/main/doc/recipes/shell/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.org][How do I provision the system with Acme Corporation (holding
+group)?]]. Either path — wizard or shell — ends with the structure
+this chapter has walked: four legal entities, their trading floors,
+and fifty-eight staff accounts, ready to log in and explore.
+
+** Conclusion
+
+The chapter set out to show that understanding Acme Corporation means
+knowing what it is, the organisational model its structure is built
+from, the structure itself, the departments within it, and how to
+stand it up, and it has traced exactly that path. Acme Corporation is
+a synthetic house, identified by fake-but-valid LEIs, integrated into
+the system's real GLEIF counterparty universe rather than isolated
+from it. That house's four legal entities are built from the same
+organisational and portfolio hierarchies every party in ORE Studio
+uses — business units typed and anchored to a business centre, books
+aggregating beneath physical and virtual portfolios — and those
+hierarchies exist to enforce a real control principle: trading,
+processing, and risk measurement kept organisationally separate, even
+though that separation is not yet an access-control boundary.
+Populated concretely with fifty-eight staff across Rates, Credit, and
+FX desks, Middle Office, and Market Risk, whose reporting lines the
+org-chart view renders at a glance, provisioning — from either the Qt
+wizard's one-click choice or the equivalent shell command — showed
+that the whole entity, structure and staff and all, is one command
+away on any installation. Every other chapter's screenshots and
+worked examples now have somewhere to point.
+
+** See also
+
+- [[https://github.com/OreStudio/OreStudio/blob/main/projects/ores.refdata/core/modeling/trading_structure.org][Trading Structure: Party, Book, Portfolio, Business Unit, Business Centre]] — the organisational and portfolio hierarchy this chapter's model section draws on, including the FRTB desk-attribution use case.
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — the tenant/party model Acme Corporation is provisioned into.
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the RBAC model, including the desk-scoping gap noted above.
+- [[id:B5C2C54E-6DD3-45A1-9C6A-2527D87D86BC][Provisioning from the Shell]] — the shell provisioning sequence Acme Corporation follows.
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the Qt provisioning wizards, including the Acme Corporation vs Manual choice.
+- [[https://en.wikipedia.org/wiki/Acme_Corporation][Acme Corporation (Wikipedia)]] — the fictional-company namesake the dataset borrows.

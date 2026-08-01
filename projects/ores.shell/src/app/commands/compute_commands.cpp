@@ -24,13 +24,13 @@
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
-#include <algorithm>
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
@@ -85,13 +85,17 @@ find_app_version(std::ostream& out,
     return std::nullopt;
 }
 
-std::vector<compute::domain::app_version_platform>
+// std::nullopt on fetch failure, distinct from an empty vector (genuinely
+// no platforms published yet) -- callers must abort on nullopt rather than
+// treat it as "start fresh", or a transient RPC failure here silently
+// wipes every previously published platform on the next save.
+std::optional<std::vector<compute::domain::app_version_platform>>
 existing_platforms(std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
     compute::messaging::list_app_version_platforms_request req;
     req.app_version_id = boost::uuids::to_string(app_version_id);
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp || !resp->success)
-        return {};
+        return std::nullopt;
     return resp->platforms;
 }
 
@@ -243,9 +247,21 @@ void compute_commands::process_publish_package(std::ostream& out,
     // save_app_version_request replaces every platform row for the version
     // wholesale, so preserve platforms already published under this version
     // (e.g. from an earlier publish-package run for a different triplet)
-    // rather than overwriting them with this single upload.
-    auto platform_rows =
-        existing_version ? existing_platforms(out, session, ver.id) : std::vector<compute::domain::app_version_platform>{};
+    // rather than overwriting them with this single upload. Abort rather
+    // than proceed if the version exists but the fetch itself failed --
+    // treating a fetch failure as "no platforms yet" would silently wipe
+    // every previously published platform on save.
+    std::vector<compute::domain::app_version_platform> platform_rows;
+    if (existing_version) {
+        auto fetched = existing_platforms(out, session, ver.id);
+        if (!fetched) {
+            fail(out) << "Failed to fetch existing platforms for " << app_name << " "
+                      << engine_version << "; refusing to publish " << platform_code
+                      << " without them (would wipe other platforms on save)." << std::endl;
+            return;
+        }
+        platform_rows = std::move(*fetched);
+    }
     std::erase_if(platform_rows,
                  [&](const auto& p) { return p.platform_code == platform_code; });
     platform_rows.push_back(row);

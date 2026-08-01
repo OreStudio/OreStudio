@@ -7,6 +7,7 @@
 connect $ORES_NATS_URL
 
 provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
+compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
 logout
 
 login tenant_admin@acme_corporation Secure-Password-123

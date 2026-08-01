@@ -113,7 +113,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Fetch-then-merge doesn't guard against the fetch itself failing (raised in all 4 review passes) | compute_commands.cpp, UploadEnginesDialog.cpp | Fixed | existing_platforms() now returns std::optional; both callers abort the publish rather than silently proceed with an empty platform list on fetch failure |
+| 2 | Nit: #include <algorithm> breaks include ordering | compute_commands.cpp | Fixed | Moved next to the other std-library includes |
+| 3 | SHA256 mismatch leaves a bad object live at the canonical storage key | package_publisher.cpp, storage_routes.cpp | Declined (for now) | Needs a DELETE-on-mismatch or temp-key-rename change to storage_routes; real gap, scoped as follow-up rather than expanding this PR |
+| 4 | package_publisher::publish() runs synchronously on the Qt UI thread, blocking on large uploads | AppProvisionerWizard.cpp, UploadEnginesDialog.cpp | Declined (for now) | Real UX issue for ~57MB uploads; needs a QtConcurrent::run refactor across both call sites, scoped as follow-up |
+| 5 | Concurrent-publish race: no optimistic locking between fetch and save | compute_commands.cpp, UploadEnginesDialog.cpp | Declined | Admin-only, low-frequency operation; reviewers themselves concluded acceptable to defer |
+| 6 | No tests/ directory for the new ores.compute.client component | projects/ores.compute/client/ | Declined (for now) | Covered by the manual QA test scenario recorded above; unit tests for the JSON/mismatch logic are a reasonable follow-up |
+| 7 | max_body_size (256MB) applies server-wide, not scoped to the storage route | http_server_options.hpp, http_session.cpp | Declined | Already tracked in EA916A96-0F86-42EF-BC26-CB1E7857B3EC (stream large uploads to disk), which subsumes proper route-scoped handling |
+| 8 | vendor_compute_packages CMake glob is configure-time only / empty-glob risk | CMakeLists.txt | Declined | Repo always ships at least the linux package today; no CONFIGURE_DEPENDS needed for this PR's scope |
+| 9 | Storage upload happens before DB registration -- orphaned blob on save failure | compute_commands.cpp, UploadEnginesDialog.cpp | Declined | Self-healing on retry (deterministic key); low severity |
 
 * Result
 

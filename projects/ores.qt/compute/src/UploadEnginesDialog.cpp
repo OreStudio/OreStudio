@@ -222,14 +222,28 @@ void UploadEnginesDialog::on_upload() {
 
     // save_app_version_request replaces every platform row for the version
     // wholesale, so fetch what's already published and preserve it rather
-    // than overwriting other platforms with this single upload.
+    // than overwriting other platforms with this single upload. Abort
+    // rather than proceed if the fetch itself failed -- treating a fetch
+    // failure as "no platforms yet" would silently wipe every previously
+    // published platform on save.
     compute::messaging::list_app_version_platforms_request existing_req;
     existing_req.app_version_id = boost::uuids::to_string(version.id);
     const auto existing_resp = client_manager_->process_authenticated_request(std::move(existing_req));
+    if (!existing_resp || !existing_resp->success) {
+        QApplication::restoreOverrideCursor();
+        upload_btn_->setEnabled(true);
+        progress_bar_->setVisible(false);
+        status_label_->setText(tr("Save failed."));
+        MessageBoxHelper::critical(
+            this,
+            tr("Save Failed"),
+            tr("Failed to fetch existing platforms; refusing to publish %1 without them "
+               "(would wipe other platforms on save).")
+                .arg(QString::fromStdString(platform.code)));
+        return;
+    }
 
-    std::vector<compute::domain::app_version_platform> platform_rows;
-    if (existing_resp && existing_resp->success)
-        platform_rows = existing_resp->platforms;
+    std::vector<compute::domain::app_version_platform> platform_rows = existing_resp->platforms;
     std::erase_if(platform_rows,
                  [&](const auto& p) { return p.platform_code == platform.code; });
 

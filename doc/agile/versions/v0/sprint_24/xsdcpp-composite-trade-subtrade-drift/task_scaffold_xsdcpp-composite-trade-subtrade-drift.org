@@ -8,7 +8,7 @@
 #+filetags: :xsdcpp-composite-trade-subtrade-drift:sprint_24:v0:
 #+owner: marco
 #+branch: hotfix/xsdcpp-composite-trade-subtrade-drift
-#+pr:
+#+pr: 1803
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1803][#1803]] | [ore] Fix xsdcpp domain drift on compositeTradeComponents SubTrade |
 
 * Review
 

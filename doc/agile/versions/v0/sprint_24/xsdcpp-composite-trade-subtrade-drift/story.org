@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 50D4FE28-EC53-442D-A307-78ACB952E626
+:END:
+#+title: Story: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade
+#+description: instruments.xsd's compositeTradeComponents was updated upstream to use subTradeGroup/SubTrade (old Trade element commented out), but domain.hpp/domain.cpp were never regenerated to match.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:sprint_24:v0:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the ORE XML domain model to match =instruments.xsd=.
+Upstream commented out the old =Trade= element inside
+=compositeTradeComponents= and replaced it with a reference to
+=subTradeGroup= / =SubTrade=, but =domain.hpp=/=domain.cpp= were
+never regenerated against the updated schema, so composite-trade XML
+containing =SubTrade= elements fails to parse/round-trip correctly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Fix verified locally: full repo build and ores.ore.core.tests (478 cases) green. |
+| Waiting on    | Nothing.                               |
+| Next          | PR.                                     |
+| Last touched  | 2026-07-31                               |
+
+* Acceptance
+
+- domain.hpp/domain.cpp regenerated from the current instruments.xsd (subTradeGroup/SubTrade, not the commented-out Trade element).
+- Build is green.
+- A composite trade XML sample with SubTrade elements parses and round-trips correctly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:86964C9A-AA07-4FEC-B7DD-82067D0291B7][Scaffold story: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | STARTED | 2026-07-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:42A37B89-1CC5-4E04-A82D-FF50432DA804][Implement Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | BACKLOG | | | Initial task for: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade |
+
+* Decisions
+
+- Also removed the =MultiLegOption= ORE trade type from ORE Studio's
+  mappers, since upstream ORE deleted it outright (commit 1f9361860,
+  "QPR-13903 support xccy swaptions") once Swaption gained native
+  cross-currency-leg support, making the MultiLegOption workaround
+  redundant. Chosen over stubbing it out or leaving it broken behind a
+  TODO, to keep ORE Studio's trade-type surface matching upstream ORE.
+
+* Out of scope
+
+-

@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 42A37B89-1CC5-4E04-A82D-FF50432DA804
+:END:
+#+title: Task: Implement Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade
+#+description: Initial task for: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade
+#+type: task
+#+level: s1
+#+filetags: :xsdcpp-composite-trade-subtrade-drift:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Regenerate domain.hpp/domain.cpp from the current
+external/ore/xsd/instruments.xsd so the compositeTradeComponents
+type matches the upstream subTradeGroup/SubTrade schema, and fix any
+downstream code that referenced the old Trade element.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] |
+| Now          | Fix verified locally, full repo build and ores.ore.core.tests green. |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                                     |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- domain.hpp/domain.cpp regenerated and reflect subTradeGroup/SubTrade.
+- Project builds cleanly.
+- Composite-trade XML with SubTrade round-trips.
+
+* Plan
+
+Root cause (from investigation on 2026-07-31): instruments.xsd's
+compositeTradeComponents type was updated upstream to use
+subTradeGroup/SubTrade (the old Trade element is now commented out
+in the XSD), but domain.hpp/domain.cpp were never regenerated to
+match. Plan:
+1. Re-run xsdcpp codegen against the current instruments.xsd.
+2. Diff generated domain.hpp/domain.cpp against the checked-in
+   versions to isolate the SubTrade-related changes.
+3. Fix any call sites depending on the old Trade element/API.
+4. Build and verify round-trip of a composite trade sample using
+   SubTrade elements.
+
+* Notes
+
+Two independent bugs were involved, not just the schema drift:
+
+1. *xsdcpp bug (fixed upstream in ~/Development/xsdcpp,
+   fix-abstract-element-refs branch, uncommitted local fix)*: pass 1 of
+   ~Reader::process()~ interleaved group-definition collection with
+   eager resolution of substitutionGroup elements, file by file. When a
+   substitutionGroup element (e.g. input.xsd's top-level ~Trade~)
+   referenced a group defined in a file scanned *later* in the same
+   pass (e.g. ~oreTradeData~ in instruments.xsd), the lookup failed
+   because that file's groups hadn't been collected yet — group lookup
+   returned "not found" even though the group existed. Fixed by
+   splitting pass 1 into two full sub-passes: 1a collects group
+   definitions across every file, 1b then resolves substitutionGroup
+   elements once all groups are known.
+
+2. *xsdcpp_generate_ore.sh pointed at a stale path*: it targeted
+   ~projects/ores.ore/include|src~, left over from before ores.ore was
+   split into core/api/service. Domain.hpp/domain.cpp actually live
+   under ~projects/ores.ore/core/{include,src}~. Fixed the wrapper
+   script to point at the real location (and generalised
+   xsdcpp_generate.sh with ~--header-output=/--cpp-output=~ overrides
+   so per-component paths don't have to fit the flat
+   ~projects/PROJECT/{include,src}~ template).
+
+Once regeneration actually landed in the right place, two further
+gaps surfaced:
+
+3. xsdcpp has no notion of this project's hidden-by-default symbol
+   visibility convention (doc/knowledge/external/shared_library_symbol_visibility.org),
+   so every ~ORES_ORE_CORE_EXPORT~ annotation on domain.hpp (a
+   hand-patch) was silently dropped by regeneration, along with the
+   ~#include "ores.ore.core/export.hpp"~ line — this broke linking for
+   every consumer of load_data/save_data/to_string. Wrote
+   scripts/reapply_export_macros.py to diff the pre-regen file against
+   the freshly generated one and reapply the macro to matching
+   declarations by (whitespace-normalised) signature; wired it into
+   xsdcpp_generate_ore.sh so future regenerations preserve it
+   automatically.
+
+4. compositeTradeComponents/trsUnderlyingData's ~Trade~ vector became
+   a ~subTradeGroup~ vector of ~subTradeGroup_group_t~ (Trade/SubTrade
+   substitution-group members); cdsConventionsType's Calendar,
+   Frequency, PaymentConvention, Rule and DayCounter became optional.
+   Updated composite_instrument_mapper.cpp and conventions_mapper.cpp
+   accordingly.
+
+Separately, upstream ORE removed the ~MultiLegOption~ trade type
+entirely (not renamed) in commit 1f9361860 ("QPR-13903 support xccy
+swaptions", merged 2026-04-30): Swaption gained native
+cross-currency-leg support, so the MultiLegOption workaround for
+cross-currency legs became redundant. Removed the corresponding
+forward/reverse mapper functions, dispatch cases, and doc-comment
+mentions from ORE Studio to match.
+
+Regenerated the 10 stale Hybrid_* golden fixtures
+(assets/test_data/golden_dataset/Products/Example_Trades/) that
+encoded the old Trade-element serialisation shape.
+
+Full repo build (compass build, no target) is green, and
+ores.ore.core.tests passes all 478 test cases / 428669 assertions.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -11,15 +11,15 @@
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>ConvertibleBond</TradeType>
+        <SubTrade>
+          <SubTradeType>ConvertibleBond</SubTradeType>
           <ConvertibleBondData>
             <BondData>
               <SecurityId>ISIN:US682189AS48</SecurityId>
               <BondNotional>1000000.00</BondNotional>
             </BondData>
           </ConvertibleBondData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

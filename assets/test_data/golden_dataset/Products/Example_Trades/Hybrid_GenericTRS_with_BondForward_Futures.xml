@@ -11,8 +11,8 @@
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>ForwardBond</TradeType>
+        <SubTrade>
+          <SubTradeType>ForwardBond</SubTradeType>
           <ForwardBondData>
             <BondData>
               <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
@@ -25,7 +25,7 @@
             </SettlementData>
             <LongInForward>true</LongInForward>
           </ForwardBondData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

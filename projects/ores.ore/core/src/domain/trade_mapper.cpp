@@ -253,8 +253,6 @@ trade_mapper::map_composite_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "CompositeTrade")
         return composite_instrument_mapper::forward_composite_trade(v);
-    if (type == "MultiLegOption")
-        return composite_instrument_mapper::forward_multi_leg_option(v);
     if (type == "TotalReturnSwap")
         return composite_instrument_mapper::forward_total_return_swap(v);
     if (type == "ContractForDifference")

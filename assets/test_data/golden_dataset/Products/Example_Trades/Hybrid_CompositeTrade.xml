@@ -13,8 +13,8 @@
       <Currency>USD</Currency>
       <NotionalCalculation>Mean</NotionalCalculation>
       <Components>
-        <Trade>
-          <TradeType>EquityOption</TradeType>
+        <SubTrade>
+          <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
               <LongShort>Long</LongShort>
@@ -30,9 +30,9 @@
             <Quantity>775</Quantity>
             <Strike>2147.56</Strike>
           </EquityOptionData>
-        </Trade>
-        <Trade>
-          <TradeType>EquityOption</TradeType>
+        </SubTrade>
+        <SubTrade>
+          <SubTradeType>EquityOption</SubTradeType>
           <EquityOptionData>
             <OptionData>
               <LongShort>Short</LongShort>
@@ -48,7 +48,7 @@
             <Quantity>775</Quantity>
             <Strike>2147.56</Strike>
           </EquityOptionData>
-        </Trade>
+        </SubTrade>
       </Components>
     </CompositeTradeData>
   </Trade>

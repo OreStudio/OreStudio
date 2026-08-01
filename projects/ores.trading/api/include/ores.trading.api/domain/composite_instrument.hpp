@@ -27,8 +27,8 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Composite instrument economics for CompositeTrade and MultiLegOption
- * ORE product types.
+ * @brief Composite instrument economics for CompositeTrade, TotalReturnSwap,
+ * and ContractForDifference ORE product types.
  *
  * Discriminated by trade_type_code. Constituent trades are stored separately
  * in composite_leg records keyed by this instrument's instrument_id.

@@ -42,8 +42,7 @@ struct composite_leg_identity final {
 };
 
 /**
- * @brief One constituent trade of a composite instrument (CompositeTrade,
- * MultiLegOption).
+ * @brief One constituent trade of a composite instrument (CompositeTrade).
  *
  * The leg_sequence field provides 1-based ordering of the constituent trades
  * within the parent composite instrument.

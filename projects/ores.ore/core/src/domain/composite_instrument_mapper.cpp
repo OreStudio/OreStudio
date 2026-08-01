@@ -117,13 +117,35 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
-composite_leg make_composite_leg(const compositeTradeComponents_Trade_t& comp, int seq) {
+// subTradeGroup is a substitution group: exactly one of Trade/SubTrade is
+// populated per instance (Trade for top-level-shaped constituents,
+// SubTrade for the nested-only variant introduced by the same schema
+// change).
+oreTradeType sub_trade_group_type(const subTradeGroup_group_t& g) {
+    if (g.Trade)
+        return g.Trade->TradeType;
+    if (g.SubTrade)
+        return g.SubTrade->SubTradeType;
+    throw std::runtime_error(
+        "sub_trade_group_type: subTradeGroup has neither Trade nor SubTrade set");
+}
+
+xsd::optional<xsd::string> sub_trade_group_id(const subTradeGroup_group_t& g) {
+    if (g.Trade)
+        return g.Trade->id;
+    if (g.SubTrade)
+        return g.SubTrade->id;
+    return {};
+}
+
+composite_leg make_composite_leg(const subTradeGroup_group_t& comp, int seq) {
     composite_leg leg;
     leg.identity.leg_sequence = seq;
-    if (comp.id)
-        leg.constituent_trade_id = std::string(*comp.id);
+    const auto id = sub_trade_group_id(comp);
+    if (id)
+        leg.constituent_trade_id = std::string(*id);
     else
-        leg.constituent_trade_id = to_string(comp.TradeType);
+        leg.constituent_trade_id = to_string(sub_trade_group_type(comp));
     leg.audit.modified_by = "ores";
     leg.audit.performed_by = "ores";
     leg.audit.change_reason_code = "system.external_data_import";
@@ -151,23 +173,9 @@ composite_instrument_mapper::forward_composite_trade(const trade& t) {
 
     if (d.Components) {
         int seq = 1;
-        for (const auto& comp : d.Components->Trade)
+        for (const auto& comp : d.Components->subTradeGroup)
             result.legs.push_back(make_composite_leg(comp, seq++));
     }
-    return result;
-}
-
-// ---------------------------------------------------------------------------
-// Forward: MultiLegOption
-// ---------------------------------------------------------------------------
-
-trading::domain::composite_instrument_data
-composite_instrument_mapper::forward_multi_leg_option(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping MultiLegOption: " << std::string(t.id);
-    trading::domain::composite_instrument_data result;
-    result.instrument = make_base("MultiLegOption");
-    // MultiLegOptionData has leg data but composite_instrument only
-    // captures the top-level type; legs are stored separately.
     return result;
 }
 
@@ -197,10 +205,6 @@ trade composite_instrument_mapper::reverse_composite_trade(const composite_instr
 }
 
 // ---------------------------------------------------------------------------
-// Reverse: MultiLegOption
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Forward: TotalReturnSwap
 // ---------------------------------------------------------------------------
 
@@ -213,11 +217,12 @@ composite_instrument_mapper::forward_total_return_swap(const trade& t) {
         return result;
     const auto& d = *t.TotalReturnSwapData;
     // Extract the underlying trade type as description
-    if (!d.UnderlyingData.Trade.empty())
-        result.instrument.description = to_string(d.UnderlyingData.Trade.front().TradeType);
+    if (!d.UnderlyingData.subTradeGroup.empty())
+        result.instrument.description =
+            to_string(sub_trade_group_type(d.UnderlyingData.subTradeGroup.front()));
     else if (!d.UnderlyingData.Derivative.empty())
         result.instrument.description =
-            to_string(d.UnderlyingData.Derivative.front().Trade.TradeType);
+            to_string(sub_trade_group_type(d.UnderlyingData.Derivative.front().subTradeGroup));
     return result;
 }
 
@@ -233,11 +238,12 @@ composite_instrument_mapper::forward_contract_for_difference(const trade& t) {
     if (!t.ContractForDifferenceData)
         return result;
     const auto& d = *t.ContractForDifferenceData;
-    if (!d.UnderlyingData.Trade.empty())
-        result.instrument.description = to_string(d.UnderlyingData.Trade.front().TradeType);
+    if (!d.UnderlyingData.subTradeGroup.empty())
+        result.instrument.description =
+            to_string(sub_trade_group_type(d.UnderlyingData.subTradeGroup.front()));
     else if (!d.UnderlyingData.Derivative.empty())
         result.instrument.description =
-            to_string(d.UnderlyingData.Derivative.front().Trade.TradeType);
+            to_string(sub_trade_group_type(d.UnderlyingData.Derivative.front().subTradeGroup));
     return result;
 }
 
@@ -271,26 +277,6 @@ trade composite_instrument_mapper::reverse_contract_for_difference(
     t.TradeType = oreTradeType::ContractForDifference;
     totalReturnSwapData d;
     t.ContractForDifferenceData = std::move(d);
-    return t;
-}
-
-// ---------------------------------------------------------------------------
-
-trade composite_instrument_mapper::reverse_multi_leg_option(const composite_instrument& instr) {
-    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping MultiLegOption";
-    (void)instr;
-    trade t;
-    t.TradeType = oreTradeType::MultiLegOption;
-    // MultiLegOption leg data (strikes, barriers, underlying leg definitions)
-    // is stored in composite_leg records in the ORES domain, not in the
-    // composite_instrument itself.  Reconstructing a fully populated
-    // MultiLegOptionData therefore requires access to the associated leg
-    // records, which are outside the scope of this single-instrument reverse
-    // mapper.  The trade shell produced here is structurally valid and
-    // sufficient for round-trip type identity; a complete export must enrich
-    // it with legs from the composite_leg repository.
-    multiLegOptionData d;
-    t.MultiLegOptionData = std::move(d);
     return t;
 }
 

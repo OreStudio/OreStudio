@@ -11,8 +11,8 @@
     </Envelope>
     <ContractForDifferenceData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>EquityPosition</TradeType>
+        <SubTrade>
+          <SubTradeType>EquityPosition</SubTradeType>
           <EquityPositionData>
             <Quantity>1000</Quantity>
             <Underlying>
@@ -22,7 +22,7 @@
               <Weight>1</Weight>
             </Underlying>
           </EquityPositionData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

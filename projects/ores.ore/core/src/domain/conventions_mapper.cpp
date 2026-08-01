@@ -416,7 +416,9 @@ cdsConventionsType reverse_cds(const refdata::domain::cds_convention& v) {
     cdsConventionsType r;
     static_cast<std::string&>(r.Id) = v.id;
     r.SettlementDays = static_cast<int64_t>(v.settlement_days);
-    static_cast<std::string&>(r.Calendar) = v.calendar;
+    cdsConventionsType_Calendar_t calendar;
+    static_cast<std::string&>(calendar) = v.calendar;
+    r.Calendar = calendar;
     r.Frequency = parse_frequency(v.frequency);
     r.PaymentConvention = parse_bdc(v.payment_convention);
     r.Rule = parse_date_rule(v.rule);
@@ -919,12 +921,18 @@ refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventions
 
     refdata::domain::cds_convention r;
     r.id = std::string(v.Id);
-    r.settlement_days = static_cast<int>(v.SettlementDays);
-    r.calendar = std::string(v.Calendar);
-    r.frequency = normalize_frequency(v.Frequency);
-    r.payment_convention = normalize_bdc(v.PaymentConvention);
-    r.rule = normalize_date_rule(v.Rule);
-    r.day_count_fraction = normalize_day_counter(v.DayCounter);
+    if (v.SettlementDays)
+        r.settlement_days = static_cast<int>(*v.SettlementDays);
+    if (v.Calendar)
+        r.calendar = std::string(*v.Calendar);
+    if (v.Frequency)
+        r.frequency = normalize_frequency(*v.Frequency);
+    if (v.PaymentConvention)
+        r.payment_convention = normalize_bdc(*v.PaymentConvention);
+    if (v.Rule)
+        r.rule = normalize_date_rule(*v.Rule);
+    if (v.DayCounter)
+        r.day_count_fraction = normalize_day_counter(*v.DayCounter);
 
     if (v.UpfrontSettlementDays)
         r.upfront_settlement_days = static_cast<int>(*v.UpfrontSettlementDays);

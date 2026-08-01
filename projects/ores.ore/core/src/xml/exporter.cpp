@@ -374,8 +374,6 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                 } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                     if (tt == "CompositeTrade")
                         xsd_t = composite_instrument_mapper::reverse_composite_trade(r.instrument);
-                    else if (tt == "MultiLegOption")
-                        xsd_t = composite_instrument_mapper::reverse_multi_leg_option(r.instrument);
                     else if (tt == "TotalReturnSwap")
                         xsd_t =
                             composite_instrument_mapper::reverse_total_return_swap(r.instrument);

@@ -226,7 +226,8 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
                 computeDashboardController_->showDashboard();
         });
 
-        auto* actConsole = smc.analytics_menu->addAction(ico(Icon::ServerLink), tr("&Console"));
+        auto* actConsole =
+            smc.analytics_menu->addAction(ico(Icon::ServerLink), tr("&Compute Console"));
         connect(actConsole, &QAction::triggered, this, [this]() {
             if (computeConsoleController_)
                 computeConsoleController_->showConsole();

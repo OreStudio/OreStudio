@@ -1,0 +1,18 @@
+ORE package diff report -- for sign-off before trusting this build
+Package         : ore-1.8.16.0-4-g3b62ba248-x64-linux
+Sample          : /mnt/development/OreStudio/ores_dev_bright_faraday/external/ore/packages/TA002_IR_Swap.tar.gz (extracted)
+Expected output : /mnt/development/OreStudio/ores_dev_bright_faraday/external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput
+Compared        : 2026-08-01T00:38:56Z
+Tolerance       : rtol=1e-6
+
+curves.csv:
+  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06.
+
+flows.csv:
+  NEW COLUMNS (in this build, not in the reference -- review before sign-off):
+    ['EffectiveFloorVolatility', 'EffectiveCapVolatility', 'Amount(Base)', 'DiscountFactor(Base)']
+  OK: 60 row(s) x 25 shared column(s) match within rtol=1e-06.
+
+npv.csv:
+  OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06.
+

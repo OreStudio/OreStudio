@@ -26,12 +26,12 @@ containing =SubTrade= elements fails to parse/round-trip correctly.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Fix verified locally: full repo build and ores.ore.core.tests (478 cases) green. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | PR.                                     |
-| Last touched  | 2026-07-31                               |
+| Next          | Nothing. |
+| Last touched  | 2026-08-01                               |
 
 * Acceptance
 
@@ -43,8 +43,8 @@ containing =SubTrade= elements fails to parse/round-trip correctly.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:86964C9A-AA07-4FEC-B7DD-82067D0291B7][Scaffold story: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | STARTED | 2026-07-31 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:42A37B89-1CC5-4E04-A82D-FF50432DA804][Implement Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | BACKLOG | | | Initial task for: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade |
+| [[id:86964C9A-AA07-4FEC-B7DD-82067D0291B7][Scaffold story: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | DONE | 2026-07-31 | 2026-08-01 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:42A37B89-1CC5-4E04-A82D-FF50432DA804][Implement Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] | DONE | | 2026-08-01 | Initial task for: Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade |
 
 * Decisions
 
@@ -58,3 +58,14 @@ containing =SubTrade= elements fails to parse/round-trip correctly.
 * Out of scope
 
 -
+
+* Result
+
+domain.hpp/domain.cpp regenerated to match instruments.xsd's
+subTradeGroup/SubTrade schema. Fixed the xsdcpp bugs and stale
+generate-script paths blocking regeneration, reapplied the
+ORES_ORE_CORE_EXPORT hand-patch (now automated for future regens),
+updated the mapper call sites for the new schema shapes, removed the
+upstream-deleted MultiLegOption trade type, and regenerated the stale
+Hybrid_* golden fixtures. Full repo build and ores.ore.core.tests
+(478/478) green.

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -69,3 +69,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded via compass story new --kind hotfix: story.org, this task,
+and the implementation task, wired into sprint.org. Shipped in the
+same PR as the implementation rather than a separate scaffold-only PR,
+given the hotfix's fast turnaround.

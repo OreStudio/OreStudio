@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ downstream code that referenced the old Trade element.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] |
-| Now          | Fix verified locally, full repo build and ores.ore.core.tests green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                     |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -143,3 +143,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Regenerated domain.hpp/domain.cpp against the current instruments.xsd
+(subTradeGroup/SubTrade). Fixed two xsdcpp bugs blocking regeneration
+(premature group-reference resolution in Reader::process() pass 1;
+stale output paths in xsdcpp_generate_ore.sh from before the
+core/api/service split), and two hand-patch gaps regeneration exposed
+(missing ORES_ORE_CORE_EXPORT annotations/export.hpp include, now
+reapplied automatically via scripts/reapply_export_macros.py). Updated
+composite_instrument_mapper.cpp and conventions_mapper.cpp for the new
+schema shapes, and removed the MultiLegOption trade type (deleted
+upstream, not renamed). Regenerated the 10 stale Hybrid_* golden
+fixtures. Full repo build green; ores.ore.core.tests 478/478 passed
+(428669 assertions).

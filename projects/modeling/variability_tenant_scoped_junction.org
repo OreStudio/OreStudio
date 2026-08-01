@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 9618DCF1-2FE8-4AE2-A841-F671A97E764E
+:END:
+#+title: Profile: Tenant-scoped junction
+#+description: Tenant-scoped many-to-many association table, no independent lifecycle or Qt surface of its own.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models a plain many-to-many association between two entities (currency
+↔ calendar, party ↔ country, tenor convention ↔ tenor, ...): a row is
+just a pair of foreign keys plus a scoping column, with no natural key
+of its own, no self-standing lifecycle, and — with one exception — no
+Qt surface. Junctions default =has_tenant_id= to /false/ (the opposite
+of a =domain_entity=), so authoring it =true= is a genuine, recurring
+choice, not incidental boilerplate — the ~ores.refdata~ junction
+survey found 9 of 9 junctions sharing this exact value with nothing
+else varying. One of the 9,
+[[id:1DC67FAD-7543-4E63-A91D-9EE878A2EE8D][calendar_date]], additionally carries its own independent Qt list
+drawer (it is a materialised fact table, not a pure link table) — that
+drawer sits alongside this profile's binding untouched, exactly as an
+entity's own extra features sit alongside
+[[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]].
+
+* Reference entity
+
+[[id:EC7B18A7-3865-424A-AD78-F6BE522F3B0B][currency_calendar]] — links a currency to the holiday calendar used
+for its spot/settlement date computation; the plainest, most
+representative instance of the shape.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice. Feature names are literal —
+exactly what [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] documents them as, so this
+table can be read directly by whatever eventually resolves
+=:profile:= bindings, with no translation layer:
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] — the =domain_entity= metatype's own tenant-scoped-only sibling; this profile is its junction-metatype counterpart.

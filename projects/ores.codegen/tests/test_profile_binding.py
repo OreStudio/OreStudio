@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.org_loader import (  # noqa: E402
+    load_org_junction_model,
     org_document_to_model,
     parse_org,
     _load_profile_assignments,
@@ -103,3 +104,53 @@ def test_profile_qt_default_feeds_derived_qt_flag():
     de = org_document_to_model(parse_org(text))["domain_entity"]
     assert de["qt"]["has_version_navigation"] is True
     assert de["qt"]["has_toolbar"] is True
+
+
+JUNCTION_HEADER = """
+:PROPERTIES:
+:ID: TEST0001-0000-0000-0000-000000000000
+:END:
+#+title: ores.refdata.thing_other_thing
+#+type: ores.codegen.junction
+#+component: refdata
+#+name: thing_other_things
+#+name_singular: thing_other_thing
+#+name_title: Thing Other Thing
+"""
+
+
+def test_junction_profile_supplies_root_level_default(tmp_path):
+    # Junctions read #+profile: from frontmatter (they have no root Flags
+    # drawer the way domain_entity does) and default has_tenant_id to
+    # false, unlike domain_entity's true -- tenant-scoped-junction's
+    # explicit has_tenant_id=true default must still resolve here.
+    p = tmp_path / "thing.org"
+    p.write_text(JUNCTION_HEADER + "#+profile: tenant-scoped-junction\n", encoding="utf-8")
+    j = load_org_junction_model(p)["junction"]
+    assert j["has_tenant_id"] is True
+
+
+def test_junction_explicit_value_overrides_profile_default(tmp_path):
+    p = tmp_path / "thing.org"
+    p.write_text(
+        JUNCTION_HEADER + "#+profile: tenant-scoped-junction\n#+has_tenant_id: false\n",
+        encoding="utf-8",
+    )
+    j = load_org_junction_model(p)["junction"]
+    assert j["has_tenant_id"] is False
+
+
+def test_junction_profile_qt_default_feeds_derived_qt_flag(tmp_path):
+    # Same has_toolbar ordering regression as the domain_entity case above,
+    # but exercised through the junction loader path (calendar_date is the
+    # one junction with its own Qt drawer).
+    text = (
+        JUNCTION_HEADER
+        + "#+profile: fully-featured-lookup\n"
+        + "* C++\n** Qt\n:PROPERTIES:\n:domain_class: refdata::domain::thing\n:END:\n"
+    )
+    p = tmp_path / "thing.org"
+    p.write_text(text, encoding="utf-8")
+    j = load_org_junction_model(p)["junction"]
+    assert j["qt"]["has_version_navigation"] is True
+    assert j["qt"]["has_toolbar"] is True

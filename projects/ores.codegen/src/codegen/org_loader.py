@@ -1360,6 +1360,8 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             j[key] = fm[key]
     if "has_tenant_id" in fm:
         j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
+    if "profile" in fm:
+        j["profile"] = fm["profile"]
 
     body = _strip_body(doc.root)
     if body:
@@ -1430,7 +1432,9 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         # facet stays exactly as before.
         qt_section = _section(cpp_section, "Qt")
         if qt_section:
-            j["qt"] = _parse_qt_drawer(qt_section)
+            j["qt"] = _parse_qt_drawer(
+                qt_section, _profile_namespace_defaults(j.get("profile"), "qt")
+            )
             name_singular = j.get("name_singular", "unknown")
             words = name_singular.split("_")
             j["entity_singular"] = name_singular
@@ -1479,6 +1483,11 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     impls = _collect_implementations(doc.root)
     if impls:
         j["implementations"] = impls
+
+    # Profile binding, mirroring org_document_to_model()'s domain_entity
+    # handling: a #+profile: frontmatter line resolves against the named
+    # profile's own Assignments table as feature defaults.
+    _apply_profile(j)
 
     return {"junction": j}
 

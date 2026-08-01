@@ -16,10 +16,12 @@ sketches the model the steps rest on — tenants as units of isolation,
 parties as the organisational hierarchy within them — then walks the
 fixed three-wizard sequence in order: the System Provisioner creates
 the platform administrator and the first tenant; the Tenant Provisioner
-seeds a tenant with reference data and its house party hierarchy; and
-the Party Provisioner equips each party with counterparties and report
-definitions. The chapter closes with party selection at login, the
-point where provisioning ends and daily use begins.
+seeds a tenant with reference data and, at its first step, forks
+between the ready-made Acme Corporation reference entity and a Manual
+path that builds your own house party hierarchy; and the Party
+Provisioner equips each manually-created party with counterparties
+and report definitions. The chapter closes with party selection at
+login, the point where provisioning ends and daily use begins.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
@@ -35,10 +37,12 @@ the chapter builds on. From there it lays out the [[*The provisioning sequence][
 sequence]] as a whole — the three steps and the login identity each one
 requires — before working through each wizard in turn. It walks the
 [[*The System Provisioner wizard][System Provisioner]], which creates the platform administrator and the
-first tenant; then the [[*The Tenant Provisioner wizard][Tenant Provisioner]], which seeds a tenant with
-reference data and its house party hierarchy; and then the [[*The Party Provisioner wizard][Party
-Provisioner]], which equips a single party with counterparties and report
-definitions. Finally it shows where provisioning hands over to daily use
+first tenant; then the [[*The Tenant Provisioner wizard][Tenant Provisioner]], whose first page forks
+between the ready-made Acme Corporation reference entity and a Manual
+path that seeds a tenant with reference data and its own house party
+hierarchy; and then the [[*The Party Provisioner wizard][Party Provisioner]], which equips a single
+manually-created party with counterparties and report definitions.
+Finally it shows where provisioning hands over to daily use
 in [[*Choosing a party at login][Choosing a party at login]], and the [[*Conclusion][Conclusion]] draws these steps
 together.
 
@@ -73,8 +77,12 @@ identity:
    (or simply connect as a new user) and *log in as the tenant
    administrator* created in step 1. OreStudio detects that this
    account has never logged in before and launches the Tenant
-   Provisioner automatically. This step seeds the tenant with reference
-   data and creates the house party hierarchy.
+   Provisioner automatically. Here the path forks: choosing /Acme
+   Corporation (full sample bank)/ populates the tenant with the
+   system's ready-made reference entity in one step (see the
+   [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] chapter); choosing /Manual setup/ instead seeds
+   the tenant with reference data and creates your own house party
+   hierarchy, step by step, as described below.
 
 3. *Party provisioning* — *log in to a specific house party* using the
    tenant administrator account, or any operational account that holds
@@ -180,13 +188,33 @@ and, optionally, an initial party hierarchy. You can skip it with
 *Cancel* and set everything up by hand later from the Data Librarian and
 Parties windows.
 
-*** Welcome
+*** Welcome: Acme Corporation or Manual setup
 
-#+caption[The Tenant Provisioner welcome page]: The Tenant Provisioner welcome page, listing its three steps: select a reference-data catalogue, choose a party structure, and execute.
+Before anything else, the welcome page offers a choice between two
+entirely different paths:
+
+- */Acme Corporation (full sample bank)/* — the fastest way to a
+  fully populated, realistic installation. Selecting it skips every
+  other step in this wizard (catalogue selection, data source, party
+  setup) and hands the whole build to the server: a four-legal-entity
+  holding group with business units, portfolios, books, and
+  fifty-eight staff accounts, imported and published in one step. This
+  is the recommended path if your goal is exploring ORE Studio rather
+  than modelling your own organisation — see the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]]
+  chapter for what you get and why.
+- */Manual setup/* — build the tenant up yourself: choose a
+  reference-data catalogue, choose how to seed your own party
+  hierarchy (from the real GLEIF registry or generated synthetic
+  data), and optionally run the Party Setup wizard per party. Choose
+  this path when you want to model your own organisation rather than
+  explore a pre-built one. The rest of this section walks that path
+  step by step.
+
+#+caption[The Tenant Provisioner welcome page]: The Tenant Provisioner welcome page, listing its three steps: select a reference-data catalogue, choose a party structure, and execute. This capture predates the Acme Corporation vs Manual setup choice described above and needs retaking.
 [[proj:assets/images/tenant_provisioner_setup.png]]
 
-The welcome page outlines the steps: select a catalogue, choose how to
-populate the party hierarchy, and execute. Click *Next*.
+Selecting /Manual setup/ and clicking *Next* moves on to catalogue
+selection, described next.
 
 *** Select a catalogue
 
@@ -453,10 +481,12 @@ with the full treatment reserved for the Tenants chapter — because the
 provisioning steps exist to create precisely those structures. Building
 on that premise, the three wizards did the work in turn: the System
 Provisioner created the platform administrator and the first tenant, the
-Tenant Provisioner seeded the tenant with reference data and its house
-party hierarchy, and the Party Provisioner equipped each party with
-counterparties, an organisational structure, and report definitions.
-Each step required its own login identity, and each ran once. Provisioning
+Tenant Provisioner forked between the ready-made Acme Corporation
+reference entity and a Manual path seeding the tenant with reference
+data and its own house party hierarchy, and the Party Provisioner
+equipped each manually-created party with counterparties, an
+organisational structure, and report definitions. Each step required
+its own login identity, and each ran once. Provisioning
 ends where daily use begins — choosing a party at login — and the
 accounts the wizards created, like every account after them, are managed
 through the windows described in the next chapter.

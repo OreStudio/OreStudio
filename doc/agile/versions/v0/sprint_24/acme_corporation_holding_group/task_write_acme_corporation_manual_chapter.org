@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme_corporation_holding_group:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-acme-corporation-manual-chapter
+#+pr: 1801
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
 #+updated: 2026-07-25
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,35 +37,139 @@ they are looking at once it is up.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
-| Now          | Not yet started.                       |
+| Now          | Chapter, Initial Setup, and Shell Provisioning chapters all updated and building cleanly; 2 real screenshots captured, scenario PASSED. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Human review of the prose (content-complete, per doc-add-entity-chapter's scope). |
 | Last touched | 2026-07-25                               |
 
 * Acceptance
 
 - A new manual chapter (following the existing entity-chapter
   contract, per the =doc-add-entity-chapter= skill) introduces Acme
-  Bank: what it is, why it exists (replacing Barclays Plc as the
-  reference demo/test entity), and how to provision it.
-- Covers the holding-group structure -- Acme Bank Group plc (holding,
-  no desks) and its three operating companies, Acme Bank UK plc, Acme
-  Bank US Inc, Acme Bank HK Ltd -- with their business units,
-  portfolios, books, and staff/accounts.
-- Covers the demo logo attached to a real GLEIF counterparty (BARCLAYS
-  PLC), as a worked example a reader can look up immediately after
-  provisioning without any manual setup.
+  Corporation: what it is and how to provision it. (Revised during
+  implementation, see =* Plan=: presents Acme directly rather than
+  framing it as "replacing Barclays Plc" -- Barclays/historical
+  framing removed per user direction.)
+- Covers the holding-group structure -- Acme Corporation Plc (holding)
+  and its three operating companies, ACME Corporation UK plc, ACME
+  Corporation US Inc, ACME Corporation HK Ltd -- with their business
+  units, portfolios, books, and staff/accounts.
+- Covers the departments each operating company's trading floor is
+  split into (front office, Middle Office, Market Risk) and why they
+  are kept organisationally separate, including which seeded RBAC
+  role each department's accounts hold. (Added during implementation
+  per user direction; not in the original scope.)
 - Cross-references the provisioning recipe (=provision tenant --source
   acme=) so a reader can stand up the entity themselves.
-- Manual PDF rebuilds cleanly with the new chapter included.
+- =chapter_initial_setup.org= and =chapter_shell_provisioning.org=
+  updated to document the real Acme-vs-Manual fork in both the Qt
+  wizard and =provision tenant --source acme=, clarifying the two use
+  cases: Acme for quick exploration, Manual/GLEIF/synthetic for
+  modelling your own organisation. (Added during implementation per
+  user direction; not in the original scope.)
+- The demo-counterparty-logo item from the original scope was dropped
+  entirely (chapter and screenshot) per user direction during
+  screenshot capture -- see =* Plan=.
+- Manual PDF and site both rebuild cleanly with the new/updated
+  chapters included.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Followed the =doc-add-entity-chapter= skill, adapted for a narrative
+overview rather than a single codegen entity: same thesis structure
+(Abstract, Overview, domain-concepts section, body sections, segued
+throughout, Conclusion, See also), but the body sections cover the
+holding-group structure, staff, and a worked counterparty example
+instead of a list-window/detail-dialog/history/shell-CLI walkthrough.
+
+Domain-knowledge sources (confirmed with the user before drafting,
+per the recipe's step 0): the =Trading Structure= modelling note
+(=projects/ores.refdata/core/modeling/trading_structure.org=) for the
+organisational/portfolio hierarchy model, plus the =acme_corporation=
+and =acme_corporation_structure_analysis= dataset_overview.org docs
+for the actual shipped structure (four legal entities, business
+units, 58 staff accounts, LEIs). Cross-checked the analysis doc's
+proposed shape against the actual generated =companies.json=/
+=business_units.json=/=accounts.json= data, since the analysis
+predates and partially diverges from what shipped (e.g. entity
+naming, UK entity's broader global-desk structure).
+
+Scaffolded via =compass add manual=, wired into =user_manual.org=
+(Getting Started part, after Provisioning from the Shell -- this
+entity is what every later chapter's screenshots point at) and
+=user_manual_site.org=. Six =[SCREENSHOT NEEDED]= placeholders
+inserted: Parties window (4-entity hierarchy), Org Chart window
+(staff reporting lines), CounterpartyDetailDialog (Barclays PLC demo
+logo), and the tenant-wizard's Acme-vs-Manual choice step.
+
+One id-link (to the Trading Structure note, outside doc/manual/)
+broke the PDF export -- =compass add manual='s own warning about
+this was right; switched it to a plain GitHub blob URL, matching how
+the shell-provisioning recipe cross-reference is already handled.
+
+Along the way, hit a pre-existing, unrelated
+=validate_schemas.sh= warning (=TEMPORAL_004= on
+=ores_compute_app_version_platforms_tbl=) while confirming a clean
+build; added it to =validation_ignore.txt= under the existing
+"lightweight junction tables" exception category (same pattern as
+=ores_dq_dataset_dependencies_tbl=) rather than bolting on an unused
+version column, per user instruction to fix it as part of this task.
+
+** Screenshot capture and scope revision (round 2)
+
+Ran the =doc-run-manual-screenshots= flow: DB recreate, Acme
+Corporation provisioning, test scenario, QA Validation Runner. 2 of
+4 planned screenshots captured cleanly (Parties window, Org Chart);
+2 were dropped by user decision during the run rather than captured
+-- see the scenario doc's =* Notes= and its steps 4/5 Results:
+
+- The Barclays PLC counterparty logo screenshot -- and the whole
+  chapter section describing it -- dropped. User: "lets not do the
+  barclays logo."
+- The tenant wizard's Acme-vs-Manual screenshot dropped: the QA
+  Validation Runner cannot screenshot QWizard dialogs (not MDI
+  windows). Kept the choice described in prose instead of working
+  around the modality gap with a manual desktop capture.
+
+User then asked for a substantially larger rework than the original
+scope: drop all Barclays/historical framing from the chapter (present
+Acme directly, not as "replacing" anything); add a detailed
+Departments and segregation of duties section (front office, Middle
+Office, Market Risk -- what each does, headcounts, and which seeded
+RBAC role each department's accounts actually hold, grounded in
+=accounts.json='s real =job_title=/=role= fields, not invented);
+and separate the two provisioning use cases (Acme quick-start vs.
+building your own organisation) across chapters. Scoped this with the
+user via AskUserQuestion into: (1) update =chapter_initial_setup.org=
+and =chapter_shell_provisioning.org= now, since both have real,
+undocumented drift (the wizard's Welcome page already offers the
+Acme/Manual choice; the shell chapter's worked example demoed an
+unrelated, confusingly-similarly-named synthetic "Acme Corp" tenant);
+(2) leave 5 other chapters with real Barclays UI screenshots
+(Tenants, Accounts and Roles, Connecting, Parties, Counterparties)
+untouched -- filed as capture [[id:56A3540C-26F8-4A2E-9DE1-616E8D402156][Re-shoot manual screenshots showing
+Barclays as Acme Corporation]] rather than edited blind, since their
+prose is tied to real screenshots that would need re-shooting too.
+
+Important accuracy check made while writing the departments section:
+ORE Studio's roles (=Trading=, =Operations=, =Viewer=) are seeded at
+the tenant level, not scoped to an individual desk/business unit --
+so the chapter is explicit that the organisational separation Acme
+demonstrates is not yet an access-control boundary, rather than
+overclaiming desk-level RBAC enforcement that doesn't exist (a real,
+tracked gap -- see the structure-analysis dataset's Gaps section).
+
+Discovered and worked around a real Qt-help caching gotcha while
+verifying the rebuilt chapter renders in the client: HelpViewer only
+re-registers a =.qch= if its namespace isn't already in the
+co-located =.qhc= index, and the exe's POST_BUILD =copy_if_different=
+deploy step only runs on an actual relink, so =deploy_help_qch= plus
+a full rebuild can silently leave the client serving a stale manual.
+Worked around by hand (copy the =.qch=, delete the =.qhc=); filed as
+capture [[id:09CC7500-87FA-41BD-B98C-00AED080F9A1][Document the stale Qt help .qch/.qhc cache gotcha in the
+screenshot recipe]] so the recipe covers it next time.
 
 * Notes
 
@@ -78,18 +182,19 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:BDA711D3-0FBB-4439-AB2E-A485D55D0497][Capture screenshots for the Acme Corporation manual chapter]] | PASSED | 2 of 4 planned screenshots captured (Parties window, Org Chart); 2 dropped by design (Barclays logo section removed; wizard screenshot not capturable via the Runner, kept as prose). Both review steps (Qt client, PDF) passed. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1801][#1801]] | [docs,agile,sql] Add Acme Corporation manual chapter; document Acme-vs-Manual provisioning fork |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Reporting-line description wrong: Head of Desk/Middle Office/Market Risk don't report directly to Country Head -- accounts.json shows an unmentioned intermediate layer (Head of Trading, Head of Risk, COO) | chapter_acme_corporation.org | Fixed | Verified against accounts.json's reports_to_username chain and the org-chart screenshot; added the missing Head of Trading/Head of Risk roles to Front office/Market risk/Leadership sections and corrected every reporting-chain sentence. |
+| 2 | "Three desks apiece"/"no placeholder rows" overclaims: business_units.json shows UK has 7 DESK units, only the 3 EMEA ones staffed per accounts.json | chapter_acme_corporation.org | Fixed | Verified counts against business_units.json/accounts.json; reworded to state only EMEA is staffed today, Americas/APAC are structural placeholders, and dropped the "no placeholder rows" claim. |
 
 * Result

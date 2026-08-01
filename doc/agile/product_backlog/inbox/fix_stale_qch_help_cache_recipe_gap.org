@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 09CC7500-87FA-41BD-B98C-00AED080F9A1
+:END:
+#+title: Document the stale Qt help .qch/.qhc cache gotcha in the screenshot recipe
+#+description: HelpViewer only re-registers the .qch if its namespace isn't already in the co-located .qhc index, and the exe's POST_BUILD copy_if_different only runs on an actual relink, so deploy_help_qch + a full rebuild can silently leave the client serving a stale manual. Document the workaround (copy the .qch by hand, delete the .qhc) in the screenshot-capture recipe.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:manual:qt:tooling:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=HelpViewer::HelpViewer()= (=projects/ores.qt/application/src/HelpViewer.cpp=)
+only calls =engine_->registerDocumentation(*qch)= when the .qch's
+QHelpEngine namespace is *not already present* in the co-located
+=user_manual.qhc= index file next to it. That index persists across
+client restarts, so once a namespace has been registered once, a
+rebuilt =.qch= with the same namespace is silently ignored — the
+viewer keeps serving whatever content was registered the first time.
+Separately, =ores.qt.application/src/CMakeLists.txt='s POST_BUILD
+=copy_if_different= step that deploys
+=resources/help/user_manual.qch= to =publish/bin/help/= only runs
+when the =ores.qt.exe= target actually relinks — a full
+=compass build --preset <preset>= after =compass build --direct help=
++ =cmake --build ... --target deploy_help_qch= does *not* guarantee a
+relink if nothing the exe depends on changed, so the runtime copy can
+stay stale even though the source-controlled resource file updated.
+
+Document the actual fix in
+[[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]]'s "Wire the real
+images into the chapter and rebuild" section: after
+=deploy_help_qch=, manually copy
+=projects/ores.qt/application/resources/help/user_manual.qch= over
+the running build's
+=build/output/<preset>/publish/bin/help/user_manual.qch=, and delete
+the co-located =user_manual.qhc= before restarting the client, rather
+than trusting the POST_BUILD step or the QHelpEngine cache to pick up
+a content change automatically.
+
+* Why
+
+Discovered while capturing screenshots for the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]]
+chapter: the client kept showing an older manual with no Acme
+Corporation chapter even after =deploy_help_qch= and a full rebuild,
+because of the two caching layers described above. The recipe's
+existing "rebuild the Qt-embedded HTML help" step doesn't mention
+either gotcha, so the next author to add or heavily edit a chapter
+will likely hit the same silent staleness and waste time debugging
+it.
+
+* References
+
+- =projects/ores.qt/application/src/HelpViewer.cpp= — the QHelpEngine namespace-registration check.
+- =projects/ores.qt/application/src/CMakeLists.txt= — the POST_BUILD =copy_if_different= deploy step.
+
+* See also
+
+- [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — the recipe to update.
+- [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] — the chapter whose screenshot capture surfaced this.

@@ -16,9 +16,11 @@ command line, where a complete system can be provisioned with three
 commands — or with one script, run end to end without touching the
 desktop application. It sets out the =provision= commands and how each
 maps onto its wizard, the supporting commands they are built from, the
-script library that ties them together, and a complete worked example,
-showing that scripted provisioning is repeatable: the same script
-against a fresh installation always produces the same system.
+script library that ties them together, and two complete worked
+examples — the fast Acme Corporation path and the generic path for
+building your own organisation — showing that scripted provisioning
+is repeatable: the same script against a fresh installation always
+produces the same system.
 
 # Restore the heading gap that the lettrine paragraph suppresses.
 #+latex: \bigskip
@@ -40,9 +42,11 @@ in for the wizard it replaces. It then opens up the machinery in
 [[*The supporting commands][The supporting commands]], the smaller commands the =provision= phases
 call and that you can run by hand to inspect the system or recover a
 failed run, before showing in [[*Scripts][Scripts]] how the shell runs those commands
-unattended from a file. Finally [[*A complete example][A complete example]] runs the whole sequence
-from a single shipped script, and the [[*Conclusion][Conclusion]] draws these steps
-together.
+unattended from a file. Finally [[*A complete example][A complete example]] runs the fast
+Acme Corporation path from a single shipped script, and [[*A custom example: your own organisation][A custom
+example: your own organisation]] points to the equivalent script for
+building your own house instead, before the [[*Conclusion][Conclusion]] draws these
+steps together.
 
 ** The shell and provisioning
 
@@ -156,19 +160,32 @@ ores-shell> Bye!
 
 With no options this publishes the first available reference data
 catalogue and uses the GLEIF registry as the data source, just as the
-wizard's defaults do. The options mirror the wizard's pages:
+wizard's defaults do. The options mirror the wizard's Welcome-page
+fork and its Manual sub-pages:
 
-- =--bundle <code>= selects a specific catalogue (=bundles list=
-  shows what is available).
-- =--source gleif= (the default) optionally takes =--root-lei <lei>=
-  to build the house hierarchy from a real organisation; find the LEI
-  with =lei countries= and =lei entities <country> --filter <text>=.
-- =--source synthetic= generates a realistic artificial organisation
-  instead. All the generation controls from the wizard's synthetic
+- =--source acme= — the fastest path to a fully populated, realistic
+  installation, matching the wizard's /Acme Corporation (full sample
+  bank)/ choice. Ignores every other option below: it imports Acme
+  Corporation's four-entity LEI hierarchy and publishes all of its
+  business units, portfolios, books, and staff accounts server-side
+  in one command. See the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] chapter for what this
+  produces, and [[*A complete example][A complete example]] below for the full worked run.
+- =--bundle <code>= selects a specific reference-data catalogue for
+  the Manual path (=bundles list= shows what is available).
+- =--source gleif= (the default when =--source= is omitted) optionally
+  takes =--root-lei <lei>= to build your own house hierarchy from a
+  real organisation; find the LEI with =lei countries= and =lei
+  entities <country> --filter <text>=.
+- =--source synthetic= generates a realistic but fictional
+  organisation instead, for evaluation or testing without importing
+  real data. All the generation controls from the wizard's synthetic
   page are available as options with the same defaults
   (=--party-count=, =--counterparty-count=, =--portfolio-leaf-count=
   and so on); =--seed <n>= makes the result reproducible — the same
   seed always generates the same organisation, names included.
+
+Choose =--source acme= to explore ORE Studio quickly; choose =gleif=
+or =synthetic= when you want to model your own organisation instead.
 
 The command publishes the catalogue and waits while the backend works
 through its datasets, printing each step as it completes; generates
@@ -276,56 +293,81 @@ than editing the original, which the build regenerates.
 
 ** A complete example
 
-The library's =acme_system_provision.ores= provisions a complete system
-from a fresh installation: platform administrator, an Acme tenant with
-a reproducible synthetic organisation, and the house's root party with
-its risk management, synthetic market data, and FX driver-rate bundles.
-(Its sibling =barclays_system_provision.ores=
-does the same from the GLEIF golden copy instead of synthetic data.) It
+The library's
+=how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+provisions a complete system from a fresh installation with a single
+=--source acme= call: platform administrator, an Acme Corporation
+tenant, and all four of its legal entities — business units,
+portfolios, books, staff accounts, and market data — server-side
+orchestrated in one step. It is the quickest way to a fully populated
+installation and the recommended starting point for exploring ORE
+Studio; see the [[id:E3387565-DC9B-45BA-B98D-437ED80CEAED][Acme Corporation]] chapter for what it produces. It
 expects a fresh installation in bootstrap mode, all services running,
 and a connected, logged-out session.
 
-#+name: shellprov-all
+#+name: shellprov-acme
 #+begin_src ores-shell :exports code
-load projects/ores.shell/scripts/library/acme_system_provision.ores
+load projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
 exit
 #+end_src
 
-An error-free run ends with a fully provisioned system (the excerpt
-below elides most of the run — the full output reports every dataset,
-generation count and report definition as it lands):
+An error-free run ends with all four legal entities active (the
+excerpt below elides most of the per-entity dataset/bundle detail —
+the full output reports every step for all four companies as it
+lands):
 
 #+begin_src sh :noweb yes :results output :wrap example :exports results
 ./projects/ores.compass/compass.sh shell << 'EOF'
-<<shellprov-all>>
+<<shellprov-acme>>
 EOF
 #+end_src
 
 #+RESULTS:
 #+begin_example
-ores-shell> Loading script: projects/ores.shell/scripts/library/acme_system_provision.ores
-> provision system super_admin Secure-Password-123 admin@localhost.com ...
-✓ System provisioned. Tenant 'Default Tenant' ...
-...
-> provision party "Lloyds Wealth Management Ltd"
-[5/5] Activating party 'Lloyds Wealth Management Ltd'...
-✓ Party 'Lloyds Wealth Management Ltd' provisioned and active.
+ores-shell> Loading script: .../how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+> provision system super_admin Secure-Password-123 super_admin@localhost.com ...
+✓ System provisioned. Tenant 'Acme Corporation' ...
+> login tenant_admin@acme_corporation Secure-Password-123
+✓ Login successful!
+> provision tenant --source acme
+Step 1: Publishing base reference data: ... completed
+Step 2: Importing Acme Corporation LEI hierarchy: ... completed
+Step 3: Publishing group-level staff: ... completed
+Step 4: Publishing ACME Corporation UK plc: ... completed
+Step 5: Publishing ACME Corporation US Inc: ... completed
+Step 6: Publishing ACME Corporation HK Ltd: ... completed
+Step 7: Granting cross-entity access: ... completed
+✓ Acme Corporation holding group provisioned.
 > logout
 ✓ Logged out successfully.
-Script complete: 9 commands executed.
+Script complete: 6 commands executed.
 #+end_example
 
-Two details are worth pausing on. The seed pins the generated
-organisation, which is why stage 3 can name /Lloyds Wealth Management
-Ltd/ — change the seed and you must discover the new root party with
-=parties list --category Operational= and update the script. And the
-logouts between stages are not ceremony: they are how the session
-learns that the tenant has become active and the parties exist,
-exactly as the wizards instruct.
+Unlike the generic =provision party= flow, =--source acme= handles
+every one of Acme's four legal entities internally — there is no
+per-party stage to call separately, and no seed to track: the same
+script against a fresh installation always produces the same four
+entities, the same fifty-eight staff, and the same structure.
 
 Log in — from the shell or the desktop application — as
-=tenant_admin@default=, select a party, and daily use begins, just as
-at the end of the previous chapter.
+=tenant_admin@acme_corporation=, select one of the four operating
+companies, and daily use begins, just as at the end of the previous
+chapter.
+
+** A custom example: your own organisation
+
+Where the Acme Corporation script above is the fast path, building
+your own house from scratch — modelling a real organisation, or a
+synthetic one shaped to your own testing needs — uses the generic
+three-stage sequence [[*Provisioning the system][Provisioning the system]] through [[*Provisioning a party][Provisioning a
+party]] set out earlier: =provision system=, then =provision tenant
+--source gleif= (or =--source synthetic=), then =provision party= for
+each party that needs its own counterparties and bundles. The
+library's =barclays_system_provision.ores= is the worked example of
+this path — real GLEIF-imported data rather than Acme's curated
+dataset — and follows exactly the same =load=/logout/login shape as
+the Acme example above, just with more stages since each party is
+provisioned individually.
 
 ** Conclusion
 
@@ -341,9 +383,12 @@ that refresh the session's view of the system. Each =provision= command
 collapses a wizard into a single line whose options carry the same
 defaults, and each is built from smaller supporting commands that can be
 run by hand to inspect the system or recover a failed run. The =load=
-command then runs those commands unattended from a file, and the shipped
-script library showed the whole sequence executing end to end from a
-fresh installation. Because the same script against the same starting
-point always produces the same system, scripted provisioning is the
-natural tool for development environments, testing, and automation —
-everything the wizards do, reproducibly and without the desktop.
+command then runs those commands unattended from a file, and the
+shipped script library showed both paths executing end to end from a
+fresh installation: =--source acme= for the fast, fully populated
+Acme Corporation entity, and the generic =gleif=/=synthetic= sequence
+for building a house of your own. Because the same script against the
+same starting point always produces the same system, scripted
+provisioning is the natural tool for development environments,
+testing, and automation — everything the wizards do, reproducibly and
+without the desktop.

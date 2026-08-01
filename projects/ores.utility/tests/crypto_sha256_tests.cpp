@@ -38,8 +38,7 @@ TEST_CASE("sha256_hex_digest_of_empty_string", tags) {
     const auto result = sha256::hex_digest("");
     BOOST_LOG_SEV(lg, info) << "Empty digest: " << result;
 
-    CHECK(result ==
-          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+    CHECK(result == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
 }
 
 TEST_CASE("sha256_hex_digest_of_known_string", tags) {
@@ -48,8 +47,7 @@ TEST_CASE("sha256_hex_digest_of_known_string", tags) {
     const auto result = sha256::hex_digest("hello world");
     BOOST_LOG_SEV(lg, info) << "Digest: " << result;
 
-    CHECK(result ==
-          "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
+    CHECK(result == "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9");
 }
 
 TEST_CASE("sha256_hex_digest_of_file_matches_hex_digest", tags) {

@@ -83,8 +83,12 @@ const QColor& currentUserHighlightColour() {
 
 } // namespace
 
-OrgChartWidget::OrgChartWidget(ClientManager* clientManager, ImageCache* imageCache, QWidget* parent)
-    : QWidget(parent), clientManager_(clientManager), imageCache_(imageCache) {
+OrgChartWidget::OrgChartWidget(ClientManager* clientManager,
+                               ImageCache* imageCache,
+                               QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache) {
     resize(1000, 700);
 
     scene_ = new QGraphicsScene(this);
@@ -97,12 +101,16 @@ OrgChartWidget::OrgChartWidget(ClientManager* clientManager, ImageCache* imageCa
     layout->addWidget(view_);
 
     accountModel_ = std::make_unique<ClientAccountModel>(clientManager_, this);
-    connect(accountModel_.get(), &ClientAccountModel::dataLoaded, this,
+    connect(accountModel_.get(),
+            &ClientAccountModel::dataLoaded,
+            this,
             &OrgChartWidget::onAccountsLoaded);
-    connect(accountModel_.get(), &ClientAccountModel::loadError, this,
+    connect(accountModel_.get(),
+            &ClientAccountModel::loadError,
+            this,
             [](const QString& message, const QString&) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to load accounts for org chart: "
-                                            << message.toStdString();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to load accounts for org chart: " << message.toStdString();
             });
 
     if (imageCache_) {
@@ -179,9 +187,8 @@ void OrgChartWidget::rebuildTree() {
         n.depth = depth;
         n.colourIndex = colour;
         for (Node* child : n.children) {
-            const int childColour = depth == 0
-                ? (nextBranchColour++ % static_cast<int>(cardPalette().size()))
-                : colour;
+            const int childColour =
+                depth == 0 ? (nextBranchColour++ % static_cast<int>(cardPalette().size())) : colour;
             assign(*child, depth + 1, childColour);
         }
     };
@@ -219,7 +226,8 @@ void OrgChartWidget::resolvePartyLabels() {
 
         if (result.success) {
             auto labelFor = [&](Node& anchor) -> std::string {
-                auto pit = result.accountIdToPartyId.find(boost::uuids::to_string(anchor.account.id));
+                auto pit =
+                    result.accountIdToPartyId.find(boost::uuids::to_string(anchor.account.id));
                 if (pit == result.accountIdToPartyId.end())
                     return {};
                 auto nit = result.partyIdToName.find(pit->second);
@@ -266,8 +274,7 @@ void OrgChartWidget::resolvePartyLabels() {
                 clientManager->process_authenticated_request(std::move(request));
             if (accountPartiesResult && !accountPartiesResult->account_parties.empty()) {
                 result.accountIdToPartyId[boost::uuids::to_string(accountId)] =
-                    boost::uuids::to_string(
-                        accountPartiesResult->account_parties.front().party_id);
+                    boost::uuids::to_string(accountPartiesResult->account_parties.front().party_id);
             }
         }
 
@@ -323,9 +330,8 @@ QGraphicsItemGroup* OrgChartWidget::createCard(Node& node) {
     const QColor title_colour = isRoot ? QColor(255, 255, 255, 210) : QColor(0x2b, 0x2b, 0x2b, 200);
     const QColor party_colour = isRoot ? QColor(255, 255, 255, 170) : QColor(0x2b, 0x2b, 0x2b, 150);
 
-    const bool isCurrentUser =
-        clientManager_ && !node.account.username.empty()
-        && node.account.username == clientManager_->currentUsername();
+    const bool isCurrentUser = clientManager_ && !node.account.username.empty() &&
+                               node.account.username == clientManager_->currentUsername();
 
     QPainterPath path;
     path.addRoundedRect(QRectF(0, 0, CARD_W, CARD_H), 14, 14);
@@ -342,8 +348,7 @@ QGraphicsItemGroup* OrgChartWidget::createCard(Node& node) {
     QFont nameFont;
     nameFont.setBold(true);
     nameFont.setPointSize(10);
-    auto* nameText = new QGraphicsSimpleTextItem(
-        QString::fromStdString(node.account.full_name));
+    auto* nameText = new QGraphicsSimpleTextItem(QString::fromStdString(node.account.full_name));
     nameText->setFont(nameFont);
     nameText->setBrush(name_colour);
     nameText->setPos(TEXT_X, 10);
@@ -396,8 +401,12 @@ QPixmap OrgChartWidget::circularPhoto(const boost::uuids::uuid& imageId, int dia
 
     if (!source.isNull()) {
         painter.drawPixmap(
-            0, 0, diameter, diameter,
-            source.scaled(diameter, diameter, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+            0,
+            0,
+            diameter,
+            diameter,
+            source.scaled(
+                diameter, diameter, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
     } else {
         painter.fillRect(0, 0, diameter, diameter, QColor(255, 255, 255, 60));
     }

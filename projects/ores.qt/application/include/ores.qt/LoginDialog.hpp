@@ -70,8 +70,8 @@ public:
         Type type;
         QString name;
         QString subtitle; // "host:port" for environments; for connections, the
-                           // connection's description (e.g. "Head of Desk, FX
-                           // Rates UK") when set, else the username
+                          // connection's description (e.g. "Head of Desk, FX
+                          // Rates UK") when set, else the username
         QStringList tags; // tags for label-filter narrowing
     };
 

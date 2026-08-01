@@ -97,15 +97,17 @@ std::pair<std::string, std::string> splitIndexFamilyAndTenor(const std::string& 
     const auto dash = suffix.find('-');
     std::string family = dash == std::string::npos ? suffix : suffix.substr(0, dash);
     std::string tenor = dash == std::string::npos ? std::string() : suffix.substr(dash + 1);
-    std::transform(family.begin(), family.end(), family.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
     return {family, tenor};
 }
 
 QString joinIndexFamilyAndTenor(const std::string& index_family, const std::string& tenor) {
     auto family = index_family;
-    std::transform(family.begin(), family.end(), family.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
     if (tenor.empty())
         return QString::fromStdString(family);
     return QString::fromStdString(family + "-" + tenor);

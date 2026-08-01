@@ -47,10 +47,9 @@ TEST_CASE("mint_token_produces_a_token_validating_to_the_impersonated_identity",
     const auto other_visible_id = boost::uuids::random_generator()();
 
     auto signer = ores::security::jwt::jwt_authenticator::create_hs256(test_secret);
-    internal_impersonation_service sut(
-        signer, [&](const std::string&, const boost::uuids::uuid&) {
-            return std::vector<boost::uuids::uuid>{party_id, other_visible_id};
-        });
+    internal_impersonation_service sut(signer, [&](const std::string&, const boost::uuids::uuid&) {
+        return std::vector<boost::uuids::uuid>{party_id, other_visible_id};
+    });
 
     const auto token = sut.mint_token(h.context(), tenant_id, account_id, party_id, "some.user");
     REQUIRE_FALSE(token.empty());
@@ -73,10 +72,9 @@ TEST_CASE("mint_token_respects_the_requested_ttl", tags) {
     const auto party_id = boost::uuids::random_generator()();
 
     auto signer = ores::security::jwt::jwt_authenticator::create_hs256(test_secret);
-    internal_impersonation_service sut(
-        signer, [](const std::string&, const boost::uuids::uuid&) {
-            return std::vector<boost::uuids::uuid>{};
-        });
+    internal_impersonation_service sut(signer, [](const std::string&, const boost::uuids::uuid&) {
+        return std::vector<boost::uuids::uuid>{};
+    });
 
     const auto token = sut.mint_token(
         h.context(), tenant_id, account_id, party_id, "some.user", std::chrono::seconds{1});

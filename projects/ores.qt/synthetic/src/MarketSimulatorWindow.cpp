@@ -808,8 +808,9 @@ namespace {
 // unit).
 std::string ir_index_display_suffix(const synthetic::domain::ir_curve_generation_config& ir) {
     auto family = ir.index_family;
-    std::transform(family.begin(), family.end(), family.begin(),
-                   [](unsigned char c) { return std::toupper(c); });
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
     if (ir.tenor.empty())
         return family;
     return family + "-" + ir.tenor;
@@ -2421,8 +2422,8 @@ MarketSimulatorWindow::Results MarketSimulatorWindow::computeIrCurveBindingColli
             continue;
         const auto folder = ir.folder_id.value_or(boost::uuids::uuid{});
         const auto label = ir.source_name.empty() ?
-            (ir.currency_code + "/" + ir_index_display_suffix(ir)) :
-            ir.source_name;
+                               (ir.currency_code + "/" + ir_index_display_suffix(ir)) :
+                               ir.source_name;
         by_binding[{folder, ir.currency_code, ir.index_family, ir.tenor, ir.role}].push_back(label);
     }
 
@@ -2435,8 +2436,7 @@ MarketSimulatorWindow::Results MarketSimulatorWindow::computeIrCurveBindingColli
             for (const auto& other : labels)
                 if (other != label)
                     others << QString::fromStdString(other);
-            const auto index_display =
-                tenor.empty() ? index_family : index_family + "-" + tenor;
+            const auto index_display = tenor.empty() ? index_family : index_family + "-" + tenor;
             results.push_back(
                 {label,
                  false,

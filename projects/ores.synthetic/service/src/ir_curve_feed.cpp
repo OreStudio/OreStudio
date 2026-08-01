@@ -177,8 +177,9 @@ std::string lowercase(std::string s) {
 // separate component with no natural common header for a one-line helper).
 std::string index_display_suffix(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
     auto family = cfg.index_family;
-    std::transform(family.begin(), family.end(), family.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
     if (cfg.tenor.empty())
         return family;
     return family + "-" + cfg.tenor;
@@ -284,19 +285,18 @@ make_ir_curve_feed(ores::nats::service::client& nats,
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(
-        nats,
-        cfg.tenant_id,
-        cfg.party_id,
-        cfg.source_name,
-        "synthetic.v1.curve_family." + cfg.source_name,
-        "RATES",
-        "YIELD",
-        cfg.currency_code + "/" + index_display_suffix(cfg),
-        cfg.role,
-        std::move(process),
-        static_cast<double>(cfg.ticks_per_hour),
-        std::move(resolved));
+    return std::make_shared<ir_curve_feed>(nats,
+                                           cfg.tenant_id,
+                                           cfg.party_id,
+                                           cfg.source_name,
+                                           "synthetic.v1.curve_family." + cfg.source_name,
+                                           "RATES",
+                                           "YIELD",
+                                           cfg.currency_code + "/" + index_display_suffix(cfg),
+                                           cfg.role,
+                                           std::move(process),
+                                           static_cast<double>(cfg.ticks_per_hour),
+                                           std::move(resolved));
 }
 
 }

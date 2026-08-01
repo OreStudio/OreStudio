@@ -78,10 +78,12 @@ public:
     public:
         service_error(std::string error_code, std::string_view subject)
             : std::runtime_error("Request to " + std::string(subject) +
-                                 " rejected by server: " + error_code),
-              error_code_(std::move(error_code)) {}
+                                 " rejected by server: " + error_code)
+            , error_code_(std::move(error_code)) {}
 
-        [[nodiscard]] const std::string& error_code() const noexcept { return error_code_; }
+        [[nodiscard]] const std::string& error_code() const noexcept {
+            return error_code_;
+        }
 
     private:
         std::string error_code_;
@@ -106,12 +108,10 @@ public:
     typename Request::response_type
     request(const Request& req, std::chrono::seconds timeout = std::chrono::seconds{30}) {
         const auto& codec = ores::nats::default_wire_codec();
-        for (int attempt = 0; ; ++attempt) {
+        for (int attempt = 0;; ++attempt) {
             const auto bytes = codec.encode(req);
-            const auto reply = nats_.request_sync(Request::nats_subject,
-                                                  std::span<const std::byte>(bytes),
-                                                  headers(),
-                                                  timeout);
+            const auto reply = nats_.request_sync(
+                Request::nats_subject, std::span<const std::byte>(bytes), headers(), timeout);
             if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
                 it != reply.headers.end()) {
                 if (attempt == 0 && refresh_token_ && it->second == "token_expired") {
@@ -124,8 +124,8 @@ public:
             auto result = codec.decode<typename Request::response_type>(reply.data);
             if (!result)
                 throw std::runtime_error("Failed to parse response to " +
-                                         std::string(Request::nats_subject) +
-                                         ": " + result.error().what());
+                                         std::string(Request::nats_subject) + ": " +
+                                         result.error().what());
             return *result;
         }
     }
@@ -144,10 +144,11 @@ public:
      *         workflow is a reportable orchestration outcome, not a
      *         transport-level exception).
      */
-    bool wait_for_workflow_instance(const std::string& instance_id,
-                                    std::chrono::seconds timeout,
-                                    std::size_t expected_steps,
-                                    const std::function<void(const std::string&)>& on_progress = {});
+    bool
+    wait_for_workflow_instance(const std::string& instance_id,
+                               std::chrono::seconds timeout,
+                               std::size_t expected_steps,
+                               const std::function<void(const std::string&)>& on_progress = {});
 
 private:
     [[nodiscard]] std::unordered_map<std::string, std::string> headers() const;

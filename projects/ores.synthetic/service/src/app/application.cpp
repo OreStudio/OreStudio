@@ -167,8 +167,8 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
         const auto it = entries_by_config.find(cfg.id);
         if (it == entries_by_config.end() || it->second.empty()) {
             BOOST_LOG_SEV(auto_start_lg(), warn)
-                << "Skipping enabled IR curve config " << cfg.currency_code << "/" << cfg.index_family
-                << " — no template entries.";
+                << "Skipping enabled IR curve config " << cfg.currency_code << "/"
+                << cfg.index_family << " — no template entries.";
             continue;
         }
 

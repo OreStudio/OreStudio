@@ -412,10 +412,11 @@ void PortfolioExplorerMdiWindow::doReload() {
                 if (!result)
                     return {.success = false,
                             .parties = {},
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch parties: " + result.error())};
+                            .error_message = QString::fromStdString("Failed to fetch parties: " +
+                                                                    result.error())};
 
-                return {.success = true, .parties = std::move(result->parties), .error_message = {}};
+                return {
+                    .success = true, .parties = std::move(result->parties), .error_message = {}};
             },
             "parties");
     }));

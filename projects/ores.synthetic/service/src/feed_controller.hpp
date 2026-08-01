@@ -344,7 +344,8 @@ private:
                    ".";
         };
 
-        const auto key = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
+        const auto key =
+            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
         if (!key) {
             error_detail = "Cannot parse ORE key '" + ore_key + "'.";
             return false;
@@ -465,7 +466,8 @@ private:
     bool resolve_series(const std::string& ore_key, boost::uuids::uuid& out) {
         using namespace ores::marketdata::domain;
 
-        const auto key = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
+        const auto key =
+            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
         if (!key) {
             BOOST_LOG_SEV(lg(), ores::logging::warn) << "Cannot parse ORE key '" << ore_key << "'.";
             return false;

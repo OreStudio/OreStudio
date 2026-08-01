@@ -39,7 +39,8 @@ std::string hex_encode(const unsigned char* digest, unsigned int len) {
 
 class digest_context {
 public:
-    digest_context() : ctx_(EVP_MD_CTX_new()) {
+    digest_context()
+        : ctx_(EVP_MD_CTX_new()) {
         if (!ctx_)
             throw std::runtime_error("SHA256: failed to create digest context");
         if (EVP_DigestInit_ex(ctx_, EVP_sha256(), nullptr) != 1) {

@@ -32,13 +32,12 @@ TEST_CASE("ir_curve_feeds_conflict: same qualifier, same role, is a conflict", t
     CHECK(ir_curve_feeds_conflict("USD/SOFR", "discount", "USD/SOFR", "discount"));
 }
 
-TEST_CASE(
-    "ir_curve_feeds_conflict: same qualifier, different role, is NOT a conflict "
-    "-- a discount curve and a projection curve for the same currency+index+tenor coexist",
-    tags) {
+TEST_CASE("ir_curve_feeds_conflict: same qualifier, different role, is NOT a conflict "
+          "-- a discount curve and a projection curve for the same currency+index+tenor coexist",
+          tags) {
     CHECK_FALSE(ir_curve_feeds_conflict("USD/SOFR", "discount", "USD/SOFR", "projection"));
-    CHECK_FALSE(ir_curve_feeds_conflict("USD/LIBOR-3M", "self_discounting", "USD/LIBOR-3M",
-                                       "projection"));
+    CHECK_FALSE(
+        ir_curve_feeds_conflict("USD/LIBOR-3M", "self_discounting", "USD/LIBOR-3M", "projection"));
 }
 
 TEST_CASE("ir_curve_feeds_conflict: different qualifier, same role, is NOT a conflict", tags) {

@@ -255,8 +255,8 @@ ProvenanceWidget* AccountDetailDialog::provenanceWidget() const {
 }
 
 std::optional<boost::uuids::uuid> AccountDetailDialog::entityImageId() const {
-    return currentAccount_.image_id.is_nil() ? std::nullopt
-                                              : std::optional(currentAccount_.image_id);
+    return currentAccount_.image_id.is_nil() ? std::nullopt :
+                                               std::optional(currentAccount_.image_id);
 }
 
 void AccountDetailDialog::setAccount(const iam::domain::account& account) {
@@ -382,19 +382,18 @@ void AccountDetailDialog::populateReportsToCombo(const iam::domain::account& acc
         return;
 
     QPointer<AccountDetailDialog> self = this;
-    reportsToWatcher_->setFuture(
-        QtConcurrent::run([self]() -> std::vector<iam::domain::account> {
-            if (!self || !self->clientManager_)
-                return {};
+    reportsToWatcher_->setFuture(QtConcurrent::run([self]() -> std::vector<iam::domain::account> {
+        if (!self || !self->clientManager_)
+            return {};
 
-            iam::messaging::get_accounts_request_typed req;
-            req.limit = 10'000;
-            auto result = self->clientManager_->process_authenticated_request(std::move(req));
-            if (!result)
-                return {};
+        iam::messaging::get_accounts_request_typed req;
+        req.limit = 10'000;
+        auto result = self->clientManager_->process_authenticated_request(std::move(req));
+        if (!result)
+            return {};
 
-            return result->accounts;
-        }));
+        return result->accounts;
+    }));
 }
 
 void AccountDetailDialog::onReportsToAccountsLoaded() {
@@ -412,9 +411,8 @@ void AccountDetailDialog::onReportsToAccountsLoaded() {
             continue;
 
         const auto idStr = QString::fromStdString(boost::uuids::to_string(a.id));
-        const auto displayName =
-            a.full_name.empty() ? QString::fromStdString(a.username)
-                                : QString::fromStdString(a.full_name);
+        const auto displayName = a.full_name.empty() ? QString::fromStdString(a.username) :
+                                                       QString::fromStdString(a.full_name);
         ui_->reportsToCombo->addItem(displayName, idStr);
         if (!currentAccount_.reports_to_account_id.is_nil() &&
             a.id == currentAccount_.reports_to_account_id)
@@ -783,8 +781,7 @@ void AccountDetailDialog::onSaveClicked() {
         const std::string jobTitle = ui_->jobTitleEdit->text().toStdString();
         const std::string reportsToAccountId =
             ui_->reportsToCombo->currentData().toString().toStdString();
-        const auto selectedImage =
-            flagChanged() ? selectedImageId() : entityImageId();
+        const auto selectedImage = flagChanged() ? selectedImageId() : entityImageId();
         const std::string imageId =
             selectedImage ? boost::uuids::to_string(*selectedImage) : std::string{};
         const auto pendingRoleAdds =

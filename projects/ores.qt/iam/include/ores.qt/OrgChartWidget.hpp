@@ -64,7 +64,8 @@ private:
     }
 
 public:
-    explicit OrgChartWidget(ClientManager* clientManager, ImageCache* imageCache,
+    explicit OrgChartWidget(ClientManager* clientManager,
+                            ImageCache* imageCache,
                             QWidget* parent = nullptr);
     ~OrgChartWidget() override;
 

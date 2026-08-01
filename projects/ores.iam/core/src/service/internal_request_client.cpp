@@ -39,13 +39,15 @@ constexpr auto poll_interval = std::chrono::milliseconds(500);
 } // namespace
 
 internal_request_client::internal_request_client(ores::nats::service::client& nats,
-                                                  std::string token,
-                                                  std::function<std::string()> refresh_token)
-    : nats_(nats), token_(std::move(token)), refresh_token_(std::move(refresh_token)) {}
+                                                 std::string token,
+                                                 std::function<std::string()> refresh_token)
+    : nats_(nats)
+    , token_(std::move(token))
+    , refresh_token_(std::move(refresh_token)) {}
 
 std::unordered_map<std::string, std::string> internal_request_client::headers() const {
     return {{std::string(ores::nats::headers::authorization),
-            std::string(ores::nats::headers::bearer_prefix) + token_}};
+             std::string(ores::nats::headers::bearer_prefix) + token_}};
 }
 
 bool internal_request_client::wait_for_workflow_instance(
@@ -74,8 +76,8 @@ bool internal_request_client::wait_for_workflow_instance(
             // an expired internal impersonation token). That will not
             // change on retry -- unlike a transient transport hiccup, so
             // fail fast instead of burning the rest of the timeout.
-            BOOST_LOG_SEV(lg(), error) << "Aborting wait for workflow instance " << instance_id
-                                       << ": " << e.what();
+            BOOST_LOG_SEV(lg(), error)
+                << "Aborting wait for workflow instance " << instance_id << ": " << e.what();
             return false;
         } catch (const std::exception& e) {
             ok = false;
@@ -105,9 +107,9 @@ bool internal_request_client::wait_for_workflow_instance(
             std::size_t completed = 0;
             for (const auto& step : result.steps) {
                 if (step.status == "failed") {
-                    BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id
-                                              << " failed at step " << step.step_index << ": "
-                                              << step.error;
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Workflow instance " << instance_id << " failed at step "
+                        << step.step_index << ": " << step.error;
                     return false;
                 }
                 if (step.status == "completed" || step.status == "completed_with_warnings")
@@ -115,7 +117,7 @@ bool internal_request_client::wait_for_workflow_instance(
             }
             if (total > 0 && completed == total && total >= expected_steps) {
                 BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed ("
-                                         << total << " step(s)).";
+                                          << total << " step(s)).";
                 return true;
             }
         }

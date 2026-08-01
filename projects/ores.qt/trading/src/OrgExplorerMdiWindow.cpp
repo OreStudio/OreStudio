@@ -363,8 +363,8 @@ void OrgExplorerMdiWindow::doReload() {
                 if (!result)
                     return {.success = false,
                             .parties = {},
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch parties: " + result.error()),
+                            .error_message = QString::fromStdString("Failed to fetch parties: " +
+                                                                    result.error()),
                             .error_details = {}};
 
                 return {.success = true,

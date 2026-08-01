@@ -38,8 +38,10 @@ namespace ores::synthetic::service {
  * it's directly unit-testable (curve_feed_controller_tests.cpp) without a live NATS client,
  * which neither ir_curve_feed nor curve_feed_controller itself can be constructed without.
  */
-inline bool ir_curve_feeds_conflict(const std::string& qualifier_a, const std::string& role_a,
-                                    const std::string& qualifier_b, const std::string& role_b) {
+inline bool ir_curve_feeds_conflict(const std::string& qualifier_a,
+                                    const std::string& role_a,
+                                    const std::string& qualifier_b,
+                                    const std::string& role_b) {
     return qualifier_a == qualifier_b && role_a == role_b;
 }
 
@@ -125,9 +127,8 @@ public:
      * any -- for building the "already running as X -- stop it first" message after a
      * qualifier_conflict result.
      */
-    std::optional<std::string>
-    running_source_name_for_qualifier(const std::string& qualifier,
-                                      const std::string& role) const {
+    std::optional<std::string> running_source_name_for_qualifier(const std::string& qualifier,
+                                                                 const std::string& role) const {
         std::lock_guard lock(mu_);
         for (const auto& [name, rf] : feeds_)
             if (rf.qualifier == qualifier && rf.role == role)

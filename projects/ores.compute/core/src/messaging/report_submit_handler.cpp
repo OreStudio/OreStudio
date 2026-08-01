@@ -125,7 +125,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             // until the compute app version is wired up.
 
             nats_.publish(assignment_subject(req.tenant_id),
-                         ores::nats::default_wire_codec().encode(evt));
+                          ores::nats::default_wire_codec().encode(evt));
 
             BOOST_LOG_SEV(lg(), debug) << "Dispatched work assignment for workunit " << wu_id;
         }

@@ -47,9 +47,9 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.asset_class = // Cycled deterministically (not left uninitialized) -- an unset enum here
-        // previously fed rfl::enum_to_string() a garbage value, flagged by the
-        // nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
-        // task_fix_market_series_generator_uninitialized_enums).
+                    // previously fed rfl::enum_to_string() a garbage value, flagged by the
+                    // nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
+                    // task_fix_market_series_generator_uninitialized_enums).
         [idx] {
             static constexpr domain::asset_class classes[] = {domain::asset_class::fx,
                                                               domain::asset_class::rates,

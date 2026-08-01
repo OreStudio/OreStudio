@@ -8,7 +8,7 @@
 #+filetags: :systemd:podman:split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generate-quadlet-podman-units
-#+pr:
+#+pr: 1802
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -187,7 +187,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1802][#1802]] | [systemd] Generate Quadlet (podman) units for remote hosts |
 
 * Review
 

@@ -35,7 +35,6 @@
           <item row="0" column="1">
            <widget class="QComboBox" name="tradeTypeCombo">
             <item><property name="text"><string>CompositeTrade</string></property></item>
-            <item><property name="text"><string>MultiLegOption</string></property></item>
            </widget>
           </item>
           <item row="1" column="0">

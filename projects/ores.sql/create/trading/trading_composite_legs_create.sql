@@ -22,7 +22,7 @@
 -- Composite Legs Table
 --
 -- Child table of ores_trading_composite_instruments_tbl. Each row is one
--- constituent trade of a composite instrument (CompositeTrade, MultiLegOption).
+-- constituent trade of a composite instrument (CompositeTrade).
 -- The leg_sequence field provides 1-based ordering of the constituent trades.
 -- =============================================================================
 

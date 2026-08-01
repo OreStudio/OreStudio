@@ -37,9 +37,6 @@ insert into ores_trading_trade_types_tbl (
     ('CompositeTrade',                    ores_utility_system_tenant_id_fn(), 0, 'Composite Trade',
      'composite', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
-    ('MultiLegOption',                    ores_utility_system_tenant_id_fn(), 0, 'Multi-Leg Option',
-     'composite', false, false,
-     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- Rates
     ('Swap',                              ores_utility_system_tenant_id_fn(), 0, 'Interest Rate Swap',
      'swap', false, false,

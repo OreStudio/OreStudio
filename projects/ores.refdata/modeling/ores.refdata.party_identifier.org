@@ -22,7 +22,7 @@ multiple identifiers across different schemes.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -193,7 +193,6 @@ std::string("Test identifier")
 :collection_name:         party_identifiers
 :item_var:                partyIdentifier
 :key_field:               id_value
-:has_uuid_primary_key:    true
 :get_request_class:       refdata::messaging::get_party_identifiers_request
 :get_response_class:      refdata::messaging::get_party_identifiers_response
 :get_message_type:        get_party_identifiers_request
@@ -207,7 +206,6 @@ std::string("Test identifier")
 :history_request_class:   refdata::messaging::get_party_identifier_history_request
 :history_response_class:  refdata::messaging::get_party_identifier_history_response
 :history_message_type:    get_party_identifier_history_request
-:has_change_reason_cache: true
 :settings_group:          PartyIdentifierListWindow
 :window_title:            Party Identifiers
 :has_pagination:          true

@@ -22,11 +22,11 @@ organisation itself.
 :schema:               public
 :product:              ores
 :component:             refdata
-:has_tenant_id:         true
 :has_parent_id:         true
 :parent_id_column:      parent_party_id
 :hierarchy_name_field:  full_name
 :read_for_cache:        true
+:profile:   self-referencing-hierarchy
 :END:
 
 Cross-cutting properties. Consumed by *both* C++ and SQL codegen.
@@ -323,7 +323,6 @@ Everything below is consumed by the C++ codegen pipeline only.
 :collection_name:        parties
 :item_var:               party
 :key_field:              short_code
-:has_uuid_primary_key:   true
 :get_request_class:      refdata::messaging::get_parties_request
 :get_response_class:     refdata::messaging::get_parties_response
 :get_message_type:       get_parties_request
@@ -337,7 +336,6 @@ Everything below is consumed by the C++ codegen pipeline only.
 :history_request_class:  refdata::messaging::get_party_history_request
 :history_response_class: refdata::messaging::get_party_history_response
 :history_message_type:   get_party_history_request
-:has_change_reason_cache: true
 :settings_group:         PartyListWindow
 :window_title:           Parties
 :icon:                   Organization

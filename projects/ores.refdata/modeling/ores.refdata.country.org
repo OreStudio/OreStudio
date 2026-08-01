@@ -10,7 +10,6 @@
 #+entity_singular: country
 #+entity_plural: countries
 #+entity_title: Country
-#+has_tenant_id: true
 #+coding_scheme: nullable
 #+image_id: false
 #+created: 2026-06-25
@@ -24,7 +23,7 @@ Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -218,9 +217,6 @@ drop function if exists ores_refdata_validate_country_fn;
 :collection_name:             countries
 :item_var:                    country
 :key_field:                   alpha2_code
-:has_uuid_primary_key:        false
-:has_pagination:              true
-:has_change_reason_cache:     true
 :flag_icon_column:            Alpha2Code
 :flag_inline_widget:          codeEdit
 :flag_accessor:               getCountryFlagIcon

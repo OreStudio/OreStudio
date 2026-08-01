@@ -24,7 +24,7 @@ parent.level.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -246,8 +246,6 @@ $$ language plpgsql;
 :collection_name:         business_unit_types
 :item_var:                business_unit_type
 :key_field:               code
-:has_uuid_primary_key:    true
-:has_change_reason_cache: true
 :get_request_class:       refdata::messaging::get_business_unit_types_request
 :get_response_class:      refdata::messaging::get_business_unit_types_response
 :get_message_type:        get_business_unit_types_request

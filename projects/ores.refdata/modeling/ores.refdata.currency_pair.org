@@ -10,7 +10,6 @@
 #+entity_singular: currency_pair
 #+entity_plural: currency_pairs
 #+entity_title: Currency Pair
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
@@ -30,7 +29,7 @@ rationale.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -176,9 +175,6 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 :collection_name:        pairs
 :item_var:               pair
 :key_field:              pair_code
-:has_uuid_primary_key:         false
-:has_pagination:               true
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_pairs_request
 :get_response_class:     refdata::messaging::get_currency_pairs_response
 :get_message_type:       get_currency_pairs_request

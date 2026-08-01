@@ -11,7 +11,6 @@
 #+entity_singular: currency_pair_convention
 #+entity_plural: currency_pair_conventions
 #+entity_title: Currency Pair Convention
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
@@ -32,7 +31,7 @@ pure overhead. Like every other soft-FK relationship in this codebase,
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -219,9 +218,6 @@ drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 :collection_name:        conventions
 :item_var:               convention
 :key_field:              pair_code
-:has_uuid_primary_key:         false
-:has_pagination:               true
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_pair_conventions_request
 :get_response_class:     refdata::messaging::get_currency_pair_conventions_response
 :get_message_type:       get_currency_pair_conventions_request

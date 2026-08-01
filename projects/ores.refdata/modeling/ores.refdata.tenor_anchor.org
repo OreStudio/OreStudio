@@ -26,7 +26,7 @@ out of scope for this model and lives on the curve/ladder entity instead.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -128,15 +128,12 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor_anchor.hpp
 :domain_class:           refdata::domain::tenor_anchor
 :protocol_include:       ores.refdata.api/messaging/tenor_anchor_protocol.hpp
 :collection_name:        anchors
 :item_var:               anchor
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenor_anchors_request
 :get_response_class:     refdata::messaging::get_tenor_anchors_response
 :get_message_type:       get_tenor_anchors_request

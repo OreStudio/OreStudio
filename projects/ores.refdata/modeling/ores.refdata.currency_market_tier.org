@@ -10,7 +10,6 @@
 #+entity_singular: currency_market_tier
 #+entity_plural: currency_market_tiers
 #+entity_title: Currency Market Tier
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
@@ -24,6 +23,7 @@ Values include: G10, Emerging, Exotic, Frontier, Historical.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -153,15 +153,12 @@ drop function if exists ores_refdata_validate_currency_market_tier_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/currency_market_tier.hpp
 :domain_class:           refdata::domain::currency_market_tier
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:         false
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_market_tiers_request
 :get_response_class:     refdata::messaging::get_currency_market_tiers_response
 :get_message_type:       get_currency_market_tiers_request

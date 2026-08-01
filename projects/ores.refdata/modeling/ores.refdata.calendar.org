@@ -10,7 +10,6 @@
 #+entity_singular: calendar
 #+entity_plural: calendars
 #+entity_title: Calendar
-#+has_tenant_id: true
 #+coding_scheme: nullable
 #+image_id: false
 #+created: 2026-07-13
@@ -35,7 +34,7 @@ than a nullable country reference, since no single country owns them.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -290,9 +289,6 @@ drop function if exists ores_refdata_validate_calendar_fn;
 :collection_name:             calendars
 :item_var:                    calendar
 :key_field:                   code
-:has_uuid_primary_key:        false
-:has_pagination:              true
-:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_calendars_request
 :get_response_class:          refdata::messaging::get_calendars_response
 :get_message_type:            get_calendars_request

@@ -10,7 +10,6 @@
 #+entity_singular: currency_group
 #+entity_plural: currency_groups
 #+entity_title: Currency Group
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
@@ -29,6 +28,7 @@ change needed for a new group.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -158,15 +158,12 @@ drop function if exists ores_refdata_validate_currency_group_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/currency_group.hpp
 :domain_class:           refdata::domain::currency_group
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        groups
 :item_var:               group
 :key_field:              code
-:has_uuid_primary_key:         false
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_groups_request
 :get_response_class:     refdata::messaging::get_currency_groups_response
 :get_message_type:       get_currency_groups_request

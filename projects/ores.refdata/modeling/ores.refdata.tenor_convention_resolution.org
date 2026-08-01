@@ -12,7 +12,7 @@
 #+brief: Joins a tenor convention to the tenors valid under it, with an optional per-tenor anchor override.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
+#+profile: tenant-scoped-junction
 #+filetags: :model:junction:refdata:tenor:
 #+created: 2026-07-13
 #+updated: 2026-07-13

@@ -10,7 +10,6 @@
 #+entity_plural: calendar_rules
 #+entity_title: Calendar Rule
 #+brief: An indefinite recurring rule for a base-less calendar template.
-#+has_tenant_id: true
 #+created: 2026-07-24
 #+updated: 2026-07-24
 
@@ -32,7 +31,7 @@ stays a timeless, indefinitely-repeating pattern.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -289,9 +288,7 @@ std::nullopt
 :collection_name:             calendar_rules
 :item_var:                    rule
 :key_field:                   id
-:has_uuid_primary_key:        true
 :has_pagination:              true
-:has_change_reason_cache:     true
 :has_export_macro:            true
 :get_request_class:           refdata::messaging::get_calendar_rules_request
 :get_response_class:          refdata::messaging::get_calendar_rules_response

@@ -10,7 +10,6 @@
 #+entity_singular: ledger_feed_type
 #+entity_plural: ledger_feed_types
 #+entity_title: Ledger Feed Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-13
@@ -34,6 +33,7 @@ lookup entity rather than two booleans.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -168,9 +168,6 @@ faker::number::integer(1, 100)
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_ledger_feed_types_request
 :get_response_class:     refdata::messaging::get_ledger_feed_types_response
 :get_message_type:       get_ledger_feed_types_request

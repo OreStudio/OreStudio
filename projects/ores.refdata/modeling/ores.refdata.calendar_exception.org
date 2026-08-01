@@ -10,7 +10,6 @@
 #+entity_plural: calendar_exceptions
 #+entity_title: Calendar Exception
 #+brief: A one-off holiday/business-day override for a single calendar day.
-#+has_tenant_id: true
 #+created: 2026-07-24
 #+updated: 2026-07-24
 
@@ -34,7 +33,7 @@ data.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -186,9 +185,7 @@ std::string("Test exception")
 :collection_name:             calendar_exceptions
 :item_var:                    exc
 :key_field:                   id
-:has_uuid_primary_key:        true
 :has_pagination:              true
-:has_change_reason_cache:     true
 :has_export_macro:            true
 :get_request_class:           refdata::messaging::get_calendar_exceptions_request
 :get_response_class:          refdata::messaging::get_calendar_exceptions_response

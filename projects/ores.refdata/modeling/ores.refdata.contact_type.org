@@ -10,7 +10,6 @@
 #+entity_singular: contact_type
 #+entity_plural: contact_types
 #+entity_title: Contact Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
@@ -27,6 +26,7 @@ categorise contact information records for parties and counterparties.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -154,15 +154,12 @@ drop function if exists ores_refdata_validate_contact_type_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:              ores.refdata.api/domain/contact_type.hpp
 :domain_class:                refdata::domain::contact_type
 :protocol_include:            ores.refdata.api/messaging/contact_type_protocol.hpp
 :collection_name:             types
 :item_var:                    type
 :key_field:                   code
-:has_uuid_primary_key:        false
-:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_contact_types_request
 :get_response_class:          refdata::messaging::get_contact_types_response
 :get_message_type:            get_contact_types_request

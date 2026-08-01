@@ -9,7 +9,6 @@
 #+entity_singular: business_centre
 #+entity_plural: business_centres
 #+entity_title: Business Centre
-#+has_tenant_id: true
 #+coding_scheme: required
 #+image_id: false
 #+brief: Financial trading location used for holiday calendar determination (FpML-style code).
@@ -29,7 +28,7 @@ soft FK.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -208,9 +207,6 @@ drop function if exists ores_refdata_validate_business_centre_coding_scheme_fn;
 :collection_name:             business_centres
 :item_var:                    business_centre
 :key_field:                   code
-:has_uuid_primary_key:        false
-:has_pagination:              true
-:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_business_centres_request
 :get_response_class:          refdata::messaging::get_business_centres_response
 :get_message_type:            get_business_centres_request

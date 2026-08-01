@@ -31,9 +31,9 @@ downstream code that referenced the old Trade element.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:50D4FE28-EC53-442D-A307-78ACB952E626][Hotfix: xsdcpp domain drift on compositeTradeComponents SubTrade]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Now          | Review round 1 addressed (MultiLegOption UI/SQL cleanup), pushed, CI running. |
+| Waiting on   | CI on PR #1803.                        |
+| Next         | Merge once CI is green.                |
 | Last touched | 2026-07-31                               |
 
 * Acceptance

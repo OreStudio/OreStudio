@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 878061F1-8784-4A68-A902-E88A206DAF37
+:END:
+#+title: Archetype: doc_feature.org.mustache
+#+description: Feature doc scaffold: the canonical detail page for one MASD feature -- identity, effect, structural consequence, and which profiles use it. Self-hosting.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+Feature doc scaffold for [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Projection
+configuration: how an existing artefact family is shaped". The produced =.org= is the single canonical
+detail page for one authored feature — every other document (profile
+docs, the Variability Model's bundle tables, segment pages) links here
+rather than restating a feature's effect.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_feature.org.mustache=.
+
+#+begin_src mustache :tangle doc_feature.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: Feature: {{title}}
+,#+description: {{description}}
+,#+type: feature
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+,* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =(the exact org-mode property name, e.g. :has_pagination:)= |
+| Bundle | (=ores.sql.schema= / =ores.cpp.qt= / =licence= / structural — see [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] for =has_tenant_id=/=has_workspace_id=) |
+| Type | (bool / string / collection<string> / collection<struct> / struct) |
+| Default | (value when omitted) |
+
+,* Effect
+
+(What generation-time behaviour this feature's value selects — the
+authoritative description; nowhere else restates this.)
+
+,* Structural consequence
+
+(If setting this feature changes the shape of what gets generated — a
+column, a field, a class member — say so explicitly and link the
+segment page where that structural element is documented. State "None"
+if purely cosmetic/behavioural with no structural echo.)
+
+,* Used by
+
+(Which profiles fix this feature's value, if any — link each. Leave as
+"None yet" if no profile currently sets it.)
+
+,* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.
+#+end_src
+
+* See also
+
+- Parent facet: [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

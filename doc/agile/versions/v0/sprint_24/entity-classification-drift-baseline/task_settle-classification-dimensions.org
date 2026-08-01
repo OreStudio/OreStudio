@@ -1,0 +1,328 @@
+:PROPERTIES:
+:ID: 29CDC40B-5E1F-41BE-85CF-57AAC2380E1A
+:END:
+#+title: Task: Settle entity classification dimensions and tool design
+#+description: Review entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org as input, finalise the classification dimensions (component, tenancy scope, meta-type, model format/legacy status, per-layer coverage, codegen regen drift, hand-crafted-vs-paste-block, compound-vs-single key, variability knobs, test coverage), and design how the automated tool computes each from the codegen models and generated file tree. Dimension coverage must be exhaustive -- a missed dimension lets undetected drift accumulate and the codebase degrade again.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_24:v0:entity-classification-drift-baseline:
+#+owner: marco
+#+branch: feature/settle-classification-dimensions
+#+pr: 1799
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a settled, documented set of classification dimensions that is
+*exhaustive by construction*, not by guesswork — a missed dimension means a
+class of drift stays invisible and the codebase quietly degrades again after
+this story closes. Cross-check candidate dimensions from every independent
+angle available rather than trusting any single source:
+
+- The three stale docs ([[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]], [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]],
+  [[id:8B02B617-2BF0-40A3-80F9-523D6D8B80C6][Entity Catalogue]]) — what they already tried to measure.
+- The [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] and its per-facet segment pages (keys and
+  columns, SQL, C++ domain/repository/service/protocol/NATS/Qt/generator/
+  presentation) — the full set of facets a model file can declare, which
+  bounds what "coverage" can even mean.
+- A direct grep/survey of the actual codebase: every distinct generated
+  artefact kind that exists on disk today (including ones not yet named by
+  any of the above — CLI, Shell, Wt, HTTP, tests, manual chapters, messaging).
+- The 14 ad hoc per-component drift tasks and the primary-key-heading task —
+  concrete symptoms already found in the wild that any dimension set must be
+  able to represent.
+
+The output is the dimension list plus, for each dimension, exactly how the
+tool computes it (which files/patterns it inspects, what "regular" looks
+like, what values are possible).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] |
+| Now          | Done.                                   |
+| Waiting on   | Nothing.                               |
+| Next         | Pilot task builds the tool against these dimensions. |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+- Every candidate source above (three stale docs, meta-model segment pages,
+  direct codebase survey, existing drift tasks) has been consulted and its
+  criteria mapped onto the dimension list — nothing is dropped silently; any
+  criterion deliberately excluded is recorded with a reason.
+- The dimension list distinguishes structural dimensions (component, tenancy
+  scope, meta-type, key shape) from coverage dimensions (per-layer artefact
+  presence) from health dimensions (model format/legacy status, regen drift,
+  hand-crafted-vs-paste-block discipline, variability knobs, test coverage).
+- For each dimension: how the tool computes its value is specified concretely
+  enough to implement (file globs, model fields, comparison method) — no
+  dimension is left as "TBD" or "manual judgement required" going into the
+  pilot task.
+- The list and its computation rules are written up in a knowledge doc (or
+  the story itself) that the pilot and rollout tasks reference.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Variability metamodel sync (ground truth before taxonomy)
+
+Before drafting any dimensions, synced the variability docs against the
+actual code generator, since the taxonomy cannot be trusted if built on
+stale ground truth:
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] is the right "latest" doc (2026-07-16,
+  code-verified feature catalogue) but its own citations pointed at
+  =src/generator.py=, a file retired in the =core.py=/=org_loader.py=/
+  =generate.py=/=cli.py=/=manifest.py= split. Fixed every citation.
+- Cross-checked every claimed feature against current source
+  (=codegen/core.py=, =org_loader.py=, =library/templates/*.mustache=):
+  - =security_definer= (masd.sql) is no longer an authored toggle — now
+    emitted unconditionally; removed from the feature table, cross-linked
+    to the evaluation checklist's "always" rule.
+  - =has_csv_xml_io=, =has_export_macro=, =has_version_navigation= are
+    real Qt features, confirmed live in multiple =cpp_qt_*.mustache=
+    templates, but were missing from the =masd.qt= table entirely. Added.
+  - =has_change_reason_cache= is real but only ever read via Mustache's
+    dotted-path lookup, never an explicit Python =.get()= — the doc's
+    verification method was imprecise. Fixed.
+- Found a genuine three-way vocabulary mismatch: the feature catalogue in
+  the Variability Model doc, =doc_generate.py='s =ENTITY_ORG_KNOBS=
+  scaffold flags, and what the generator actually reads don't all agree.
+  Specifically =has_parent_scoping=, and the boolean-shaped
+  =has_foreign_keys=/=has_parent_id=/=has_insert_trigger_validations=,
+  are scaffold-only: they only steer which example boilerplate
+  =compass add entity_org= writes into a fresh model file, and have no
+  effect on an already-authored entity at generation time. Documented as
+  a known, tracked gap (§ "Scaffold-only knobs") rather than silently
+  treating them as real dimensions.
+- [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] (the older generic-methodology doc) checked for
+  duplication: it carries none — pure abstract MASD/Dogen vocabulary, no
+  ORE Studio specifics. Gave it an explicit "Role" note up front pointing
+  to the Variability Model doc for anything concrete, instead of deleting
+  it.
+- Did *not* touch =projects/ores.codegen/src/doc_generate.py= or
+  =projects/ores.compass/src/compass.py= — an earlier attempt to redesign
+  =ENTITY_ORG_SHAPE_PRESETS= into orthogonal axes was reverted; that is a
+  code-design decision for later, once the taxonomy itself is settled, not
+  before.
+
+** Meta-model / variability doc architecture split
+
+The Variability Model doc and the =Codegen org-entity meta-model= hub +
+segment pages had overlapping scope with no stated division of labour,
+which is exactly why they'd drifted against each other independently.
+Settled and applied a clean split before touching any content further:
+
+- *Structural metamodel* (the meta-model hub + its per-facet segment
+  pages) answers "what shape can an entity have" — root conventions,
+  specialised per Technical Space (SQL), further specialised per sub-TS
+  where one TS itself splits into independent facets (C++ →
+  domain/repository/service/protocol/NATS/Qt/generator/presentation). A
+  segment page may *name* a knob when a structural artefact is
+  conditional on it, but never redescribe its type/default/effect.
+- *Variability metamodel* ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]) answers "how is
+  one fixed shape's projection tuned" — cross-cutting by feature bundle,
+  the single source of truth for every knob's type/default/effect and
+  its feature-vs-predicate classification.
+
+Added an explicit "Role" section to the hub stating this. Then audited
+all 9 segment pages (SQL, keys-and-columns, and the 7 C++ facets)
+against current source (=codegen/core.py=, =org_loader.py=,
+=library/templates/*.mustache=) one at a time:
+
+- SQL was genuinely thin — missing the whole =masd.sql= feature
+  narrative (=system_scope=, =nullable_tenant_id=, =extra_checks=,
+  =soft_fk_validations=, etc.). Added it there, in the same style as
+  the Qt page's existing Behavioural section.
+- Qt, keys-and-columns, domain, repository, service, protocol, NATS,
+  presentation: all independently verified accurate against source
+  (every claimed knob and every paste-block UUID cross-checked against
+  the actual templates/loader) — no changes needed. Note: my *first*
+  pass claimed the Qt page was missing 11 of 14 knobs; that was a false
+  alarm from grepping the wrong (doc_generate.py-prefixed) field names —
+  corrected before making any edit.
+- Trimmed the Variability Model doc's =masd.sql=/=masd.qt= tables down
+  to thin cross-facet indexes (name/type/default, no effect prose),
+  since the full narrative now lives once on each segment page —
+  removing the duplication that let the two docs disagree in the first
+  place.
+
+** TS / Facet / Archetype layer audit
+
+Continued the ground-truth sync one level up: MASD's TS→Part→Facet→
+Archetype hierarchy and how ORE Studio instantiates it.
+
+- Abstract layer (=MASD=, [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]], [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]], [[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]]): clean,
+  pure methodology, no drift risk.
+- Clarified [[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]] (index) vs [[id:D7DE4834-234A-43EA-B14B-20DB80E7B1B7][Other Technical
+  Spaces]] (detail overflow page for every TS except C++/SQL, which each
+  get their own dedicated doc) — legitimate index/detail split, not
+  duplication.
+- Found systemic drift in the index's summary table: checked every
+  codegen-supported TS's facet/archetype counts against the actual
+  generated physical-space graph nodes (=ores.cpp.org=, =ores.sql.org=,
+  =ores.cmake.org=, =ores.doc.org=) and every row was wrong — "C++: 9
+  facets/57 archetypes" (real: 15/58, see below), "CMake: 1/8" (real:
+  2/7), "Doc: 1/20" (real: 4/27), plus an "Assets" row for a TS that's
+  been fully retired. SQL's count ("~26", tilde-flagged as approximate)
+  was also off (real: 3 facets/20 archetypes exactly). Rewrote the whole
+  table from the graph nodes and said so inline, so it's re-verifiable
+  the same way next time instead of hand-counted again.
+- Found a real bug, not just a doc gap, while reconciling the C++ count:
+  =ores.cpp.presentation= (2 archetypes, confirmed generating real
+  =*_history_field_mapper.hpp/cpp= files) is *not listed in
+  =ores.cpp.org='s own Facets table* — the generated graph =ores.cpp.org=
+  itself says codegen traverses (root → TS → facet → archetype) to
+  resolve archetypes. A functioning facet is unreachable by that
+  traversal. Flagged with a starred footnote in the corrected table
+  rather than silently folded into an unstarred total; needs a fix in
+  whatever regenerates =ores.cpp.org= — out of scope to hand-edit here
+  since that file is marked "Generated; do not edit by hand."
+- =C++ Technical Space='s "Component mapping" table used facet names
+  that no longer exist (=Messaging=, =Model types=, =Table=) predating
+  the NATS/protocol split and the enum/field-group facets. Corrected to
+  the current facet names.
+- =SQL Technical Space= checked clean against =ores.sql.org= (3 facets,
+  matches exactly) — no changes needed.
+- Also fixed one more stale =generator.py= citation (§ "Physical
+  Metamodel in ORE Studio").
+
+Next: draft the feature taxonomy itself, using the corrected variability
+catalogue plus the 5 existing (but non-orthogonal, overlapping,
+unclearly-named) =ENTITY_ORG_SHAPE_PRESETS= combinations as raw sample
+data — a starting corpus, not the taxonomy.
+
+** Profile taxonomy: identified, documented, and implemented in codegen
+
+Drafted the taxonomy as [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD]]'s /profile/ concept — a term free to reuse
+now that Part 1's activation profiles are fully retired. Decomposed the
+old 5 overlapping shapes into independent orthogonal axes (tenancy
+scope, SQL tenant-scoping policy, key shape, Qt richness tier, list
+mode, parent relationship — documented in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Part 3 — Profiles"), dropped the two knobs confirmed
+scaffold-only, and named 5 concrete profiles anchored to real
+commissioned entities (=simple-lookup=/country, =fk-scoped-child=/book,
+=self-referencing-hierarchy=/counterparty, =fully-featured-lookup=/
+currency, =readonly-timeseries=/market_observation).
+
+Architecture decisions made along the way, each reversed/refined once
+before landing:
+
+- Profiles are *not* prose in the Variability Model doc — they're a
+  concrete, codegen-facing artefact (one entity binds to one, expecting
+  no ad hoc variation), so each profile is its own document
+  (=projects/modeling/variability_<slug>.org=), the same one-doc-per-node
+  pattern the physical-space graph already uses for facets/TSes.
+- Considered making profiles nodes in the =ores.*= physical-space graph
+  proper; settled on =projects/modeling/= alongside =variability_model.org=
+  instead — a profile doesn't itself produce archetypes/files the way a
+  facet does, so it fits the variability-doc family better than the
+  physical-space-graph family.
+- Assignments started as a prose axis-value table
+  (=Tenancy scope: tenant-workspace=); switched to a literal =Knob |
+  Value= table with exact knob identifiers after realising the axis
+  framing would need a translation layer to ever become real codegen
+  input, and the codebase already has a parseable knob=value convention
+  (entity model Flags drawers) to match instead.
+- Added a =Purpose= section per profile (domain-shape prose, not codegen
+  terms) after the first drafts turned out to answer "which knobs" but
+  never "which real-world shape this models or why it recurs."
+
+Implemented the missing scaffolding, since =compass add= had no
+=--type profile=:
+
+- Registered =profile= in =doc_generate.py= (=TYPE_TO_TEMPLATE=,
+  =PARENTLESS_TYPES=, default =parent_dir=, output path
+  =variability_<slug>.org=) and in =compass.py='s help text.
+- Added the literate archetype source
+  (=library/templates/doc_profile_org.org=, tangling to
+  =doc_profile.org.mustache=) and registered it in =ores.doc.modeling.org='s
+  Archetypes table (7 archetypes now, was 6 — the table had been
+  under-counted at "7" even before this change; fixed that too), which
+  bumped =ores.doc.org='s Doc-facet-family total.
+- Added =profile= to [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]]'s "Codegen model types" list.
+- Verified end-to-end: =compass add profile --slug ...= produces a
+  correctly-ID'd, correctly-placed doc; all 5 profiles plus the routing
+  index ([[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]]) scaffolded this way, then hand-authored.
+- =ENTITY_ORG_SHAPE_PRESETS=/=doc_generate.py='s =--shape= flag itself is
+  *not* touched — an earlier attempt to redesign it into axes was
+  explicitly reverted; retiring the old presets in favour of
+  =:profile:=-driven generation is real codegen behaviour change,
+  correctly out of scope here and left for a follow-on task once this
+  taxonomy is trusted.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1799][#1799]] | [modeling] Sync variability metamodel, add profile/feature catalogue |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Before drafting any dimensions, synced the variability metamodel
+family against the actual code generator — the taxonomy could not be
+trusted otherwise. That sync grew substantially beyond the original
+scope (tracked in full in the Notes above) and produced, as durable
+artefacts:
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]]: stale citations fixed, missing =masd.qt=
+  features added, a real drift (=security_definer=) removed, address
+  resolution split out to [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] (its correct conceptual home),
+  restructured with an explicit argumentative spine, and every
+  historical/editorial self-reference removed.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Profiles": the MASD /profile/ concept
+  instantiated for ORE Studio — 5 named profiles superseding the
+  non-orthogonal =ENTITY_ORG_SHAPE_PRESETS=, each anchored to a real
+  entity ([[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][simple-lookup]]/country, [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][fk-scoped-child]]/book,
+  [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][self-referencing-hierarchy]]/counterparty, [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][fully-featured-lookup]]/currency,
+  [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][readonly-timeseries]]/market_observation).
+- A canonical detail page for all 28 real features ([[id:82394CFF-712C-45FF-84A5-6ED17A990568][Variability
+  Features]]), cross-linked from every profile's assignments table.
+- A new =profile=/=feature= compass doc type pair, so this catalogue is
+  scaffolded the same way every other physical-space doc is, not
+  hand-authored.
+- All 9 codegen entity meta-model segment pages audited against
+  source; the SQL segment page's genuine gap fixed.
+- Systemic drift fixed in the TS/facet/archetype catalogue
+  ([[id:805CBB9F-CD4E-4C79-BD2D-B8AFCF45FB4C][ORE Studio Technical Spaces]], [[id:5293A5FE-9150-4C0A-92F2-5FE53325FFE0][C++ Technical Space]]) against the generated
+  =ores.*= graph.
+
+On top of that verified ground truth, all acceptance criteria for this
+task are met: the classification dimensions are settled and written up
+in the story's § "Classification dimensions", each with its computation
+method stated concretely enough to implement, cross-checked against
+every source the task's Goal named. The pilot task now has real ground
+truth — including a verified reference specimen (=currency=) and known
+profile matches — to build and spot-check the tool against.

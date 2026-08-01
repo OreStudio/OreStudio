@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 1D0B00E4-6032-4DCA-9B66-571DE9F131FC
+:END:
+#+title: Profile: Simple lookup
+#+description: Text natural key, standard tenant scope, standard Qt tier, no parent relationship.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models a plain reference-data code: a small, tenant-scoped list of
+records identified by a short human-readable code (an ISO code, an
+enum-like designation) rather than a manufactured id, with no
+relationship to any other entity and no nesting. The commonest shape
+in the codebase by entity count — most reference data is exactly this
+and nothing more — which is why it deserves a name rather than being
+re-derived by hand each time.
+
+* Reference entity
+
+[[id:88E8E1FB-6F2F-495F-BEC4-8C7ABEF68563][country]] — a plain reference-data lookup with a human-meaningful text
+natural key (ISO code), no self-reference, no parent, and just enough
+Qt to be usable (change-reason cache, pagination) without the richer
+optional surfaces =currency= exercises.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice:
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
+| [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
+| [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
+| [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
+| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
+| [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
+| [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

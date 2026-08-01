@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 511F04C5-2934-40D6-A464-8EDA810F4718
+:END:
+#+title: Archetype: doc_profile.org.mustache
+#+description: Profile doc scaffold: a named element-scope variability-axis assignment table, linking back to the Variability Model. Self-hosting.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+Profile doc scaffold for [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Profiles: naming
+a recurring configuration point". The produced =.org= is a named, reusable bundle of
+variability-feature axis values (a MASD profile at element scope) that
+a model file binds to instead of authoring each feature individually.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/doc_profile.org.mustache=.
+
+#+begin_src mustache :tangle doc_profile.org.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/doc.org. Edit the org source. }}
+:PROPERTIES:
+:ID: {{id}}
+:END:
+,#+title: Profile: {{title}}
+,#+description: {{description}}
+,#+type: profile
+,#+level: cross
+,#+filetags: {{filetags}}
+,#+created: {{date}}
+,#+updated: {{date}}
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+,* Purpose
+
+(One paragraph: what class of entity this profile models — its shape
+in domain terms, not codegen terms — and why that shape recurs enough
+to deserve a name rather than being authored ad hoc each time.)
+
+,* Reference entity
+
+(Which real commissioned entity this profile was anchored to, and why
+it exemplifies the combination.)
+
+,* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice. Feature names are literal —
+exactly what [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] documents them as, so this
+table can be read directly by whatever eventually resolves
+=:profile:= bindings, with no translation layer:
+
+| Feature | Value |
+|------+-------|
+
+,* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.
+#+end_src
+
+* See also
+
+- Parent facet: [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

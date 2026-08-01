@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-07-16
+#+updated: 2026-07-31
 
 This page is the node for the =ores.doc= technical space in the codegen
 physical-space address graph. Its title is its MASD address; it gathers the
@@ -43,7 +43,7 @@ do not edit by hand.
 |-------+------------+-------------|
 | [[id:21169E9E-4948-4660-AB0E-61DB65C37B87][ores.doc.agile]] | 5 | Agile artefact scaffolds: task, story, sprint, version, test_scenario. |
 | [[id:6D051AC6-0FB4-4188-99FE-846ACB19AB6D][ores.doc.knowledge]] | 11 | Prose doc scaffolds: knowledge, recipe, manual, skill, memory, capture, runbook, component, investigation, product identity, release notes. |
-| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 7 | Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset. |
+| [[id:3D46BA01-BAD7-44B2-BD70-FF30394698F0][ores.doc.modeling]] | 8 | Entity-modeling doc scaffolds: entity_org, field_group, junction, lookup_entity, service_registry, dataset, profile, feature. |
 | [[id:351F7645-3868-49C4-BFE5-2E1E76D47787][ores.doc.template]] | 4 | Codegen template scaffolds: facet, facet_group, technical_space, archetype docs. |
 
 * See also

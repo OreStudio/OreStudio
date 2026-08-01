@@ -349,3 +349,20 @@ loader (=org_loader.py=) and the scaffolding templates:
   =_field_group.org=. Scaffold: =compass add field_group=.
 - =dataset_overview= — seeder dataset description. Scaffold:
   =compass add dataset_overview=.
+- =profile= (=#+type: profile=) — a named element-scope MASD profile:
+  one fixed combination of variability-feature values (see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+  Studio Variability Model]] § "Profiles: naming a recurring
+  configuration point"), anchored to a real
+  reference entity. A model file will bind to a profile (=:profile:
+  <name>=) instead of authoring each feature individually, once codegen
+  consumption is wired up — today the docs are the source of truth, the
+  binding mechanism is a tracked follow-on. Lives under
+  =projects/modeling/= as =variability_<slug>.org=. Scaffold: =compass
+  add profile=.
+- =feature= (=#+type: feature=) — the canonical detail page for one
+  authored MASD feature (see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] § "Projection
+  configuration: how an existing artefact family is shaped"): identity (bundle, type, default), effect,
+  structural consequence, and which profiles fix its value. Every
+  profile and bundle-table entry links here instead of restating a
+  feature's effect. Lives under =projects/modeling/= as
+  =variability_feature_<slug>.org=. Scaffold: =compass add feature=.

@@ -2,13 +2,13 @@
 :ID: 3D46BA01-BAD7-44B2-BD70-FF30394698F0
 :END:
 #+title: ores.doc.modeling
-#+description: Entity-modeling doc scaffolds: entity_org, field_group, table, junction, lookup_entity, service_registry, dataset_overview.
+#+description: Entity-modeling doc scaffolds: entity_org, field_group, junction, lookup_entity, service_registry, dataset_overview, profile, feature.
 #+type: facet
 #+level: cross
 #+facet_group: ores.doc
 #+filetags: :codegen:physical-space:doc:
 #+created: 2026-06-27
-#+updated: 2026-07-16
+#+updated: 2026-07-31
 
 This page is the node for the =ores.doc.modeling= facet of the codegen
 template library, part of the [[id:1759F0CB-F7E1-4DD4-8A43-766D1107A22B][ores.doc]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
@@ -20,9 +20,10 @@ table to them.
 
 Codegen model-authoring scaffolds: entity_org (the literate codegen
 entity model — frontmatter plus the section/table skeleton the
-org_loader parses), field_group, table (SQL-only), junction,
-lookup_entity (batch-loaded), service_registry, and dataset_overview.
-No profile involvement.
+org_loader parses), field_group, junction, lookup_entity
+(batch-loaded), service_registry, dataset_overview, profile (named
+element-scope variability bundle), and feature (canonical per-feature
+detail page).
 
 * The ores.doc.modeling facet
 
@@ -49,6 +50,8 @@ branches on.
 | [[id:C0B89074-D107-46E5-B9D2-146AE14ADDFA][ores.doc.modeling.entity_org]] | Literate codegen entity model (the org-migration story's format): frontmatter plus the section/table skeleton the org_loader parses. |
 | [[id:C635D9E4-C934-4BBF-A5CA-D81DEC345FFD][ores.doc.modeling.service_registry]] | Codegen service-registry model: catalogue of backend services with psql vars, IAM roles, and DML grant prefixes. One top-level section per service. |
 | [[id:DB094CBB-5E9A-4EEB-9B3B-B48654734590][ores.doc.modeling.dataset]] | Seeder dataset page: =#+dataset_name/version/type= and =source_methodology= metadata for =ores.seeder= datasets. |
+| [[id:511F04C5-2934-40D6-A464-8EDA810F4718][doc_profile.org.mustache]] | Named element-scope MASD profile (=variability_<slug>.org=): fixed variability-axis assignment table, anchored to a reference entity. |
+| [[id:878061F1-8784-4A68-A902-E88A206DAF37][doc_feature.org.mustache]] | Canonical detail page for one MASD feature (=variability_feature_<slug>.org=): identity, effect, structural consequence, used-by profiles. |
 
 * See also
 

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:masd:codegen:architecture:applied:
 #+created: 2026-06-07
-#+updated: 2026-06-27
+#+updated: 2026-07-31
 
 * Summary
 
@@ -65,10 +65,10 @@ separate, deliberately collapsed into one physical document.
 2. *Authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][variability]], at element scope* — configuration that tunes how
    the (unchanged) shape above is /projected/ into physical artefacts:
    naming, chrome, feature toggles. [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] catalogues
-   these as authored /feature bundles/ (its Part 2) and gives the operative
-   test for telling this concern apart from the first: a property is
-   variability only if the model author sets it and the generator merely
-   /reads/ it through; if the generator instead /computes/ the value from
+   these as authored /feature bundles/, applying [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]]'s test for
+   telling this concern apart from the first: a property is variability
+   only if the model author sets it and the generator merely /reads/ it
+   through; if the generator instead /computes/ the value from
    the object graph (=has_tenant_id=, =is_uuid=, and the rest of that
    document's "Excluded: structural predicates" table), it is a consequence
    of concern (1), not a configuration choice, however boolean-shaped it
@@ -322,45 +322,114 @@ every run, carries nothing a human edits, and lives under =build/output/= so it
 stays out of the input tree. =projects/ores.codegen/models/= holds authored
 input only.
 
-** Variability → the physical-space graph and element-scope binding
+** Address resolution: the physical-space graph and element-scope binding
 
-ORE Studio does not maintain a formal VMM. Instead the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
-graph]] serves as its address catalogue: each facet node's own address
-(=ores.cpp.domain=, =ores.sql.schema=, =ores.cpp.qt=…) names the templates
-it activates and the model types they apply to. Three activation scopes are
-supported:
+ORE Studio does not maintain a formal VMM data structure for
+activation; instead the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] under
+=projects/ores.codegen/library/templates/= plays that role: one node
+per technical space, fanning out to facet nodes, each carrying an =*
+Archetypes= table mapping every archetype to its output path. A
+facet's own address *is* the addressing unit — =--address ores.cpp.qt=
+selects exactly the =ores.cpp.qt= facet's templates directly, with no
+indirection through any intermediate name. A grouping that spans
+several facets is addressed one level up the hierarchy instead — a
+technical-space address (=ores.cpp=) for every C++ facet, the root
+address (=ores=) for everything.
 
-- *Product scope* — a technical-space or root address (=ores.cpp=, =ores=) groups multiple
-  facets into a single invocation.
-- *Component scope* — the component manifest (=manifest.py=) controls discovery roots; an
-  optional =--address= filter may be supplied at invocation time to restrict generation.
-- *Element scope* — entity model files declare =ores.*= properties in their =:PROPERTIES:=
-  drawer. This is the *supported/target set model*: the entity's =ores.*= binding is its
-  *supported set* (what it can generate); the CLI =--address= is the *target set* (what to
-  generate this run; default = full supported set). What generates = target ∩ supported.
-  Target ∩ supported = ∅ for an entity → warning. There is no separate profile
-  selector — the entity's =ores.*= binding IS its generation footprint, and
-  =--address= is the only CLI selector.
+The entity author's own choice of which facets apply — the *supported
+set*, $S_e$, declared via =ores.*= properties on the entity's model — is
+the one part of this mechanism that is a genuinely authored feature; it
+is catalogued alongside the rest of the feature catalogue in
+[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]], including the specificity-resolution
+rule that governs how a partial =ores.*= binding is resolved into a
+full $S_e$ (more-specific overrides less-specific, depth-first) — that
+rule is about authoring one entity's own $S_e$ correctly, not about
+addressing mechanism, so it stays there rather than being restated
+here. Everything below this point is resolution mechanism a developer
+invokes, not a choice an entity author authors.
 
-  Address syntax follows Dogen's =:masd.cpp.enabled:= convention, with specificity-ordered
-  resolution (more-specific overrides less-specific):
+*** Model types — the scope filter
 
-#+begin_example
-:PROPERTIES:
-:ID: ...
-:ores.cpp.enabled: true
-:ores.cpp.qt.enabled: false
-:END:
-#+end_example
+A *model type* is a tag that classifies each model file and controls
+which facet's archetypes can apply to it. A facet's =model_types= list
+acts as the filter: only a model whose type appears in that list is a
+valid target for the facet. Model type is derived from the filename
+suffix (JSON route) or the =#+type:= frontmatter field (org-mode
+route):
 
-  The above → supported set = all C++ except Qt. Entities with no =ores.*= properties:
-  supported set = model-types filter (backward-compatible). The TS→facet map now lives
-  in each technical space's own =* Facets= table in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space
-  graph]]. All resolution logic is isolated in =codegen/physical_space.py= with its own
-  unit tests.
+| Model type       | Filename suffix          | Org frontmatter type           | What it represents |
+|------------------+--------------------------+--------------------------------+--------------------|
+| =domain_entity=  | =*_domain_entity.json=   | =ores.codegen.entity=          | Bi-temporal C++ entity with full SQL + C++ stack |
+| =schema=         | =*_entity.json=          | =ores.codegen.entity=          | SQL-only schema entity (legacy JSON route) |
+| =junction=       | =*_junction.json=        | =ores.codegen.junction=        | SQL junction (many-to-many) table |
+| =component=      | —                        | =ores.codegen.component=       | Component scaffold (CMakeLists, stubs, export macros) |
+| =field_group=    | —                        | =ores.codegen.field_group=     | Nested value struct (no DB mapping) |
+| =enum=           | —                        | =ores.codegen.lookup_entity=   | C++ enum class with string conversion |
+| =service_registry= | —                      | =ores.codegen.service_registry= | DB service registration (users, grants, accounts) |
+| =data=           | —                        | —                              | PlantUML ER diagrams |
 
-For the full treatment — model types, the address catalogue, activation semantics, and the
-MASD→ORE Studio mapping — see [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]].
+This filter prevents, for instance, the =component= scaffold facet from
+inadvertently running against entity models, and the =domain= facet
+from running against SQL-only table models.
+
+*** Invoking =--address=
+
+Generation is scoped at invocation time via the CLI's =--address=:
+
+#+begin_src sh
+./projects/ores.codegen/codegen.sh generate \
+  --component refdata \
+  --address ores.cpp.domain
+#+end_src
+
+Omitting =--address= generates the entity's full supported set; giving
+an address restricts the run to the facets under that physical-space
+subtree. *Component scope* is handled by =src/codegen/manifest.py=:
+the manifest maps component names to their model discovery roots
+(=models_dir= for legacy JSON models; =modeling_dir= for org-mode
+model files). It does not assign a default address — that is always
+either omitted (full supported set) or given explicitly by the
+developer, a [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]], or a compass recipe. *Product scope* — activation
+applying across the whole product — is expressed the same way, by a
+technical-space or root address (=ores.cpp=, =ores=), and by
+[[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] that bundle common multi-facet invocations into a single
+command.
+
+*** Target set and the generation set
+
+The *target set* $T$ is what to generate in this particular run.
+Default: $T = S_e$, the entity's own supported set. The CLI
+=--address= argument overrides $T$:
+
+#+begin_src sh
+# T = S_e — generate everything the entity supports
+./projects/ores.codegen/codegen.sh generate --component refdata
+
+# T = all sql archetypes
+./projects/ores.codegen/codegen.sh generate --component refdata --address sql
+
+# T = all cpp.qt archetypes
+./projects/ores.codegen/codegen.sh generate --component refdata --address cpp.qt
+#+end_src
+
+There is no =--profile= flag; the entity's =ores.*= binding IS the
+generation footprint, and =--address= is a filter on it, never an
+expansion. *What generates* for entity $e$ is $T \cap S_e$. When
+$T \cap S_e = \emptyset$ the run emits a warning ("=<entity>=: nothing
+to generate for address =<addr>=") and continues; an =--address=
+value unknown to the
+facet catalogue is an error.
+
+*** Technical-space to facet map
+
+The TS→facet map lives in each technical space's own =* Facets= table
+in the [[id:D7D53D71-C9E8-43AE-AA42-E58E57CD76C8][ores physical-space graph]] — [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]], [[id:230D4E62-E2CC-464E-8EFD-E5CF2FA7EB0E][ores.sql]], and the
+other TS root nodes — which is the sole source of truth for which
+facets belong to which technical space; it is not reproduced here. All
+supported/target set logic lives in =codegen/physical_space.py= —
+isolated from dispatch code and covered by a dedicated test suite
+(=tests/test_physical_space.py=); this is deliberately complex logic
+and must not be diffused across multiple modules.
 
 ** The facet catalogue
 

@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: CBA5E1E2-AFD9-4968-8878-9C6825839890
+:END:
+#+title: Feature: extra_delete_sets
+#+description: Extra SET clauses in the soft-delete rule.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:extra_delete_sets:= |
+| Bundle | =ores.sql.schema= |
+| Type | collection<string> |
+| Default | ∅ |
+
+* Effect
+
+Extra SET clauses appended to the soft-delete rule.
+
+* Structural consequence
+
+Yes — changes what the soft-delete rule sets on a row.
+
+* Used by
+
+None yet.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

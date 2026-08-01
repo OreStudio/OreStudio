@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: E6EEAC72-FD59-4277-BF33-E26F981262E0
+:END:
+#+title: Profile: FK-scoped child
+#+description: UUID surrogate key, tenant+workspace scope, basic Qt, explorer-child parent relationship.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models an entity that only makes sense in the context of a specific
+owning parent — it is never browsed on its own, only reached by
+drilling into a parent record's explorer (a portfolio's books, a
+party's contact points). Recurs anywhere the domain has a genuine
+one-to-many ownership relationship rather than a soft, optional
+reference.
+
+* Reference entity
+
+[[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][book]] — a UUID-keyed entity that only ever exists nested under a
+parent (=portfolio=), listed via the parent's explorer window rather
+than its own top-level MDI entry.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice:
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | true |
+| [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
+| [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
+| [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |
+| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
+| [[id:9D8D1849-D721-47D1-B477-95058D1FAC32][has_explorer_api]] | true |
+| [[id:A12F591B-DF0E-4112-8457-550FA9323DDF][parent_entity_singular]] | required, string — the adopting entity's own parent entity name (e.g. =portfolio= for =book=); this profile fixes that the value must be set, not which literal string, since that is necessarily specific to the adopting entity |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

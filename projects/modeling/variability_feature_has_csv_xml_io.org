@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 74EB0234-97F3-459C-8806-5A979B9E5A22
+:END:
+#+title: Feature: has_csv_xml_io
+#+description: Emit CSV/XML import/export support: client model, MDI window import dialog.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:has_csv_xml_io:= |
+| Bundle | =ores.cpp.qt= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Turns on CSV/XML import/export: client model, MDI window import dialog, and the paired =csv_export_class=/=xml_export_class=/=xml_import_class= properties naming the hand-written helper classes.
+
+* Structural consequence
+
+Yes — adds import/export methods to the generated client model and MDI window.
+
+* Used by
+
+- [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

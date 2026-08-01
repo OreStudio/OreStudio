@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 623CFC6A-320A-4F71-A595-B3A47FBD06B8
+:END:
+#+title: Story: Entity classification and drift baseline across all components
+#+description: Reconcile the existing, fragmented drift-tracking attempts (entity_coverage_matrix.org, entity_evaluation_checklist.org, entity_catalogue.org, the 14 ad hoc per-component drift tasks) into one unified, automated way of measuring entity drift. Build a tool that inventories every codegen entity across every component and classifies it along dimensions: component, tenancy scope, meta-type (domain vs auxiliary), model format/legacy status, per-layer coverage (SQL/domain/repository/service/messaging/Qt/HTTP/CLI/Shell/Wt/manual), codegen regen drift, hand-crafted-vs-paste-block discipline, compound-vs-single key, variability knobs, test coverage. Must be verifiably accurate before any remediation is multi-tasked off the back of it.
+#+type: story
+#+level: s2
+#+filetags: :codegen:drift:tooling:sprint_24:v0:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+We do not know how far ORE Studio's entities are from "regular": an up-to-date
+codegen model, fully current generated code, and any manual code confined to
+paste blocks. Several attempts to answer this already exist, independently,
+and none is trustworthy on its own:
+
+- [[id:A3F8C2D1-7E4B-4F9A-B2C5-8D1E6A3F0B7C][Entity Coverage Matrix]] — hand-maintained Y/N per layer per entity; covers
+  only 6 of ~20 components; stale since 2026-05-29.
+- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — a strong 12-layer criteria list, but a
+  manual checklist with no automation and no legacy/drift signal.
+- [[id:8B02B617-2BF0-40A3-80F9-523D6D8B80C6][Entity Catalogue]] — hand-maintained navigation index, mostly unfilled.
+- 14 ad hoc "Fix =<component>= entity model drift" tasks in
+  [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] — scope is guessed per component,
+  not measured.
+- The dormant backlog story [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] (sprint 19,
+  never built) proposed exactly this kind of tool and was never picked up.
+- Task [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]] found
+  one concrete legacy-model symptom that generalises the same question.
+
+This story reconciles all of the above into a single, unified, *automated*
+way of measuring drift: one tool that walks every codegen entity model and
+every generated/hand-crafted artefact across every component, classifies
+each entity along an agreed set of dimensions, and produces a quantified
+report of what remains to make every entity "regular". The report is the
+deliverable of this story; the accuracy of its measurements must be
+verified before any remediation work is multi-tasked off the back of it —
+fixing entities is explicitly out of scope here.
+
+*Phased rollout*: prove the approach on one pilot component first
+(=ores.refdata= — largest, most varied entity population, and the component
+where the legacy primary-key-heading symptom was found) before running it
+across the other ~19 components. The pilot validates the dimensions and the
+tool's accuracy cheaply; only once it is trusted on refdata does it get
+pointed at everything else.
+
+** Classification dimensions (settled)
+
+Grounded in the verified feature/profile catalogue ([[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio
+Variability Model]], [[id:82394CFF-712C-45FF-84A5-6ED17A990568][Variability Features]], [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]]) synced
+before this list was finalised — see the parent task's Notes for the
+full sync history. Each dimension states what it measures and, where
+applicable, exactly what the tool reads to compute it:
+
+- *Component* — =ores.refdata=, =ores.iam=, =ores.dq=, ... (every
+  component with codegen models, not a fixed subset).
+- *Meta-type* — the model type the entity's =#+type:=/filename suffix
+  declares (=domain_entity=, =lookup_entity=/=enum=, =junction=,
+  =field_group=, =component=, =service_registry=; see [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] §
+  "Model types").
+- *Profile match* — does the entity's actual feature-value combination
+  match one of the 5 named [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] exactly? If not, a feature-by-feature
+  diff against its nearest profile (by Hamming distance over the shared
+  feature set) — this is the dimension that turns "27 loose knobs" into
+  a single comparable signal per entity, and surfaces genuinely novel
+  combinations worth naming as a new profile rather than left as drift.
+- *Individual feature values* — for entities with no close profile
+  match, the raw value of every feature in the [[id:82394CFF-712C-45FF-84A5-6ED17A990568][catalogue]] (tenancy
+  scope via =has_tenant_id=/=has_workspace_id=, key shape via
+  =has_uuid_primary_key=, Qt surface via the =ores.cpp.qt= bundle, SQL
+  tenant-scoping policy via =system_scope=/=nullable_tenant_id=, etc.).
+- *Model format / legacy status* — current =domain_entity=/org-mode
+  convention vs legacy =lookup_entity= vs the legacy top-level =Primary
+  key= heading ([[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][task]]) vs no model at all (hand-written, uncatalogued).
+- *Per-layer coverage* — SQL, C++ domain, repository, service,
+  messaging/JSON IO, Qt, HTTP, CLI, Shell, Wt, manual chapter: does the
+  archetype's expected output path exist on disk for this entity.
+- *Codegen regen drift* — does regenerating the model reproduce the
+  checked-in files byte-for-byte, or has the template moved on since
+  the entity was last regenerated.
+- *Hand-crafted vs paste-block discipline* — do manual customisations
+  live inside a documented paste-block marker ([[id:40AD7EFB-AACE-472F-B767-8FD3FF2F5C03][Paste blocks]]), or as raw
+  edits to generated files a regen would silently clobber.
+- *Compound vs single natural/primary key*.
+- *Per-layer test coverage*.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-31                               |
+
+* Acceptance
+
+- An automated tool exists (compass command or script) that walks every
+  codegen entity model and its generated/hand-crafted artefacts across every
+  component and computes the classification, with no hand-maintained table.
+- The classification dimensions are settled (see above) and documented.
+- The tool's output is spot-checked against known-good and known-bad entities
+  (e.g. =currency= as the reference specimen; the 16 primary-key-heading
+  entities as known-legacy) until we are confident it measures drift
+  accurately.
+- A quantified report is produced: totals and per-component breakdowns of how
+  many entities are "regular" vs not, and why not.
+- The tool and dimensions are proven on the =ores.refdata= pilot before being
+  run across the remaining components; the pilot report is reviewed and
+  trusted before rollout continues.
+- =entity_coverage_matrix.org=, =entity_evaluation_checklist.org=, and
+  =entity_catalogue.org= are used as inputs (their criteria and known data
+  points feed the tool/dimensions) and then deleted — they do not survive
+  this story; the automated report is the sole source of truth going forward.
+- The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced)
+  using real data from the report instead of guesses.
+- Fixing/regenerating entities is out of scope — this story only measures and
+  reports.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:29CDC40B-5E1F-41BE-85CF-57AAC2380E1A][Settle entity classification dimensions and tool design]] | DONE | 2026-07-31 | 2026-08-01 | Review entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org as input, finalise the classification dimensions (component, tenancy scope, meta-type, model format/legacy status, per-layer coverage, codegen regen drift, hand-crafted-vs-paste-block, compound-vs-single key, variability knobs, test coverage), and design how the automated tool computes each from the codegen models and generated file tree. Dimension coverage must be exhaustive -- a missed dimension lets undetected drift accumulate and the codebase degrade again. |
+| [[id:AD953FB1-65AF-4475-BF67-E964DA6CA5D4][Build and verify the classification tool on the ores.refdata pilot]] | BACKLOG | | | Implement the automated classification/drift tool and run it against ores.refdata only. Spot-check its output against known-good (currency) and known-bad (16 primary-key-heading legacy models) entities until confident the measurements are accurate. Produce the refdata drift report. |
+| [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | BACKLOG | | | Once the ores.refdata pilot is trusted, run the tool across every remaining component, produce the full quantified drift report, re-scope or close the 14 ad hoc per-component drift tasks using real data, and delete entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org. |
+
+* Decisions
+
+* Out of scope
+
+- Actually fixing/regenerating any entity's drift (this is a measurement
+  story; remediation is multi-tasked afterwards, off the resulting report).
+- Retrofitting a new metatype/facet system into ores.codegen itself.

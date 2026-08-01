@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :modeling:masd:technical_space:cpp:codegen:
 #+created: 2026-06-07
-#+updated: 2026-06-07
+#+updated: 2026-07-31
 
 [[https://en.wikipedia.org/wiki/C%2B%2B][C++]] is a general-purpose, statically-typed, compiled programming
 language, an extension of C with classes and (in modern revisions)
@@ -53,12 +53,15 @@ The C++ TS's projections distribute across components according to the
 |-------+--------------------------|
 | Domain | =ores.<group>.api= |
 | Repository | =ores.<group>.core= |
-| Messaging | =ores.<group>.api= (protocol types), =ores.nats= |
-| Service application | =ores.<group>.service= |
-| Qt UI | =ores.qt.<group>= |
+| Protocol | =ores.<group>.api= (message struct definitions) |
+| NATS (handler, sub-registrar, eventing, event-registrar) | =ores.<group>.core= |
+| Service | =ores.<group>.core= |
+| Service-app | =ores.<group>.service= |
+| Qt | =ores.qt.<group>= |
 | Component | Every component |
-| Model types | =ores.<group>.api= |
-| Table | =ores.<group>.api= or =ores.cli= |
+| Enum | =ores.<group>.api= |
+| Field-group | =ores.<group>.api= |
+| Generator | =ores.<group>.api= |
 
 * See also
 

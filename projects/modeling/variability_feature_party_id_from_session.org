@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: DDB365AA-E27A-42EA-84E2-1B316106363E
+:END:
+#+title: Feature: party_id_from_session
+#+description: Set party_id from the session GUC app.current_party_id.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:party_id_from_session:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Set party_id from the session GUC app.current_party_id rather than from the inbound row.
+
+* Structural consequence
+
+None on the table shape itself — changes trigger logic only; the =party_id= column must already exist independently.
+
+* Used by
+
+None yet.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

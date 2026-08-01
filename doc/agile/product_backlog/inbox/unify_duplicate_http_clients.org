@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: A3D9F559-9665-4E61-9564-2FF29E014541
+:END:
+#+title: Unify the codebase's three separate Beast HTTP client implementations
+#+description: Replace ores.storage::net::http_client, ores.compute.wrapper::net::http_client, and ores.http.api's request-read path with one shared, correctly-configured Beast HTTP client component.
+#+type: capture
+#+level: cross
+#+filetags: :http:storage:compute:refactor:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three independent, hand-written Beast-based HTTP client/request-read
+implementations exist in the codebase:
+=ores.storage::net::http_client= (=projects/ores.storage/src/net/http_client.cpp=,
+GET/PUT for object storage), =ores.compute.wrapper::net::http_client=
+(=projects/ores.compute/wrapper/src/net/http_client.cpp=, package
+download/upload for compute jobs), and =ores.http.api='s per-connection
+request-read loop (=http_session::run()=, which every JSON API route
+and the storage routes share). Replace all three with one shared
+Beast-based HTTP client/request-reading component: GET/PUT with
+=http::file_body= streaming to/from disk (never a full in-memory
+buffer), a single sane and configurable =body_limit=, and used
+identically by =ores.storage=, =ores.compute.wrapper=, and
+=ores.http.api='s session loop.
+
+* Why
+
+Discovered while fixing the ACME compute package publishing flow (task
+0F768B80-184A-44C7-B725-A594A873AB4A): all three independently hit the
+*exact same* bug -- Beast's default 1MB =body_limit= rejecting a
+multi-MB compute engine package -- and each had to be found and fixed
+one at a time as manual testing surfaced it (server-side request read,
+=ores.storage='s client GET, then =ores.compute.wrapper='s own
+separate =download()=), rather than being caught once by a single,
+already-correct shared implementation. =ores.compute.wrapper='s client
+additionally buffers whole file uploads into memory as a plain
+=std::string= instead of streaming from disk via =file_body= like
+=ores.storage='s version already does -- another divergence that
+wouldn't exist with one shared implementation.
+
+* References
+
+- =projects/ores.storage/src/net/http_client.cpp=
+- =projects/ores.compute/wrapper/src/net/http_client.cpp=
+- =projects/ores.http/api/src/net/http_session.cpp=
+- =projects/ores.http/api/include/ores.http.api/net/http_server_options.hpp=
+  (=max_body_size=, added as the interim per-fix patch)
+
+* See also
+
+- [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Task: Design and build ACME compute package publishing (client lib, shell, Qt)]]
+- [[id:EA916A96-0F86-42EF-BC26-CB1E7857B3EC][Stream large HTTP upload bodies to disk instead of buffering]]

@@ -422,6 +422,421 @@ def cmd_deploy(project_root: Path, env: dict, args) -> int:
     return 0
 
 
+def _quadlet_unit_basename(service_name, env_name):
+    """ores.iam.service, swift_curie -> ores.iam.service-swift_curie-quadlet
+    -- deliberately distinct from _unit_basename()'s plain-systemd naming.
+    Quadlet's generator turns a <name>.container into a *.service unit of
+    the exact same <name>; without this suffix that .service would collide
+    with the plain-systemd path's own <service>-<env>.service, and
+    systemd's regular-unit-file search path (~/.config/systemd/user/)
+    outright shadows the generator-emitted Quadlet equivalent of the same
+    name -- confirmed with `systemctl --user cat` while both were deployed
+    side by side on the same host during this task's own verification."""
+    return f"{service_name}-{env_name}-quadlet"
+
+
+def _quadlet_image_ref(service_name: str) -> str:
+    """localhost/ores.iam.service:local -- one already-built per-service
+    image per the existing docker/service-runtime.Dockerfile (ARG
+    SERVICE_NAME) convention; building/tagging/transferring these images
+    to a remote host is the sibling offload-to-WSL-host story's job, not
+    this generator's -- it only references the tag by (documented)
+    convention."""
+    return f"localhost/{service_name}:local"
+
+
+def _quadlet_jwt_secret_name(env_name: str) -> str:
+    return f"ores-iam-jwt-key-{env_name}"
+
+
+def _quadlet_host_dir(checkout_root, kind, service_name, env_name, replica=None):
+    """Host-side bind-mount target for /app/log or /app/run -- the fix
+    story.org's Decisions record for the "Newton storage EIO" finding:
+    the image's own baked-in mode-777 /app/log//app/run dirs return EIO
+    (not EACCES) when written to by a uid other than the one that built
+    the image, reproducibly, regardless of host (confirmed uid-remap-
+    dependent, not Newton-specific). Bind-mounting a real host directory
+    -- owned by whichever uid actually runs `compass systemd quadlet-
+    deploy`, matching User=/Group= above -- sidesteps the overlay-layer
+    bug entirely, the same fix PR #1779 already applied elsewhere."""
+    suffix = f"-{replica}" if replica is not None else ""
+    return f"{checkout_root}/build/quadlet-{kind}/{service_name}-{env_name}{suffix}"
+
+
+def render_quadlet_singleton_unit(def_row, deps_on, checkout_root, env_name,
+                                   target_name):
+    """Quadlet .container counterpart to render_singleton_unit: same
+    dependency-graph-derived After=/Requires=, same host networking
+    (Network=host) and rootless-uid-remap fix (UserNS=keep-id) as
+    run-pod.sh's pod -- without keep-id this hits the exact "Input/output
+    error" writing to /app/log/*.log that the story's Notes document as
+    the Newton storage EIO finding (confirmed reproducing it locally
+    while verifying this renderer, before adding UserNS=keep-id fixed
+    it). Notify=healthy ties systemd's readiness gate to the image's own
+    HEALTHCHECK (docker/healthcheck.c), reusing the IAM pilot's plumbing
+    (PR #1787) instead of re-deriving it.
+
+    EnvironmentFile= (the podman-env-file-compatible docker/.env, not the
+    checkout's own .env -- see docker/generate-env.sh's quote-stripping)
+    is set in BOTH [Container] and [Service]: [Container]'s becomes
+    podman run's own --env-file (the CONTAINER's runtime env, e.g. for
+    anything the binary reads via getenv), but Exec='s ${ORES_NATS_URL}
+    etc. are substituted by *systemd itself* when it builds ExecStart=,
+    from *systemd's own* unit environment -- which only [Service]'s
+    EnvironmentFile= populates. Without the [Service] copy, systemd has
+    no such variable and passes the literal string "${ORES_NATS_URL}" as
+    a podman run argument instead of the real value (confirmed against
+    `podman-user-generator -dryrun`'s ExecStart= output)."""
+    env_file = f"{checkout_root}/docker/.env"
+    keys_dir = f"{checkout_root}/build/keys/nats"
+
+    args = _substitute_args(def_row["args_template"], def_row, keys_dir)
+
+    after = [_quadlet_unit_basename("nats-server", env_name) + ".service"] + \
+        [_quadlet_unit_basename(d, env_name) + ".service" for d in deps_on]
+    after_line = " ".join(after)
+
+    secret_line = ""
+    if def_row["service_name"] == "ores.iam.service":
+        secret_line = (
+            f"Secret={_quadlet_jwt_secret_name(env_name)},type=env,"
+            "target=ORES_IAM_SERVICE_JWT_PRIVATE_KEY\n"
+        )
+
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=ORE Studio {def_row['service_name']} (environment {env_name}, Quadlet)
+After={after_line}
+Requires={after_line}
+PartOf={target_name}
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Container]
+Image={_quadlet_image_ref(def_row['service_name'])}
+ContainerName={_unit_basename(def_row['service_name'], env_name)}
+Network=host
+UserNS=keep-id
+User={os.getuid()}
+Group={os.getgid()}
+Volume={_quadlet_host_dir(checkout_root, "log", def_row['service_name'], env_name)}:/app/log
+Volume={_quadlet_host_dir(checkout_root, "run", def_row['service_name'], env_name)}:/app/run
+Volume={keys_dir}:{keys_dir}:ro
+EnvironmentFile={env_file}
+{secret_line}Exec={args}
+Notify=healthy
+
+[Service]
+EnvironmentFile={env_file}
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy={target_name}
+"""
+    return unit
+
+
+def render_quadlet_wrapper_units(def_row, deps_on, checkout_root, env_name,
+                                  target_name):
+    """Quadlet counterpart to render_wrapper_units: one .container unit per
+    ores.compute.wrapper hot replica, same replica-index/host_id/work_dir
+    baking as the plain-systemd path."""
+    keys_dir = f"{checkout_root}/build/keys/nats"
+    env_file = f"{checkout_root}/docker/.env"
+
+    after = [_quadlet_unit_basename("nats-server", env_name) + ".service"] + \
+        [_quadlet_unit_basename(d, env_name) + ".service" for d in deps_on]
+    after_line = " ".join(after)
+
+    units = []
+    hostname = socket.gethostname()
+    for replica in range(1, def_row["desired_replicas"] + 1):
+        host_id = uuid.uuid5(HOST_ID_NAMESPACE, f"{hostname}:{replica}")
+        work_dir = f"../run/wrappers/node_{replica}"
+        args = _substitute_args(def_row["args_template"], def_row, keys_dir,
+                                 replica_index=replica, host_id=host_id,
+                                 work_dir=work_dir)
+
+        basename = f"{_quadlet_unit_basename(def_row['service_name'], env_name)}-{replica}"
+        container_name = f"{_unit_basename(def_row['service_name'], env_name)}-{replica}"
+        unit = UNIT_HEADER
+        unit += f"""
+[Unit]
+Description=ORE Studio {def_row['service_name']} hot replica {replica} (environment {env_name}, Quadlet)
+After={after_line}
+Requires={after_line}
+PartOf={target_name}
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Container]
+Image={_quadlet_image_ref(def_row['service_name'])}
+ContainerName={container_name}
+Network=host
+UserNS=keep-id
+User={os.getuid()}
+Group={os.getgid()}
+Volume={_quadlet_host_dir(checkout_root, "log", def_row['service_name'], env_name, replica)}:/app/log
+Volume={_quadlet_host_dir(checkout_root, "run", def_row['service_name'], env_name, replica)}:/app/run
+Volume={keys_dir}:{keys_dir}:ro
+EnvironmentFile={env_file}
+Exec={args}
+Notify=healthy
+
+[Service]
+EnvironmentFile={env_file}
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy={target_name}
+"""
+        units.append((f"{basename}.container", unit))
+    return units
+
+
+def render_quadlet_nats_unit(checkout_root, env_name, target_name):
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=NATS server (environment {env_name}, Quadlet)
+PartOf={target_name}
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Container]
+Image=localhost/ores-nats:local
+ContainerName={_unit_basename("nats-server", env_name)}
+Network=host
+EnvironmentFile={checkout_root}/docker/.env
+Volume={checkout_root}/build/config/nats-{env_name}.conf:{checkout_root}/build/config/nats-{env_name}.conf:ro
+Volume={checkout_root}/build/keys/nats:{checkout_root}/build/keys/nats:ro
+Exec=--config {checkout_root}/build/config/nats-{env_name}.conf
+
+[Service]
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy={target_name}
+"""
+    return unit
+
+
+def render_quadlet_target(defs, env_name):
+    wants = [_quadlet_unit_basename("nats-server", env_name) + ".service"]
+    for d in defs:
+        if not d["enabled"]:
+            continue
+        if d["desired_replicas"] > 1:
+            wants += [f"{_quadlet_unit_basename(d['service_name'], env_name)}-{r}.service"
+                      for r in range(1, d["desired_replicas"] + 1)]
+        else:
+            wants.append(_quadlet_unit_basename(d["service_name"], env_name) + ".service")
+
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=ORE Studio fleet (environment {env_name}, Quadlet)
+Wants={" ".join(wants)}
+
+[Install]
+WantedBy=default.target
+"""
+    return unit
+
+
+def cmd_quadlet(project_root: Path, env: dict, args) -> int:
+    """Render Quadlet .container units for podman/remote hosts -- same
+    service_definition/service_dependency dependency graph and
+    After=/Requires= derivation as `compass systemd generate`, a second
+    renderer over one source of truth rather than a hand-maintained
+    podman pod/compose spec. Building/tagging the per-service images this
+    references, and transferring them to a remote host, are out of scope
+    here -- see the task doc's Goal for the scope boundary."""
+    env_name = env.get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    checkout_root = str(project_root)
+    target_name = _quadlet_unit_basename("ores", env_name) + ".target"
+
+    defs = fetch_service_definitions(env)
+    deps = fetch_dependencies(env)
+
+    out_dir = project_root / "systemd/quadlet"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("*"):
+        stale.unlink()
+
+    written = []
+
+    def write(name, content):
+        path = out_dir / name
+        path.write_text(content)
+        written.append(name)
+
+    write(_quadlet_unit_basename("nats-server", env_name) + ".container",
+          render_quadlet_nats_unit(checkout_root, env_name, target_name))
+
+    for d in defs:
+        deps_on = deps.get(d["service_name"], [])
+        if d["desired_replicas"] > 1:
+            for r in range(1, d["desired_replicas"] + 1):
+                for kind in ("log", "run"):
+                    Path(_quadlet_host_dir(checkout_root, kind, d["service_name"],
+                                            env_name, r)).mkdir(parents=True, exist_ok=True)
+            for name, content in render_quadlet_wrapper_units(
+                    d, deps_on, checkout_root, env_name, target_name):
+                write(name, content)
+        else:
+            for kind in ("log", "run"):
+                Path(_quadlet_host_dir(checkout_root, kind, d["service_name"],
+                                        env_name)).mkdir(parents=True, exist_ok=True)
+            write(_quadlet_unit_basename(d["service_name"], env_name) + ".container",
+                  render_quadlet_singleton_unit(d, deps_on, checkout_root,
+                                                 env_name, target_name))
+
+    write(target_name, render_quadlet_target(defs, env_name))
+
+    print(f"Wrote {len(written)} Quadlet unit files to {out_dir}")
+    print()
+    print("Each referenced image (localhost/<service_name>:local) must "
+          "already be built and present wherever these units run -- see "
+          "docker/service-runtime.Dockerfile and docker/stage-runtime.sh "
+          "--service <binary-name>.")
+    print("To install for this user:")
+    print(f"  compass systemd quadlet-deploy [--host <ssh-host>]")
+    return 0
+
+
+def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
+    """Copy generated Quadlet units into ~/.config/containers/systemd/
+    (locally, or on a remote host over SSH with --host) and reload/start.
+    Mirrors cmd_deploy's sync-if-changed and stale-unit-removal pattern.
+    Ensures the IAM JWT podman secret exists (podman secret create
+    --replace, idempotent) so the generated unit's Secret= reference
+    resolves -- podman secrets are the multiline-safe equivalent of the
+    plain-systemd path's $(cat pem-file) shell re-export, since Quadlet
+    unit files have no shell around them to run that re-export in.
+
+    --host is deliberately "copy the already-rendered units and start
+    them," not a full remote-provisioning step: it does NOT create the
+    bind-mount host directories (_quadlet_host_dir's build/quadlet-log/
+    build/quadlet-run) or the IAM JWT podman secret on the target host,
+    and the rendered User=/Group=/Volume= paths are baked in from this
+    (rendering) machine's own uid/gid/checkout path, not the remote
+    deploying user's. Building/staging/provisioning a remote host
+    properly is the sibling offload-to-WSL-host story's job (see this
+    task's Goal) -- --host here only carries a checkout that already has
+    matching users/paths/secrets set up by hand."""
+    env_name = env.get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    src_dir = project_root / "systemd/quadlet"
+    if not src_dir.is_dir():
+        print(f"error: {src_dir} does not exist -- run "
+              "`compass systemd quadlet` first", file=sys.stderr)
+        return 1
+
+    host = getattr(args, "host", None)
+
+    def run_remote(cmd_args):
+        if host:
+            return subprocess.run(["ssh", host] + cmd_args, check=False)
+        return subprocess.run(cmd_args, check=False)
+
+    jwt_key_file = project_root / "build/keys/iam-rsa-private.pem"
+    if jwt_key_file.is_file():
+        if host:
+            print(f"warning: --host does not provision the IAM JWT podman "
+                  f"secret on {host} -- create "
+                  f"{_quadlet_jwt_secret_name(env_name)} there by hand "
+                  "before starting any IAM unit.", file=sys.stderr)
+        else:
+            secret_name = _quadlet_jwt_secret_name(env_name)
+            result = subprocess.run(
+                ["podman", "secret", "create", "--replace", secret_name,
+                 str(jwt_key_file)], check=False, capture_output=True,
+                text=True)
+            if result.returncode != 0:
+                print(f"warning: failed to create podman secret "
+                      f"{secret_name}: {result.stderr.strip()} -- any "
+                      "IAM unit's Secret= reference will fail to resolve "
+                      "at start time.", file=sys.stderr)
+
+    src_names = sorted(p.name for p in src_dir.glob("*"))
+
+    if host:
+        print(f"warning: --host does not create the bind-mount host "
+              f"directories (build/quadlet-log/, build/quadlet-run/) on "
+              f"{host}, and the rendered User=/Group=/Volume= paths are "
+              "baked in from this machine's own uid/gid/checkout path, "
+              "not the remote user's -- see cmd_quadlet_deploy's "
+              "docstring.", file=sys.stderr)
+        dest = f"{host}:.config/containers/systemd/"
+        subprocess.run(["ssh", host, "mkdir", "-p",
+                         ".config/containers/systemd"], check=True)
+        subprocess.run(
+            ["scp"] + [str(src_dir / n) for n in src_names] + [dest],
+            check=True)
+        run_remote(["systemctl", "--user", "daemon-reload"])
+        run_remote(["systemctl", "--user", "start",
+                     _quadlet_unit_basename("ores", env_name) + ".target"])
+        print(f"Copied {len(src_names)} Quadlet unit files to {host} and "
+              "started the fleet there.")
+        return 0
+
+    dest_dir = Path.home() / ".config" / "containers" / "systemd"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    src_name_set = set(src_names)
+    added, updated, removed = [], [], []
+    for name in src_names:
+        src = src_dir / name
+        dest = dest_dir / name
+        if dest.exists():
+            if not filecmp.cmp(src, dest, shallow=False):
+                shutil.copyfile(src, dest)
+                updated.append(name)
+        else:
+            shutil.copyfile(src, dest)
+            added.append(name)
+
+    # Same stale-unit removal as cmd_deploy: header + env-name(-quadlet)
+    # suffix gated, so a service disabled/removed from the DB doesn't
+    # leave a dangling .container unit (or stale .target Wants=) behind.
+    stale_re = re.compile(
+        rf"-{re.escape(env_name)}-quadlet(-\d+)?\.container$|"
+        rf"-{re.escape(env_name)}-quadlet\.target$")
+    for dest in sorted(dest_dir.iterdir()):
+        if not dest.is_file() or not stale_re.search(dest.name):
+            continue
+        if dest.name in src_name_set:
+            continue
+        if dest.read_text(encoding="utf-8").startswith(UNIT_HEADER):
+            dest.unlink()
+            removed.append(dest.name)
+
+    if added or updated or removed:
+        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+
+    print(f"Added: {len(added)}, updated: {len(updated)}, "
+          f"removed: {len(removed)}")
+    for name in added:
+        print(f"  + {name}")
+    for name in updated:
+        print(f"  ~ {name}")
+    for name in removed:
+        print(f"  - {name}")
+    if not (added or updated or removed):
+        print("Nothing changed; skipped daemon-reload.")
+    return 0
+
+
 def run(argv, project_root: Path) -> int:
     parser = argparse.ArgumentParser(prog="compass systemd")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -429,6 +844,15 @@ def run(argv, project_root: Path) -> int:
                    "this environment from service_definition/service_dependency")
     sub.add_parser("deploy", help="Install generated units into "
                    "~/.config/systemd/user/ and reload if changed")
+    sub.add_parser("quadlet", help="Render Quadlet .container units for "
+                   "podman/remote hosts from the same dependency graph")
+    quadlet_deploy_p = sub.add_parser(
+        "quadlet-deploy", help="Install generated Quadlet units into "
+        "~/.config/containers/systemd/ (locally, or on a remote host with "
+        "--host) and start the fleet there")
+    quadlet_deploy_p.add_argument(
+        "--host", help="SSH host (e.g. from ~/.ssh/config) to deploy to "
+        "instead of this machine")
     args = parser.parse_args(argv)
 
     env = load_env(project_root)
@@ -437,4 +861,8 @@ def run(argv, project_root: Path) -> int:
         return cmd_generate(project_root, env, args)
     if args.cmd == "deploy":
         return cmd_deploy(project_root, env, args)
+    if args.cmd == "quadlet":
+        return cmd_quadlet(project_root, env, args)
+    if args.cmd == "quadlet-deploy":
+        return cmd_quadlet_deploy(project_root, env, args)
     return 1

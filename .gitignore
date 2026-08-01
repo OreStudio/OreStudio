@@ -16,9 +16,13 @@ Thumbs.db
 build/output
 build/docker-stage
 
-# generated systemd units (compass systemd generate) -- per-environment,
-# absolute-path-baked-in output, not portable across checkouts
+# generated systemd/Quadlet units (compass systemd generate/quadlet) --
+# per-environment, absolute-path-baked-in output, not portable across
+# checkouts
 systemd/units
+systemd/quadlet
+build/quadlet-log
+build/quadlet-run
 
 # .Net ignores
 *.userprefs

@@ -20,12 +20,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends binutils \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-# Populated by docker/stage-runtime.sh — only the ores.*.service binaries
-# and their actual shared-library dependency closure, not the full publish/
-# tree (which also carries Qt libs and test binaries).
+# Populated by docker/stage-runtime.sh — only the staged service binary/
+# binaries and their actual shared-library dependency closure, not the
+# full publish/ tree (which also carries Qt libs and test binaries).
+# Strip every staged binary, not just an ores.*.service glob: two
+# supervised binaries (ores.compute.wrapper, ores.http.server) don't
+# follow that naming convention -- stage-runtime.sh's own comment
+# already calls them out -- and the glob silently matched zero files
+# for them, failing the whole build ("strip: '/src/bin/ores.*.service':
+# No such file").
 COPY build/docker-stage/bin/ /src/bin/
 COPY build/docker-stage/lib/ /src/lib/
-RUN strip --strip-debug /src/bin/ores.*.service /src/lib/libores.*.so*
+RUN strip --strip-debug /src/bin/* /src/lib/libores.*.so*
 
 # process_supervisor always launches child services with --log-enabled and
 # a relative --log-directory ../log (see default_args_template), and writes

@@ -7,43 +7,170 @@
 #+level: s1
 #+filetags: :systemd:podman:split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-quadlet-podman-units
+#+pr: 1802
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend ~compass systemd~ (currently ~generate~/~deploy~ for plain
+local ~--user~ units, in ~projects/ores.compass/src/systemd_generate.py~)
+with a second renderer, ~compass systemd quadlet~, that reads the
+same ~service_definition~/~service_dependency~ tables and emits
+Quadlet ~.container~ unit files for podman/remote hosts (e.g. Newton)
+-- one source of truth (the DB dependency graph), two renderers (local
+plain-systemd, remote Quadlet). Reuse the same ~After=~/~Requires=~
+ordering derivation already written for the plain-systemd path, and
+wrap the generated units in a per-environment ~.target~ the same way.
+Add a ~compass systemd quadlet-deploy~ subcommand that copies the
+rendered units to a target's ~~/.config/containers/systemd/~ and runs
+~systemctl --user daemon-reload && start~ there. Reuse the podman
+~--sdnotify=healthy~/HEALTHCHECK plumbing from the IAM pilot (PR
+#1787) so Quadlet's own readiness gating (via
+~Type=notify~/~--sdnotify=healthy~) lines up with the same
+sd_notify(READY=1) contract the plain-systemd units already use.
+
+Scope boundary (decided after discovering the sibling
+[[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB
+runtime to a WSL host over SSH]] story already owns adjacent BACKLOG
+tasks for this exact area): this task owns *rendering* the Quadlet
+units and copying/starting them on a reachable host given
+already-built images -- it does NOT build new compass tooling for
+building/saving/transferring container images to a remote host (that
+is [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to
+build, stage, transfer, and deploy service-runtime images to a remote
+host]]'s job), and it does NOT roll the full 18-service fleet out to
+Newton (that is [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18
+services running end-to-end on Newton]]'s job). End-to-end
+verification here reuses the already-built
+~localhost/ores-iam-pilot:local~ image, transferred manually via
+~podman save~/~ssh ... podman load~ (the ad-hoc sequence the sibling
+story's tooling task will later formalise), not new compass image
+machinery.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-01                               |
 
 * Acceptance
 
--
+- ~compass systemd quadlet~ (or equivalent) renders one Quadlet
+  ~.container~ unit per (service, environment) pair from
+  ~service_definition~/~service_dependency~, plus NATS, mirroring the
+  plain-systemd generator's one-file-per-service approach -- no
+  manually-maintained podman pod/compose spec.
+- Generated units carry ~After=~/~Requires=~ ordering derived from the
+  same dependency graph as the plain-systemd path (single source of
+  truth, not duplicated/hand-reconciled logic).
+- Units are wrapped in a per-environment ~.target~ so
+  ~systemctl --user start/stop ores-<env>.target~ works identically to
+  the local plain-systemd deployment mode.
+- ~compass systemd quadlet-deploy~ copies the rendered units to a
+  target host over SSH and brings the target up there
+  (~systemctl --user daemon-reload && start~), without touching
+  another environment's or another remote host's units.
+- Readiness gating on the remote/podman side matches the local
+  sd_notify(READY=1) contract (Quadlet ~--sdnotify=healthy~ /
+  ~Type=notify~), reusing the IAM pilot's HEALTHCHECK work (PR #1787)
+  rather than reinventing it.
+- Verified end-to-end locally (this checkout's own podman/Quadlet,
+  the same generator output that would run on any Quadlet-capable
+  host) for the IAM pilot service, following the same "prove it on
+  one service first" pattern the earlier per-service-container pilot
+  task used -- reaches ~podman ps~ ``healthy`` and ~systemctl --user
+  status`` ``active (running)``.
+- Genuinely deploying to Newton itself is deferred: it needs
+  ~docker/.env~ and the built image physically present there, which is
+  exactly the image-build/transfer tooling this task deliberately
+  does not build (see Goal's scope boundary) -- ~compass systemd
+  quadlet-deploy --host~ is written and ready for when that lands.
+- Out of scope, left to the sibling offload-to-WSL-host story's own
+  tasks: compass tooling for building/saving/transferring images, and
+  rolling the full 18-service fleet out to Newton.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extended ~projects/ores.compass/src/systemd_generate.py~ with a second
+family of renderers (~render_quadlet_singleton_unit~,
+~render_quadlet_wrapper_units~, ~render_quadlet_nats_unit~,
+~render_quadlet_target~) reusing the existing
+~fetch_service_definitions~/~fetch_dependencies~/~_substitute_args~
+plumbing, plus ~compass systemd quadlet~ (render) and
+~compass systemd quadlet-deploy [--host]~ (install/start, locally or
+over SSH) subcommands. Verified against ~podman-user-generator
+-dryrun~ and a real local start of the IAM pilot service, fixing three
+real bugs found along the way (see Notes).
 
 * Notes
+
+** DANGER avoided: unit-name collision with the plain-systemd path
+
+Quadlet's generator turns ``<name>.container`` into a ``<name>.service``
+unit. Naively reusing ~_unit_basename()~ (``<service>-<env>``) for the
+Quadlet units too collided with the plain-systemd path's own
+identically-named units already deployed in this checkout from an
+earlier task -- and lost silently: ~systemctl --user cat~ on the
+Quadlet-derived name kept showing the *plain-systemd* unit, because
+regular unit files under ~~/.config/systemd/user/~ outright shadow a
+generator-emitted unit of the same name from
+~/run/user/*/systemd/generator/~ in systemd's search order. Fixed with
+a distinct ~_quadlet_unit_basename()`` (``<service>-<env>-quadlet``)
+for every Quadlet unit file/After=/Requires=/Wants=/target reference,
+so the two deployment modes can never collide even if (as happened
+here, purely from testing both) both land in the same user session.
+
+** BUG found and fixed: ~${ORES_NATS_URL}~ etc. never actually resolved
+
+The generator originally set ~EnvironmentFile=~ only in the
+~[Container]~ section, which Quadlet translates to podman run's own
+``--env-file`` -- populating the *container's* runtime environment, not
+systemd's own. But ~Exec=~'s ``${ORES_NATS_URL}`` etc. are expanded by
+*systemd itself* when it builds ``ExecStart=``, from *systemd's own*
+unit environment. Without a matching ~EnvironmentFile=~ in
+``[Service]`` too, systemd had no such variable and passed the literal
+string ``${ORES_NATS_URL}`` as an argument to ``podman run`` -- confirmed
+via ``podman-user-generator -dryrun``'s printed ``ExecStart=``. Fixed by
+setting ~EnvironmentFile=~ in both sections.
+
+** BUG found and fixed: rootless uid-remap breaks writing to /app/log
+
+Starting the IAM unit for real (not just dry-run) hit exactly the
+"Newton storage EIO" finding story.org's Decisions already document:
+``Error: Failed to open file for writing: Input/output error ...
+"/app/bin/../log/ores.iam.service.0.log"``, reproducing locally with
+the already-verified ~ores-iam-pilot:local~ image too once given real
+DB config (the earlier "it works" runs during bisection just hadn't
+reached the log-write code path yet -- they failed earlier, on missing
+DB args). ~UserNS=keep-id~ plus an explicit ~User=~/~Group=~ matching
+the deploying user (both needed -- ~UserNS=keep-id~ alone wasn't
+enough, since without ~User=~ the container still ran as the image's
+baked-in uid 65532) did not fix it: the image's own baked-in mode-777
+~/app/log~/~/app/run~ dirs return ``EIO`` (not ``EACCES``) when written to
+by a different uid than built them, on this overlay filesystem,
+regardless of uid-remap settings. The documented fix (story.org
+Decisions, task_finish-iam-pilot-healthcheck.org) is to bind-mount
+real host directories over ~/app/log~/~/app/run~ instead of relying on
+the image's own copies -- confirmed this resolves it, and added it to
+the generator (~_quadlet_host_dir~, one ``build/quadlet-log/<unit>``/
+``build/quadlet-run/<unit>`` pair per service, created by ``compass
+systemd quadlet``). Also needed a read-only bind mount of
+~build/keys/nats~ (the NATS TLS cert/key paths baked into ~Exec=~ are
+host-absolute, from the same ~_substitute_args~ the plain-systemd path
+uses) -- the container has no other way to reach them.
 
 * Test Scenarios
 
@@ -60,12 +187,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1802][#1802]] | [systemd] Generate Quadlet (podman) units for remote hosts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | render_quadlet_wrapper_units missing the keys_dir volume mount, so ores.compute.wrapper replicas can't reach their NATS TLS cert/key | projects/ores.compass/src/systemd_generate.py | Fixed | Added Volume={keys_dir}:{keys_dir}:ro, matching render_quadlet_singleton_unit. Verified live: wrapper replica-1 connected to NATS via mTLS. Also fixed a pre-existing, unrelated Dockerfile bug this surfaced (strip glob didn't match ores.compute.wrapper/ores.http.server). |
+| 2 | quadlet-deploy --host doesn't provision the remote side (host dirs, IAM JWT secret, uid/gid baked from the render machine) | projects/ores.compass/src/systemd_generate.py | Fixed (documented, not auto-provisioned) | Added explicit warnings printed at deploy time plus a docstring explanation; full remote provisioning stays out of scope per the task's established boundary (sibling offload-to-WSL-host story's job). |
+| 3 | Secret-creation failures silently discarded | projects/ores.compass/src/systemd_generate.py | Fixed | Now checks the return code and prints a warning with stderr on failure. |
+| 4 | quadlet-deploy's local path never removes stale units (parity gap vs cmd_deploy) | projects/ores.compass/src/systemd_generate.py | Fixed | Added the same header+env-suffix-gated stale-unit removal as cmd_deploy, adapted for the -quadlet suffix. |
 
 * Result
+
+Shipped ~compass systemd quadlet~/~compass systemd quadlet-deploy
+[--host]~ (=projects/ores.compass/src/systemd_generate.py=), a second
+renderer over the same =service_definition=/=service_dependency=
+dependency graph the plain-systemd generator already reads, emitting
+Quadlet =.container= units (one per service+environment, plus NATS)
+with the same =After=/Requires== ordering and a per-environment
+=.target=. Verified end-to-end locally: the IAM pilot service reaches
+=podman ps= ``healthy`` and =systemctl --user status= ``active
+(running)``, with real NATS handler registration and a ``Service
+ready.`` log line. Found and fixed three real bugs along the way (unit-
+name collision with the plain-systemd path, ``${ORES_NATS_URL}`` never
+resolving, and the "Newton storage EIO" finding reproducing locally
+too) -- see Notes for each.
+
+Deliberately scoped to *rendering and local/SSH install*, not to
+building/transferring container images or rolling the fleet out to
+Newton -- both already tracked as BACKLOG tasks in the sibling
+[[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB
+runtime to a WSL host over SSH]] story, discovered mid-task and
+deliberately not duplicated here.

@@ -8,7 +8,7 @@
 #+filetags: :update-vendored-ore-engine:sprint_24:v0:
 #+owner: marco
 #+branch: feature/design-acme-compute-package-publishing-flow
-#+pr:
+#+pr: 1800
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1800][#1800]] | [compute] Design and build ACME compute package publishing (client lib, shell, Qt) |
 
 * Review
 

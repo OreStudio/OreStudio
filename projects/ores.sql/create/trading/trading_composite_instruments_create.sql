@@ -21,8 +21,8 @@
 -- =============================================================================
 -- Composite Instruments Table
 --
--- Holds composite instrument economics for CompositeTrade and MultiLegOption
--- ORE product types. The trade_type_code discriminates the exact product.
+-- Holds composite instrument economics for CompositeTrade and related ORE
+-- product types. The trade_type_code discriminates the exact product.
 -- Constituent trades are stored in the composite_legs child table.
 -- =============================================================================
 
@@ -49,7 +49,7 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('CompositeTrade', 'MultiLegOption'))
+    check ("trade_type_code" in ('CompositeTrade'))
 );
 
 -- Version uniqueness for optimistic concurrency

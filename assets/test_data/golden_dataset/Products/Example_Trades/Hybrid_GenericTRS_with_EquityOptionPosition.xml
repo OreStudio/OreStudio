@@ -11,8 +11,8 @@
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>EquityOptionPosition</TradeType>
+        <SubTrade>
+          <SubTradeType>EquityOptionPosition</SubTradeType>
           <EquityOptionPositionData>
             <Quantity>1000</Quantity>
             <Underlying>
@@ -52,7 +52,7 @@
               <Strike>3400</Strike>
             </Underlying>
           </EquityOptionPositionData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

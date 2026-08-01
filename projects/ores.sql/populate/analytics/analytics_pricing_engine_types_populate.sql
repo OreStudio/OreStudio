@@ -53,8 +53,6 @@ insert into ores_analytics_pricing_engine_types_tbl (
      'BalanceGuaranteedSwap', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine types'),
     ('CallableSwap',            ores_utility_system_tenant_id_fn(), 0, 'Callable Swap',
      'CallableSwap', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine types'),
-    ('MultiLegOption',          ores_utility_system_tenant_id_fn(), 0, 'Multi-Leg Option',
-     'MultiLegOption', 'ores_analytics_service', 'system.initial_load', 'Seed pricing engine types'),
 
     -- Coupon/Leg-Level Pricers (no corresponding instrument type)
     ('YYCapFloor',              ores_utility_system_tenant_id_fn(), 0, 'Year-on-Year Inflation Cap/Floor',

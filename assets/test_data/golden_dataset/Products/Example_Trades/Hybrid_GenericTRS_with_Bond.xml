@@ -11,13 +11,13 @@
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>Bond</TradeType>
+        <SubTrade>
+          <SubTradeType>Bond</SubTradeType>
           <BondData>
             <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
             <BondNotional>1000000.00</BondNotional>
           </BondData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

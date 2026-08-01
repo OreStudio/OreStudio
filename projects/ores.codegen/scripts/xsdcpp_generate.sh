@@ -13,6 +13,10 @@
 #   --namespace NS       C++ namespace to wrap generated code (e.g., ores::ore)
 #   --name NAME          Name for generated files (e.g., domain)
 #   --include-prefix PFX Prefix for #include paths (default: PROJECT/NAME)
+#   --header-output DIR  Header output dir, relative to repo root
+#                        (default: projects/PROJECT/include/PROJECT/NAME)
+#   --cpp-output DIR     CPP output dir, relative to repo root
+#                        (default: projects/PROJECT/src/NAME)
 #   --reset-goldens DIR  Delete DIR (relative to repo root) before regenerating,
 #                        so golden tests re-bootstrap on next test run
 #   --help               Show this help message
@@ -56,6 +60,8 @@ PROJECT=""
 NAMESPACE=""
 NAME=""
 INCLUDE_PREFIX=""
+HEADER_OUTPUT_OVERRIDE=""
+CPP_OUTPUT_OVERRIDE=""
 RESET_GOLDENS=""
 
 # Parse arguments
@@ -79,6 +85,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --include-prefix)
             INCLUDE_PREFIX="$2"
+            shift 2
+            ;;
+        --header-output)
+            HEADER_OUTPUT_OVERRIDE="$2"
+            shift 2
+            ;;
+        --cpp-output)
+            CPP_OUTPUT_OVERRIDE="$2"
             shift 2
             ;;
         --reset-goldens)
@@ -127,8 +141,16 @@ GIT_ROOT=$(find_git_root)
 
 # Build paths relative to git root
 XSD_FULL_PATH="${GIT_ROOT}/${XSD_PATH}"
-HEADER_OUTPUT="${GIT_ROOT}/projects/${PROJECT}/include/${PROJECT}/${NAME}"
-CPP_OUTPUT="${GIT_ROOT}/projects/${PROJECT}/src/${NAME}"
+if [ -n "$HEADER_OUTPUT_OVERRIDE" ]; then
+    HEADER_OUTPUT="${GIT_ROOT}/${HEADER_OUTPUT_OVERRIDE}"
+else
+    HEADER_OUTPUT="${GIT_ROOT}/projects/${PROJECT}/include/${PROJECT}/${NAME}"
+fi
+if [ -n "$CPP_OUTPUT_OVERRIDE" ]; then
+    CPP_OUTPUT="${GIT_ROOT}/${CPP_OUTPUT_OVERRIDE}"
+else
+    CPP_OUTPUT="${GIT_ROOT}/projects/${PROJECT}/src/${NAME}"
+fi
 
 # Validate XSD file exists
 if [ ! -f "$XSD_FULL_PATH" ]; then
@@ -148,8 +170,8 @@ echo "Namespace:       ${NAMESPACE}"
 echo "Name:            ${NAME}"
 echo "Include prefix:  ${INCLUDE_PREFIX}"
 echo ""
-echo "Header output:   projects/${PROJECT}/include/${PROJECT}/${NAME}"
-echo "CPP output:      projects/${PROJECT}/src/${NAME}"
+echo "Header output:   ${HEADER_OUTPUT#$GIT_ROOT/}"
+echo "CPP output:      ${CPP_OUTPUT#$GIT_ROOT/}"
 echo ""
 
 if [ -n "$RESET_GOLDENS" ]; then

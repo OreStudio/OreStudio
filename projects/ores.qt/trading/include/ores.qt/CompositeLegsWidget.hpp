@@ -34,7 +34,7 @@ namespace ores::qt {
  * @brief Reusable widget for displaying and editing a list of composite legs.
  *
  * Manages a QTableWidget with Seq / Trade ID columns. Embed in any dialog
- * that deals with composite_leg records (CompositeTrade, MultiLegOption).
+ * that deals with composite_leg records (CompositeTrade).
  */
 class CompositeLegsWidget final : public QWidget {
     Q_OBJECT

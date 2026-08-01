@@ -33,9 +33,12 @@ namespace ores::ore::domain {
  *
  * Handles:
  *   - CompositeTrade         (compositeTradeData)
- *   - MultiLegOption         (multiLegOptionData)
  *   - TotalReturnSwap        (totalReturnSwapData)
  *   - ContractForDifference  (totalReturnSwapData via ContractForDifferenceData)
+ *
+ * MultiLegOption was removed from the ORE XSD upstream (QPR-13903, "support
+ * xccy swaptions") once cross-currency legs became supported directly on
+ * the standard Swaption trade type, so it is no longer mapped here.
  */
 class ORES_ORE_CORE_EXPORT composite_instrument_mapper {
 private:
@@ -49,13 +52,11 @@ private:
 
 public:
     static trading::domain::composite_instrument_data forward_composite_trade(const trade& t);
-    static trading::domain::composite_instrument_data forward_multi_leg_option(const trade& t);
     static trading::domain::composite_instrument_data forward_total_return_swap(const trade& t);
     static trading::domain::composite_instrument_data
     forward_contract_for_difference(const trade& t);
 
     static trade reverse_composite_trade(const ores::trading::domain::composite_instrument& instr);
-    static trade reverse_multi_leg_option(const ores::trading::domain::composite_instrument& instr);
     static trade
     reverse_total_return_swap(const ores::trading::domain::composite_instrument& instr);
     static trade

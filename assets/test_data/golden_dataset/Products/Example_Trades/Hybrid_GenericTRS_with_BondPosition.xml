@@ -11,8 +11,8 @@
     </Envelope>
     <TotalReturnSwapData>
       <UnderlyingData>
-        <Trade>
-          <TradeType>BondPosition</TradeType>
+        <SubTrade>
+          <SubTradeType>BondPosition</SubTradeType>
           <BondBasketData>
             <Quantity>1000</Quantity>
             <Identifier>CUSTOM</Identifier>
@@ -29,7 +29,7 @@
               <Weight>0.5</Weight>
             </Underlying>
           </BondBasketData>
-        </Trade>
+        </SubTrade>
       </UnderlyingData>
       <ReturnData>
         <Payer>false</Payer>

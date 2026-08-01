@@ -85,7 +85,158 @@ don't force a match.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** Metatypes covered
+
+=ores.refdata/modeling/*.org= (69 files) spans four metatypes; only
+two carry any variability =:profile:= binding can express:
+
+| Metatype               | Count | =:profile:= binding                        |
+|-------------------------+-------+---------------------------------------------|
+| =ores.codegen.entity=   |    58 | Yes — 6 profiles, 100% match, zero new work |
+| =ores.codegen.junction= |     9 | Yes — added this task (7th profile)         |
+| =ores.codegen.module=   |     1 | N/A — a catalogue index, not an entity      |
+| =ores.codegen.component=|     1 | N/A — component overview, not an entity     |
+
+** Worklist — process one entity at a time: remove its explicit
+   feature properties the target profile covers, add =:profile:=,
+   regenerate at =--address ores=, diff against the pre-rebind
+   checked-in output, revert and flag on any non-zero diff.
+
+*** Non-codegened (2) — no variability applies, tracked not skipped
+
+| File                    | Justification                                        |
+|--------------------------+-------------------------------------------------------|
+| =module.org=             | =ores.codegen.module=: the component's entity catalogue index, not itself a generated artefact. |
+| =component_overview.org= | =ores.codegen.component=: component-level metadata doc, not a generated artefact. |
+
+*** =ores.codegen.junction= (9) → =tenant-scoped-junction=
+
+| Entity                              | Status |
+|---------------------------------------+--------|
+| currency_calendar (reference entity)  | DONE   |
+| calendar_date                         | TODO   |
+| currency_country                      | TODO   |
+| currency_currency_group_junction      | TODO   |
+| currency_pair_convention_calendar     | TODO   |
+| party_counterparty_junction           | TODO   |
+| party_country_junction                | TODO   |
+| party_currency_junction               | TODO   |
+| tenor_convention_resolution           | TODO   |
+
+*** =ores.codegen.entity= (58), grouped by matched profile
+
+**** =simple-lookup= (34)
+
+| Entity | Status |
+|---------|--------|
+| asset_class_code | TODO |
+| book_purpose_type | TODO |
+| book_status | TODO |
+| business_centre | TODO |
+| business_day_convention_type | TODO |
+| calendar | TODO |
+| calendar_type | TODO |
+| contact_type | TODO |
+| country | TODO |
+| currency_group | TODO |
+| currency_market_tier | TODO |
+| currency_pair | TODO |
+| currency_pair_classification | TODO |
+| currency_pair_convention | TODO |
+| curve_role | TODO |
+| day_count_fraction_type | TODO |
+| floating_index_type | TODO |
+| instrument_code | TODO |
+| ledger_feed_type | TODO |
+| leg_type | TODO |
+| monetary_nature | TODO |
+| party_id_scheme | TODO |
+| party_status | TODO |
+| party_type | TODO |
+| payment_frequency | TODO |
+| purpose_type | TODO |
+| regulatory_book_type | TODO |
+| rounding_type | TODO |
+| tenor | TODO |
+| tenor_anchor | TODO |
+| tenor_convention | TODO |
+| tenor_kind | TODO |
+| tenor_resolution_algorithm | TODO |
+| tenor_unit | TODO |
+
+**** =fk-scoped-child= (3)
+
+| Entity | Status |
+|---------|--------|
+| book | TODO |
+| business_unit | TODO |
+| portfolio | TODO |
+
+**** =self-referencing-hierarchy= (12)
+
+| Entity | Status |
+|---------|--------|
+| business_unit_type | TODO |
+| calendar_exception | TODO |
+| calendar_rule | TODO |
+| counterparty | TODO |
+| counterparty_contact_information | TODO |
+| counterparty_identifier | TODO |
+| crm_driver_pair | TODO |
+| crm_enabled_derived_pair | TODO |
+| crm_topology_config | TODO |
+| party | TODO |
+| party_contact_information | TODO |
+| party_identifier | TODO |
+
+**** =fully-featured-lookup= (1)
+
+| Entity | Status |
+|---------|--------|
+| currency | DONE (proof case) |
+
+**** =read-only-time-series= (0 in ores.refdata)
+
+No =ores.refdata= entity matched; reference entity =market_observation=
+lives in another component.
+
+**** =workspace-scoped-lookup= (8)
+
+| Entity | Status |
+|---------|--------|
+| cds_convention | TODO |
+| deposit_convention | TODO |
+| fra_convention | TODO |
+| ibor_index_convention | TODO |
+| ois_convention | TODO |
+| overnight_index_convention | TODO |
+| swap_convention | TODO |
+| zero_convention | TODO |
+
+** No-profile-match — none remain
+
+Every =ores.codegen.entity= and =ores.codegen.junction= file in
+=ores.refdata= matches a profile (7/7, after adding
+=tenant-scoped-junction=). 100% coverage is achievable without
+inventing or forcing any additional profile.
+
 * Notes
+
+- Rebinding a junction ([[id:EC7B18A7-3865-424A-AD78-F6BE522F3B0B][currency_calendar]]) surfaced pre-existing,
+  unrelated generation drift — the checked-in
+  =currency_calendar_generator.cpp=/=currency_calendar_entity.cpp= no
+  longer byte-match what the current templates produce even for the
+  *unmodified* model file (a missing =#include <faker-cxx/faker.h>=
+  and a blank-line formatting difference), and several facets
+  (messaging handler/registrar, service) that the current templates
+  emit at =--address ores= were never generated/checked in for that
+  entity at all. Isolated by regenerating the untouched original file
+  before touching it — confirmed the profile rebind itself introduces
+  zero *additional* diff. Out of scope for this task (not caused by
+  profile binding); flagged for a separate drift-remediation pass
+  once the full worklist above is regenerated, since the same
+  pre-existing-drift check should be run for every entity in this
+  worklist before trusting its diff as a true zero.
 
 * Test Scenarios
 

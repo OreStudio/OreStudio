@@ -88,7 +88,7 @@ signals:
 
 private:
     friend class AppProvisionerReviewPage; // needs access to page pointers in initializePage()
-    friend class PackageUploadPage; // needs access to page pointers in initializePage()
+    friend class PackageUploadPage;        // needs access to page pointers in initializePage()
 
     ClientManager* client_manager_;
     ChangeReasonCache* change_reason_cache_;

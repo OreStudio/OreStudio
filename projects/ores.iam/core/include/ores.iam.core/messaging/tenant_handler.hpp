@@ -503,35 +503,37 @@ public:
                 // publish/wait pair (guaranteed by the helper's loop body),
                 // so wait can safely rely on current_mkt_step set just above.
                 if (!dq::messaging::publish_party_provisioning_plan(
-                    mkt_plan,
-                    party->id,
-                    [&](const std::string& bundle_code, const std::string& params_json)
-                        -> std::optional<dq::messaging::publish_bundle_response> {
-                        dq::messaging::publish_bundle_request req;
-                        req.bundle_code = bundle_code;
-                        req.published_by = username;
-                        req.atomic = true;
-                        req.params_json = params_json;
-                        auto pub = client.request(req);
-                        const auto mkt_label = office.code + "." + bundle_code;
-                        if (!pub.success) {
-                            add_step(mkt_label + ".failed", pub.error_message, 0);
-                            return std::nullopt;
-                        }
-                        add_step(mkt_label,
-                                "dispatched",
-                                static_cast<std::uint64_t>(pub.datasets_dispatched));
-                        return pub;
-                    },
-                    [&](const std::string& instance_id, std::size_t expected) {
-                        const auto mkt_label = office.code + "." + current_mkt_step;
-                        return client.wait_for_workflow_instance(
-                            instance_id, std::chrono::seconds{120}, expected, progress(mkt_label));
-                    },
-                    [&](const auto& step) {
-                        current_mkt_step = step.bundle_code;
-                        add_step(office.code + "." + step.bundle_code, "starting", 0);
-                    }))
+                        mkt_plan,
+                        party->id,
+                        [&](const std::string& bundle_code, const std::string& params_json)
+                            -> std::optional<dq::messaging::publish_bundle_response> {
+                            dq::messaging::publish_bundle_request req;
+                            req.bundle_code = bundle_code;
+                            req.published_by = username;
+                            req.atomic = true;
+                            req.params_json = params_json;
+                            auto pub = client.request(req);
+                            const auto mkt_label = office.code + "." + bundle_code;
+                            if (!pub.success) {
+                                add_step(mkt_label + ".failed", pub.error_message, 0);
+                                return std::nullopt;
+                            }
+                            add_step(mkt_label,
+                                     "dispatched",
+                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
+                            return pub;
+                        },
+                        [&](const std::string& instance_id, std::size_t expected) {
+                            const auto mkt_label = office.code + "." + current_mkt_step;
+                            return client.wait_for_workflow_instance(instance_id,
+                                                                     std::chrono::seconds{120},
+                                                                     expected,
+                                                                     progress(mkt_label));
+                        },
+                        [&](const auto& step) {
+                            current_mkt_step = step.bundle_code;
+                            add_step(office.code + "." + step.bundle_code, "starting", 0);
+                        }))
                     continue;
 
                 const auto photo_label = office.code + ".staff_photos";

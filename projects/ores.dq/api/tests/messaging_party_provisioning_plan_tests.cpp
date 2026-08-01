@@ -72,8 +72,8 @@ TEST_CASE("publish_party_provisioning_plan_stops_and_returns_false_on_publish_fa
     bool ok = publish_party_provisioning_plan(
         three_step_plan,
         boost::uuids::random_generator()(),
-        [&](const std::string& bundle_code, const std::string&)
-            -> std::optional<publish_bundle_response> {
+        [&](const std::string& bundle_code,
+            const std::string&) -> std::optional<publish_bundle_response> {
             published.push_back(bundle_code);
             if (bundle_code == "bundle_b")
                 return std::nullopt;

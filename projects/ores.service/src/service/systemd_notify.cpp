@@ -18,7 +18,6 @@
  *
  */
 #include "ores.service/service/systemd_notify.hpp"
-
 #include <cstdlib>
 #include <cstring>
 #include <sys/socket.h>
@@ -29,12 +28,14 @@ namespace ores::service {
 
 void notify_systemd_ready() noexcept {
     const char* socket_path = std::getenv("NOTIFY_SOCKET");
-    if (!socket_path || socket_path[0] == '\0') return;
+    if (!socket_path || socket_path[0] == '\0')
+        return;
 
     sockaddr_un addr{};
     addr.sun_family = AF_UNIX;
     std::size_t path_len = std::strlen(socket_path);
-    if (path_len >= sizeof(addr.sun_path)) return;
+    if (path_len >= sizeof(addr.sun_path))
+        return;
 
     // An abstract socket address (leading '@') is written as a leading NUL
     // byte, not a literal '@' -- systemd's own convention.
@@ -44,15 +45,15 @@ void notify_systemd_ready() noexcept {
         offset = 1;
     }
     std::memcpy(addr.sun_path + offset, socket_path + offset, path_len - offset);
-    socklen_t addr_len = static_cast<socklen_t>(
-        offsetof(sockaddr_un, sun_path) + path_len);
+    socklen_t addr_len = static_cast<socklen_t>(offsetof(sockaddr_un, sun_path) + path_len);
 
     int fd = ::socket(AF_UNIX, SOCK_DGRAM, 0);
-    if (fd < 0) return;
+    if (fd < 0)
+        return;
 
     static constexpr char message[] = "READY=1";
-    ::sendto(fd, message, sizeof(message) - 1, 0,
-        reinterpret_cast<const sockaddr*>(&addr), addr_len);
+    ::sendto(
+        fd, message, sizeof(message) - 1, 0, reinterpret_cast<const sockaddr*>(&addr), addr_len);
     ::close(fd);
 }
 

@@ -114,14 +114,14 @@ two carry any variability =:profile:= binding can express:
 | Entity                              | Status |
 |---------------------------------------+--------|
 | currency_calendar (reference entity)  | DONE   |
-| calendar_date                         | TODO   |
-| currency_country                      | TODO   |
-| currency_currency_group_junction      | TODO   |
-| currency_pair_convention_calendar     | TODO   |
-| party_counterparty_junction           | TODO   |
-| party_country_junction                | TODO   |
-| party_currency_junction               | TODO   |
-| tenor_convention_resolution           | TODO   |
+| calendar_date                         | DONE   |
+| currency_country                      | DONE   |
+| currency_currency_group_junction      | DONE   |
+| currency_pair_convention_calendar     | DONE   |
+| party_counterparty_junction           | DONE   |
+| party_country_junction                | DONE   |
+| party_currency_junction               | DONE   |
+| tenor_convention_resolution           | DONE   |
 
 *** =ores.codegen.entity= (58), grouped by matched profile
 
@@ -129,65 +129,65 @@ two carry any variability =:profile:= binding can express:
 
 | Entity | Status |
 |---------|--------|
-| asset_class_code | TODO |
-| book_purpose_type | TODO |
-| book_status | TODO |
-| business_centre | TODO |
-| business_day_convention_type | TODO |
-| calendar | TODO |
-| calendar_type | TODO |
-| contact_type | TODO |
-| country | TODO |
-| currency_group | TODO |
-| currency_market_tier | TODO |
-| currency_pair | TODO |
-| currency_pair_classification | TODO |
-| currency_pair_convention | TODO |
-| curve_role | TODO |
-| day_count_fraction_type | TODO |
-| floating_index_type | TODO |
-| instrument_code | TODO |
-| ledger_feed_type | TODO |
-| leg_type | TODO |
-| monetary_nature | TODO |
-| party_id_scheme | TODO |
-| party_status | TODO |
-| party_type | TODO |
-| payment_frequency | TODO |
-| purpose_type | TODO |
-| regulatory_book_type | TODO |
-| rounding_type | TODO |
-| tenor | TODO |
-| tenor_anchor | TODO |
-| tenor_convention | TODO |
-| tenor_kind | TODO |
-| tenor_resolution_algorithm | TODO |
-| tenor_unit | TODO |
+| asset_class_code | DONE |
+| book_purpose_type | DONE |
+| book_status | DONE |
+| business_centre | DONE |
+| business_day_convention_type | DONE |
+| calendar | DONE |
+| calendar_type | DONE |
+| contact_type | DONE |
+| country | DONE |
+| currency_group | DONE |
+| currency_market_tier | DONE |
+| currency_pair | DONE |
+| currency_pair_classification | DONE |
+| currency_pair_convention | DONE |
+| curve_role | DONE |
+| day_count_fraction_type | DONE |
+| floating_index_type | DONE |
+| instrument_code | DONE |
+| ledger_feed_type | DONE |
+| leg_type | NOT BOUND (false positive, see Notes) |
+| monetary_nature | DONE |
+| party_id_scheme | DONE |
+| party_status | DONE |
+| party_type | DONE |
+| payment_frequency | DONE |
+| purpose_type | DONE |
+| regulatory_book_type | DONE |
+| rounding_type | DONE |
+| tenor | DONE |
+| tenor_anchor | DONE |
+| tenor_convention | DONE |
+| tenor_kind | DONE |
+| tenor_resolution_algorithm | DONE |
+| tenor_unit | DONE |
 
 **** =fk-scoped-child= (3)
 
 | Entity | Status |
 |---------|--------|
-| book | TODO |
-| business_unit | TODO |
-| portfolio | TODO |
+| book | DONE |
+| business_unit | NOT BOUND (false positive, see Notes) |
+| portfolio | DONE |
 
 **** =self-referencing-hierarchy= (12)
 
 | Entity | Status |
 |---------|--------|
-| business_unit_type | TODO |
-| calendar_exception | TODO |
-| calendar_rule | TODO |
-| counterparty | TODO |
-| counterparty_contact_information | TODO |
-| counterparty_identifier | TODO |
-| crm_driver_pair | TODO |
-| crm_enabled_derived_pair | TODO |
-| crm_topology_config | TODO |
-| party | TODO |
-| party_contact_information | TODO |
-| party_identifier | TODO |
+| business_unit_type | DONE |
+| calendar_exception | DONE |
+| calendar_rule | DONE |
+| counterparty | DONE |
+| counterparty_contact_information | DONE |
+| counterparty_identifier | DONE |
+| crm_driver_pair | DONE |
+| crm_enabled_derived_pair | DONE |
+| crm_topology_config | DONE |
+| party | DONE |
+| party_contact_information | DONE |
+| party_identifier | DONE |
 
 **** =fully-featured-lookup= (1)
 
@@ -204,14 +204,14 @@ lives in another component.
 
 | Entity | Status |
 |---------|--------|
-| cds_convention | TODO |
-| deposit_convention | TODO |
-| fra_convention | TODO |
-| ibor_index_convention | TODO |
-| ois_convention | TODO |
-| overnight_index_convention | TODO |
-| swap_convention | TODO |
-| zero_convention | TODO |
+| cds_convention | DONE |
+| deposit_convention | DONE |
+| fra_convention | DONE |
+| ibor_index_convention | DONE |
+| ois_convention | DONE |
+| overnight_index_convention | DONE |
+| swap_convention | DONE |
+| zero_convention | DONE |
 
 ** No-profile-match — none remain
 
@@ -222,6 +222,31 @@ inventing or forcing any additional profile.
 
 * Notes
 
+- =business_unit= (matched =fk-scoped-child=) and =leg_type= (matched
+  =simple-lookup=) were deliberately **not** bound, despite matching
+  the survey's scoring. Both leave a feature unset that their matched
+  profile fixes to a value (=has_workspace_id= for =business_unit=,
+  =has_change_reason_cache= for =leg_type=) — the survey only compared
+  features already present on *both* sides, so an unset feature the
+  profile would newly inject (via its setdefault semantics) never
+  showed up as a mismatch. Regenerating after a trial rebind produced
+  real, non-empty diffs (a new =wireDetailDialogCommon= refactor
+  reachable only once the injected feature turns a code path on; new
+  controller methods) — caught by the regen+diff check exactly as
+  designed, not a tooling bug. Lesson for the next component: a
+  correct match requires comparing *every* profile-assigned feature
+  against the entity's actual resolved value (defaulted or not), not
+  only features the entity happens to already set.
+- All 63 remaining rebinds (55 =domain_entity= + 8 =junction=) were
+  applied via a scripted, per-entity pipeline: for each entity,
+  regenerate the *unmodified* file first to capture any pre-existing
+  drift baseline, revert, apply the profile rebind, regenerate again,
+  and require the new diff to be an exact subset of that baseline
+  (zero *additional* diff) before keeping the edit — otherwise revert
+  and flag for manual review. This is the same method proven by hand
+  on =currency= and =currency_calendar=, just automated across the
+  worklist so every entity still gets its own real regen+diff
+  verification rather than a batch assumption.
 - Rebinding a junction ([[id:EC7B18A7-3865-424A-AD78-F6BE522F3B0B][currency_calendar]]) surfaced pre-existing,
   unrelated generation drift — the checked-in
   =currency_calendar_generator.cpp=/=currency_calendar_entity.cpp= no

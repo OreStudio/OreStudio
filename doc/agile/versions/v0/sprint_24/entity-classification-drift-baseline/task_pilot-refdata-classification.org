@@ -148,7 +148,7 @@ two carry any variability =:profile:= binding can express:
 | floating_index_type | DONE |
 | instrument_code | DONE |
 | ledger_feed_type | DONE |
-| leg_type | NOT BOUND (false positive, see Notes) |
+| leg_type | DONE (bound; missing =has_change_reason_cache= was a genuine gap, fixed — see Notes) |
 | monetary_nature | DONE |
 | party_id_scheme | DONE |
 | party_status | DONE |
@@ -169,7 +169,7 @@ two carry any variability =:profile:= binding can express:
 | Entity | Status |
 |---------|--------|
 | book | DONE |
-| business_unit | NOT BOUND (false positive, see Notes) |
+| business_unit | NO MATCH (correctly bespoke — genuinely tenant-only, not workspace-scoped; =fk-scoped-child= would wrongly add a =workspace_id= column — see Notes) |
 | portfolio | DONE |
 
 **** =self-referencing-hierarchy= (12)
@@ -223,20 +223,39 @@ inventing or forcing any additional profile.
 * Notes
 
 - =business_unit= (matched =fk-scoped-child=) and =leg_type= (matched
-  =simple-lookup=) were deliberately **not** bound, despite matching
-  the survey's scoring. Both leave a feature unset that their matched
+  =simple-lookup=) both left a feature unset that their matched
   profile fixes to a value (=has_workspace_id= for =business_unit=,
   =has_change_reason_cache= for =leg_type=) — the survey only compared
   features already present on *both* sides, so an unset feature the
   profile would newly inject (via its setdefault semantics) never
-  showed up as a mismatch. Regenerating after a trial rebind produced
-  real, non-empty diffs (a new =wireDetailDialogCommon= refactor
-  reachable only once the injected feature turns a code path on; new
-  controller methods) — caught by the regen+diff check exactly as
-  designed, not a tooling bug. Lesson for the next component: a
-  correct match requires comparing *every* profile-assigned feature
-  against the entity's actual resolved value (defaulted or not), not
-  only features the entity happens to already set.
+  showed up as a mismatch. A trial rebind of each surfaced a real,
+  non-empty diff — caught by the regen+diff check exactly as designed,
+  not a tooling bug. Lesson for the next component: a correct match
+  requires comparing *every* profile-assigned feature against the
+  entity's actual resolved value (defaulted or not), not only features
+  the entity happens to already set. The two cases resolved
+  differently on inspection, not by the same rule:
+  - =leg_type= missing change-reason tracking was a genuine gap, not a
+    deliberate design choice — every other =simple-lookup= entity
+    audits who changed a row and why; this one arbitrarily didn't.
+    Bound to the profile, which added a =ChangeReasonCache*=
+    constructor parameter to =LegTypeController= (same shape every
+    sibling controller already has); wired the one hand-written call
+    site (=RefdataPlugin::setupControllers=) to pass
+    =ctx_.change_reason_cache= alongside them.
+  - =business_unit= is genuinely tenant-only, not workspace-scoped —
+    unlike =book=/=portfolio= (the other two =fk-scoped-child=
+    members, both truly workspace-scoped), nothing about
+    =business_unit='s domain semantics calls for per-workspace
+    isolation, and forcing it in would add a real, unwanted
+    =workspace_id= column (SQL schema + index + validation trigger +
+    C++ struct field) — a schema migration for no product reason.
+    Left unbound, keeping its own explicit properties: this is the
+    entity's genuinely bespoke, correct configuration, not a defect
+    to fix or a profile to force. Not a candidate for a new profile
+    either — the catalogue's own bar is a combination recurring
+    across more than one entity, and =business_unit= is currently the
+    only =ores.refdata= entity with this exact shape.
 - All 63 remaining rebinds (55 =domain_entity= + 8 =junction=) were
   applied via a scripted, per-entity pipeline: for each entity,
   regenerate the *unmodified* file first to capture any pre-existing

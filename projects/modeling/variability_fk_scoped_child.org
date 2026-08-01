@@ -41,7 +41,6 @@ here is left to the model's own choice:
 | [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
 | [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |
-| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
 | [[id:9D8D1849-D721-47D1-B477-95058D1FAC32][has_explorer_api]] | true |
 | [[id:A12F591B-DF0E-4112-8457-550FA9323DDF][parent_entity_singular]] | required, string — the adopting entity's own parent entity name (e.g. =portfolio= for =book=); this profile fixes that the value must be set, not which literal string, since that is necessarily specific to the adopting entity |
 

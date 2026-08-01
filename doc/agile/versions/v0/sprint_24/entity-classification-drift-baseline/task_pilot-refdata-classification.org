@@ -1,56 +1,83 @@
 :PROPERTIES:
 :ID: AD953FB1-65AF-4475-BF67-E964DA6CA5D4
 :END:
-#+title: Task: Build and verify the classification tool on the ores.refdata pilot
-#+description: Implement the automated classification/drift tool and run it against ores.refdata only. Spot-check its output against known-good (currency) and known-bad (16 primary-key-heading legacy models) entities until confident the measurements are accurate. Produce the refdata drift report.
+#+title: Task: Bind ores.refdata entities to profiles; verify zero-diff regen
+#+description: Implement real :profile: binding in the code generator, rebind every matching ores.refdata entity to its profile, regenerate, and confirm byte-identical output -- the strongest possible proof the profile catalogue is accurate before trusting or rolling it out further.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_24:v0:entity-classification-drift-baseline:
 #+owner: marco
-#+branch:
+#+branch: feature/pilot-refdata-classification
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Implement the classification tool against the settled dimension list and
-run it end-to-end on =ores.refdata= only — the pilot component, chosen for
-its size and variety. Deliberately try to break it: run it against entities
-we already know the answer for (=currency= as the fully-regular reference
-specimen; the 16 primary-key-heading legacy models as known-drifted) and
-confirm the tool's output matches reality before trusting it on anything
-else. Any dimension the tool gets wrong or can't compute here must be fixed
-before rollout, not carried forward.
+Refined from a read-only classification scanner into a concrete,
+falsifiable proof: implement real =:profile:= binding in the code
+generator, rebind every =ores.refdata= entity that matches one of the
+5 named profiles ([[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]]) to that profile — removing its
+now-redundant, individually-authored feature properties — regenerate,
+and confirm byte-identical output against what was checked in before
+the rebind. A zero-diff regen is the strongest possible confirmation
+that the profile catalogue actually captures what it claims to: if
+binding to a profile changes what gets generated for a single entity,
+the profile (or the classification of that entity as matching it) is
+wrong, and that must be fixed before this pilot is trusted, let alone
+rolled out to the other ~19 components.
+
+This is the "Profile match" classification dimension from the
+story's settled list, but validated far more strongly than a
+read-only report could: not "the feature values look equal on paper"
+but "codegen produces the same files whether the entity's variability
+is spelled out explicitly or expressed as one profile name."
+
+Entities matching no profile are not a failure of this task — they
+are real data, either genuinely novel configurations (candidates for
+a 6th profile, once a second entity repeats the same combination) or
+entities whose per-entity features are correctly bespoke. Record them,
+don't force a match.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing :profile: binding resolution in org_loader.py. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Survey ores.refdata entities against the 5 profiles, then rebind + regen + diff. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
 
-- The tool runs over every =ores.refdata= entity model and generated artefact
-  and outputs a value for every settled dimension, no manual steps required.
-- =currency= classifies as fully regular on every dimension the tool checks.
-- All 16 known primary-key-heading entities are correctly flagged as legacy
-  on the model-format dimension.
-- At least a handful of other refdata entities are hand-verified line-by-line
-  against the tool's output (pick a mix of domain and auxiliary types) with
-  no discrepancies before the pilot is declared trusted.
-- A refdata-scoped drift report is produced and reviewed.
+- =org_loader.py= resolves a =:profile: <name>= property on an entity model
+  by reading that profile's own =variability_<slug>.org= Assignments table
+  as the source of truth (no hardcoded second copy of the profile
+  catalogue) and merging its feature values in before the rest of loading
+  proceeds; an explicit per-entity property still overrides its profile's
+  value where both are present.
+- Every =ores.refdata= entity's current feature values are computed and
+  compared against the 5 profiles; each is recorded as a match (which
+  profile) or no-match.
+- Every matching entity is rebound: its explicit per-entity feature
+  properties replaced with =:profile: <name>=, keeping only what the
+  profile does not cover (structural fields, per-entity naming).
+- Every rebound entity is regenerated and diffed against its pre-rebind
+  checked-in output. Zero diff for all of them is the pass condition; any
+  non-zero diff is a bug in either the profile catalogue or the matching
+  logic and must be fixed, not worked around, before this task is done.
+- =currency= (the =fully-featured-lookup= reference entity) is among the
+  rebound and zero-diff-verified set.
+- No-match entities are listed with their actual feature values, not
+  silently dropped.
 
 * Plan
 

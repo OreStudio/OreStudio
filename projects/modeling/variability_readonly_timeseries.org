@@ -37,7 +37,6 @@ here is left to the model's own choice:
 |------+-------|
 | [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
 | [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
-| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | false |
 
 * See also
 

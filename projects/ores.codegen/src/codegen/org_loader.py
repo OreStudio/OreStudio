@@ -28,8 +28,151 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
+
+# --------------------------------------------------------------------------
+# Profile binding (ORE Studio Variability Model § "Profiles")
+#
+# A :profile: property on an entity's root Flags drawer names one of the
+# catalogued profiles (projects/modeling/variability_<slug>.org). Its
+# Assignments table -- Feature | Value -- is the single source of truth for
+# the feature defaults it supplies; nothing here duplicates that data.
+# Which of the entity dict's three namespaces (root / sql / qt) a feature
+# belongs to is fixed by the feature catalogue itself
+# (projects/modeling/variability_features.org's grouping).
+
+_PROFILES_DIR = Path(__file__).resolve().parents[3] / "modeling"
+
+# feature name -> which sub-dict of the domain_entity a profile default for
+# it is merged into. "" means the root of the domain_entity dict itself.
+_FEATURE_NAMESPACE: dict[str, str] = {
+    "has_tenant_id": "",
+    "has_workspace_id": "",
+    "has_parent_id": "sql",
+    "system_scope": "sql",
+    "nullable_tenant_id": "sql",
+    "extra_checks": "sql",
+    "extra_delete_sets": "sql",
+    "fk_copy_validations": "sql",
+    "text_code_validations": "sql",
+    "party_id_from_book_id": "sql",
+    "party_id_from_session": "sql",
+    "has_pagination": "qt",
+    "has_uuid_primary_key": "qt",
+    "has_change_reason_cache": "qt",
+    "has_explorer_api": "qt",
+    "parent_entity_singular": "qt",
+    "has_csv_xml_io": "qt",
+    "has_export_macro": "qt",
+    "has_version_navigation": "qt",
+    "has_readonly_paginated_list": "qt",
+    "has_parent_scoped_list": "qt",
+    "parent_key_field": "qt",
+    "parent_key_param": "qt",
+}
+
+_LINK_RE = re.compile(r"\[\[id:[0-9A-Fa-f-]+\]\[([^\]]+)\]\]")
+
+
+def _profile_feature_name(cell: str) -> str:
+    """Extract the plain feature name from an Assignments table's Feature
+    cell -- either an ``[[id:...][name]]`` link (linked, real feature) or
+    plain text (=name= or bare, structural property listed for context)."""
+    m = _LINK_RE.search(cell)
+    if m:
+        return m.group(1).strip()
+    return cell.strip().strip("=").strip()
+
+
+def _profile_literal_value(raw: str) -> Any | None:
+    """Parse an Assignments table's Value cell into a concrete default, or
+    None if the cell is prose (a per-entity-required placeholder, not a
+    fixed literal -- e.g. parent_entity_singular's row in fk-scoped-child)
+    rather than an actual value every adopting entity shares."""
+    v = raw.strip()
+    if v in ("true", "false"):
+        return v == "true"
+    # A literal string value is wrapped in =...= or is a bare identifier
+    # with no spaces/parens -- anything else (parenthetical prose, "set,
+    # e.g. ...") is a placeholder documenting that the feature is required,
+    # not a value to default in.
+    if v.startswith("=") and v.endswith("="):
+        return v.strip("=")
+    if v and " " not in v and "(" not in v:
+        return v
+    return None
+
+
+@lru_cache(maxsize=None)
+def _load_profile_assignments(slug: str) -> tuple[tuple[str, Any], ...]:
+    """Parse projects/modeling/variability_<slug>.org's Assignments table
+    into (feature_name, value) pairs, skipping non-literal (per-entity
+    required, no fixed default) rows. Cached: the same profile is resolved
+    for many entities in one codegen run."""
+    path = _PROFILES_DIR / f"variability_{slug.replace('-', '_')}.org"
+    if not path.is_file():
+        raise ValueError(
+            f"unknown profile '{slug}': {path} does not exist "
+            f"(see projects/modeling/variability_profiles.org for the catalogue)"
+        )
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    assignments = _section(doc.root, "Assignments")
+    if not assignments:
+        return ()
+    rows = _parse_org_table_rows(assignments)
+    out: list[tuple[str, Any]] = []
+    for row in rows:
+        name = _profile_feature_name(row.get("Feature", ""))
+        value = _profile_literal_value(row.get("Value", ""))
+        if name and value is not None:
+            out.append((name, value))
+    return tuple(out)
+
+
+def _profile_namespace_defaults(slug: str | None, namespace: str) -> dict[str, Any]:
+    """The subset of a profile's Assignments that belongs to one namespace
+    (``""``/``"sql"``/``"qt"``), as a plain dict -- used to seed a facet's raw
+    properties *before* that facet derives any computed flag from them (e.g.
+    ``ores.cpp.qt``'s ``has_toolbar`` from ``has_version_navigation``), so the
+    derivation sees the profile's values rather than their absence."""
+    if not slug:
+        return {}
+    return {
+        feature: value
+        for feature, value in _load_profile_assignments(slug)
+        if _FEATURE_NAMESPACE.get(feature) == namespace
+    }
+
+
+def _apply_profile(de: dict[str, Any]) -> None:
+    """If de['profile'] names a catalogued profile, merge its Assignments
+    as defaults into de (root / sql / qt namespaces per feature). An
+    already-explicit value at the entity level always wins -- a profile
+    supplies defaults, it never overrides what the model author wrote.
+
+    This is the final safety-net pass over the whole ``de`` dict; namespaces
+    whose facet derives computed flags from these features (currently
+    ``qt``) must also seed those defaults *before* that facet's own parsing
+    via :func:`_profile_namespace_defaults`, since by the time this runs the
+    derivation has already happened and setdefault here is too late to
+    affect it."""
+    slug = de.get("profile")
+    if not slug:
+        return
+    for feature, value in _load_profile_assignments(slug):
+        namespace = _FEATURE_NAMESPACE.get(feature)
+        if namespace is None:
+            # Not in the catalogue's namespace map (e.g. a structural
+            # property incidentally listed for context) -- skip rather
+            # than guess where it belongs.
+            continue
+        if namespace == "":
+            de.setdefault(feature, value)
+        else:
+            de.setdefault(namespace, {})
+            de[namespace].setdefault(feature, value)
 
 
 # --------------------------------------------------------------------------
@@ -903,7 +1046,9 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         # Qt UI bindings.
         qt = _section(cpp_section, "Qt")
         if qt:
-            de["qt"] = _parse_qt_drawer(qt)
+            de["qt"] = _parse_qt_drawer(
+                qt, _profile_namespace_defaults(de.get("profile"), "qt")
+            )
 
         # Custom repository methods (the literate fragment mechanism).
         cm = _section(cpp_section, "Custom repository methods")
@@ -916,19 +1061,36 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     if impls:
         de["implementations"] = impls
 
+    # Profile binding: a :profile: property on the root Flags drawer
+    # (already lifted into de['profile'] by the generic Flags loop above)
+    # supplies feature defaults from the named profile's own Assignments
+    # table. Applied last so every explicit value parsed above wins.
+    _apply_profile(de)
+
     return {"domain_entity": de}
 
 
-def _parse_qt_drawer(qt: OrgNode) -> dict[str, Any]:
+def _parse_qt_drawer(
+    qt: OrgNode, profile_defaults: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Parse a ``** Qt`` drawer (properties + Detail fields / Columns (Qt
     model) / Icon columns / Setting-gated actions / Related entity
     shortcuts sub-sections) into the ``qt`` sub-dict the ``ores.cpp.qt``
     mustache templates consume. Shared by :func:`org_document_to_model`
     (domain_entity) and :func:`load_org_junction_model` (junction) — the
-    drawer shape and every derived flag below is identical for both."""
+    drawer shape and every derived flag below is identical for both.
+
+    ``profile_defaults`` (a bound entity's profile's qt-namespace
+    Assignments, if any) is seeded in *before* any derivation below runs --
+    e.g. ``has_toolbar``'s derivation from ``has_version_navigation`` must
+    see the profile-supplied value, not its absence. An explicit drawer
+    property still wins over it either way."""
     qt_out: dict[str, Any] = {}
     for k, v in qt.properties.items():
         qt_out[k.lower()] = _parse_typed(v)
+    if profile_defaults:
+        for k, v in profile_defaults.items():
+            qt_out.setdefault(k, v)
     df = _section(qt, "Detail fields")
     if df:
         qt_out["detail_fields"] = _detail_fields(df)

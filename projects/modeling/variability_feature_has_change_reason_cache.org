@@ -35,6 +35,7 @@ Yes — adds a constructor parameter and private member to the generated control
 - [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]]
 - [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
 - [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+- [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]]
 
 * See also
 

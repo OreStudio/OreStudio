@@ -36,6 +36,7 @@ Yes — adds a =workspace_id= column/field.
 - [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]]
 - [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
 - [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+- [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]]
 - [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]]
 
 * See also

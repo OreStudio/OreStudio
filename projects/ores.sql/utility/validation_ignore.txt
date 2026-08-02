@@ -30,7 +30,6 @@ TEMPORAL_006 ores_dq_change_reasons_tbl
 # These are simple relationship tables without full audit trail
 # =============================================================================
 TEMPORAL_004 ores_dq_dataset_dependencies_tbl
-TEMPORAL_004 ores_compute_app_version_platforms_tbl
 
 # NOT intentional -- ores_compute_app_version_platforms_tbl's checked-in SQL
 # is stale against the current sql_schema_junction_create.mustache template

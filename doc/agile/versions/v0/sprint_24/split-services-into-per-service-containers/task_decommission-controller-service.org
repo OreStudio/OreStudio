@@ -54,7 +54,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:69C1426F-A151-44FD-AB87-DE2305B65083][Verify controller decommission (systemd lifecycle + Qt client)]] | PENDING | Hand off to the user to run via the QA Validation Runner. |
 
 * PRs
 

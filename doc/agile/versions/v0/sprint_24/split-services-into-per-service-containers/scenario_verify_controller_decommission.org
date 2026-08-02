@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 69C1426F-A151-44FD-AB87-DE2305B65083
+:END:
+#+title: Test Scenario: Verify controller decommission (systemd lifecycle + Qt client)
+#+description: Confirm compass services start/stop/status bring up the full fleet via systemd (not the deleted controller), and that the Qt client launches cleanly with the Service Dashboard menu item gone.
+#+type: test_scenario
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] in [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database needs Acme Corporation provisioned (any working
+  tenant/login works for this scenario — it isn't testing tenant data,
+  just that the service fleet and Qt client work post-decommission).
+  Confirm via =compass db status=, recreating only if stale:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- Stop any running fleet first (=compass services stop=) so Step 2
+  below is a genuine cold start, not a no-op against an already-warm
+  environment.
+- Build must be current: =compass build= (confirms the controller/
+  Service Dashboard removal compiled and linked cleanly).
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] |
+| Parent story  | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]   |
+| Target dialog | None — this scenario verifies process/service lifecycle and the main window's menu, not a specific dialog. |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Start the fleet via compass services start
+
+- From a terminal (not the Qt client yet): run =compass services
+  start=.
+- Confirm the command prints "[Generate + deploy systemd units]"
+  followed by "[systemctl --user start ores-<env>.target]" — this is
+  the new systemd-backed path, not the old controller.
+- Wait for it to finish (up to ~5 minutes cold — 20+ services all
+  connecting to the DB at once). It should exit 0 with every unit
+  reported ready; if any unit times out, that's a FAIL worth noting
+  (which unit, and its log tail from
+  =build/output/<preset>/publish/log/<service_name>.0.log=).
+
+** Confirm status shows the full fleet running
+
+- Run =compass services status=.
+- Confirm all ~23 units (nats-server + every service, including the 5
+  =ores.compute.wrapper= replicas) show =running=, none =missing= or
+  =stopped=.
+- There must be **no** =ores.controller.service= row at all — its
+  absence (not a "stopped" row for it) is the point of this check.
+
+** Log in as tenant_admin@acme_corporation
+
+- Launch the client: =compass client start=.
+- Log in as =tenant_admin@acme_corporation= /
+  =Secure-Password-123=.
+- Confirm login succeeds and the main window opens normally.
+
+** Confirm the Service Dashboard menu item is gone
+
+- Open the *Operations > Telemetry* menu.
+- Confirm there is **no** "Service Dashboard..." entry (nor the
+  separator that used to precede it) — it was removed along with
+  =ores.controller.service= in this task.
+- Confirm the rest of the Telemetry menu (whatever remains) still
+  opens normally — no crash, no empty/broken menu.
+
+** Confirm Queue Monitor still works
+
+- Open *Operations > Message Queue > Queue Monitor*.
+- Confirm the Queue Monitor window opens without error (it sits right
+  next to where the Service Dashboard wiring was removed in
+  ComputePlugin.cpp — a quick regression check that the removal didn't
+  collateral-damage its neighbour).
+
+** Stop the fleet via compass services stop
+
+- Close the client (=compass client stop= or quit the window).
+- Run =compass services stop=.
+- Confirm it prints "[systemctl --user stop ores-<env>.target]" and
+  exits 0.
+- Run =compass services status= again — confirm every unit now shows
+  =stopped=, none left =running=.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -277,7 +277,7 @@ multi-row INSERT statement, so every row in a batch gets a different
 suffix, avoiding duplicate-key collisions that a NOT EXISTS loop
 cannot prevent due to the statement-level snapshot in READ COMMITTED.
 
-#+begin_src sql :name extra_ddl :implements 92432102-D405-46FC-911A-111DFED27358
+#+begin_src sql :name extra_ddl :implements 92432102-d405-46fc-911a-111dfed27358
 -- Sequence used to generate a unique base-26 suffix for auto-generated
 -- codenames.  nextval() is outside MVCC: it advances even within a
 -- multi-row INSERT statement, so every row in a batch gets a different

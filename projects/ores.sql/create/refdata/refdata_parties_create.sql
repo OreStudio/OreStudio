@@ -354,3 +354,9 @@ begin
     select d.id, d.parent_id, d.name from descendants d;
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
+-- Sequence used to generate a unique base-26 suffix for auto-generated
+-- codenames.  nextval() is outside MVCC: it advances even within a
+-- multi-row INSERT statement, so every row in a batch gets a different
+-- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
+-- prevent due to the statement-level snapshot in READ COMMITTED.
+create sequence if not exists ores_refdata_party_codename_seq;

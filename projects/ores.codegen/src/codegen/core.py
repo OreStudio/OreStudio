@@ -1003,13 +1003,21 @@ def _substitute_paste_markers(text, data):
     Missing kinds produce an empty substitution and the entire marker line
     (including its newline) is collapsed, leaving no trace in the output.
     This makes templates safe to include markers that no current entity
-    implements."""
+    implements.
+
+    UUIDs are matched case-insensitively: a template marker and a model's
+    :implements property are free-standing text authored independently
+    (often by different sessions), and a UUID is canonically
+    case-insensitive -- a case mismatch between the two must not silently
+    drop an author's paste block, which a case-sensitive dict lookup would
+    do without any error or warning."""
     de = data.get("domain_entity") or data.get("junction") or {}
     impls = de.get("implementations") or {}
+    impls_lower = {k.lower(): v for k, v in impls.items()}
 
     def replace(match):
-        kind = match.group(1)
-        blocks = impls.get(kind)
+        kind = match.group(1).lower()
+        blocks = impls_lower.get(kind)
         if not blocks:
             return ""
         return "\n\n".join(b.rstrip() for b in blocks) + "\n"

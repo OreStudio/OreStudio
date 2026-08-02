@@ -169,16 +169,12 @@ void CrmDriverPairController::onShowHistory(const refdata::domain::crm_driver_pa
     showHistoryWindow(pair);
 }
 
-void CrmDriverPairController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM driver pair";
-
-    auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
+void CrmDriverPairController::wireDetailDialogCommon(CrmDriverPairDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CrmDriverPairDetailDialog::statusMessage,
@@ -188,6 +184,15 @@ void CrmDriverPairController::showAddWindow() {
             &CrmDriverPairDetailDialog::errorMessage,
             this,
             &CrmDriverPairController::errorMessage);
+}
+
+void CrmDriverPairController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM driver pair";
+
+    auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CrmDriverPairDetailDialog::pairSaved,
             this,
@@ -225,22 +230,10 @@ void CrmDriverPairController::showDetailWindow(const refdata::domain::crm_driver
                                << boost::uuids::to_string(pair.id);
 
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setPair(pair);
 
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::statusMessage,
-            this,
-            &CrmDriverPairController::statusMessage);
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::errorMessage,
-            this,
-            &CrmDriverPairController::errorMessage);
     connect(detailDialog,
             &CrmDriverPairDetailDialog::pairSaved,
             this,
@@ -384,30 +377,9 @@ void CrmDriverPairController::onOpenVersion(const refdata::domain::crm_driver_pa
     }
 
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setPair(pair);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CrmDriverPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CrmDriverPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -526,25 +498,13 @@ void CrmDriverPairController::onRevertVersion(const refdata::domain::crm_driver_
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CrmDriverPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_pair = pair;
     reverted_pair.version = 0;
     detailDialog->setPair(reverted_pair);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::statusMessage,
-            this,
-            &CrmDriverPairController::statusMessage);
-    connect(detailDialog,
-            &CrmDriverPairDetailDialog::errorMessage,
-            this,
-            &CrmDriverPairController::errorMessage);
     connect(detailDialog,
             &CrmDriverPairDetailDialog::pairSaved,
             this,

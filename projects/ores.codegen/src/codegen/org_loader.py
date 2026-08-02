@@ -1855,7 +1855,11 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     for k in ("name", "full_name", "brief", "description"):
         if k in fm:
             c[k] = fm[k]
-    # Component kind (flat | api | core | service) selects the scaffolding
-    # variant set via the graph's kind discriminator; defaults to "flat".
+    # Component kind (flat | api | core | service | composite) selects the
+    # scaffolding variant set via the graph's kind discriminator; defaults
+    # to "flat". "composite" is a pure aggregator with sub-components of
+    # its own and no code -- no archetype in ores.cpp.component/
+    # ores.cmake.component declares it, so a composite component
+    # generates nothing from either facet by design.
     c["kind"] = fm.get("component_kind", "flat")
     return {"component": c}

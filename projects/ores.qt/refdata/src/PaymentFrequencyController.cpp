@@ -168,16 +168,13 @@ void PaymentFrequencyController::onShowHistory(
     showHistoryWindow(QString::fromStdString(payment_frequency_.code));
 }
 
-void PaymentFrequencyController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new payment frequency";
-
-    auto* detailDialog = new PaymentFrequencyDetailDialog(mainWindow_);
+void PaymentFrequencyController::wireDetailDialogCommon(
+    PaymentFrequencyDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PaymentFrequencyDetailDialog::statusMessage,
@@ -187,6 +184,15 @@ void PaymentFrequencyController::showAddWindow() {
             &PaymentFrequencyDetailDialog::errorMessage,
             this,
             &PaymentFrequencyController::errorMessage);
+}
+
+void PaymentFrequencyController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new payment frequency";
+
+    auto* detailDialog = new PaymentFrequencyDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PaymentFrequencyDetailDialog::payment_frequency_Saved,
             this,
@@ -224,22 +230,10 @@ void PaymentFrequencyController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << payment_frequency_.code;
 
     auto* detailDialog = new PaymentFrequencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setFrequency(payment_frequency_);
 
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::statusMessage,
-            this,
-            &PaymentFrequencyController::statusMessage);
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::errorMessage,
-            this,
-            &PaymentFrequencyController::errorMessage);
     connect(detailDialog,
             &PaymentFrequencyDetailDialog::payment_frequency_Saved,
             this,
@@ -379,30 +373,9 @@ void PaymentFrequencyController::onOpenVersion(
     }
 
     auto* detailDialog = new PaymentFrequencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setFrequency(payment_frequency_);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PaymentFrequencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PaymentFrequencyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -524,25 +497,13 @@ void PaymentFrequencyController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PaymentFrequencyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_payment_frequency_ = payment_frequency_;
     reverted_payment_frequency_.version = 0;
     detailDialog->setFrequency(reverted_payment_frequency_);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::statusMessage,
-            this,
-            &PaymentFrequencyController::statusMessage);
-    connect(detailDialog,
-            &PaymentFrequencyDetailDialog::errorMessage,
-            this,
-            &PaymentFrequencyController::errorMessage);
     connect(detailDialog,
             &PaymentFrequencyDetailDialog::payment_frequency_Saved,
             this,

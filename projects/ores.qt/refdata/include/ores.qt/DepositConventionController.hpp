@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class DepositConventionMdiWindow;
+class DepositConventionDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -88,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::deposit_convention& dc);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * DepositConventionDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(DepositConventionDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

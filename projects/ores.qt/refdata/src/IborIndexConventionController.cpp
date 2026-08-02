@@ -165,15 +165,12 @@ void IborIndexConventionController::onShowHistory(
     showHistoryWindow(QString::fromStdString(ic.id));
 }
 
-void IborIndexConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IBOR index convention";
-
-    auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+void IborIndexConventionController::wireDetailDialogCommon(
+    IborIndexConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &IborIndexConventionDetailDialog::statusMessage,
@@ -183,6 +180,15 @@ void IborIndexConventionController::showAddWindow() {
             &IborIndexConventionDetailDialog::errorMessage,
             this,
             &IborIndexConventionController::errorMessage);
+}
+
+void IborIndexConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IBOR index convention";
+
+    auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &IborIndexConventionDetailDialog::icSaved,
             this,
@@ -220,21 +226,10 @@ void IborIndexConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << ic.id;
 
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(ic);
 
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::statusMessage,
-            this,
-            &IborIndexConventionController::statusMessage);
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::errorMessage,
-            this,
-            &IborIndexConventionController::errorMessage);
     connect(detailDialog,
             &IborIndexConventionDetailDialog::icSaved,
             this,
@@ -375,29 +370,9 @@ void IborIndexConventionController::onOpenVersion(const refdata::domain::ibor_in
     }
 
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(ic);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -519,24 +494,13 @@ void IborIndexConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_ic = ic;
     reverted_ic.version = 0;
     detailDialog->setConvention(reverted_ic);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::statusMessage,
-            this,
-            &IborIndexConventionController::statusMessage);
-    connect(detailDialog,
-            &IborIndexConventionDetailDialog::errorMessage,
-            this,
-            &IborIndexConventionController::errorMessage);
     connect(detailDialog,
             &IborIndexConventionDetailDialog::icSaved,
             this,

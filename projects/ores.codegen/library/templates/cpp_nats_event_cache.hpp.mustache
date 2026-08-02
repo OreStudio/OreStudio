@@ -8,6 +8,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
@@ -26,7 +27,6 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <functional>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -112,7 +112,8 @@ public:
     [[nodiscard]] std::string load(const std::string& tenant_id) {
         using namespace ores::logging;
         try {
-            const auto req_json = rfl::json::write(
+            const auto& codec = ores::nats::default_wire_codec();
+            const auto bytes = codec.encode(
                 ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request{
                     .tenant_id = tenant_id});
             std::unordered_map<std::string, std::string> headers;
@@ -121,10 +122,10 @@ public:
                     std::string(ores::nats::headers::bearer_prefix) + token_provider_(false);
             const auto reply = nats_.request_sync(
                 ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_request::nats_subject,
-                ores::nats::as_bytes(req_json), std::move(headers));
+                bytes, std::move(headers));
             auto resp =
-                rfl::json::read<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
-                    ores::nats::as_string_view(reply.data));
+                codec.decode<ores::{{component}}::messaging::read_{{entity_plural}}_for_cache_response>(
+                    reply.data);
             if (!resp || !resp->success) {
                 const auto msg = resp ? resp->message : "parse error (malformed or error reply)";
                 BOOST_LOG_SEV({{entity_singular}}_cache_lg(), warn)

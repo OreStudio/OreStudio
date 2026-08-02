@@ -164,15 +164,12 @@ void CalendarExceptionController::onShowHistory(const refdata::domain::calendar_
     showHistoryWindow(exc);
 }
 
-void CalendarExceptionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar exception";
-
-    auto* detailDialog = new CalendarExceptionDetailDialog(mainWindow_);
+void CalendarExceptionController::wireDetailDialogCommon(
+    CalendarExceptionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CalendarExceptionDetailDialog::statusMessage,
@@ -182,6 +179,15 @@ void CalendarExceptionController::showAddWindow() {
             &CalendarExceptionDetailDialog::errorMessage,
             this,
             &CalendarExceptionController::errorMessage);
+}
+
+void CalendarExceptionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar exception";
+
+    auto* detailDialog = new CalendarExceptionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CalendarExceptionDetailDialog::excSaved,
             this,
@@ -218,21 +224,10 @@ void CalendarExceptionController::showDetailWindow(const refdata::domain::calend
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << boost::uuids::to_string(exc.id);
 
     auto* detailDialog = new CalendarExceptionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setException(exc);
 
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::statusMessage,
-            this,
-            &CalendarExceptionController::statusMessage);
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::errorMessage,
-            this,
-            &CalendarExceptionController::errorMessage);
     connect(detailDialog,
             &CalendarExceptionDetailDialog::excSaved,
             this,
@@ -377,29 +372,9 @@ void CalendarExceptionController::onOpenVersion(const refdata::domain::calendar_
     }
 
     auto* detailDialog = new CalendarExceptionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setException(exc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CalendarExceptionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CalendarExceptionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -519,24 +494,13 @@ void CalendarExceptionController::onRevertVersion(const refdata::domain::calenda
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CalendarExceptionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_exc = exc;
     reverted_exc.version = 0;
     detailDialog->setException(reverted_exc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::statusMessage,
-            this,
-            &CalendarExceptionController::statusMessage);
-    connect(detailDialog,
-            &CalendarExceptionDetailDialog::errorMessage,
-            this,
-            &CalendarExceptionController::errorMessage);
     connect(detailDialog,
             &CalendarExceptionDetailDialog::excSaved,
             this,

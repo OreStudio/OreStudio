@@ -171,16 +171,13 @@ void CrmTopologyConfigController::onShowHistory(
     showHistoryWindow(config);
 }
 
-void CrmTopologyConfigController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM topology config";
-
-    auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
+void CrmTopologyConfigController::wireDetailDialogCommon(
+    CrmTopologyConfigDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CrmTopologyConfigDetailDialog::statusMessage,
@@ -190,6 +187,15 @@ void CrmTopologyConfigController::showAddWindow() {
             &CrmTopologyConfigDetailDialog::errorMessage,
             this,
             &CrmTopologyConfigController::errorMessage);
+}
+
+void CrmTopologyConfigController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM topology config";
+
+    auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CrmTopologyConfigDetailDialog::configSaved,
             this,
@@ -227,22 +233,10 @@ void CrmTopologyConfigController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << config.name;
 
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConfig(config);
 
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::statusMessage,
-            this,
-            &CrmTopologyConfigController::statusMessage);
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::errorMessage,
-            this,
-            &CrmTopologyConfigController::errorMessage);
     connect(detailDialog,
             &CrmTopologyConfigDetailDialog::configSaved,
             this,
@@ -384,30 +378,9 @@ void CrmTopologyConfigController::onOpenVersion(const refdata::domain::crm_topol
     }
 
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConfig(config);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CrmTopologyConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CrmTopologyConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -528,25 +501,13 @@ void CrmTopologyConfigController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CrmTopologyConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_config = config;
     reverted_config.version = 0;
     detailDialog->setConfig(reverted_config);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::statusMessage,
-            this,
-            &CrmTopologyConfigController::statusMessage);
-    connect(detailDialog,
-            &CrmTopologyConfigDetailDialog::errorMessage,
-            this,
-            &CrmTopologyConfigController::errorMessage);
     connect(detailDialog,
             &CrmTopologyConfigDetailDialog::configSaved,
             this,

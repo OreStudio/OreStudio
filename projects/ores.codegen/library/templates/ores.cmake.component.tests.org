@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/{component_dir}/tests/CMakeLists.txt
 #+facet: ores.cmake.component
+#+component_kind: flat api core service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08

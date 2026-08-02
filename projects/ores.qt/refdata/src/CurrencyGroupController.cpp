@@ -163,15 +163,11 @@ void CurrencyGroupController::onShowHistory(const refdata::domain::currency_grou
     showHistoryWindow(QString::fromStdString(group.code));
 }
 
-void CurrencyGroupController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency group";
-
-    auto* detailDialog = new CurrencyGroupDetailDialog(mainWindow_);
+void CurrencyGroupController::wireDetailDialogCommon(CurrencyGroupDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyGroupDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void CurrencyGroupController::showAddWindow() {
             &CurrencyGroupDetailDialog::errorMessage,
             this,
             &CurrencyGroupController::errorMessage);
+}
+
+void CurrencyGroupController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency group";
+
+    auto* detailDialog = new CurrencyGroupDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurrencyGroupDetailDialog::groupSaved,
             this,
@@ -217,21 +222,10 @@ void CurrencyGroupController::showDetailWindow(const refdata::domain::currency_g
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << group.code;
 
     auto* detailDialog = new CurrencyGroupDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setGroup(group);
 
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::statusMessage,
-            this,
-            &CurrencyGroupController::statusMessage);
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::errorMessage,
-            this,
-            &CurrencyGroupController::errorMessage);
     connect(detailDialog,
             &CurrencyGroupDetailDialog::groupSaved,
             this,
@@ -371,29 +365,9 @@ void CurrencyGroupController::onOpenVersion(const refdata::domain::currency_grou
     }
 
     auto* detailDialog = new CurrencyGroupDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setGroup(group);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyGroupController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyGroupController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void CurrencyGroupController::onRevertVersion(const refdata::domain::currency_gr
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyGroupDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_group = group;
     reverted_group.version = 0;
     detailDialog->setGroup(reverted_group);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::statusMessage,
-            this,
-            &CurrencyGroupController::statusMessage);
-    connect(detailDialog,
-            &CurrencyGroupDetailDialog::errorMessage,
-            this,
-            &CurrencyGroupController::errorMessage);
     connect(detailDialog,
             &CurrencyGroupDetailDialog::groupSaved,
             this,

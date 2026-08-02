@@ -168,16 +168,12 @@ void BusinessCentreController::onShowHistory(
     showHistoryWindow(QString::fromStdString(business_centre.code));
 }
 
-void BusinessCentreController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business centre";
-
-    auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+void BusinessCentreController::wireDetailDialogCommon(BusinessCentreDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BusinessCentreDetailDialog::statusMessage,
@@ -187,6 +183,15 @@ void BusinessCentreController::showAddWindow() {
             &BusinessCentreDetailDialog::errorMessage,
             this,
             &BusinessCentreController::errorMessage);
+}
+
+void BusinessCentreController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business centre";
+
+    auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BusinessCentreDetailDialog::business_centreSaved,
             this,
@@ -224,22 +229,10 @@ void BusinessCentreController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << business_centre.code;
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCentre(business_centre);
 
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::statusMessage,
-            this,
-            &BusinessCentreController::statusMessage);
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::errorMessage,
-            this,
-            &BusinessCentreController::errorMessage);
     connect(detailDialog,
             &BusinessCentreDetailDialog::business_centreSaved,
             this,
@@ -379,30 +372,9 @@ void BusinessCentreController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCentre(business_centre);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -523,25 +495,13 @@ void BusinessCentreController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_business_centre = business_centre;
     reverted_business_centre.version = 0;
     detailDialog->setCentre(reverted_business_centre);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::statusMessage,
-            this,
-            &BusinessCentreController::statusMessage);
-    connect(detailDialog,
-            &BusinessCentreDetailDialog::errorMessage,
-            this,
-            &BusinessCentreController::errorMessage);
     connect(detailDialog,
             &BusinessCentreDetailDialog::business_centreSaved,
             this,

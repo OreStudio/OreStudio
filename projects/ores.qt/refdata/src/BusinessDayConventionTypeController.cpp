@@ -166,15 +166,12 @@ void BusinessDayConventionTypeController::onShowHistory(
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void BusinessDayConventionTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business day convention type";
-
-    auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+void BusinessDayConventionTypeController::wireDetailDialogCommon(
+    BusinessDayConventionTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BusinessDayConventionTypeDetailDialog::statusMessage,
@@ -184,6 +181,15 @@ void BusinessDayConventionTypeController::showAddWindow() {
             &BusinessDayConventionTypeDetailDialog::errorMessage,
             this,
             &BusinessDayConventionTypeController::errorMessage);
+}
+
+void BusinessDayConventionTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business day convention type";
+
+    auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BusinessDayConventionTypeDetailDialog::typeSaved,
             this,
@@ -222,21 +228,10 @@ void BusinessDayConventionTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this,
-            &BusinessDayConventionTypeController::statusMessage);
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this,
-            &BusinessDayConventionTypeController::errorMessage);
     connect(detailDialog,
             &BusinessDayConventionTypeDetailDialog::typeSaved,
             this,
@@ -378,29 +373,9 @@ void BusinessDayConventionTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -526,24 +501,13 @@ void BusinessDayConventionTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessDayConventionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this,
-            &BusinessDayConventionTypeController::statusMessage);
-    connect(detailDialog,
-            &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this,
-            &BusinessDayConventionTypeController::errorMessage);
     connect(detailDialog,
             &BusinessDayConventionTypeDetailDialog::typeSaved,
             this,

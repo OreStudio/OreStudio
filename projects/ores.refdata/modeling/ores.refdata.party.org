@@ -25,6 +25,7 @@ organisation itself.
 :has_parent_id:         true
 :parent_id_column:      parent_party_id
 :hierarchy_name_field:  full_name
+:generate_touch_function: true
 :read_for_cache:        true
 :profile:   self-referencing-hierarchy
 :END:
@@ -53,7 +54,6 @@ Surrogate key for the party record.
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:natural_key: true
 :END:
 
 Full legal name of the party.
@@ -78,9 +78,6 @@ A brief mnemonic code used in trading systems.
 #+begin_src cpp :name generator
 std::string(faker::string::alpha(6))
 #+end_src
-
-Regular columns. Inserted as struct fields in C++ and as table columns in
-SQL.
 
 ** codename
 :PROPERTIES:
@@ -218,28 +215,14 @@ Optional reference to a logo/branding image in the images table.
 std::nullopt
 #+end_src
 
-* SQL
+* Foreign keys
 
-Everything below is consumed by the SQL codegen pipeline only.
-
-** Flags
+** parent_party_id
 :PROPERTIES:
-:tablename: ores_refdata_parties_tbl
+:table:         ores_refdata_parties_tbl
+:nullable:      true
+:error_message: Invalid parent_party_id: %. No active party found with this id.
 :END:
-
-Note: party's SQL file cannot yet be safely regenerated wholesale from
-this model -- its insert trigger has hand-written codename generation
-and per-party queue provisioning with no codegen facet/paste-block
-coverage yet (see the =Bring party under codegen= task, BLOCKED). The
-=ores_refdata_parties_hierarchy_fn= function was hand-added to
-=refdata_parties_create.sql= to match exactly what the top-level
-=has_parent_id= flag would generate, so it becomes correct ground
-truth once party's SQL is migrated onto the unified template. The
-same applies to party's messaging layer (=party_protocol.hpp= and
-friends) -- it also has pre-existing, unrelated drift from the
-codegen template (see the =Party messaging layer has drifted from
-codegen= capture), so the hand-written =get_party_hierarchy_*=
-structs/methods are correct ground truth but not yet regenerable.
 
 ** image_id
 :PROPERTIES:
@@ -249,12 +232,105 @@ structs/methods are correct ground truth but not yet regenerable.
 :error_message: Invalid image_id: %. Image must exist.
 :END:
 
-Not regenerated into SQL (see the note above -- party's SQL stays
-hand-maintained); =refdata_parties_create.sql= was hand-edited to add
-this column and its insert-trigger soft-FK validation directly,
-matching what this facet would emit once party's SQL is migrated onto
-the unified template. Documented here so it becomes correct ground
-truth at that point.
+* Insert trigger
+** Validations
+
+| column               | validation_function                      |
+|-----------------------+-------------------------------------------|
+| party_category        | ores_refdata_validate_party_category_fn  |
+| party_type             | ores_refdata_validate_party_type_fn      |
+| status                 | ores_refdata_validate_party_status_fn    |
+| business_center_code   | ores_refdata_validate_business_centre_fn |
+
+* SQL
+
+Everything below is consumed by the SQL codegen pipeline only.
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_parties_tbl
+:END:
+
+** Checks
+
+| expression                                            |
+|--------------------------------------------------------|
+| length("codename") <= 32                                |
+| "codename" = '' or "codename" ~ '^[a-z][a-z_]+$'         |
+
+** Indexes
+
+| name        | columns          | unique | current_only | where_extra |
+|--------------+-------------------+--------+---------------+-------------|
+| full_name    | tenant_id, full_name | false | true         |             |
+| codename_uniq     | codename          | true   | true          | codename <> '' |
+| root_party_uniq   | tenant_id         | true   | false         | parent_party_id is null and party_category <> 'System' and valid_to = ores_utility_infinity_timestamp_fn() |
+| system_party_uniq | tenant_id         | true   | false         | party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn() |
+
+** Codename sequence
+:PROPERTIES:
+:END:
+
+Sequence used to generate a unique base-26 suffix for auto-generated
+codenames. =nextval()= is outside MVCC: it advances even within a
+multi-row INSERT statement, so every row in a batch gets a different
+suffix, avoiding duplicate-key collisions that a NOT EXISTS loop
+cannot prevent due to the statement-level snapshot in READ COMMITTED.
+
+#+begin_src sql :name extra_ddl :implements 92432102-D405-46FC-911A-111DFED27358
+-- Sequence used to generate a unique base-26 suffix for auto-generated
+-- codenames.  nextval() is outside MVCC: it advances even within a
+-- multi-row INSERT statement, so every row in a batch gets a different
+-- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
+-- prevent due to the statement-level snapshot in READ COMMITTED.
+create sequence if not exists ores_refdata_party_codename_seq;
+#+end_src
+
+#+begin_src sql :name extra_drop_ddl :implements 0A8B6774-1112-4C01-997B-8D1AA708C955
+drop sequence if exists ores_refdata_party_codename_seq;
+#+end_src
+
+** Codename immutability (update path)
+
+Codename is immutable: restore it from the active row on every update,
+rather than letting a client-supplied value silently overwrite it.
+
+#+begin_src sql :name codename_restore_on_update :implements 59F4313F-B119-44D8-8E4E-05AE8B18DE95
+        -- Codename is immutable: restore from active row on every update.
+        select codename into NEW.codename
+        from "ores_refdata_parties_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+** Codename generation and queue provisioning (insert path)
+
+Auto-generates =codename= (whimsical name + a globally-unique base-26
+sequence suffix) when the client leaves it blank, validates the final
+format, and provisions the per-party report-event queue -- all only on
+first insert, since codename is immutable thereafter (see above).
+
+#+begin_src sql :name codename_generate_and_provision :implements 8697C751-ECD5-4501-AF06-77AD9A8985AB
+        -- Auto-generate codename using whimsical name + sequence suffix.
+        -- The sequence suffix is outside MVCC (nextval always advances),
+        -- so every row in a multi-row INSERT gets a distinct suffix, making
+        -- the codename globally unique without relying on a NOT EXISTS
+        -- check that cannot see sibling rows in the same statement.
+        if NEW.codename = '' or NEW.codename is null then
+            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
+                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
+        end if;
+        -- Validate the final codename.
+        if NEW.codename !~ '^[a-z][a-z_]+$' then
+            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
+                using errcode = '23514';
+        end if;
+        -- Provision the per-party report event queue.
+        perform ores_mq_queues_create_fn(
+            NEW.tenant_id, NEW.id, 'party', 'task',
+            'report_events', 'Per-party report scheduling queue', current_user);
+#+end_src
 
 * C++
 

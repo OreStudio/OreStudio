@@ -163,15 +163,11 @@ void OisConventionController::onShowHistory(const refdata::domain::ois_conventio
     showHistoryWindow(QString::fromStdString(oc.id));
 }
 
-void OisConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new OIS convention";
-
-    auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+void OisConventionController::wireDetailDialogCommon(OisConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &OisConventionDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void OisConventionController::showAddWindow() {
             &OisConventionDetailDialog::errorMessage,
             this,
             &OisConventionController::errorMessage);
+}
+
+void OisConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new OIS convention";
+
+    auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &OisConventionDetailDialog::ocSaved,
             this,
@@ -217,21 +222,10 @@ void OisConventionController::showDetailWindow(const refdata::domain::ois_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << oc.id;
 
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(oc);
 
-    connect(detailDialog,
-            &OisConventionDetailDialog::statusMessage,
-            this,
-            &OisConventionController::statusMessage);
-    connect(detailDialog,
-            &OisConventionDetailDialog::errorMessage,
-            this,
-            &OisConventionController::errorMessage);
     connect(detailDialog,
             &OisConventionDetailDialog::ocSaved,
             this,
@@ -371,29 +365,9 @@ void OisConventionController::onOpenVersion(const refdata::domain::ois_conventio
     }
 
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(oc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &OisConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<OisConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &OisConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<OisConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void OisConventionController::onRevertVersion(const refdata::domain::ois_convent
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_oc = oc;
     reverted_oc.version = 0;
     detailDialog->setConvention(reverted_oc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &OisConventionDetailDialog::statusMessage,
-            this,
-            &OisConventionController::statusMessage);
-    connect(detailDialog,
-            &OisConventionDetailDialog::errorMessage,
-            this,
-            &OisConventionController::errorMessage);
     connect(detailDialog,
             &OisConventionDetailDialog::ocSaved,
             this,

@@ -175,11 +175,19 @@ void CurrencyPairConventionDetailDialog::populatePairCodeCombo() {
             combo->clear();
             for (const auto& c : codes)
                 combo->addItem(QString::fromStdString(c));
-            // fallback_selection is evaluated here (fetch-completion time), not
-            // at populate-call time, since setConvention() may run before or
-            // after setClientManager() triggers this fetch.
+            // fallback is evaluated here (fetch-completion time), not at
+            // populate-call time, since setConvention() may run before or
+            // after setClientManager() triggers this fetch. Preferred over
+            // previous: setConvention() always runs synchronously before
+            // this dialog is shown to the user, well before this async
+            // fetch can complete, so by the time this callback fires the
+            // model's own field value is authoritative -- previous (the
+            // combo's transient text, empty until this first population)
+            // would otherwise permanently blank the selection on every
+            // dialog open, racing this fetch against every
+            // setConvention() call that happened first.
             const QString fallback = QString::fromStdString(self->convention_.pair_code);
-            const QString to_select = !previous.isEmpty() ? previous : fallback;
+            const QString to_select = !fallback.isEmpty() ? fallback : previous;
             if (!to_select.isEmpty()) {
                 const int idx = combo->findText(to_select);
                 if (idx >= 0)

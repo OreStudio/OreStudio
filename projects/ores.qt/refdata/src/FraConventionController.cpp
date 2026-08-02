@@ -163,15 +163,11 @@ void FraConventionController::onShowHistory(const refdata::domain::fra_conventio
     showHistoryWindow(QString::fromStdString(fc.id));
 }
 
-void FraConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new FRA convention";
-
-    auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+void FraConventionController::wireDetailDialogCommon(FraConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &FraConventionDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void FraConventionController::showAddWindow() {
             &FraConventionDetailDialog::errorMessage,
             this,
             &FraConventionController::errorMessage);
+}
+
+void FraConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new FRA convention";
+
+    auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &FraConventionDetailDialog::fcSaved,
             this,
@@ -217,21 +222,10 @@ void FraConventionController::showDetailWindow(const refdata::domain::fra_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << fc.id;
 
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(fc);
 
-    connect(detailDialog,
-            &FraConventionDetailDialog::statusMessage,
-            this,
-            &FraConventionController::statusMessage);
-    connect(detailDialog,
-            &FraConventionDetailDialog::errorMessage,
-            this,
-            &FraConventionController::errorMessage);
     connect(detailDialog,
             &FraConventionDetailDialog::fcSaved,
             this,
@@ -371,29 +365,9 @@ void FraConventionController::onOpenVersion(const refdata::domain::fra_conventio
     }
 
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(fc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &FraConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<FraConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &FraConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<FraConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void FraConventionController::onRevertVersion(const refdata::domain::fra_convent
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FraConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_fc = fc;
     reverted_fc.version = 0;
     detailDialog->setConvention(reverted_fc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &FraConventionDetailDialog::statusMessage,
-            this,
-            &FraConventionController::statusMessage);
-    connect(detailDialog,
-            &FraConventionDetailDialog::errorMessage,
-            this,
-            &FraConventionController::errorMessage);
     connect(detailDialog,
             &FraConventionDetailDialog::fcSaved,
             this,

@@ -168,15 +168,12 @@ void CounterpartyIdentifierController::onShowHistory(
     showHistoryWindow(counterpartyIdentifier);
 }
 
-void CounterpartyIdentifierController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty identifier";
-
-    auto* detailDialog = new CounterpartyIdentifierDetailDialog(mainWindow_);
+void CounterpartyIdentifierController::wireDetailDialogCommon(
+    CounterpartyIdentifierDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CounterpartyIdentifierDetailDialog::statusMessage,
@@ -186,6 +183,15 @@ void CounterpartyIdentifierController::showAddWindow() {
             &CounterpartyIdentifierDetailDialog::errorMessage,
             this,
             &CounterpartyIdentifierController::errorMessage);
+}
+
+void CounterpartyIdentifierController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty identifier";
+
+    auto* detailDialog = new CounterpartyIdentifierDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved,
             this,
@@ -224,21 +230,10 @@ void CounterpartyIdentifierController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << counterpartyIdentifier.id_value;
 
     auto* detailDialog = new CounterpartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setIdentifier(counterpartyIdentifier);
 
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::statusMessage,
-            this,
-            &CounterpartyIdentifierController::statusMessage);
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::errorMessage,
-            this,
-            &CounterpartyIdentifierController::errorMessage);
     connect(detailDialog,
             &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved,
             this,
@@ -387,29 +382,9 @@ void CounterpartyIdentifierController::onOpenVersion(
     }
 
     auto* detailDialog = new CounterpartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setIdentifier(counterpartyIdentifier);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CounterpartyIdentifierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CounterpartyIdentifierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -533,24 +508,13 @@ void CounterpartyIdentifierController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_counterpartyIdentifier = counterpartyIdentifier;
     reverted_counterpartyIdentifier.version = 0;
     detailDialog->setIdentifier(reverted_counterpartyIdentifier);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::statusMessage,
-            this,
-            &CounterpartyIdentifierController::statusMessage);
-    connect(detailDialog,
-            &CounterpartyIdentifierDetailDialog::errorMessage,
-            this,
-            &CounterpartyIdentifierController::errorMessage);
     connect(detailDialog,
             &CounterpartyIdentifierDetailDialog::counterpartyIdentifierSaved,
             this,

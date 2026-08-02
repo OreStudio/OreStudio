@@ -19,6 +19,7 @@
  */
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/FloatingIndexTypeDetailDialog.hpp"
 #include "ores.qt/FloatingIndexTypeMdiWindow.hpp"
@@ -46,9 +47,11 @@ constexpr std::string_view type_event_name =
 FloatingIndexTypeController::FloatingIndexTypeController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
                                                          ClientManager* clientManager,
+                                                         ChangeReasonCache* changeReasonCache,
                                                          const QString& username,
                                                          QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -160,13 +163,12 @@ void FloatingIndexTypeController::onShowHistory(const refdata::domain::floating_
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void FloatingIndexTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new floating index type";
-
-    auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
+void FloatingIndexTypeController::wireDetailDialogCommon(
+    FloatingIndexTypeDetailDialog* detailDialog) {
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &FloatingIndexTypeDetailDialog::statusMessage,
@@ -176,6 +178,15 @@ void FloatingIndexTypeController::showAddWindow() {
             &FloatingIndexTypeDetailDialog::errorMessage,
             this,
             &FloatingIndexTypeController::errorMessage);
+}
+
+void FloatingIndexTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new floating index type";
+
+    auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &FloatingIndexTypeDetailDialog::typeSaved,
             this,
@@ -213,19 +224,10 @@ void FloatingIndexTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::statusMessage,
-            this,
-            &FloatingIndexTypeController::statusMessage);
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::errorMessage,
-            this,
-            &FloatingIndexTypeController::errorMessage);
     connect(detailDialog,
             &FloatingIndexTypeDetailDialog::typeSaved,
             this,
@@ -365,27 +367,9 @@ void FloatingIndexTypeController::onOpenVersion(const refdata::domain::floating_
     }
 
     auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -506,22 +490,13 @@ void FloatingIndexTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::statusMessage,
-            this,
-            &FloatingIndexTypeController::statusMessage);
-    connect(detailDialog,
-            &FloatingIndexTypeDetailDialog::errorMessage,
-            this,
-            &FloatingIndexTypeController::errorMessage);
     connect(detailDialog,
             &FloatingIndexTypeDetailDialog::typeSaved,
             this,

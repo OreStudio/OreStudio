@@ -178,16 +178,13 @@ void CounterpartyContactInformationController::onShowHistory(
     showHistoryWindow(counterpartyContactInformation);
 }
 
-void CounterpartyContactInformationController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty contact information";
-
-    auto* detailDialog = new CounterpartyContactInformationDetailDialog(mainWindow_);
+void CounterpartyContactInformationController::wireDetailDialogCommon(
+    CounterpartyContactInformationDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CounterpartyContactInformationDetailDialog::statusMessage,
@@ -197,6 +194,15 @@ void CounterpartyContactInformationController::showAddWindow() {
             &CounterpartyContactInformationDetailDialog::errorMessage,
             this,
             &CounterpartyContactInformationController::errorMessage);
+}
+
+void CounterpartyContactInformationController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new counterparty contact information";
+
+    auto* detailDialog = new CounterpartyContactInformationDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CounterpartyContactInformationDetailDialog::counterpartyContactInformationSaved,
             this,
@@ -236,22 +242,10 @@ void CounterpartyContactInformationController::showDetailWindow(
                                << counterpartyContactInformation.contact_type;
 
     auto* detailDialog = new CounterpartyContactInformationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setInformation(counterpartyContactInformation);
 
-    connect(detailDialog,
-            &CounterpartyContactInformationDetailDialog::statusMessage,
-            this,
-            &CounterpartyContactInformationController::statusMessage);
-    connect(detailDialog,
-            &CounterpartyContactInformationDetailDialog::errorMessage,
-            this,
-            &CounterpartyContactInformationController::errorMessage);
     connect(detailDialog,
             &CounterpartyContactInformationDetailDialog::counterpartyContactInformationSaved,
             this,
@@ -405,32 +399,9 @@ void CounterpartyContactInformationController::onOpenVersion(
     }
 
     auto* detailDialog = new CounterpartyContactInformationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setInformation(counterpartyContactInformation);
     detailDialog->setReadOnly(true);
-
-    connect(
-        detailDialog,
-        &CounterpartyContactInformationDetailDialog::statusMessage,
-        this,
-        [self = QPointer<CounterpartyContactInformationController>(this)](const QString& message) {
-            if (!self)
-                return;
-            emit self->statusMessage(message);
-        });
-    connect(
-        detailDialog,
-        &CounterpartyContactInformationDetailDialog::errorMessage,
-        this,
-        [self = QPointer<CounterpartyContactInformationController>(this)](const QString& message) {
-            if (!self)
-                return;
-            emit self->errorMessage(message);
-        });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -556,25 +527,13 @@ void CounterpartyContactInformationController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CounterpartyContactInformationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_counterpartyContactInformation = counterpartyContactInformation;
     reverted_counterpartyContactInformation.version = 0;
     detailDialog->setInformation(reverted_counterpartyContactInformation);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CounterpartyContactInformationDetailDialog::statusMessage,
-            this,
-            &CounterpartyContactInformationController::statusMessage);
-    connect(detailDialog,
-            &CounterpartyContactInformationDetailDialog::errorMessage,
-            this,
-            &CounterpartyContactInformationController::errorMessage);
     connect(
         detailDialog,
         &CounterpartyContactInformationDetailDialog::counterpartyContactInformationSaved,

@@ -43,7 +43,7 @@ generate_synthetic_business_unit_type(utility::generation::generation_context& c
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.coding_scheme_code = // no_generator_suffix: validated soft FK, a "-<idx>" suffix would never
-                           // match a real seeded coding scheme.
+        // match a real seeded coding scheme.
         std::string("ORES-ORG");
     r.code = std::string("TYPE") + std::to_string(idx) + "-" + std::to_string(idx);
     r.name = std::string(faker::word::noun()) + " Type";

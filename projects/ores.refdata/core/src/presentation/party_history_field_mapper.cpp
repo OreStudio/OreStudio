@@ -28,8 +28,8 @@ std::vector<ores::diff::domain::field_value> render_party_fields(const domain::p
     std::vector<field_value> fields;
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
-    fields.push_back({.name = "Full Name", .value = v.full_name});
     fields.push_back({.name = "Short Code", .value = v.short_code});
+    fields.push_back({.name = "Full Name", .value = v.full_name});
     fields.push_back({.name = "Codename", .value = v.codename});
     fields.push_back(
         {.name = "Transliterated Name", .value = v.transliterated_name.value_or(std::string{})});
@@ -40,6 +40,8 @@ std::vector<ores::diff::domain::field_value> render_party_fields(const domain::p
          .value = v.parent_party_id ? boost::uuids::to_string(*v.parent_party_id) : std::string{}});
     fields.push_back({.name = "Business Center Code", .value = v.business_center_code});
     fields.push_back({.name = "Status", .value = v.status});
+    fields.push_back({.name = "Image ID",
+                      .value = v.image_id ? boost::uuids::to_string(*v.image_id) : std::string{}});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
     fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});

@@ -34,7 +34,9 @@
 namespace ores::qt {
 
 class FloatingIndexTypeMdiWindow;
+class FloatingIndexTypeDetailDialog;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing floating index type windows and operations.
@@ -58,6 +60,7 @@ public:
     FloatingIndexTypeController(QMainWindow* mainWindow,
                                 QMdiArea* mdiArea,
                                 ClientManager* clientManager,
+                                ChangeReasonCache* changeReasonCache,
                                 const QString& username,
                                 QObject* parent = nullptr);
 
@@ -86,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::floating_index_type& type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * FloatingIndexTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(FloatingIndexTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**
@@ -102,6 +113,7 @@ private:
         std::function<void(
             std::expected<std::vector<refdata::domain::floating_index_type>, QString>)> callback);
 
+    ChangeReasonCache* changeReasonCache_;
     FloatingIndexTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

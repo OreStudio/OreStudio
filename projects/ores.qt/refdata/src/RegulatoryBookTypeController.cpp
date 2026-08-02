@@ -165,15 +165,12 @@ void RegulatoryBookTypeController::onShowHistory(
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void RegulatoryBookTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new regulatory book type";
-
-    auto* detailDialog = new RegulatoryBookTypeDetailDialog(mainWindow_);
+void RegulatoryBookTypeController::wireDetailDialogCommon(
+    RegulatoryBookTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &RegulatoryBookTypeDetailDialog::statusMessage,
@@ -183,6 +180,15 @@ void RegulatoryBookTypeController::showAddWindow() {
             &RegulatoryBookTypeDetailDialog::errorMessage,
             this,
             &RegulatoryBookTypeController::errorMessage);
+}
+
+void RegulatoryBookTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new regulatory book type";
+
+    auto* detailDialog = new RegulatoryBookTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &RegulatoryBookTypeDetailDialog::typeSaved,
             this,
@@ -220,21 +226,10 @@ void RegulatoryBookTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new RegulatoryBookTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::statusMessage,
-            this,
-            &RegulatoryBookTypeController::statusMessage);
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::errorMessage,
-            this,
-            &RegulatoryBookTypeController::errorMessage);
     connect(detailDialog,
             &RegulatoryBookTypeDetailDialog::typeSaved,
             this,
@@ -374,29 +369,9 @@ void RegulatoryBookTypeController::onOpenVersion(const refdata::domain::regulato
     }
 
     auto* detailDialog = new RegulatoryBookTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<RegulatoryBookTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<RegulatoryBookTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -518,24 +493,13 @@ void RegulatoryBookTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new RegulatoryBookTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::statusMessage,
-            this,
-            &RegulatoryBookTypeController::statusMessage);
-    connect(detailDialog,
-            &RegulatoryBookTypeDetailDialog::errorMessage,
-            this,
-            &RegulatoryBookTypeController::errorMessage);
     connect(detailDialog,
             &RegulatoryBookTypeDetailDialog::typeSaved,
             this,

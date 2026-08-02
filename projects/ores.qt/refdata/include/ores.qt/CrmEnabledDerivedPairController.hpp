@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class CrmEnabledDerivedPairMdiWindow;
+class CrmEnabledDerivedPairDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
@@ -93,6 +94,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::crm_enabled_derived_pair& pair);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * CrmEnabledDerivedPairDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(CrmEnabledDerivedPairDetailDialog* detailDialog);
     void showHistoryWindow(const refdata::domain::crm_enabled_derived_pair& pair);
 
     /**

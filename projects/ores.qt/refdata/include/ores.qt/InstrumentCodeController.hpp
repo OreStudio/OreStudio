@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class InstrumentCodeMdiWindow;
+class InstrumentCodeDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
@@ -91,6 +92,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::instrument_code& code_);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * InstrumentCodeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(InstrumentCodeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

@@ -159,15 +159,11 @@ void TenorUnitController::onShowHistory(const refdata::domain::tenor_unit& unit)
     showHistoryWindow(QString::fromStdString(unit.code));
 }
 
-void TenorUnitController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor unit";
-
-    auto* detailDialog = new TenorUnitDetailDialog(mainWindow_);
+void TenorUnitController::wireDetailDialogCommon(TenorUnitDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &TenorUnitDetailDialog::statusMessage,
@@ -177,6 +173,15 @@ void TenorUnitController::showAddWindow() {
             &TenorUnitDetailDialog::errorMessage,
             this,
             &TenorUnitController::errorMessage);
+}
+
+void TenorUnitController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor unit";
+
+    auto* detailDialog = new TenorUnitDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenorUnitDetailDialog::unitSaved,
             this,
@@ -213,21 +218,10 @@ void TenorUnitController::showDetailWindow(const refdata::domain::tenor_unit& un
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << unit.code;
 
     auto* detailDialog = new TenorUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setUnit(unit);
 
-    connect(detailDialog,
-            &TenorUnitDetailDialog::statusMessage,
-            this,
-            &TenorUnitController::statusMessage);
-    connect(detailDialog,
-            &TenorUnitDetailDialog::errorMessage,
-            this,
-            &TenorUnitController::errorMessage);
     connect(detailDialog,
             &TenorUnitDetailDialog::unitSaved,
             this,
@@ -366,29 +360,9 @@ void TenorUnitController::onOpenVersion(const refdata::domain::tenor_unit& unit,
     }
 
     auto* detailDialog = new TenorUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setUnit(unit);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenorUnitDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenorUnitController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenorUnitDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenorUnitController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -507,24 +481,13 @@ void TenorUnitController::onRevertVersion(const refdata::domain::tenor_unit& uni
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_unit = unit;
     reverted_unit.version = 0;
     detailDialog->setUnit(reverted_unit);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &TenorUnitDetailDialog::statusMessage,
-            this,
-            &TenorUnitController::statusMessage);
-    connect(detailDialog,
-            &TenorUnitDetailDialog::errorMessage,
-            this,
-            &TenorUnitController::errorMessage);
     connect(detailDialog,
             &TenorUnitDetailDialog::unitSaved,
             this,

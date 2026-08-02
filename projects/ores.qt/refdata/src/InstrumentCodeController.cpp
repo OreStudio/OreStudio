@@ -165,16 +165,12 @@ void InstrumentCodeController::onShowHistory(const refdata::domain::instrument_c
     showHistoryWindow(QString::fromStdString(code_.code));
 }
 
-void InstrumentCodeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new instrument code";
-
-    auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
+void InstrumentCodeController::wireDetailDialogCommon(InstrumentCodeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &InstrumentCodeDetailDialog::statusMessage,
@@ -184,6 +180,15 @@ void InstrumentCodeController::showAddWindow() {
             &InstrumentCodeDetailDialog::errorMessage,
             this,
             &InstrumentCodeController::errorMessage);
+}
+
+void InstrumentCodeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new instrument code";
+
+    auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &InstrumentCodeDetailDialog::code_Saved,
             this,
@@ -220,22 +225,10 @@ void InstrumentCodeController::showDetailWindow(const refdata::domain::instrumen
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << code_.code;
 
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCode(code_);
 
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::statusMessage,
-            this,
-            &InstrumentCodeController::statusMessage);
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::errorMessage,
-            this,
-            &InstrumentCodeController::errorMessage);
     connect(detailDialog,
             &InstrumentCodeDetailDialog::code_Saved,
             this,
@@ -375,30 +368,9 @@ void InstrumentCodeController::onOpenVersion(const refdata::domain::instrument_c
     }
 
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCode(code_);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<InstrumentCodeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<InstrumentCodeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -517,25 +489,13 @@ void InstrumentCodeController::onRevertVersion(const refdata::domain::instrument
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new InstrumentCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_code_ = code_;
     reverted_code_.version = 0;
     detailDialog->setCode(reverted_code_);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::statusMessage,
-            this,
-            &InstrumentCodeController::statusMessage);
-    connect(detailDialog,
-            &InstrumentCodeDetailDialog::errorMessage,
-            this,
-            &InstrumentCodeController::errorMessage);
     connect(detailDialog,
             &InstrumentCodeDetailDialog::code_Saved,
             this,

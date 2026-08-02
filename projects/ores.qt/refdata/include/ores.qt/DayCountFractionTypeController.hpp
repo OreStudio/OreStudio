@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class DayCountFractionTypeMdiWindow;
+class DayCountFractionTypeDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -88,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::day_count_fraction_type& type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * DayCountFractionTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(DayCountFractionTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

@@ -159,15 +159,11 @@ void CurveRoleController::onShowHistory(const refdata::domain::curve_role& role_
     showHistoryWindow(QString::fromStdString(role_.code));
 }
 
-void CurveRoleController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new curve role";
-
-    auto* detailDialog = new CurveRoleDetailDialog(mainWindow_);
+void CurveRoleController::wireDetailDialogCommon(CurveRoleDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurveRoleDetailDialog::statusMessage,
@@ -177,6 +173,15 @@ void CurveRoleController::showAddWindow() {
             &CurveRoleDetailDialog::errorMessage,
             this,
             &CurveRoleController::errorMessage);
+}
+
+void CurveRoleController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new curve role";
+
+    auto* detailDialog = new CurveRoleDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurveRoleDetailDialog::role_Saved,
             this,
@@ -213,21 +218,10 @@ void CurveRoleController::showDetailWindow(const refdata::domain::curve_role& ro
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << role_.code;
 
     auto* detailDialog = new CurveRoleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setRole(role_);
 
-    connect(detailDialog,
-            &CurveRoleDetailDialog::statusMessage,
-            this,
-            &CurveRoleController::statusMessage);
-    connect(detailDialog,
-            &CurveRoleDetailDialog::errorMessage,
-            this,
-            &CurveRoleController::errorMessage);
     connect(detailDialog,
             &CurveRoleDetailDialog::role_Saved,
             this,
@@ -366,29 +360,9 @@ void CurveRoleController::onOpenVersion(const refdata::domain::curve_role& role_
     }
 
     auto* detailDialog = new CurveRoleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setRole(role_);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CurveRoleDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurveRoleController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurveRoleDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurveRoleController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -507,24 +481,13 @@ void CurveRoleController::onRevertVersion(const refdata::domain::curve_role& rol
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurveRoleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_role_ = role_;
     reverted_role_.version = 0;
     detailDialog->setRole(reverted_role_);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurveRoleDetailDialog::statusMessage,
-            this,
-            &CurveRoleController::statusMessage);
-    connect(detailDialog,
-            &CurveRoleDetailDialog::errorMessage,
-            this,
-            &CurveRoleController::errorMessage);
     connect(detailDialog,
             &CurveRoleDetailDialog::role_Saved,
             this,

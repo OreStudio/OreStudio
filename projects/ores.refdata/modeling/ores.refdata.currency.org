@@ -10,7 +10,6 @@
 #+entity_singular: currency
 #+entity_plural: currencies
 #+entity_title: Currency
-#+has_tenant_id: true
 #+coding_scheme: nullable
 #+image_id: false
 #+created: 2026-06-26
@@ -25,7 +24,7 @@ rounding, and display formatting across the system.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   fully-featured-lookup
 :END:
 
 * Columns
@@ -343,9 +342,7 @@ drop function if exists ores_refdata_validate_currency_fn;
 :collection_name:             currencies
 :item_var:                    currency
 :key_field:                   iso_code
-:has_uuid_primary_key:        false
 :has_pagination:              true
-:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_currencies_request
 :get_response_class:          refdata::messaging::get_currencies_response
 :get_message_type:            get_currencies_request
@@ -369,7 +366,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 :qt_settings_version:         3
 :window_title:                Currencies
 :icon:                        Currency
-:has_csv_xml_io:              true
 :csv_export_include:          ores.refdata.api/csv/exporter.hpp
 :csv_export_class:            refdata::csv::exporter
 :csv_export_method:           export_currency_config
@@ -380,7 +376,6 @@ drop function if exists ores_refdata_validate_currency_fn;
 :xml_import_class:            ore::xml::importer
 :xml_import_method:           import_currency_config
 :xml_validate_method:         validate_currency
-:has_version_navigation:      true
 :changed_event_class:         refdata::eventing::currency_changed_event
 :changed_event_include:       ores.refdata.api/eventing/currency_changed_event.hpp
 :END:

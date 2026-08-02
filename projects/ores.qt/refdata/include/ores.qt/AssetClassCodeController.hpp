@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class AssetClassCodeMdiWindow;
+class AssetClassCodeDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -89,6 +90,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::asset_class_code& class_);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * AssetClassCodeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(AssetClassCodeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

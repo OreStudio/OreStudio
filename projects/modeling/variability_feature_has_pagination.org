@@ -33,6 +33,7 @@ None — purely a Qt behavioural toggle, no column or struct field.
 * Used by
 
 - [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]]
+- [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]]
 
 * See also
 

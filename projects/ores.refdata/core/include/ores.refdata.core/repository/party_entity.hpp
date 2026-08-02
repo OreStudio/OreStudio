@@ -41,11 +41,9 @@ struct party_entity {
     std::string tenant_id;
     int version = 0;
 
-    std::string full_name;
-
-
     std::string short_code;
 
+    std::string full_name;
     std::string codename;
     std::optional<std::string> transliterated_name;
     std::string party_category = "Operational";

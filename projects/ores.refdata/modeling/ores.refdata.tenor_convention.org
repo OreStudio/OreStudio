@@ -39,7 +39,7 @@ not here.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -153,15 +153,12 @@ std::string("ANCHOR_OFFSET")
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor_convention.hpp
 :domain_class:           refdata::domain::tenor_convention
 :protocol_include:       ores.refdata.api/messaging/tenor_convention_protocol.hpp
 :collection_name:        conventions
 :item_var:               convention
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenor_conventions_request
 :get_response_class:     refdata::messaging::get_tenor_conventions_response
 :get_message_type:       get_tenor_conventions_request

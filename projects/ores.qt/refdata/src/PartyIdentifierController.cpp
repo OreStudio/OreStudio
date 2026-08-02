@@ -167,15 +167,11 @@ void PartyIdentifierController::onShowHistory(
     showHistoryWindow(partyIdentifier);
 }
 
-void PartyIdentifierController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party identifier";
-
-    auto* detailDialog = new PartyIdentifierDetailDialog(mainWindow_);
+void PartyIdentifierController::wireDetailDialogCommon(PartyIdentifierDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PartyIdentifierDetailDialog::statusMessage,
@@ -185,6 +181,15 @@ void PartyIdentifierController::showAddWindow() {
             &PartyIdentifierDetailDialog::errorMessage,
             this,
             &PartyIdentifierController::errorMessage);
+}
+
+void PartyIdentifierController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party identifier";
+
+    auto* detailDialog = new PartyIdentifierDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PartyIdentifierDetailDialog::partyIdentifierSaved,
             this,
@@ -222,21 +227,10 @@ void PartyIdentifierController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << partyIdentifier.id_value;
 
     auto* detailDialog = new PartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setIdentifier(partyIdentifier);
 
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::statusMessage,
-            this,
-            &PartyIdentifierController::statusMessage);
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::errorMessage,
-            this,
-            &PartyIdentifierController::errorMessage);
     connect(detailDialog,
             &PartyIdentifierDetailDialog::partyIdentifierSaved,
             this,
@@ -380,29 +374,9 @@ void PartyIdentifierController::onOpenVersion(
     }
 
     auto* detailDialog = new PartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setIdentifier(partyIdentifier);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PartyIdentifierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PartyIdentifierController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -523,24 +497,13 @@ void PartyIdentifierController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyIdentifierDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_partyIdentifier = partyIdentifier;
     reverted_partyIdentifier.version = 0;
     detailDialog->setIdentifier(reverted_partyIdentifier);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::statusMessage,
-            this,
-            &PartyIdentifierController::statusMessage);
-    connect(detailDialog,
-            &PartyIdentifierDetailDialog::errorMessage,
-            this,
-            &PartyIdentifierController::errorMessage);
     connect(detailDialog,
             &PartyIdentifierDetailDialog::partyIdentifierSaved,
             this,

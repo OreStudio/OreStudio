@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class BusinessCentreMdiWindow;
+class BusinessCentreDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -90,6 +91,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::business_centre& business_centre);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * BusinessCentreDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(BusinessCentreDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

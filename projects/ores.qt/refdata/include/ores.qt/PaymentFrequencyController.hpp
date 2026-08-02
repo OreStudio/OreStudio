@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class PaymentFrequencyMdiWindow;
+class PaymentFrequencyDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
@@ -92,6 +93,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::payment_frequency& payment_frequency_);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * PaymentFrequencyDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(PaymentFrequencyDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

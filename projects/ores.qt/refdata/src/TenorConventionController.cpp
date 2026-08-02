@@ -171,15 +171,11 @@ void TenorConventionController::onShowHistory(const refdata::domain::tenor_conve
     showHistoryWindow(QString::fromStdString(convention.code));
 }
 
-void TenorConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor convention";
-
-    auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+void TenorConventionController::wireDetailDialogCommon(TenorConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &TenorConventionDetailDialog::statusMessage,
@@ -189,6 +185,15 @@ void TenorConventionController::showAddWindow() {
             &TenorConventionDetailDialog::errorMessage,
             this,
             &TenorConventionController::errorMessage);
+}
+
+void TenorConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor convention";
+
+    auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenorConventionDetailDialog::conventionSaved,
             this,
@@ -226,21 +231,10 @@ void TenorConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << convention.code;
 
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(convention);
 
-    connect(detailDialog,
-            &TenorConventionDetailDialog::statusMessage,
-            this,
-            &TenorConventionController::statusMessage);
-    connect(detailDialog,
-            &TenorConventionDetailDialog::errorMessage,
-            this,
-            &TenorConventionController::errorMessage);
     connect(detailDialog,
             &TenorConventionDetailDialog::conventionSaved,
             this,
@@ -380,29 +374,9 @@ void TenorConventionController::onOpenVersion(const refdata::domain::tenor_conve
     }
 
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(convention);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenorConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenorConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenorConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenorConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -522,24 +496,13 @@ void TenorConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_convention = convention;
     reverted_convention.version = 0;
     detailDialog->setConvention(reverted_convention);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &TenorConventionDetailDialog::statusMessage,
-            this,
-            &TenorConventionController::statusMessage);
-    connect(detailDialog,
-            &TenorConventionDetailDialog::errorMessage,
-            this,
-            &TenorConventionController::errorMessage);
     connect(detailDialog,
             &TenorConventionDetailDialog::conventionSaved,
             this,

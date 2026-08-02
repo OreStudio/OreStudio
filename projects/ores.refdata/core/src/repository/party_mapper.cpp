@@ -36,11 +36,9 @@ domain::party party_mapper::map(const party_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
 
-    r.full_name = v.full_name;
-
-
     r.short_code = v.short_code;
 
+    r.full_name = v.full_name;
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;
@@ -72,11 +70,9 @@ party_entity party_mapper::map(const domain::party& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
 
-    r.full_name = v.full_name;
-
-
     r.short_code = v.short_code;
 
+    r.full_name = v.full_name;
     r.codename = v.codename;
     r.transliterated_name = v.transliterated_name;
     r.party_category = v.party_category;

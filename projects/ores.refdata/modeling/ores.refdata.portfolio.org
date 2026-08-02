@@ -22,9 +22,8 @@ via self-referencing parent_portfolio_id.
 :schema:           public
 :product:          ores
 :component:        refdata
-:has_tenant_id:    true
-:has_workspace_id: true
 :generate_touch_function: true
+:profile:   fk-scoped-child
 :END:
 
 * Columns
@@ -288,7 +287,6 @@ entity versioning" architecture doc, "Multi-level composition".
 :collection_name:         portfolios
 :item_var:                portfolio
 :key_field:               name
-:has_uuid_primary_key:    true
 :get_request_class:       refdata::messaging::get_portfolios_request
 :get_response_class:      refdata::messaging::get_portfolios_response
 :get_message_type:        get_portfolios_request
@@ -304,7 +302,6 @@ entity versioning" architecture doc, "Multi-level composition".
 :history_message_type:    get_portfolio_history_request
 :has_change_reason_cache: true
 :has_export_macro:        true
-:has_explorer_api:        true
 :parent_entity_singular:  portfolio
 :settings_group:          PortfolioListWindow
 :window_title:            Portfolios

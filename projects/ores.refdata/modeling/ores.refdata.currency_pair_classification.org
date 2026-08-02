@@ -10,7 +10,6 @@
 #+entity_singular: currency_pair_classification
 #+entity_plural: currency_pair_classifications
 #+entity_title: Currency Pair Classification
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
@@ -27,6 +26,7 @@ this classification).
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -156,15 +156,12 @@ drop function if exists ores_refdata_validate_currency_pair_classification_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/currency_pair_classification.hpp
 :domain_class:           refdata::domain::currency_pair_classification
 :protocol_include:       ores.refdata.api/messaging/protocol.hpp
 :collection_name:        classifications
 :item_var:               classification
 :key_field:              code
-:has_uuid_primary_key:         false
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_currency_pair_classifications_request
 :get_response_class:     refdata::messaging::get_currency_pair_classifications_response
 :get_message_type:       get_currency_pair_classifications_request

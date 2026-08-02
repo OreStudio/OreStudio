@@ -10,7 +10,6 @@
 #+entity_singular: book_status
 #+entity_plural: book_statuses
 #+entity_title: Book Status
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-25
@@ -27,6 +26,7 @@ track the lifecycle of book records.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -167,9 +167,6 @@ drop function if exists ores_refdata_validate_book_status_fn;
 :collection_name:        statuses
 :item_var:               status
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_book_statuses_request
 :get_response_class:     refdata::messaging::get_book_statuses_response
 :get_message_type:       get_book_statuses_request

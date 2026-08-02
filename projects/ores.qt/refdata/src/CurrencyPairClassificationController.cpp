@@ -167,15 +167,12 @@ void CurrencyPairClassificationController::onShowHistory(
     showHistoryWindow(QString::fromStdString(classification.code));
 }
 
-void CurrencyPairClassificationController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency pair classification";
-
-    auto* detailDialog = new CurrencyPairClassificationDetailDialog(mainWindow_);
+void CurrencyPairClassificationController::wireDetailDialogCommon(
+    CurrencyPairClassificationDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyPairClassificationDetailDialog::statusMessage,
@@ -185,6 +182,15 @@ void CurrencyPairClassificationController::showAddWindow() {
             &CurrencyPairClassificationDetailDialog::errorMessage,
             this,
             &CurrencyPairClassificationController::errorMessage);
+}
+
+void CurrencyPairClassificationController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency pair classification";
+
+    auto* detailDialog = new CurrencyPairClassificationDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurrencyPairClassificationDetailDialog::classificationSaved,
             this,
@@ -223,21 +229,10 @@ void CurrencyPairClassificationController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << classification.code;
 
     auto* detailDialog = new CurrencyPairClassificationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setClassification(classification);
 
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::statusMessage,
-            this,
-            &CurrencyPairClassificationController::statusMessage);
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::errorMessage,
-            this,
-            &CurrencyPairClassificationController::errorMessage);
     connect(detailDialog,
             &CurrencyPairClassificationDetailDialog::classificationSaved,
             this,
@@ -380,29 +375,9 @@ void CurrencyPairClassificationController::onOpenVersion(
     }
 
     auto* detailDialog = new CurrencyPairClassificationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setClassification(classification);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyPairClassificationController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyPairClassificationController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -528,24 +503,13 @@ void CurrencyPairClassificationController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyPairClassificationDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_classification = classification;
     reverted_classification.version = 0;
     detailDialog->setClassification(reverted_classification);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::statusMessage,
-            this,
-            &CurrencyPairClassificationController::statusMessage);
-    connect(detailDialog,
-            &CurrencyPairClassificationDetailDialog::errorMessage,
-            this,
-            &CurrencyPairClassificationController::errorMessage);
     connect(detailDialog,
             &CurrencyPairClassificationDetailDialog::classificationSaved,
             this,

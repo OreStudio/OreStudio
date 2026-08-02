@@ -159,19 +159,24 @@ void TenorController::onShowHistory(const refdata::domain::tenor& tenor) {
     showHistoryWindow(QString::fromStdString(tenor.code));
 }
 
-void TenorController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor";
-
-    auto* detailDialog = new TenorDetailDialog(mainWindow_);
+void TenorController::wireDetailDialogCommon(TenorDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog, &TenorDetailDialog::statusMessage, this, &TenorController::statusMessage);
     connect(detailDialog, &TenorDetailDialog::errorMessage, this, &TenorController::errorMessage);
+}
+
+void TenorController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor";
+
+    auto* detailDialog = new TenorDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenorDetailDialog::tenorSaved,
             this,
@@ -208,16 +213,10 @@ void TenorController::showDetailWindow(const refdata::domain::tenor& tenor) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenor.code;
 
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setTenor(tenor);
 
-    connect(detailDialog, &TenorDetailDialog::statusMessage, this, &TenorController::statusMessage);
-    connect(detailDialog, &TenorDetailDialog::errorMessage, this, &TenorController::errorMessage);
     connect(detailDialog,
             &TenorDetailDialog::tenorSaved,
             this,
@@ -354,30 +353,9 @@ void TenorController::onOpenVersion(const refdata::domain::tenor& tenor, int ver
     }
 
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setTenor(tenor);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenorDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenorController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenorDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenorController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -494,19 +472,13 @@ void TenorController::onRevertVersion(const refdata::domain::tenor& tenor) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_tenor = tenor;
     reverted_tenor.version = 0;
     detailDialog->setTenor(reverted_tenor);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog, &TenorDetailDialog::statusMessage, this, &TenorController::statusMessage);
-    connect(detailDialog, &TenorDetailDialog::errorMessage, this, &TenorController::errorMessage);
     connect(detailDialog,
             &TenorDetailDialog::tenorSaved,
             this,

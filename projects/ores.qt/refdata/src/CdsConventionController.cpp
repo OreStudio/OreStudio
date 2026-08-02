@@ -163,15 +163,11 @@ void CdsConventionController::onShowHistory(const refdata::domain::cds_conventio
     showHistoryWindow(QString::fromStdString(cc.id));
 }
 
-void CdsConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CDS convention";
-
-    auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+void CdsConventionController::wireDetailDialogCommon(CdsConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CdsConventionDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void CdsConventionController::showAddWindow() {
             &CdsConventionDetailDialog::errorMessage,
             this,
             &CdsConventionController::errorMessage);
+}
+
+void CdsConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CDS convention";
+
+    auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CdsConventionDetailDialog::ccSaved,
             this,
@@ -217,21 +222,10 @@ void CdsConventionController::showDetailWindow(const refdata::domain::cds_conven
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << cc.id;
 
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(cc);
 
-    connect(detailDialog,
-            &CdsConventionDetailDialog::statusMessage,
-            this,
-            &CdsConventionController::statusMessage);
-    connect(detailDialog,
-            &CdsConventionDetailDialog::errorMessage,
-            this,
-            &CdsConventionController::errorMessage);
     connect(detailDialog,
             &CdsConventionDetailDialog::ccSaved,
             this,
@@ -371,29 +365,9 @@ void CdsConventionController::onOpenVersion(const refdata::domain::cds_conventio
     }
 
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(cc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CdsConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CdsConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CdsConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CdsConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void CdsConventionController::onRevertVersion(const refdata::domain::cds_convent
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_cc = cc;
     reverted_cc.version = 0;
     detailDialog->setConvention(reverted_cc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CdsConventionDetailDialog::statusMessage,
-            this,
-            &CdsConventionController::statusMessage);
-    connect(detailDialog,
-            &CdsConventionDetailDialog::errorMessage,
-            this,
-            &CdsConventionController::errorMessage);
     connect(detailDialog,
             &CdsConventionDetailDialog::ccSaved,
             this,

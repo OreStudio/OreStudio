@@ -10,7 +10,6 @@
 #+entity_singular: rounding_type
 #+entity_plural: rounding_types
 #+entity_title: Rounding Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
@@ -27,6 +26,7 @@ specify how currency amounts are rounded in financial calculations.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -156,15 +156,12 @@ drop function if exists ores_refdata_validate_rounding_type_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/rounding_type.hpp
 :domain_class:           refdata::domain::rounding_type
 :protocol_include:       ores.refdata.api/messaging/rounding_type_protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:         false
-:has_change_reason_cache:      true
 :get_request_class:      refdata::messaging::get_rounding_types_request
 :get_response_class:     refdata::messaging::get_rounding_types_response
 :get_message_type:       get_rounding_types_request

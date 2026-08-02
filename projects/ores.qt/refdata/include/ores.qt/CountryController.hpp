@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class CountryMdiWindow;
+class CountryDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -90,6 +91,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::country& country);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * CountryDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(CountryDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

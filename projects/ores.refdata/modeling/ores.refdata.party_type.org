@@ -10,7 +10,6 @@
 #+entity_singular: party_type
 #+entity_plural: party_types
 #+entity_title: Party Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
@@ -27,6 +26,7 @@ categorise parties and counterparties.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -162,15 +162,12 @@ drop function if exists ores_refdata_validate_party_type_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/party_type.hpp
 :domain_class:           refdata::domain::party_type
 :protocol_include:       ores.refdata.api/messaging/party_type_protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_party_types_request
 :get_response_class:     refdata::messaging::get_party_types_response
 :get_message_type:       get_party_types_request

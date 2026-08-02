@@ -28,7 +28,7 @@ Book/BusinessCentre's own moves to =ores.refdata=, and the same move
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:       simple-lookup
 :END:
 
 * Columns

@@ -22,26 +22,27 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Party Table
  *
- * Internal legal entities (the organisation and its subsidiaries) that participate
- * in financial transactions. Parties form a hierarchy through parent_party_id,
- * with exactly one root party per tenant representing the organisation itself.
+ * Internal legal entities (the organisation and its subsidiaries) that
+ * participate in financial transactions. Parties form a hierarchy through
+ * parent_party_id, with exactly one root party per tenant representing the
+ * organisation itself.
  */
 
 create table if not exists "ores_refdata_parties_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "full_name" text not null,
     "short_code" text not null,
-    "codename" text not null default '',
+    "full_name" text not null,
+    "codename" text not null,
     "transliterated_name" text null,
-    "party_category" text not null default 'Operational',
+    "party_category" text not null,
     "party_type" text not null,
     "parent_party_id" uuid null,
     "business_center_code" text not null,
-    "status" text not null default 'Active',
+    "status" text not null,
     "image_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -61,13 +62,6 @@ create table if not exists "ores_refdata_parties_tbl" (
     check ("codename" = '' or "codename" ~ '^[a-z][a-z_]+$')
 );
 
--- Non-unique full_name index for search. Full names are not unique in
--- real-world data (e.g. "CAISSE LOCALE CREDIT AGRICOLE" appears for
--- multiple branches, each with a distinct LEI).
-create index if not exists parties_full_name_idx
-on "ores_refdata_parties_tbl" (tenant_id, full_name)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 -- Unique short_code for active records
 create unique index if not exists parties_short_code_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id, short_code)
@@ -86,161 +80,23 @@ create index if not exists parties_tenant_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Root party uniqueness: exactly one operational root party per tenant.
--- The system party (party_category='System') is excluded — it has its
--- own uniqueness constraint below.
+create index if not exists parties_full_name_idx
+on "ores_refdata_parties_tbl" (tenant_id, full_name)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists parties_codename_uniq_idx
+on "ores_refdata_parties_tbl" (codename)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and codename <> '';
+
 create unique index if not exists parties_root_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where parent_party_id is null and party_category <> 'System' and valid_to = ores_utility_infinity_timestamp_fn();
 
--- System party uniqueness: exactly one system party per tenant
 create unique index if not exists parties_system_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn();
 
--- Globally unique codename across all tenants (empty string excluded)
-create unique index if not exists parties_codename_uniq_idx
-on "ores_refdata_parties_tbl" (codename)
-where valid_to = ores_utility_infinity_timestamp_fn() and codename <> '';
-
--- Sequence used to generate a unique base-26 suffix for auto-generated
--- codenames.  nextval() is outside MVCC: it advances even within a
--- multi-row INSERT statement, so every row in a batch gets a different
--- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
--- prevent due to the statement-level snapshot in READ COMMITTED.
-create sequence if not exists ores_refdata_party_codename_seq;
-
-create or replace function ores_refdata_parties_insert_fn()
-returns trigger as $$
-declare
-    current_version integer;
-begin
-    -- Validate tenant_id
-    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate party_category
-    NEW.party_category := ores_refdata_validate_party_category_fn(NEW.tenant_id, NEW.party_category);
-
-    -- Validate party_type
-    NEW.party_type := ores_refdata_validate_party_type_fn(NEW.tenant_id, NEW.party_type);
-
-    -- Validate status
-    NEW.status := ores_refdata_validate_party_status_fn(NEW.tenant_id, NEW.status);
-
-    -- Validate parent_party_id (soft FK)
-    if NEW.parent_party_id is not null then
-        if not exists (
-            select 1 from ores_refdata_parties_tbl
-            where tenant_id = NEW.tenant_id and id = NEW.parent_party_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid parent_party_id: %. No active party found with this id.',
-                NEW.parent_party_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate business_center_code (mandatory)
-    if NEW.business_center_code is null or NEW.business_center_code = '' then
-        raise exception 'business_center_code is required for parties'
-            using errcode = '23502';
-    end if;
-    NEW.business_center_code := ores_refdata_validate_business_centre_fn(
-        NEW.tenant_id, NEW.business_center_code);
-
-    -- Validate image_id (optional soft FK to ores_assets_images_tbl)
-    if NEW.image_id is not null then
-        if not exists (
-            select 1 from ores_assets_images_tbl
-            where tenant_id = NEW.tenant_id
-              and image_id = NEW.image_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Version management
-    select version into current_version
-    from "ores_refdata_parties_tbl"
-    where tenant_id = NEW.tenant_id
-      and id = NEW.id
-      and valid_to = ores_utility_infinity_timestamp_fn()
-    for update;
-
-    if found then
-        if NEW.version != 0 and NEW.version != current_version then
-            raise exception 'Version conflict: expected version %, but current version is %',
-                NEW.version, current_version
-                using errcode = 'P0002';
-        end if;
-        NEW.version = current_version + 1;
-
-        -- Codename is immutable: restore from active row on every update.
-        select codename into NEW.codename
-        from "ores_refdata_parties_tbl"
-        where tenant_id = NEW.tenant_id
-          and id = NEW.id
-          and valid_to = ores_utility_infinity_timestamp_fn();
-
-        -- clock_timestamp(), not current_timestamp: current_timestamp is
-        -- frozen for the whole transaction, so a same-transaction
-        -- multi-write to this row (e.g. a composite entity's parent
-        -- touched twice by two different children in one transaction)
-        -- would collide with itself. clock_timestamp() always advances.
-        update "ores_refdata_parties_tbl"
-        set valid_to = clock_timestamp()
-        where tenant_id = NEW.tenant_id
-          and id = NEW.id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < clock_timestamp();
-    else
-        NEW.version = 1;
-
-        -- Auto-generate codename using whimsical name + sequence suffix.
-        -- The sequence suffix is outside MVCC (nextval always advances),
-        -- so every row in a multi-row INSERT gets a distinct suffix, making
-        -- the codename globally unique without relying on a NOT EXISTS
-        -- check that cannot see sibling rows in the same statement.
-        if NEW.codename = '' or NEW.codename is null then
-            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
-                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
-        end if;
-        -- Validate the final codename.
-        if NEW.codename !~ '^[a-z][a-z_]+$' then
-            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
-                using errcode = '23514';
-        end if;
-        -- Provision the per-party report event queue.
-        perform ores_mq_queues_create_fn(
-            NEW.tenant_id, NEW.id, 'party', 'task',
-            'report_events', 'Per-party report scheduling queue', current_user);
-    end if;
-
-    NEW.valid_from = clock_timestamp();
-    NEW.valid_to = ores_utility_infinity_timestamp_fn();
-
-    new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
-    return NEW;
-end;
-$$ language plpgsql;
-
-create or replace trigger ores_refdata_parties_insert_trg
-before insert on "ores_refdata_parties_tbl"
-for each row execute function ores_refdata_parties_insert_fn();
-
-create or replace rule ores_refdata_parties_delete_rule as
-on delete to "ores_refdata_parties_tbl" do instead
-    update "ores_refdata_parties_tbl"
-    set valid_to = clock_timestamp()
-    where tenant_id = OLD.tenant_id
-      and id = OLD.id
-      and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Touch-version function for party
@@ -251,9 +107,22 @@ on delete to "ores_refdata_parties_tbl" do instead
 --
 -- Deliberately does NOT duplicate the version/valid_from/valid_to
 -- management here: it fetches the current row, resets version to the
--- 0 sentinel, and re-inserts — the table's own insert trigger (above)
+-- 0 sentinel, and re-inserts — the table's own insert trigger (below)
 -- then performs the exact same close-current/bump-version dance a
--- normal application save does.
+-- normal application save does. This also sidesteps a real footgun:
+-- current_timestamp is frozen for the whole transaction, so a
+-- same-transaction bulk import (parent + child created together, as
+-- GLEIF provisioning does) would otherwise make the just-inserted
+-- parent row's own valid_from collide with this function's close
+-- timestamp.
+--
+-- Defined before the insert trigger/delete rule below (not after):
+-- for a self-referencing entity (this entity is its own composite
+-- parent, e.g. a portfolio tree), the delete rule calling this
+-- function lives in the *same* file. PostgreSQL parses CREATE RULE
+-- eagerly, so the function must already exist by then -- unlike a
+-- PL/pgSQL function body (e.g. the insert trigger function), which is
+-- opaque at CREATE time and only resolves calls at execution.
 --
 -- p_reason_code is passed through as-is (already a validated code from
 -- the child's own row); p_child_entity distinguishes which child
@@ -299,6 +168,131 @@ begin
     select (rec).*;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace function ores_refdata_parties_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate parent_party_id (optional soft FK to ores_refdata_parties_tbl)
+    if NEW.parent_party_id is not null then
+        if not exists (
+            select 1 from ores_refdata_parties_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.parent_party_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid parent_party_id: %. No active party found with this id.', NEW.parent_party_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate image_id (optional soft FK to ores_assets_images_tbl)
+    if NEW.image_id is not null then
+        if not exists (
+            select 1 from ores_assets_images_tbl
+            where tenant_id = NEW.tenant_id
+              and image_id = NEW.image_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid image_id: %. Image must exist.', NEW.image_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate party_category
+    NEW.party_category := ores_refdata_validate_party_category_fn(NEW.tenant_id, NEW.party_category);
+
+    -- Validate party_type
+    NEW.party_type := ores_refdata_validate_party_type_fn(NEW.tenant_id, NEW.party_type);
+
+    -- Validate status
+    NEW.status := ores_refdata_validate_party_status_fn(NEW.tenant_id, NEW.status);
+
+    -- Validate business_center_code
+    NEW.business_center_code := ores_refdata_validate_business_centre_fn(NEW.tenant_id, NEW.business_center_code);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    -- Version management
+    select version into current_version
+    from "ores_refdata_parties_tbl"
+    where tenant_id = NEW.tenant_id
+      and id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+        -- Codename is immutable: restore from active row on every update.
+        select codename into NEW.codename
+        from "ores_refdata_parties_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
+        update "ores_refdata_parties_tbl"
+        set valid_to = clock_timestamp()
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < clock_timestamp();
+    else
+        NEW.version = 1;
+        -- Auto-generate codename using whimsical name + sequence suffix.
+        -- The sequence suffix is outside MVCC (nextval always advances),
+        -- so every row in a multi-row INSERT gets a distinct suffix, making
+        -- the codename globally unique without relying on a NOT EXISTS
+        -- check that cannot see sibling rows in the same statement.
+        if NEW.codename = '' or NEW.codename is null then
+            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
+                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
+        end if;
+        -- Validate the final codename.
+        if NEW.codename !~ '^[a-z][a-z_]+$' then
+            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
+                using errcode = '23514';
+        end if;
+        -- Provision the per-party report event queue.
+        perform ores_mq_queues_create_fn(
+            NEW.tenant_id, NEW.id, 'party', 'task',
+            'report_events', 'Per-party report scheduling queue', current_user);
+    end if;
+
+    NEW.valid_from = clock_timestamp();
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_refdata_parties_insert_trg
+before insert on "ores_refdata_parties_tbl"
+for each row execute function ores_refdata_parties_insert_fn();
+
+create or replace rule ores_refdata_parties_delete_rule as
+on delete to "ores_refdata_parties_tbl" do instead (
+    update "ores_refdata_parties_tbl"
+    set valid_to = clock_timestamp()
+    where tenant_id = OLD.tenant_id
+      and id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+);
 
 -- =============================================================================
 -- Hierarchy traversal for parties.
@@ -360,3 +354,9 @@ begin
     select d.id, d.parent_id, d.name from descendants d;
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
+-- Sequence used to generate a unique base-26 suffix for auto-generated
+-- codenames.  nextval() is outside MVCC: it advances even within a
+-- multi-row INSERT statement, so every row in a batch gets a different
+-- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
+-- prevent due to the statement-level snapshot in READ COMMITTED.
+create sequence if not exists ores_refdata_party_codename_seq;

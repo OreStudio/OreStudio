@@ -46,7 +46,7 @@ the full reasoning.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -227,9 +227,6 @@ drop function if exists ores_refdata_validate_payment_frequency_fn;
 :collection_name:        payment_frequencies
 :item_var:               payment_frequency_
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_payment_frequencies_request
 :get_response_class:     refdata::messaging::get_payment_frequencies_response
 :get_message_type:       get_payment_frequencies_request

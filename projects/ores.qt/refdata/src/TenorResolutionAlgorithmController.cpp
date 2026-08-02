@@ -166,15 +166,12 @@ void TenorResolutionAlgorithmController::onShowHistory(
     showHistoryWindow(QString::fromStdString(algorithm.code));
 }
 
-void TenorResolutionAlgorithmController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor resolution algorithm";
-
-    auto* detailDialog = new TenorResolutionAlgorithmDetailDialog(mainWindow_);
+void TenorResolutionAlgorithmController::wireDetailDialogCommon(
+    TenorResolutionAlgorithmDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &TenorResolutionAlgorithmDetailDialog::statusMessage,
@@ -184,6 +181,15 @@ void TenorResolutionAlgorithmController::showAddWindow() {
             &TenorResolutionAlgorithmDetailDialog::errorMessage,
             this,
             &TenorResolutionAlgorithmController::errorMessage);
+}
+
+void TenorResolutionAlgorithmController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenor resolution algorithm";
+
+    auto* detailDialog = new TenorResolutionAlgorithmDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenorResolutionAlgorithmDetailDialog::algorithmSaved,
             this,
@@ -222,21 +228,10 @@ void TenorResolutionAlgorithmController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << algorithm.code;
 
     auto* detailDialog = new TenorResolutionAlgorithmDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setAlgorithm(algorithm);
 
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::statusMessage,
-            this,
-            &TenorResolutionAlgorithmController::statusMessage);
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::errorMessage,
-            this,
-            &TenorResolutionAlgorithmController::errorMessage);
     connect(detailDialog,
             &TenorResolutionAlgorithmDetailDialog::algorithmSaved,
             this,
@@ -378,29 +373,9 @@ void TenorResolutionAlgorithmController::onOpenVersion(
     }
 
     auto* detailDialog = new TenorResolutionAlgorithmDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setAlgorithm(algorithm);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenorResolutionAlgorithmController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenorResolutionAlgorithmController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -526,24 +501,13 @@ void TenorResolutionAlgorithmController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenorResolutionAlgorithmDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_algorithm = algorithm;
     reverted_algorithm.version = 0;
     detailDialog->setAlgorithm(reverted_algorithm);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::statusMessage,
-            this,
-            &TenorResolutionAlgorithmController::statusMessage);
-    connect(detailDialog,
-            &TenorResolutionAlgorithmDetailDialog::errorMessage,
-            this,
-            &TenorResolutionAlgorithmController::errorMessage);
     connect(detailDialog,
             &TenorResolutionAlgorithmDetailDialog::algorithmSaved,
             this,

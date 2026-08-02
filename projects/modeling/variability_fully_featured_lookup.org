@@ -40,7 +40,6 @@ here is left to the model's own choice:
 | [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
 | [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
-| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
 | [[id:74EB0234-97F3-459C-8806-5A979B9E5A22][has_csv_xml_io]] | true |
 | [[id:5A843D4A-2FF7-4410-8B70-A29FD01622FD][has_version_navigation]] | true |

@@ -163,15 +163,11 @@ void SwapConventionController::onShowHistory(const refdata::domain::swap_convent
     showHistoryWindow(QString::fromStdString(sc.id));
 }
 
-void SwapConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new swap convention";
-
-    auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
+void SwapConventionController::wireDetailDialogCommon(SwapConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &SwapConventionDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void SwapConventionController::showAddWindow() {
             &SwapConventionDetailDialog::errorMessage,
             this,
             &SwapConventionController::errorMessage);
+}
+
+void SwapConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new swap convention";
+
+    auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &SwapConventionDetailDialog::scSaved,
             this,
@@ -217,21 +222,10 @@ void SwapConventionController::showDetailWindow(const refdata::domain::swap_conv
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << sc.id;
 
     auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(sc);
 
-    connect(detailDialog,
-            &SwapConventionDetailDialog::statusMessage,
-            this,
-            &SwapConventionController::statusMessage);
-    connect(detailDialog,
-            &SwapConventionDetailDialog::errorMessage,
-            this,
-            &SwapConventionController::errorMessage);
     connect(detailDialog,
             &SwapConventionDetailDialog::scSaved,
             this,
@@ -371,29 +365,9 @@ void SwapConventionController::onOpenVersion(const refdata::domain::swap_convent
     }
 
     auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(sc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &SwapConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<SwapConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &SwapConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<SwapConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void SwapConventionController::onRevertVersion(const refdata::domain::swap_conve
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new SwapConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_sc = sc;
     reverted_sc.version = 0;
     detailDialog->setConvention(reverted_sc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &SwapConventionDetailDialog::statusMessage,
-            this,
-            &SwapConventionController::statusMessage);
-    connect(detailDialog,
-            &SwapConventionDetailDialog::errorMessage,
-            this,
-            &SwapConventionController::errorMessage);
     connect(detailDialog,
             &SwapConventionDetailDialog::scSaved,
             this,

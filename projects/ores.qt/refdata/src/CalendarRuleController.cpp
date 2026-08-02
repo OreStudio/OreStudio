@@ -165,15 +165,11 @@ void CalendarRuleController::onShowHistory(const refdata::domain::calendar_rule&
     showHistoryWindow(rule);
 }
 
-void CalendarRuleController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar rule";
-
-    auto* detailDialog = new CalendarRuleDetailDialog(mainWindow_);
+void CalendarRuleController::wireDetailDialogCommon(CalendarRuleDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CalendarRuleDetailDialog::statusMessage,
@@ -183,6 +179,15 @@ void CalendarRuleController::showAddWindow() {
             &CalendarRuleDetailDialog::errorMessage,
             this,
             &CalendarRuleController::errorMessage);
+}
+
+void CalendarRuleController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new calendar rule";
+
+    auto* detailDialog = new CalendarRuleDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CalendarRuleDetailDialog::ruleSaved,
             this,
@@ -220,21 +225,10 @@ void CalendarRuleController::showDetailWindow(const refdata::domain::calendar_ru
                                << boost::uuids::to_string(rule.id);
 
     auto* detailDialog = new CalendarRuleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setRule(rule);
 
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::statusMessage,
-            this,
-            &CalendarRuleController::statusMessage);
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::errorMessage,
-            this,
-            &CalendarRuleController::errorMessage);
     connect(detailDialog,
             &CalendarRuleDetailDialog::ruleSaved,
             this,
@@ -378,29 +372,9 @@ void CalendarRuleController::onOpenVersion(const refdata::domain::calendar_rule&
     }
 
     auto* detailDialog = new CalendarRuleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setRule(rule);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CalendarRuleController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CalendarRuleController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -519,24 +493,13 @@ void CalendarRuleController::onRevertVersion(const refdata::domain::calendar_rul
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CalendarRuleDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_rule = rule;
     reverted_rule.version = 0;
     detailDialog->setRule(reverted_rule);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::statusMessage,
-            this,
-            &CalendarRuleController::statusMessage);
-    connect(detailDialog,
-            &CalendarRuleDetailDialog::errorMessage,
-            this,
-            &CalendarRuleController::errorMessage);
     connect(detailDialog,
             &CalendarRuleDetailDialog::ruleSaved,
             this,

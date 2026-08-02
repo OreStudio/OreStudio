@@ -159,21 +159,26 @@ void CountryController::onShowHistory(const refdata::domain::country& country) {
     showHistoryWindow(QString::fromStdString(country.alpha2_code));
 }
 
-void CountryController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new country";
-
-    auto* detailDialog = new CountryDetailDialog(mainWindow_);
+void CountryController::wireDetailDialogCommon(CountryDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(
         detailDialog, &CountryDetailDialog::statusMessage, this, &CountryController::statusMessage);
     connect(
         detailDialog, &CountryDetailDialog::errorMessage, this, &CountryController::errorMessage);
+}
+
+void CountryController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new country";
+
+    auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CountryDetailDialog::countrySaved,
             this,
@@ -210,18 +215,10 @@ void CountryController::showDetailWindow(const refdata::domain::country& country
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << country.alpha2_code;
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCountry(country);
 
-    connect(
-        detailDialog, &CountryDetailDialog::statusMessage, this, &CountryController::statusMessage);
-    connect(
-        detailDialog, &CountryDetailDialog::errorMessage, this, &CountryController::errorMessage);
     connect(detailDialog,
             &CountryDetailDialog::countrySaved,
             this,
@@ -358,30 +355,9 @@ void CountryController::onOpenVersion(const refdata::domain::country& country, i
     }
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCountry(country);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CountryDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CountryController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CountryDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CountryController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -498,21 +474,13 @@ void CountryController::onRevertVersion(const refdata::domain::country& country)
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_country = country;
     reverted_country.version = 0;
     detailDialog->setCountry(reverted_country);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(
-        detailDialog, &CountryDetailDialog::statusMessage, this, &CountryController::statusMessage);
-    connect(
-        detailDialog, &CountryDetailDialog::errorMessage, this, &CountryController::errorMessage);
     connect(detailDialog,
             &CountryDetailDialog::countrySaved,
             this,

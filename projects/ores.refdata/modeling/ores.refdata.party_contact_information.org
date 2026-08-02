@@ -21,7 +21,7 @@ Settlement, Billing). Each party can have one contact record per type.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -318,7 +318,6 @@ std::string("https://example.com")
 :collection_name:         party_contact_informations
 :item_var:                partyContactInformation
 :key_field:               contact_type
-:has_uuid_primary_key:    true
 :get_request_class:       refdata::messaging::get_party_contact_informations_request
 :get_response_class:      refdata::messaging::get_party_contact_informations_response
 :get_message_type:        get_party_contact_informations_request
@@ -332,7 +331,6 @@ std::string("https://example.com")
 :history_request_class:   refdata::messaging::get_party_contact_information_history_request
 :history_response_class:  refdata::messaging::get_party_contact_information_history_response
 :history_message_type:    get_party_contact_information_history_request
-:has_change_reason_cache: true
 :settings_group:          PartyContactInformationListWindow
 :window_title:            Party Contact Information
 :has_pagination:          true

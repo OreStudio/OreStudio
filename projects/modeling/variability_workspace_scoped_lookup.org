@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: EB5118BB-925A-4414-AB38-FFF15DAFDF0C
+:END:
+#+title: Profile: Workspace-scoped lookup
+#+description: Text natural key, tenant+workspace scope, standard Qt tier with pagination and change-reason cache.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-08-01
+#+updated: 2026-08-01
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models a market-convention reference table: a small, named set of
+records identified by a human-meaningful text code (e.g.
+=EUR-CDS-CONVENTIONS=), scoped to both tenant and workspace since
+convention sets are typically curated per trading desk/workspace
+rather than shared tenant-wide. Discovered as a genuine recurring
+combination while surveying =ores.refdata= for this profile catalogue
+pilot — 8 entities (=cds_convention=, =deposit_convention=,
+=fra_convention=, =ibor_index_convention=, =ois_convention=,
+=overnight_index_convention=, =swap_convention=, =zero_convention=)
+share this exact configuration independently, which is the bar this
+catalogue sets for naming a profile rather than leaving it as
+unremarked repetition.
+
+* Reference entity
+
+[[id:558BC028-D6EF-473C-96E7-8518D6302472][cds_convention]] — settlement lag, premium schedule, and accrual rules
+for a vanilla CDS, keyed by a text convention identifier.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice:
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | true |
+| [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
+| [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
+| [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] — the tenant-only, pagination+change-reason-cache sibling this profile adds workspace scope to.

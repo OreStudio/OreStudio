@@ -163,15 +163,11 @@ void ZeroConventionController::onShowHistory(const refdata::domain::zero_convent
     showHistoryWindow(QString::fromStdString(zc.id));
 }
 
-void ZeroConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new zero convention";
-
-    auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
+void ZeroConventionController::wireDetailDialogCommon(ZeroConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &ZeroConventionDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void ZeroConventionController::showAddWindow() {
             &ZeroConventionDetailDialog::errorMessage,
             this,
             &ZeroConventionController::errorMessage);
+}
+
+void ZeroConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new zero convention";
+
+    auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &ZeroConventionDetailDialog::zcSaved,
             this,
@@ -217,21 +222,10 @@ void ZeroConventionController::showDetailWindow(const refdata::domain::zero_conv
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << zc.id;
 
     auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(zc);
 
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::statusMessage,
-            this,
-            &ZeroConventionController::statusMessage);
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::errorMessage,
-            this,
-            &ZeroConventionController::errorMessage);
     connect(detailDialog,
             &ZeroConventionDetailDialog::zcSaved,
             this,
@@ -371,29 +365,9 @@ void ZeroConventionController::onOpenVersion(const refdata::domain::zero_convent
     }
 
     auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(zc);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void ZeroConventionController::onRevertVersion(const refdata::domain::zero_conve
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_zc = zc;
     reverted_zc.version = 0;
     detailDialog->setConvention(reverted_zc);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::statusMessage,
-            this,
-            &ZeroConventionController::statusMessage);
-    connect(detailDialog,
-            &ZeroConventionDetailDialog::errorMessage,
-            this,
-            &ZeroConventionController::errorMessage);
     connect(detailDialog,
             &ZeroConventionDetailDialog::zcSaved,
             this,

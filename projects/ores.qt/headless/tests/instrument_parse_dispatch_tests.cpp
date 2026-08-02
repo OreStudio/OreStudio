@@ -38,6 +38,16 @@ using namespace ores::trading::messaging;
 
 const std::string tags("[instrument_parse_dispatch]");
 
+// parse_trade_instrument() decodes via the process-wide default_wire_codec
+// (matching ClientManager's encode_request()), which defaults to msgpack
+// until a real NATS client sets it from resolved config -- never the case
+// in this headless test binary. Fixtures below build JSON via rfl::json,
+// so pin the default codec to json to keep them format-matched.
+const bool codec_pinned_to_json = [] {
+    ores::nats::set_default_wire_codec(ores::nats::wire_codec(ores::nats::wire_format::json));
+    return true;
+}();
+
 // --- Test helpers ---
 
 trade make_test_trade(product_type pt, const std::string& trade_type) {

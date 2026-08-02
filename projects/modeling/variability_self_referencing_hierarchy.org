@@ -48,7 +48,6 @@ here is left to the model's own choice:
 | [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | false |
 | [[id:F6ECC504-CBF4-4120-85D4-7B930C7BFBF0][has_parent_id]] | true |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |
-| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
 
 * See also

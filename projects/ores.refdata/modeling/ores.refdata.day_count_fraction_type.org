@@ -9,7 +9,6 @@
 #+entity_singular: day_count_fraction_type
 #+entity_plural: day_count_fraction_types
 #+entity_title: Day Count Fraction Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+brief: Day count fraction convention code (e.g. Actual/360, Actual/365, 30/360).
@@ -28,7 +27,7 @@ description / display_order) as
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -154,15 +153,12 @@ Ordinal position for dropdown/list display.
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:              ores.refdata.api/domain/day_count_fraction_type.hpp
 :domain_class:                refdata::domain::day_count_fraction_type
 :protocol_include:            ores.refdata.api/messaging/day_count_fraction_type_protocol.hpp
 :collection_name:             types
 :item_var:                    type
 :key_field:                   code
-:has_uuid_primary_key:        false
-:has_change_reason_cache:     true
 :get_request_class:           refdata::messaging::get_day_count_fraction_types_request
 :get_response_class:          refdata::messaging::get_day_count_fraction_types_response
 :get_message_type:            get_day_count_fraction_types_request

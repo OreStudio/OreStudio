@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class PortfolioMdiWindow;
+class PortfolioDetailDialog;
 class DetachableMdiSubWindow;
 class BadgeCache;
 class ChangeReasonCache;
@@ -97,6 +98,14 @@ private slots:
 private:
     void showAddWindow(boost::uuids::uuid parentPortfolioId = {});
     void showDetailWindow(const refdata::domain::portfolio& portfolio);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * PortfolioDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(PortfolioDetailDialog* detailDialog);
     void showHistoryWindow(const refdata::domain::portfolio& portfolio);
 
     /**

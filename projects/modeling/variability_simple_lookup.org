@@ -43,7 +43,6 @@ here is left to the model's own choice:
 | [[id:4F426ED0-E75D-47CC-B8E8-1775185D08D0][system_scope]] | false |
 | [[id:743EBB4F-46EE-48C2-AF8C-205FF7958AC2][nullable_tenant_id]] | false |
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | false |
-| [[id:FEDCA276-A03E-4C91-BDAD-4CF6655A38F8][has_qt]] | true |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
 | [[id:26409919-470E-4820-B8C1-AC816181F894][has_pagination]] | true |
 

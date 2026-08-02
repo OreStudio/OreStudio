@@ -19,6 +19,7 @@
  */
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -46,10 +47,12 @@ constexpr std::string_view type_event_name =
 LegTypeController::LegTypeController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
+                                     ChangeReasonCache* changeReasonCache,
                                      const QString& username,
                                      BadgeCache* badgeCache,
                                      QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , badgeCache_(badgeCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -153,6 +156,8 @@ void LegTypeController::onShowHistory(const refdata::domain::leg_type& type) {
 }
 
 void LegTypeController::wireDetailDialogCommon(LegTypeDetailDialog* detailDialog) {
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 

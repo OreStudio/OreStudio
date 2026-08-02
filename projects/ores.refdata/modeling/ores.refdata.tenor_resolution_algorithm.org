@@ -25,7 +25,7 @@ like other tenor code tables.
 :schema:    public
 :product:   ores
 :component: refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -165,9 +165,6 @@ drop function if exists ores_refdata_validate_tenor_resolution_algorithm_fn;
 :collection_name:        algorithms
 :item_var:               algorithm
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenor_resolution_algorithms_request
 :get_response_class:     refdata::messaging::get_tenor_resolution_algorithms_response
 :get_message_type:       get_tenor_resolution_algorithms_request

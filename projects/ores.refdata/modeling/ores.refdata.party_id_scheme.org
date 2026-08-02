@@ -10,7 +10,6 @@
 #+entity_singular: party_id_scheme
 #+entity_plural: party_id_schemes
 #+entity_title: Party ID Scheme
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-06-01
@@ -27,6 +26,7 @@ coding_scheme_code field cross-references the DQ coding scheme table.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -202,15 +202,12 @@ drop function if exists ores_refdata_validate_party_id_scheme_coding_scheme_fn;
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/party_id_scheme.hpp
 :domain_class:           refdata::domain::party_id_scheme
 :protocol_include:       ores.refdata.api/messaging/party_id_scheme_protocol.hpp
 :collection_name:        schemes
 :item_var:               scheme
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_party_id_schemes_request
 :get_response_class:     refdata::messaging::get_party_id_schemes_response
 :get_message_type:       get_party_id_schemes_request

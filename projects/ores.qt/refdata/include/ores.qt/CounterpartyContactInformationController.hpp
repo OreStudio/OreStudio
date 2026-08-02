@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class CounterpartyContactInformationMdiWindow;
+class CounterpartyContactInformationDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -97,6 +98,14 @@ private:
     void showAddWindow();
     void showDetailWindow(
         const refdata::domain::counterparty_contact_information& counterpartyContactInformation);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * CounterpartyContactInformationDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(CounterpartyContactInformationDetailDialog* detailDialog);
     void showHistoryWindow(
         const refdata::domain::counterparty_contact_information& counterpartyContactInformation);
 

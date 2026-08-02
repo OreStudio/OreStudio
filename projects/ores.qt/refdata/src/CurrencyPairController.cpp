@@ -171,17 +171,13 @@ void CurrencyPairController::onShowHistory(const refdata::domain::currency_pair&
     showHistoryWindow(QString::fromStdString(pair.pair_code));
 }
 
-void CurrencyPairController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency pair";
-
-    auto* detailDialog = new CurrencyPairDetailDialog(mainWindow_);
+void CurrencyPairController::wireDetailDialogCommon(CurrencyPairDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CurrencyPairDetailDialog::statusMessage,
@@ -191,6 +187,15 @@ void CurrencyPairController::showAddWindow() {
             &CurrencyPairDetailDialog::errorMessage,
             this,
             &CurrencyPairController::errorMessage);
+}
+
+void CurrencyPairController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency pair";
+
+    auto* detailDialog = new CurrencyPairDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CurrencyPairDetailDialog::pairSaved,
             this,
@@ -227,23 +232,10 @@ void CurrencyPairController::showDetailWindow(const refdata::domain::currency_pa
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << pair.pair_code;
 
     auto* detailDialog = new CurrencyPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setPair(pair);
 
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::statusMessage,
-            this,
-            &CurrencyPairController::statusMessage);
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::errorMessage,
-            this,
-            &CurrencyPairController::errorMessage);
     connect(detailDialog,
             &CurrencyPairDetailDialog::pairSaved,
             this,
@@ -382,31 +374,9 @@ void CurrencyPairController::onOpenVersion(const refdata::domain::currency_pair&
     }
 
     auto* detailDialog = new CurrencyPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setPair(pair);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CurrencyPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CurrencyPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -525,26 +495,13 @@ void CurrencyPairController::onRevertVersion(const refdata::domain::currency_pai
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_pair = pair;
     reverted_pair.version = 0;
     detailDialog->setPair(reverted_pair);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::statusMessage,
-            this,
-            &CurrencyPairController::statusMessage);
-    connect(detailDialog,
-            &CurrencyPairDetailDialog::errorMessage,
-            this,
-            &CurrencyPairController::errorMessage);
     connect(detailDialog,
             &CurrencyPairDetailDialog::pairSaved,
             this,

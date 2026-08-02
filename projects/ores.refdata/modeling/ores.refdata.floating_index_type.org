@@ -27,7 +27,7 @@ Book/BusinessCentre's own moves to =ores.refdata=.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -97,14 +97,12 @@ std::string(faker::lorem::sentence())
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/floating_index_type.hpp
 :domain_class:           refdata::domain::floating_index_type
 :protocol_include:       ores.refdata.api/messaging/floating_index_type_protocol.hpp
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:   false
 :get_request_class:      refdata::messaging::get_floating_index_types_request
 :get_response_class:     refdata::messaging::get_floating_index_types_response
 :get_message_type:       get_floating_index_types_request

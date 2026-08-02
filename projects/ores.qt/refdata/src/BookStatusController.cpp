@@ -165,15 +165,11 @@ void BookStatusController::onShowHistory(const refdata::domain::book_status& sta
     showHistoryWindow(QString::fromStdString(status.code));
 }
 
-void BookStatusController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book status";
-
-    auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+void BookStatusController::wireDetailDialogCommon(BookStatusDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BookStatusDetailDialog::statusMessage,
@@ -183,6 +179,15 @@ void BookStatusController::showAddWindow() {
             &BookStatusDetailDialog::errorMessage,
             this,
             &BookStatusController::errorMessage);
+}
+
+void BookStatusController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book status";
+
+    auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BookStatusDetailDialog::statusSaved,
             this,
@@ -219,21 +224,10 @@ void BookStatusController::showDetailWindow(const refdata::domain::book_status& 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << status.code;
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setStatus(status);
 
-    connect(detailDialog,
-            &BookStatusDetailDialog::statusMessage,
-            this,
-            &BookStatusController::statusMessage);
-    connect(detailDialog,
-            &BookStatusDetailDialog::errorMessage,
-            this,
-            &BookStatusController::errorMessage);
     connect(detailDialog,
             &BookStatusDetailDialog::statusSaved,
             this,
@@ -372,29 +366,9 @@ void BookStatusController::onOpenVersion(const refdata::domain::book_status& sta
     }
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setStatus(status);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BookStatusDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BookStatusController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BookStatusDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BookStatusController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -513,24 +487,13 @@ void BookStatusController::onRevertVersion(const refdata::domain::book_status& s
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_status = status;
     reverted_status.version = 0;
     detailDialog->setStatus(reverted_status);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BookStatusDetailDialog::statusMessage,
-            this,
-            &BookStatusController::statusMessage);
-    connect(detailDialog,
-            &BookStatusDetailDialog::errorMessage,
-            this,
-            &BookStatusController::errorMessage);
     connect(detailDialog,
             &BookStatusDetailDialog::statusSaved,
             this,

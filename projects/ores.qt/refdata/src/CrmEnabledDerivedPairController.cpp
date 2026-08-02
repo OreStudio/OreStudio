@@ -173,16 +173,13 @@ void CrmEnabledDerivedPairController::onShowHistory(
     showHistoryWindow(pair);
 }
 
-void CrmEnabledDerivedPairController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM enabled derived pair";
-
-    auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
+void CrmEnabledDerivedPairController::wireDetailDialogCommon(
+    CrmEnabledDerivedPairDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CrmEnabledDerivedPairDetailDialog::statusMessage,
@@ -192,6 +189,15 @@ void CrmEnabledDerivedPairController::showAddWindow() {
             &CrmEnabledDerivedPairDetailDialog::errorMessage,
             this,
             &CrmEnabledDerivedPairController::errorMessage);
+}
+
+void CrmEnabledDerivedPairController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new CRM enabled derived pair";
+
+    auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CrmEnabledDerivedPairDetailDialog::pairSaved,
             this,
@@ -231,22 +237,10 @@ void CrmEnabledDerivedPairController::showDetailWindow(
                                << boost::uuids::to_string(pair.id);
 
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setPair(pair);
 
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::statusMessage,
-            this,
-            &CrmEnabledDerivedPairController::statusMessage);
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::errorMessage,
-            this,
-            &CrmEnabledDerivedPairController::errorMessage);
     connect(detailDialog,
             &CrmEnabledDerivedPairDetailDialog::pairSaved,
             this,
@@ -394,30 +388,9 @@ void CrmEnabledDerivedPairController::onOpenVersion(
     }
 
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setPair(pair);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CrmEnabledDerivedPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CrmEnabledDerivedPairController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -540,25 +513,13 @@ void CrmEnabledDerivedPairController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CrmEnabledDerivedPairDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_pair = pair;
     reverted_pair.version = 0;
     detailDialog->setPair(reverted_pair);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::statusMessage,
-            this,
-            &CrmEnabledDerivedPairController::statusMessage);
-    connect(detailDialog,
-            &CrmEnabledDerivedPairDetailDialog::errorMessage,
-            this,
-            &CrmEnabledDerivedPairController::errorMessage);
     connect(detailDialog,
             &CrmEnabledDerivedPairDetailDialog::pairSaved,
             this,

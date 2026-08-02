@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class TenorKindMdiWindow;
+class TenorKindDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -89,6 +90,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::tenor_kind& kind);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * TenorKindDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(TenorKindDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

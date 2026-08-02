@@ -10,7 +10,6 @@
 #+entity_singular: book_purpose_type
 #+entity_plural: book_purpose_types
 #+entity_title: Book Purpose Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-11
@@ -34,6 +33,7 @@ and ledger feed.
 :schema:    public
 :product:   ores
 :component: refdata
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -169,9 +169,6 @@ faker::number::integer(1, 100)
 :collection_name:        types
 :item_var:               type
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_book_purpose_types_request
 :get_response_class:     refdata::messaging::get_book_purpose_types_response
 :get_message_type:       get_book_purpose_types_request

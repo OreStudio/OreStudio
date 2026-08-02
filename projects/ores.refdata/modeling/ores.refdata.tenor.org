@@ -30,7 +30,7 @@ with a standard label.
 :schema:        public
 :product:       ores
 :component:     refdata
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -181,15 +181,12 @@ ctx.random_int(1, 30)
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :domain_include:         ores.refdata.api/domain/tenor.hpp
 :domain_class:           refdata::domain::tenor
 :protocol_include:       ores.refdata.api/messaging/tenor_protocol.hpp
 :collection_name:        tenors
 :item_var:               tenor
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_change_reason_cache: true
 :get_request_class:      refdata::messaging::get_tenors_request
 :get_response_class:     refdata::messaging::get_tenors_response
 :get_message_type:       get_tenors_request

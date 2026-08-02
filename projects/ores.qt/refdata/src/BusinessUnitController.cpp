@@ -176,16 +176,12 @@ void BusinessUnitController::onShowHistory(const refdata::domain::business_unit&
     showHistoryWindow(business_unit);
 }
 
-void BusinessUnitController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit";
-
-    auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
+void BusinessUnitController::wireDetailDialogCommon(BusinessUnitDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BusinessUnitDetailDialog::statusMessage,
@@ -195,6 +191,15 @@ void BusinessUnitController::showAddWindow() {
             &BusinessUnitDetailDialog::errorMessage,
             this,
             &BusinessUnitController::errorMessage);
+}
+
+void BusinessUnitController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit";
+
+    auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BusinessUnitDetailDialog::business_unitSaved,
             this,
@@ -231,22 +236,10 @@ void BusinessUnitController::showDetailWindow(const refdata::domain::business_un
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << business_unit.unit_code;
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setUnit(business_unit);
 
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::statusMessage,
-            this,
-            &BusinessUnitController::statusMessage);
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::errorMessage,
-            this,
-            &BusinessUnitController::errorMessage);
     connect(detailDialog,
             &BusinessUnitDetailDialog::business_unitSaved,
             this,
@@ -390,30 +383,9 @@ void BusinessUnitController::onOpenVersion(const refdata::domain::business_unit&
     }
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setUnit(business_unit);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BusinessUnitController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BusinessUnitController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -532,25 +504,13 @@ void BusinessUnitController::onRevertVersion(const refdata::domain::business_uni
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_business_unit = business_unit;
     reverted_business_unit.version = 0;
     detailDialog->setUnit(reverted_business_unit);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::statusMessage,
-            this,
-            &BusinessUnitController::statusMessage);
-    connect(detailDialog,
-            &BusinessUnitDetailDialog::errorMessage,
-            this,
-            &BusinessUnitController::errorMessage);
     connect(detailDialog,
             &BusinessUnitDetailDialog::business_unitSaved,
             this,

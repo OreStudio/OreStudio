@@ -165,15 +165,12 @@ void DayCountFractionTypeController::onShowHistory(
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void DayCountFractionTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new day count fraction type";
-
-    auto* detailDialog = new DayCountFractionTypeDetailDialog(mainWindow_);
+void DayCountFractionTypeController::wireDetailDialogCommon(
+    DayCountFractionTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &DayCountFractionTypeDetailDialog::statusMessage,
@@ -183,6 +180,15 @@ void DayCountFractionTypeController::showAddWindow() {
             &DayCountFractionTypeDetailDialog::errorMessage,
             this,
             &DayCountFractionTypeController::errorMessage);
+}
+
+void DayCountFractionTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new day count fraction type";
+
+    auto* detailDialog = new DayCountFractionTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &DayCountFractionTypeDetailDialog::typeSaved,
             this,
@@ -221,21 +227,10 @@ void DayCountFractionTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new DayCountFractionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::statusMessage,
-            this,
-            &DayCountFractionTypeController::statusMessage);
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::errorMessage,
-            this,
-            &DayCountFractionTypeController::errorMessage);
     connect(detailDialog,
             &DayCountFractionTypeDetailDialog::typeSaved,
             this,
@@ -377,29 +372,9 @@ void DayCountFractionTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new DayCountFractionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<DayCountFractionTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<DayCountFractionTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -522,24 +497,13 @@ void DayCountFractionTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new DayCountFractionTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_type = type;
     reverted_type.version = 0;
     detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::statusMessage,
-            this,
-            &DayCountFractionTypeController::statusMessage);
-    connect(detailDialog,
-            &DayCountFractionTypeDetailDialog::errorMessage,
-            this,
-            &DayCountFractionTypeController::errorMessage);
     connect(detailDialog,
             &DayCountFractionTypeDetailDialog::typeSaved,
             this,

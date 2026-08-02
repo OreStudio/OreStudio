@@ -163,15 +163,11 @@ void AssetClassCodeController::onShowHistory(const refdata::domain::asset_class_
     showHistoryWindow(QString::fromStdString(class_.code));
 }
 
-void AssetClassCodeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new asset class code";
-
-    auto* detailDialog = new AssetClassCodeDetailDialog(mainWindow_);
+void AssetClassCodeController::wireDetailDialogCommon(AssetClassCodeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &AssetClassCodeDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void AssetClassCodeController::showAddWindow() {
             &AssetClassCodeDetailDialog::errorMessage,
             this,
             &AssetClassCodeController::errorMessage);
+}
+
+void AssetClassCodeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new asset class code";
+
+    auto* detailDialog = new AssetClassCodeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &AssetClassCodeDetailDialog::class_Saved,
             this,
@@ -217,21 +222,10 @@ void AssetClassCodeController::showDetailWindow(const refdata::domain::asset_cla
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << class_.code;
 
     auto* detailDialog = new AssetClassCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setCode(class_);
 
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::statusMessage,
-            this,
-            &AssetClassCodeController::statusMessage);
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::errorMessage,
-            this,
-            &AssetClassCodeController::errorMessage);
     connect(detailDialog,
             &AssetClassCodeDetailDialog::class_Saved,
             this,
@@ -371,29 +365,9 @@ void AssetClassCodeController::onOpenVersion(const refdata::domain::asset_class_
     }
 
     auto* detailDialog = new AssetClassCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCode(class_);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<AssetClassCodeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<AssetClassCodeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -512,24 +486,13 @@ void AssetClassCodeController::onRevertVersion(const refdata::domain::asset_clas
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AssetClassCodeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_class_ = class_;
     reverted_class_.version = 0;
     detailDialog->setCode(reverted_class_);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::statusMessage,
-            this,
-            &AssetClassCodeController::statusMessage);
-    connect(detailDialog,
-            &AssetClassCodeDetailDialog::errorMessage,
-            this,
-            &AssetClassCodeController::errorMessage);
     connect(detailDialog,
             &AssetClassCodeDetailDialog::class_Saved,
             this,

@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class CurrencyPairClassificationMdiWindow;
+class CurrencyPairClassificationDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -89,6 +90,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const refdata::domain::currency_pair_classification& classification);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * CurrencyPairClassificationDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(CurrencyPairClassificationDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

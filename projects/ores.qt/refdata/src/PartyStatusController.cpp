@@ -163,15 +163,11 @@ void PartyStatusController::onShowHistory(const refdata::domain::party_status& s
     showHistoryWindow(QString::fromStdString(status.code));
 }
 
-void PartyStatusController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party status";
-
-    auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
+void PartyStatusController::wireDetailDialogCommon(PartyStatusDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PartyStatusDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void PartyStatusController::showAddWindow() {
             &PartyStatusDetailDialog::errorMessage,
             this,
             &PartyStatusController::errorMessage);
+}
+
+void PartyStatusController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party status";
+
+    auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PartyStatusDetailDialog::statusSaved,
             this,
@@ -217,21 +222,10 @@ void PartyStatusController::showDetailWindow(const refdata::domain::party_status
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << status.code;
 
     auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setStatus(status);
 
-    connect(detailDialog,
-            &PartyStatusDetailDialog::statusMessage,
-            this,
-            &PartyStatusController::statusMessage);
-    connect(detailDialog,
-            &PartyStatusDetailDialog::errorMessage,
-            this,
-            &PartyStatusController::errorMessage);
     connect(detailDialog,
             &PartyStatusDetailDialog::statusSaved,
             this,
@@ -370,29 +364,9 @@ void PartyStatusController::onOpenVersion(const refdata::domain::party_status& s
     }
 
     auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setStatus(status);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PartyStatusDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PartyStatusController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PartyStatusDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PartyStatusController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -511,24 +485,13 @@ void PartyStatusController::onRevertVersion(const refdata::domain::party_status&
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_status = status;
     reverted_status.version = 0;
     detailDialog->setStatus(reverted_status);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PartyStatusDetailDialog::statusMessage,
-            this,
-            &PartyStatusController::statusMessage);
-    connect(detailDialog,
-            &PartyStatusDetailDialog::errorMessage,
-            this,
-            &PartyStatusController::errorMessage);
     connect(detailDialog,
             &PartyStatusDetailDialog::statusSaved,
             this,

@@ -245,7 +245,6 @@ cross-facet index only.
 
 | Feature | Type | Default |
 |---------+------+---------|
-| =has_qt= | bool | false |
 | =has_pagination= | bool | false |
 | =has_uuid_primary_key= | bool | false |
 | =has_change_reason_cache= | bool | false |
@@ -311,7 +310,7 @@ predicate. Which one applies depends on the model's metatype.
 
 | Group | Predicates | Computed from |
 |-------+------------+---------------|
-| Presence gates | =has_tenant_in_pk=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right= | "does the entity have attribute / key X" |
+| Presence gates | =has_tenant_in_pk=, =has_multiple_natural_keys=, =has_uuid_columns=, =has_badge_columns=, =has_description_column=, =has_combo_fields=, =has_text_edit_fields=, =has_uuid_detail_fields=, =has_uuid_left_or_right=, =has_qt= | "does the entity have attribute / key X" — =has_qt= is truthiness of whether a =** Qt= heading was authored at all, not a settable value |
 | Presence gates (=domain_entity=/=table= only) | =has_image_id=, =has_coding_scheme=, =has_nullable_coding_scheme= | computed in =core.py= from other fields (=image_id=, =coding_scheme=) — /for these two model types only/ |
 | Type predicates | =is_uuid=, =is_text=, =primary_key.is_uuid/is_text=, =left.is_uuid=, =right.is_uuid= | attribute SQL / C++ type |
 | Nullability predicates | =nullable=, =is_optional(_string/_uuid/_timestamp)=, =is_nullable_int/_string=, =is_already_optional=, =is_tristate= | attribute nullability |
@@ -353,7 +352,7 @@ axes. Each axis has a small, closed vocabulary:
 | Tenancy scope | global / tenant / tenant-workspace | =has_tenant_id=, =has_workspace_id= ([[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]]) |
 | SQL tenant-scoping policy | standard / system-scoped / nullable-tenant | =system_scope=, =nullable_tenant_id= (=ores.sql.schema=; already an enumerated feature per the note above, not two independent booleans) |
 | Key shape | text-natural-key / uuid-surrogate-key | =has_uuid_primary_key= (=ores.cpp.qt=) |
-| Qt richness tier | none / basic / standard / rich | =has_qt= off, or on plus an increasing set of =has_change_reason_cache=/=has_pagination=/=has_csv_xml_io=/=has_version_navigation=/=has_explorer_api=/=has_export_macro= (=ores.cpp.qt=) |
+| Qt richness tier | none / basic / standard / rich | no =** Qt= heading authored at all, or one present plus an increasing set of =has_change_reason_cache=/=has_pagination=/=has_csv_xml_io=/=has_version_navigation=/=has_explorer_api=/=has_export_macro= (=ores.cpp.qt=) |
 | List mode | full-crud / readonly-paginated | =has_readonly_paginated_list= (=ores.cpp.qt=) |
 | Parent relationship | none / explorer-child / parent-scoped-list | =parent_entity_singular=+=has_explorer_api=, or =has_parent_scoped_list=+=parent_key_field=+=parent_key_param= (=ores.cpp.qt=; the two are mutually exclusive with each other but each independent of every other axis here — =has_parent_scoped_list= is only meaningful paired with =readonly-paginated= above, per [[id:483EBF89-6151-480E-8801-FC1ABB284A17][C++ Qt]]) |
 

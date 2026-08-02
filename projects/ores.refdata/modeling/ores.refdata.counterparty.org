@@ -22,11 +22,11 @@ parent_counterparty_id for group structures.
 :schema:               public
 :product:              ores
 :component:             refdata
-:has_tenant_id:         true
 :has_parent_id:         true
 :parent_id_column:      parent_counterparty_id
 :hierarchy_name_field:  full_name
 :generate_touch_function: true
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns
@@ -261,7 +261,6 @@ std::nullopt
 :collection_name:         counterparties
 :item_var:                counterparty
 :key_field:               short_code
-:has_uuid_primary_key:    true
 :get_request_class:       refdata::messaging::get_counterparties_request
 :get_response_class:      refdata::messaging::get_counterparties_response
 :get_message_type:        get_counterparties_request
@@ -275,7 +274,6 @@ std::nullopt
 :history_request_class:   refdata::messaging::get_counterparty_history_request
 :history_response_class:  refdata::messaging::get_counterparty_history_response
 :history_message_type:    get_counterparty_history_request
-:has_change_reason_cache: true
 :settings_group:          CounterpartyListWindow
 :window_title:            Counterparties
 :icon:                    Handshake

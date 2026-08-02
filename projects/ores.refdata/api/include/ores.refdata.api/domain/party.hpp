@@ -56,18 +56,18 @@ struct party final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Full legal name of the party.
-     *
-     * The official registered name of the entity.
-     */
-    std::string full_name;
-
-    /**
      * @brief Short code for quick reference.
      *
      * A brief mnemonic code used in trading systems.
      */
     std::string short_code;
+
+    /**
+     * @brief Full legal name of the party.
+     *
+     * The official registered name of the entity.
+     */
+    std::string full_name;
 
     /**
      * @brief Globally unique human-readable codename (adjective_noun).
@@ -114,7 +114,12 @@ struct party final {
     /**
      * @brief Business center location code.
      *
-     * FpML business center code indicating primary location.
+     * FpML business center code indicating primary location. Synthetic parties default to WRLD (the
+     * global sentinel business centre, guaranteed seeded for every tenant by the system-tenant
+     * bootstrap -- see the same reasoning in ores.refdata.book.org), not a real FpML city code like
+     * GBLO: real city codes only exist once the large, optional FpML business-centre reference
+     * dataset has been loaded, so using one here would make a freshly-generated party fail its
+     * FK-validation trigger in any environment that hasn't loaded it.
      */
     std::string business_center_code;
 

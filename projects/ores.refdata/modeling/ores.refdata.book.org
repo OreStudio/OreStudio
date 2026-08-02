@@ -22,8 +22,7 @@ capital treatment. Must belong to exactly one portfolio.
 :schema:           public
 :product:          ores
 :component:        refdata
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:   fk-scoped-child
 :END:
 
 * Columns
@@ -337,7 +336,6 @@ std::string("WRLD")
 :collection_name:         books
 :item_var:                book
 :key_field:               name
-:has_uuid_primary_key:    true
 :get_request_class:       refdata::messaging::get_books_request
 :get_response_class:      refdata::messaging::get_books_response
 :get_message_type:        get_books_request
@@ -351,7 +349,6 @@ std::string("WRLD")
 :history_request_class:   refdata::messaging::get_book_history_request
 :history_response_class:  refdata::messaging::get_book_history_response
 :history_message_type:    get_book_history_request
-:has_explorer_api:        true
 :has_change_reason_cache: true
 :has_export_macro:        true
 :parent_entity_singular:  portfolio

@@ -24,8 +24,7 @@ instead inherited from the referenced IBOR index convention.
 :schema:           public
 :product:          ores
 :component:        refdata
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:   workspace-scoped-lookup
 :END:
 
 * Columns
@@ -193,12 +192,9 @@ std::nullopt
 
 ** Qt
 :PROPERTIES:
-:has_pagination:          true
 :collection_name:         deposit_conventions
 :item_var:                dc
 :key_field:               id
-:has_uuid_primary_key:    false
-:has_change_reason_cache:     true
 :delete_request_id_field:   ids
 :get_request_class:       refdata::messaging::get_deposit_conventions_request
 :get_response_class:      refdata::messaging::get_deposit_conventions_response

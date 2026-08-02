@@ -31,6 +31,8 @@ abstract.
 | [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]] | =counterparty= | UUID surrogate key, standard Qt tier, self-referencing =has_parent_id= tree. |
 | [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]] | =currency= | Text natural key, rich Qt tier: CSV/XML import-export, version navigation. |
 | [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]] | =market_observation= | No Qt, TimescaleDB hypertable, write-heavy measurement stream. |
+| [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]] | =cds_convention= | Text natural key, tenant+workspace scope, standard Qt tier. |
+| [[id:9618DCF1-2FE8-4AE2-A841-F671A97E764E][Tenant-scoped junction]] | =currency_calendar= | Plain many-to-many association, tenant-scoped, no Qt surface. The one profile anchored to the =junction= metatype rather than =domain_entity=. |
 
 * See also
 

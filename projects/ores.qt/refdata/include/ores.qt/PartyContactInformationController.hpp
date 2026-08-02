@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class PartyContactInformationMdiWindow;
+class PartyContactInformationDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -92,6 +93,14 @@ private:
     void showAddWindow();
     void
     showDetailWindow(const refdata::domain::party_contact_information& partyContactInformation);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * PartyContactInformationDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(PartyContactInformationDetailDialog* detailDialog);
     void
     showHistoryWindow(const refdata::domain::party_contact_information& partyContactInformation);
 

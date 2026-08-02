@@ -166,15 +166,12 @@ void OvernightIndexConventionController::onShowHistory(
     showHistoryWindow(QString::fromStdString(ni.id));
 }
 
-void OvernightIndexConventionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new overnight index convention";
-
-    auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+void OvernightIndexConventionController::wireDetailDialogCommon(
+    OvernightIndexConventionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &OvernightIndexConventionDetailDialog::statusMessage,
@@ -184,6 +181,15 @@ void OvernightIndexConventionController::showAddWindow() {
             &OvernightIndexConventionDetailDialog::errorMessage,
             this,
             &OvernightIndexConventionController::errorMessage);
+}
+
+void OvernightIndexConventionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new overnight index convention";
+
+    auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &OvernightIndexConventionDetailDialog::niSaved,
             this,
@@ -222,21 +228,10 @@ void OvernightIndexConventionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << ni.id;
 
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(ni);
 
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::statusMessage,
-            this,
-            &OvernightIndexConventionController::statusMessage);
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::errorMessage,
-            this,
-            &OvernightIndexConventionController::errorMessage);
     connect(detailDialog,
             &OvernightIndexConventionDetailDialog::niSaved,
             this,
@@ -378,29 +373,9 @@ void OvernightIndexConventionController::onOpenVersion(
     }
 
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConvention(ni);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<OvernightIndexConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<OvernightIndexConventionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -525,24 +500,13 @@ void OvernightIndexConventionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OvernightIndexConventionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_ni = ni;
     reverted_ni.version = 0;
     detailDialog->setConvention(reverted_ni);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::statusMessage,
-            this,
-            &OvernightIndexConventionController::statusMessage);
-    connect(detailDialog,
-            &OvernightIndexConventionDetailDialog::errorMessage,
-            this,
-            &OvernightIndexConventionController::errorMessage);
     connect(detailDialog,
             &OvernightIndexConventionDetailDialog::niSaved,
             this,

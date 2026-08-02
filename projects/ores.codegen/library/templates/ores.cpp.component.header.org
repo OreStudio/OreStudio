@@ -6,6 +6,7 @@
 #+type: archetype
 #+output: projects/{component_dir}/include/{component_full}/{component_full}.hpp
 #+facet: ores.cpp.component
+#+component_kind: flat api core service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08

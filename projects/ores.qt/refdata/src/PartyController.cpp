@@ -166,20 +166,25 @@ void PartyController::onShowHistory(const refdata::domain::party& party) {
     showHistoryWindow(party);
 }
 
-void PartyController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
-
-    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+void PartyController::wireDetailDialogCommon(PartyDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
     connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
+}
+
+void PartyController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party";
+
+    auto* detailDialog = new PartyDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PartyDetailDialog::partySaved,
             this,
@@ -216,17 +221,10 @@ void PartyController::showDetailWindow(const refdata::domain::party& party) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << party.short_code;
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setParty(party);
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
-    connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
     connect(detailDialog,
             &PartyDetailDialog::partySaved,
             this,
@@ -365,31 +363,9 @@ void PartyController::onOpenVersion(const refdata::domain::party& party, int ver
     }
 
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setParty(party);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PartyDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PartyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PartyDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PartyController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -506,20 +482,13 @@ void PartyController::onRevertVersion(const refdata::domain::party& party) {
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_party = party;
     reverted_party.version = 0;
     detailDialog->setParty(reverted_party);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog, &PartyDetailDialog::statusMessage, this, &PartyController::statusMessage);
-    connect(detailDialog, &PartyDetailDialog::errorMessage, this, &PartyController::errorMessage);
     connect(detailDialog,
             &PartyDetailDialog::partySaved,
             this,

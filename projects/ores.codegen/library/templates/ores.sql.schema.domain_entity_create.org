@@ -631,7 +631,7 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+<<paste:59F4313F-B119-44D8-8E4E-05AE8B18DE95>>
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent
@@ -646,6 +646,7 @@ begin
           and valid_from < clock_timestamp();
     else
         NEW.version = 1;
+<<paste:8697C751-ECD5-4501-AF06-77AD9A8985AB>>
     end if;
 {{/domain_entity.has_audit_columns}}
 {{^domain_entity.has_audit_columns}}

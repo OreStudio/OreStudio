@@ -34,9 +34,13 @@ namespace ores::marketdata::client {
  *
  * Translates an ORE key (e.g. "FX/RATE/EUR/USD") into the canonical NATS
  * fan-out subject ("marketdata.v1.tick.fx.rate.eur.usd") and subscribes to
- * it. Each arriving message is deserialised with rfl::json and delivered to
- * the caller-supplied handler. Malformed messages are logged and silently
- * dropped.
+ * it. Each arriving message is deserialised with the process-wide
+ * default_wire_codec() (matches whatever ORES_NATS_WIRE_FORMAT the
+ * publisher used) and delivered to the caller-supplied handler. Malformed
+ * messages are logged and reported via @p on_error, if supplied — a
+ * consistently-failing stream (e.g. a wire-format mismatch) is otherwise
+ * invisible in the UI: ticks silently never arrive, with nothing to tell
+ * the user why.
  *
  * The subscription is torn down automatically when this object is destroyed.
  * Move-only — the underlying NATS subscription cannot be shared.
@@ -55,6 +59,17 @@ public:
     using handler = std::function<void(const domain::fx_spot_tick&)>;
 
     /**
+     * @brief Callback invoked (on the NATS delivery thread, same as @ref
+     * handler) when a tick fails to deserialise. Not rate-limited: under
+     * normal operation this path should never fire, since the codec
+     * matches the publisher's own wire format -- if it does fire
+     * repeatedly, that is itself the signal worth surfacing (e.g. a wire
+     * format mismatch, or a genuinely corrupt stream), not something to
+     * suppress.
+     */
+    using error_handler = std::function<void(const std::string&)>;
+
+    /**
      * @brief Subscribe to tick updates for an ORE key.
      *
      * @param nats       Connected NATS client to subscribe on.
@@ -63,11 +78,15 @@ public:
      *                   subscription matches the tenant-scoped publish path used
      *                   by the ingest loop.
      * @param on_tick    Invoked on the NATS delivery thread for each valid tick.
+     * @param on_error   Optional; invoked on the NATS delivery thread for each
+     *                   tick that fails to deserialise. Failures are always
+     *                   logged regardless of whether this is supplied.
      */
     fx_spot_subscription(ores::nats::service::client& nats,
                          std::string ore_key,
                          std::string tenant_id,
-                         handler on_tick);
+                         handler on_tick,
+                         error_handler on_error = {});
 
     ~fx_spot_subscription() = default;
 

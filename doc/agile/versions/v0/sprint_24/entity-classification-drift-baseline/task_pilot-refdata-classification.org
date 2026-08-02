@@ -303,7 +303,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Duplicate/contradictory ignore entry (flagged independently by all 3 review passes) | projects/ores.sql/utility/validation_ignore.txt | Accepted | Fixed in 6f44cc3b4 -- removed the stale "intentionally omit version" entry, kept the correctly-explained one. |
+| 2 | CI has no check that catches ores.refdata drift itself (user request, raised mid-round, not a bot finding) | .github/workflows/pr.yml, projects/ores.codegen/scripts/check_component_drift.py (new) | Accepted | Added in 4a1bba138: refdata-codegen-drift job regenerates every ores.refdata model on every PR and fails on any diff. Scoped to refdata for now; extend --components per component as each is brought to a verified zero-diff state. |
+| 3 | Minor: legacy is_domain_entity_model fallback path noted, not a defect in this diff | projects/ores.codegen/src/codegen/core.py | Declined | Not changed. Explicitly flagged as no-action-needed by the reviewer itself -- a future cleanup note, not a defect in this PR. |
+| 4 | Minor: silent last-write-wins on impls_lower collision if two implementations UUIDs differ only by case | projects/ores.codegen/src/codegen/core.py | Declined | Not changed. Can't happen today (UUIDs are canonically case-insensitive identifiers, so two such keys really are the same paste point) -- noted by the reviewer as an implicit assumption, not a bug. |
 
 * Result
 

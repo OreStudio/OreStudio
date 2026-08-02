@@ -8,7 +8,7 @@
 #+filetags: :nats-configurable-wire-format:sprint_24:v0:
 #+owner: marco
 #+branch: feature/fix-fx-spot-subscription-hardcoded-json
-#+pr:
+#+pr: 1809
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-02
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1809][#1809]] | [marketdata,qt] Fix fx_spot_subscription hardcoded rfl::json, ignoring wire codec |
 
 * Review
 

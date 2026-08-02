@@ -453,6 +453,16 @@ void FxSpotChartWindow::startLiveSubscription() {
                             self->addSample(ms, mid);
                     },
                     Qt::QueuedConnection);
+            },
+            [self](const std::string& reason) {
+                QMetaObject::invokeMethod(
+                    self,
+                    [self, reason]() {
+                        if (self)
+                            emit self->errorOccurred(
+                                tr("Failed to parse FX tick: %1").arg(QString::fromStdString(reason)));
+                    },
+                    Qt::QueuedConnection);
             });
         BOOST_LOG_SEV(lg(), debug) << "Live subscription started for " << oreKey_.toStdString();
     } catch (const std::exception& e) {

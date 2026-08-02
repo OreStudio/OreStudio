@@ -8,7 +8,7 @@
 #+filetags: :sprint_24:v0:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment: solid_dirac
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -48,7 +48,7 @@ task.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
@@ -89,6 +89,7 @@ task.
 | [[id:926379AF-B17C-4700-AF89-6AD1EB006281][Consolidate and migrate ores.shell request helpers to wire_codec]] | DONE | 2026-07-30 | 2026-07-30 | The do_request/do_auth_request template helper is copy-pasted independently into thirteen shell command .cpp files (18 definitions, 60 call sites), plus 7 more files using other direct rfl::json patterns (101 occurrences across 22 files total). De-duplicate into one shared helper in a shell-wide header first -- a real cleanup win independent of the format work -- then have that single helper route through an injected wire_codec instead of rfl::json directly. |
 | [[id:493C5EF6-FE85-4623-8103-563EB5CA6EE3][End-to-end verify msgpack wire format and close out the story]] | DONE | 2026-07-31 | 2026-07-31 | With every layer migrated, flip a test environment's .env to msgpack and verify round-trip correctness across Qt-to-service and shell-to-service, including the image-batch flows this whole investigation started from. Confirms the raw-bytes-not-base64-for-images task's goal is achieved for free. Abandon that task in favour of this story at close, and record the .env config knob in the relevant How do I recipe. |
 | [[id:581EDA54-D912-43C0-B68B-6CD33C8DFA0B][Migrate remaining service-to-service hard-coded rfl::json call sites to wire_codec]] | DONE | 2026-07-30 | 2026-07-30 | A repo-wide sweep (grep for rfl::json combined with request_sync usage) found service-to-service NATS call sites still hard-coding rfl::json instead of routing through ores::nats::default_wire_codec(), discovered outside every completed task's audited file list: ores.iam.core/service/cache/party_cache.hpp, ores.iam.core/messaging/tenant_handler.hpp, ores.marketdata.client/crm_client.cpp, ores.refdata.client/service/cache/currency_pair_convention_cache.hpp, ores.reporting.core/messaging/report_definition_template_handler.hpp, ores.trading.core/messaging/trade_handler.hpp, plus ClientManagerTradeInstrument.cpp's decode side (parse_trade_instrument, a JSON-specific two-phase parser in ores.qt.headless). Migrate every one onto the common wire_codec encode/decode helpers, then re-run the sweep to confirm it is clean, so a full-environment msgpack switch is safe. |
+| [[id:1FC899C9-48A9-416C-87D0-FF4BB54F0DB7][Fix fx_spot_subscription hardcoded rfl::json, ignoring wire codec]] | DONE | 2026-08-02 | 2026-08-02 | fx_spot_subscription.cpp still hardcodes rfl::json::read regardless of ORES_NATS_WIRE_FORMAT, so FX Spot Monitor and Cross-Rates Matrix silently receive zero ticks under msgpack -- missed by the story's migration sweep. |
 
 * Decisions
 

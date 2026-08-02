@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 1FC899C9-48A9-416C-87D0-FF4BB54F0DB7
+:END:
+#+title: Task: Fix fx_spot_subscription hardcoded rfl::json, ignoring wire codec
+#+description: fx_spot_subscription.cpp still hardcodes rfl::json::read regardless of ORES_NATS_WIRE_FORMAT, so FX Spot Monitor and Cross-Rates Matrix silently receive zero ticks under msgpack -- missed by the story's migration sweep.
+#+type: task
+#+level: s1
+#+filetags: :nats-configurable-wire-format:sprint_24:v0:
+#+owner: marco
+#+branch: feature/fix-fx-spot-subscription-hardcoded-json
+#+pr: 1809
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Switch =fx_spot_subscription.cpp= from a hardcoded =rfl::json::read= to
+=ores::nats::default_wire_codec().decode<T>()=, matching the pattern
+already used by =crm_client.cpp=, so FX spot ticks deserialise
+correctly regardless of =ORES_NATS_WIRE_FORMAT=. Also surface
+deserialisation failures to the UI instead of only logging a WARN
+(add an =error_handler= callback wired to the existing
+=errorOccurred=/status-bar mechanism), since a silently-failing stream
+is otherwise invisible to the user.
+
+Discovered during manual QA of an unrelated task (controller
+decommission, sprint 24): under msgpack, FX Spot Monitor and
+Cross-Rates Matrix showed no data at all, with the only signal a WARN
+in =ores.marketdata.client.fx_spot_subscription='s log
+(=Failed to deserialise fx_spot_tick: ...=).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-02                              |
+
+* Acceptance
+
+- =fx_spot_subscription.cpp= decodes via
+  =ores::nats::default_wire_codec()= instead of hardcoded
+  =rfl::json::read=.
+- =fx_spot_subscription='s constructor gains an optional
+  =error_handler= invoked on deserialisation failure, in addition to
+  the existing WARN log.
+- =FxSpotGridWindow::subscribe= wires that callback to
+  =errorOccurred= (status-bar message), so a wire-format mismatch or
+  corrupt stream is visible to the user, not just the log.
+- Manually verified against a running msgpack environment: FX Spot
+  Monitor and Cross-Rates Matrix receive live ticks with zero
+  deserialisation-failure log lines.
+
+* Plan
+
+Root cause: =fx_spot_subscription.cpp= was the one NATS-tick call site
+missed by the wire-format migration story's sweep (it isn't a
+service-to-service =request_sync= call, which is what that sweep
+grepped for — it's a fire-and-forget subscription handler). Fixed by
+switching to =default_wire_codec().decode<T>()=, following the
+already-correct pattern in =crm_client.cpp=. Also added an
+=error_handler= callback since the existing code only
+logged a WARN on failure — invisible to a user with no server-log
+access, and the actual symptom that made this bug hard to diagnose
+during manual QA (grids just silently stayed empty).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1809][#1809]] | [marketdata,qt] Fix fx_spot_subscription hardcoded rfl::json, ignoring wire codec |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | FxSpotChartWindow uses the same fx_spot_subscription class but only reports subscribe failures, not per-tick decode failures | FxSpotChartWindow.cpp | Accepted | Wired the on_error callback the same way as FxSpotGridWindow, mirroring the pattern rather than deferring to a follow-up. |
+| 2 | No dedicated unit test for the decode-failure -> on_error path | fx_spot_subscription_tests.cpp | Declined | Matches existing convention for this NATS-facing class (crm_client.cpp's equivalent decode path is also untested at this granularity); client isn't easily mockable. |
+| 3 | default_wire_codec() called inline per-message instead of bound once, unlike crm_client.cpp | fx_spot_subscription.cpp | Declined | Cheap const& to a process-wide singleton; not a performance concern, purely stylistic. |
+
+* Result
+
+Fixed =fx_spot_subscription.cpp= to decode via
+=ores::nats::default_wire_codec()= instead of hardcoded
+=rfl::json::read=, and added an =error_handler= callback wired to
+=FxSpotGridWindow='s =errorOccurred= status-bar signal so
+deserialisation failures are visible to the user, not just logged.
+Verified manually against a running msgpack environment (FX Spot
+Monitor and Cross-Rates Matrix receiving live ticks, zero
+deserialisation-failure log lines after the fix) and locally: build
+clean (linux-clang-debug-make), ctest 71/71 passed (100%).
+
+Review round 1: also wired the =on_error= callback into
+=FxSpotChartWindow= (same class of gap the reviewer flagged, mirrors
+=FxSpotGridWindow='s wiring). Two minor style/test-coverage points
+declined as consistent with existing project convention.

@@ -460,6 +460,22 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                             self->applyTick(ore_key, mid, when);
                     },
                     Qt::QueuedConnection);
+            },
+            [self, ore_key](const std::string& reason) {
+                // Not rate-limited here either: a consistently-failing
+                // stream (e.g. the wire-format mismatch this callback was
+                // added to catch) is a real, actionable problem, not
+                // per-tick noise to suppress -- see fx_spot_subscription's
+                // own error_handler docstring.
+                QMetaObject::invokeMethod(
+                    self,
+                    [self, ore_key, reason]() {
+                        if (self)
+                            emit self->errorOccurred(
+                                tr("Failed to parse FX tick for %1: %2")
+                                    .arg(QString::fromStdString(ore_key), QString::fromStdString(reason)));
+                    },
+                    Qt::QueuedConnection);
             });
         BOOST_LOG_SEV(lg(), debug) << "Subscribed to " << ore_key;
     } catch (const std::exception& e) {

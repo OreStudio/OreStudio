@@ -21,7 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.client/detail/subject_helpers.hpp"
 #include "ores.nats/domain/message.hpp"
-#include <rfl/json.hpp>
+#include "ores.nats/domain/wire_codec.hpp"
 
 namespace ores::marketdata::client {
 
@@ -41,19 +41,22 @@ inline static std::string_view logger_name = "ores.marketdata.client.fx_spot_sub
 fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
                                            std::string ore_key,
                                            std::string tenant_id,
-                                           handler on_tick)
-    : sub_(nats.subscribe(detail::ore_key_to_subject(ore_key, tenant_id),
-                          [on_tick = std::move(on_tick)](ores::nats::message msg) {
-                              auto tick = rfl::json::read<ores::marketdata::domain::fx_spot_tick>(
-                                  ores::nats::as_string_view(msg.data));
-                              if (tick) {
-                                  on_tick(*tick);
-                              } else {
-                                  using namespace ores::logging;
-                                  BOOST_LOG_SEV(lg(), warn)
-                                      << "Failed to deserialise fx_spot_tick: "
-                                      << tick.error().what();
-                              }
-                          })) {}
+                                           handler on_tick,
+                                           error_handler on_error)
+    : sub_(nats.subscribe(
+          detail::ore_key_to_subject(ore_key, tenant_id),
+          [on_tick = std::move(on_tick), on_error = std::move(on_error)](ores::nats::message msg) {
+              auto tick = ores::nats::default_wire_codec()
+                              .decode<ores::marketdata::domain::fx_spot_tick>(msg.data);
+              if (tick) {
+                  on_tick(*tick);
+              } else {
+                  using namespace ores::logging;
+                  const std::string reason = tick.error().what();
+                  BOOST_LOG_SEV(lg(), warn) << "Failed to deserialise fx_spot_tick: " << reason;
+                  if (on_error)
+                      on_error(reason);
+              }
+          })) {}
 
 } // namespace ores::marketdata::client

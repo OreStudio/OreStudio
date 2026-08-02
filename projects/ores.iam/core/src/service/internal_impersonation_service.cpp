@@ -45,7 +45,7 @@ std::string internal_impersonation_service::mint_token(const context& ctx,
                                                        const boost::uuids::uuid& party_id,
                                                        const std::string& username,
                                                        std::chrono::seconds ttl) {
-    auto claims = ores::security::jwt::jwt_claims::with_ttl(ttl);
+    ores::security::jwt::jwt_claims claims;
     claims.subject = boost::uuids::to_string(account_id);
     claims.username = username;
     claims.tenant_id = tenant_id;
@@ -56,6 +56,16 @@ std::string internal_impersonation_service::mint_token(const context& ctx,
 
     authorization_service auth_svc(ctx);
     claims.roles = auth_svc.get_effective_permissions(account_id);
+
+    // issued_at/expires_at are stamped last, immediately before signing --
+    // not up front -- so the DB round-trip above (get_effective_permissions)
+    // never eats into the caller-requested ttl. With a short ttl (this
+    // service also backs short-lived step-up tokens), stamping the clock
+    // before that round-trip let it expire before the caller could even use
+    // it under load.
+    const auto ttl_claims = ores::security::jwt::jwt_claims::with_ttl(ttl);
+    claims.issued_at = ttl_claims.issued_at;
+    claims.expires_at = ttl_claims.expires_at;
 
     auto token = signer_.create_token(claims);
     if (!token) {

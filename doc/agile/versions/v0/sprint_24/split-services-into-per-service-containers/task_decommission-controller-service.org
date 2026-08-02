@@ -8,7 +8,7 @@
 #+filetags: :systemd:split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
 #+branch: feature/decommission-controller-service
-#+pr:
+#+pr: 1806
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1806][#1806]] | [systemd,qt] Decommission ores.controller.service and process_supervisor |
 
 * Review
 

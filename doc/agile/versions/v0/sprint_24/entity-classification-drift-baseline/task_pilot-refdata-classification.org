@@ -49,11 +49,11 @@ don't force a match.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all components]] |
-| Now          | Implementing :profile: binding resolution in org_loader.py. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Survey ores.refdata entities against the 5 profiles, then rebind + regen + diff. |
+| Next         | Nothing. |
 | Last touched | 2026-07-31                               |
 
 * Acceptance
@@ -306,3 +306,66 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered, and considerably wider in scope than the original pilot
+goal, after the user escalated this from "prove the profile
+catalogue" to a full zero-drift hotfix:
+
+- =:profile:= binding implemented for both =domain_entity= and
+  =junction= metatypes; 7 profiles (added =tenant-scoped-junction=
+  for the 9 junctions); 100% of =ores.refdata='s 67 codegen-eligible
+  entities/junctions bound and zero-diff regen verified, per
+  Acceptance.
+- =currency= (reference =fully-featured-lookup= entity) and
+  =currency_calendar= (reference junction) both rebound and
+  zero-diff-verified, as required.
+- =leg_type= bound to =simple-lookup= after a genuine gap (missing
+  change-reason tracking) was found by the profile-injection check;
+  =business_unit= correctly left unbound (genuinely bespoke, not
+  workspace-scoped) -- see =* Notes= for the reasoning on both.
+- Beyond the pilot's original scope, at the user's explicit
+  direction to get the branch fully green rather than merely proving
+  the tooling: brought =party='s previously-BLOCKED SQL layer fully
+  under codegen via two new template paste points (plus reuse of an
+  existing one), eliminating the last hand-written/generated
+  divergence in the component; fixed a real, previously-undetected
+  bug in the codegen paste-substitution mechanism (case-sensitive
+  =<<paste:UUID>>= matching -- found only by actually running
+  =compass db recreate -y=, not by isolated diffing); fixed a
+  composite-component scaffold bug (aggregator components like
+  =ores.refdata= itself matching the flat single-module archetype);
+  fixed a wire_codec template bug in the NATS event-cache generator;
+  eliminated all remaining =ores.refdata= generation drift (~130
+  regenerated files, byte-identical to current templates); silenced
+  one pre-existing, unrelated =TEMPORAL_004= schema-validation
+  warning on =ores_compute_app_version_platforms_tbl= with a
+  documented follow-up note (explicit user instruction -- that
+  entity's own regen/filename-migration is out of scope here).
+- Rebased onto latest =main= (picked up an unrelated =ores.ore.core=
+  XML fix) and re-verified end-to-end: full clean rebuild, DB
+  recreate, full =ctest= run. Two failures surfaced post-rebase, both
+  root-caused and fixed (not worked around) rather than dismissed as
+  flaky, per the user's standing "fix it properly" directive:
+  - =ores.qt.headless.tests= (=instrument_parse_dispatch_tests.cpp=,
+    10 cases): test fixtures were json-encoded but
+    =parse_trade_instrument()= decodes via the process-wide
+    =default_wire_codec()=, which defaults to =msgpack= absent a real
+    NATS client. Pinned the test binary's default codec to json.
+  - =ores.iam.core.tests=
+    (=mint_token_respects_the_requested_ttl=/impersonation tests): a
+    real race, not flakiness -- =mint_token()= stamped the token's
+    =issued_at=/=expires_at= before a DB round-trip
+    (=get_effective_permissions()=), so a short ttl could expire
+    before the token was even returned under load. Moved ttl stamping
+    to immediately before signing; verified with 5 consecutive
+    stress-test =ctest= runs, all green.
+- Final state: full local build clean, =validate_schemas.sh= green,
+  full =ctest= suite 74/74 passed.
+
+Acceptance criteria (see =* Acceptance=) are all met. Deferred, by
+explicit user instruction or genuine out-of-scope: a full
+regen/filename-migration for =ores_compute_app_version_platforms_tbl=
+(follow-up noted in =validation_ignore.txt=); a same-treatment audit
+of =counterparty= against what was found for =party= (raised by the
+user mid-session, not picked up this task -- worth a fast follow-up
+given the structural similarity).

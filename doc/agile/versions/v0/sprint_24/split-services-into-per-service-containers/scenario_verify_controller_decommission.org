@@ -30,15 +30,21 @@ This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB
 - The database needs Acme Corporation provisioned (any working
   tenant/login works for this scenario — it isn't testing tenant data,
   just that the service fleet and Qt client work post-decommission).
-  Confirm via =compass db status=, recreating only if stale:
-  =compass db recreate -y -k= then =compass shell -f
-  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
-  Confirm the run completes with no failed steps before starting.
-- Stop any running fleet first (=compass services stop=) so Step 2
-  below is a genuine cold start, not a no-op against an already-warm
-  environment.
-- Build must be current: =compass build= (confirms the controller/
-  Service Dashboard removal compiled and linked cleanly).
+- Build must be current: =compass build=.
+- The fleet lifecycle itself (=compass services start/stop/status=
+  bringing all ~23 units up and down cleanly via systemd, with no
+  =ores.controller.service= row) is a CLI-only check, not something a
+  tester exercises through the client — verify it yourself before
+  handing this scenario off, and start the fleet so it's already
+  running by the time the tester opens the client at Step 1 below.
+- Clean stale plugin build artifacts before launching the client if
+  you've recently removed/renamed a Qt plugin component: the plugin
+  loader globs every =.so= in the plugins directory, so an orphaned
+  old build output left behind by an incremental build (not a fresh
+  =compass build=) gets loaded alongside the current one and can
+  double-instantiate shared UI (e.g. two Test Scenario Runner windows,
+  as this exact removal exposed once — the plugin loader picking up a
+  now-source-deleted =ores.qt.admin=; not a code bug).
 
 * Scenario Info
 
@@ -77,34 +83,18 @@ exactly what to click or type, and exactly what confirms the step
 passed. The panel writes each step's PASS/FAIL/PENDING outcome and
 notes back as a =*** Result= child heading directly under it.
 
-** Start the fleet via compass services start
-
-- From a terminal (not the Qt client yet): run =compass services
-  start=.
-- Confirm the command prints "[Generate + deploy systemd units]"
-  followed by "[systemctl --user start ores-<env>.target]" — this is
-  the new systemd-backed path, not the old controller.
-- Wait for it to finish (up to ~5 minutes cold — 20+ services all
-  connecting to the DB at once). It should exit 0 with every unit
-  reported ready; if any unit times out, that's a FAIL worth noting
-  (which unit, and its log tail from
-  =build/output/<preset>/publish/log/<service_name>.0.log=).
-
-** Confirm status shows the full fleet running
-
-- Run =compass services status=.
-- Confirm all ~23 units (nats-server + every service, including the 5
-  =ores.compute.wrapper= replicas) show =running=, none =missing= or
-  =stopped=.
-- There must be **no** =ores.controller.service= row at all — its
-  absence (not a "stopped" row for it) is the point of this check.
-
 ** Log in as tenant_admin@acme_corporation
 
 - Launch the client: =compass client start=.
 - Log in as =tenant_admin@acme_corporation= /
   =Secure-Password-123=.
 - Confirm login succeeds and the main window opens normally.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Confirm the Service Dashboard menu item is gone
 
@@ -115,6 +105,12 @@ notes back as a =*** Result= child heading directly under it.
 - Confirm the rest of the Telemetry menu (whatever remains) still
   opens normally — no crash, no empty/broken menu.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Confirm Queue Monitor still works
 
 - Open *Operations > Message Queue > Queue Monitor*.
@@ -122,6 +118,12 @@ notes back as a =*** Result= child heading directly under it.
   next to where the Service Dashboard wiring was removed in
   ComputePlugin.cpp — a quick regression check that the removal didn't
   collateral-damage its neighbour).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Stop the fleet via compass services stop
 
@@ -132,14 +134,20 @@ notes back as a =*** Result= child heading directly under it.
 - Run =compass services status= again — confirm every unit now shows
   =stopped=, none left =running=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-08-02T09:27:26Z |
+| Branch        | feature/decommission-controller-service |
+| Commit        | 9b9ca3b17 |
+| Worktree      | swift_curie |
 
 * Notes

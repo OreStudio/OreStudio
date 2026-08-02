@@ -18,6 +18,13 @@
  *
  */
 #include "ores.service/service/systemd_notify.hpp"
+
+// systemd only exists on Linux; the sd_notify(3) wire protocol this
+// implements is a Linux-only AF_UNIX datagram, so there is nothing to
+// notify on macOS/Windows -- notify_systemd_ready() is a no-op there
+// (see the header doc: "safe to call unconditionally").
+#if defined(__linux__)
+
 #include <cstdlib>
 #include <cstring>
 #include <sys/socket.h>
@@ -58,3 +65,14 @@ void notify_systemd_ready() noexcept {
 }
 
 }
+
+#else
+
+namespace ores::service {
+
+void notify_systemd_ready() noexcept {
+}
+
+}
+
+#endif

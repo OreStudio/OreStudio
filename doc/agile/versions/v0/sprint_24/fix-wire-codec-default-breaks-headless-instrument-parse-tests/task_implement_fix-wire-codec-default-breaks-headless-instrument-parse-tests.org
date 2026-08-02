@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: FC8E0FAB-29B5-4C58-83EC-0A935E66C7E1
+:END:
+#+title: Task: Implement Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests
+#+description: Initial task for: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests
+#+type: task
+#+level: s1
+#+filetags: :fix-wire-codec-default-breaks-headless-instrument-parse-tests:sprint_24:v0:
+#+owner: marco
+#+branch: feature/implement-fix-wire-codec-default-breaks-headless-instrument-parse-tests
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:91385A39-EBE4-4048-9A18-E2812E9350A2][Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix =instrument_parse_dispatch_tests.cpp= so its fixtures encode
+through the same wire codec =parse_trade_instrument()= decodes with,
+instead of hard-coding =rfl::json::write()= against a process default
+that is now =msgpack=. Also fix =ores.service='s =systemd_notify.cpp=,
+found broken on macOS/Windows CI while confirming "all operative
+systems" were checked, not just Linux -- it unconditionally used
+Linux-only POSIX socket APIs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:91385A39-EBE4-4048-9A18-E2812E9350A2][Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] |
+| Now          | Both fixes applied; Linux verified locally (build + full ctest 74/74 + headless suite 41/41). macOS/Windows fix cannot be verified locally (no cross-compile toolchain here) -- relying on CI. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, PR, confirm all 3 platforms green in CI.       |
+| Last touched | 2026-08-02                               |
+
+* Acceptance
+
+- =test_ores.qt.headless.tests= passes locally, all 41 cases.
+- No changes to production code (=parse_trade_instrument.cpp=,
+  =wire_codec.cpp=) -- the msgpack default itself is correct.
+- =systemd_notify.cpp= compiles on all platforms; Linux behaviour
+  unchanged (same code, now inside =#if defined(__linux__)=).
+
+* Plan
+
+Root cause, found by bisecting Continuous Linux run history via
+=gh run list=/=gh run view --log=: CI has been red on every run since
+=e7a49f8c1a= (last green, 2026-07-30 20:53 UTC) →
+=95a10b4e84= (first red, 2026-07-31 01:44 UTC). That specific window's
+break was a separate, since-resolved issue (PR #1788's tenant_id
+removal, reverted by =2e9d82d6a=). The failure that is *still* red at
+current =main= tip is different: =ores.qt.headless.tests= failing
+=instrument_parse_dispatch_tests.cpp='s
+=parse_trade_instrument_dispatches_*=/=returns_nullopt_for_*= cases
+with =result.has_value() for: false=, present in every run since
+=66b8ccd0d= (2026-08-01 05:15) through the current tip.
+
+Traced to =b34181e6a= ("[nats,qt,compass] Wire ORES_NATS_WIRE_FORMAT
+into the Qt client and flip the default to msgpack", merged 2026-07-31
+18:13 as part of PR #1793): it flipped
+=wire_codec.cpp='s compiled-in =mutable_default_wire_codec()= from
+=wire_format::json= to =wire_format::msgpack=. That default is what
+=parse_trade_instrument.cpp='s =try_parse<T>()= always decodes
+through (=ores::nats::default_wire_codec().decode<T>(bytes)=), but
+=instrument_parse_dispatch_tests.cpp='s =make_response_json()= helper
+(and one inline call site) still encoded fixtures with
+=rfl::json::write()= directly -- JSON bytes fed to a msgpack decoder,
+so every dispatch case's =parse_trade_instrument()= call returned
+=std::nullopt=.
+
+Fix: added an =encode_via_default_codec()= helper that encodes
+through =ores::nats::default_wire_codec()= (returns
+=std::vector<std::byte>=, converted to a binary-safe =std::string=)
+and replaced both =rfl::json::write()= call sites with it. The
+fixture now round-trips correctly regardless of which wire format is
+the current process default -- fixes today's msgpack default and
+won't silently break again if the default changes again later.
+Dropped the now-unused =<rfl/json.hpp>= include.
+
+** Second regression: macOS/Windows compile failure
+
+Asked explicitly whether CI had been checked "across all operative
+systems" -- it had not; only Linux logs had been inspected up to that
+point. Pulled the latest =Continuous MacOS= and =Continuous Windows=
+run logs directly via =gh run view --log=, and found a second,
+unrelated failure: both fail to even *compile*
+=ores.service/src/service/systemd_notify.cpp=. macOS: =error:
+'sockaddr_un' does not refer to a value= / =use of undeclared
+identifier 'sun_path'=. Windows: =fatal error: 'sys/socket.h' file
+not found=. Same file, same root cause on both: the file
+unconditionally =#include=s =<sys/socket.h>=/=<sys/un.h>= and uses
+=sockaddr_un=/=AF_UNIX= -- POSIX/Linux-only APIs implementing the
+sd_notify(3) wire protocol, added by the systemd sd_notify-readiness
+work (merged as part of PR #1793/#1802) with no platform guard, even
+though its own header doc already says the function is "safe to call
+unconditionally" (true only if it compiles everywhere).
+
+Confirmed no other file in the tree has the same unguarded-include
+pattern (=grep -rl "sys/socket.h\|sys/un.h" projects/=  --  only this
+one file).
+
+Fix: wrapped the whole Linux implementation in
+=#if defined(__linux__) ... #else ... #endif=, with a no-op body on
+the =#else= branch (macOS/Windows have no systemd to notify; a no-op
+is exactly the documented contract already, just now actually true
+cross-platform). Linux behaviour is byte-for-byte unchanged -- same
+code, just now conditionally compiled. Verified the Linux build still
+compiles clean; macOS/Windows compilation cannot be verified locally
+(no cross-toolchain in this environment) and will be confirmed by CI
+on the PR.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

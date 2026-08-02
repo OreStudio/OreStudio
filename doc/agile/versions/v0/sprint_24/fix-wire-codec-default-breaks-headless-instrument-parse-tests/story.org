@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 91385A39-EBE4-4048-9A18-E2812E9350A2
+:END:
+#+title: Story: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests
+#+description: b34181e6a flipped the process-wide default_wire_codec() from JSON to MessagePack, but instrument_parse_dispatch_tests.cpp still hand-encodes its fixtures via rfl::json::write() -- every parse_trade_instrument dispatch test now fails to decode, red on Continuous Linux/MacOS/Windows and Nightly Build across main since.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore a green CI. Continuous Linux/MacOS/Windows and Nightly Build
+have all been red on main, from two separate, unrelated regressions
+found by checking each platform's failure logs individually:
+
+1. *Linux*: PR #1793 (commit b34181e6a, "flip the default to
+   msgpack") broke =ores.qt.headless.tests= -- 41 of its
+   =parse_trade_instrument_dispatches_*=/=returns_nullopt_for_*=
+   cases fail, because =instrument_parse_dispatch_tests.cpp= builds
+   its fixtures with =rfl::json::write()= while
+   =parse_trade_instrument()= always decodes via the process-wide
+   =default_wire_codec()=, which that commit flipped from JSON to
+   MessagePack.
+2. *macOS and Windows*: the systemd sd_notify work (merged as part of
+   PR #1793/#1802) added =ores.service/src/service/systemd_notify.cpp=
+   with an unconditional =#include <sys/socket.h>=/=<sys/un.h>= and
+   =sockaddr_un= usage -- these headers/types don't exist on
+   macOS/Windows, so the whole build fails to compile on those
+   platforms before a single test can run.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Root cause found and fixed locally; verifying and opening the PR. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit, PR, merge.                     |
+| Last touched  | 2026-08-02                               |
+
+* Acceptance
+
+- =ores.qt.headless.tests= passes locally (all 41 cases in
+  =instrument_parse_dispatch_tests.cpp=).
+- =ores.service= (and everything depending on it) compiles on
+  macOS/Windows again -- =notify_systemd_ready()= becomes a no-op
+  outside =__linux__= rather than referencing POSIX-only types.
+- No behavioural change on Linux for either fix: the =msgpack=
+  default flip itself is correct and intentional (PR #1793), and
+  =notify_systemd_ready()='s Linux implementation is untouched inside
+  the =#if defined(__linux__)= guard.
+- CI (Continuous Linux, MacOS, and Windows) goes green on the hotfix
+  PR.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6EDE12C2-492A-4707-8A80-4618676F38B6][Scaffold story: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] | DONE | 2026-08-02 | 2026-08-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FC8E0FAB-29B5-4C58-83EC-0A935E66C7E1][Implement Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] | STARTED | 2026-08-02 | | Initial task for: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests |
+
+* Decisions
+
+* Out of scope
+
+-

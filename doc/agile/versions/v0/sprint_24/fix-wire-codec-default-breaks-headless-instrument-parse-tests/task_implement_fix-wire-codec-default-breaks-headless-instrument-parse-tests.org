@@ -115,6 +115,38 @@ compiles clean; macOS/Windows compilation cannot be verified locally
 (no cross-toolchain in this environment) and will be confirmed by CI
 on the PR.
 
+** Follow-up: replace raw POSIX sockets with boost::asio (round 2)
+
+User pushed back on the raw =socket()=/=sendto()=/=sockaddr_un=
+POSIX code as a hack, given the codebase already depends on
+Boost.Asio everywhere else (=ores.nats= etc.) and Asio wraps AF_UNIX
+datagram sockets directly. Rewrote using
+=boost::asio::local::datagram_protocol::socket=/=endpoint=, guarded
+by =#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)= (Asio's own macro for
+"local sockets are available here", true on POSIX, false on Windows)
+rather than =__linux__= directly -- same practical effect (still a
+no-op on Windows; macOS could theoretically compile the real path
+too, though =$NOTIFY_SOCKET= is never set there in practice since
+macOS has no systemd) but ties the guard to what the code actually
+needs (Asio local-socket support) rather than a platform name.
+Removed all manual =sockaddr_un=/=offsetof=/=memcpy= packing --
+=boost::asio::local::datagram_protocol::endpoint(path)= builds the
+address, and =socket::send_to()= replaces =::socket()=/=::sendto()=/
+=::close()=. The abstract-socket (leading =@=/NUL byte) handling
+and the exact wire message (=READY=1=) are preserved exactly.
+=try/catch (...)= replaces manual return-on-error checks, keeping
+the function's =noexcept= contract (Asio throws
+=boost::system::system_error= on failure; caught and swallowed,
+consistent with the original's best-effort semantics).
+
+Verified: full local build clean (=linux-clang-debug-make=), full
+=ctest= 74/74 passed (re-run after this change, not just the earlier
+targeted =ores.service.lib= build). No unit tests exist for
+=notify_systemd_ready()= itself (before or after) -- it is a
+fire-and-forget, environment-gated call with no meaningful behaviour
+to assert against outside a real systemd socket; not adding one now,
+consistent with the function's existing untested status.
+
 * Notes
 
 * Test Scenarios

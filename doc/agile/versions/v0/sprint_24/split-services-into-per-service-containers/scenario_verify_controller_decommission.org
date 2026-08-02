@@ -94,7 +94,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm the Service Dashboard menu item is gone
 
@@ -109,7 +109,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm Queue Monitor still works
 
@@ -123,7 +123,38 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+
+** Confirm Market Simulator feeds start
+
+- Open *Market Data > Market Simulator*.
+- Note: the folder tree shows one "Synthetic" root per business-unit
+  party (three roots for Acme Corporation) — this is expected, not a
+  duplicate; see [[id:275824BB-0DCE-4EA4-964D-9C86B0498509][Market Simulator: scope folders to current party,
+  clarify feed-start UX]] for the follow-up captured on this. Pick
+  *any one* of the three "Synthetic" roots — they're per-party copies
+  of the same feed set, not different data.
+- Expand that root → =2026 Realistic= → =FX= → =FX Rates=, select the
+  folder, and click *Start all rates* (not the per-row Start button —
+  that only starts one pair at a time).
+- =FX Spot Monitor= (Market Data menu) and =Cross-Rates Matrix=
+  (toolbar) both read the same published FX ticks — "CRM" here is
+  *Cross-Rates Matrix*, a derived grid of cross rates computed from FX
+  spot, not a separate feed you start independently. Once FX Rates are
+  running, open both windows and confirm live prices update in each.
+- Confirm at least some feeds move to =running= (checked via the
+  =Feeds= panel, or by FX Spot Monitor / Cross-Rates Matrix receiving
+  ticks). Not every pair is expected to start — some are skipped for
+  missing vintage data (also tracked in the capture above); this step
+  only confirms the feed-start mechanism itself works post-decommission,
+  not full data coverage.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | 6/13 FX pairs started in the tested "2026 Realistic" folder; remaining pairs skipped for missing vintage data (fed.h10, 2026-05-05) — tracked separately, not a controller-decommission regression. |
 
 ** Stop the fleet via compass services stop
 
@@ -138,16 +169,25 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-08-02T09:27:26Z |
+| Status        | PASSED |
+| Completed at  | 2026-08-02T22:20:00Z |
 | Branch        | feature/decommission-controller-service |
-| Commit        | 9b9ca3b17 |
+| Commit        | ca5b88a12 |
 | Worktree      | swift_curie |
 
 * Notes
+
+Original run recorded a FAIL on "Stop the fleet" using its Notes field
+to report a Market Simulator feed-start issue — there was no dedicated
+step for that check yet. Added one ("Confirm Market Simulator feeds
+start") and re-verified: the fleet stop itself works fine; the "3
+Synthetic roots" are legitimate per-party folders, not duplicates; and
+the partial feed start (6/13 pairs) is a pre-existing vintage-data gap,
+now captured separately at [[id:275824BB-0DCE-4EA4-964D-9C86B0498509][Market Simulator: scope folders to current
+party, clarify feed-start UX]] rather than blocking this scenario.

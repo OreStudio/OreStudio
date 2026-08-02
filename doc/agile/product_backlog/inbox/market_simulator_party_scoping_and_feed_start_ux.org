@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 275824BB-0DCE-4EA4-964D-9C86B0498509
+:END:
+#+title: Market Simulator: scope folders to current party, clarify feed-start UX
+#+description: Market Simulator window shows every party's Synthetic folder tree unfiltered, and feed-start failures (missing vintage data) are silently skipped with no UI feedback.
+#+type: capture
+#+level: cross
+#+filetags: :ores.qt:synthetic:market-simulator:ux:iam:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The Market Simulator window's folder tree (=MarketSimulatorWindow=,
+backed by =ores_synthetic_folders_tbl=) currently displays *every*
+party's =Synthetic= root folder side by side — in Acme Corporation's
+tenant this shows up as three separate "Synthetic" root nodes (one per
+business unit party: HK, US, and a third), each with its own "2016 ORE
+Samples" / "2026 Realistic" collection subtree. This isn't a data bug
+(the rows are legitimate, one root per =party_id=) but the UI doesn't
+scope the tree to the *currently selected party* the way other
+party-aware windows do — every tester/user sees the union of all
+parties' configs at once, with no visual grouping or filter by party
+name. Two related open questions worth resolving together:
+
+- Should the tree be filtered/grouped by the currently active party
+  (as other party-aware windows in the client do), showing only
+  that party's folders unless the user explicitly asks to see others?
+- Why do only the three business-unit parties have a =Synthetic= root
+  and not the holding/root party itself — is that intentional (feeds
+  are always BU-scoped) or a provisioning gap?
+
+Separately, and compounding the confusion: starting feeds for a folder
+(=Start all rates=) silently skips any pair/curve missing vintage data
+for its configured =source=/=date= (e.g. "No vintage data found for
+source=fed.h10.2026-05-05, date=2026-05-05") — this is logged as a
+service-side WARN only, never surfaced in the Market Simulator UI. A
+user has no way to tell, from the client, why a folder shows fewer
+running feeds than it has entries, or what to do about it (provision
+more vintage data? pick a different date?). Discovered while manually
+testing feed startup for FX Spot / CRM verification: of 13 FX pairs in
+a "2026 Realistic" folder, only 6 actually started publishing; the
+other 7 were skipped with no client-visible explanation.
+
+* Why
+
+Together these make "how do I get the Market Simulator feeding data"
+needlessly opaque: the tree shows more than the current party
+plausibly needs, doesn't explain the party-scoping model, and silently
+drops most of a folder's feeds without telling the user why one folder
+publishes 6/13 pairs and calling it done. This surfaced directly during
+manual QA of the controller-decommission task (unrelated to that
+task's own scope, hence captured separately rather than fixed inline).
+
+* References
+
+- =projects/ores.qt/mktdata/src/MarketSimulatorWindow.cpp=
+- =projects/ores.synthetic/.../folder_feed_control_handler.*= (source
+  of the "No vintage data found" skip warning)
+- =ores_synthetic_folders_tbl= (party-scoped folder roots)
+
+* See also
+
+-

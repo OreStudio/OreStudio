@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.qt.headless/parse_trade_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
@@ -29,7 +30,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace {
 
@@ -54,13 +54,23 @@ trade make_test_trade(product_type pt, const std::string& trade_type) {
     return t;
 }
 
+// parse_trade_instrument() always decodes via the process-wide
+// default_wire_codec() (see parse_trade_instrument.cpp's try_parse()), not
+// hard-coded JSON, so the fixture must encode through the same codec rather
+// than rfl::json::write() directly -- otherwise this drifts out of sync
+// whenever the default wire format changes (see wire_codec.cpp).
+std::string encode_via_default_codec(const auto& resp) {
+    auto bytes = ores::nats::default_wire_codec().encode(resp);
+    return std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+}
+
 std::string make_response_json(trade t, trade_instrument instr) {
     get_trade_instrument_response resp;
     resp.success = true;
     resp.message = "";
     resp.trade = std::move(t);
     resp.instrument = std::move(instr);
-    return rfl::json::write(resp);
+    return encode_via_default_codec(resp);
 }
 
 // --- Concrete test populators (one per leaf type under test) ---
@@ -433,7 +443,7 @@ TEST_CASE("parse_trade_instrument_returns_nullopt_for_server_error", tags) {
     resp.message = "trade not found";
 
     ores::qt::IInstrumentFormPopulator pop;
-    auto result = ores::qt::parse_trade_instrument(rfl::json::write(resp), pop);
+    auto result = ores::qt::parse_trade_instrument(encode_via_default_codec(resp), pop);
 
     CHECK_FALSE(result.has_value());
 }

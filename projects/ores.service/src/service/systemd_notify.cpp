@@ -18,43 +18,62 @@
  *
  */
 #include "ores.service/service/systemd_notify.hpp"
-#include <cstdlib>
-#include <cstring>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
+#include "ores.platform/environment/environment.hpp"
+#include <boost/asio/local/datagram_protocol.hpp>
+
+// systemd only exists on Linux, and boost::asio's local (AF_UNIX) sockets
+// -- which this uses instead of hand-rolled sockaddr_un/socket()/sendto()
+// -- are themselves only available where BOOST_ASIO_HAS_LOCAL_SOCKETS is
+// defined (POSIX, not Windows). Nothing to notify on macOS/Windows anyway
+// -- notify_systemd_ready() is a no-op there (see the header doc: "safe to
+// call unconditionally").
+#if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
+
+#include <boost/asio/buffer.hpp>
+#include <boost/asio/io_context.hpp>
+#include <string>
 
 namespace ores::service {
 
 void notify_systemd_ready() noexcept {
-    const char* socket_path = std::getenv("NOTIFY_SOCKET");
-    if (!socket_path || socket_path[0] == '\0')
+    // ores::platform::environment::get_value() rather than std::getenv()
+    // directly -- the latter trips -Werror=deprecated-declarations on
+    // Windows Clang (MSVC STL flags it in favour of _dupenv_s).
+    auto socket_path = platform::environment::environment::get_value("NOTIFY_SOCKET");
+    if (!socket_path || socket_path->empty())
         return;
 
-    sockaddr_un addr{};
-    addr.sun_family = AF_UNIX;
-    std::size_t path_len = std::strlen(socket_path);
-    if (path_len >= sizeof(addr.sun_path))
-        return;
+    try {
+        std::string path = *socket_path;
+        // An abstract socket address (leading '@') is written as a leading
+        // NUL byte, not a literal '@' -- systemd's own convention.
+        // boost::asio::local::*::endpoint copies path.size() bytes rather
+        // than treating it as a NUL-terminated C string, so an embedded
+        // NUL here is preserved correctly.
+        if (path.front() == '@')
+            path.front() = '\0';
 
-    // An abstract socket address (leading '@') is written as a leading NUL
-    // byte, not a literal '@' -- systemd's own convention.
-    std::size_t offset = 0;
-    if (socket_path[0] == '@') {
-        addr.sun_path[0] = '\0';
-        offset = 1;
+        boost::asio::io_context io;
+        boost::asio::local::datagram_protocol::socket sock(io);
+        sock.open();
+
+        static constexpr char message[] = "READY=1";
+        sock.send_to(boost::asio::buffer(message, sizeof(message) - 1),
+                     boost::asio::local::datagram_protocol::endpoint(path));
+    } catch (...) {
+        // Best-effort notification; never throws (see header doc).
     }
-    std::memcpy(addr.sun_path + offset, socket_path + offset, path_len - offset);
-    socklen_t addr_len = static_cast<socklen_t>(offsetof(sockaddr_un, sun_path) + path_len);
-
-    int fd = ::socket(AF_UNIX, SOCK_DGRAM, 0);
-    if (fd < 0)
-        return;
-
-    static constexpr char message[] = "READY=1";
-    ::sendto(
-        fd, message, sizeof(message) - 1, 0, reinterpret_cast<const sockaddr*>(&addr), addr_len);
-    ::close(fd);
 }
 
 }
+
+#else
+
+namespace ores::service {
+
+void notify_systemd_ready() noexcept {
+}
+
+}
+
+#endif

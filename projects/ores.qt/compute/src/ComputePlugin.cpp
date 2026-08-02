@@ -29,7 +29,6 @@
 #include "ores.qt/ReportDefinitionController.hpp"
 #include "ores.qt/ReportInstanceController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
-#include "ores.qt/ServiceDashboardController.hpp"
 #include <QAction>
 #include <QMainWindow>
 #include <QMdiArea>
@@ -132,25 +131,6 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
             &PluginBase::windowCreated);
     connect(computeConsoleController_.get(),
             &ComputeConsoleController::detachableWindowDestroyed,
-            this,
-            &PluginBase::windowDestroyed);
-
-    serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect(serviceDashboardController_.get(),
-            &ServiceDashboardController::statusMessage,
-            this,
-            &PluginBase::statusMessage);
-    connect(serviceDashboardController_.get(),
-            &ServiceDashboardController::errorMessage,
-            this,
-            [this](const QString& msg) { emit statusMessage(msg); });
-    connect(serviceDashboardController_.get(),
-            &ServiceDashboardController::detachableWindowCreated,
-            this,
-            &PluginBase::windowCreated);
-    connect(serviceDashboardController_.get(),
-            &ServiceDashboardController::detachableWindowDestroyed,
             this,
             &PluginBase::windowDestroyed);
 
@@ -277,27 +257,6 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
             if (queueMonitorController_)
                 queueMonitorController_->showListWindow();
         });
-
-        // ---- Operations > Telemetry > Service Dashboard (first item) ----
-        auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty() ?
-                                         nullptr :
-                                         smc.telemetry_menu->actions().first();
-
-        auto* actServiceDashboard =
-            new QAction(ico(Icon::Chart), tr("&Service Dashboard..."), this);
-        connect(actServiceDashboard, &QAction::triggered, this, [this]() {
-            if (serviceDashboardController_)
-                serviceDashboardController_->showDashboard();
-        });
-
-        if (firstTelemetryAction) {
-            smc.telemetry_menu->insertAction(firstTelemetryAction, actServiceDashboard);
-            auto* sep = new QAction(this);
-            sep->setSeparator(true);
-            smc.telemetry_menu->insertAction(firstTelemetryAction, sep);
-        } else {
-            smc.telemetry_menu->addAction(actServiceDashboard);
-        }
     }
 }
 
@@ -319,7 +278,6 @@ void ComputePlugin::on_logout() {
     concurrencyPolicyController_.reset();
     reportTypeController_.reset();
     queueMonitorController_.reset();
-    serviceDashboardController_.reset();
     computeConsoleController_.reset();
     computeDashboardController_.reset();
     appVersionController_.reset();

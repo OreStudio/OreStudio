@@ -57,7 +57,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.qt.api.lib
         ores.iam.api.lib
-        ores.controller.api.lib
         ores.variability.api.lib
     PRIVATE
         # Transient: SessionAuditDialog and other shared dialogs still live in

@@ -37,7 +37,7 @@ class WorkflowDefinitionMdiWindow;
  * @brief Controller for the workflow monitor window.
  *
  * Creates and manages the lifetime of the WorkflowMdiWindow within the MDI
- * area. Follows the same pattern as ServiceDashboardController.
+ * area.
  */
 class WorkflowController final : public QObject {
     Q_OBJECT

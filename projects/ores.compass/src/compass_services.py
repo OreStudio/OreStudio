@@ -9,21 +9,32 @@ Native port of the build/scripts service-lifecycle scripts:
     clear-logs.sh       ->  compass services clear-logs
     start-client.sh     ->  compass client start
 
-The controller spawns IAM and every domain service; this module only
-manages nats-server, the controller, and the Qt client, plus PID-file
-hygiene for anything else found under publish/run/.
+`compass services start/stop/status` are systemd-backed: they
+generate+deploy the concrete per-environment units (same code path as
+`compass systemd generate`/`deploy`) and drive them via `systemctl
+--user`, instead of spawning ores.controller.service to exec/cascade
+its own children directly. ores.controller.service/process_supervisor
+were decommissioned once systemd took over dependency-ordered startup
+and readiness gating (see the split-services-into-per-service-
+containers story). Each unit still execs the same binaries with the
+same --log-directory args as before, so log-based readiness detection
+(gather_counts/cmd_status) is unchanged; only process ownership
+(PID-file bookkeeping -> systemd) and cascade-stop (controller ->
+PartOf=<target>) moved. The Qt client is unaffected -- it was never
+part of the controller's cascade and keeps its own PID-file-based
+launch/stop path.
 """
 
 import argparse
 import contextlib
 import os
-import shutil
 import signal
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+import systemd_generate
 from compass_db import load_env, validate_env_version
 
 CLIENT_COLOURS = {"red": "F44336", "green": "4CAF50", "blue": "2196F3"}
@@ -93,17 +104,14 @@ class Ctx:
         self.log_dir = self.build_dir / "publish/log"
         self.run_dir = self.build_dir / "publish/run"
         self.label = env.get("ORES_CHECKOUT_LABEL", "local1")
+        self.env_name = env.get("ORES_ENV_NAME", "")
+        self.target_name = (systemd_generate._unit_basename("ores", self.env_name)
+                            + ".target" if self.env_name else "")
         self.nats_port = int(env.get("ORES_NATS_PORT", "4222"))
         self.nats_url = env.get("ORES_NATS_URL",
                                 f"nats://localhost:{self.nats_port}")
         self.nats_prefix = env.get("ORES_NATS_SUBJECT_PREFIX",
                                    f"ores.dev.{self.label}")
-        self.nats_wire_format = env.get("ORES_NATS_WIRE_FORMAT", "msgpack")
-        self.nats_config = project_root / f"build/config/nats-{self.label}.conf"
-        self.nats_pid_file = (project_root / "build/nats" / self.label
-                              / "nats-server.pid")
-        self.keys_dir = project_root / "build/keys/nats"
-        self.tls = bool(env.get("ORES_NATS_TLS_CA", ""))
 
     def child_env(self):
         e = os.environ.copy()
@@ -133,7 +141,8 @@ def _read_pid(pid_file: Path):
 
 
 def _launch(ctx, name, binary, args, pid_name=None):
-    """Start a detached process from bin_dir; record its PID file."""
+    """Start a detached process from bin_dir; record its PID file. Used only
+    by the Qt client path -- service lifecycle is systemd-managed."""
     pid_name = pid_name or name
     pid_file = ctx.run_dir / f"{pid_name}.pid"
     pid = _read_pid(pid_file)
@@ -150,12 +159,31 @@ def _launch(ctx, name, binary, args, pid_name=None):
     return proc.pid
 
 
-def _tls_args(ctx, cert_name):
-    if not ctx.tls:
-        return []
-    return ["--nats-tls-ca", str(ctx.keys_dir / "ca.crt"),
-            "--nats-tls-cert", str(ctx.keys_dir / f"{cert_name}.crt"),
-            "--nats-tls-key", str(ctx.keys_dir / f"{cert_name}.key")]
+def _terminate(name, pid_file, grace) -> str:
+    """SIGTERM (then SIGKILL after `grace` seconds) the PID in `pid_file`.
+    Used only by the Qt client path."""
+    pid = _read_pid(pid_file)
+    if pid is None:
+        print(f"  skip    {name} (no PID file — already stopped)")
+        return "gone"
+    pid_file.unlink(missing_ok=True)
+    if not _pid_alive(pid):
+        print(f"  gone    {name:<38} PID {pid}")
+        return "gone"
+    os.kill(pid, signal.SIGTERM)
+    print(f"  stop    {name:<38} PID {pid}")
+    print(f"Waiting for {name} to exit...", end="", flush=True)
+    for _ in range(grace * 2):
+        if not _pid_alive(pid):
+            break
+        time.sleep(0.5)
+        print(".", end="", flush=True)
+    print(" done")
+    if _pid_alive(pid):
+        os.kill(pid, signal.SIGKILL)
+        print(f"  killed  PID {pid} (did not exit within grace period)")
+    print()
+    return "stopped"
 
 
 def _wait_for_listen(port, timeout=60) -> bool:
@@ -174,8 +202,8 @@ def _wait_for_listen(port, timeout=60) -> bool:
     return False
 
 
-def _wait_for_log(ctx, name, pattern, timeout=120, suffix=".log") -> bool:
-    log_file = ctx.log_dir / f"{name}{suffix}"
+def _wait_for_log(ctx, name, pattern, timeout=120, log_basename=None) -> bool:
+    log_file = ctx.log_dir / (log_basename or f"{name}.log")
     start_pos = log_file.stat().st_size if log_file.exists() else 0
     print(f"  wait    {name} ({pattern})", end="", flush=True)
     for i in range(timeout * 2):
@@ -193,6 +221,57 @@ def _wait_for_log(ctx, name, pattern, timeout=120, suffix=".log") -> bool:
             print(".", end="", flush=True)
     print(f" ... timeout (check {log_file})")
     return False
+
+
+def _wait_for_logs(ctx, units, pattern, timeout=180, start_pos=None) -> dict:
+    """Poll every (unit, log_basename) in `units` concurrently -- one
+    shared timeout, not N sequential per-unit timeouts -- since systemd
+    already started every unit's dependency-ordered chain in parallel
+    when the target was started; a real deploy with 20+ services all
+    connecting to the DB at once can legitimately take longer than any
+    single unit's own budget to settle, so checking them one at a time
+    with individual timeouts (as an earlier version of this function
+    did) reported false timeouts for units that were still simply
+    queued behind slower siblings, not actually stuck. Returns
+    {unit: bool} once every unit is ready or the shared timeout expires.
+
+    `start_pos`, if given, is a {unit: byte-offset} map captured by the
+    caller *before* issuing `systemctl start` -- capturing it fresh in
+    here (log_file.stat().st_size at call time) is too late: a fast
+    unit can start, connect, and log "Service ready." before this
+    function is even entered (e.g. while the caller is still waiting
+    on something else, like the NATS port), so a size captured now
+    would already be past that line and this function would wait
+    forever for a *second* occurrence that never comes."""
+    remaining = {unit: ctx.log_dir / log for unit, log in units}
+    if start_pos is None:
+        start_pos = {unit: (f.stat().st_size if f.exists() else 0)
+                     for unit, f in remaining.items()}
+    ready = {}
+    print(f"  wait    {len(remaining)} unit(s) ({pattern})", end="", flush=True)
+    for i in range(timeout * 2):
+        for unit in list(remaining):
+            log_file = remaining[unit]
+            cur = log_file.stat().st_size if log_file.exists() else 0
+            if cur < start_pos[unit]:  # log truncated by service restart
+                start_pos[unit] = 0
+            if not log_file.exists():
+                continue
+            with open(log_file, "rb") as f:
+                f.seek(start_pos[unit])
+                if pattern.encode() in f.read():
+                    ready[unit] = True
+                    del remaining[unit]
+        if not remaining:
+            print(" ... done")
+            return ready
+        time.sleep(0.5)
+        if i % 4 == 3:
+            print(".", end="", flush=True)
+    print(f" ... timeout ({len(remaining)}/{len(ready) + len(remaining)} "
+          f"still not ready: {', '.join(sorted(remaining))})")
+    ready.update({unit: False for unit in remaining})
+    return ready
 
 
 def _log_contains(log_file: Path, pattern: str) -> bool:
@@ -224,42 +303,79 @@ def _log_last_line(log_file: Path) -> str:
     return lines[-1].decode("utf-8", errors="ignore") if lines else ""
 
 
+def _service_units(ctx):
+    """(unit, log_basename) for every concrete systemd unit this
+    environment's target aggregates -- NOT including nats-server, which
+    has no readiness log file under systemd (see _nats_unit) and is
+    tracked separately. `unit` is the systemd unit basename (carries the
+    -<env> suffix systemd_generate.py uses to keep this checkout's units
+    distinct from a sibling checkout's on the same user session);
+    `log_basename` is what the *binary itself* actually names its log
+    file as, which is NOT unit-name-based -- it's always
+    "<service_name>.<replica_index>.log" (replica_index 0 even for
+    singletons, per the shared args_template), unaffected by env name
+    since each checkout's build/output/<preset>/publish/log/ is already
+    its own directory."""
+    units = []
+    for d in systemd_generate.fetch_service_definitions(ctx.env):
+        if not d["enabled"]:
+            continue
+        base = systemd_generate._unit_basename(d["service_name"], ctx.env_name)
+        if d["desired_replicas"] > 1:
+            units += [(f"{base}-{r}", f"{d['service_name']}.{r}.log")
+                      for r in range(1, d["desired_replicas"] + 1)]
+        else:
+            units.append((base, f"{d['service_name']}.0.log"))
+    return units
+
+
+def _nats_unit(ctx):
+    return systemd_generate._unit_basename("nats-server", ctx.env_name)
+
+
+def _systemctl(args, **kwargs):
+    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("text", True)
+    return subprocess.run(["systemctl", "--user"] + args, **kwargs)
+
+
+def _unit_active_state(unit) -> str:
+    """"active"/"inactive"/"failed"/"activating"/... , or "missing" if the
+    unit isn't loaded at all (e.g. never deployed)."""
+    out = _systemctl(["is-active", f"{unit}.service"], check=False)
+    state = out.stdout.strip()
+    return state if state else "missing"
+
+
 def gather_counts(ctx):
     """Service state counts for status displays: dict of state -> count,
-    plus nats state. Mirrors cmd_status's classification."""
+    plus nats state. Mirrors cmd_status's classification, driven by
+    `systemctl --user is-active` instead of PID files."""
     counts = {"running": 0, "starting": 0, "stopped": 0, "missing": 0}
-    _ready = _log_contains
 
-    def _classify(svc):
-        pid = _read_pid(ctx.run_dir / f"{svc}.pid")
-        if pid is None:
+    def _classify(unit, log_basename):
+        state = _unit_active_state(unit)
+        if state == "missing":
             return "missing"
-        if not _pid_alive(pid):
+        if state != "active":
             return "stopped"
-        log_file = ctx.log_dir / f"{svc}.log"
-        if not log_file.exists() and (ctx.log_dir / f"{svc}.0.log").exists():
-            log_file = ctx.log_dir / f"{svc}.0.log"
-        return "running" if _ready(log_file, "Service ready") else "starting"
+        return ("running" if _log_contains(ctx.log_dir / log_basename, "Service ready")
+                else "starting")
 
-    nats_pid = _read_pid(ctx.nats_pid_file)
-    if nats_pid is None:
-        nats = "missing"
-    elif not _pid_alive(nats_pid):
-        nats = "stopped"
-    elif _ready(ctx.log_dir / "nats-server.log", "Server is ready"):
-        nats = "running"
-    else:
-        nats = "starting"
+    if not ctx.env_name:
+        return {"nats": "missing", "counts": counts, "service_total": 0}
 
-    seen = set()
-    if ctx.run_dir.is_dir():
-        for pid_file in sorted(ctx.run_dir.glob("*.pid")):
-            svc = pid_file.stem
-            if svc.startswith("ores.qt"):
-                continue  # the client is reported separately
-            seen.add(svc)
-            counts[_classify(svc)] += 1
-    return {"nats": nats, "counts": counts, "service_total": len(seen)}
+    # nats-server's systemd unit has no -l logfile flag (unlike the old
+    # native-process launch) -- it logs to journald only -- so readiness
+    # here is ActiveState alone, no log-content check available.
+    nats_state = _unit_active_state(_nats_unit(ctx))
+    nats = "missing" if nats_state == "missing" else (
+        "running" if nats_state == "active" else "stopped")
+
+    units = _service_units(ctx)
+    for unit, log_basename in units:
+        counts[_classify(unit, log_basename)] += 1
+    return {"nats": nats, "counts": counts, "service_total": len(units)}
 
 
 def client_status(ctx):
@@ -288,59 +404,72 @@ def _cmd_start(ctx, args):
               file=sys.stderr)
         print(f"       cmake --build --preset {ctx.preset}", file=sys.stderr)
         return 1
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
     ctx.log_dir.mkdir(parents=True, exist_ok=True)
     ctx.run_dir.mkdir(parents=True, exist_ok=True)
-
-    nats_bin = None
-    for candidate in ([shutil.which("nats-server")] +
-                      ["/usr/sbin/nats-server", "/sbin/nats-server",
-                       "/usr/local/sbin/nats-server",
-                       "/usr/local/bin/nats-server"]):
-        if candidate and os.access(candidate, os.X_OK):
-            nats_bin = candidate
-            break
-    if not nats_bin:
-        print("error: nats-server not found (tried PATH, /usr/sbin, /sbin, "
-              "/usr/local/sbin)", file=sys.stderr)
-        return 1
 
     start_ts = time.time()
     print("Starting ORE Studio services")
     print(f"  Preset : {ctx.preset}")
-    print(f"  NATS   : {ctx.nats_url} (prefix: {ctx.nats_prefix}, "
-          f"mTLS: {'enabled' if ctx.tls else 'disabled'})")
+    print(f"  NATS   : {ctx.nats_url} (prefix: {ctx.nats_prefix})")
     print()
 
-    print("[NATS server]")
-    nats_pid = _read_pid(ctx.nats_pid_file)
-    if nats_pid and _pid_alive(nats_pid):
-        print(f"  skip    {'nats-server':<38} PID {nats_pid}")
-    else:
-        if not ctx.nats_config.exists():
-            print(f"  error: NATS config not found: {ctx.nats_config}")
-            print("         run: ./projects/ores.compass/compass.sh nats init")
-            return 1
-        ctx.nats_pid_file.parent.mkdir(parents=True, exist_ok=True)
-        proc = subprocess.Popen(
-            [nats_bin, "--config", str(ctx.nats_config),
-             "-l", str(ctx.log_dir / "nats-server.log")],
-            env=ctx.child_env(), start_new_session=True)
-        ctx.nats_pid_file.write_text(f"{proc.pid}\n")
-        print(f"  start   {'nats-server':<38} PID {proc.pid}")
-    if not _wait_for_listen(ctx.nats_port):
+    print("[Generate + deploy systemd units]")
+    if systemd_generate.cmd_generate(ctx.root, ctx.env, None) != 0:
+        return 1
+    if systemd_generate.cmd_deploy(ctx.root, ctx.env, None) != 0:
         return 1
     print()
 
-    print("[Controller]")
-    _launch(ctx, "ores.controller.service", "ores.controller.service",
-            ["--log-enabled", "--log-level", args.log_level,
-             "--log-directory", "../log",
-             "--nats-url", ctx.nats_url,
-             "--nats-subject-prefix", ctx.nats_prefix,
-             "--nats-wire-format", ctx.nats_wire_format]
-            + _tls_args(ctx, "ores.controller.service"))
-    ok = _wait_for_log(ctx, "ores.controller.service",
-                       "All services started", 120)
+    units = _service_units(ctx)
+    # Captured *before* `systemctl start` so a fast unit that logs
+    # "Service ready." before we ever get around to calling
+    # _wait_for_logs (e.g. while still waiting on the NATS port below)
+    # doesn't have its readiness line skipped by a start_pos taken too
+    # late -- see _wait_for_logs's own docstring.
+    start_pos = {unit: ((ctx.log_dir / log).stat().st_size
+                        if (ctx.log_dir / log).exists() else 0)
+                for unit, log in units}
+
+    print(f"[systemctl --user start {ctx.target_name}]")
+    result = _systemctl(["start", ctx.target_name], check=False)
+    if result.returncode != 0:
+        print(result.stderr, file=sys.stderr)
+        return 1
+    print()
+
+    if not _wait_for_listen(ctx.nats_port):
+        return 1
+
+    # 300s: 20+ services all connecting to the DB at once (migrations,
+    # schema checks) can genuinely take several minutes to all settle,
+    # observed empirically -- the old controller-based start gave a
+    # single combined "All services started" wait of 120s for the same
+    # fleet, but that was one signal from one process; here every unit
+    # is checked independently and the slowest one sets the bar.
+    ready = _wait_for_logs(ctx, units, "Service ready", timeout=300,
+                           start_pos=start_pos)
+    # Requires= means a unit whose FIRST start attempt fails (e.g. it
+    # briefly races a dependency) permanently fails that unit's start
+    # job -- systemd does NOT re-trigger it once the dependency's own
+    # Restart=always later succeeds. One reset-failed+start retry pass
+    # for anything still not ready and in a failed/inactive systemd
+    # state covers that race without masking a genuinely broken service
+    # (which will just fail the retry too).
+    retry = [unit for unit, ok in ready.items()
+             if not ok and _unit_active_state(unit) in ("failed", "inactive")]
+    if retry:
+        print(f"[retry: {len(retry)} unit(s) failed their first start "
+              f"attempt -- likely raced a dependency; retrying once]")
+        for unit in retry:
+            _systemctl(["reset-failed", f"{unit}.service"], check=False)
+            _systemctl(["start", f"{unit}.service"], check=False)
+        retry_units = [(u, log) for u, log in units if u in retry]
+        ready.update(_wait_for_logs(ctx, retry_units, "Service ready"))
+
+    ok = all(ready.values())
     print()
     print(f"Logs     : {ctx.log_dir}")
     print(f"Stop     : compass services stop")
@@ -348,147 +477,22 @@ def _cmd_start(ctx, args):
     return 0 if ok else 1
 
 
-def _terminate(name, pid_file, grace) -> str:
-    """SIGTERM (then SIGKILL after `grace` seconds) the PID in `pid_file`.
-
-    Returns "stopped", "gone" (already dead / no PID file), for callers that
-    tally results across several processes.
-    """
-    pid = _read_pid(pid_file)
-    if pid is None:
-        print(f"  skip    {name} (no PID file — already stopped)")
-        return "gone"
-    pid_file.unlink(missing_ok=True)
-    if not _pid_alive(pid):
-        print(f"  gone    {name:<38} PID {pid}")
-        return "gone"
-    os.kill(pid, signal.SIGTERM)
-    print(f"  stop    {name:<38} PID {pid}")
-    print(f"Waiting for {name} to exit...", end="", flush=True)
-    for _ in range(grace * 2):
-        if not _pid_alive(pid):
-            break
-        time.sleep(0.5)
-        print(".", end="", flush=True)
-    print(" done")
-    if _pid_alive(pid):
-        os.kill(pid, signal.SIGKILL)
-        print(f"  killed  PID {pid} (did not exit within grace period)")
-    print()
-    return "stopped"
-
-
-def _find_orphans(ctx):
-    """Scan the OS process table for anything belonging to this environment
-    that outlived `cmd_stop` — e.g. a domain service the controller failed
-    to cascade-kill (controller died before reaching stop_all(), or a
-    prior session's process was never tracked by a PID file at all).
-
-    Matches conservatively, scoped to *this* environment only, so a
-    sibling worktree's fleet (different --nats-subject-prefix / NATS
-    config) is never touched:
-      - nats-server: command line contains this environment's NATS config
-        path (ctx.nats_config).
-      - every other service: carries this environment's
-        --nats-subject-prefix (unique per checkout by construction — it
-        embeds ORES_CHECKOUT_LABEL). Matched on the prefix alone, not on
-        bin_dir: `ps` reports processes by the relative argv0 they were
-        launched with (`./ores.foo.service`, since _launch() sets
-        cwd=bin_dir), so bin_dir never actually appears in the command
-        line — matching on it silently matches nothing. The Qt client is
-        excluded — its lifecycle is managed by `compass client stop`,
-        not `services stop`.
-
-    Returns a list of (pid, cmdline) tuples.
-    """
-    try:
-        out = subprocess.run(["ps", "-eo", "pid,args"],
-                             capture_output=True, text=True, check=True)
-    except (OSError, subprocess.CalledProcessError):
-        return []
-
-    nats_marker = str(ctx.nats_config)
-    prefix_marker = f"--nats-subject-prefix {ctx.nats_prefix}"
-    orphans = []
-    for line in out.stdout.splitlines()[1:]:
-        line = line.strip()
-        if not line:
-            continue
-        pid_str, _, cmd = line.partition(" ")
-        try:
-            pid = int(pid_str)
-        except ValueError:
-            continue
-        if not _pid_alive(pid):
-            continue
-        is_nats = "nats-server" in cmd and nats_marker in cmd
-        is_service = prefix_marker in cmd and "ores.qt" not in cmd.split()[0]
-        if is_nats or is_service:
-            orphans.append((pid, cmd))
-    return orphans
-
-
-def _verify_no_orphans(ctx):
-    """Run after cmd_stop's own termination sequence: catch anything that
-    outlived it (controller-cascade failures, or processes that were never
-    tracked by a PID file). SIGKILLs whatever it finds and reports it —
-    there is no graceful path left to offer something `cmd_stop` already
-    gave two SIGTERM rounds to reach."""
-    orphans = _find_orphans(ctx)
-    if not orphans:
-        return 0
-    print(f"\n⚠ WARNING: {len(orphans)} stray process(es) survived stop — "
-          f"this means the controller failed to cascade-stop one or more "
-          f"children (or a process from an earlier session was never "
-          f"tracked by a PID file at all). Killing them now, but this is a "
-          f"symptom worth investigating, not a routine cleanup:")
-    for pid, cmd in orphans:
-        binary = cmd.split()[0].split("/")[-1]
-        try:
-            os.kill(pid, signal.SIGKILL)
-            print(f"  ⚠ killed  {binary:<38} PID {pid} (orphaned — untracked, "
-                  f"or the controller failed to stop it)")
-        except OSError as e:
-            print(f"  ⚠ warn    {binary:<38} PID {pid}: could not kill ({e})")
-    print("⚠ If this recurs, check ores.controller.service's own logs from "
-          "the prior session for why stop_all() did not run or did not "
-          "finish.")
-    return len(orphans)
-
-
 def cmd_stop(ctx, args):
     print(f"Stopping ORE Studio services ({ctx.preset})\n")
-    stopped = gone = 0
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
 
-    def _term(name, pid_file, grace):
-        nonlocal stopped, gone
-        if _terminate(name, pid_file, grace) == "stopped":
-            stopped += 1
-        else:
-            gone += 1
+    print(f"[systemctl --user stop {ctx.target_name}]")
+    # PartOf=<target> on every generated unit means stopping the target
+    # cascades to nats-server plus every service, the same one-command
+    # cascade ores.controller.service used to perform itself.
+    result = _systemctl(["stop", ctx.target_name], check=False)
+    if result.returncode != 0 and "not loaded" not in (result.stderr or ""):
+        print(result.stderr, file=sys.stderr)
+        return 1
 
-    print("[Controller]")
-    # The controller must stop all its children before it exits: 30 s grace.
-    _term("ores.controller.service",
-          ctx.run_dir / "ores.controller.service.pid", 30)
-
-    # Clear stale PID files for anything already dead.
-    if ctx.run_dir.is_dir():
-        for f in ctx.run_dir.glob("*.pid"):
-            pid = _read_pid(f)
-            if pid is None or not _pid_alive(pid):
-                f.unlink(missing_ok=True)
-
-    print("[NATS server]")
-    _term("nats-server", ctx.nats_pid_file, 10)
-
-    orphan_count = _verify_no_orphans(ctx)
-
-    if stopped + gone == 0 and orphan_count == 0:
-        print(f"No services found for preset '{ctx.preset}'.")
-        return 0
-    print(f"Stopped  : {stopped} service(s), {gone} already gone"
-          f"{f', {orphan_count} orphan(s) killed' if orphan_count else ''}.")
+    print(f"Stopped  : {ctx.target_name} (and every unit it aggregates).")
     return 0
 
 
@@ -497,52 +501,39 @@ def cmd_status(ctx, args):
     print(f"  {'STATUS':<10} {'SERVICE':<40} DETAIL")
     print(f"  {'-' * 10} {'-' * 40} ------")
     running = starting = stopped = missing = 0
-    _ready = _log_contains
 
-    nats_pid = _read_pid(ctx.nats_pid_file)
-    nats_log = ctx.log_dir / "nats-server.log"
-    if nats_pid is None:
-        print(f"  {'missing':<10} {'nats-server':<40} (no PID file)")
-    elif not _pid_alive(nats_pid):
-        print(f"  {'stopped':<10} {'nats-server':<40} PID {nats_pid} (dead)")
-    elif _ready(nats_log, "Server is ready"):
-        print(f"  {'running':<10} {'nats-server':<40} PID {nats_pid}  "
-              f"port {ctx.nats_port}")
-    else:
-        print(f"  {'starting':<10} {'nats-server':<40} PID {nats_pid}")
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
 
-    def _check(svc):
+    def _check(unit, log_file=None):
         nonlocal running, starting, stopped, missing
-        pid_file = ctx.run_dir / f"{svc}.pid"
-        # Domain services log per-instance (name.0.log); the controller and
-        # singletons log to name.log. Prefer whichever exists.
-        log_file = ctx.log_dir / f"{svc}.log"
-        if not log_file.exists() and (ctx.log_dir / f"{svc}.0.log").exists():
-            log_file = ctx.log_dir / f"{svc}.0.log"
-        pid = _read_pid(pid_file)
-        if pid is None:
-            print(f"  {'missing':<10} {svc:<40} (no PID file)")
+        state = _unit_active_state(unit)
+        if state == "missing":
+            print(f"  {'missing':<10} {unit:<40} (unit not loaded)")
             missing += 1
             return
-        if not _pid_alive(pid):
-            print(f"  {'stopped':<10} {svc:<40} PID {pid} (dead)")
+        if state != "active":
+            print(f"  {'stopped':<10} {unit:<40} ({state})")
             stopped += 1
             return
-        if _ready(log_file, "Service ready"):
-            print(f"  {'running':<10} {svc:<40} PID {pid}")
+        # nats-server's systemd unit has no log file (journald only).
+        if log_file is None:
+            print(f"  {'running':<10} {unit:<40} (active)")
+            running += 1
+            return
+        if _log_contains(log_file, "Service ready"):
+            print(f"  {'running':<10} {unit:<40} (active)")
             running += 1
         else:
             last = _log_last_line(log_file).split('\"] ')[-1][:60]
-            print(f"  {'starting':<10} {svc:<40} PID {pid}  "
+            print(f"  {'starting':<10} {unit:<40}  "
                   f"{f'({last})' if last else ''}")
             starting += 1
 
-    _check("ores.controller.service")
-    if ctx.run_dir.is_dir():
-        for pid_file in sorted(ctx.run_dir.glob("*.pid")):
-            svc = pid_file.stem
-            if svc != "ores.controller.service":
-                _check(svc)
+    _check(_nats_unit(ctx))
+    for unit, log_basename in _service_units(ctx):
+        _check(unit, ctx.log_dir / log_basename)
 
     print(f"\nservices: running={running}  starting={starting}  "
           f"stopped={stopped}  missing={missing}")
@@ -638,21 +629,21 @@ def _common(parser):
 def run(argv, project_root: Path) -> int:
     ap = argparse.ArgumentParser(
         prog="compass services",
-        description="Operate pillar: service lifecycle (nats-server + "
-                    "controller; the controller spawns the domain services).")
+        description="Operate pillar: service lifecycle, generated+deployed "
+                    "as systemd units and driven via `systemctl --user`.")
     sub = ap.add_subparsers(dest="subcmd", required=True)
 
-    st = sub.add_parser("start", help="Start nats-server and the controller "
-                                      "(which spawns all services)")
+    st = sub.add_parser("start", help="Generate+deploy systemd units, then "
+                                      "systemctl --user start the fleet")
     _common(st)
     st.add_argument("--log-level", default="trace")
 
-    sp = sub.add_parser("stop", help="Stop the controller (and its children) "
-                                     "then nats-server")
+    sp = sub.add_parser("stop", help="systemctl --user stop the fleet "
+                                     "(cascades via PartOf=)")
     _common(sp)
 
-    su = sub.add_parser("status", help="Per-service status from PID files "
-                                       "and readiness log lines")
+    su = sub.add_parser("status", help="Per-unit status from systemctl "
+                                       "plus readiness log lines")
     _common(su)
 
     cl = sub.add_parser("clear-logs", help="Delete all *.log / *.err under "

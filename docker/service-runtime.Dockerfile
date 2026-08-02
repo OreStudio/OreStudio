@@ -46,7 +46,7 @@ RUN mkdir -p /src/log /src/run /src/storage && chmod 777 /src/log /src/run /src/
 # Chainguard glibc-dynamic has no shell to `ln -s` with, so the entrypoint
 # symlink is created here instead, where the real binary already exists --
 # relative, so it resolves identically once COPY'd into /app/bin/ below.
-ARG SERVICE_NAME=ores.controller.service
+ARG SERVICE_NAME=ores.iam.service
 # Fail the build loudly if SERVICE_NAME and stage-runtime.sh's --service
 # disagree (or --service wasn't used), rather than shipping a dangling
 # symlink that only fails once the container actually starts.

@@ -63,7 +63,6 @@ target_link_libraries(${lib_target_name}
         ores.workflow.core.lib
         ores.ore.core.lib
         ores.ore.api.lib
-        ores.controller.api.lib
         Qt6::Charts
     PRIVATE
         # Transient: many dialogs/controllers still live in ores.qt. Remove when files move.

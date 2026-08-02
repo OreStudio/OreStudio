@@ -18,7 +18,6 @@ import tempfile
 from pathlib import Path
 
 _SERVICES = [
-    "ores.controller.service",
     "ores.iam.service",
     "ores.refdata.service",
     "ores.workspace.service",

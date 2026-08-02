@@ -18,6 +18,7 @@
  *
  */
 #include "ores.service/service/systemd_notify.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include <boost/asio/local/datagram_protocol.hpp>
 
 // systemd only exists on Linux, and boost::asio's local (AF_UNIX) sockets
@@ -30,18 +31,20 @@
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
-#include <cstdlib>
 #include <string>
 
 namespace ores::service {
 
 void notify_systemd_ready() noexcept {
-    const char* socket_path = std::getenv("NOTIFY_SOCKET");
-    if (!socket_path || socket_path[0] == '\0')
+    // ores::platform::environment::get_value() rather than std::getenv()
+    // directly -- the latter trips -Werror=deprecated-declarations on
+    // Windows Clang (MSVC STL flags it in favour of _dupenv_s).
+    auto socket_path = platform::environment::environment::get_value("NOTIFY_SOCKET");
+    if (!socket_path || socket_path->empty())
         return;
 
     try {
-        std::string path(socket_path);
+        std::string path = *socket_path;
         // An abstract socket address (leading '@') is written as a leading
         // NUL byte, not a literal '@' -- systemd's own convention.
         // boost::asio::local::*::endpoint copies path.size() bytes rather

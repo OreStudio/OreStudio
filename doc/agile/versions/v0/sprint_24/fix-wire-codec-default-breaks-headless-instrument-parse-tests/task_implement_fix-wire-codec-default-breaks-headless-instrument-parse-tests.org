@@ -147,6 +147,43 @@ fire-and-forget, environment-gated call with no meaningful behaviour
 to assert against outside a real systemd socket; not adding one now,
 consistent with the function's existing untested status.
 
+** Verifying cross-platform: manually dispatched Continuous MacOS/Windows against this branch
+
+Local Linux verification alone doesn't prove the macOS/Windows
+compile fix actually works -- no cross-toolchain available in this
+environment. Both =Continuous MacOS= and =Continuous Windows=
+workflows support =workflow_dispatch=, so triggered both directly
+against this branch (=gh workflow run ... --ref
+feature/implement-fix-wire-codec-default-breaks-headless-instrument-parse-tests=)
+rather than waiting for the next main-scheduled run or merging blind.
+
+Found a *third* real, distinct issue this way:
+=windows-clang-debug-ninja= failed with
+=-Werror=deprecated-declarations= on =std::getenv= (Windows/MSVC STL
+flags it in favour of =_dupenv_s=) -- confirming along the way that
+=BOOST_ASIO_HAS_LOCAL_SOCKETS= genuinely *is* defined on this Windows
+toolchain (modern Windows supports AF_UNIX), so the real
+Asio-local-socket code path was compiling there too, just tripping on
+the unrelated =getenv= call. Fixed by using the project's existing
+=ores::platform::environment::environment::get_value()= helper
+(already used elsewhere in the codebase, e.g.
+=ores.platform/src/environment/environment.cpp= itself defines
+=_CRT_SECURE_NO_WARNINGS= internally to swallow this exact warning)
+instead of calling =std::getenv= directly -- consistent with "no raw
+platform APIs where a project helper already exists," same principle
+as the boost::asio rewrite above. =ores.platform.lib= is already a
+transitive PUBLIC dependency of =ores.service.lib= (via
+=ores.utility.lib=), so no CMakeLists change needed.
+
+Cancelled the in-flight Windows dispatch (doomed -- all four Windows
+matrix variants would hit the identical =getenv= warning) rather than
+waiting for it to finish failing; macOS was left running since it was
+not failing on this issue (macOS's libc++ doesn't deprecate
+=getenv=), and gives an independent confirmation the Asio rewrite
+compiles there too. Re-verified locally on Linux (build + link
+clean) and pushed the fix; re-dispatching MacOS/Windows against the
+new commit to confirm before merging.
+
 * Notes
 
 * Test Scenarios

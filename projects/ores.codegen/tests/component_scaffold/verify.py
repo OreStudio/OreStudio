@@ -12,7 +12,7 @@ Targets:
 - *Prior art* under ``projects/``:
   - ``projects/ores.nats/modeling/component_overview.org`` — a real flat
     component already in the tree.
-  - ``projects/ores.iam/{,api,core,service}/modeling/component_overview.org``
+  - ``projects/ores.dq/{,api,core,service}/modeling/component_overview.org``
     — a real composite group + three subcomponents.
 
 For each target we check:
@@ -84,12 +84,11 @@ def main() -> int:
         ("fixture/composite-core", here / "sample_composite/core/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
         # Prior art: flat
         ("prior-art/ores.nats", REPO_ROOT / "projects/ores.nats/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
-        # Prior art: composite group + three subs (controller — all four had
-        # JSON models pre-merge so all four overviews carry the scalars).
-        ("prior-art/ores.controller (group)", REPO_ROOT / "projects/ores.controller/modeling/component_overview.org", None),
-        ("prior-art/ores.controller.api", REPO_ROOT / "projects/ores.controller/api/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
-        ("prior-art/ores.controller.core", REPO_ROOT / "projects/ores.controller/core/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
-        ("prior-art/ores.controller.service", REPO_ROOT / "projects/ores.controller/service/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
+        # Prior art: composite group + three subs.
+        ("prior-art/ores.dq (group)", REPO_ROOT / "projects/ores.dq/modeling/component_overview.org", None),
+        ("prior-art/ores.dq.api", REPO_ROOT / "projects/ores.dq/api/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
+        ("prior-art/ores.dq.core", REPO_ROOT / "projects/ores.dq/core/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
+        ("prior-art/ores.dq.service", REPO_ROOT / "projects/ores.dq/service/modeling/component_overview.org", SCAFFOLD_OUTPUTS_FLAT),
     ]
     for label, path, scaffold in checks:
         line = _check_loader(label, path)

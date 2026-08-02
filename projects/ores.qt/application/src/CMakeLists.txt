@@ -72,7 +72,6 @@ target_link_libraries(${lib_target_name}
         ores.connections.lib
         ores.variability.api.lib
         ores.telemetry.core.lib
-        ores.controller.api.lib
         ores.security.lib
         ores.qt.workflow.lib
         Qt6::Charts

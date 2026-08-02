@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 69C1426F-A151-44FD-AB87-DE2305B65083
+:END:
+#+title: Test Scenario: Verify controller decommission (systemd lifecycle + Qt client)
+#+description: Confirm compass services start/stop/status bring up the full fleet via systemd (not the deleted controller), and that the Qt client launches cleanly with the Service Dashboard menu item gone.
+#+type: test_scenario
+#+level: s1
+#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+target_dialog:
+#+created: 2026-08-02
+#+updated: 2026-08-02
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] in [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database needs Acme Corporation provisioned (any working
+  tenant/login works for this scenario — it isn't testing tenant data,
+  just that the service fleet and Qt client work post-decommission).
+- Build must be current: =compass build=.
+- The fleet lifecycle itself (=compass services start/stop/status=
+  bringing all ~23 units up and down cleanly via systemd, with no
+  =ores.controller.service= row) is a CLI-only check, not something a
+  tester exercises through the client — verify it yourself before
+  handing this scenario off, and start the fleet so it's already
+  running by the time the tester opens the client at Step 1 below.
+- Clean stale plugin build artifacts before launching the client if
+  you've recently removed/renamed a Qt plugin component: the plugin
+  loader globs every =.so= in the plugins directory, so an orphaned
+  old build output left behind by an incremental build (not a fresh
+  =compass build=) gets loaded alongside the current one and can
+  double-instantiate shared UI (e.g. two Test Scenario Runner windows,
+  as this exact removal exposed once — the plugin loader picking up a
+  now-source-deleted =ores.qt.admin=; not a code bug).
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] |
+| Parent story  | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]   |
+| Target dialog | None — this scenario verifies process/service lifecycle and the main window's menu, not a specific dialog. |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+- Launch the client: =compass client start=.
+- Log in as =tenant_admin@acme_corporation= /
+  =Secure-Password-123=.
+- Confirm login succeeds and the main window opens normally.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the Service Dashboard menu item is gone
+
+- Open the *Operations > Telemetry* menu.
+- Confirm there is **no** "Service Dashboard..." entry (nor the
+  separator that used to precede it) — it was removed along with
+  =ores.controller.service= in this task.
+- Confirm the rest of the Telemetry menu (whatever remains) still
+  opens normally — no crash, no empty/broken menu.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm Queue Monitor still works
+
+- Open *Operations > Message Queue > Queue Monitor*.
+- Confirm the Queue Monitor window opens without error (it sits right
+  next to where the Service Dashboard wiring was removed in
+  ComputePlugin.cpp — a quick regression check that the removal didn't
+  collateral-damage its neighbour).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm Market Simulator feeds start
+
+- Open *Market Data > Market Simulator*.
+- Note: the folder tree shows one "Synthetic" root per business-unit
+  party (three roots for Acme Corporation) — this is expected, not a
+  duplicate; see [[id:275824BB-0DCE-4EA4-964D-9C86B0498509][Market Simulator: scope folders to current party,
+  clarify feed-start UX]] for the follow-up captured on this. Pick
+  *any one* of the three "Synthetic" roots — they're per-party copies
+  of the same feed set, not different data.
+- Expand that root → =2026 Realistic= → =FX= → =FX Rates=, select the
+  folder, and click *Start all rates* (not the per-row Start button —
+  that only starts one pair at a time).
+- =FX Spot Monitor= (Market Data menu) and =Cross-Rates Matrix=
+  (toolbar) both read the same published FX ticks — "CRM" here is
+  *Cross-Rates Matrix*, a derived grid of cross rates computed from FX
+  spot, not a separate feed you start independently. Once FX Rates are
+  running, open both windows and confirm live prices update in each.
+- Confirm at least some feeds move to =running= (checked via the
+  =Feeds= panel, or by FX Spot Monitor / Cross-Rates Matrix receiving
+  ticks). Not every pair is expected to start — some are skipped for
+  missing vintage data (also tracked in the capture above); this step
+  only confirms the feed-start mechanism itself works post-decommission,
+  not full data coverage.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | 6/13 FX pairs started in the tested "2026 Realistic" folder; remaining pairs skipped for missing vintage data (fed.h10, 2026-05-05) — tracked separately, not a controller-decommission regression. |
+
+** Stop the fleet via compass services stop
+
+- Close the client (=compass client stop= or quit the window).
+- Run =compass services stop=.
+- Confirm it prints "[systemctl --user stop ores-<env>.target]" and
+  exits 0.
+- Run =compass services status= again — confirm every unit now shows
+  =stopped=, none left =running=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-02T22:20:00Z |
+| Branch        | feature/decommission-controller-service |
+| Commit        | ca5b88a12 |
+| Worktree      | swift_curie |
+
+* Notes
+
+Original run recorded a FAIL on "Stop the fleet" using its Notes field
+to report a Market Simulator feed-start issue — there was no dedicated
+step for that check yet. Added one ("Confirm Market Simulator feeds
+start") and re-verified: the fleet stop itself works fine; the "3
+Synthetic roots" are legitimate per-party folders, not duplicates; and
+the partial feed start (6/13 pairs) is a pre-existing vintage-data gap,
+now captured separately at [[id:275824BB-0DCE-4EA4-964D-9C86B0498509][Market Simulator: scope folders to current
+party, clarify feed-start UX]] rather than blocking this scenario.

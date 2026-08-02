@@ -2,25 +2,47 @@
 :ID: D8663EF2-5626-462E-AADC-AB2717F49C0D
 :END:
 #+title: How do I start the ORE Studio services?
-#+description: Start NATS and all backend services for a local checkout with compass services start; stop and check status with the companion verbs.
+#+description: Start, stop, and check status of NATS and all backend services -- via compass services (recommended, generates+deploys systemd units for you) or directly with compass systemd + systemctl --user for finer control.
 #+type: recipe
 #+level: cross
-#+filetags: :cmake:build:services:nats:controller:recipe:
+#+filetags: :cmake:build:services:nats:systemd:recipe:
 #+created: 2026-05-31
-#+updated: 2026-07-12
+#+updated: 2026-08-02
 
 Requires =.env= and built binaries (see [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]]).
-Start order: NATS server → controller; the controller spawns all other
-services (IAM, domain services, HTTP, Wt, compute wrappers) in dependency order.
+Every service is a concrete, per-environment =systemd --user= unit
+(one per (service, environment) pair, generated from the
+=service_definition=/=service_dependency= DB tables) aggregated under
+one per-environment target, =ores-<env>.target= -- there is no
+separate orchestrator process; systemd itself owns dependency-ordered
+startup and readiness gating (=Type=notify=/=sd_notify(READY=1)=).
+=ores.controller.service=/=process_supervisor=, which used to spawn
+every other service as its own child, were decommissioned once this
+landed. Remote/podman hosts use the same DB-driven graph rendered as
+Quadlet units instead -- see [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][compass systemd quadlet]].
+
+Two equivalent ways to drive this locally:
+- *=compass services=* (recommended for day-to-day dev) -- generates
+  and deploys the units for you, then wraps =systemctl --user= with
+  log-based readiness waiting and a status table.
+- *=compass systemd= + raw =systemctl --user=* -- the same units, but
+  you drive systemd directly (useful for starting/stopping a single
+  service, watching a live journal, or debugging a unit that won't
+  come up).
 
 * Question
 
-How do I start all ORE Studio backend services for a local checkout?
+How do I start, stop, and check the status of all ORE Studio backend
+services for a local checkout -- with =compass services=, or directly
+with systemd?
 
 * Answer
 
-1. /Ensure the environment is initialised/ and the project is built (see
-   [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] and [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]).
+** Recommended: compass services
+
+1. /Ensure the environment is initialised/ and the project is built
+   (see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] and [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the
+   system?]]).
 
 2. /Start services/:
 
@@ -28,57 +50,133 @@ How do I start all ORE Studio backend services for a local checkout?
    ./projects/ores.compass/compass.sh services start
    #+end_src
 
-   The preset defaults to =ORES_PRESET= from =.env=. Override with =--preset=:
+   This runs =compass systemd generate= + =compass systemd deploy=
+   (picks up the current DB state), then =systemctl --user start
+   ores-<env>.target=, then polls every service's own log file for its
+   "Service ready." line (NATS readiness is checked via a TCP LISTEN
+   probe on its port instead -- its unit has no log file, only
+   journald). The preset defaults to =ORES_PRESET= from =.env=;
+   override with =--preset=. Change log verbosity with =--log-level=
+   (default: =trace=).
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh services start --preset linux-clang-debug-make
-   #+end_src
+   Cold starts with 20+ services all connecting to the DB at once can
+   legitimately take several minutes; the command's own progress
+   output streams live to =/tmp/ores_<env>_services_start.log=
+   (overwritten each run) -- =tail -f= that path from another shell to
+   watch startup without waiting on this command's own output.
 
-   Change log verbosity with =--log-level= (default: =trace=):
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh services start --log-level info
-   #+end_src
-
-   The script blocks until the controller logs =All services started=, then
-   exits. Its own progress output (not the per-service logs below) also
-   streams live to =/tmp/ores_<env>_services_start.log= (overwritten each
-   run) — =tail -f= that path from another shell to watch startup without
-   waiting on this command's own output.
-
-** Check status
+3. /Check status/:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh services status
    #+end_src
 
-** Stop all services
+   Per-unit table: =running= (active + "Service ready." seen in its
+   log), =starting= (active, not ready yet), =stopped= (not active),
+   =missing= (unit not loaded at all -- run =services start= first).
+
+4. /Stop services/:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh services stop
    #+end_src
 
-** Logs
+   Runs =systemctl --user stop ores-<env>.target=; every unit's
+   =PartOf=ores-<env>.target= means this cascades to nats-server and
+   every service in one command, the same one-shot stop the old
+   controller used to perform itself.
 
-Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
-=<name>.log= file; the NATS server writes =nats-server.log=.
+5. /Clear logs/ (optional):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services clear-logs
+   #+end_src
+
+** Direct: compass systemd + systemctl --user
+
+Use this when you want to start/stop/inspect one unit rather than the
+whole fleet, or watch a live journal.
+
+1. /Generate and deploy the units/ (same DB-driven render
+   =compass services start= runs internally -- do this whenever
+   =service_definition=/=service_dependency= changes, or after a
+   rebuild):
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh systemd generate
+   ./projects/ores.compass/compass.sh systemd deploy
+   #+end_src
+
+   =generate= writes concrete unit files to =systemd/units/= (not
+   portable across checkouts -- absolute paths and this environment's
+   own =.env= baked in); =deploy= syncs them into
+   =~/.config/systemd/user/= and reloads only if something changed.
+
+2. /Start the whole fleet, or one service/:
+
+   #+begin_src sh :results verbatim
+   systemctl --user start ores-<env>.target        # everything
+   systemctl --user start ores.iam.service-<env>    # just IAM
+   #+end_src
+
+   (=<env>= is =ORES_ENV_NAME= from =.env=, e.g. =swift_curie=.)
+
+3. /Status and logs/:
+
+   #+begin_src sh :results verbatim
+   systemctl --user status ores-<env>.target
+   systemctl --user status ores.iam.service-<env>
+   journalctl --user -u 'ores*-<env>*' -f           # live, whole fleet
+   journalctl --user -u ores.iam.service-<env> -f   # live, one unit
+   #+end_src
+
+   Application-level logs (not the systemd/journal wrapper) still land
+   in =build/output/<preset>/publish/log/=, one file per
+   =<service_name>.<replica_index>.log= (e.g.
+   =ores.iam.service.0.log=) -- note this is the *binary's own*
+   filename convention, not the systemd unit name (which carries a
+   =-<env>= suffix to stay distinct from a sibling checkout's units on
+   the same user session). NATS logs to journald only, no file.
+
+4. /Stop/:
+
+   #+begin_src sh :results verbatim
+   systemctl --user stop ores-<env>.target          # everything, cascades via PartOf=
+   systemctl --user stop ores.iam.service-<env>      # just IAM
+   #+end_src
+
+5. /A unit stuck failed after a dependency raced it/: =Requires=
+   means a unit whose *first* start attempt fails (e.g. it raced
+   =nats-server= or another dependency) stays failed even once that
+   dependency's own =Restart=always= later succeeds -- systemd does
+   not automatically retry it. Reset and restart by hand:
+
+   #+begin_src sh :results verbatim
+   systemctl --user reset-failed ores.iam.service-<env>
+   systemctl --user start ores.iam.service-<env>
+   #+end_src
 
 ** Prerequisites checklist
 
-- =.env= exists (run =compass env configure= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
+- =.env= exists (run =compass env configure= if not -- see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
 - Database initialised (=compass db recreate -y=).
 - Project built (=./compass.sh build --preset <preset>=).
 - =nats-server= on =PATH= or in =/usr/sbin=.
 
 * Script
 
-=compass services start= — starts NATS then the controller; blocks until all services are up.
-=compass services stop= — stops all services cleanly.
-=compass services status= — shows running/stopped state per service.
+=compass services start/stop/status/clear-logs= -- generate+deploy the
+systemd units and drive them, with readiness waiting and a status
+table.
+=compass systemd generate/deploy= -- render and install the units
+without starting anything.
+=systemctl --user start/stop/status <unit>= -- drive one unit or the
+whole =ores-<env>.target= directly.
 
 * Tested by
 
-Manual, each development session. No CI path — CI uses pre-configured runners.
+Manual, each development session. No CI path -- CI uses pre-configured
+runners.
 
 * See also
 

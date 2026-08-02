@@ -100,18 +100,6 @@ Related documents:
 
 - [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — compute architecture, run lifecycle, and chunking design.
 
-** ores.controller
-
-Orchestration controller — assembles multi-stage compute pipelines from
-scheduler, compute, and reporting steps, sequences their execution, and tracks
-run state end-to-end.
-
-| Sub-component           | Role                                           | Dependencies                                              |
-|-------------------------+------------------------------------------------+-----------------------------------------------------------|
-| [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]]     | Shared controller types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                                                         |
-| [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]]    | Pipeline assembly, stage sequencing, run state | [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]], [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]], [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]] |
-| [[id:1A4E357C-0B10-44CF-9096-47EE42E6F1A4][ores.controller.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                      | [[id:C871C5DF-A521-4815-9572-72D07DA62CC7][ores.controller.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]                           |
-
 ** ores.shell
 
 POSIX shell and Emacs Lisp developer tooling — database administration scripts,

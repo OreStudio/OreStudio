@@ -7,43 +7,119 @@
 #+level: s1
 #+filetags: :systemd:split-services-into-per-service-containers:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/decommission-controller-service
+#+pr: 1806
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Remove =ores.controller.service=/=process_supervisor= from the build
+and deploy path entirely, now that systemd (plain-systemd locally,
+Quadlet on remote/podman hosts) owns dependency-ordered startup and
+readiness gating. Discovered mid-task that this is bigger than a pure
+component deletion: the controller has a real NATS API (list/start/
+stop/restart service, service definitions/events) consumed by a
+950-line Qt Service Dashboard panel (the task's original premise --
+"no NATS handlers beyond process supervision" -- was wrong), and
+=compass services start/stop/status= (the local dev workflow every
+worktree uses) worked by launching the controller and letting it
+cascade-spawn every other service as its own children. Both had to
+move too, with explicit user sign-off given the blast radius (breaks
+=compass services start/stop= for every worktree, not just this one).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-31                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-02                               |
 
 * Acceptance
 
--
+- =projects/ores.controller/= (api, core, service) deleted entirely,
+  including its CMake wiring (=projects/CMakeLists.txt=
+  ~add_subdirectory~ entries).
+- The Qt Service Dashboard (=ServiceDashboardMdiWindow=/
+  =ServiceDashboardController=) and its menu wiring in =ComputePlugin=
+  removed; the now-dead =ores.controller.api.lib= link dropped from
+  =ores.qt.compute=/=ores.qt.iam=/=ores.qt.application=.
+- =compass services start/stop/status= reimplemented on top of
+  =compass systemd generate=/=deploy= + =systemctl --user=, with the
+  same CLI surface and the same log-based readiness detection --
+  verified end-to-end bringing the full 23-unit fleet up and down.
+- =ORES_CONTROLLER_SERVICE_*= NATS env vars, cert generation, and DB
+  grants removed now that nothing reads them.
+- Full build clean, ctest green (excluding the pre-existing, unrelated
+  =ores.qt.headless.tests= failure), Qt client launches without the
+  Dashboard menu item.
+- Docs/tests referencing the deleted component updated (a stale
+  codegen test fixture that used =ores.controller= as its composite-
+  component prior art, =docker/service-runtime.Dockerfile='s default
+  ~SERVICE_NAME~).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Delete =projects/ores.controller/= and its CMake wiring.
+2. Delete the Qt Service Dashboard and its =ComputePlugin= wiring.
+3. Rewrite =compass_services.py='s start/stop/status to drive systemd
+   instead of spawning the controller; verify the full fleet
+   start/stop/status cycle end-to-end (found and fixed two real bugs
+   along the way -- see Notes).
+4. Remove now-dead =ORES_CONTROLLER_SERVICE_*= env plumbing (cert
+   generation, .env template, DB grants).
+5. Sweep for and fix remaining references (Dockerfile default,
+   stage-runtime.sh comments, a stale codegen test fixture).
+6. Full build + ctest, rebase onto latest main, re-verify.
 
 * Notes
+
+** BUG found and fixed: readiness log filenames are not unit-name-based
+
+=compass_services.py='s systemd-backed rewrite initially assumed each
+unit's readiness log lived at =<unit-name>.log= (matching the old
+PID-file-based convention). The binaries actually always log to
+=<service_name>.<replica_index>.log= (e.g. =ores.iam.service.0.log=)
+-- env-suffix-agnostic, unlike systemd unit names (which carry
+=-<env>= to stay distinct per checkout). Fixed by deriving the log
+basename from =service_name=/replica index directly, not the unit
+name. Also found nats-server's systemd unit has no ~-l logfile~ flag
+at all (logs to journald only) -- unlike the old native launch, which
+passed one explicitly -- so nats readiness is ActiveState-only, no
+log-content check available.
+
+** BUG found and fixed: log start_pos captured too late
+
+The first working version of =_cmd_start='s readiness wait captured
+each unit's log start_pos (the byte offset to seek past before
+searching for "Service ready.") *after* waiting on the NATS port --
+by which point a fast unit could already have started, connected, and
+logged its readiness line, so the offset was already past it and the
+wait function polled forever for a line that would never appear
+again. Fixed by capturing every unit's start_pos immediately after
+generate+deploy, before issuing ~systemctl start~ at all.
+
+** Real startup latency, not a bug: 20+ services all hitting the DB at once
+
+Sequential per-unit waits (an earlier iteration of this rewrite) took
+over 20 minutes total treating 20+ services each getting their own
+60-120s budget one at a time; even the shared-timeout combined-poll
+version needs 300s+ under a loaded box, since systemd starts every
+unit's dependency chain in parallel and the slowest one (usually IAM,
+under real DB contention) sets the bar for the whole fleet becoming
+ready. This mirrors the old controller's own combined "All services
+started" wait (120s) but for a fleet that's grown since that budget
+was set.
 
 * Test Scenarios
 
@@ -54,18 +130,28 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:69C1426F-A151-44FD-AB87-DE2305B65083][Verify controller decommission (systemd lifecycle + Qt client)]] | PENDING | Hand off to the user to run via the QA Validation Runner. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1806][#1806]] | [systemd,qt] Decommission ores.controller.service and process_supervisor |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | CI site job failed: broken org-roam links to deleted ores.controller docs | projects/modeling/system_model_application.org, projects/ores.qt/iam/modeling/component_overview.org, doc/knowledge/architecture/anatomy_of_a_service.org | Fixed | Removed the dead ores.controller subsection/bullets; updated anatomy_of_a_service.org's service-launch-list paragraph to describe the current systemd_generate.py-driven reality instead of the deleted controller. Verified locally: compass build --direct deploy_site succeeds with no unresolved-link errors. |
+| 2 | Manual QA run found two real issues: (a) two duplicate Test Scenario Runner windows on launch, (b) Step 1 asked the tester to run terminal commands instead of testing through the client | doc/agile/.../scenario_verify_controller_decommission.org | Fixed | (a) traced to a stale libores.qt.admin.so build artifact left behind by an incremental (non-clean) build after the source component was deleted/merged into ores.qt.iam's AdminPlugin -- not a code bug; removed it and did a full clean rebuild to confirm. (b) removed the CLI-only step from the scenario; the fleet lifecycle is now something the implementer verifies before handoff, noted in Before you start instead. |
 
 * Result
+
+=ores.controller.service=/=process_supervisor= and the Qt Service
+Dashboard are gone; =compass services start/stop/status= now generate
+and deploy the concrete systemd units and drive them via ~systemctl
+--user~. Verified end-to-end: full build clean, ctest 70/71 (only the
+pre-existing, unrelated =ores.qt.headless.tests= failure), the
+23-unit fleet comes up and down correctly, and the Qt client launches
+cleanly with the Dashboard menu item gone. Manual QA scenario filed
+for the user to run the full lifecycle + client checks themselves.

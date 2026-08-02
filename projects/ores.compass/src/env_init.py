@@ -496,13 +496,10 @@ def run(argv, project_root: Path) -> int:
     nats_certs.generate(checkout_root)
 
     nats_tls_ca = nats_tls_cert = nats_tls_key = ""
-    controller_nats_tls_cert = controller_nats_tls_key = ""
     if (nats_certs_dir / "ca.crt").is_file():
         nats_tls_ca = str(nats_certs_dir / "ca.crt")
         nats_tls_cert = str(nats_certs_dir / "ores.qt.client.crt")
         nats_tls_key = str(nats_certs_dir / "ores.qt.client.key")
-        controller_nats_tls_cert = str(nats_certs_dir / "ores.controller.service.crt")
-        controller_nats_tls_key = str(nats_certs_dir / "ores.controller.service.key")
 
     # IAM RSA signing key (preset-independent).
     keys_dir = checkout_root / "build" / "keys"
@@ -705,18 +702,6 @@ ORES_NATS_WIRE_FORMAT={nats_wire_format}
 ORES_NATS_TLS_CA={nats_tls_ca}
 ORES_NATS_TLS_CERT={nats_tls_cert}
 ORES_NATS_TLS_KEY={nats_tls_key}
-
-# ---------------------------------------------------------------------------
-# Controller service NATS config (read by C++ make_mapper("CONTROLLER_SERVICE")).
-# Only the controller needs this: it launches every other service directly
-# with these same values as CLI args (see process_supervisor.cpp), so they
-# never read NATS_* from the environment themselves.
-# ---------------------------------------------------------------------------
-ORES_CONTROLLER_SERVICE_NATS_URL={nats_url}
-ORES_CONTROLLER_SERVICE_NATS_SUBJECT_PREFIX={nats_prefix}
-ORES_CONTROLLER_SERVICE_NATS_TLS_CA={nats_tls_ca}
-ORES_CONTROLLER_SERVICE_NATS_TLS_CERT={controller_nats_tls_cert}
-ORES_CONTROLLER_SERVICE_NATS_TLS_KEY={controller_nats_tls_key}
 
 # ---------------------------------------------------------------------------
 # Database admin (postgres superuser — for compass db recreate and psql)

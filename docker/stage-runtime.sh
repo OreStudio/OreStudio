@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 # Stages only what a service-runtime image needs into build/docker-stage/
 # for the Dockerfile to COPY: either every supervised service binary plus
-# the closure of their shared-library dependencies (default — used by the
-# all-in-one controller image), or, with --service <binary-name>, just
-# that one binary plus its own dependency closure (used to build a
-# minimal per-service image). Either way this excludes Qt libs, test
-# binaries, and everything else under publish/ that isn't actually needed
-# at runtime.
+# the closure of their shared-library dependencies (default -- unused now
+# that per-service images via --service <binary-name> are the only
+# supported deployment mode, kept for ad-hoc local use), or, with
+# --service <binary-name>, just that one binary plus its own dependency
+# closure (used to build a minimal per-service image). Either way this
+# excludes Qt libs, test binaries, and everything else under publish/
+# that isn't actually needed at runtime.
 #
 # The default set is the ores.*.service glob plus an explicit allow-list
 # for the two supervised binaries that don't follow that naming convention
 # (ores.http.server, ores.compute.wrapper) -- not derived from
 # ores_controller_service_definitions_tbl itself, so a future supervised
-# binary named outside both patterns can still go silently missing (as
-# these two did, only discovered when process_supervisor logged
-# "Binary not found" for them on a real deploy).
+# binary named outside both patterns can still go silently missing.
 set -euo pipefail
 
 service=""

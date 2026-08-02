@@ -32,7 +32,6 @@ class AppController;
 class AppVersionController;
 class ComputeDashboardController;
 class ComputeConsoleController;
-class ServiceDashboardController;
 class QueueMonitorController;
 class ReportTypeController;
 class ConcurrencyPolicyController;
@@ -86,7 +85,6 @@ private:
     std::unique_ptr<AppVersionController> appVersionController_;
     std::unique_ptr<ComputeDashboardController> computeDashboardController_;
     std::unique_ptr<ComputeConsoleController> computeConsoleController_;
-    std::unique_ptr<ServiceDashboardController> serviceDashboardController_;
     std::unique_ptr<QueueMonitorController> queueMonitorController_;
     std::unique_ptr<ReportTypeController> reportTypeController_;
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;

@@ -51,14 +51,12 @@ controllers.
 
 - =ores.qt.api= — IPlugin, base controller/window/dialog classes, ClientManager.
 - =ores.iam.api= — account, role, tenant, badge domain types and NATS schemas.
-- =ores.controller.api= — system-setting and variability domain types.
 - =ores.variability.api= — variability/feature-flag domain types.
 
 * See also
 
 - [[id:4E0DC581-D74D-4BD1-87D2-7F524A36D20C][ores.iam.api]] — domain types and NATS protocol schemas for IAM.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — server-side IAM logic and NATS handlers.
-- [[id:85D20E29-0EBD-41FF-9F32-10F60AF074A8][ores.controller.api]] — system-setting domain types.
 - [[id:26218AD6-C63E-44E8-9B92-7FB51C366566][ores.variability.api]] — variability/feature-flag domain types.
 - [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — plugin lifecycle and menu-contribution model.

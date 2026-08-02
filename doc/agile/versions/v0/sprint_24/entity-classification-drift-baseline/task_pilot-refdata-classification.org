@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_24:v0:entity-classification-drift-baseline:
 #+owner: marco
 #+branch: feature/pilot-refdata-classification
-#+pr:
+#+pr: 1808
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -297,7 +297,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1808][#1808]] | [refdata,codegen] Bind ores.refdata entities to profiles; verify zero-diff regen |
 
 * Review
 

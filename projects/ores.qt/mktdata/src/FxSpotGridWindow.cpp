@@ -546,16 +546,31 @@ void FxSpotGridWindow::applyError(const std::string& ore_key, const std::string&
 
     RowState& rs = it->second;
     rs.last_error = QString::fromStdString(reason);
-    rs.last_status = FeedStatus::Error;
-    apply_status_indicator({rs.status_icon_label, rs.status_text_label},
-                           FeedStatus::Error,
-                           rs.last_tick,
-                           tr("Failed to decode tick: %1").arg(rs.last_error));
+    // Guard, matching applyTick()'s pattern: errors are deliberately not
+    // rate-limited upstream (a consistently-failing stream can call this
+    // many times per second), so avoid regenerating the status icon and
+    // repainting the stylesheet/tooltip on every single failure once
+    // already showing Error.
+    if (rs.last_status != FeedStatus::Error) {
+        rs.last_status = FeedStatus::Error;
+        apply_status_indicator({rs.status_icon_label, rs.status_text_label},
+                               FeedStatus::Error,
+                               rs.last_tick,
+                               tr("Failed to decode tick: %1").arg(rs.last_error));
+    }
 }
 
 void FxSpotGridWindow::onStaleCheck() {
     for (auto& [key, rs] : rows_) {
-        if (!rs.ever_ticked)
+        // A row currently showing Error must not be silently reclaimed by
+        // the generic Stale/Disconnected transition below: applyError()
+        // doesn't touch last_tick, so once its age crosses the
+        // live/stale thresholds this loop would otherwise overwrite the
+        // decode-error tooltip with an empty one, erasing the very
+        // explanation this status exists to show. The Error state is
+        // cleared only by a subsequent successful tick (applyTick()
+        // unconditionally repaints to Live).
+        if (!rs.ever_ticked || rs.last_status == FeedStatus::Error)
             continue;
         const auto status = deriveStatus(rs);
         const StatusIndicator indicator{rs.status_icon_label, rs.status_text_label};

@@ -39,6 +39,7 @@
 ;;; Code:
 (require 'package)
 (require 'org)
+(require 'org-id)
 (require 'ox-publish)
 
 (setq debug-on-error nil)
@@ -51,6 +52,9 @@
 (defvar ores/release-notes-github-user "OreStudio")
 (defvar ores/release-notes-github-repo "OreStudio")
 (defvar ores/release-notes-github-branch "main")
+(defvar ores/release-notes-site-base-url "https://orestudio.github.io/OreStudio/"
+  "Base URL of the published site, mirroring the repository layout.
+Same convention as ores-build-manual.el's ores/site-base-url.")
 
 (defun ores/release-notes--image-p (path)
   (string-match-p "\\.\\(png\\|jpe?g\\|gif\\|svg\\)$" path))
@@ -73,7 +77,31 @@
                  (format "![%s](%s)" (or desc (file-name-nondirectory path))
                          (ores/release-notes--raw-url path))
                (format "[%s](%s)" (or desc path)
-                       (ores/release-notes--blob-url path))))))
+                       (ores/release-notes--blob-url path)))))
+  ;; id: links point into the published site (same convention as
+  ;; ores-build-manual.el's ores/manual-id-export), not a relative .md
+  ;; path or a github.com blob link to the .org source -- a release
+  ;; note ships as a standalone GitHub release body, with none of the
+  ;; rest of the doc tree alongside it, so both those alternatives
+  ;; would be broken for any reader. Applies to every release note
+  ;; going forward, not just this sprint's, since it's set once here
+  ;; in the shared exporter rather than per-document.
+  (org-link-set-parameters
+   "id"
+   :export (lambda (id desc backend)
+             ;; ox-gfm derives from ox-md, but link transcoding reports the
+             ;; effective backend as 'md, not 'gfm -- checking for 'md
+             ;; catches both (verified empirically; 'gfm alone never fires).
+             (when (org-export-derived-backend-p backend 'md)
+               (let* ((found (org-id-find id))
+                      (file (car found)))
+                 (when file
+                   (let ((url (concat ores/release-notes-site-base-url
+                                      (replace-regexp-in-string
+                                       "\\.org\\'" ".html"
+                                       (file-relative-name (expand-file-name file)
+                                                           ores/release-notes-repo-root)))))
+                     (format "[%s](%s)" (or desc url) url))))))))
 
 ;; Suppress the TOC even if #+options: toc:t is set in-buffer — in-buffer
 ;; options take precedence over project/explicit :with-toc settings.
@@ -106,6 +134,19 @@
     (unless (file-exists-p org-file)
       (message "release_notes.org not found: %s" org-file)
       (kill-emacs 1))
+    ;; Without this, id: links resolve against whatever org-id-locations
+    ;; happens to already be in memory -- effectively nothing, since this
+    ;; script runs under `emacs -Q` with no org-roam and no prior state.
+    ;; release_notes.org routinely links out to knowledge docs and other
+    ;; agile artefacts well outside its own sprint directory (e.g. the
+    ;; market-data design docs), so every one of those id: links silently
+    ;; became "[BROKEN LINK: <uuid>]" in the exported Markdown -- the
+    ;; GitHub release body -- until this repo-wide scan runs first, same
+    ;; as every other exporter (ores-build-site.el et al).
+    (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
+    (org-id-update-id-locations
+     (seq-remove (lambda (f) (string-match-p "/\\.claude/worktrees/" f))
+                 (directory-files-recursively ores/release-notes-repo-root "\\.org$")))
     (condition-case err
         (with-current-buffer (find-file-noselect org-file)
           (let ((org-export-with-toc nil)

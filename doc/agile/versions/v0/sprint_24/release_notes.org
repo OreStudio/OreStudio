@@ -12,6 +12,8 @@
 
 /August 2026/
 
+[[proj:assets/images/ore_studio-v0.0.24.png]]
+
 Sprint 24 continued commissioning work across components and pushed
 on IR generation. Acme Corporation shipped as ORE Studio's fully
 populated synthetic holding-group test entity, replacing Barclays
@@ -49,6 +51,11 @@ full analysis.
 - Sprint ran roughly twice its intended duration; two health
   reviews (both RED) flagged the overrun and a goal-alignment gap on
   IR generation -- see the health reviews for the full analysis.
+
+The new holiday-aware date picker, shown here on the New Trade dialog's
+Maturity Date field (weekends in red):
+
+[[proj:doc/agile/versions/v0/sprint_24/date_picker.png]]
 
 * 🛠️ Key Improvements
 

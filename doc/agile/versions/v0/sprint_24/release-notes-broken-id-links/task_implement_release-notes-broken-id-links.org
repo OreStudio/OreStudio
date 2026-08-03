@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: FBDC3D98-5177-4028-A504-1143C0D9024B
+:END:
+#+title: Task: Implement Hotfix: release notes export produces broken/relative id links
+#+description: Initial task for: Hotfix: release notes export produces broken/relative id links
+#+type: task
+#+level: s1
+#+filetags: :release-notes-broken-id-links:sprint_24:v0:
+#+owner: marco
+#+branch: hotfix/release-notes-broken-id-links
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D78F32FC-89C4-4BDD-8F12-D2CAC17D83A3][Hotfix: release notes export produces broken/relative id links]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+`ores-build-release-notes.el` never called `org-id-update-id-locations`,
+unlike every other `ores-build-*.el` exporter, so `id:` links pointing
+outside `release_notes.org` itself (e.g. to knowledge-base docs)
+rendered as `[BROKEN LINK: <uuid>]` in the exported `release_notes.md`
+— the GitHub release body. Additionally, the exporter had no custom
+`id` link handler at all, so once resolution was fixed the links would
+have rendered as relative `.md` paths that don't exist standalone in a
+GitHub release body. Fix both: resolve `id:` links repo-wide before
+export, and render them as absolute URLs into the published site
+(`https://orestudio.github.io/OreStudio/...`), matching the convention
+already established in `ores-build-manual.el`.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D78F32FC-89C4-4BDD-8F12-D2CAC17D83A3][Hotfix: release notes export produces broken/relative id links]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-03                               |
+
+* Acceptance
+
+- No `BROKEN LINK` placeholders in the exported `release_notes.md` for
+  sprint 24.
+- `id:` links in the exported markdown resolve to real, live
+  `https://orestudio.github.io/OreStudio/...` URLs (verified via curl).
+- The fix lives in the shared exporter (`ores-build-release-notes.el`),
+  so every future sprint's release notes benefit automatically.
+
+* Plan
+
+1. Add `org-id-update-id-locations` over the whole repo (excluding
+   `.claude/worktrees/`) before export, mirroring
+   `ores-build-site.el`/`ores-build-manual.el`.
+2. Add a custom `id` link `:export` handler resolving via
+   `org-id-find`, rewriting `.org` -> `.html`, and prefixing with
+   `ores/release-notes-site-base-url`. Had to check
+   `(org-export-derived-backend-p backend 'md)` rather than `'gfm` --
+   ox-gfm derives from ox-md and link transcoding reports the backend
+   as `md`, verified via a standalone debug script.
+3. Re-ran `compass release-notes export --sprint 24` and confirmed
+   zero `BROKEN LINK` occurrences and that the resolved URLs return
+   HTTP 200 against the live GitHub Pages site.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Added a repo-wide `org-id-update-id-locations` scan and a custom `id`
+link `:export` handler to `ores-build-release-notes.el`, resolving
+`id:` links to absolute `https://orestudio.github.io/OreStudio/...`
+URLs. Re-exported `release_notes.md` for sprint 24: zero `BROKEN LINK`
+occurrences remain, and the resolved URLs were verified live against
+the published GitHub Pages site (HTTP 200). The fix is in the shared
+exporter, so it applies to every future sprint's release notes, not
+just this one.

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8710A2AF-8C7B-46E3-AD20-E209A3D10C39
+:END:
+#+title: In-app bug report / user-voice feature with screenshot capture
+#+description: Let users capture a screenshot and file a bug report/feedback item from anywhere in the app, stored in the database, with a CLI export path that converts them into agile captures.
+#+type: capture
+#+level: cross
+#+filetags: :qt:feature:screenshot:bug-report:tooling:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a global "Report a bug / feedback" action (menu item and/or
+shortcut) available anywhere in ores.qt that captures a screenshot of
+the app at the moment it's invoked, lets the user attach a short
+description, and stores the result — screenshot bytes plus metadata
+(user, tenant, timestamp, app version, active window/screen context)
+— as a new bug-report/user-voice entity in the database, following the
+existing refdata/codegen conventions (table, repository, service). A
+companion CLI command (likely under =compass=, or a new =ores.shell=
+script) should list/dump outstanding bug reports and convert each into
+a proper =capture= org file in =doc/agile/product_backlog/inbox/=
+(including the embedded screenshot as a sibling PNG), so they can be
+triaged and committed the same way any other capture is.
+
+* Why
+
+Right now, capturing a screenshot of the running app for a bug report
+requires external tooling and manual steps outside the app (as seen
+first-hand trying to screenshot the calendar combo box for sprint 24's
+release notes: GNOME Shell/X11 screenshot tools misbehave badly under
+WSLg's Wayland compositor, and a workaround via the Windows host was
+needed). An in-app capture mechanism sidesteps all display-server
+quirks by grabbing pixels straight from Qt's own render surface, and
+folding it into a first-class bug-report/user-voice feature gives
+users (not just developers) a direct channel to flag problems as they
+hit them, instead of relying on someone reproducing the issue later
+to screenshot it externally.
+
+* References
+
+- Sprint 24 struggle to screenshot the calendar combo box over WSLg
+  (X11 root-window capture returns black/BadMatch under XWayland;
+  per-window =xwd= works but can't span a top-level popup + its
+  parent window in one shot; worked around via a Windows-side
+  screenshot instead).
+- Related existing capture:
+  [[id:69D4594A-C70A-4B23-A4B5-741EE2135B73][Auto-crop QA Validation Runner screenshots to the active window]]
+  (fixes the *desktop-capture* crop problem for the QA runner
+  specifically; this capture is broader — an always-available,
+  end-user-facing bug report/feedback channel, not just a QA tool
+  fix).
+
+* See also
+
+-

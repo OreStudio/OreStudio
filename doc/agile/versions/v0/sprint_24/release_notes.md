@@ -14,6 +14,10 @@ Sprint 24 continued commissioning work across components and pushed on IR genera
 -   Service runtime proven containerised and running reproducibly on a remote WSL host.
 -   Sprint ran roughly twice its intended duration; two health reviews (both RED) flagged the overrun and a goal-alignment gap on IR generation &#x2013; see the health reviews for the full analysis.
 
+The new holiday-aware date picker, shown here on the New Trade dialog's Maturity Date field (weekends in red):
+
+![date_picker.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_24/date_picker.png)
+
 
 # 🛠️ Key Improvements
 

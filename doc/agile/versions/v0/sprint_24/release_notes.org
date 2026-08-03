@@ -50,6 +50,11 @@ full analysis.
   reviews (both RED) flagged the overrun and a goal-alignment gap on
   IR generation -- see the health reviews for the full analysis.
 
+The new holiday-aware date picker, shown here on the New Trade dialog's
+Maturity Date field (weekends in red):
+
+[[proj:doc/agile/versions/v0/sprint_24/date_picker.png]]
+
 * 🛠️ Key Improvements
 
 ** Build & Portability

@@ -12,6 +12,8 @@
 
 /August 2026/
 
+[[proj:assets/images/ore_studio-v0.0.24.png]]
+
 Sprint 24 continued commissioning work across components and pushed
 on IR generation. Acme Corporation shipped as ORE Studio's fully
 populated synthetic holding-group test entity, replacing Barclays

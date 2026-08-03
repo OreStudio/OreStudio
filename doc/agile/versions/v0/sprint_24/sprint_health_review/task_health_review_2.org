@@ -160,7 +160,9 @@ items already satisfied. The remaining 3 BACKLOG tasks (Qt-drawer
 entity backfill, legacy primary-key heading migration, hand-written
 Qt list pagination) are forward-looking extensions outside that
 acceptance, not blockers to it. Closed the story DONE and split the
-3 remaining tasks into a new product-backlog story,
+3 remaining tasks into a new sprint-backlog story (BACKLOG, still
+inside sprint 24 -- not the product backlog, which is a separate
+document tree entirely),
 [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]],
 so the delivered work is recorded as shipped rather than carried
 forward as an implicitly-incomplete story.
@@ -234,11 +236,11 @@ delivered work is left implicitly incomplete:
 - [[id:91385A39-EBE4-4048-9A18-E2812E9350A2][Hotfix: wire codec default flip to msgpack]] -- closed DONE
   (PR #1807 merged, CI green).
 - [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups]] -- closed DONE (all acceptance
-  items met); 3 forward-looking tasks split into a new
-  product-backlog story.
+  items met); 3 forward-looking tasks split into a new sprint-backlog
+  story.
 - [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] -- closed DONE (shipped
   tasks independently satisfy the story's own acceptance); 3
-  not-yet-started tasks split into a new product-backlog story.
+  not-yet-started tasks split into a new sprint-backlog story.
 - [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] --
   renamed/renarrowed to [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime
   and verify it on a remote WSL host]] and closed DONE, reflecting
@@ -246,7 +248,8 @@ delivered work is left implicitly incomplete:
   verification). The real remaining work -- first-class compass
   deploy tooling and the actual day-to-day cutover -- was split into
   a fresh, correctly-named [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL
-  host over SSH]] story in the product backlog.
+  host over SSH]] story, kept in the sprint backlog (not the product
+  backlog -- initially misfiled there, corrected after review).
 - [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering]] --
   split into a closed [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities]]
   story (DONE) and a renamed, narrower [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Roll out badge/image/
@@ -258,3 +261,23 @@ Sprint 24 now has exactly one STARTED story --
 badge/image/plain-text rollout, correctly still open since its
 remaining task is its own unmet acceptance, not scope creep. Every
 other story is DONE, ABANDONED, or BACKLOG (carried, not blocking).
+
+** Addendum: missing story found and wired in (2026-08-03)
+
+User flagged [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment
+isolation]] (BACKLOG, single BACKLOG task) as absent from this
+review's analysis. Confirmed: the story file existed in this
+branch's history (committed 2026-07-31 as part of
+=d103ea38a=) but was never wired into sprint.org's =* Stories=
+table, so it was invisible to both the regex-based story count in
+this review and to =compass search=. Audited every other
+=story.org= under sprint_24 for the same gap -- none found (the only
+other unwired story is this health-review meta-story itself, which
+is deliberately tracked via the =* Health Review= section instead of
+the Stories table). Wired the systemd story into sprint.org as
+BACKLOG; does not change this review's dimension verdicts or overall
+RAG (still BACKLOG, never started, no completed work to record), but
+does mean the sprint-load and goal-alignment analysis above under-
+counted by one BACKLOG story. Worth a process note: a story file
+existing without a =* Stories= table row is a silent gap -- neither
+=compass search= nor a review relying on that table will surface it.

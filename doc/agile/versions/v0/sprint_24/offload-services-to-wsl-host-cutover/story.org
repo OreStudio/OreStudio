@@ -5,27 +5,39 @@
 #+description: Split from sprint 24's containerize-and-deploy story at sprint close: the actual cutover to running the dev environment's services/DB on a WSL host day-to-day, starting with first-class compass tooling to build/stage/transfer/deploy the service-runtime image to a remote host instead of the current manual SSH/podman sequence.
 #+type: story
 #+level: s2
-#+filetags: :next:product_backlog:
+#+filetags: :devops:environment:wsl:infrastructure:sprint_24:v0:
 #+created: 2026-08-03
 #+updated: 2026-08-03
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Split from [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it
+on a remote WSL host]] at sprint 24 close: the actual cutover to
+running the dev environment's services/DB on a WSL host day-to-day,
+starting with first-class compass tooling to build/stage/transfer/
+deploy the service-runtime image to a remote host, replacing the
+current manual SSH/podman sequence.
+
+Distinct from [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment
+isolation]]'s WS-3 (=compass systemd deploy=): that workstream installs
+generated =ores@<env>.target= units into the *local* machine's
+=~/.config/systemd/user/=; this story is about building, staging, and
+transferring a service-runtime *image* to a *remote* host over SSH.
+Same word ("deploy"), different problem.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Add compass tooling for remote deploys.  |
 | Last touched  | 2026-08-03                               |
 
 * Acceptance

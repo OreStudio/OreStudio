@@ -133,6 +133,7 @@ def _substitute_args(args_template, def_row, keys_dir, replica_index=0,
     tmpl = args_template
     tmpl = tmpl.replace("{nats_url}", "${ORES_NATS_URL}")
     tmpl = tmpl.replace("{nats_prefix}", "${ORES_NATS_SUBJECT_PREFIX}")
+    tmpl = tmpl.replace("{nats_wire_format}", "${ORES_NATS_WIRE_FORMAT}")
     tmpl = tmpl.replace("{tenant_id}", SYSTEM_TENANT_UUID)
     tmpl = tmpl.replace("{log_level}", "info")
     tmpl = tmpl.replace("{log_dir}", "../log")

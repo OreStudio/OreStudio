@@ -115,42 +115,11 @@ Sprint 24 continued commissioning work across components and pushed on IR genera
 
 # ⚠️ Known Issues & Postponed
 
--   **DQ/Refdata service boundary cleanup** (ABANDONED): deferred.
--   **IAM/Refdata service boundary cleanup** (ABANDONED): deferred.
--   **Refdata entity NATS event registrar audit** (ABANDONED): deferred.
--   **Codegen developer experience improvements** (ABANDONED): deferred.
--   **Stochastic tick arrival times for synthetic feeds** (ABANDONED): deferred.
--   **Audit refdata entities for composite (temporal-versioned) child relationships** (ABANDONED): deferred.
--   **Codegen: generate NATS subject constants per component** (ABANDONED): deferred.
--   **Server-side UUID generation for all entities** (ABANDONED): deferred.
--   **Roll out badge/image/plain-text rendering across classified domain entities** (ABANDONED): deferred.
--   **Classify FK-like/lookup entities and decide badge vs image vs plain-text rendering policy** (ABANDONED): deferred.
--   **Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type** (ABANDONED): deferred.
--   **Commission remaining DQ entities** (ABANDONED): deferred.
--   **Codegen infrastructure follow-ups from DQ commissioning** (ABANDONED): deferred.
--   **Calendar follow-ups: remaining hand-written list pagination cleanup** (ABANDONED): deferred.
--   **Retire per-entity history dialogs: Phase C rollout** (ABANDONED): deferred.
--   **IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions** (ABANDONED): deferred.
--   **Rate display conventions: convention-aware formatting across all Qt rate surfaces (FX + IR)** (ABANDONED): deferred.
--   **Migrate to oresmd, delete market\_series qualifier and ore\_key** (ABANDONED): deferred.
--   **Extend oresmd to full ORE quote-type coverage** (ABANDONED): deferred.
--   **IR curve bootstrapping + official curve republish** (ABANDONED): deferred.
--   **Commission ores.qt.admin into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.analytics into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.compute into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.marketdata into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.synthetic into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.trading into codegen** (ABANDONED): deferred.
--   **Commission ores.qt.workspace into codegen** (ABANDONED): deferred.
--   **Generalize as-of and as-of-bucket queries across repositories** (ABANDONED): deferred.
--   **Add a server-side rate-history endpoint for chart panels** (ABANDONED): deferred.
--   **Audit ores.synthetic.service headers for missing export macro** (ABANDONED): deferred.
--   **Entity classification and drift baseline across all components** (ABANDONED): deferred.
--   **Audit and standardize the display\_order field across lookup/code-table entities** (ABANDONED): deferred.
--   **Offload service and DB runtime to a WSL host over SSH** (ABANDONED): deferred.
--   **Split ORE Studio services into one container per service** (ABANDONED): deferred.
--   **Systemd resource management and per-environment isolation** (ABANDONED): deferred.
--   **Compass quality-of-life improvements: remaining follow-ups** (ABANDONED): deferred.
+-   **IR generation goal not delivered**: the sprint mission's "improve IR generation" half shipped only design work (the oresmd URN scheme). Dataset seeding, dual-curve support, and quoting conventions are all still unstarted &#x2013; see the health reviews for the full analysis.
+-   **Badge/image/plain-text rollout still in progress**: all 120 candidate entities are audited and classified, but implementation is only partway through its batches.
+-   **Entity classification tool proven on one component only**: the drift-measurement tool is built and verified on the ores.refdata pilot; rollout to the remaining ~19 components hasn't started.
+-   **WSL host offload not yet cut over**: the service runtime is containerised and proven running on a remote WSL host, but first-class compass tooling for the deploy and the actual day-to-day dev-workflow switch are still ahead.
+-   **ores.wt.service crashes on startup (SEGV)**: found during this release's own manual verification pass, after the sprint's own work closed &#x2013; not yet investigated.
 
 
 # 📈 Sprint Charts

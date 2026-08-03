@@ -39,6 +39,7 @@ test scenario (not ad hoc), and the retrospective.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:32C80A2E-CF88-4F6A-9D58-8B070ED41E4F][Write sprint 24 release notes]] | BACKLOG | | | Generate release notes via compass add release_notes, populate from PR data and closed tasks' Result sections, and capture illustrative screenshots via a QA test scenario. |
+| [[id:C10F0EF1-2E05-4B64-8DFB-EACDB3316497][Fix unsubstituted {nats_wire_format} placeholder in systemd unit generator]] | DONE | 2026-08-03 | 2026-08-03 | systemd_generate.py substituted {nats_url}/{nats_prefix}/{nats_tls_args} but never {nats_wire_format}, so every service with a custom args_template (http.server, telemetry, ore.service, wt.service, all 5 compute.wrapper replicas) passed the literal string '{nats_wire_format}' to --nats-wire-format and crashed on every start. Found while starting services to run the release-notes screenshot scenario. |
 
 * Decisions
 

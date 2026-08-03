@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: C10F0EF1-2E05-4B64-8DFB-EACDB3316497
+:END:
+#+title: Task: Fix unsubstituted {nats_wire_format} placeholder in systemd unit generator
+#+description: systemd_generate.py substituted {nats_url}/{nats_prefix}/{nats_tls_args} but never {nats_wire_format}, so every service with a custom args_template (http.server, telemetry, ore.service, wt.service, all 5 compute.wrapper replicas) passed the literal string '{nats_wire_format}' to --nats-wire-format and crashed on every start. Found while starting services to run the release-notes screenshot scenario.
+#+type: task
+#+level: s1
+#+filetags: :sprint-24-close:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D62C998-6B91-4A5A-9428-3FF89C00EFAD][Sprint 24 closure: release notes and demo]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Services with a custom args_template (http.server, telemetry,
+ore.service, wt.service, all 5 compute.wrapper replicas) start
+successfully with the correct wire format from ORES_NATS_WIRE_FORMAT
+instead of crashing on the literal string '{nats_wire_format}'.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:0D62C998-6B91-4A5A-9428-3FF89C00EFAD][Sprint 24 closure: release notes and demo]] |
+| Now          | Fixed and verified.                    |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-03                               |
+
+* Acceptance
+
+- =_substitute_args()= in =systemd_generate.py= substitutes
+  =\{nats_wire_format\}= with =${ORES_NATS_WIRE_FORMAT}=, matching the
+  existing =\{nats_url\}=/=\{nats_prefix\}=/=\{nats_tls_args\}=
+  substitutions.
+- =compass services start= brings up all services with a custom
+  args_template without a =--nats-wire-format= crash.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Root cause: =_substitute_args()= replaced =\{nats_url\}=,
+=\{nats_prefix\}=, and =\{nats_tls_args\}= but never
+=\{nats_wire_format\}=, even though every custom
+=args_template= row in =controller_service_definitions_populate.sql=
+includes =--nats-wire-format \{nats_wire_format\}= (the SQL's own
+comment already warns this is easy to forget). Added the missing
+substitution (=\{nats_wire_format\}= -> =${ORES_NATS_WIRE_FORMAT}=),
+regenerated and redeployed the units (=compass systemd generate=,
+=compass systemd deploy= -- 9 units updated, exactly the ones with
+custom templates), and restarted the previously-crashing services.
+All 23 compass-managed services now start and report active
+(=compass services status=). =ores.wt.service= separately crashes
+with a SIGSEGV unrelated to this fix -- out of scope, not chased
+further.

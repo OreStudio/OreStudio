@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 21D8DE9C-9498-45FB-8FD7-B1FFC7A5EB0C
+:END:
+#+title: Flaky nightly-only test: mint_token_respects_the_requested_ttl uses a 1-second TTL validated in real time
+#+description: mint_token_respects_the_requested_ttl (ores.iam.core.tests, service_internal_impersonation_service_tests.cpp:84) intermittently fails with 'claims.has_value() for: false' on Nightly Build only (not Continuous), e.g. runs 30777821573/30727690723/30678814795/30597405755. Root cause: the test mints a token with a 1-second TTL and immediately validates it in the same test body; under Nightly's heavy parallel ctest -j load, more than 1 second can genuinely elapse between mint and validate, so the token is legitimately expired by validation time -- a flaky test from too-short a TTL under load, not a real regression. Confirmed unrelated to the 2026-08-03 systemd nats_wire_format fix (different component, predates that commit). Fix: use a longer TTL (e.g. 30s) and assert the expiry window arithmetically instead of relying on real-time validation timing, or mock/inject the clock.
+#+type: capture
+#+level: cross
+#+filetags: :bug:test:flaky:iam:ci:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

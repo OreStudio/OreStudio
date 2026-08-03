@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D2DB1A84-2293-47B4-A231-38F5B730AA57
+:END:
+#+title: QA Validation Runner: add a keyboard-shortcut-armed delayed screenshot so combo box/popup dropdowns can be captured
+#+description: QaValidationRunnerWidget::captureScreenshot() already has a 1500ms QTimer::singleShot delay before grabbing the active top-level window, but it's useless for popups/combo-box dropdowns (e.g. HolidayAwareDatePicker's calendar popup, any QComboBox dropdown): clicking the Runner panel's own Screenshot button steals focus and dismisses the popup immediately, before the timer even starts -- confirmed live during the sprint 24 release-notes screenshot scenario (step 2, date picker popup: 'i can see calendar but i cannot screenshot it as its a combo box'). Need a way to arm the delayed capture WITHOUT clicking anything in the Runner UI, so the tester can open the combo/popup after arming and it's still open when the timer fires -- e.g. a global keyboard shortcut (works while the popup has focus, unlike a button click) that starts the same countdown-then-grab flow already used for the window-switch case. Found while running the sprint 24 release-notes screenshot test scenario (2026-08-03).
+#+type: capture
+#+level: cross
+#+filetags: :qt:qa:tooling:screenshot:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

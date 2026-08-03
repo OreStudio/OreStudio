@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7CF26D60-A7A1-4531-ADBC-F7801A4D9516
+:END:
+#+title: compass services start's own readiness poll is far slower than systemd's own Type=notify tracking
+#+description: compass services start's own readiness-wait loop (the '22 unit(s) (Service ready)...' progress bar) is the actual bottleneck, taking well over a minute even though systemd itself already reports every unit active/running within 1-5s (units are Type=notify with NotifyAccess=all, so systemd already tracks real readiness via sd_notify). compass appears to run its own separate readiness check (NATS ping/heartbeat polling?) redundant with what systemd already knows, rather than just trusting 'systemctl is-active'/'systemctl --user show -p ActiveState,SubState' or waiting on the units' own Type=notify readiness signal. Should rely on systemd's own readiness tracking instead of a slow independent poll. Found while restarting services to pick up a fresh build during sprint 24 release-notes screenshot prep (2026-08-03).
+#+type: capture
+#+level: cross
+#+filetags: :bug:compass:systemd:performance:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

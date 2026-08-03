@@ -50,6 +50,12 @@ This page documents a test scenario verifying [[id:0D62C998-6B91-4A5A-9428-3FF89
   with a party selector showing =Acme Corporation Plc= or one of its
   children.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Capture the holiday-aware date picker
 
 - Open /Trading → New Trade/ (or wherever a Swap/FRA instrument form
@@ -61,6 +67,13 @@ This page documents a test scenario verifying [[id:0D62C998-6B91-4A5A-9428-3FF89
 - Click /Screenshot/, then /Pass/.
 - Target filename: =sprint24_holiday_aware_date_picker.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | i can see calendar but i cannot screenshot it as its a combo box |
+
 ** Capture the Browse Holidays view
 
 - Open /Reference Data → Calendars/, select a calendar row (e.g.
@@ -70,6 +83,13 @@ This page documents a test scenario verifying [[id:0D62C998-6B91-4A5A-9428-3FF89
 - Click /Screenshot/, then /Pass/.
 - Target filename: =sprint24_browse_holidays_view.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_sprint-24-release-notes-screenshots_step3_20260803_100755.png]] |
+
 ** Capture the redesigned FX Spot Monitor
 
 - Open /Market Data → FX Spot Monitor/.
@@ -78,6 +98,13 @@ This page documents a test scenario verifying [[id:0D62C998-6B91-4A5A-9428-3FF89
   is available, to show the 3-decimal convention.
 - Click /Screenshot/, then /Pass/.
 - Target filename: =sprint24_fx_spot_monitor_redesign.png=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | even though spot is ticking we are still pending; [[file:scenario_sprint-24-release-notes-screenshots_step4_20260803_101123.png]] |
 
 ** Capture badge/image rendering on a classified entity
 
@@ -89,14 +116,21 @@ This page documents a test scenario verifying [[id:0D62C998-6B91-4A5A-9428-3FF89
 - Click /Screenshot/, then /Pass/.
 - Target filename: =sprint24_badge_classification_rollout.png=.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_sprint-24-release-notes-screenshots_step5_20260803_101200.png]] |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-08-03T09:12:16Z |
+| Branch        | feature/implement-fix-wire-codec-default-breaks-headless-instrument-parse-tests |
+| Commit        | 6604b84b4 |
+| Worktree      | brave_hopper |
 
 * Notes

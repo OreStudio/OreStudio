@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0C611884-AD3B-41E9-8549-5F9091A23DA6
+:END:
+#+title: SUPERSEDED -- was thought to be an ores.shell auto-login/NATS request-leak bug, actually a duplicate-fleet symptom
+#+description: RESOLVED, root cause was environmental, not a code bug. Originally filed as: compass shell -f's auto-login attempt (--login-username/--login-password) timing out in bootstrap mode appeared to corrupt the next NATS request on the same session ('Failed to parse response: Could not cast to a map'), and a client-side async-request thread leak was suspected. The real cause, found later the same day: a stale, pre-systemd fleet of ~90 orphaned service processes (leftover from before this sprint's controller-service decommission) was still running and sharing the same NATS queue groups as the current systemd-managed fleet. NATS was round-robining requests between a live instance and a zombie instance; any request -- not specifically the one after a timed-out login -- could land on the zombie and fail or hang. After killing every orphaned process (see doc/agile/versions/v0/sprint_24/release_notes.org's Post Mortem for the incident), providers and logins alike worked cleanly and reproducibly, including the auto-login path this capture originally blamed. No client-side fix needed; discard this capture's original theory. Kept for the record rather than deleted, since the debugging trail (natsConnection_RequestMsg uses a unique inbox per call, ruling out that layer) may be useful if a similar symptom resurfaces.
+#+type: capture
+#+level: cross
+#+filetags: :bug:nats:shell:iam:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

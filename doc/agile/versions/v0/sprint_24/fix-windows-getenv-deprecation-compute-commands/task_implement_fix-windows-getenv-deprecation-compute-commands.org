@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 67899DE5-D313-4433-8152-8D1AF122DCB1
+:END:
+#+title: Task: Implement Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp
+#+description: Initial task for: Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp
+#+type: task
+#+level: s1
+#+filetags: :fix-windows-getenv-deprecation-compute-commands:sprint_24:v0:
+#+owner: marco
+#+branch: feature/implement-fix-windows-getenv-deprecation-compute-commands
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:37C33FB7-EF7A-4D1F-A44D-D56A6BFB71C1][Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the Windows clang-cl build failure: -Werror=deprecated-declarations
+on std::getenv in projects/ores.shell/src/app/commands/compute_commands.cpp:51,
+by replacing it with the project's
+ores::platform::environment::environment::get_value_or_default() helper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:37C33FB7-EF7A-4D1F-A44D-D56A6BFB71C1][Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Replaced std::getenv("ORES_HTTP_PORT") in default_http_base_url() with
+ores::platform::environment::environment::get_value_or_default(), the
+same helper used to fix the equivalent Windows Clang deprecation
+warning in systemd_notify.cpp (commit 530a5f97b). This file was missed
+in that pass because it's a distinct translation unit
+(ores.shell/src/app/commands/compute_commands.cpp) not touched by that
+commit. ores.platform.lib is already a transitive PUBLIC dependency of
+ores.shell.lib via ores.utility.lib, so no CMakeLists change was
+needed. Removed the now-unused <cstdlib> include.
+
+Confirmed no other stray std::getenv/::getenv call remains in the
+codebase outside ores.platform's own environment.cpp implementation.
+
+Also confirmed while investigating: the "why aren't we building
+Windows/macOS" concern is by design, not a regression --
+continuous-windows.yml/continuous-macos.yml run on a schedule (every
+12h / 3h) and on tag pushes only, not on pull_request, to avoid
+competing with PR CI for the shared sccache quota. Separately, the
+macOS CI failures observed (unrelated sockaddr_un/sun_path compile
+error in systemd_notify.cpp) are already fixed on main via
+28fc7a975/530a5f97b; no scheduled macOS run has landed since that fix
+merged yet.

@@ -26,11 +26,11 @@
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.platform/environment/environment.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -49,8 +49,7 @@ constexpr std::string_view default_reason_code =
     dq::domain::change_reason_constants::codes::new_record;
 
 std::string default_http_base_url() {
-    return "http://localhost:" +
-        environment::get_value_or_default("ORES_HTTP_PORT", "20600");
+    return "http://localhost:" + environment::get_value_or_default("ORES_HTTP_PORT", "20600");
 }
 
 std::optional<compute::domain::app>

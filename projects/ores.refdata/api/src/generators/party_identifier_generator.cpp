@@ -44,8 +44,8 @@ generate_synthetic_party_identifier(utility::generation::generation_context& ctx
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.id_scheme = // no_generator_suffix: validated enum, a "-<idx>" suffix would be invalid.
-        // Rotate so a batch of several identifiers for one party gets distinct
-        // schemes (max one identifier per scheme per party).
+                  // Rotate so a batch of several identifiers for one party gets distinct
+                  // schemes (max one identifier per scheme per party).
         [idx] {
             static constexpr const char* schemes[] = {"LEI",
                                                       "BIC",

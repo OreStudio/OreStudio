@@ -46,8 +46,9 @@ fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
     : sub_(nats.subscribe(
           detail::ore_key_to_subject(ore_key, tenant_id),
           [on_tick = std::move(on_tick), on_error = std::move(on_error)](ores::nats::message msg) {
-              auto tick = ores::nats::default_wire_codec()
-                              .decode<ores::marketdata::domain::fx_spot_tick>(msg.data);
+              auto tick =
+                  ores::nats::default_wire_codec().decode<ores::marketdata::domain::fx_spot_tick>(
+                      msg.data);
               if (tick) {
                   on_tick(*tick);
               } else {

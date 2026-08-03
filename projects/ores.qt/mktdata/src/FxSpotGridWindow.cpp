@@ -471,9 +471,9 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                     self,
                     [self, ore_key, reason]() {
                         if (self)
-                            emit self->errorOccurred(
-                                tr("Failed to parse FX tick for %1: %2")
-                                    .arg(QString::fromStdString(ore_key), QString::fromStdString(reason)));
+                            emit self->errorOccurred(tr("Failed to parse FX tick for %1: %2")
+                                                         .arg(QString::fromStdString(ore_key),
+                                                              QString::fromStdString(reason)));
                     },
                     Qt::QueuedConnection);
             });

@@ -29,9 +29,9 @@
 // call unconditionally").
 #if defined(BOOST_ASIO_HAS_LOCAL_SOCKETS)
 
-#include <boost/asio/buffer.hpp>
-#include <boost/asio/io_context.hpp>
-#include <string>
+#    include <boost/asio/buffer.hpp>
+#    include <boost/asio/io_context.hpp>
+#    include <string>
 
 namespace ores::service {
 
@@ -71,8 +71,7 @@ void notify_systemd_ready() noexcept {
 
 namespace ores::service {
 
-void notify_systemd_ready() noexcept {
-}
+void notify_systemd_ready() noexcept {}
 
 }
 

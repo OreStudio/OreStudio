@@ -459,8 +459,8 @@ void FxSpotChartWindow::startLiveSubscription() {
                     self,
                     [self, reason]() {
                         if (self)
-                            emit self->errorOccurred(
-                                tr("Failed to parse FX tick: %1").arg(QString::fromStdString(reason)));
+                            emit self->errorOccurred(tr("Failed to parse FX tick: %1")
+                                                         .arg(QString::fromStdString(reason)));
                     },
                     Qt::QueuedConnection);
             });

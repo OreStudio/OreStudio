@@ -8,7 +8,7 @@
 #+filetags: :release-notes-broken-id-links:sprint_24:v0:
 #+owner: marco
 #+branch: hotfix/release-notes-broken-id-links
-#+pr:
+#+pr: 1816
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-03
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1816][#1816]] | [agile,doc] Fix release notes exporter dropping broken/relative id: links |
 
 * Review
 

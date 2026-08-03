@@ -58,12 +58,67 @@ The central relationship the whole cluster builds toward is:
 
 $$\mathrm{MDS}(T) \;=\; \mathrm{closure}\bigl(\rho\bigl(\mathrm{static}(\tau(T)) \cup \mathrm{dynamic}(T,d)\bigr)\bigr) \cap U$$
 
-Read as: the dynamic requirement set for a trade population $T$ on date
-$d$ is resolved ($\rho$) into identifiers, expanded to its dependency
-closure, and intersected with the universe $U$ of everything that exists.
-[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] walks
-through this formula in full with a worked FX Forward example and defines
-every symbol; the individual documents below each own one symbol in depth.
+Reading left to right:
+
+1. $\mathrm{static}(\tau(T)) \cup \mathrm{dynamic}(T, d)$ — the union of
+   every trade type's static requirement set with every individual trade's
+   dynamic refinement, at valuation date $d$. This is a set of logical
+   requirements, not yet a set of identifiers.
+2. $\rho(\cdot)$ — [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][resolution]],
+   mapping each requirement to exactly one physical identifier. The result
+   is a set of candidate identifiers — not yet confirmed members of $U$,
+   and not yet complete: each identifier's own dependencies have not been
+   expanded.
+3. $\mathrm{closure}(\cdot)$ — [[id:C573A598-52FF-46F7-A1C0-D008F4364601][dependency
+   closure]], expanding the set from step 2 to include everything it
+   transitively depends on.
+4. $\cap\, U$ — intersection with the
+   [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][market data universe]],
+   turning "everything the trades claim to need, resolved and expanded"
+   into "everything they need that actually exists." Anything produced by
+   steps 1–3 that is not a member of $U$ is excluded — which is exactly
+   why this must not be a silent step: a production system needs to surface
+   the difference $\mathrm{closure}(\rho(\ldots)) \setminus U$ (everything
+   requested but missing) as an explicit error, rather than letting the
+   intersection quietly discard it and proceed to value the trade against
+   an incomplete data set.
+
+#+begin_note
+*Worked example: a EUR/USD FX Forward*
+
+Suppose $T$ is a single EUR/USD FX Forward. Its static requirement set
+(fixed by the FX Forward product type) is "the EUR discount curve" and
+"the USD discount curve." Its dynamic refinement, given this trade's
+actual 87-day maturity and today's date, identifies the two pillar points
+that bracket that date on each curve — the 2M and 3M tenor points —
+since 87 days falls between those pillars and
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolation]] between them
+is needed to obtain the discount factor at the exact maturity date. Both
+pillar points are therefore required for each currency: four point-level
+requirements in total. Resolution ($\rho$) maps each to one physical
+identifier in [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]
+notation:
+
+- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
+- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
+- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
+- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
+
+Dependency closure then expands each of the four identifiers to include
+whatever instrument quotes were used to bootstrap those pillar points in
+the first place. Finally, intersecting with $U$ confirms that every
+expanded identifier genuinely has data behind it; if any pillar point
+depends on an instrument quote that was never loaded into $U$, that gap
+surfaces here as a member of $\mathrm{closure}(\rho(\ldots))$ that
+intersection with $U$ excludes.
+
+In the DNS analogy: a browser loading one page resolves the page's domain
+name to an IP address, then discovers the page has =<img>= tags that
+name further domain names — the analogue of dependency closure. Each of
+those is resolved in turn, and the browser only successfully renders each
+image if that address is actually reachable — the network-level analogue
+of intersecting with $U$ and finding the result present.
+#+end_note
 
 * Documents in this cluster
 
@@ -97,10 +152,9 @@ specific concept.
   independent reference systems (ORE, OpenGamma Strata) converge on.
 
 - [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] —
-  $U$. The global set every identifier is drawn from. Carries the full
-  worked derivation of $\mathrm{MDS}(T)$ and the argument for why set
-  notation — rather than "environment" or similar terms — is the right
-  vocabulary for this concept.
+  $U$. The global set every identifier is drawn from. Carries the argument
+  for why set notation — rather than "environment" or similar terms — is
+  the right vocabulary for this concept.
 
 - [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency
   Resolution]] — $\mathrm{closure}$. The transitive expansion of a

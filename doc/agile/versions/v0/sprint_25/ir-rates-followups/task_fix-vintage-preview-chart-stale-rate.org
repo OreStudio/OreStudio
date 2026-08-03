@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 94BF8EBA-30B7-45C1-8C5A-757F9C56DD32
+:END:
+#+title: Task: Fix vintage-mode preview chart using stale r0/initial price instead of resolved rate
+#+description: IrCurveEditor's and the FX Spot editor's Process/sample-paths chart preview is parameterized from the local editor's r0/gmm_initial_price spin value, which for a vintage-mode config just holds an unused leftover default -- the server resolves the real seed from the vintage observation instead. The chart should be centered on the resolved vintage rate, not the stale local value. Check both IR curve and FX spot editors.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Discovered while manually verifying vintage-aware IR curve seeding
+([[id:FC800706-1673-4E48-84C2-22569E836DF5][task]]): =IrCurveEditor='s
+sample-paths chart (Process tab) is parameterized directly from
+=initialRateSpin_->value()= (=IrCurveEditor.cpp:925=), the editor's
+local r0 spin box. For a =price_source=vintage= config, that field
+holds an unused leftover/default value -- the server instead resolves
+the real starting rate from the vintage market observation at feed
+start (=select_vintage_anchor_entry()=). The chart preview therefore
+shows sample paths centred on the wrong rate for any vintage-mode
+config, which is misleading when a user opens the editor to inspect
+or demo a vintage curve.
+
+=FxSpotEditor= has the analogous =gmm_initial_price=/vintage
+discriminator (=price_source=/=vintage_source=/=vintage_date=,
+mirrored onto IR curves per this story) and likely the same pattern
+in its own preview chart -- check it alongside the IR curve editor
+rather than fixing IR curves only and leaving FX with the identical
+gap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- For a =price_source=vintage= config, =IrCurveEditor='s sample-paths
+  chart is centred on the resolved vintage rate, not the stale
+  =initial_rate= spin value -- either by resolving it client-side (a
+  read-only lookup mirroring =select_vintage_anchor_entry()=) or by
+  surfacing the already-running feed's resolved rate when one exists.
+- =FxSpotEditor='s equivalent preview chart is checked for the same
+  gap against =gmm_initial_price= and fixed if present.
+- Fixed-mode configs are unaffected -- the chart still reflects the
+  typed r0/=gmm_initial_price= exactly, as today.
+- Side effect this fixes for free: today there is no way to see the
+  server-resolved vintage rate anywhere (=start_ir_curve_feed_response=/
+  =list_ir_curve_feed_configs_response= only carry
+  success/message/running names, and =resolve_vintage_initial_rate()=
+  never logs the value it computes) -- once the chart is centred on
+  the resolved rate, opening the editor on a running vintage config is
+  enough to visually confirm the process is seeded within the expected
+  range, without needing a dedicated status field or log line.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

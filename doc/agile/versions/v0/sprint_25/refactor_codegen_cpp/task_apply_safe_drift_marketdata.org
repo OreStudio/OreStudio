@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: A0A1834D-F274-4066-A38D-D597A8827C8D
+:END:
+#+title: Task: Apply safe drift to marketdata-cpp
+#+description: The 75-model drift catalog never audited ores.marketdata; market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main. Audit and apply safe drift following the refdata-cpp pilot pattern.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+While regenerating a sample of entities for the "Delete legacy codegen
+profile system" task, `compass codegen entity generate market_fixing`
+(=ores.marketdata=) — run on clean, unmodified =origin/main= to
+isolate the effect of that task's change — produced real, pre-existing
+drift: new untracked files the template wants to generate that don't
+exist in the repo yet (=messaging/market_fixing_registrar.hpp/.cpp=,
+=presentation/market_fixing_history_field_mapper.hpp/.cpp=,
+=service/messaging/market_fixing_event_registrar.hpp=). This is the
+same class of "additive" drift this story already catalogues and
+fixes component-by-component, but =ores.marketdata= was never in
+scope of the original 75-model drift catalog. Extend the catalog with
+a "marketdata" section and apply safe drift following the
+refdata-cpp pilot pattern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

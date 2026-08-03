@@ -42,7 +42,7 @@ describing them.
 * Sense 1: narrowing MDS(T) by configured valuation engines
 
 Given a valuation-scoped market data set $\mathrm{MDS}(T)$ (see
-[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] for
 its derivation), sense 1 is the further narrowing
 
 $$\mathrm{MDS}(T) \cap \mathrm{engineRelevant}(\mathrm{configuredEngines})$$

@@ -297,6 +297,6 @@ about system behaviour that is not actually there.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — what a requirement resolves *to*.
 - [[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] — the mechanism that performs the resolution from requirement to identifier.
-- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space every resolved identifier is drawn from, and the full pipeline formula.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — the space every resolved identifier is drawn from.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — RIC, Bloomberg, and ORE quote key compared, a worked instance of the identity attributes discussed above.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — ORE's own concrete quote-key scheme, a second worked instance.

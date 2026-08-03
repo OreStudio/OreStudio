@@ -137,16 +137,25 @@ defines it in full:
 Suppose $T$ is a single EUR/USD FX Forward. Its static requirement set
 (fixed by the FX Forward product type) is "the EUR discount curve" and
 "the USD discount curve." Its dynamic refinement, given this trade's
-actual 87-day maturity and today's date, narrows each of those to "the
-3-month tenor point specifically." Resolution ($\rho$) maps each of those
-two point-level requirements to one physical identifier apiece —
-=DISCOUNT/RATE/EUR/3M= and =DISCOUNT/RATE/USD/3M=, following this
-repository's own identifier scheme (see
-[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]]).
-Dependency closure then expands each identifier to include whatever
-instrument quotes were used to bootstrap that curve point in the first
-place. Finally, intersecting with $U$ confirms that every expanded
-identifier genuinely has data behind it; if the EUR curve's 3-month point
+actual 87-day maturity and today's date, identifies the two pillar points
+that bracket that date on each curve — the 2M and 3M tenor points —
+since 87 days falls between those pillars and
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][interpolation]] between them
+is needed to obtain the discount factor at the exact maturity date. Both
+pillar points are therefore required for each currency: four point-level
+requirements in total. Resolution ($\rho$) maps each to one physical
+identifier in [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]
+notation:
+
+- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
+- =oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
+- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=2m=
+- =oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=quote&metric=discount_factor&point=3m=
+
+Dependency closure then expands each of the four identifiers to include
+whatever instrument quotes were used to bootstrap those pillar points in
+the first place. Finally, intersecting with $U$ confirms that every
+expanded identifier genuinely has data behind it; if any pillar point
 depends on an instrument quote that was never loaded into $U$, that gap
 surfaces here as a member of $\mathrm{closure}(\rho(\ldots))$ that
 intersection with $U$ excludes.

@@ -49,6 +49,7 @@ static const QColor k_pending_color{140, 140, 140};
 static const QColor k_live_color{22, 163, 74};
 static const QColor k_stale_color{200, 140, 0};
 static const QColor k_disconnected_color{220, 38, 38};
+static const QColor k_error_color{220, 38, 38};
 
 // ── rate colours ───────────────────────────────────────────────────────────
 static const QColor k_up_color{34, 197, 94};   // green-400
@@ -71,6 +72,8 @@ static QColor status_color(FxSpotGridWindow::FeedStatus s) {
             return k_disconnected_color;
         case FxSpotGridWindow::FeedStatus::Pending:
             return k_pending_color;
+        case FxSpotGridWindow::FeedStatus::Error:
+            return k_error_color;
     }
     return k_pending_color;
 }
@@ -85,6 +88,8 @@ static Icon status_icon(FxSpotGridWindow::FeedStatus s) {
             return Icon::PlugDisconnected;
         case FxSpotGridWindow::FeedStatus::Pending:
             return Icon::FeedPending;
+        case FxSpotGridWindow::FeedStatus::Error:
+            return Icon::Error;
     }
     return Icon::FeedPending;
 }
@@ -139,6 +144,9 @@ static void update_status_text(const StatusIndicator& ind,
         case FxSpotGridWindow::FeedStatus::Disconnected:
             text = QStringLiteral("DISCONNECTED");
             break;
+        case FxSpotGridWindow::FeedStatus::Error:
+            text = QStringLiteral("ERROR");
+            break;
     }
     ind.text_label->setText(text);
 }
@@ -149,12 +157,15 @@ static void update_status_text(const StatusIndicator& ind,
 // the same status between polls.
 static void apply_status_indicator(const StatusIndicator& ind,
                                    FxSpotGridWindow::FeedStatus s,
-                                   std::chrono::system_clock::time_point last_tick) {
+                                   std::chrono::system_clock::time_point last_tick,
+                                   const QString& tooltip = {}) {
     const QColor color = status_color(s);
     const QIcon icon = IconUtils::createRecoloredIcon(status_icon(s), color);
     ind.icon_label->setPixmap(icon.pixmap(16, 16));
     ind.text_label->setStyleSheet(QStringLiteral("color: %1; font-weight: 600;").arg(color.name()));
     update_status_text(ind, s, last_tick);
+    ind.icon_label->setToolTip(tooltip);
+    ind.text_label->setToolTip(tooltip);
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -470,10 +481,18 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                 QMetaObject::invokeMethod(
                     self,
                     [self, ore_key, reason]() {
-                        if (self)
-                            emit self->errorOccurred(tr("Failed to parse FX tick for %1: %2")
-                                                         .arg(QString::fromStdString(ore_key),
-                                                              QString::fromStdString(reason)));
+                        if (!self)
+                            return;
+                        // Persistent per-row indicator, not just the transient
+                        // status-bar blip errorOccurred() produces below --
+                        // under a consistently-failing stream this fires many
+                        // times per second, which floods/overwrites the status
+                        // bar faster than a user can read it, leaving the row
+                        // stuck showing PENDING with no visible explanation.
+                        self->applyError(ore_key, reason);
+                        emit self->errorOccurred(
+                            tr("Failed to parse FX tick for %1: %2")
+                                .arg(QString::fromStdString(ore_key), QString::fromStdString(reason)));
                     },
                     Qt::QueuedConnection);
             });
@@ -518,6 +537,20 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
         apply_status_indicator(
             {rs.status_icon_label, rs.status_text_label}, FeedStatus::Live, when);
     }
+}
+
+void FxSpotGridWindow::applyError(const std::string& ore_key, const std::string& reason) {
+    auto it = rows_.find(ore_key);
+    if (it == rows_.end())
+        return;
+
+    RowState& rs = it->second;
+    rs.last_error = QString::fromStdString(reason);
+    rs.last_status = FeedStatus::Error;
+    apply_status_indicator({rs.status_icon_label, rs.status_text_label},
+                           FeedStatus::Error,
+                           rs.last_tick,
+                           tr("Failed to decode tick: %1").arg(rs.last_error));
 }
 
 void FxSpotGridWindow::onStaleCheck() {

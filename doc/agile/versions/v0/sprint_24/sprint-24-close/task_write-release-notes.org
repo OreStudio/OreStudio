@@ -28,11 +28,11 @@ for it through a real QA test scenario rather than ad hoc captures.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:0D62C998-6B91-4A5A-9428-3FF89C00EFAD][Sprint 24 closure: release notes and demo]] |
-| Now          | Generating release notes.              |
+| Now          | Complete: release notes generated, reviewed, restructured, screenshots captured via the QA scenario. |
 | Waiting on   | Nothing.                               |
-| Next         | Populate from PR/task data, then capture screenshots. |
+| Next         | Nothing.                               |
 | Last touched | 2026-08-03                               |
 
 * Acceptance

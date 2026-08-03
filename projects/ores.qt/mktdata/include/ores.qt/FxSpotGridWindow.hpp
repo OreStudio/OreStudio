@@ -67,7 +67,7 @@ private:
     enum Column { ColPair = 0, ColMid, ColChange, ColStatus, ColumnCount };
 
 public:
-    enum class FeedStatus { Pending, Live, Stale, Disconnected };
+    enum class FeedStatus { Pending, Live, Stale, Disconnected, Error };
 
 private:
     struct RowState {
@@ -85,6 +85,7 @@ private:
         QLabel* status_icon_label = nullptr;
         QLabel* status_text_label = nullptr;
         FeedStatus last_status = FeedStatus::Pending;
+        QString last_error;
         std::unique_ptr<marketdata::client::fx_spot_subscription> subscription;
     };
 
@@ -120,6 +121,7 @@ private:
     void subscribe(RowState& rs);
     void
     applyTick(const std::string& ore_key, double mid, std::chrono::system_clock::time_point when);
+    void applyError(const std::string& ore_key, const std::string& reason);
     static FeedStatus deriveStatus(const RowState& rs);
 
     ClientManager* clientManager_;

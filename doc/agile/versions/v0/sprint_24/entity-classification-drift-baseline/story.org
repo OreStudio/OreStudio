@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 623CFC6A-320A-4F71-A595-B3A47FBD06B8
 :END:
-#+title: Story: Entity classification and drift baseline across all components
-#+description: Reconcile the existing, fragmented drift-tracking attempts (entity_coverage_matrix.org, entity_evaluation_checklist.org, entity_catalogue.org, the 14 ad hoc per-component drift tasks) into one unified, automated way of measuring entity drift. Build a tool that inventories every codegen entity across every component and classifies it along dimensions: component, tenancy scope, meta-type (domain vs auxiliary), model format/legacy status, per-layer coverage (SQL/domain/repository/service/messaging/Qt/HTTP/CLI/Shell/Wt/manual), codegen regen drift, hand-crafted-vs-paste-block discipline, compound-vs-single key, variability knobs, test coverage. Must be verifiably accurate before any remediation is multi-tasked off the back of it.
+#+title: Story: Entity classification and drift baseline: ores.refdata pilot
+#+description: Settle the classification dimensions and build the automated entity-drift tool, proven on the ores.refdata pilot (largest, most varied entity population) before rollout to every other component. Reconciles the existing, fragmented drift-tracking attempts (entity_coverage_matrix.org, entity_evaluation_checklist.org, entity_catalogue.org, the 14 ad hoc per-component drift tasks) into one unified, automated way of measuring entity drift.
 #+type: story
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_24:v0:
@@ -93,36 +93,26 @@ applicable, exactly what the tool reads to compute it:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Not yet started.                       |
+| Now           | Dimensions settled and the classification tool built and verified on the ores.refdata pilot. Closed at sprint 24 health review: rollout to the remaining ~19 components split into [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-07-31                               |
+| Next          | Nothing -- see the rollout story for the remaining components. |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
 - An automated tool exists (compass command or script) that walks every
-  codegen entity model and its generated/hand-crafted artefacts across every
-  component and computes the classification, with no hand-maintained table.
+  codegen entity model and its generated/hand-crafted artefacts and
+  computes the classification, with no hand-maintained table.
 - The classification dimensions are settled (see above) and documented.
 - The tool's output is spot-checked against known-good and known-bad entities
   (e.g. =currency= as the reference specimen; the 16 primary-key-heading
   entities as known-legacy) until we are confident it measures drift
   accurately.
-- A quantified report is produced: totals and per-component breakdowns of how
-  many entities are "regular" vs not, and why not.
-- The tool and dimensions are proven on the =ores.refdata= pilot before being
-  run across the remaining components; the pilot report is reviewed and
-  trusted before rollout continues.
-- =entity_coverage_matrix.org=, =entity_evaluation_checklist.org=, and
-  =entity_catalogue.org= are used as inputs (their criteria and known data
-  points feed the tool/dimensions) and then deleted — they do not survive
-  this story; the automated report is the sole source of truth going forward.
-- The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced)
-  using real data from the report instead of guesses.
-- Fixing/regenerating entities is out of scope — this story only measures and
-  reports.
+- The tool and dimensions are proven on the =ores.refdata= pilot, with a
+  reviewed, trusted pilot report, before rollout to the remaining
+  components (tracked in the split-off rollout story).
 
 * Tasks
 
@@ -130,7 +120,6 @@ applicable, exactly what the tool reads to compute it:
 |------+-------+-------+-----+-------------|
 | [[id:29CDC40B-5E1F-41BE-85CF-57AAC2380E1A][Settle entity classification dimensions and tool design]] | DONE | 2026-07-31 | 2026-08-01 | Review entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org as input, finalise the classification dimensions (component, tenancy scope, meta-type, model format/legacy status, per-layer coverage, codegen regen drift, hand-crafted-vs-paste-block, compound-vs-single key, variability knobs, test coverage), and design how the automated tool computes each from the codegen models and generated file tree. Dimension coverage must be exhaustive -- a missed dimension lets undetected drift accumulate and the codebase degrade again. |
 | [[id:AD953FB1-65AF-4475-BF67-E964DA6CA5D4][Build and verify the classification tool on the ores.refdata pilot]] | DONE | 2026-08-01 | 2026-08-02 | Implement the automated classification/drift tool and run it against ores.refdata only. Spot-check its output against known-good (currency) and known-bad (16 primary-key-heading legacy models) entities until confident the measurements are accurate. Produce the refdata drift report. |
-| [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | BACKLOG | | | Once the ores.refdata pilot is trusted, run the tool across every remaining component, produce the full quantified drift report, re-scope or close the 14 ad hoc per-component drift tasks using real data, and delete entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org. |
 
 * Decisions
 

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 0D62C998-6B91-4A5A-9428-3FF89C00EFAD
+:END:
+#+title: Story: Sprint 24 closure: release notes and demo
+#+description: Close out sprint 24: generate release notes from the collected PR data and closed tasks' Result sections, capture demo screenshots via a QA test scenario, and write the retrospective.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Own the final steps of sprint closure: release notes summarising
+what shipped, illustrative screenshots captured through a real QA
+test scenario (not ad hoc), and the retrospective.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Writing release notes.                 |
+| Waiting on    | Nothing.                               |
+| Next          | Generate release notes, then capture screenshots. |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+- Release notes are generated and linked from the sprint's Status table. A test scenario captures screenshots suitable for illustrating the release notes. The sprint's Retrospective section is filled.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:32C80A2E-CF88-4F6A-9D58-8B070ED41E4F][Write sprint 24 release notes]] | BACKLOG | | | Generate release notes via compass add release_notes, populate from PR data and closed tasks' Result sections, and capture illustrative screenshots via a QA test scenario. |
+
+* Decisions
+
+* Out of scope
+
+-

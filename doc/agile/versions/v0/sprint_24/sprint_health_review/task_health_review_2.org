@@ -281,3 +281,45 @@ does mean the sprint-load and goal-alignment analysis above under-
 counted by one BACKLOG story. Worth a process note: a story file
 existing without a =* Stories= table row is a silent gap -- neither
 =compass search= nor a review relying on that table will surface it.
+
+** Addendum: branch sync, entity-classification split, and full backlog carry (2026-08-03)
+
+Three more corrections/actions before closing the sprint:
+
+- The branch was found to be 31 commits behind =origin/main= (grew
+  from 8 at session start as other environments kept merging), and
+  at least one story ([[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline]]) was
+  shown BACKLOG locally while actually STARTED with a DONE pilot
+  task on main. Ran =compass pr sync= (clean rebase, no conflicts)
+  before doing anything further, per user direction, rather than
+  risk carrying/abandoning stories that were further along than our
+  stale view showed.
+- After sync, [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all
+  components]] itself needed the same audit-vs-rollout split as the
+  WSL and badge stories: dimensions settled and the tool built +
+  verified on the =ores.refdata= pilot (2/3 tasks DONE). Renamed to
+  [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline: ores.refdata pilot]] and
+  closed DONE; the rollout-to-remaining-components task split into a
+  new sprint-backlog story, [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline
+  across all components]].
+- User confirmed the sprint's active work has stopped entirely
+  (including the one remaining STARTED badge-rollout story) and
+  asked to move every unfinished story to the product backlog per
+  [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]]'s documented procedure. Carried all 35 BACKLOG/
+  STARTED stories to =doc/agile/product_backlog/inbox/=: 18
+  undecomposed stories moved flat (=story.org= only), 17 with task
+  files moved as whole folders so task history/Results/PRs travel
+  with them. Every moved file's =:ID:= was preserved (=git mv=, never
+  copied); filetags and the intro sentence were updated to reference
+  the inbox instead of Sprint 24, and each Status table's "Parent
+  sprint" row was relabelled "Carried from" with the close date.
+  Sprint 24's own Stories table rows were marked ABANDONED (not
+  deleted) with the 2026-08-03 close date, so the sprint record
+  still shows what didn't make it and where it went. Regenerated the
+  backlog indexes ( =regenerate_backlog_indexes.py= ) and the compass
+  search index afterward.
+
+Sprint 24's Stories table now has zero BACKLOG and zero STARTED
+rows: 34 DONE, 36 ABANDONED (carried). The sprint is ready for the
+remaining closure steps (Achievements, release notes, retrospective,
+State -> DONE).

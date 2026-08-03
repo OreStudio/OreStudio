@@ -15,17 +15,21 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Sprint 25 exists as a proper agile artefact (scaffolded, wired into
+the version manifest and agile index), sprint 24's remaining
+bookkeeping drift is resolved, and the build-side housekeeping that
+always accompanies a sprint open (version bump, vcpkg submodule
+update) lands verified.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Scaffolding sprint 25.                 |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Wire manifest, move postponed stories, bump version. |
+| Next          | Nothing. |
 | Last touched  | 2026-08-03                               |
 
 * Acceptance
@@ -36,10 +40,17 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0B4D18C1-6F3F-45E7-8E01-1D9A6A99C5B5][Open sprint 25]] | STARTED | 2026-08-03 |     | Scaffold sprint 25, wire version manifest, move postponed stories, and bump the project version. |
+| [[id:0B4D18C1-6F3F-45E7-8E01-1D9A6A99C5B5][Open sprint 25]] | DONE | 2026-08-03 | 2026-08-04 | Scaffold sprint 25, wire version manifest, move postponed stories, and bump the project version. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Sprint 25 opened and wired in; sprint 24 fully closed out (bookkeeping
+drift resolved, retrospective written, cross-links added). Version
+bumped to 0.0.25 and vcpkg updated to latest, both verified with a
+full clean build and 71/71 tests passing.

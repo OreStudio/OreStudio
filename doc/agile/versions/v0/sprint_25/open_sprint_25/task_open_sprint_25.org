@@ -13,24 +13,28 @@
 #+blocked_since:
 #+created: 2026-08-03
 #+updated: 2026-08-03
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4222FDF0-E5EF-4363-BE29-F1E22B2A9FC7][Open sprint 25]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Sprint 25 exists as a proper agile artefact (scaffolded, wired into
+the version manifest and agile index), sprint 24's remaining
+bookkeeping drift is resolved, and the build-side housekeeping that
+always accompanies a sprint open (version bump, vcpkg submodule
+update) lands verified.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4222FDF0-E5EF-4363-BE29-F1E22B2A9FC7][Open sprint 25]] |
-| Now          | Scaffolding sprint 25.                 |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire manifest, move postponed stories, bump version. |
+| Next         | Nothing. |
 | Last touched | 2026-08-03                               |
 
 * Acceptance
@@ -69,3 +73,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Sprint 25 scaffolded, mission set, wired into version.org and
+agile.org. Sprint 24's remaining bookkeeping drift resolved: a story
+with all tasks DONE but a stale State field closed properly, the
+retrospective written into sprint.org from the release notes' Post
+Mortem, real id: org-roam links added both ways between sprint.org and
+release_notes.org, and sprint 24 itself flipped to DONE. Two sprint-24
+stories with genuine unfinished work (Commission Acme Corporation,
+Sprint 24 closure) split their remainders into acceptance-scoped
+sprint-25 stories rather than being carried forward wholesale.
+downloads.org updated with the missing v0.0.23/v0.0.24 rows, Windows
+build status verified against each tag's actual CI check-runs rather
+than assumed. Version bumped to 0.0.25 across all six files the
+recipe names. vcpkg submodule updated to latest
+(2026.06.24-242-g3ddaad9be9 -> 2026.07.29-43-gfbb17a16a9); the newer
+commit needed a vcpkg rebootstrap to pick up a vcpkg-tools.json schema
+bump. Verified with a full clean build (linux-clang-debug-make) and
+the complete test suite: 71/71 passed.

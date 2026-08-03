@@ -42,7 +42,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
-| [[id:4222FDF0-E5EF-4363-BE29-F1E22B2A9FC7][Open sprint 25]] | STARTED | 2026-08-03 |     | Scaffold sprint 25, wire version manifest, move postponed stories. |
+| [[id:4222FDF0-E5EF-4363-BE29-F1E22B2A9FC7][Open sprint 25]] | DONE | 2026-08-03 | 2026-08-04 | Scaffold sprint 25, wire version manifest, move postponed stories. |
 
 ** Hotfixes
 

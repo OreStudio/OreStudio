@@ -8,7 +8,7 @@
 #+filetags: :fix-wire-codec-default-breaks-headless-instrument-parse-tests:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-fix-wire-codec-default-breaks-headless-instrument-parse-tests
-#+pr: 1807
+#+pr: 1814
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-02
@@ -201,6 +201,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1814][#1814]] | [marketdata,qt,synthetic,agile] Sprint 24 close: systemd fix, release notes, fx spot diagnostics |
 | [[https://github.com/OreStudio/OreStudio/pull/1807][#1807]] | [qt,service] Hotfix: fix two CI-breaking regressions (msgpack default, macOS/Windows compile) |
 
 * Review

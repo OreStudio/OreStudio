@@ -9,7 +9,7 @@
 #+created: 2026-07-21
 #+start_date: 2026-07-21
 #+end_date: 2026-08-03
-#+updated: 2026-07-21
+#+updated: 2026-08-03
 #+todo: STARTED | DONE
 
 This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 24*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
@@ -22,15 +22,15 @@ Continue commissioning work across components, and improve IR generation.
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE                              |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
 | Start          | 2026-07-21                               |
 | End (expected) | 2026-07-28                           |
-| Now            | Nothing.                                |
+| Now            | Closed. See [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. |
 | Waiting on     | Nothing.                               |
-| Next           | Release notes, retrospective, transition to DONE. |
-| Release Notes  | Added at end of sprint.                |
+| Next           | Nothing.                               |
+| Release Notes  | [[id:F9806984-5FCF-4ADA-80C6-04EF824ADF9A][Sprint 24 – Release Notes]] |
 | Last touched   | 2026-08-03                               |
 
 ** Achievements
@@ -77,7 +77,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:7201D9AB-FF9D-4B15-8DF2-849B40FB4321][Open sprint 24]] | DONE | 2026-07-21 | 2026-07-21 | Scaffold sprint 24, wire version manifest, bump project version, update vcpkg submodule. |
 | [[id:B6422FA1-D61A-4D9D-B6B8-DFE3CD12E1C5][Improve FX Spot Monitor widget UI/UX]] | DONE | 2026-07-29 | 2026-07-30 | Reduce color fatigue, fix numeric alignment, apply JPY 3-decimal convention, and replace the repeated LIVE badge, per a Gemini UI review. |
 | [[id:81CBF56B-0E5F-491B-A5C5-BFE5FCA3B219][Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle]] | DONE | 2026-07-22 | 2026-07-22 | Pulled from product backlog next: replace the fixed hand-written phase list in both the Qt provisioning wizard and the ores.shell CLI with a data-driven list of bundle codes to publish, so a new party-scoped bundle never requires new phase code in either provisioner. Also fixed the Data Librarian tree regression (RLS-defeating tenant filter on shared DQ governance entities). |
-| [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] | DONE | 2026-07-22 | 2026-07-24 | Comprehensive synthetic holding-group entity — parties, business units, portfolios, books, and locale-appropriate staff — to replace Barclays Plc as the fully populated test entity. |
+| [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] | DONE | 2026-07-22 | 2026-08-03 | Comprehensive synthetic holding-group entity — parties, business units, portfolios, books, and locale-appropriate staff — to replace Barclays Plc as the fully populated test entity. |
 | [[id:263C0B6B-D983-44F7-8D57-BB095972445A][DQ/Refdata service boundary cleanup]] | ABANDONED | 2026-07-11 | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Carried from sprint 23: route DQ bundle publication through refdata.v1.* NATS endpoints instead of direct table writes. |
 | [[id:3C8912A0-78C8-4CD5-BA75-EF63D606FEF4][IAM/Refdata service boundary cleanup]] | ABANDONED | 2026-07-11 | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Carried from sprint 23: replace ores.iam.core's direct refdata table access with NATS calls. |
 | [[id:F90CDE0A-9813-407C-A145-30BA001FAAA8][Sprint 22 leftover cleanup]] | DONE | 2026-07-11 | 2026-07-25 | Carried from sprint 23: close out four standalone leftover tasks parked at sprint 22 close. |
@@ -92,7 +92,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:8D2F638E-B4DA-4E36-8258-3D30DAAFC2B6][Badge colour scheme: visual polish and self-badging fixes]] | DONE | 2026-07-22 | 2026-07-30 | Split from Sprint 23's badge colour scheme story at close: palette swatch rendering + data-driven fallback badge, and self-badging for badge-source entities. |
 | [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]] | DONE | 2026-07-30 | 2026-07-30 | Split out at sprint 24 health review from the story below: inventory every FK-like/code/lookup domain_entity model (all 120), classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy. Batched for implementation. |
 | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Roll out badge/image/plain-text rendering across classified domain entities]] | ABANDONED | 2026-07-30 | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Renamed at sprint 24 health review to carry only the implementation rollout, after the completed audit/classification was split into its own story above. Implementation in progress, batch by batch. |
-| [[id:0D62C998-6B91-4A5A-9428-3FF89C00EFAD][Sprint 24 closure: release notes and demo]] | STARTED | 2026-08-03 | | Close out sprint 24: generate release notes from the collected PR data and closed tasks' Result sections, capture demo screenshots via a QA test scenario, and write the retrospective. |
+| [[id:0D62C998-6B91-4A5A-9428-3FF89C00EFAD][Sprint 24 closure: release notes and demo]] | DONE | 2026-08-03 | 2026-08-03 | Close out sprint 24: generate release notes from the collected PR data and closed tasks' Result sections, capture demo screenshots via a QA test scenario, and write the retrospective. |
 | [[id:5FD778C7-574A-49C5-A85B-9146AE7FA868][Classify FK-like/lookup entities and decide badge vs image vs plain-text rendering policy]] | ABANDONED | 2026-07-25 | 2026-07-30 | Merged into the badge-adoption-audit story above -- same underlying question asked from two angles. |
 | [[id:6AFE12CD-5E04-41D6-8B18-075E5C714D78][Junction eventing: extend codegen with notify-trigger, changed-event, and event-registrar facets for the junction model type]] | ABANDONED |  | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Surfaced while testing the fallback badge: a badge_mapping edit has no live NATS event at all, unlike a regular entity -- every junction table in the codebase (party_currency, party_country, party_counterparty, currency_currency_group, account_party, dataset_bundle_member, app_version_platform, badge_mapping) has zero eventing support since the notify-trigger/changed-event/event-registrar codegen facets are scoped to the entity model type only. |
 | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] | ABANDONED |  | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Split from Sprint 23's DQ codegen commissioning story at close: subject_area, data_management history-dialog migration, change_reason_code bug, Data Librarian tree regression. |
@@ -109,7 +109,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] | ABANDONED | 2026-07-30 | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Split off from the ORE curve-config/market-data XML round-trip task: oresmd's design represents ~7 of the 49 ORE quote types the market data catalogue documents. Extend the design and implementation family by family (IR, credit, equity, commodity, FX, inflation, volatility surfaces, correlation) so oresmd can express every ORE-supported identifier. |
 | [[id:EFFEEFAC-0406-4FF3-AAFB-075EB0324DB1][Fix image-batch NATS payload overflow, add SVG compression]] | DONE | 2026-07-22 | 2026-07-29 | Surfaced while testing the vintage IR dataset: country flags partially failed to load because ImageCache batches image fetches by count, not byte size, so a batch of several large SVGs can exceed NATS's max payload and silently drop. Make batching byte-size aware (or move to HTTP storage transfer) and add compression. |
 | [[id:5CB963BE-9B73-49A0-A834-AC7D47DD49BC][Fix jetstream_admin missing gzip decompression]] | DONE | 2026-07-29 | 2026-07-29 | Split from the image-batch story at close: peek_message()/peek_last_message() in jetstream_admin don't decompress gzip'd JetStream payloads, unlike extract_message(). Raised non-blocking in PR #1706 review. |
-| [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] | DONE | 2026-07-28 | 2026-07-31 | Surfaced while scoping the image-batch story's raw-bytes-not-base64 follow-up: the base64 overhead isn't image-specific, it's every rfl::json-encoded NATS message. Build a single wire_codec chosen once at startup from .env, threaded through ores.service/ores.qt/ores.shell -- solves the base64 problem for every message type at once, superseding the narrower image-specific task. |
+| [[id:1A815B1E-904E-460C-A2FB-31D9E3B392E2][Make NATS wire format configurable: JSON/MessagePack, decided once at startup]] | DONE | 2026-07-28 | 2026-08-03 | Surfaced while scoping the image-batch story's raw-bytes-not-base64 follow-up: the base64 overhead isn't image-specific, it's every rfl::json-encoded NATS message. Build a single wire_codec chosen once at startup from .env, threaded through ores.service/ores.qt/ores.shell -- solves the base64 problem for every message type at once, superseding the narrower image-specific task. |
 | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] | ABANDONED |  | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Promoted from an inbox capture: bootstrap the raw instrument grid into a desk-consumable zero/discount curve, and republish it as an official curve stream. |
 | [[id:9819FCE0-C26E-4854-9B88-FBDBA1DCD178][Commission ores.qt.admin into codegen]] | ABANDONED |  | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.admin's entities; unblocks Phase C history-dialog retirement. |
 | [[id:8EF15E8F-EFB0-4AAF-828E-9CD530BE3702][Commission ores.qt.analytics into codegen]] | ABANDONED |  | 2026-08-03 | Carried unfinished to the product backlog inbox at sprint 24 close. Promoted from an inbox capture: inventory, model, and full-stack codegen for ores.qt.analytics's entities; unblocks Phase C history-dialog retirement. |
@@ -219,7 +219,54 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+See the [[id:F9806984-5FCF-4ADA-80C6-04EF824ADF9A][release notes]]' Post Mortem section for the full write-up.
+Summary:
+
+** What worked
+
+- High absolute throughput: 151 PRs merged, 34 stories closed DONE,
+  across a sprint that ran roughly double its intended window.
+- The story-splitting pattern (audit vs. rollout, containerise vs.
+  cutover, pilot vs. full rollout) kept delivered work honestly
+  recorded as shipped instead of one bloated story silently carried
+  forward wholesale at close.
+- Once a cross-platform regression was found, the response was
+  thorough: the wire-codec hotfix manually dispatched Continuous
+  macOS/Windows against the fix branch to confirm before merging.
+- Two written health reviews (mid-sprint and close) caught the goal
+  drift and duration overrun in a durable record.
+
+** What didn't work
+
+- The sprint ran ~13-14 days against a 7-day target; the day-9 health
+  review already flagged this RED, and it still ran four-plus days
+  past that verdict.
+- The "improve IR generation" mission goal didn't ship a real
+  improvement -- only a design document.
+- Cross-platform breakage (Windows/macOS) was repeatedly found late,
+  only by CI -- five of this sprint's seven hotfixes were exactly this
+  pattern.
+- Two changes with many silent consumers (msgpack default flip, an
+  upstream XSD schema update) broke consumers nothing forced anyone to
+  check before merging.
+- Sprint bookkeeping drifted from reality multiple times: stale
+  Stories-table rows, a story with no table row at all.
+- A stale, pre-systemd fleet of ~90 orphaned processes sat running
+  undetected for three-plus days, causing intermittent NATS decode
+  failures.
+
+** Improve next sprint
+
+- Enforce the 7-day box at the day-of-decision level.
+- Treat "improve X" mission goals as requiring a shipped, user-visible
+  improvement, not just design/analysis work.
+- Dispatch Windows/macOS CI proactively for platform-sensitive changes.
+- Treat "flip a global default" or "an upstream schema changed" as its
+  own checklist item: grep every consumer before merging.
+- Wire every new story into sprint.org's Stories table at creation
+  time; spot-check story-file State against the table periodically.
+- Prioritise the "Systemd resource management and per-environment
+  isolation" story next sprint.
 
 * Release Notes
 

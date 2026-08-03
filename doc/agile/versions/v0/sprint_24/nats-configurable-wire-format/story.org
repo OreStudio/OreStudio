@@ -48,11 +48,11 @@ task.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Nothing.                               |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-07-31                               |
 
 * Acceptance
@@ -234,3 +234,16 @@ still hard-coded JSON decode while their publishers
   I/O, not NATS wire calls; the write-up task should confirm this and
   either drop it from scope entirely or file a small follow-up if any
   genuine NATS call sites are found there.
+
+* Result
+
+All eight tasks landed: a single non-polymorphic =wire_codec=,
+decided once at process startup from =ORES_NATS_WIRE_FORMAT= (default
+=msgpack=) and threaded via dependency injection through
+=ores.service=, =ores.qt=, and =ores.shell=, with the =ores.shell=
+=do_request=/=do_auth_request= duplication consolidated along the way.
+End-to-end msgpack verification passed across Qt<->service and
+shell<->service, including image-carrying flows, confirming the
+raw-bytes-not-base64 win landed for free. All tasks were already DONE
+or ABANDONED; only the story's own =State= field had drifted and
+needed flipping at sprint close.

@@ -5,7 +5,7 @@
 #+description: catalog, change_reason_category, change_reason, data_domain, and subject_area (all ores.dq) have a real codegen .org entity model, but that model has no ** Qt drawer at all -- their generated-looking Qt client models, controllers, detail dialogs, and MDI windows exist in the codebase but were hand-authored outside codegen, never driven by the model. Regenerating any facet of these entities would not touch their Qt layer at all (codegen has nothing to emit for it), so unlike the has_pagination task's main fix, adding :has_pagination: true to these models would be a no-op. Discovered while scoping the has_pagination pagination-truncation task, which excluded these 5 as out of reach of the mechanical model-flip fix.
 #+type: task
 #+level: s1
-#+filetags: :calendar-followups:sprint_24:v0:
+#+filetags: :calendar-list-pagination-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,7 +37,7 @@ anything for these five.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Parent story | [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

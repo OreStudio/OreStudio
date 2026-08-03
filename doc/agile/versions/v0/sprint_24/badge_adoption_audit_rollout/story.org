@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 6AC16489-70F6-4F95-A5FA-0D561FF151A3
 :END:
-#+title: Story: Classify and roll out badge/image/plain-text rendering across domain entities
-#+description: Audit every FK-like/code/lookup domain_entity model, classify each as colour badge, image/flag, or plain text/neither (documenting the policy, not just the verdict), then annotate and regenerate the identified entities in batches.
+#+title: Story: Roll out badge/image/plain-text rendering across classified domain entities
+#+description: Consume [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][the completed audit/classification]]'s batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time.
 #+type: story
 #+level: s2
 #+filetags: :qt:badges:codegen:refdata:ux:architecture:sprint_24:v0:
@@ -50,22 +50,13 @@ today.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Audit/classification done; ready to pick up implementation, one batch at a time. |
+| Now           | In progress, batch by batch. Renamed and narrowed at sprint 24 health review: the completed audit/classification is now its own closed story, [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]]; this story carries only the still-open implementation rollout. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement Batch 1 (11 refdata entities).  |
-| Last touched  | 2026-07-30                               |
+| Next          | Continue implementing remaining batches.  |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
-- A written audit/classification exists covering every FK-like/code/
-  lookup =domain_entity= model (all 120, not just the 10 already
-  badged): each is classified as colour badge, image/flag, or plain
-  text/neither, with the reasoning documented (not just the verdict),
-  and a stated policy/criteria for the classification so future
-  entities don't need the question re-litigated.
-- The classified list is split into ready-to-annotate vs
-  needs-new-badge-definition/image-data, then batched into groups for
-  implementation.
 - Every audit candidate needing a rendering change is either
   annotated (=badge_key=, image/flag wiring, or explicitly left as
   plain text) and regenerated, or has a one-line documented reason it
@@ -78,8 +69,7 @@ today.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit and classify entities: badge, image, or plain text]] | DONE | 2026-07-30 | 2026-07-30 | Inventory every FK-like/code/lookup domain_entity model; classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy. Split the result into batches for implementation. |
-| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Implement classified entities in batches]] | BACKLOG | | | Consume the audit/classification's batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time. |
+| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Implement classified entities in batches]] | STARTED | 2026-07-30 | | Consume [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][the audit/classification]]'s batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time. |
 
 * Decisions
 

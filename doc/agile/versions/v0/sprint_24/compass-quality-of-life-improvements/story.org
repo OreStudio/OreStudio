@@ -24,12 +24,12 @@ developer-experience work.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Both current tasks DONE; second PR pending. |
+| Now           | The two shipped tasks (compass claude launcher + environment-scoped naming) each satisfy this story's own acceptance independently. Closed at sprint 24 health review; the three remaining not-yet-started tasks were split into [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] in the product backlog. |
 | Waiting on    | Nothing.                               |
-| Next          | Raise the PR; add further tasks as they come up. |
-| Last touched  | 2026-07-29                               |
+| Next          | Nothing -- see the split-off story for further compass DevX work. |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
@@ -42,9 +42,6 @@ developer-experience work.
 |------+-------+-------+-----+-------------|
 | [[id:8780F2D4-E135-448B-995C-8C36302B74E4][Add compass claude, a systemd-scoped Claude Code launcher]] | DONE | 2026-07-29 | 2026-07-29 | New compass claude subcommand launches Claude Code as a transient systemd --user scope under a checked-in app-claude.slice, so systemd-oomd can kill a runaway session without taking its parent (e.g. Emacs) down with it. Deploys the slice unit on first use, no separate machine bootstrap needed. |
 | [[id:9D32A18D-C05C-4189-867B-A26A0CDEF719][Name compass claude's systemd scope after the environment identity]] | DONE | 2026-07-29 | 2026-07-29 | compass claude currently names its transient systemd scope/unit claude-<pid>, so systemd-cgtop/systemctl --user status can't tell which worktree a Claude session belongs to. Include ORES_ENV_NAME (falling back to the checkout dir name) in the unit name, e.g. claude-<env>-<pid>. |
-| [[id:BB046E80-655A-4D6F-950C-0A81C9040F05][Add compass command to prune merged git branches and report branch/environment usage]] | BACKLOG | | | Add a compass git subcommand (e.g. 'compass branches prune' or similar) that deletes all fully-merged local and remote git branches, and separately reports which branches are stale/unmerged, mapping each to the fleet worktree/environment currently using it if any. Formalises a manual git-branch cleanup workflow performed ad hoc in this session (fetch --prune, diff local/remote against origin/main, cross-reference against 'compass fleet' to avoid deleting a branch another environment has checked out, then git branch -d / git push origin --delete for the safe set). |
-| [[id:4E613004-5331-42C2-A654-56292F763095][Support multiple named .env files, e.g. per remote host]] | BACKLOG | | | Every compass command that needs environment or DB config (db recreate, services start, etc.) reads a single hardcoded .env at the repo root, with no way to point at a different target. Surfaced while deploying the containerized service runtime to Newton: compass db recreate had to be run against Newton's Postgres by temporarily editing the repo's own .env in place (ORES_DB_HOST, PGPORT), then restoring it afterward -- fragile and easy to forget to revert. Add support for named environment files, e.g. .env.newton alongside the default .env, and a way to select one per invocation (an --env-file flag or similar), so targeting a remote host's DB or services never requires mutating the working .env. |
-| [[id:C96740B8-89CA-44C1-98F1-38EF97886EDC][Show systemd slice/scope info in compass fleet and bearings]] | BACKLOG | | | Add systemd slice/scope information to compass fleet and compass bearings output |
 
 * Decisions
 

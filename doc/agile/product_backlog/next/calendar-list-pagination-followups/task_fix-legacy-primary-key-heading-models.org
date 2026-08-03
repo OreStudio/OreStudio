@@ -5,7 +5,7 @@
 #+description: 70+ codegen entity .org models across the repo declare their primary key using an old, now-unsupported top-level heading (Primary key, with column/type/cpp_type properties) instead of the current convention (a field inside Columns flagged with primary_key true). org_loader.py's load_org_model() only recognises the latter, so any regeneration of these models fails with a Missing primary key error. Discovered while fixing the has_pagination truncation bug: 16 of 45 target entities hit this and were excluded from that task's scope.
 #+type: task
 #+level: s1
-#+filetags: :calendar-followups:sprint_24:v0:
+#+filetags: :calendar-list-pagination-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -41,7 +41,7 @@ Confirmed to affect entities in =ores.analytics=, =ores.compute=,
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Parent story | [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

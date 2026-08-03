@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 1BA7037B-14E9-4165-AE5E-799E2B75CA75
+:END:
+#+title: Story: Offload service and DB runtime to a WSL host over SSH
+#+description: Split from sprint 24's containerize-and-deploy story at sprint close: the actual cutover to running the dev environment's services/DB on a WSL host day-to-day, starting with first-class compass tooling to build/stage/transfer/deploy the service-runtime image to a remote host instead of the current manual SSH/podman sequence.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+- Compass has first-class tooling (e.g. compass env deploy) to build, stage, transfer, and deploy the service-runtime image to a remote host, replacing the manual SSH/podman sequence; the dev workflow is actually cut over to using a WSL host day-to-day, with documented, repeatable steps for standing the environment up and tearing it down.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
+
+* Decisions
+
+* Out of scope
+
+-

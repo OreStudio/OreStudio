@@ -38,12 +38,12 @@ found by checking each platform's failure logs individually:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Root cause found and fixed locally; verifying and opening the PR. |
+| Now           | Merged as PR #1807; CI green across Linux/macOS/Windows Continuous and Nightly. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit, PR, merge.                     |
-| Last touched  | 2026-08-02                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
@@ -64,7 +64,7 @@ found by checking each platform's failure logs individually:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6EDE12C2-492A-4707-8A80-4618676F38B6][Scaffold story: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] | DONE | 2026-08-02 | 2026-08-02 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:FC8E0FAB-29B5-4C58-83EC-0A935E66C7E1][Implement Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] | STARTED | 2026-08-02 | | Initial task for: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests |
+| [[id:FC8E0FAB-29B5-4C58-83EC-0A935E66C7E1][Implement Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] | DONE | 2026-08-02 | 2026-08-03 | Initial task for: Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests |
 
 * Decisions
 

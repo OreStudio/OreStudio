@@ -5,7 +5,7 @@
 #+description: Only 10 of 108 domain_entity models use badge_key today, and no entity has ever had its rendering treatment (colour badge vs image/flag vs plain text) decided against a documented criterion -- it's been ad hoc per entity (badge_definition renders as a swatch, currencies render as flags, everything else is plain text, by convention-following rather than policy). Inventory every FK-like/code/lookup domain_entity model, classify each into one of the three treatments with documented reasoning, state the policy/criteria driving the classification, and split the result into implementation batches (ready-to-annotate vs needs-new-badge-definition/image-data) -- this task is the audit/classification/policy, not implementing it.
 #+type: task
 #+level: s1
-#+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
+#+filetags: :badge-adoption-audit:sprint_24:v0:
 #+owner: marco
 #+branch: feature/merge-badge-audit-classify-stories
 #+pr:
@@ -16,7 +16,7 @@
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -46,7 +46,7 @@ rationale) into one pass over the entity catalogue:
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
+| Parent story | [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]] |
 | Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Pick up the implementation task, one batch at a time. |

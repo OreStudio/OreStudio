@@ -5,7 +5,7 @@
 #+description: 11 entities (role, system_setting, dataset, dataset_dependency, methodology, nature_dimension, origin_dimension, telemetry_log, treatment_dimension, coding_scheme, coding_scheme_authority_type) have no codegen .org model at all -- their Qt client models are entirely hand-written, predating the entity_org migration. None of their MdiWindows show a PaginationWidget, so unlike the has_pagination truncation bug, they present no misleading pagination affordance -- they are honest flat lists, just silently capped at the server's default 100-row limit with no visible indication more rows exist. Discovered while scoping the has_pagination pagination-truncation task, which excluded these 11 as out of its actual bug definition.
 #+type: task
 #+level: s1
-#+filetags: :calendar-followups:sprint_24:v0:
+#+filetags: :calendar-list-pagination-followups:next:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -46,7 +46,7 @@ sees a flat list and has no reason to expect more than what's shown.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization]] |
+| Parent story | [[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

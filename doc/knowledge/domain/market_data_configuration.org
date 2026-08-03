@@ -218,6 +218,6 @@ later applies to price a swap off of whichever curve was resolved.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub; a reading-order guide for the full cluster.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — $\rho$'s domain.
 - [[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]] — $\rho$'s codomain.
-- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from after $\cap\, U$ confirms membership; the full pipeline formula.
+- [[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] — where $\rho$'s output is drawn from after $\cap\, U$ confirms membership.
 - [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency Resolution]] — the step immediately following resolution.
 - [[id:EDAE3C87-7733-4D0C-881F-5AA65DD832AC][Pricing Configuration]] — the adjacent, distinct concept this document is careful not to be confused with.

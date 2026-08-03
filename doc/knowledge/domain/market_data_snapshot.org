@@ -61,7 +61,7 @@ convenient to have around.
 ** Formal definition
 
 Given a valuation-scoped market data set $\mathrm{MDS}(T)$ (see
-[[id:842487B3-BEA2-4E74-8EA4-E1007FD559F3][Market Data Universe]] for
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] for
 its full derivation), a snapshot is the materialisation of a function
 
 $$\mathrm{value}: \mathrm{MDS}(T) \to \mathrm{Data}$$

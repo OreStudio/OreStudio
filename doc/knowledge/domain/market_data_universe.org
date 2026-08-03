@@ -20,8 +20,9 @@ uses is a much smaller *market data set* $\mathrm{MDS}(T)$ — a subset of
 $U$, derived from it by resolving a population of trades' requirements,
 expanding the result into its full dependency closure, and intersecting
 with $U$ itself to account for the possibility that not everything
-requested actually exists. This document defines $U$ precisely and argues for the set-notation
-vocabulary used throughout this cluster. The step-by-step derivation of
+requested actually exists. This document defines $U$ precisely and
+argues for the set-notation vocabulary used throughout this cluster.
+The step-by-step derivation of
 $\mathrm{MDS}(T)$ from $U$, with a worked example, is in
 [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and
 Resolution]].
@@ -90,7 +91,6 @@ can, entirely correctly, produce an identifier that does not happen to be
 a member of $U$ — the requested curve genuinely does not exist, was never
 loaded, or has not yet been published — and that failure is nothing more
 exotic than testing $x \in U$ and finding it false.
-
 
 * See also
 

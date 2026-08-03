@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: B81335B4-E897-436F-AA02-AD4A7A6F1CD3
+:END:
+#+title: Story: Audit and classify FK-like/lookup entities for badge/image/plain-text rendering
+#+description: Split from the badge classification/rollout story at sprint 24 health review: the completed audit -- inventory every FK-like/code/lookup domain_entity model (all 120), classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy -- kept separate from the still-in-progress rollout/implementation work.
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Split from [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Roll out badge/image/plain-text rendering across classified domain entities]]
+(formerly the merged classification+rollout story) at sprint 24
+health review: keep the completed audit/classification work recorded
+as shipped, separate from the still-STARTED implementation work
+that consumes it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                  |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Audit/classification complete: all 120 candidate entities classified, documented, and batched for implementation. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing -- see [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][the rollout story]] for implementation. |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+- A written audit/classification exists covering every FK-like/code/lookup domain_entity model (all 120, not just the 10 already badged): each is classified as colour badge, image/flag, or plain text/neither, with the reasoning documented (not just the verdict), and a stated policy/criteria for the classification. The classified list is split into ready-to-annotate vs needs-new-badge-definition/image-data, then batched into groups for implementation.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:712AA40D-67D2-4234-ABD2-1D006F63673B][Audit and classify entities: badge, image, or plain text]] | DONE | 2026-07-30 | 2026-07-30 | Inventory every FK-like/code/lookup domain_entity model; classify each as colour badge, image/flag, or plain text/neither, with documented reasoning and a stated policy. Split the result into batches for implementation. |
+
+* Decisions
+
+* Out of scope
+
+-

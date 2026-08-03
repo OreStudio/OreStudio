@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 4E613004-5331-42C2-A654-56292F763095
+:END:
+#+title: Task: Support multiple named .env files, e.g. per remote host
+#+description: Every compass command that needs environment or DB config (db recreate, services start, etc.) reads a single hardcoded .env at the repo root, with no way to point at a different target. Surfaced while deploying the containerized service runtime to Newton: compass db recreate had to be run against Newton's Postgres by temporarily editing the repo's own .env in place (ORES_DB_HOST, PGPORT), then restoring it afterward -- fragile and easy to forget to revert. Add support for named environment files, e.g. .env.newton alongside the default .env, and a way to select one per invocation (an --env-file flag or similar), so targeting a remote host's DB or services never requires mutating the working .env.
+#+type: task
+#+level: s1
+#+filetags: :compass-quality-of-life-improvements-followups:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let compass commands that read environment/DB config (~db recreate~,
+~services start/stop~, ~nats init~, etc.) target a named environment
+file other than the repo-root ~.env~, e.g. ~.env.newton~ for a remote
+deploy host. Today every one of these hardcodes ~project_root / ".env"~
+(~compass_db.py load_env()~ and equivalents elsewhere), so the only way
+to point at a different Postgres/NATS/host is to edit the working
+~.env~ in place and remember to revert it -- exactly what this
+session's Newton deploy-and-verify task had to do by hand.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- Environment-reading compass commands accept a way to select a named
+  env file (e.g. ~--env-file .env.newton~ or ~--env newton~ resolving
+  to ~.env.newton~), defaulting to the current ~.env~ when omitted --
+  fully backwards compatible.
+- At minimum ~compass db recreate~ and ~compass services
+  start/stop/status~ support it, since those are the two operations
+  this session needed against Newton.
+- Documented via a recipe under ~doc/recipes/~.
+- The working ~.env~ is never mutated as a side effect of targeting a
+  different host.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,325 @@
+:PROPERTIES:
+:ID: A816C827-FCF0-4131-9A26-A4BFAC0867AF
+:END:
+#+title: Task: Health review 2 — sprint 24 close analysis
+#+description: System 2 health review 2 of sprint 24, at sprint close.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_24:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:64BD5956-3E3F-4365-94CD-78496E725BD6][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                  |
+| Parent story | [[id:64BD5956-3E3F-4365-94CD-78496E725BD6][Sprint health review — System 2 analysis]] |
+| Now          | Complete.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Close sprint 24.                       |
+| Last touched | 2026-08-03                               |
+
+* Acceptance
+
+- A System 2 health review of sprint 24 is written, covering goal
+  alignment, sprint load, PR velocity, story/task balance, focus
+  signal, and an overall verdict, in preparation for sprint close.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-08-03 (day 13 of 7)
+
+Pre-existing concerns noted before gathering data: the mid-sprint
+review (day 9) was already RED; today is day 13 -- the sprint has
+now run nearly *twice* its 7-day target duration with no formal
+close yet. The "improve IR generation" half of the mission looked,
+from memory, like it had produced mostly design work rather than
+shipped generation improvements -- worth checking hard rather than
+crediting design-only stories as goal coverage.
+
+*** Goal alignment
+
+Mission: "Continue commissioning work across components, and improve
+IR generation."
+
+| Goal                          | Coverage | Stories (DONE/STARTED/BACKLOG)                                                                         | Verdict |
+|--------------------------------+----------+---------------------------------------------------------------------------------------------------------+---------|
+| Continue commissioning work    | Strong   | Acme commissioning (DONE), badge classification/rollout (STARTED), calendar follow-ups (DONE, split), entity classification baseline (BACKLOG, owned by another env), DQ leftover cleanup (DONE), calendar XML/DQ export (DONE) | GREEN   |
+| Improve IR generation          | Weak     | Market data notation/URN design (DONE -- design only), IR Rates synthetic data seeding (BACKLOG, untouched), Rate display conventions (BACKLOG), IR curve bootstrapping (BACKLOG), oresmd migration (BACKLOG) | RED     |
+
+Commissioning work is well served: several stories shipped real,
+user-visible entity/feature work. IR generation is not -- the only
+DONE story under this goal is a *design* document (the oresmd URN
+scheme); every story that would actually improve IR generation
+(dataset seeding, dual-curve, quoting conventions, curve
+bootstrapping) is still BACKLOG and was never started this sprint.
+Calling the design work "progress on the goal" would be wishful --
+it unblocks IR generation work, it isn't IR generation work.
+A large amount of the sprint's actual STARTED/DONE effort went to
+work with no mapping to either goal at all: two Hotfixes, WSL host
+offload (dev-infra), compass CLI quality-of-life (dev-infra), CMake/
+CI hygiene, ccache/btrfs migration, ORE Engine vendor upgrade. None
+of this is illegitimate work, but it means the sprint's realised
+throughput was substantially not the two stated goals.
+
+*** Sprint load
+
+Target: <= 1000 commits, <= 7 days.
+
+| Metric              | Value        | Target      | Status |
+|----------------------+--------------+-------------+--------|
+| Elapsed days         | 13           | 7           | RED    |
+| Total commits         | 1072         | <=1000      | AMBER  |
+| Commits/day (avg)     | ~82          | n/a         | --     |
+| Peak day (2026-07-29) | 338 commits  | n/a         | --     |
+
+Commit volume alone (1072) is only mildly over target (AMBER band),
+but duration is nearly double the 7-day target, and volume was not
+flat -- 2026-07-29 and 2026-07-30 alone account for 526 commits
+(49% of the sprint's total), the two days the wire-codec/badge/
+compass-QoL/CMake work landed in a burst. Several days (07-23 to
+07-26) sat in the 42-49 commits/day range -- steady, not idle, so
+this isn't a stall followed by a burst; it's sustained high-volume
+work for nearly two weeks. Given the duration overrun compounding
+the volume overrun, this dimension is RED, not AMBER -- the 7-day
+box the targets assume was abandoned in practice around day 8.
+
+*** PR velocity
+
+Target: 100-120 PRs merged for a 7-day sprint.
+
+| Metric                    | Value | Notes                                    |
+|----------------------------+-------+-------------------------------------------|
+| PRs merged since 2026-07-21 | 148   | Above the 100-120 target, within ~150 AMBER band |
+| PRs merged/day (avg)        | ~11.4 | Healthy pace, no evidence of stalling    |
+| Currently open PRs          | 1     | #1775, opened 2026-07-30 -- 4 days open, no long-open WIP pileup |
+
+Merge pace itself is healthy and PRs are not piling up -- a single
+open PR is not a WIP accumulation signal. The total (148) is over
+target but consistent with the sprint's extended duration rather
+than runaway parallelism. Verdict: AMBER (total over target, but
+velocity and WIP hygiene are both fine).
+
+*** Story and task balance
+
+| Story (STARTED)                        | Tasks (DONE/total) | Age (days) | Notes |
+|------------------------------------------+---------------------+------------+-------|
+| Badge/image/plain-text rendering rollout  | 1/2                 | 4          | Small, healthy in-progress ratio |
+| Offload service/DB runtime to WSL host    | 4/6 (+1 not counted, moved) | 11 | Acceptance nearly met; one BACKLOG task (compass remote-deploy tooling) *is* an unmet acceptance item, not scope creep -- left STARTED, correctly not split |
+| Compass quality-of-life improvements      | 2/5                 | 5          | Acceptance is "each task self-contained" -- an open-ended story by design, not a completion blocker |
+| Hotfix: wire codec default breaks headless tests | 1/2          | 1          | Fresh, in progress |
+
+*Split action taken this review*: [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups]] had
+accumulated 16 tasks, 13 DONE, with all three of its own Acceptance
+items already satisfied. The remaining 3 BACKLOG tasks (Qt-drawer
+entity backfill, legacy primary-key heading migration, hand-written
+Qt list pagination) are forward-looking extensions outside that
+acceptance, not blockers to it. Closed the story DONE and split the
+3 remaining tasks into a new sprint-backlog story (BACKLOG, still
+inside sprint 24 -- not the product backlog, which is a separate
+document tree entirely),
+[[id:8C7503BB-2EEA-4242-8FE3-E3183D58012E][Calendar follow-ups: remaining hand-written list pagination cleanup]],
+so the delivered work is recorded as shipped rather than carried
+forward as an implicitly-incomplete story.
+
+Across all 64 sprint-24 stories (after the split): 29 DONE, 4
+STARTED, 30 BACKLOG, 1 ABANDONED. Ratio DONE/(STARTED+BACKLOG) =
+29/34 = 0.85 -- GREEN by the numeric threshold. However, the 30
+BACKLOG stories include a large tail carried from sprint 23 (dated
+2026-07-11 to 2026-07-14) that was never picked up across two full
+sprints -- a backlog-inflation pattern the ratio alone doesn't
+surface. Verdict: GREEN on the ratio, with a carryover-accumulation
+caveat worth flagging for backlog refinement.
+
+*** Focus signal
+
+| Metric                        | Value | Verdict |
+|---------------------------------+-------+---------|
+| STARTED stories (sprint 24)      | 4     | AMBER   |
+| Themes represented               | Badge rollout (entity classification), WSL host offload (dev-infra), compass CLI (dev-infra), hotfix (wire codec) | Mixed |
+
+Four simultaneously STARTED stories sits at the AMBER boundary. Two
+of the four (WSL offload, compass QoL) are dev-infrastructure rather
+than product work, and neither maps to a sprint goal -- consistent
+with the goal-alignment gap above. The hotfix is fresh and
+necessary. Verdict: AMBER -- not a runaway focus problem, but a
+sprint that drifted toward infra/tooling work alongside its stated
+goals rather than a tight two-goal push.
+
+*** Velocity
+
+| Metric                    | Value | Notes                                             |
+|----------------------------+-------+----------------------------------------------------|
+| Stories closed DONE         | 29    | Strong absolute output over the extended window   |
+| Stories closed per elapsed day | ~2.2 | Reasonable, but the window is 13 days not 7       |
+| Sprawling-story cleanups     | 1     | Calendar follow-ups split at this review          |
+
+Raw output is high, but it was produced over roughly double the
+intended sprint window -- velocity-per-calendar-day looks fine only
+because the denominator quietly grew.
+
+*** Overall verdict
+
+| Dimension              | Verdict |
+|--------------------------+---------|
+| Goal alignment            | RED (mixed: commissioning GREEN, IR generation RED) |
+| Sprint load               | RED     |
+| PR velocity               | AMBER   |
+| Story and task balance    | GREEN (with carryover caveat) |
+| Focus signal              | AMBER   |
+
+*Overall: RED.* The sprint has run nearly double its intended
+7-day window (day 13, already RED at the day-9 mid-sprint check),
+and while total output is genuinely strong -- 148 PRs, 29 stories
+DONE, one sprawling story cleanly split and closed at this review --
+half the stated mission ("improve IR generation") shipped no actual
+generation improvement, only a design document, while dev-infra
+work (WSL offload, compass tooling, ccache/btrfs, CI hygiene) that
+maps to neither goal consumed a meaningful share of in-flight
+capacity. The single most impactful fix for future sprints is
+enforcing the 7-day box at the day-of-decision level -- close or
+explicitly re-scope the sprint around day 7-8 instead of letting it
+run open-ended, which is what let both the duration overrun and the
+goal-drift compound unchecked for an extra week.
+
+** Addendum: closing pass on remaining STARTED stories (2026-08-03)
+
+Following the review, went through every STARTED sprint-24 story and
+either closed it or split it, so the sprint carries no story whose
+delivered work is left implicitly incomplete:
+
+- [[id:91385A39-EBE4-4048-9A18-E2812E9350A2][Hotfix: wire codec default flip to msgpack]] -- closed DONE
+  (PR #1807 merged, CI green).
+- [[id:16162B5B-1EDA-4CA7-9AB6-E5AD37D21426][Calendar entity follow-ups]] -- closed DONE (all acceptance
+  items met); 3 forward-looking tasks split into a new sprint-backlog
+  story.
+- [[id:F64924CE-8D35-437A-B275-617558DC5FBE][Compass quality-of-life improvements]] -- closed DONE (shipped
+  tasks independently satisfy the story's own acceptance); 3
+  not-yet-started tasks split into a new sprint-backlog story.
+- [[id:568238F1-AD99-49CB-817F-09D3810D5185][Offload service and DB runtime to a WSL host over SSH]] --
+  renamed/renarrowed to [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime
+  and verify it on a remote WSL host]] and closed DONE, reflecting
+  what actually shipped (containerization, networking model, Newton
+  verification). The real remaining work -- first-class compass
+  deploy tooling and the actual day-to-day cutover -- was split into
+  a fresh, correctly-named [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL
+  host over SSH]] story, kept in the sprint backlog (not the product
+  backlog -- initially misfiled there, corrected after review).
+- [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering]] --
+  split into a closed [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities]]
+  story (DONE) and a renamed, narrower [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Roll out badge/image/
+  plain-text rendering across classified domain entities]] story,
+  left STARTED since its implementation task is genuinely still in
+  progress (active in another environment).
+
+Sprint 24 now has exactly one STARTED story --
+badge/image/plain-text rollout, correctly still open since its
+remaining task is its own unmet acceptance, not scope creep. Every
+other story is DONE, ABANDONED, or BACKLOG (carried, not blocking).
+
+** Addendum: missing story found and wired in (2026-08-03)
+
+User flagged [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment
+isolation]] (BACKLOG, single BACKLOG task) as absent from this
+review's analysis. Confirmed: the story file existed in this
+branch's history (committed 2026-07-31 as part of
+=d103ea38a=) but was never wired into sprint.org's =* Stories=
+table, so it was invisible to both the regex-based story count in
+this review and to =compass search=. Audited every other
+=story.org= under sprint_24 for the same gap -- none found (the only
+other unwired story is this health-review meta-story itself, which
+is deliberately tracked via the =* Health Review= section instead of
+the Stories table). Wired the systemd story into sprint.org as
+BACKLOG; does not change this review's dimension verdicts or overall
+RAG (still BACKLOG, never started, no completed work to record), but
+does mean the sprint-load and goal-alignment analysis above under-
+counted by one BACKLOG story. Worth a process note: a story file
+existing without a =* Stories= table row is a silent gap -- neither
+=compass search= nor a review relying on that table will surface it.
+
+** Addendum: branch sync, entity-classification split, and full backlog carry (2026-08-03)
+
+Three more corrections/actions before closing the sprint:
+
+- The branch was found to be 31 commits behind =origin/main= (grew
+  from 8 at session start as other environments kept merging), and
+  at least one story ([[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline]]) was
+  shown BACKLOG locally while actually STARTED with a DONE pilot
+  task on main. Ran =compass pr sync= (clean rebase, no conflicts)
+  before doing anything further, per user direction, rather than
+  risk carrying/abandoning stories that were further along than our
+  stale view showed.
+- After sync, [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline across all
+  components]] itself needed the same audit-vs-rollout split as the
+  WSL and badge stories: dimensions settled and the tool built +
+  verified on the =ores.refdata= pilot (2/3 tasks DONE). Renamed to
+  [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline: ores.refdata pilot]] and
+  closed DONE; the rollout-to-remaining-components task split into a
+  new sprint-backlog story, [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline
+  across all components]].
+- User confirmed the sprint's active work has stopped entirely
+  (including the one remaining STARTED badge-rollout story) and
+  asked to move every unfinished story to the product backlog per
+  [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]]'s documented procedure. Carried all 35 BACKLOG/
+  STARTED stories to =doc/agile/product_backlog/inbox/=: 18
+  undecomposed stories moved flat (=story.org= only), 17 with task
+  files moved as whole folders so task history/Results/PRs travel
+  with them. Every moved file's =:ID:= was preserved (=git mv=, never
+  copied); filetags and the intro sentence were updated to reference
+  the inbox instead of Sprint 24, and each Status table's "Parent
+  sprint" row was relabelled "Carried from" with the close date.
+  Sprint 24's own Stories table rows were marked ABANDONED (not
+  deleted) with the 2026-08-03 close date, so the sprint record
+  still shows what didn't make it and where it went. Regenerated the
+  backlog indexes ( =regenerate_backlog_indexes.py= ) and the compass
+  search index afterward.
+
+Sprint 24's Stories table now has zero BACKLOG and zero STARTED
+rows: 34 DONE, 36 ABANDONED (carried). The sprint is ready for the
+remaining closure steps (Achievements, release notes, retrospective,
+State -> DONE).

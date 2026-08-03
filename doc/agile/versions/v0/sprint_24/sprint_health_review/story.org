@@ -25,10 +25,10 @@ story/task balance.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Health review 1 complete (RED).        |
+| Now           | Health review 1 (RED, day 9) and health review 2 (RED, day 13, close analysis) complete. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
-| Last touched  | 2026-07-30                               |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
@@ -40,6 +40,7 @@ story/task balance.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:82D7CA2E-30BF-406D-BAFB-595DD630F502][Health review 1 — sprint 24 mid-sprint analysis]] | DONE | 2026-07-30 | 2026-07-30 | System 2 health review 1 of sprint 24. |
+| [[id:A816C827-FCF0-4131-9A26-A4BFAC0867AF][Health review 2 — sprint 24 close analysis]] | DONE | 2026-08-03 | 2026-08-03 | System 2 health review 2 of sprint 24, at sprint close. |
 
 * Decisions
 

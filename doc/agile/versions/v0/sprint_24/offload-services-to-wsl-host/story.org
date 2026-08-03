@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 568238F1-AD99-49CB-817F-09D3810D5185
 :END:
-#+title: Story: Offload service and DB runtime to a WSL host over SSH
-#+description: Provision a WSL-based host so the running aspects of a dev environment (services, DB, and optionally a UI/docker image for testing) can be offloaded to a separate box, reachable via SSH, while development, builds, and the client stay local.
+#+title: Story: Containerize the ORE Studio service runtime and verify it on a remote WSL host
+#+description: Build a Docker/Podman image for ORE Studio's service runtime (glibc-compatible with the WSL/Debian 11 deploy target), work out the networking/deployment model for a native-Postgres remote host, and prove the whole stack -- all 18 services plus a full Acme end-to-end scenario -- running reproducibly on the Newton WSL host over SSH.
 #+type: story
 #+level: s2
 #+filetags: :devops:environment:wsl:infrastructure:sprint_24:v0:
@@ -15,45 +15,39 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Offload the running aspects of a dev environment — services and the
-database — to a WSL-based host reachable over SSH, freeing up the
-local dev machine to be used mainly for Claude Code and builds
-(compute-heavy work), while services/DB run remotely. The client
-should be able to stay local and connect to the remote services over
-the network.
-
-Docker is not a hard requirement: favour the simplest approach that
-is easiest for day-to-day development (e.g. scp'ing build artifacts
-across plus SSH to restart services), and only reach for a Docker
-image if it turns out to be genuinely easier for the testing
-use case. The analysis task should weigh this and recommend an
-approach.
+Work out and prove, on a real remote WSL host (Newton), the
+mechanics of running ORE Studio's service runtime somewhere other
+than the local dev machine: containerize the service binaries (glibc
+mismatch ruled out a plain scp-binaries approach), solve the
+networking model for a host with its own native Postgres, and get
+all 18 services running reproducibly with a full Acme scenario
+passing end-to-end. This is groundwork for actually offloading the
+day-to-day dev environment to WSL, split out as its own story --
+[[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] -- once
+first-class tooling exists to make deploys repeatable rather than a
+manual SSH/podman sequence.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                  |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | All 18 services running reproducibly on Newton, Acme scenario passed end-to-end. Only the compass remote-deploy tooling task remains open. |
+| Now           | All 18 services running reproducibly on Newton, full Acme scenario passed end-to-end. Closed at sprint 24 health review: the remaining compass remote-deploy tooling task is the actual WSL-offload cutover work, not groundwork, so it was split into [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] in the product backlog. |
 | Waiting on    | Nothing.                               |
-| Next          | Add compass tooling for remote deploys (open follow-up task).            |
-| Last touched  | 2026-07-29                               |
+| Next          | Nothing -- see the split-off story for the WSL cutover itself. |
+| Last touched  | 2026-08-03                               |
 
 * Acceptance
 
 - A WSL-based host is provisioned and reachable via SSH from the dev
   machine.
-- Services and the database can be run on the WSL host, using
-  whichever mechanism the analysis task recommends as architecturally
-  simplest for development (e.g. scp + SSH restart; Docker only if
-  it proves genuinely easier for testing).
-- The Qt client can run locally and connect to the services/DB
-  running on the remote WSL host.
-- Documented, repeatable steps (or scripts) exist for standing the
-  environment up and tearing it down on the WSL host.
-- A single PR is raised only once the whole story (all tasks) is
-  complete.
+- The service runtime is containerized and deployed to that host,
+  with all 18 services running reproducibly across restarts.
+- A full end-to-end scenario (Acme) passes against the remote
+  deployment.
+- The networking/deployment model (native-Postgres host,
+  =--network=host=, etc.) is documented in the story's Decisions.
 
 * Tasks
 
@@ -63,7 +57,6 @@ approach.
 | [[id:EE315554-2A5B-4576-B25E-FE282E9B90CF][Set up Docker for the service runtime deployment]] | DONE | 2026-07-24 | 2026-07-27 | Build a Dockerfile and image for ORE Studio's service runtime, targeting a base whose glibc is compatible with the WSL/Debian 11 deploy host, replacing the plain scp-binaries approach that a glibc mismatch ruled out. |
 | [[id:67C78BEF-C664-4B57-AE4D-CBCF3782FBF0][Debug: start_all() coroutine never resumes inside podman container]] | DONE | 2026-07-27 | 2026-07-29 | process_supervisor::start_all()'s coroutine, spawned via co_spawn(io_ctx, ..., use_awaitable) in application.cpp, never begins executing inside the podman container -- its unconditional first log line never appears despite the same io_ctx demonstrably running other coroutines concurrently (NATS connect succeeds, JWKS-fetch retries fire on schedule). Natively, the identical code reaches that line and does its DB reads within ~200ms. Consequence: no supervised services (IAM etc.) ever launch in-container, so the controller's own JWKS fetch from IAM loops forever. |
 | [[id:3627D272-CC9F-4A45-B5F4-0B5A5B1E71AE][Deploy and verify service runtime on the Newton WSL host]] | DONE | 2026-07-29 | 2026-07-29 | Deploy the containerized service runtime (docker/run-pod.sh) to the actual Newton WSL host (192.168.1.22, WSL2 Debian 11 bullseye) over SSH. Reached partial success (image/uid/log/DB-password fixes, --network=host model); all-18-running and Qt-client-connects deferred, blocked on an apparent memory-corruption issue in process_supervisor under real load, carried to the split-per-service follow-on story rather than fixed here. |
-| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
 | [[id:82F1F41E-3BA4-45EA-AABE-30CA969E2A1A][Get all 18 services running end-to-end on Newton]] | DONE | 2026-07-30 | 2026-07-30 | Reached full success: all 18 services (22 rows with compute.wrapper replicas) running reproducibly across 3+ restarts, no distinct corruption bug remained once several real bugs (Newton storage EIO, DB connection exhaustion, stale schema, missing http.server/compute.wrapper staging, wrong http-base-url, podman env-file quote handling, NATS cert SAN type, compute dispatch tenant mismatch) were fixed. Acme end-to-end scenario passed in full, including a compute job run to completion. Two deeper issues (compute-domain tenant scoping, a vendored ORE package missing its own shared libs) filed as captures rather than fixed blind. |
 
 * Decisions

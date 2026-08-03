@@ -93,7 +93,11 @@ void fx_spot_feed::start(handler on_tick) {
 
         on_tick(tick);
 
-        nats_.js_publish(nats_subject_, ores::nats::default_wire_codec().encode(tick));
+        const auto& codec = ores::nats::default_wire_codec();
+        BOOST_LOG_SEV(lg(), trace)
+            << "Encoding fx_spot_tick for " << nats_subject_ << ": wire_format="
+            << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
+        nats_.js_publish(nats_subject_, codec.encode(tick));
         const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
         if (n == 1 || n % 100 == 0) {
             BOOST_LOG_SEV(lg(), info)

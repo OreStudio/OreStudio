@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2D8570EF-88FA-4F8A-9B8C-44F21FD8FAE5
+:END:
+#+title: FX Spot Monitor stuck pending: fx_spot_tick decode fails via the JSON branch despite both sides resolving msgpack at startup
+#+description: FX Spot Monitor shows persistent 'pending' status and ores.marketdata.client.fx_spot_subscription logs a continuous stream of 'Failed to deserialise fx_spot_tick: Could not parse document: unexpected character, expected a JSON value' warnings, even with a live-ticking feed and a freshly rebuilt/restarted, single-instance fleet (ruling out the stale-orphan-process issue found and fixed earlier the same session). The error text is confirmed (via the vendored reflect-cpp headers, rfl/json/read.hpp) to come specifically from rfl::json::read's error path, meaning the failing decode() call took the JSON branch of wire_codec::decode(), not msgpack -- yet ores.qt's own startup log shows 'Wire format: msgpack' resolved correctly from ORES_NATS_WIRE_FORMAT, and the publisher side (ores.synthetic.service's fx_spot_feed.cpp) also encodes via the shared default_wire_codec() with no hardcoded JSON and no compression applied by js_publish(). Both binaries are freshly built (2026-08-03 09:08), ruling out stale-binary drift. Static code reading found no discrepancy; the actual live mismatch needs a repro with temporary trace logging of codec.format() immediately before both the fx_spot_feed.cpp encode call and the fx_spot_subscription.cpp decode call, to see which side (or both) disagrees with its own startup-logged default. Found running the sprint 24 release-notes screenshot scenario (2026-08-03), step 4.
+#+type: capture
+#+level: cross
+#+filetags: :bug:marketdata:nats:wire-codec:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

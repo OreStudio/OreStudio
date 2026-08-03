@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: FFC4117A-3D79-4779-A347-92532ED2A19A
+:END:
+#+title: Story: Split ORE Studio services into one container per service
+#+description: Move from the single-container process-supervisor (ores.controller.service launching/monitoring the other 17 services as child processes) to the idiomatic Podman/container pattern of one process per container, with the orchestrator (podman pod, compose, or k8s) responsible for start ordering and supervision.
+#+type: story
+#+level: s2
+#+filetags: :docker:architecture:deployment:product_backlog:inbox:
+#+created: 2026-07-27
+#+updated: 2026-07-31
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Deploy each ORE Studio backend service (currently 17, plus the controller
+itself) as its own container, launched and supervised by the container
+orchestrator (podman pod, compose, or eventually k8s) rather than by
+~ores.controller.service~ spawning them as child processes inside a single
+container. This is the idiomatic Podman/container
+pattern -- one process per container -- and gets us standard per-service
+health checks, restart policies, and log routing "for free" from the
+orchestrator instead of reimplementing them in ~process_supervisor~.
+
+The controller currently does real control-plane work beyond process
+babysitting -- dependency-ordered startup, DB-backed instance/phase
+tracking, readiness gating (see
+~ores.controller.core/service/process_supervisor.cpp~) -- so this is not a
+simple lift-and-shift: that logic needs to either move into the
+orchestration layer (init containers / dependency ordering in the pod spec)
+or stay as a thin coordination service that no longer itself execs the
+other binaries.
+
+Confirmed (see the dependency-graph-generator task): the controller has
+no responsibilities beyond ~process_supervisor~ -- no other NATS
+handlers exist on it -- so it is decommissioned entirely, not kept as a
+thin coordinator. Systemd becomes the single orchestration substrate
+for *both* supported deployment modes: concrete, per-environment
+systemd units (native binaries, ~--user~ scope, ~EnvironmentFile=~
+pointing at each environment's own ~.env~) for local dev machines,
+each running possibly several environments/checkouts side by side; and
+Quadlet ~.container~ units (still systemd under the hood) for
+podman/remote hosts like Newton. (Local units are deliberately
+*concrete*, not systemd *template* units via ~%i~ -- an earlier
+template design hit a real systemd specifier-expansion bug; see the
+dependency-graph-generator task's Notes.) A per-environment ~.target~
+unit (~ores-<env>.target~) aggregates NATS + every service for that
+environment in both modes, so ~systemctl --user start/stop
+ores-<env>.target~ starts or stops a whole environment (e.g.
+"swift_curie") as one command.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
+| Now           | IAM pilot complete end-to-end: JWT signing fixed (same root cause as PR #1779), HEALTHCHECK added, reaches podman ps healthy standalone. |
+| Waiting on    | Nothing.                               |
+| Next          | Dependency-graph generator, podman-events watcher, then rollout to the remaining 17 services (three follow-up tasks, all BACKLOG). |
+| Last touched  | 2026-07-31                               |
+
+* Acceptance
+
+- Each of the 18 service binaries runs as PID 1 of its own container image
+  (or a small number of shared images parameterised by entrypoint args),
+  not spawned as a child process by another container.
+- Startup ordering (e.g. IAM before its dependents) and readiness gating are
+  expressed at the orchestration layer, not inside a C++ process supervisor.
+- Per-service logs are retrievable via ~podman logs <service>~ --
+  requires each service's own container to pass ~--log-to-console~
+  alongside ~--log-enabled~ (confirmed empirically in the IAM pilot:
+  podman's log driver only captures stdout/stderr, and none of our
+  services write there by default).
+- The existing DB-backed service_instance/phase tracking either moves to
+  the orchestrator's own state (preferred) or is demonstrably still useful
+  and is kept deliberately, not by default.
+- End-to-end smoke test: the full fleet starts, reaches steady state, and
+  survives killing and restarting one service container without taking
+  down the others.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9E08056D-DEC1-43E3-803E-03E5F9808AD5][Design the per-service container architecture and pilot it with one service]] | DONE | 2026-07-29 | 2026-07-29 | Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17. |
+| [[id:B15181A2-D0DB-47F3-A41C-28A2DF712628][Finish IAM per-service pilot: JWT signing failure and HEALTHCHECK]] | DONE | 2026-07-30 | 2026-07-31 | The per-service container pilot for IAM got past a rootless-podman uid-remapping issue (fixed, needs --userns=keep-id) and connects to NATS successfully standalone, but does not yet reach a fully healthy end-to-end state: a distinct, not-yet-root-caused JWT token signing failure (in-memory PEM parsing, bio read failed) surfaces afterward. Root-cause and fix that, then add the HEALTHCHECK probe (tailing IAM's own log for Service ready.) and confirm IAM reaches podman ps healthy end-to-end. |
+| [[id:22287ABA-E21F-4B52-87A0-AB887C618203][Generate per-environment plain-systemd units from service_dependency]] | DONE | 2026-07-31 | 2026-07-31 | Scope narrowed to local/plain-systemd only. Generator reads service_definition/service_dependency and renders concrete systemd units (native, --user, EnvironmentFile per environment) for local dev machines, wrapped in a per-environment ores-<env>.target for one-command start/stop/status, plus sd_notify(READY=1) for real readiness-gated ordering and a compass systemd deploy step. Quadlet/podman and controller decommission now tracked as separate follow-up tasks. |
+| [[id:F4BD29A9-0DAE-4662-B381-CCAD9122AFA7][Mirror podman events into service_instance/service_event tables]] | BLOCKED | | | A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working on remote/Quadlet podman hosts (local dev now runs native systemd units, no podman involved). Depends on the Quadlet generator task landing first. |
+| [[id:5B6F80E0-11C9-4A7F-9D0B-EBD50B0A9451][Roll out per-service containers to the remaining 17 services]] | ABANDONED | | 2026-07-31 | Superseded: its podman pod/compose plan predates the pivot to systemd as the orchestration substrate. Rolling out per-service containers to all 18 services is now the Quadlet generator task's job -- same DB-driven graph, already-parameterised image, no separate manual rollout. |
+| [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Generate Quadlet (podman) units for remote hosts from the same dependency graph]] | DONE | 2026-08-01 | 2026-08-01 | Second renderer over the same service_definition/service_dependency graph, emitting Quadlet .container units (compass systemd quadlet/quadlet-deploy) with the same After=/Requires= ordering and a per-environment .target as the plain-systemd path. Verified end-to-end locally (IAM pilot reaches podman ps healthy / systemctl active). Scoped to rendering + local/SSH install only -- image build/transfer tooling and the full Newton rollout stay with the sibling offload-to-WSL-host story's own tasks, discovered mid-task. |
+| [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] | DONE | 2026-08-01 | 2026-08-02 | Removed ores.controller.service/process_supervisor entirely. Bigger than a pure deletion: the controller had a real NATS API consumed by a 950-line Qt Service Dashboard panel (removed too), and compass services start/stop/status -- the local dev workflow every worktree uses -- worked by launching the controller and letting it cascade-spawn everything; rewrote it to drive systemd generate/deploy + systemctl --user instead, same CLI surface. Verified end-to-end: full build clean, ctest green, 23-unit fleet up/down correctly, Qt client launches cleanly. |
+| [[id:F6C2D87F-E21E-44C2-AA1D-E01A863C3426][Re-scope podman-fleet tasks after the pivot to systemd]] | DONE | 2026-07-31 | 2026-07-31 | Roll out per-service containers to the remaining 17 services and Mirror podman events both predate the story's pivot to systemd (native + Quadlet) as the single orchestration substrate; abandon the rollout task (superseded by the Quadlet generator task) and narrow the podman-events watcher to remote/Quadlet hosts only, blocked on the Quadlet generator landing. |
+
+* Decisions
+
+- Per-service images: one parameterised ~docker/service-runtime.Dockerfile~
+  (~ARG SERVICE_NAME~) plus ~docker/stage-runtime.sh --service <name>~,
+  not 18 separate Dockerfiles and not one shared "kitchen sink" image
+  switched via ~--entrypoint~ (the latter was tried first, rejected in
+  review as not idiomatic -- ships every service's dead code and a
+  larger attack surface per container).
+- Rootless podman containers reading host-owned NATS client private
+  keys (mode 600) *must* use ~--userns=keep-id~ -- without it, the
+  container's mapped uid does not match the host uid that owns the
+  key, causing a silent ~EACCES~ inside OpenSSL that surfaced only as
+  a generic "Connection Closed" (fixed at the source in
+  ~ores.nats/service/client.cpp~, which now checks and reports this
+  explicitly). This is the same root cause as the Newton cert-
+  permission fix in PR #1747/~docker/run-pod.sh~ -- confirmed to apply
+  uniformly to every container in this architecture, not just Newton.
+- The Newton PR #1747 memory-corruption finding does *not* reproduce
+  in the per-service pilot (as expected -- no in-process multi-child
+  bookkeeping exists there to race). What initially looked like a
+  second instance of it was actually the uid-remapping issue above --
+  a distinct, now-understood, unrelated bug.
+- The IAM pilot's "bio read failed" JWT-signing failure was *not* a
+  distinct bug either: it was the exact same escaped-~\n~ env-file
+  corruption already root-caused and fixed generically in PR #1779
+  (~docker/generate-env.sh~'s quote-stripping plus a ~--env~
+  passthrough for that one variable), just predating that fix in this
+  pilot's own session. No source change was needed to close this
+  task once verified. The Newton storage ~EIO~ finding from that same
+  PR also reproduces locally under ~--userns=keep-id~, confirming it
+  was never Newton-specific either -- both are uid-remap-dependent,
+  not host-dependent.
+- ~HEALTHCHECK~ needs a real binary, not a shell script --
+  ~cgr.dev/chainguard/glibc-dynamic~ has no shell at all. Added a
+  small statically-linked C program (~docker/healthcheck.c~), built in
+  its own debian stage, that scans ~/app/log/*.log~ for "Service
+  ready.". Also: podman silently drops ~HEALTHCHECK~ unless built with
+  ~podman build --format docker~ (the default OCI format has no
+  health-check concept) -- easy to miss, only a build-time warning.
+- The Newton storage ~EIO~ finding's actual fix (not just its uid-
+  remap-dependent nature, established above): ~--userns=keep-id~ plus
+  a matching ~--user~/~--group~ is *not* enough on its own -- the
+  image's own baked-in mode-777 ~/app/log~/~/app/run~ dirs still
+  return ~EIO~ (not ~EACCES~) when written to by a uid other than the
+  one that built them, an overlay-layer quirk independent of uid-remap
+  settings. The fix is bind-mounting real host directories over
+  ~/app/log~/~/app/run~ instead of relying on the image's own copies
+  (confirmed in the Quadlet generator task; same fix PR #1779
+  originally applied). Any future per-service container tooling in
+  this architecture needs these bind mounts, not just
+  ~--userns=keep-id~.
+
+* Out of scope
+
+- Kubernetes manifests -- podman pod/compose is the target for this story;
+  k8s is a possible later step, not required here.
+- Redesigning ~ores.controller.service~'s domain responsibilities (service
+  definitions/dependencies as data) beyond what's needed to stop it
+  exec'ing other services directly.
+- Production hardening (secrets management, TLS cert rotation, HA) --
+  tracked separately.

@@ -8,7 +8,7 @@
 #+filetags: :fix-wire-codec-default-breaks-headless-instrument-parse-tests:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-fix-wire-codec-default-breaks-headless-instrument-parse-tests
-#+pr: 1807
+#+pr: 1814
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-02
@@ -32,11 +32,11 @@ Linux-only POSIX socket APIs.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:91385A39-EBE4-4048-9A18-E2812E9350A2][Hotfix: default wire codec flip to msgpack breaks ores.qt.headless.tests]] |
-| Now          | Both fixes applied; Linux verified locally (build + full ctest 74/74 + headless suite 41/41). macOS/Windows fix cannot be verified locally (no cross-compile toolchain here) -- relying on CI. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, PR, confirm all 3 platforms green in CI.       |
+| Next         | Nothing. |
 | Last touched | 2026-08-02                               |
 
 * Acceptance
@@ -201,6 +201,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1814][#1814]] | [marketdata,qt,synthetic,agile] Sprint 24 close: systemd fix, release notes, fx spot diagnostics |
 | [[https://github.com/OreStudio/OreStudio/pull/1807][#1807]] | [qt,service] Hotfix: fix two CI-breaking regressions (msgpack default, macOS/Windows compile) |
 
 * Review
@@ -210,3 +211,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed all three issues found (msgpack-vs-JSON test fixture mismatch,
+non-portable systemd_notify.cpp POSIX sockets, Windows getenv
+deprecation warning) and merged as PR #1807. CI is green across
+Linux/macOS/Windows Continuous and Nightly.

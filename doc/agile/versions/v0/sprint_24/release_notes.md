@@ -1,0 +1,169 @@
+*August 2026*
+
+Sprint 24 continued commissioning work across components and pushed on IR generation. Acme Corporation shipped as ORE Studio's fully populated synthetic holding-group test entity, replacing Barclays Plc, with data-driven bundle provisioning. Calendar reference data was completed end to end: a holiday-aware date picker, real QuantLib holiday/adjustment materialisation, and a fix for a silent 100-row list-truncation bug affecting 29 refdata/marketdata entities. A configurable NATS wire format (JSON/MessagePack) rolled out across every service, fixing the base64 overhead problem for every message type. Entity classification and drift measurement was designed, built, and proven on the ores.refdata pilot, replacing several fragmented hand-maintained tracking documents with one automated report. The service runtime was proven containerised and running reproducibly on a remote WSL host. The sprint ran roughly twice its intended 7-day window (two health reviews, both RED) and the "improve IR generation" goal shipped only design work rather than a delivered improvement &#x2013; see the sprint's health reviews for the full analysis.
+
+---
+
+
+# ✅ Highlights
+
+-   Acme Corporation shipped as ORE Studio's fully populated synthetic test entity, replacing Barclays Plc.
+-   Calendar reference data completed end to end: holiday-aware date picker, real QuantLib holiday materialisation, and a fix for a silent list-truncation bug affecting 29 entities.
+-   Configurable NATS wire format (JSON/MessagePack) rolled out across every service.
+-   Entity classification and drift-measurement tooling designed, built, and proven on the ores.refdata pilot.
+-   Service runtime proven containerised and running reproducibly on a remote WSL host.
+-   Sprint ran roughly twice its intended duration; two health reviews (both RED) flagged the overrun and a goal-alignment gap on IR generation &#x2013; see the health reviews for the full analysis.
+
+
+# 🛠️ Key Improvements
+
+
+## Build & Portability
+
+-   **Replace GLOB\_RECURSE with explicit source lists across the build**: Eliminate GLOB-based source discovery across the codebase so that a target's source list is always exactly what's checked in, with zero risk of a build silently using a stale file set after a rebase or new-file add &#x2013; the idiomatic CMake approach, as opposed to the CONFIGURE\_DEPENDS mitigation already landed.
+-   **Windows CI: pip self-upgrade fails invoking pip.exe directly**: Restore the Windows CI job so it doesn't fail on the pip self-upgrade step in compass.sh's requirements install.
+-   **Migrate shared ccache/build storage to btrfs for reflink-safe hardlink-free caching**: Reformat the shared SSD (`/mnt/development`, currently a single 220G ext4 partition at 83% full, 36G free) to btrfs, and reconfigure ccache to use btrfs reflinks (`file_clone=true`, `hard_link=false`) instead of hard links, so concurrent worktree builds can no longer corrupt each other's cached object files via a shared inode &#x2013; the failure class root-caused in the CIR rename PR's review round (heap corruption crash in `ores.refdata.service` during Barclays provisioning, traced via GDB to a stale/corrupted `party_repository.cpp.o` that a ccache-disabled rebuild proved didn't match a fresh compile of the same source).
+
+
+## Financial Features
+
+-   **Commission Acme Corporation: a realistic holding-group test entity**: Barclays Plc has been our stand-in test/demo legal entity because it has a "realistic" corporate shape, but it is not fit for purpose: it has no employees, so we cannot exercise features that depend on staff/role identity — e.g. verifying that logging in as Middle Office, or as a Trader, resolves the correct permissions and data visibility.
+-   **Market data cleanup: retire dead duplicate tables and preserve hand-written overrides**: Retire the dead pre-codegen marketdata tables (`ores_marketdata_series_tbl`, `ores_marketdata_observations_tbl`, `ores_marketdata_fixings_tbl`) so the schema, RLS policies, ER diagram, and schema-validator ignore list only describe tables that are actually in use — and stop the codegen-managed `market_observation` repository/service from silently losing its hand-written `series_id` filter and pagination logic every time `compass codegen regenerate` runs.
+-   **Badge colour scheme: visual polish and self-badging fixes**: Split from Improve badge colour scheme support (Sprint 23) at close: that story shipped its core deliverable — the `badge_mapping` browser UI and the migration of `badge_definition=/=badge_severity=/ =code_domain` onto standard codegen + DQ publishing — but left two concrete, scoped defects unfixed: (1) the Badge Definitions/Severities admin UI showed colours as plain hex text instead of swatches, with a hardcoded Qt-only fallback colour instead of a real `badge_definition` row; (2) an entity that is itself a badge source (e.g. `book_status`) didn't badge itself on its own list, only its consumers did. Both fixed.
+-   **Finish integrating calendar reference data: XML export and DQ publish**: Split from Sprint 23's Model calendars as proper ORE Studio reference data at close: that story shipped the calendar domain model, the FK relationships from currency/currency\_pair\_convention, the Qt CRUD screens, and the currency\_country junction (5/7 of its own acceptance).
+-   **Market data notation: design an ORE Studio canonical URN mapping to ORE/Bloomberg/Reuters**: Our IR curve config/feed identifiers (`currency_code=+=index_name` qualifier) don't model ORE's real addressing scheme &#x2013; an index name, a `Yield/CCY/CURVE_ID` curve key, and a `TYPE/SUBTYPE/dim` raw quote key are three distinct, non-interchangeable key types, unlike FX's single explicit `ore_key`. Surveyed ORE, Bloomberg, and Reuters notations and designed [BROKEN LINK: C3E053CA-0D4B-480B-9119-E11530160EC1], a canonical ORE Studio URN that projects into each. See also [BROKEN LINK: 3D56DB59-8075-42BB-8139-A7440C9786B2], [BROKEN LINK: F9AE7F54-D995-476A-BA24-93698BF5029D], [BROKEN LINK: 41200F4A-BAC1-4C7A-8998-2EDCC8C8787F], and [BROKEN LINK: F3010EA7-6A0E-405C-81FA-1EF051749B5E] (the Bloomberg/RIC/MDDL/FIX comparative survey).
+-   **Update vendored ORE Engine to 1.8.16.0**: Replaced the broken (non-self-contained) `ore-1.8.15.0-x64-linux.tar.gz` package with a genuinely self-contained, self-tested `ore-1.8.16.0-x64-linux.tar.gz` &#x2013; verified via an automated run against a real example (`TA002_IR_Swap`) tolerantly diffed against expected output, not just an `ldd` check. Synced `external/ore/examples/` and `external/ore/xsd/` from the same engine commit with reproducible provenance, and automated reapplying the known upstream hand-patches so a future refresh can no longer silently undo them (it already had once, mid-story). Also added SHA256 verification of compute-grid packages on download, and built and tested a full per-platform ACME compute package publishing flow (new `ores.compute.client` publisher shared by `ores.shell` and a new `ores.qt` `UploadEnginesDialog`) against a real build &#x2013; which surfaced and fixed several real bugs along the way: a fetch-then-merge race that silently wiped out an already-published platform's package on a second upload, an `ores.http.server` 1MB body-size limit that broke the ~57MB engine upload, and compute-console dialogs that weren't properly docked into the main window.
+-   **Calendar entity follow-ups: date picker, list-pagination fix, QuantLib materialization**: Pick up three follow-ups beyond Model calendars as proper ORE Studio reference data (Sprint 23, in progress) that aren't required by its own acceptance: a holiday-aware date picker widget, a list-truncation/pagination bug fix, and QuantLib calendar-holiday materialization.
+
+
+## Service Architecture
+
+-   **As-of lookup resolution codegen facet**: Give any bitemporal reference/lookup entity a codegen-generated way to answer "what did code X mean as of timepoint t" — a point-in-time query (`valid_from <` t and valid\_to >= t=), distinct from and unrelated to composite parent-child version bumping.
+-   **Qt as-of combo facet and primary-key model shape migration**: Make the as-of Qt combo logic a proper codegen facet instead of hand-patched generated output, and unblock regeneration of book/book\_status/portfolio via the new primary-key model shape.
+-   **Classify FK-like/lookup entities and decide badge vs image vs plain-text rendering policy**: Every FK-like/lookup/code entity in the system currently gets an ad hoc rendering treatment decided per-entity as it's built: `badge_definition` renders as a colour swatch, currencies render as flags, and everything else renders as plain text — with no documented policy for which treatment a given entity should get.
+-   **Unify entity key modeling: one way to declare primary/natural keys, with compound-key support**: **Superseded framing (kept for history):** the original goal below talked about "unifying two templates in parallel active use for two key shapes." That premise was wrong — see the `* Findings` correction dated 2026-07-22.
+-   **Fix jetstream\_admin missing gzip decompression**: Split out of Fix image-batch NATS payload overflow, add SVG compression once that story's core goal (compression + byte-size-aware batching) shipped: the one remaining loose end, raised non-blocking in PR #1706 review, doesn't belong under a now-closed story.
+-   **Entity classification and drift baseline: ores.refdata pilot**: We do not know how far ORE Studio's entities are from "regular": an up-to-date codegen model, fully current generated code, and any manual code confined to paste blocks.
+-   **Fix cross-tenant badge lookup: stale generated repositories ignore tenant\_read\_scope: shared**: Found by brave\_hopper: every badge in the UI renders with the default/fallback colour, for every entity, in every tenant except the system tenant.
+-   **Party generator test expectations and business\_center\_code drift**: Restore ores.refdata.api.tests to green on main, and remove the business\_center\_code landmine from party.org before it reaches another regen.
+-   **Make party-scoped bundle provisioning data-driven, not one hand-written phase per bundle**: Discovered while implementing Synthetic data librarian support: FX foundation: adding a new dataset (`synthetic.fx_spot_configs`) to the `ore_analytics` bundle had **no effect** on either party-provisioning path, because neither actually publishes that bundle for reports.
+-   **Audit and classify FK-like/lookup entities for badge/image/plain-text rendering**: Split from Roll out badge/image/plain-text rendering across classified domain entities (formerly the merged classification+rollout story) at sprint 24 health review: keep the completed audit/classification work recorded as shipped, separate from the still-STARTED implementation work that consumes it.
+-   **Make NATS wire format configurable: JSON/MessagePack, decided once at startup**: Every NATS message (server responses, service handler decode, Qt client requests, shell client requests) is currently serialized by a hard-coded, inline `rfl::json::write=/=rfl::json::read` call at each individual send/receive site &#x2013; roughly 40+ distinct call sites spread across four codebases (`ores.service`, `ores.qt`, `ores.shell`, `ores.cli`).
+-   **Containerize the ORE Studio service runtime and verify it on a remote WSL host**: Work out and prove, on a real remote WSL host (Newton), the mechanics of running ORE Studio's service runtime somewhere other than the local dev machine: containerize the service binaries (glibc mismatch ruled out a plain scp-binaries approach), solve the networking model for a host with its own native Postgres, and get all 18 services running reproducibly with a full Acme scenario passing end-to-end.
+
+
+## Qt UI
+
+-   **Fix image-batch NATS payload overflow, add SVG compression**: Discovered while testing the vintage IR dataset story: country flags (and any other batch-loaded image set) were partially missing in the Qt client.
+-   **Automate connections.db master-password unlock via CLI/env**: `ores.qt`'s connection-bookmark store (`connections.db`, managed by `ores.connections`) is protected by a master password that gates decryption of stored server-login credentials.
+-   **Sprint 24 quick bug fixes: currency CRUD, party re-provisioning**: Bundle three small, unrelated bugs pulled in from the inbox — each blocking or degrading basic functionality: (1) the Qt client's Currency add dialog never enabled Save even after all required fields were filled in, blocking currency creation entirely; (2) the currencies list window's pagination controls didn't work, unlike other entity list windows; (3) re-provisioning a party threw a raw Postgres duplicate-key error instead of skipping/upserting cleanly. All three fixed.
+-   **Improve FX Spot Monitor widget UI/UX**: A Gemini UI/UX review of the FX Spot Monitor widget (full audit and mockup) identified four concrete issues: (1) colors the entire currency-pair label red/green instead of reserving color for directional price deltas only, causing "Christmas tree" visual fatigue; (2) numeric columns aren't right-aligned, so decimal places don't stack for fast vertical scanning; (3) renders every pair to 5 decimal places, violating the standard JPY convention of 3 decimals; (4) repeats the literal text "LIVE" on every row instead of a compact status indicator.
+
+
+## Hotfixes
+
+-   **CMake 4.4 uninitialized-variable warnings on Linux CI**: GitHub Actions Linux CI started emitting a batch of new `CMake Warning (uninitialized)` messages on 2026-07-20 under CMake 4.4.0, all originating from the `project(OreStudio ...)` call at `CMakeLists.txt:51`, tripped inside CMake 4.4.0's own bundled `CMakeDetermine*.cmake` modules.
+-   **Remaining CMake 4.4 uninitialized-variable warnings**: Fixed the four remaining CMake 4.4.0 warnings surfaced while fixing the above but out of scope for that PR: two genuine use-before-define bugs in our own CMake code (`SPRINT`, `flags`), one dead-variable reference (`DOGEN_VERSION`), and CPack/InstallRequiredSystemLibraries vendored-module noise.
+-   **Windows CMake warning: uninitialized CMAKE\_THREAD\_LIBS\_INIT**: `target_link_libraries()` referenced the legacy `${CMAKE_THREAD_LIBS_INIT}` variable across ~98 CMakeLists.txt files, left uninitialized on some platforms/generators (e.g. Windows). Replaced with the `Threads::Threads` imported target, which `find_package(Threads REQUIRED)` always defines.
+-   **Revert PR #1788 (IAM model drift) — broken DB schema**: PR #1788 (merge commit `7645312a2`) broke the database schema on `main`. Reverted the merge cleanly so downstream work was unblocked again.
+-   **xsdcpp domain drift on compositeTradeComponents SubTrade**: Upstream commented out the old `Trade` element inside `compositeTradeComponents` and replaced it with a reference to `subTradeGroup=/=SubTrade`, but `domain.hpp=/=domain.cpp` were never regenerated against the updated schema, so composite-trade XML containing `SubTrade` elements failed to parse/round-trip correctly. Regenerated to match `instruments.xsd`.
+-   **Default wire codec flip to msgpack breaks ores.qt.headless.tests**: Restored a green CI after two separate, unrelated regressions took Continuous Linux/macOS/Windows and Nightly Build all red: (1) PR #1793's flip of the process-wide default wire format from JSON to msgpack broke `instrument_parse_dispatch_tests.cpp`, which still hand-encoded its fixtures via `rfl::json::write()`; (2) the systemd sd\_notify-readiness work added `systemd_notify.cpp` with unconditional POSIX-only `sys/socket.h=/=sys/un.h` usage, failing to compile on macOS/Windows. Fixed both, and along the way replaced the raw POSIX sockets with `boost::asio` and fixed a third issue found while verifying cross-platform: a Windows `-Werror=deprecated-declarations` warning on `std::getenv`.
+-   **Windows -Werror=deprecated-declarations on std::getenv in compute\_commands.cpp**: Windows clang-cl build failed on the same `std::getenv` deprecation warning in a different file (`projects/ores.shell/src/app/commands/compute_commands.cpp`), fixed the same way as the wire-codec hotfix above &#x2013; via the project's `ores::platform::environment` helper.
+
+
+### Reflection
+
+Seven hotfixes is a lot for one sprint, and they cluster into two recurring patterns rather than seven unrelated accidents. The first is **cross-platform blindness**: five of the seven (both `std::getenv` warnings, `CMAKE_THREAD_LIBS_INIT`, the `systemd_notify.cpp` POSIX sockets, and the CMake 4.4 warnings surfacing only on the runner's newer CMake) were only ever caught by CI running on a platform or toolchain version development itself doesn't use day to day &#x2013; day-to-day development here is Linux/clang only, so anything Windows-, macOS-, or newer-CMake-specific ships blind until a Continuous run turns red, sometimes days later and stacked with other regressions (the wire-codec hotfix alone untangled two unrelated causes across three platforms). The second pattern is **global-default and generated-code changes without a full consumer/regen audit**: the msgpack wire-format flip broke one test file that still hand-encoded fixtures, and the `compositeTradeComponents` XSD update broke domain code that nothing forced to regenerate &#x2013; both are cases where a single change point (a compiled-in default, an upstream schema) has many silent consumers, and nothing in the current process enumerates them before merge. The IAM model-drift revert is the odd one out: a schema-breaking change reached `main` at all, which is a review/CI-gate question rather than a platform-coverage one.
+
+For next sprint: run (or at least compile-check) Windows and macOS before merging any change that touches CMake configuration, process lifecycle/sockets, or other platform-sensitive code, rather than waiting for the next scheduled Continuous/Nightly run to find out &#x2013; manually dispatching those workflows against a branch, as this sprint's wire-codec hotfix eventually did, should be the default for that class of change, not an afterthought. And treat "flip a global default" or "an upstream schema/model changed" as its own checklist item &#x2013; grep every consumer/every generated-code call site before merging, not just the one the PR happened to touch.
+
+
+## Agile & Process
+
+-   **Open sprint 24**: Open Sprint 24: scaffold the sprint doc, set its mission, wire it into the version manifest and agile index, bump the project version, and update the `vcpkg` submodule to latest.
+-   **Sprint 22 leftover cleanup**: Close out four standalone leftover tasks parked at sprint 22 close — each a genuinely single-task remainder from an otherwise-DONE story, not worth re-opening or carrying its whole parent.
+-   **Compass quality-of-life improvements**: Collect small, standalone improvements to compass itself — ergonomics, safety nets, and workstation-integration niceties — that are each too small to warrant their own story but are still real, shippable developer-experience work.
+-   **Sprint 24 closure: release notes and demo**: Own the final steps of sprint closure: release notes summarising what shipped, illustrative screenshots captured through a real QA test scenario (not ad hoc), and the retrospective.
+
+
+# ⚠️ Known Issues & Postponed
+
+-   **IR generation goal not delivered**: the sprint mission's "improve IR generation" half shipped only design work (the oresmd URN scheme). Dataset seeding, dual-curve support, and quoting conventions are all still unstarted &#x2013; see the health reviews for the full analysis.
+-   **Badge/image/plain-text rollout still in progress**: all 120 candidate entities are audited and classified, but implementation is only partway through its batches.
+-   **Entity classification tool proven on one component only**: the drift-measurement tool is built and verified on the ores.refdata pilot; rollout to the remaining ~19 components hasn't started.
+-   **WSL host offload not yet cut over**: the service runtime is containerised and proven running on a remote WSL host, but first-class compass tooling for the deploy and the actual day-to-day dev-workflow switch are still ahead.
+-   **ores.wt.service crashes on startup (SEGV)**: found during this release's own manual verification pass, after the sprint's own work closed &#x2013; not yet investigated.
+-   **A stale, pre-systemd fleet of ~90 orphaned service processes was found still running**: leftover from before this sprint's controller-service decommission switched process launching over to systemd, silently alive since 2026-07-31/08-01 and intermittently intercepting NATS requests meant for the current fleet (root cause of several "Could not cast to a map" decode failures chased during this release's own verification pass). Killed during this release's verification; systemd's own tracking should prevent this specific class recurring, but see the Post Mortem below.
+
+
+# 🔎 Post Mortem
+
+
+## What worked
+
+-   High absolute throughput: 151 PRs merged, 34 stories closed DONE, across a sprint that ran roughly double its intended window.
+-   The story-splitting pattern (audit vs. rollout, containerise vs. cutover, pilot vs. full rollout) kept delivered work honestly recorded as shipped instead of one bloated story silently carried forward wholesale at close.
+-   Once a cross-platform regression was found, the response was thorough: the wire-codec hotfix manually dispatched Continuous macOS/Windows against the fix branch to confirm before merging, rather than merging blind and waiting for the next scheduled run.
+-   Two written health reviews (mid-sprint and close) caught the goal drift and duration overrun in a durable record, not just as an informal impression.
+
+
+## What didn't work
+
+-   The sprint ran ~13-14 days against a 7-day target. The day-9 health review already flagged this RED, and the sprint still ran another four-plus days past that verdict before closing.
+-   The "improve IR generation" mission goal didn't ship a real improvement &#x2013; only a design document (the oresmd URN scheme). Dataset seeding, dual-curve support, and quoting conventions, the actual deliverables implied by the goal, never started.
+-   Cross-platform breakage (Windows/macOS) was repeatedly found late, only by CI, because day-to-day development is Linux/clang only &#x2013; five of this sprint's seven hotfixes were exactly this pattern (see the Hotfixes reflection above).
+-   Two changes with many silent consumers &#x2013; the msgpack wire-format default flip, and an upstream XSD schema update &#x2013; broke consumers nothing forced anyone to check before merging.
+-   Sprint bookkeeping itself drifted from reality multiple times this session alone: three separate sprint.org Stories-table rows were stale relative to the actual story file's State (the systemd story, the entity-classification story, and a hotfix's sibling landed on main), and one story existed on disk with no Stories table row at all &#x2013; invisible to both the health review's story count and `compass search`.
+-   A stale, pre-systemd fleet of ~90 orphaned processes from before this sprint's own controller-decommission work sat running for three-plus days, undetected, and caused hard-to-reproduce intermittent NATS decode failures when finally noticed during this release's own environment verification &#x2013; the exact failure mode the still-BACKLOG "Systemd resource management and per-environment isolation" story exists to close.
+
+
+## Improve next sprint
+
+-   Enforce the 7-day box at the day-of-decision level: close or explicitly re-scope the sprint around day 7-8 instead of letting it run open-ended once a health review has already flagged RED.
+-   Treat "improve X" mission goals as requiring a shipped, user-visible improvement before crediting the goal as served &#x2013; design/analysis work unblocks the goal, it doesn't satisfy it.
+-   Dispatch Windows/macOS CI proactively for any change touching CMake configuration, process lifecycle, sockets, or other platform-sensitive code, rather than waiting for the next scheduled Continuous/Nightly run to find out.
+-   Treat "flip a global default" or "an upstream schema/model changed" as its own checklist item: grep every consumer/every generated-code call site before merging, not just the one the PR happened to touch.
+-   Wire every new story into sprint.org's Stories table at creation time, not after the fact, and spot-check story-file State against the table periodically rather than trusting it stayed in sync.
+-   Prioritise the "Systemd resource management and per-environment isolation" story next sprint &#x2013; this sprint's own closure verification ran directly into the exact orphaned-process failure mode it exists to prevent.
+
+
+# 📈 Sprint Charts
+
+
+## PRs and Commits per Day
+
+Dual-axis bar chart. PRs (left axis) and commits (right axis) per day. A high commits-to-PR ratio may indicate scope creep.
+
+![prs_commits.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_24/prs_commits.png)
+
+
+## Daily Line Churn
+
+Lines added (green) and deleted (red) per day. Building work produces mostly additions; refactoring produces a mix.
+
+![line_churn.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_24/line_churn.png)
+
+
+## PR Cycle Time
+
+Hours from PR open to merge, one bar per PR. Long bars indicate review bottlenecks.
+
+![pr_cycle.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_24/pr_cycle.png)
+
+
+## Cumulative Stories Done
+
+Line chart tracking stories marked DONE during the sprint. Steady upward slope is healthy; plateauing signals a stall.
+
+![stories_done.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/doc/agile/versions/v0/sprint_24/stories_done.png)
+
+
+# 📊 Time Summary
+
+-   **Total effort**: not tracked
+-   **PRs merged**: 151 (since v0.0.23, 2026-07-20 to 2026-08-03)
+-   **Sprint duration**: 2026-06-25 → 2026-08-03
+
+---
+
+*Next sprint: rolling out the entity classification/drift tool to every remaining component; delivering actual IR generation improvements (dataset seeding, dual-curve, quoting conventions) now that the design work has landed; and the WSL-offload cutover using the proven containerised service runtime.*

@@ -1,0 +1,268 @@
+:PROPERTIES:
+:ID: 712AA40D-67D2-4234-ABD2-1D006F63673B
+:END:
+#+title: Task: Audit and classify entities: badge, image, or plain text
+#+description: Only 10 of 108 domain_entity models use badge_key today, and no entity has ever had its rendering treatment (colour badge vs image/flag vs plain text) decided against a documented criterion -- it's been ad hoc per entity (badge_definition renders as a swatch, currencies render as flags, everything else is plain text, by convention-following rather than policy). Inventory every FK-like/code/lookup domain_entity model, classify each into one of the three treatments with documented reasoning, state the policy/criteria driving the classification, and split the result into implementation batches (ready-to-annotate vs needs-new-badge-definition/image-data) -- this task is the audit/classification/policy, not implementing it.
+#+type: task
+#+level: s1
+#+filetags: :badge-adoption-audit:sprint_24:v0:
+#+owner: marco
+#+branch: feature/merge-badge-audit-classify-stories
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-15
+#+updated: 2026-07-30
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Merges what were two separate stories'
+audit work (badge-adoption coverage, and badge-vs-image-vs-plain-text
+classification -- see parent story's =* Decisions= for the merge
+rationale) into one pass over the entity catalogue:
+
+1. Inventory every FK-like/code/lookup =domain_entity= model (not
+   just the ones already suspected to need =badge_key=) -- reference-
+   data codes, DQ badge-adjacent entities (=badge_severity=,
+   =code_domain=), currencies, and any others of the same shape.
+2. Classify each into exactly one of: colour badge (like
+   =badge_definition=), image/flag (like currencies), or plain text/
+   neither. Document the *reasoning*, not just the verdict, and state
+   the general policy/criteria this classification follows so future
+   entities don't need the question re-litigated.
+3. For entities classified as badge or image, further split into
+   ready-to-annotate (a =code_domain=/=badge_definition= or image
+   asset already exists) vs needs-new-data (new badge_definition rows
+   or image assets must be authored first).
+4. Group the final candidate list into batches sized for the
+   implementation task to work through incrementally.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]] |
+| Now          | Nothing.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Pick up the implementation task, one batch at a time. |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- [X] Enumerate all domain_entity FK/soft-FK columns pointing at an
+  entity already referenced via badge_key elsewhere, all boolean
+  columns, and any other FK-like/code/lookup entity in the system,
+  across all 120 current models -- not just the ones already
+  suspected of needing a badge.
+- [X] Every enumerated entity/column is classified as colour badge,
+  image/flag, or plain text/neither, with the reasoning documented.
+- [X] A stated policy/criteria doc captures what drives the
+  classification, so it's not re-litigated per entity going forward.
+- [X] The classified list is cross-referenced against existing
+  code_domain/badge_definition/image-asset data to split into
+  ready-to-annotate vs needs-new-data, then grouped into batches.
+- [X] Written up in this task's Result as a concrete, actionable,
+  batched list -- not implemented in this task.
+
+* Plan
+
+** Method
+
+1. Enumerated every =#+type: ores.codegen.entity= model across all
+   components (120 total, not the stale "108" the story's original
+   description cited -- adoption and the catalogue have both grown
+   since).
+2. Found real current adoption by parsing each model's =** Qt=
+   =*** Detail fields= table and checking the actual *values* in the
+   =badge_key=/=flag_source= columns -- not just whether those column
+   headers are present, which every entity's table carries regardless
+   of use and would have produced a useless 100%-adoption false
+   positive. Confirmed by direct inspection: 8 entities have a real
+   =badge_key= value, 15 have a real =flag_source= value (mostly all
+   pointing at the same handful of lookup domains).
+3. Identified the actual lookup/code-shaped entities each of those
+   values points at (the true unit of classification -- an entity is
+   "a badge" or "an image", and every FK-like column referencing it
+   inherits that treatment; the per-column =badge_key=/=flag_source=
+   annotations are just where that inherited treatment gets wired in
+   on the consuming side).
+4. Classified every remaining lookup/code-shaped entity not yet
+   covered against the policy below. Core business/operational
+   entities that aren't lookup/code tables at all (=party=, =book=,
+   =trade=, the =*_instrument= family, =workflow_instance=,
+   =market_observation=, synthetic generation-config entities, etc.)
+   were excluded up front -- classifying them isn't what either merged
+   story asked for.
+
+** Policy
+
+- *Image/flag*: only for entities with an inherent, globally-
+  recognisable real-world visual identity where an image asset
+  already exists or is trivially obtainable -- countries and
+  currencies (flags), and by extension anything that IS one of those
+  (currency pairs, business centres via their host country). This is
+  a closed set; nothing else in the catalogue has this property, so
+  no new image classifications are proposed.
+- *Colour badge*: a small (roughly under ~20 rows), closed,
+  semantically-meaningful classification or status domain, where a
+  colour genuinely communicates something at a glance (active/
+  inactive, good/bad/warning, a small set of named types). This is
+  the bulk of the classification work below.
+- *Plain text*: everything else -- in particular, technical
+  conventions/parameters (day-count fractions, business-day
+  conventions, IBOR/OIS/swap/FRA/deposit/CDS/zero conventions,
+  floating-index types) and open-ended registries (ID schemes, trade
+  ID types) where the value set is either too large, too technical,
+  or too open-ended for a colour to add signal -- it would just be
+  colour noise. Also anything already excluded as not a lookup/code
+  entity at all (see Method step 4).
+
+** Already correctly classified (no action)
+
+- *Image*: =country=, =currency=, =business_centre= (via country).
+- *Badge*: =asset_class_code=, =book_status=, =currency_pair_classification=,
+  =currency_pair_convention= (business-day-convention field),
+  =curve_role=, =party_status=, =party_type=, =regulatory_book_type=,
+  =tenor_kind=, =tenor_unit=, =book=, =counterparty=, =counterparty_identifier=,
+  =instrument_code=, =party=, =party_identifier=,
+  =payment_frequency=, =tenor=.
+- *Both* (not a policy violation -- different fields, different
+  purposes): =currency_pair= has flag icons on its =base_currency=/
+  =quote_currency= combos *and* a colour badge on its
+  =classification= field. The "exactly one treatment" policy applies
+  per rendered field, not per entity.
+
+** New classification: colour badge (18 entities, batched below)
+
+| Entity | Component | Reasoning |
+|--------+-----------+-----------|
+| book_purpose_type | refdata | Small closed type set, parallels the already-badged book_status |
+| business_unit_type | refdata | Small closed type classification |
+| calendar_type | refdata | Small set (e.g. Weekend, ORE, Custom) |
+| contact_type | refdata | Small closed set (email/phone/address/...) |
+| currency_market_tier | refdata | Small tier classification (G10/EM/...) |
+| ledger_feed_type | refdata | Small closed set |
+| leg_type | refdata | Classic Fixed/Floating semantic classification |
+| monetary_nature | refdata | Small set (Actual/Notional), high semantic value |
+| purpose_type | refdata | Parallels book_purpose_type |
+| rounding_type | refdata | Small set (Up/Down/Nearest/...) |
+| tenor_anchor | refdata | Small semantic set |
+| change_reason_category | dq | Small classification of change_reason itself |
+| account_type | iam | Small closed set |
+| tenant_status | iam | Classic Active/Suspended/... status |
+| tenant_type | iam | Small closed set |
+| party_role_type | trading | Small closed set, high semantic value |
+| trade_type | trading | Small closed set (Vanilla Swap/FRA/...), high semantic value |
+| report_type | reporting | Small closed set |
+
+** New classification: plain text, with documented reason (no implementation needed)
+
+| Entity | Component | Reasoning |
+|--------+-----------+-----------|
+| party_id_scheme | refdata | Open-ended external registry (LEI/DUNS/SWIFT/internal/...), not a closed semantic-state set |
+| trade_id_type | trading | Same registry-like shape as party_id_scheme |
+| tenor_resolution_algorithm | refdata | Technical/algorithmic choice, not a status |
+| concurrency_policy | reporting | Internal technical setting, not user-facing semantics |
+| pricing_engine_type | analytics | Technical, QuantLib-driven, not a curated small set |
+| yield_curve_process_type | synthetic | Technical/statistical model choice, internal config |
+| day_count_fraction_type | refdata | Standard technical convention (ACT/365, ACT/360, ...) |
+| business_day_convention_type | refdata | Standard technical convention |
+| floating_index_type | refdata | Technical convention |
+| ibor_index_convention | refdata | Technical convention |
+| ois_convention | refdata | Technical convention |
+| overnight_index_convention | refdata | Technical convention |
+| swap_convention | refdata | Technical convention |
+| cds_convention | refdata | Technical convention |
+| deposit_convention | refdata | Technical convention |
+| fra_convention | refdata | Technical convention |
+| zero_convention | refdata | Technical convention |
+| currency_group | refdata | A grouping label, not a status/classification |
+
+** Out of scope: not a lookup/code entity
+
+Core business, operational, or config entities -- classifying these
+was never what either merged story asked for. Not enumerated
+individually: =party=, =book=, =portfolio=, the =trading.*_instrument=
+family, =trade=, =trade_identifier=, =trade_party_role=,
+=lifecycle_event=, =workspace=, =tenant=, =compute.host=/=app=/
+=app_version=/=batch=/=workunit=/=result=, =scheduler.job_definition=,
+=workflow.workflow_instance=/=workflow_step=, =reporting.report_definition=/
+=report_instance=, =marketdata.*= (all four), =refdata.calendar=/
+=calendar_exception=/=calendar_rule=, =refdata.counterparty=/
+=party_contact_information= family, =synthetic.*= (all six
+generation-config/component entities), =dq.folder=/=catalog=/
+=data_domain=/=subject_area=/=change_reason=/=code_domain=/
+=badge_definition=/=badge_severity=/=dataset_bundle=,
+=database.database_info=, =controller.service_definition=/
+=service_instance=.
+
+** Implementation batches
+
+- *Batch 1* (refdata, high-confidence) -- DONE. Correction (found
+  during implementation, not caught by this audit): only 3 of the 11
+  -- =calendar_type=, =currency_market_tier=, =monetary_nature= --
+  had existing =code_domain=/=badge_definition=/=badge_mapping= rows;
+  the other 8 (=book_purpose_type=, =business_unit_type=,
+  =contact_type=, =ledger_feed_type=, =leg_type=, =purpose_type=,
+  =rounding_type=, =tenor_anchor=) needed that data authored first
+  (46 values), same as Batch 2 will. All 11 are now self-badged.
+- *Batch 2* (cross-component, same pattern): =change_reason_category=
+  (dq), =account_type=/=tenant_status=/=tenant_type= (iam),
+  =party_role_type=/=trade_type= (trading), =report_type= (reporting).
+- *Batch 3* (documentation only, no code change): record the 18
+  plain-text decisions above directly in each entity's own =.org=
+  model as a one-line comment/=:rendering_policy:=-style note (exact
+  mechanism TBD by the implementation task), so the reasoning is
+  discoverable at the model itself, not just in this task's Result.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Audited all 120 current =domain_entity= models (not the stale "108"
+the story cited). Found real current adoption by parsing actual
+=badge_key=/=flag_source= *values* in each entity's Qt detail-field
+table, not just column-header presence (which is a false-positive
+trap -- every entity's table carries those columns regardless of
+use): 8 entities badge, 15 image, all correctly classified already.
+
+Classified every remaining lookup/code-shaped entity against a
+three-way policy (image: closed set, real-world visual identity,
+asset already exists -- country/currency only; badge: small closed
+semantic-state domain; plain text: everything else, in particular
+technical conventions and open-ended registries). Result: 18 new
+badge classifications (grouped into two ready-to-annotate batches, no
+new data needed beyond standard badge-definition rows), 18 explicit
+plain-text decisions (documented reasoning, no implementation), and
+the remaining ~65 entities excluded as not lookup/code entities at
+all (core business/operational/config entities the classification
+question never applied to). Full breakdown, reasoning, and batches
+in =* Plan= above.

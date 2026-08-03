@@ -25,7 +25,10 @@ for the set-notation vocabulary used throughout this cluster for both $U$
 and $\mathrm{MDS}(T)$, and works through the set algebra by which a
 valuation-scoped subset is derived.
 
-* Layperson's mental model
+* Terminological conventions
+
+#+begin_note
+*Analogy: the market data universe as the routable Internet*
 
 If a [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data
 requirement]] is a domain name and a
@@ -41,8 +44,9 @@ shrink or reconfigure to make them so. The market data universe plays
 exactly this role for a valuation: it is the totality of everything
 addressable, of which any one valuation touches only a small,
 requirement-derived slice.
+#+end_note
 
-This picture explains why *set* language, rather than *environment*
+The analogy illustrates why *set* language, rather than *environment*
 language, is the right vocabulary for $U$. An "environment" suggests
 something a valuation is configured to run *inside of* — a fixed, walled
 container assembled ahead of time to hold exactly what that valuation

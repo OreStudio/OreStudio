@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 4222FDF0-E5EF-4363-BE29-F1E22B2A9FC7
+:END:
+#+title: Story: Open sprint 25
+#+description: Scaffold sprint 25, wire version manifest, move postponed stories.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Scaffolding sprint 25.                 |
+| Waiting on    | Nothing.                               |
+| Next          | Wire manifest, move postponed stories, bump version. |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0B4D18C1-6F3F-45E7-8E01-1D9A6A99C5B5][Open sprint 25]] | STARTED | 2026-08-03 |     | Scaffold sprint 25, wire version manifest, move postponed stories, and bump the project version. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -23,11 +23,11 @@ test scenario (not ad hoc), and the retrospective.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
-| Now           | Writing release notes.                 |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Generate release notes, then capture screenshots. |
+| Next          | Nothing. |
 | Last touched  | 2026-08-03                               |
 
 * Acceptance
@@ -39,12 +39,23 @@ test scenario (not ad hoc), and the retrospective.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:32C80A2E-CF88-4F6A-9D58-8B070ED41E4F][Write sprint 24 release notes]] | DONE | 2026-08-03 | 2026-08-03 | Generate release notes via compass add release_notes, populate from PR data and closed tasks' Result sections, and capture illustrative screenshots via a QA test scenario. |
-| [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | STARTED | 2026-08-03 | | FX Spot Monitor scenario step found the feed stuck PENDING on a wire-codec decode mismatch. Added trace logging and a persistent per-row error indicator; root cause of the actual mismatch still open, continuing next sprint. |
 | [[id:C10F0EF1-2E05-4B64-8DFB-EACDB3316497][Fix unsubstituted {nats_wire_format} placeholder in systemd unit generator]] | DONE | 2026-08-03 | 2026-08-03 | systemd_generate.py substituted {nats_url}/{nats_prefix}/{nats_tls_args} but never {nats_wire_format}, so every service with a custom args_template (http.server, telemetry, ore.service, wt.service, all 5 compute.wrapper replicas) passed the literal string '{nats_wire_format}' to --nats-wire-format and crashed on every start. Found while starting services to run the release-notes screenshot scenario. |
-| [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | BACKLOG | | | FX Spot Monitor scenario step found the feed stuck PENDING with fx_spot_subscription silently logging 'Could not parse document: unexpected character, expected a JSON value' -- the JSON decode branch firing despite both sides resolving msgpack at startup. Added permanent trace logging of the resolved wire_codec format at both the fx_spot_feed.cpp encode call and the fx_spot_subscription.cpp decode call, and a persistent per-row FeedStatus::Error indicator (red icon, tooltip with the decode failure reason) in FxSpotGridWindow, since the existing errorOccurred-to-status-bar path fires too rapidly under a consistently-failing stream to be noticed. Root cause of the actual mismatch not yet found -- needs a live repro with the new trace logging enabled; continuing next sprint. |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+Release notes generated (PR data + closed tasks' Result sections),
+illustrative screenshots captured (holiday-aware date picker, v0.0.24
+hero shot), a broken-link bug in the shared exporter fixed and shipped
+to every future sprint's release notes, the retrospective written into
+sprint.org (condensed from the release notes' Post Mortem), tag
+v0.0.24 signed and pushed, and the draft GitHub release ("Capunda")
+published with corrected content. The still-open FX Spot Monitor
+wire-codec root-cause investigation was split into
+[[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] in
+sprint 25 rather than carried here as unfinished work.

@@ -5,7 +5,7 @@
 #+description: Author a user-manual chapter describing Acme Corporation as the realistic test/demo company used to exercise all functionality within ORE Studio -- its holding-group structure, business units, portfolios, books, staff, and counterparty logo -- analogous to how Barclays Plc has served as the system's demo entity to date.
 #+type: task
 #+level: s1
-#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/write-acme-corporation-manual-chapter
 #+pr: 1801
@@ -16,7 +16,7 @@
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -38,7 +38,7 @@ they are looking at once it is up.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
 | Now          | Chapter, Initial Setup, and Shell Provisioning chapters all updated and building cleanly; 2 real screenshots captured, scenario PASSED. |
 | Waiting on   | Nothing.                               |
 | Next         | Human review of the prose (content-complete, per doc-add-entity-chapter's scope). |

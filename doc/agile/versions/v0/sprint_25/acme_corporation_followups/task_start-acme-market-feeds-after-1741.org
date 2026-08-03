@@ -5,7 +5,7 @@
 #+description: Acme's synthetic_realistic_2026 market data is published as configuration only (fx_spot_generation_config, ir_curve_generation_config rows) -- nothing actually starts the feed producers, so CRM cross-rates and IR curves sit static/dead for a freshly-provisioned Acme party. A working implementation (start_feeds_under_folder_request for FX, per-config start_ir_curve_feed_request for IR) was drafted and then deliberately backed out uncommitted: PR #1741 (merry_newton) is independently adding a way to start feeds as part of the synthetic-theme-as-one-atomic-dataset work, and we don't want two parallel paths for the same thing.
 #+type: task
 #+level: s1
-#+filetags: :acme_corporation_holding_group:sprint_24:v0:
+#+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:CB7351E9-8E7E-4BA4-9399-4EB22F6192D4][Commission Acme Corporation: a realistic holding-group test entity]] |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

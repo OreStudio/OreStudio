@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: E3786E5B-1039-4256-A61B-BFBF34465578
+:END:
+#+title: Story: Find root cause of FX Spot Monitor wire-codec decode mismatch
+#+description: fx_spot_subscription silently fails to decode ticks under msgpack despite both sides resolving msgpack at startup, leaving FX Spot Monitor rows stuck PENDING. Trace logging and a persistent error indicator shipped in sprint 24 as diagnostics; the actual encode/decode mismatch root cause is still open.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | STARTED | 2026-08-03 | | FX Spot Monitor scenario step found the feed stuck PENDING on a wire-codec decode mismatch. Added trace logging and a persistent per-row error indicator; root cause of the actual mismatch still open, continuing next sprint. |
+
+* Decisions
+
+* Out of scope
+
+-

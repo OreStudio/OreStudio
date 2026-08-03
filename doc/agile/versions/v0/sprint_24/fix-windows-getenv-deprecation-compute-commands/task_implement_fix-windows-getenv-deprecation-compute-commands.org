@@ -8,7 +8,7 @@
 #+filetags: :fix-windows-getenv-deprecation-compute-commands:sprint_24:v0:
 #+owner: marco
 #+branch: feature/implement-fix-windows-getenv-deprecation-compute-commands
-#+pr:
+#+pr: 1810
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-03
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1810][#1810]] | [shell] Fix Windows -Werror=deprecated-declarations on std::getenv |
 
 * Review
 

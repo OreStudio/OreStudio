@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_25:sprint_25:v0:
 #+owner: marco
 #+branch: feature/open-sprint-25
-#+pr:
+#+pr: 1817
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-03
@@ -64,7 +64,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1817][#1817]] | [agile,build] Open sprint 25 |
 
 * Review
 

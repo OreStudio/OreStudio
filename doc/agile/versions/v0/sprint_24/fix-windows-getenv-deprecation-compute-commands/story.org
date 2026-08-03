@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 37C33FB7-EF7A-4D1F-A44D-D56A6BFB71C1
+:END:
+#+title: Story: Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp
+#+description: Windows clang-cl build fails with -Werror=deprecated-declarations on std::getenv in projects/ores.shell/src/app/commands/compute_commands.cpp:51 (MSVC STL flags it in favour of _dupenv_s). Replace with the project's ores::platform::environment::environment::get_value_or_default() helper, consistent with the prior fix applied to systemd_notify.cpp (commit 530a5f97b).
+#+type: story
+#+level: s2
+#+filetags: :sprint_24:v0:
+#+created: 2026-08-03
+#+updated: 2026-08-03
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Windows clang-cl CI builds green again: compute_commands.cpp no longer
+trips -Werror=deprecated-declarations on std::getenv.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-08-03                               |
+
+* Acceptance
+
+- projects/ores.shell/src/app/commands/compute_commands.cpp no longer
+  calls std::getenv; uses
+  ores::platform::environment::environment::get_value_or_default()
+  instead.
+- No other stray std::getenv/::getenv calls remain outside
+  ores.platform's own implementation.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:80DBFA4E-3C40-4264-8FA4-0F4C55A400B0][Scaffold story: Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp]] | DONE | 2026-08-03 | 2026-08-03 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:67899DE5-D313-4433-8152-8D1AF122DCB1][Implement Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp]] | DONE | 2026-08-03 | 2026-08-03 | Initial task for: Hotfix: Windows -Werror deprecated-declarations on std::getenv in compute_commands.cpp |
+
+* Decisions
+
+- Same fix pattern as the prior systemd_notify.cpp hotfix
+  (530a5f97b): use ores::platform::environment::environment's helper
+  rather than std::getenv directly, since it already handles the
+  Windows deprecation warning internally.
+
+* Out of scope
+
+-

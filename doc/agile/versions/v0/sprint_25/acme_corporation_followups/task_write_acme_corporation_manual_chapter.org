@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/write-acme-corporation-manual-chapter
-#+pr: 1801
+#+pr: 1830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
@@ -188,6 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1830][#1830]] | [agile] Close: Write Acme Corporation manual chapter |
 | [[https://github.com/OreStudio/OreStudio/pull/1801][#1801]] | [docs,agile,sql] Add Acme Corporation manual chapter; document Acme-vs-Manual provisioning fork |
 
 * Review

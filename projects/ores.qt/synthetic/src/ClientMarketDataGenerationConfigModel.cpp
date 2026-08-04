@@ -18,9 +18,11 @@
  *
  */
 #include "ores.qt/ClientMarketDataGenerationConfigModel.hpp"
+#include "ores.qt/BindingModeLabel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/ScopeLabel.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
@@ -87,6 +89,10 @@ QVariant ClientMarketDataGenerationConfigModel::data(const QModelIndex& index, i
                 return QString::fromStdString(market_data_generation_config.name);
             case Description:
                 return QString::fromStdString(market_data_generation_config.description);
+            case Scope:
+                return scopeLabel(market_data_generation_config.scope);
+            case BindingMode:
+                return bindingModeLabel(market_data_generation_config.binding_mode);
             case Enabled:
                 return market_data_generation_config.enabled ? tr("true") : tr("false");
             case Version:
@@ -125,6 +131,10 @@ QVariant ClientMarketDataGenerationConfigModel::headerData(int section,
             return tr("Name");
         case Description:
             return tr("Description");
+        case Scope:
+            return tr("Scope");
+        case BindingMode:
+            return tr("Binding Mode");
         case Enabled:
             return tr("Enabled");
         case Version:

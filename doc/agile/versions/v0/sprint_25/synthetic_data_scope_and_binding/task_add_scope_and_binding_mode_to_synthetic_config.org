@@ -20,32 +20,77 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give =market_data_generation_config= the two orthogonal primitives the
+parent story needs: a =scope= column (system/tenant/party, sharing
+radius) and a =binding_mode= column (bound/sandboxed, authority), plus
+a database-level guard so at most one enabled =bound= config can ever
+cover the same scope at once.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- Entity model, SQL schema, and generated C++ carry scope + binding_mode
-- Activation validation rejects narrower-scope bound conflicts with a clear error
-- compass build and rat pass
+- [X] Entity model, SQL schema, and generated C++ carry scope + binding_mode
+- [X] Activation validation rejects narrower-scope bound conflicts with a clear error
+- [X] compass build and rat pass
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Added two hand-written domain enums (=domain::scope=,
+  =domain::binding_mode=) in =ores.synthetic.api=, following the
+  =domain::asset_class= precedent (=ores.marketdata.api=) -- plain C++
+  enum classes, no codegen enum-model facet in use yet for this
+  component.
+- Extended =ores.synthetic.market_data_generation_config.org=: made
+  =party_id= nullable (=std::optional<uuid>=), set
+  =:nullable_tenant_id: true= (tenant scope's =tenant_id= can now be
+  null for system-scope rows), added =scope= and =binding_mode= as
+  =text=/=is_enum= columns with generator blocks (both always generate
+  =party=/=bound= -- the per-column generator has no way to coordinate
+  =scope= with =party_id='s nullability, so tenant/system-scope rows
+  are created explicitly, not via the synthetic generator).
+- Regenerated the entity's full supported set via
+  =compass codegen entity generate market_data_generation_config=.
+- Qt Columns (list model) needed a =formatter= for both new columns --
+  the Qt codegen's =string= column type assumes the C++ field actually
+  is a =std::string= and calls =QString::fromStdString()= directly on
+  it, which doesn't compile against an enum. Added
+  =ores.qt/ScopeLabel.hpp= / =BindingModeLabel.hpp= (small hand-written
+  formatter functions, mirroring the existing
+  =ores.qt/ProcessTypeLabel.hpp= pattern) and wired them via the
+  Columns table's =formatter=/=formatter_include= columns.
+- The reject-at-activation conflict check is cross-row logic, not a
+  per-column FK validation, so it doesn't fit the =Insert trigger /
+  Validations= table mechanism. Used the paste-block mechanism instead
+  (=:implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e=, the same
+  injection point =ores.refdata.business_unit= uses for its
+  cross-column level check) to hand-write a symmetric scope-overlap
+  predicate directly in the insert trigger, positioned before the
+  version-management block so it runs against the still-active prior
+  row and can exclude it by =id=.
+- Verified live: recreated the DB, inserted an enabled tenant-scope
+  bound config, confirmed a conflicting party-scope bound insert for
+  the same tenant is rejected with the expected error, and confirmed a
+  =sandboxed= config for the same tenant/party inserts cleanly
+  (sandbox never participates in the check).
 
 * Notes
+
+- Deliberately did *not* touch Detail fields (the create/edit dialog)
+  for =scope=/=binding_mode= -- no combo-box widget precedent exists
+  yet in this codebase for an enum field, and setting these explicitly
+  through the UI isn't needed until the ACME consolidation task, which
+  can create the tenant-scoped config directly. Follow-up task should
+  revisit if hand-editing scope becomes a real workflow need.
 
 * Test Scenarios
 
@@ -71,3 +116,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=market_data_generation_config= now carries =scope= (system/tenant/party)
+and =binding_mode= (bound/sandboxed) end-to-end -- entity, SQL schema,
+domain struct, mapper, generator, and Qt list model -- with =party_id=
+and =tenant_id= nullable to match. A database trigger rejects enabling
+a =bound= config that conflicts with another already-enabled =bound=
+config covering an equal-or-wider scope; =sandboxed= configs are
+exempt. Verified live against a recreated DB: tenant-scope vs.
+party-scope conflict correctly rejected, sandboxed insert for the same
+tenant/party correctly allowed. =compass build= and the
+=ores.synthetic.*=/=ores.qt.tests= suites pass.

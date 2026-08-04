@@ -15,8 +15,13 @@
 
 A top-level container that owns one or more typed sub-configurations (FX spot
 now; vol surface, interest-rate curves later). It is the recipe for how
-synthetic market data is produced. Scoped to a tenant and a party so each
-party manages its own configurations and its own generated data.
+synthetic market data is produced. Carries two orthogonal axes: =scope=
+(system/tenant/party) decides the sharing radius -- who consumes the same
+generated data -- and =binding_mode= (bound/sandboxed) decides whether
+that data is authoritative for real feed consumers or reachable only by
+explicit selection. =tenant_id= and =party_id= are populated per scope
+level: system leaves both null, tenant sets =tenant_id= only, party sets
+both.
 
 * Flags
 :PROPERTIES:
@@ -40,17 +45,57 @@ Surrogate UUID uniquely identifying this configuration.
 ** party_id
 :PROPERTIES:
 :type:     uuid
-:cpp_type: boost::uuids::uuid
-:nullable: false
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
 :END:
 
-Owning party (legal entity) this configuration belongs to. Not a natural
-key: a party can legitimately own several containers (e.g. "Basic" and
-"Realistic" published from different DQ datasets), so no uniqueness is
-enforced beyond the surrogate =id=.
+Owning party (legal entity) this configuration belongs to, when =scope=
+is =party=. Null for =tenant=/=system= scope. Not a natural key: a party
+can legitimately own several containers (e.g. "Basic" and "Realistic"
+published from different DQ datasets), so no uniqueness is enforced
+beyond the surrogate =id=.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
+#+end_src
+
+** scope
+:PROPERTIES:
+:type:          text
+:cpp_type:      domain::scope
+:is_enum:       true
+:nullable:      false
+:default_value: party
+:END:
+
+Sharing radius: who consumes the same generated data. =system= leaves
+both =tenant_id= and =party_id= null, =tenant= sets =tenant_id= only,
+=party= sets both. Orthogonal to =binding_mode=.
+
+#+begin_src cpp :name generator
+// Always party-scoped in generated test data, matching the party_id
+// generator above always producing a value -- a system/tenant-scoped
+// row would need a null party_id, which this per-column generator has
+// no way to coordinate with. Real tenant/system-scoped configs are
+// created explicitly, not through the synthetic data generator.
+domain::scope::party
+#+end_src
+
+** binding_mode
+:PROPERTIES:
+:type:          text
+:cpp_type:      domain::binding_mode
+:is_enum:       true
+:nullable:      false
+:default_value: bound
+:END:
+
+Whether this configuration's generated data is authoritative for real
+feed consumers (=bound=) or reachable only by explicit selection
+(=sandboxed=, never resolved into the bound feed). Orthogonal to =scope=.
+
+#+begin_src cpp :name generator
+domain::binding_mode::bound
 #+end_src
 
 ** name
@@ -113,6 +158,7 @@ std::nullopt
 ** Flags
 :PROPERTIES:
 :tablename: ores_synthetic_market_data_generation_configs_tbl
+:nullable_tenant_id: true
 :END:
 
 * Validation function
@@ -120,6 +166,47 @@ std::nullopt
 :tenant_scope: both
 :order_by:     id
 :END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+Cross-row conflict check (not a per-column FK validation, so it does not
+fit the table above): at most one enabled =bound= config may be active
+per scope. Reject-at-activation, not resolve-at-read -- see the story's
+=Decisions= for why (compass show 9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277).
+=sandboxed= configs never participate; they are excluded from the check
+entirely.
+
+#+begin_src sql :name reject_conflicting_bound_scope :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    -- At most one enabled bound config per scope. Reject-at-activation:
+    -- ambiguity must never reach a consumer, so a narrower-scope config
+    -- cannot be enabled while a wider (or equal) one already covers it --
+    -- the caller must explicitly supersede (disable/retire) it first.
+    -- sandboxed configs never participate; they cannot conflict.
+    if NEW.enabled and NEW.binding_mode = 'bound' then
+        if exists (
+            select 1 from ores_synthetic_market_data_generation_configs_tbl
+            where id != NEW.id
+              and enabled = true
+              and binding_mode = 'bound'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and (
+                  NEW.scope = 'system' or scope = 'system'
+                  or (NEW.scope = 'tenant' and scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
+                  or (scope = 'tenant' and NEW.scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
+                  or (NEW.scope = 'party' and scope = 'party' and tenant_id = NEW.tenant_id and party_id = NEW.party_id)
+              )
+        ) then
+            raise exception 'Conflicting bound synthetic config: another enabled bound config already covers this scope. Supersede (disable or retire) it before activating this one.'
+                using errcode = '23514';
+        end if;
+    end if;
+
+#+end_src
 
 * C++
 
@@ -139,6 +226,8 @@ std::nullopt
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include "ores.synthetic.api/domain/binding_mode.hpp"
+#include "ores.synthetic.api/domain/scope.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
@@ -198,11 +287,13 @@ std::nullopt
 
 *** Columns (Qt model)
 
-| enum_name   | field       | header      | type      | width |
-|-------------+-------------+-------------+-----------+-------|
-| Name        | name        | Name        | string    | 200   |
-| Description | description | Description | string    | 300   |
-| Enabled     | enabled     | Enabled     | bool      | 80    |
-| Version     | version     | Version     | int       | 80    |
-| ModifiedBy  | modified_by | Modified By | string    | 120   |
-| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+| enum_name   | field        | header       | type      | width | formatter        | formatter_include              |
+|-------------+--------------+--------------+-----------+-------+-------------------+---------------------------------|
+| Name        | name         | Name         | string    | 200   |                   |                                 |
+| Description | description  | Description  | string    | 300   |                   |                                 |
+| Scope       | scope        | Scope        | string    | 90    | scopeLabel        | ores.qt/ScopeLabel.hpp          |
+| BindingMode | binding_mode | Binding Mode | string    | 100   | bindingModeLabel  | ores.qt/BindingModeLabel.hpp    |
+| Enabled     | enabled      | Enabled      | bool      | 80    |                   |                                 |
+| Version     | version      | Version      | int       | 80    |                   |                                 |
+| ModifiedBy  | modified_by  | Modified By  | string    | 120   |                   |                                 |
+| RecordedAt  | recorded_at  | Recorded At  | timestamp | 150   |                   |                                 |

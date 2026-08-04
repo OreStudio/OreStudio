@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
@@ -41,6 +42,15 @@ namespace ores::marketdata::domain {
  *
  * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
  * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ *
+ * derivation_kind/derivation_config_id/derivation_config_version mark
+ * whether this series is directly observed (the sentinel OBSERVED) or
+ * derived by a named mechanism (e.g. IR_CURVE_BOOTSTRAP,
+ * CRM_DERIVATION) -- so any published series answers "was this observed
+ * or computed, and by what" without guessing from the source tag on its
+ * observations. Per-observation lineage (which source series/as-of a
+ * specific derived point came from) is a separate concern, tracked by
+ * observation_lineage, not this catalog-level marker.
  */
 struct market_series final {
     /**
@@ -97,6 +107,31 @@ struct market_series final {
      * false when it is curve/surface/matrix data.
      */
     bool is_scalar = false;
+
+    /**
+     * @brief References derivation_kind.code -- whether this series is directly observed (the
+     * sentinel OBSERVED, the default) or derived by a named mechanism (IR_CURVE_BOOTSTRAP,
+     * CRM_DERIVATION, ...). Paired with derivation_config_id/derivation_config_version: a row's own
+     * derivation_kind is the discriminator that says whether those two fields are meaningful or
+     * hold their nil/zero sentinel.
+     */
+    std::string derivation_kind = "OBSERVED";
+
+    /**
+     * @brief The recipe/config that produced this series, when derived --
+     * ores_utility_nil_uuid_fn() (the sentinel, not null) when derivation_kind is 'OBSERVED'.
+     * Deliberately not a hard FK: the table this id resolves against depends on derivation_kind
+     * (the IR curve bootstrap config for IR_CURVE_BOOTSTRAP, the CRM topology config for
+     * CRM_DERIVATION), so it is a soft, self-describing reference, the same shape ir_curve_tick
+     * already uses for its own producer/config identity.
+     */
+    boost::uuids::uuid derivation_config_id = boost::uuids::nil_uuid();
+
+    /**
+     * @brief The derivation config's version this series was produced under -- 0 (the sentinel)
+     * when derivation_kind is 'OBSERVED'.
+     */
+    int derivation_config_version = 0;
 
     /**
      * @brief Username of the person who last modified this market series.

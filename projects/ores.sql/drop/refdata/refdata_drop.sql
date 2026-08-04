@@ -126,6 +126,10 @@
 \ir ./refdata_instrument_codes_drop.sql
 \ir ./refdata_asset_class_codes_notify_trigger_drop.sql
 \ir ./refdata_asset_class_codes_drop.sql
+
+-- Derivation kinds: after marketdata's market_series (which references it via validation function).
+\ir ./refdata_derivation_kinds_notify_trigger_drop.sql
+\ir ./refdata_derivation_kinds_drop.sql
 \ir ./refdata_purpose_types_notify_trigger_drop.sql
 \ir ./refdata_purpose_types_drop.sql
 \ir ./refdata_party_id_schemes_notify_trigger_drop.sql

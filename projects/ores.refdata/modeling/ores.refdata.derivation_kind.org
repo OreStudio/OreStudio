@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 6FA21D8B-F95A-47BE-BD16-26048798A164
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.refdata.derivation_kind
+#+description: Reference data table classifying how a published market_series was produced -- directly observed, or derived by a named mechanism (curve bootstrap, CRM triangulation, ...).
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: derivation_kind
+#+entity_plural: derivation_kinds
+#+entity_title: Derivation Kind
+#+brief: Classifies a market_series as directly observed or derived by a named mechanism.
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+Reference data table defining the valid =market_series.derivation_kind=
+values: the sentinel =OBSERVED= (the default case -- a directly
+published tick, no derivation involved) plus a named value per
+derivation mechanism (=IR_CURVE_BOOTSTRAP=, =CRM_DERIVATION=, ...).
+=OBSERVED= exists so =market_series.derivation_kind= can stay a
+required, FK-validated column rather than nullable free text, the same
+pattern [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][curve_role.NONE]] already establishes for
+=instrument_code.curve_role=. Deliberately generic and not
+curve-specific: a =market_series= row whose =derivation_kind <>
+'OBSERVED'= carries a =derivation_config_id=/=derivation_config_version=
+pointing at the recipe that produced it (the bootstrap config for
+=IR_CURVE_BOOTSTRAP=, the CRM topology config for =CRM_DERIVATION=),
+letting any published point answer "was this observed or computed, and
+by what" without guessing from the =source= string. Managed by the
+system tenant, like other refdata code tables.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique derivation kind code.
+
+Examples: 'OBSERVED', 'IR_CURVE_BOOTSTRAP', 'CRM_DERIVATION'.
+
+#+begin_src cpp :name generator
+std::string("DerivationKind")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the derivation kind.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Derivation"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the derivation kind.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_derivation_kinds_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_derivation_kind_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:has_batch_remove:   true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: kind
+:entity_plural_short:   kinds
+:entity_singular_words: derivation kind
+:entity_plural_words:   derivation kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: dk
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]] -- the entity whose NONE-sentinel pattern this follows.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

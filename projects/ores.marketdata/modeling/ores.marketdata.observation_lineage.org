@@ -1,0 +1,294 @@
+:PROPERTIES:
+:ID: B900C531-535D-48CA-97E7-02CCE556A70B
+:ores.cpp.qt.enabled: false
+:END:
+#+title: ores.marketdata.observation_lineage
+#+description: Codegen entity model for the marketdata observation_lineage table; per-observation provenance for a derived (non-OBSERVED) market_observation generation.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: :model:entity:marketdata:
+#+entity_singular: observation_lineage
+#+entity_plural: observation_lineages
+#+entity_title: Observation Lineage
+#+brief: Per-observation provenance -- which config/version/source produced a derived observation's generation.
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+Per-observation provenance for a *derived* =market_observation= row: which
+derivation config/version produced it, and which upstream source
+series/as-of it read. Written only alongside a derived observation --
+never for the common =OBSERVED= case, and never as a column on
+=market_observations_tbl= itself (a TimescaleDB hypertable explicitly
+documented as carrying no audit columns because tick-level volumes make
+that impractical). A row's existence *is* the "derived" marker.
+
+Deliberately generic, not curve-specific: this is what lets CRM's own
+derived-cross publishing (currently pull-only -- see the CRM
+architecture decision to never broadcast the full derived set as
+ticks) reuse this table unchanged whenever it starts persisting,
+stamping =derivation_kind= to ='CRM_DERIVATION'= exactly as the IR
+curve bootstrapper stamps it to ='IR_CURVE_BOOTSTRAP'=.
+
+Standard bitemporal entity (GIST exclusion, soft-update/delete
+triggers), not a hypertable: unlike =market_observations=, lineage rows
+are written only for the minority of observations that are derived, so
+tick-level volume concerns that justify =market_observations='s own
+hypertable/no-audit-columns treatment do not apply here. A rerun of a
+derivation over the same tenor/point natural key closes the prior
+generation's lineage row and inserts a new one -- the same soft-update
+convention every other bitemporal entity in this codebase already
+gets, mirroring (not literally reusing) how =market_observations=
+itself handles a rerun.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:has_tenant_id: true
+:natural_keys_composite_name: party_series_obs_point
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this lineage row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Party that owns the observation this lineage row describes. Included in
+the natural key because =market_observations_tbl= itself carries
+=party_id= as part of its own current-row uniqueness index -- omitting
+it here would leave this table unable to uniquely identify the
+observation it describes whenever a series isn't 1:1 with a single
+party.
+
+Set server-side from the authenticated session. Enforced by RLS.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Reference to =ores_marketdata_market_series_tbl(id)= -- the derived
+series this observation belongs to.
+
+** observation_datetime
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:natural_key: true
+:END:
+
+The =market_observation= row's own =observation_datetime= this lineage
+row describes.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** point_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default_value: ""
+:natural_key: true
+:END:
+
+Tenor or compound surface identifier, matching the =market_observation=
+row's own =point_id=. Unlike =market_observations.point_id= (which is
+genuinely nullable there), this column is =not null= with an empty-string
+sentinel for scalar series -- a stricter rule than =market_observations=,
+not a literal match of its schema.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** derivation_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The derivation config (soft reference; table depends on the owning
+=market_series.derivation_kind=) that produced this observation.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** derivation_config_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The derivation config's version this observation was produced under.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 10)
+#+end_src
+
+** source_as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+The upstream source data's as-of timestamp this derivation read (e.g.
+the raw instrument grid's as-of for a curve bootstrap, or the oldest
+contributing driver tick's timestamp for a CRM triangulation).
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** source_series_ids
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON array of the upstream =market_series= ids this
+observation was derived from (e.g. the raw series for a Funding curve
+bootstrap; the raw series plus the discount curve's own output series
+for a Projection curve bootstrap; the walked driver series for a CRM
+triangulation).
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_marketdata_observation_lineages_tbl
+:END:
+
+The top-level =* Flags= drawer's =natural_keys_composite_name:
+party_series_obs_point= overrides the default auto-concatenated
+natural-key index name
+(=party_id_series_id_observation_datetime_point_id=, 62 characters
+before the =observation_lineages_=/=_uniq_idx= prefix/suffix), which
+exceeds PostgreSQL's 63-byte =NAMEDATALEN= identifier limit and would
+otherwise be silently truncated.
+
+** Checks
+
+| expression                                     |
+|-------------------------------------------------|
+| jsonb_array_length("source_series_ids") > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: observation_lineage
+:entity_plural_short:   observation_lineages
+:entity_singular_words: observation lineage
+:entity_plural_words:   observation lineages
+:END:
+
+*** read_latest_by_observation
+:PROPERTIES:
+:ID: 5AB79B1A-1310-48D9-B4CA-C35D41DE45C3
+:END:
+
+Reads the current lineage row for one observation, identified by
+=series_id=, =observation_datetime=, and =point_id= -- the "which
+config/version/source produced this" lookup the shared derivation-lineage
+design calls for, in one round trip.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::observation_lineage> read_latest_by_observation(context ctx,
+    const boost::uuids::uuid& series_id,
+    std::chrono::system_clock::time_point observation_datetime,
+    const std::string& point_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::observation_lineage>
+observation_lineage_repository::read_latest_by_observation(context ctx,
+    const boost::uuids::uuid& series_id,
+    std::chrono::system_clock::time_point observation_datetime,
+    const std::string& point_id) {
+    using ores::platform::time::datetime;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto odt_str = datetime::to_iso8601_utc(observation_datetime);
+
+    const auto query = sqlgen::read<std::vector<observation_lineage_entity>> |
+                       where("tenant_id"_c == tid && "series_id"_c == sid &&
+                             "observation_datetime"_c == odt_str &&
+                             "point_id"_c == point_id &&
+                             "valid_to"_c == max.value()) |
+                       order_by("id"_c);
+    const auto results = execute_read_query<observation_lineage_entity, domain::observation_lineage>(
+        ctx, query,
+        [](const auto& entities) { return observation_lineage_mapper::map(entities); },
+        lg(), "Reading latest observation lineage by observation");
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ol
+:END:
+
+* See also
+
+- [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][Market Series]] -- carries the catalog-level derivation_kind marker this table's rows detail.
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][Market Observation]] -- the table each lineage row describes one generation of.

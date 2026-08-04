@@ -23,6 +23,8 @@
 \ir ./marketdata_market_series_notify_trigger_create.sql
 \ir ./marketdata_market_observations_create.sql
 \ir ./marketdata_market_observations_notify_trigger_create.sql
+\ir ./marketdata_observation_lineages_create.sql
+\ir ./marketdata_observation_lineages_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_feed_bindings_create.sql

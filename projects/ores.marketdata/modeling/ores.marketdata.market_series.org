@@ -22,6 +22,15 @@ exclusion is appropriate.
 Every ORE market data key follows the skeleton =TYPE / METRIC / QUALIFIER=;
 =asset_class= and =series_subclass= carry the coarse taxonomy for filtering.
 
+=derivation_kind=/=derivation_config_id=/=derivation_config_version= mark
+whether this series is directly observed (the sentinel =OBSERVED=) or
+derived by a named mechanism (e.g. =IR_CURVE_BOOTSTRAP=,
+=CRM_DERIVATION=) -- so any published series answers "was this observed
+or computed, and by what" without guessing from the =source= tag on its
+observations. Per-observation lineage (which source series/as-of a
+specific derived point came from) is a separate concern, tracked by
+=observation_lineage=, not this catalog-level marker.
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -149,6 +158,60 @@ Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).
 True when the series has no point dimension (e.g. an FX spot rate or a single
 fixing), false when it is curve/surface/matrix data.
 
+** derivation_kind
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "OBSERVED"
+:END:
+
+References =derivation_kind.code= -- whether this series is directly
+observed (the sentinel =OBSERVED=, the default) or derived by a named
+mechanism (=IR_CURVE_BOOTSTRAP=, =CRM_DERIVATION=, ...). Paired with
+=derivation_config_id=/=derivation_config_version=: a row's own
+=derivation_kind= is the discriminator that says whether those two
+fields are meaningful or hold their nil/zero sentinel.
+
+#+begin_src cpp :name generator
+std::string("OBSERVED")
+#+end_src
+
+** derivation_config_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      false
+:default_value: boost::uuids::nil_uuid()
+:END:
+
+The recipe/config that produced this series, when derived --
+=ores_utility_nil_uuid_fn()= (the sentinel, not null) when
+=derivation_kind= is ='OBSERVED'=. Deliberately not a hard FK: the table
+this id resolves against depends on =derivation_kind= (the IR curve
+bootstrap config for =IR_CURVE_BOOTSTRAP=, the CRM topology config for
+=CRM_DERIVATION=), so it is a soft, self-describing reference, the same
+shape =ir_curve_tick= already uses for its own producer/config identity.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+** derivation_config_version
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default:       0
+:END:
+
+The derivation config's version this series was produced under -- =0=
+(the sentinel) when =derivation_kind= is ='OBSERVED'=.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
 * SQL
 
 ** Flags
@@ -165,12 +228,15 @@ fixing), false when it is curve/surface/matrix data.
 | "qualifier" <> ''   |
 | "asset_class" <> '' |
 | "series_subclass" <> '' |
+| ("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0) |
 
+* Insert trigger
 ** Validations
 
-| column      | validation_function                        | nullable |
-|-------------+--------------------------------------------+----------|
-| asset_class | ores_refdata_validate_asset_class_fn       | false    |
+| column          | validation_function                        |
+|-----------------+---------------------------------------------|
+| asset_class     | ores_refdata_validate_asset_class_fn       |
+| derivation_kind | ores_refdata_validate_derivation_kind_fn   |
 
 * C++
 
@@ -247,6 +313,7 @@ market_series_repository::read_latest_by_type(context ctx, const std::string& se
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/nil_generator.hpp>
 #include <chrono>
 #include <string>
 #+end_src

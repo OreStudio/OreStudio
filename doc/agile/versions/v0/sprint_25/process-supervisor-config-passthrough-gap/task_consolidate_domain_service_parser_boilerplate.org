@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :controller:process-supervisor:config:tech-debt:codegen:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/consolidate-domain-service-parser-boilerplate
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ New process-wide config knobs (and new services) get the shared parsing behaviou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -39,11 +39,63 @@ New process-wide config knobs (and new services) get the shared parsing behaviou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Added ores::service::config::standard_service_options (new
+  ores.service component): make_options_description(log_file,
+  extra_options={}) composes common/logging/database/nats +
+  register_shared_domain(); parse(od, arguments, app_name) does the
+  command-line + environment two-store parse; read_options(vm) returns
+  the three sub-options; wants_help/wants_version check the standard
+  flags. This is now the single call site for
+  nats_configuration::register_shared_domain() for every migrated
+  service.
+- Migrated all 17 domain-service parser.cpp files (iam, dq, refdata,
+  assets, scheduler, synthetic, variability, workflow, workspace,
+  analytics via a scripted transform for the 8 "no extra options"
+  cases; compute, marketdata, ore, reporting, telemetry, trading, iam
+  by hand for their app-specific option groups). Each file shrank from
+  ~136-149 lines to ~90-115, keeping only what's genuinely
+  service-specific: tagline, usage line, product name, extra options,
+  and the final options-struct assembly.
+- Updated the codegen source
+  (ores.cpp.service-app.config_parser_impl.org) to scaffold against
+  standard_service_options too, with a comment showing how to add
+  app-specific options; re-tangled to regenerate
+  cpp_service_config_parser.cpp.mustache.
+- Found and fixed a real pre-existing regression surfaced by rebuilding
+  and retesting the fleet: local (non-CI) ctest loads the whole
+  developer .env into every test binary's environment (see the
+  top-level CMakeLists.txt), including the shared ORES_NATS_* vars the
+  mapper fallback-tier task made every service genuinely read. 11
+  "parse_defaults_returns_expected_values" tests asserted hardcoded
+  NATS defaults with empty argv, which broke as soon as those vars were
+  visible -- true regardless of my refactor, since register_shared_domain()
+  was already being called per-service before this task; it just hadn't
+  been exercised by a clean ctest run yet. Fixed by adding
+  ores::testing::scoped_env_unset (new RAII helper in ores.testing,
+  built on ores::platform::environment::environment as instructed --
+  no raw getenv/setenv calls) and using it in each affected test to
+  clear the three shared vars before asserting defaults.
+- Regenerated component_files.cmake across the tree via
+  regenerate_cmake_component_files.py --all.
+- Verified: full compass build clean (100%, all targets); all 17
+  migrated services' --help/--version output verified byte-identical
+  to pre-migration behaviour (including app-specific extra options);
+  register_shared_domain() confirmed called from exactly one place for
+  the 17 migrated services (grep-verified); all previously-failing test
+  suites now green even with .env sourced (iam 30/12, dq 26/10, refdata
+  26/10, assets 26/10, scheduler 26/10, synthetic 72/25, variability
+  26/10, compute 26/10, reporting 26/10, telemetry 26/10, trading
+  26/10); ores.utility.tests 476/141, ores.nats.tests 55/28,
+  ores.marketdata.service.tests 37/10 all green.
 
 * Notes
+
+- http.server, wt.service, shell, compute.wrapper, and cli were
+  deliberately left out of this consolidation, per the acceptance
+  criteria -- each has enough genuine divergence (extra option groups,
+  no-db, Wt's =--= arg separator, shell's login args and lack of a
+  per-app DB block) to be evaluated separately rather than forced into
+  the shared helper.
 
 * Test Scenarios
 
@@ -69,3 +121,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped =ores::service::config::standard_service_options=, the single
+composition+parsing helper and the single call site for
+=nats_configuration::register_shared_domain()=. Migrated all 17 domain-service
+parsers to it, cutting each from ~140 lines to ~90-115 while preserving
+--help/--version output and app-specific extras byte-for-byte. Updated the
+codegen org source and re-tangled the mustache scaffold so new services get
+the same benefit. While rebuilding and retesting the fleet, found and fixed a
+genuine pre-existing regression from the mapper fallback-tier task: local
+ctest loads the whole .env into every test process, so 11 tests asserting
+hardcoded NATS defaults broke as soon as the shared vars became visible.
+Fixed with a new =ores::testing::scoped_env_unset= RAII helper built on
+=ores::platform::environment::environment=. Full build clean; all previously
+red suites green even with =.env= sourced. Known follow-up (raised as a new
+story per direct feedback): =scoped_env_unset= mutates real process-global
+environment state, which is not safe under parallel test execution within one
+process -- ores.platform needs an injectable environment-provider interface
+instead.

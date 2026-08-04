@@ -18,12 +18,8 @@
  *
  */
 #include "ores.telemetry.service/config/parser.hpp"
-#include "ores.database/config/database_configuration.hpp"
-#include "ores.logging/logging_configuration.hpp"
-#include "ores.nats/config/nats_configuration.hpp"
+#include "ores.service/config/standard_service_options.hpp"
 #include "ores.telemetry.service/config/parser_exception.hpp"
-#include "ores.utility/program_options/common_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
@@ -35,29 +31,14 @@ const std::string more_information("Try '--help' for more information.");
 const std::string product_version("ores.telemetry.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
-const std::string help_arg("help");
-const std::string version_arg("version");
 
 using boost::program_options::value;
-using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
 using ores::telemetry::service::config::options;
 using ores::telemetry::service::config::parser_exception;
 
 options_description make_options_description() {
-    using ores::database::database_configuration;
-    using ores::logging::logging_configuration;
-    using ores::utility::program_options::common_configuration;
-    using ores::nats::config::nats_configuration;
-
-    options_description r;
-    r.add(common_configuration::make_options_description());
-    r.add(logging_configuration::make_options_description("ores.telemetry.service.log"));
-    r.add(database_configuration::make_options_description());
-    r.add(nats_configuration::make_options_description());
-    nats_configuration::register_shared_domain();
-
     options_description monitor_opts("NATS monitoring options");
     monitor_opts.add_options()("nats-monitor-url",
                                value<std::string>()->default_value("http://localhost:8222"),
@@ -65,9 +46,10 @@ options_description make_options_description() {
         "nats-monitor-interval",
         value<std::uint32_t>()->default_value(30),
         "NATS monitoring poll interval in seconds");
-    r.add(monitor_opts);
 
-    return r;
+    using ores::service::config::standard_service_options;
+    return standard_service_options::make_options_description("ores.telemetry.service.log",
+                                                               monitor_opts);
 }
 
 void print_help(const options_description& od, std::ostream& info) {
@@ -94,33 +76,26 @@ void version(std::ostream& info) {
 
 std::optional<options> parse_arguments(const std::vector<std::string>& arguments,
                                        std::ostream& info) {
-    using ores::database::database_configuration;
-    using ores::logging::logging_configuration;
-    using ores::nats::config::nats_configuration;
+    using ores::service::config::standard_service_options;
 
     const auto od(make_options_description());
-    using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("TELEMETRY_SERVICE"));
+    const auto vm(standard_service_options::parse(od, arguments, "TELEMETRY_SERVICE"));
 
-    variables_map vm;
-    boost::program_options::store(
-        boost::program_options::command_line_parser(arguments).options(od).run(), vm);
-    boost::program_options::store(boost::program_options::parse_environment(od, name_mapper), vm);
-
-    if (vm.count(help_arg)) {
+    if (standard_service_options::wants_help(vm)) {
         print_help(od, info);
         return {};
     }
 
-    if (vm.count(version_arg)) {
+    if (standard_service_options::wants_version(vm)) {
         version(info);
         return {};
     }
 
+    const auto std_opts(standard_service_options::read_options(vm));
     options r;
-    r.logging = logging_configuration::read_options(vm);
-    r.nats = nats_configuration::read_options(vm);
-    r.database = database_configuration::read_options(vm);
+    r.logging = std_opts.logging;
+    r.nats = std_opts.nats;
+    r.database = std_opts.database;
     r.nats_monitor_url = vm["nats-monitor-url"].as<std::string>();
     r.nats_monitor_interval_seconds = vm["nats-monitor-interval"].as<std::uint32_t>();
     return r;

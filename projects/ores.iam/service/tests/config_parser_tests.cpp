@@ -20,6 +20,7 @@
 #include "ores.iam.service/config/parser.hpp"
 #include "ores.iam.service/config/parser_exception.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.testing/scoped_env_unset.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <stdexcept>
@@ -37,6 +38,12 @@ using namespace ores::iam::service::config;
 
 TEST_CASE("parse_defaults_returns_expected_values", tags) {
     auto lg(ores::logging::make_logger(test_suite));
+    // Local (non-CI) ctest loads the whole .env into the test process,
+    // including shared ORES_NATS_* vars the parser now genuinely reads --
+    // clear them so this test asserts real compiled-in defaults.
+    const ores::testing::scoped_env_unset env_guard(
+        {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
+
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

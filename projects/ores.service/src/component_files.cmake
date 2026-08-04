@@ -17,12 +17,14 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "config/standard_service_options.cpp"
     "service/request_context.cpp"
     "service/systemd_notify.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/config/standard_service_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/error_code.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"

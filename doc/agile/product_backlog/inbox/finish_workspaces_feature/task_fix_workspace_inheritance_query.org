@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 3B718FE6-7CE1-43E1-93D0-E1957A59106F
+:END:
+#+title: Task: Upgrade repository template: exact-match workspace_id to resolution-order inheritance
+#+description: The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities.
+#+type: task
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make single-parent workspace inheritance actually work. Today, every
+=has_workspace_id= entity filters with an exact-match predicate
+(=workspace_id == wid=); a workspace with a parent sees none of the
+parent's data. Upgrade =cpp_domain_type_repository.cpp.mustache= to
+generate the resolution-order query
+(=workspace_id = ANY(:resolution_order)= with =DISTINCT ON=
+deduplication, closest workspace wins) that
+=projects/ores.workspace/core/modeling/multi_workspace.org= already
+documents as the target design, and thread the resolution-order array
+through the C++ context/service layer to the repository call.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- =has_workspace_id= list/find queries use
+  =workspace_id = ANY(:resolution_order)= with =DISTINCT ON=
+  deduplication instead of exact match.
+- Resolution-order array is available end-to-end: computed once
+  (existing recursive CTE), threaded through =database::context=, and
+  reaches every regenerated repository call.
+- Manually verified: a child workspace with no local rows for an
+  entity correctly sees its parent's (or Live's) rows.
+- All 21 currently-covered entities regenerate cleanly and their
+  tests still pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

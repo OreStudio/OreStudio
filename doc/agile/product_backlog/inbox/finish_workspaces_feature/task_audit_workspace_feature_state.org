@@ -47,11 +47,11 @@ Blotter story) can be scoped from facts rather than assumption:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -74,6 +74,114 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+** Inventory: workspace_id in SQL vs. codegen model coverage
+
+46 production tables carry a =workspace_id= column (grep across
+=projects/ores.sql/create/{trading,refdata,reporting}/*_create.sql=).
+Of those, codegen model coverage breaks down as:
+
+| Coverage | Count | Mechanism |
+|----------+-------+-----------|
+| Raw =has_workspace_id: true= flag | 13 | =ores.trading= instrument/trade entities: balance_guaranteed_swap, callable_swap, cap_floor, fra, inflation_swap, knock_out_swap, rpa, swaption, vanilla_swap, trade, trade_identifier, lifecycle_event, plus =reporting.report_definition= |
+| =:profile: workspace-scoped-lookup= | 8 | =ores.refdata= convention lookups: cds, deposit, fra, ois, overnight_index, swap, zero conventions |
+| *No codegen model at all* | *25* | See below -- entirely hand-crafted or unmodelled |
+
+*** The 25 uncovered tables
+
+- =refdata_books=, =refdata_portfolios= -- have real codegen models
+  (=ores.refdata.book.org=, =ores.refdata.portfolio.org=) but *neither
+  declares* =has_workspace_id= or the profile, despite their SQL
+  tables carrying the column. This is genuine drift: the column was
+  hand-added to production SQL (during the original Sprint 17/18
+  workspace rollout, before these entities were verified under
+  codegen) and never backfilled into the model. Regenerating either
+  entity today would silently drop the column from the generated SQL
+  if anyone ran a raw regen without noticing.
+- ~20 =ores.trading= instrument sub-types (bond, every equity_*
+  variant, every fx_* variant, commodity, composite +
+  composite_legs, credit, scripted, swap_legs) -- *no codegen model
+  file exists at all* (confirmed: no matching =.org= under
+  =projects/ores.trading/modeling/=). These are entirely hand-crafted
+  C++ across domain/repository/service/Qt, independent of workspace
+  specifically -- a pre-existing "not yet brought under codegen" gap
+  that happens to also carry =workspace_id=.
+
+** Qt layer: no per-entity codegen flag exists -- and none is needed
+
+Checked every Qt template (=cpp_qt_*.mustache=) and the domain/
+repository/mapper/generator templates for any =workspace_id=/
+=has_workspace_id= reference. *Zero Qt templates reference workspace
+at all.* This initially looks like the gap the user's "much like page
+support" framing anticipated -- but it isn't, once the actual
+architecture is understood:
+
+Unlike pagination (which needs per-entity generated UI: page
+controls, row-count labels), workspace scoping is injected
+*transparently* at the network layer via a single shared mechanism
+(documented in
+=projects/ores.workspace/core/modeling/multi_workspace.org=):
+=WorkspaceContext= on the Qt session -> =EntityController='s MDI-area
+event filter -> =ClientManager= injects the =X-Workspace-Id= NATS
+header on every request. No entity-specific Qt code is needed for
+scoping to apply; every generated (or hand-crafted) Qt widget that
+goes through the standard =ClientManager= call path is already
+workspace-aware for free. The workspace chip/badge in window titles
+is likewise a shared mechanism in
+=EntityController::show_managed_window()=, not per-entity generated
+code.
+
+*Conclusion*: there is no missing "workspace widget" codegen flag to
+build. The per-entity thing that actually needs =has_workspace_id= is
+the *service/repository query layer* (so the =WHERE= clause actually
+filters by workspace) -- which already exists as a flag, just under-
+applied (see the 25 uncovered tables above).
+
+** The inheritance feature does not actually work yet, for any entity
+
+The =has_workspace_id= repository template
+(=cpp_domain_type_repository.cpp.mustache=) generates an *exact-match*
+predicate:
+
+#+begin_src cpp
+where("workspace_id"_c == wid && "valid_to"_c == max.value())
+#+end_src
+
+Not the resolution-order/inheritance query the architecture doc
+describes as the target design
+(=workspace_id = ANY(:resolution_order)= with =DISTINCT ON=
+deduplication). The architecture doc itself flags this
+(=multi_workspace.org=: "Phase 2 repositories currently use an
+exact-match... Phase 5 will upgrade these"), but Phase 5 was never
+done -- confirmed by reading the template directly, not just the doc.
+
+*This means the single-parent inheritance chain -- the headline
+feature of the whole workspace design (a child workspace transparently
+sees its parent's data) -- does not work for any codegen-generated
+entity today.* A workspace with a parent only sees its *own* local
+rows; nothing falls through to the parent. This is arguably the single
+biggest gap found in this audit, bigger than any per-entity coverage
+gap, because it affects every one of the 21 already-covered entities
+equally.
+
+** Reconciliation against the three known open codegen tasks
+
+- [[id:EF349D87-4D3A-4F98-A454-7DBB2A80E48B][Fix workspace entity model drift]] -- covers regenerating
+  =ores.workspace='s own model, not the 25-table gap found here (that
+  gap is in =ores.refdata=/=ores.trading=, not =ores.workspace=
+  itself). Does not cover the inheritance-query gap either.
+- [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] -- =has_party_id= flag +
+  restoring hand-crafted =workspace_service=/=repository=/=protocol=.
+  Orthogonal to this audit's findings; still needed as scoped.
+- [[id:C02D4D5F-F743-4390-A753-E10C47F5D0B4][Commission ores.qt.workspace into codegen]] -- Qt layer for the
+  workspace entity itself (managing workspaces), not the Qt layer of
+  workspace-*scoped* entities (which, per this audit, needs no
+  per-entity codegen work at all).
+- *Gap none of the three cover*: (a) backfilling =has_workspace_id=
+  (or the profile) onto =book=/=portfolio= and deciding whether the 20
+  hand-crafted trading-instrument sub-types get codegen models at all;
+  (b) upgrading the repository template to generate the
+  resolution-order inheritance query instead of exact-match.
 
 * Test Scenarios
 
@@ -100,3 +208,33 @@ via its "Verifies task" field.
 | 2 | #+pr:/PRs table set on the audit task while State is still BACKLOG -- #1831 is the docs-grooming PR, not the task's own future implementation PR. | task_audit_workspace_feature_state.org | Declined | Matches the same "scaffold/filing task records the PR that created it" pattern already used this session for the JWT hotfix's scaffold task (also recorded its filing PR while STARTED, later DONE) -- consistent with existing repo practice, not a new inconsistency. |
 
 * Result
+
+Audit complete. Headline findings (full detail in =* Notes=):
+
+1. Of 46 production tables carrying =workspace_id=, 21 have real
+   codegen coverage (13 via the raw flag, 8 via the
+   =workspace-scoped-lookup= profile) and *25 do not* -- including two
+   entities (=book=, =portfolio=) that have codegen models which
+   simply never got the flag added, and ~20 trading-instrument
+   sub-types with no codegen model at all.
+2. There is *no missing Qt codegen flag to build* -- workspace scoping
+   is already generic/shared at the network layer
+   (=WorkspaceContext=/=EntityController=/=ClientManager=), unlike
+   pagination. The "much like page support" framing doesn't apply to
+   the Qt layer; it applies to the service/repository layer, where
+   =has_workspace_id= already exists as a flag but is under-applied
+   (finding 1).
+3. *Biggest finding*: the =has_workspace_id= repository template
+   generates an exact-match =workspace_id == wid= predicate, not the
+   resolution-order/inheritance query
+   (=workspace_id = ANY(:resolution_order)=) the architecture doc
+   describes as the target design. Single-parent inheritance -- the
+   headline feature of the whole workspace concept -- does not
+   function for any entity today, codegen-generated or not.
+4. The three known open codegen tasks are all still valid and
+   orthogonal to what this audit found; none of them cover the
+   book/portfolio backfill, the trading-instrument coverage decision,
+   or the inheritance-query upgrade. Two new follow-up tasks filed for
+   these (see parent story's Tasks table).
+
+Distilled into the parent story's =* Decisions=.

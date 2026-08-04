@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 91ED2388-6CC8-433B-95E5-795C8D0D6346
+:END:
+#+title: Task: Backfill workspace_id coverage: book, portfolio, and decide on trading instrument sub-types
+#+description: book and portfolio have codegen models but never got has_workspace_id added despite their SQL tables carrying the column -- backfill the model flag and regenerate. Separately decide whether the ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) get codegen models at all, or stay hand-crafted -- this is a pre-existing not-yet-under-codegen gap, not workspace-specific, but their workspace_id handling is currently unverified either way.
+#+type: task
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the gap between what SQL actually has and what codegen models
+declare for =workspace_id=:
+
+1. =ores.refdata.book.org= and =ores.refdata.portfolio.org= both have
+   real codegen models but neither declares =has_workspace_id= (or the
+   =workspace-scoped-lookup= profile), despite =refdata_books_tbl= and
+   =refdata_portfolios_tbl= carrying the column in production. Add the
+   flag, regenerate, confirm zero-diff.
+2. Decide -- and record the decision -- on the ~20 hand-crafted
+   trading instrument sub-types (bond, every equity_* variant, every
+   fx_* variant, commodity, composite + composite_legs, credit,
+   scripted, swap_legs) that carry =workspace_id= in SQL but have no
+   codegen model at all: bring them under codegen (large, separate
+   effort) or explicitly accept them as permanently hand-crafted and
+   move on. Either way, verify their hand-written repository/service
+   code actually filters by =workspace_id= correctly today.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- =book= and =portfolio= models declare workspace-awareness and
+  regenerate with zero diff against production SQL.
+- Explicit written decision on the ~20 uncovered trading instrument
+  sub-types, recorded in this task's =* Result= and the parent story's
+  =* Decisions=.
+- If staying hand-crafted: confirmed (by reading the actual
+  repository/service code, not assumed) that each correctly filters by
+  =workspace_id=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

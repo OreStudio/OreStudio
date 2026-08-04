@@ -161,6 +161,17 @@ std::nullopt
 :nullable_tenant_id: true
 :END:
 
+** Checks
+
+Ties =scope= to =tenant_id=/=party_id= nullability so the invariant the
+conflict-guard trigger (and the RLS policies) rely on can never be
+violated by a malformed row -- system leaves both null, tenant sets
+=tenant_id= only, party sets both.
+
+| expression                                                                                                    |
+|----------------------------------------------------------------------------------------------------------------|
+| (scope = 'system' and tenant_id is null and party_id is null) or (scope = 'tenant' and tenant_id is not null and party_id is null) or (scope = 'party' and tenant_id is not null and party_id is not null) |
+
 * Validation function
 :PROPERTIES:
 :tenant_scope: both

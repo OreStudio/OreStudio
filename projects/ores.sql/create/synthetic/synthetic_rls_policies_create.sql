@@ -32,24 +32,32 @@
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_market_data_generation_configs_tbl enable row level security;
 
+-- A NULL tenant_id/party_id is a wider-scope row (system/tenant scope --
+-- see the scope column), not an unscoped or orphaned one: it must stay
+-- visible to every session in that wider radius, not be filtered out by
+-- an equality/ANY() check that a NULL can never satisfy.
 create policy market_data_generation_configs_tenant_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
+    tenant_id is null
+    or tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
+    tenant_id is null
+    or tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 create policy market_data_generation_configs_party_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
+    party_id is null
+    or ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
+    party_id is null
+    or ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 

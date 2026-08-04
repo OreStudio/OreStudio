@@ -58,7 +58,8 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ((scope = 'system' and tenant_id is null and party_id is null) or (scope = 'tenant' and tenant_id is not null and party_id is null) or (scope = 'party' and tenant_id is not null and party_id is not null))
 );
 
 -- Version uniqueness for optimistic concurrency

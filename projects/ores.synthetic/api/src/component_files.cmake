@@ -50,6 +50,7 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/binding_mode.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/curve_template_validation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/folder_json_io.hpp"
@@ -78,6 +79,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/market_data_generation_config_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/organisation_generation_options.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/scope.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/synthetic_catalog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.api/domain/yield_curve_process_type_json_io.hpp"

@@ -27,10 +27,17 @@ against the actual generated struct. =presentation= profile.
 /Scope of this first cut/ (see the story's history-field-mapper task
 Notes for the full list): flat entities only (no
 =has_identity_group=/=has_audit_group= — none of the currently-covered
-=ores.refdata= entities use them); enum columns not yet rendered
-(=is_enum=, none present in the covered entities today); primary key
-supports =string= and =uuid= only; natural keys support =string=,
-=uuid=, =date=, =timestamp=, and =int=.
+=ores.refdata= entities use them); primary key supports =string= and
+=uuid= only; natural keys support =string=, =uuid=, =date=,
+=timestamp=, and =int=. Enum columns render via =rfl::enum_to_string=
+(=render_is_enum=, derived from the raw =is_enum= flag rather than the
+nullable-narrowed =is_enum= column flag, matching every other
+=render_is_*= flag's ground-truth-over-derived-flag rule above) --
+added for the
+=ores.synthetic.market_data_generation_config= =scope=/=binding_mode=
+columns (Synthetic data scope and binding story,
+compass show 9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277). Nullable enum
+columns are not yet covered.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -54,6 +61,9 @@ The full template source. Edit here and re-tangle with
 {{#has_date_natural_keys}}
 #include <format>
 {{/has_date_natural_keys}}
+{{#has_enum_columns}}
+#include <rfl/enums.hpp>
+{{/has_enum_columns}}
 
 namespace ores::{{component}}::presentation {
 
@@ -136,6 +146,9 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{#render_is_double}}
     fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{name}})});
 {{/render_is_double}}
+{{#render_is_enum}}
+    fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.{{name}})});
+{{/render_is_enum}}
 {{/is_identity_group_column}}
 {{/columns}}
 {{#has_audit_columns}}

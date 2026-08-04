@@ -29,7 +29,7 @@ No trace of the decommissioned controller process/architecture remains in the DB
 | State        | BACKLOG                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:ED259270-CEAF-4456-A6C9-8974E9E5B8B2][Wire systemd generate to the codegen model and strip redundant NATS CLI threading]] -- the SQL schema can't be dropped while systemd_generate.py still queries it. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-05                               |
 

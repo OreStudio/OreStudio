@@ -29,7 +29,7 @@ No ORES_CONTROLLER_SERVICE_* environment variable exists anywhere once the contr
 | State        | BACKLOG                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:26ABA6BB-85F6-4AE8-8592-A1292FEDBB3D][Decommission the legacy controller SQL schema]] -- rename only makes sense once the rest of the controller-named surface is gone. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-05                               |
 

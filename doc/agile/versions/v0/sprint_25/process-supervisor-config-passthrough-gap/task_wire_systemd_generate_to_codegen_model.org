@@ -29,7 +29,7 @@ compass systemd generate has zero DB dependency and every service picks up its N
 | State        | BACKLOG                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:79F3E3F0-1F11-4A1D-AFB0-8CF9DD6C9972][Merge service deployment config into service_registry.org as a new aspect]] -- needs the deployment aspect to exist before systemd_generate.py can read it. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-05                               |
 

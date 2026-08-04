@@ -8,7 +8,7 @@
 #+filetags: :jwt_test_ttl_too_short:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/jwt-test-ttl-too-short
-#+pr:
+#+pr: 1823
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -60,6 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1823][#1823]] | [agile] Close hotfix story, file clang-format retrospective task |
 | [[https://github.com/OreStudio/OreStudio/pull/1820][#1820]] | [iam] Fix flaky mint_token_respects_the_requested_ttl (1s JWT TTL) |
 
 * Review

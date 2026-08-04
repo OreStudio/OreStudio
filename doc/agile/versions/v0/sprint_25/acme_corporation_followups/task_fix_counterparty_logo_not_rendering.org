@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-counterparty-logo-not-rendering
-#+pr:
+#+pr: 1824
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1824][#1824]] | [qt] Fix counterparty/party logo not rendering in detail dialog |
 
 * Review
 

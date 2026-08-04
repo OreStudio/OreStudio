@@ -62,7 +62,7 @@ struct database_options final {
     /**
      * @brief Number of connections in this service's connection pool.
      */
-    int pool_size = 4;
+    int pool_size = 2;
 };
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);

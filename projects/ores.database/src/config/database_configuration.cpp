@@ -59,7 +59,7 @@ boost::program_options::options_description database_configuration::make_options
         "Required for multi-tenant database operations. "
         "Also reads from ORES_TENANT env var.")(
         "db-pool-size",
-        value<int>()->default_value(4),
+        value<int>()->default_value(2),
         "Number of connections in this service's connection pool. "
         "Reads from ORES_<APP>_DB_POOL_SIZE env var.");
 

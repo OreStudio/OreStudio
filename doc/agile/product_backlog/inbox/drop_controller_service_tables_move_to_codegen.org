@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 6E3720AB-A07B-42B4-B076-0A0DF22275C9
+:END:
+#+title: Drop controller_service_* tables, move service registry to codegen model
+#+description: The decommissioned ores.controller left behind ores_controller_service_definitions_tbl/dependencies_tbl, now used only as the DB-backed data source for systemd unit generation; this static data belongs in a codegen model, not a runtime table.
+#+type: capture
+#+level: cross
+#+filetags: :controller:systemd:codegen:tech-debt:sql:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_controller_service_definitions_tbl= and
+=ores_controller_service_dependencies_tbl=
+(=projects/ores.sql/create/controller/=,
+=projects/ores.sql/populate/controller/=) are leftovers from the
+decommissioned =ores.controller= process-supervisor (confirmed gone —
+see test scenario 69C1426F "Verify controller decommission"). They
+now serve only as the data source
+=projects/ores.compass/src/systemd_generate.py='s
+=fetch_service_definitions()= reads via a live =psql= query to produce
+systemd unit files (=compass systemd generate=). The right fix is not
+to rename these tables but to drop them altogether: service
+name/binary/replicas/args-template/dependency data is static,
+known-at-codegen-time information, not a runtime concern — it belongs
+in a codegen model (e.g. an org-mode =service_registry=-shaped model,
+matching the pattern already used elsewhere in =ores.codegen=), with
+systemd units generated directly from that model instead of round-
+tripping through Postgres.
+
+* Why
+
+Keeping static service topology in a live database table means
+=compass systemd generate= depends on the database being up just to
+answer "what services exist and how do they depend on each other" —
+a question codegen should be able to answer at build time with no
+runtime dependency at all. It's also drifted naming: "controller_*"
+now describes a table that has nothing to do with any controller,
+which is confusing to anyone reading the schema cold. Moving this
+into a codegen model removes the runtime DB dependency from unit
+generation and makes the service topology reviewable/diffable as
+source, like every other codegen-driven artefact in this repo.
+
+* References
+
+- projects/ores.compass/src/systemd_generate.py
+- projects/ores.sql/create/controller/controller_service_definitions_create.sql
+- projects/ores.sql/create/controller/controller_service_dependencies_create.sql
+- projects/ores.sql/populate/controller/controller_service_definitions_populate.sql
+- projects/ores.sql/populate/controller/controller_service_dependencies_populate.sql
+
+* See also
+
+- [[id:69C1426F-A151-44FD-AB87-DE2305B65083][Test Scenario: Verify controller decommission (systemd lifecycle + Qt client)]]

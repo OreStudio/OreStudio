@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 4544572F-7C42-4A37-8440-C11B58511C94
+:END:
+#+title: Task: Unify application.cpp and service initialisation across services
+#+description: Clean up application.cpp and service initialisation across all services (including the divergent ores.cli, ores.shell, ores.compute/wrapper shapes), finding commonalities: extract common code to a shared utility, codegen boilerplate that is identical across services, and reduce remaining variation to a minimum handled via variability switches.
+#+type: task
+#+level: s1
+#+filetags: :codegen:cpp:service-app:refactor:tech-debt:reduce_db_connection_pool_load:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Audit application.cpp, host.cpp, config/options and config/parser across all services and CLI/shell/compute-wrapper tools for duplicated and divergent boilerplate (prompted by ores.cli's std::optional-wrapped database_options tripping up a mechanical pool_size edit). Extract common logic into shared ores.database/ores.service utilities, bring identical files under codegen where they are not already, and collapse remaining differences into a small set of variability switches on the component-service archetype rather than ad-hoc hand-written divergence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing directly, but see overlap note below. |
+| Next         | Scope the boundary with task E3647ADD before starting. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Commonalities and divergences across all service application.cpp/host.cpp/config layers catalogued
+- Common logic (e.g. context/config wiring) extracted to shared utility code
+- Boilerplate identical across services brought under codegen where it is not already
+- Remaining necessary variation (e.g. ores.cli's optional database_options) expressed as explicit variability switches on the component-service archetype, not silent hand-edited drift
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Overlaps with [[id:E3647ADD-B5F6-4D12-82E4-57A93DA4C8F8][Consolidate duplicated common/logging/database/nats parser
+boilerplate across domain services]] (bright_faraday, PR #1819,
+story "Collapse NATS config passthrough to a single
+environment-mapper fallback tier"), which is scoped to
+=config/parser.cpp= composition across the 17 domain services and
+explicitly *excludes* =http.server=/=wt.service=/=shell=/
+=compute.wrapper=/=cli= "for separate evaluation". This task is the
+complement: =application.cpp=/=host.cpp= wiring plus those excluded,
+divergent tools. Coordinate rather than duplicate — that task's
+=standard_service_options= helper may make a good model or even a
+direct dependency for whatever emerges here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

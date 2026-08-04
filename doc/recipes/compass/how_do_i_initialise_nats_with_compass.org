@@ -30,11 +30,18 @@ substituted from the current =.env=) and ensures the JetStream store directory
 exists. The output config is gitignored — it contains absolute paths specific
 to this checkout.
 
-To start the NATS server after init:
+Do not start =nats-server= by hand against this config. NATS is a systemd
+unit like every other service (=nats-server-<label>.service=); start it via
+[[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]]:
 
 #+begin_src sh :results verbatim
-nats-server --config build/config/nats-<label>.conf
+./projects/ores.compass/compass.sh services start
 #+end_src
+
+Starting any individual service unit also pulls NATS up automatically —
+each generated unit carries =Requires=nats-server-<label>.service=, so
+=systemctl --user start ores.iam.service-<label>= (for example) starts NATS
+first if it isn't already running.
 
 * Script
 
@@ -50,3 +57,4 @@ init= and exposed standalone as =compass nats init=.
 - [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and ORE Studio's usage.
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =env configure= calls this automatically.
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — the companion command for mTLS certs.
+- [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]] — the systemd-based way to actually start NATS and the fleet.

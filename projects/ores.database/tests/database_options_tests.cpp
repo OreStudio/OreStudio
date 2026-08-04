@@ -63,6 +63,7 @@ TEST_CASE("database_options_default_values", tags) {
     CHECK(sut.port == 5432);
     CHECK(sut.user.empty());
     CHECK(sut.database.empty());
+    CHECK(sut.pool_size == 4);
 }
 
 TEST_CASE("database_options_custom_values", tags) {
@@ -80,6 +81,16 @@ TEST_CASE("database_options_custom_values", tags) {
     CHECK(sut.port == 5433);
     CHECK(sut.database == "production_db");
     CHECK(sut.user == "app_user");
+}
+
+TEST_CASE("database_options_custom_pool_size", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing database_options with custom pool_size";
+
+    database_options sut;
+    sut.pool_size = 8;
+
+    CHECK(sut.pool_size == 8);
 }
 
 TEST_CASE("database_options_streaming", tags) {

@@ -75,7 +75,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{.database_options = cfg.database,
-                                                    .pool_size = 4,
+                                                    .pool_size = static_cast<std::size_t>(cfg.database.pool_size),
                                                     .num_attempts = 10,
                                                     .wait_time_in_seconds = 1,
                                                     .service_account = cfg.database.user};

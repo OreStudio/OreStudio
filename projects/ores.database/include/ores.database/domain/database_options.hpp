@@ -59,6 +59,10 @@ struct database_options final {
      * Required for all operations in a multi-tenant environment.
      */
     std::string tenant;
+    /**
+     * @brief Number of connections in this service's connection pool.
+     */
+    int pool_size = 4;
 };
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);

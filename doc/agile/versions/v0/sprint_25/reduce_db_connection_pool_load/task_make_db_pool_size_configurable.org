@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/reduce-db-connection-pool-load
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,11 +38,11 @@ services.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Per-service tier implemented and building green; fleet-wide tier deferred. |
+| Waiting on   | PR #1819 (bright_faraday, https://github.com/OreStudio/OreStudio/pull/1819, "[ores.utility,ores.nats] Add generic shared-domain fallback tier to environment_mapper_factory") to merge, for the fleet-wide fallback tier. |
+| Next         | Once PR #1819 lands, register a DB shared domain and add the ORES_DB_POOL_SIZE fleet-wide fallback tier. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -51,9 +51,32 @@ services.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two-tier design (Option B) was chosen over the capture's original
+plan: a fleet-wide default falling back per-service. This task scopes
+*only* the per-service tier — the fleet-wide default tier is deferred
+until bright_faraday's PR adding "global options common to all
+services" lands, since that PR will provide the natural home for it.
+
+Per-service tier, following the existing =db-host=/=db-port= pattern
+in =database_configuration=:
+
+1. Add =int pool_size = 4;= to =database_options=.
+2. Add a =--db-pool-size= CLI option (default =4=) to
+   =database_configuration::make_options_description=.
+3. Read it into =database_options::pool_size= in
+   =database_configuration::read_options=. The =ORES_<APP>_DB_*= env
+   var mapping is generic (prefix-based), so
+   =ORES_<APP>_DB_POOL_SIZE= falls out for free once the CLI option
+   exists — no separate env var wiring needed.
+4. Update the =component-service= codegen archetype
+   (=ores.cpp.service-app.application_impl.org= /
+   =cpp_service_app_application.cpp.mustache=) so generated
+   =application.cpp= emits =.pool_size = db_opts.pool_size= instead of
+   the =4= literal.
+5. Re-tangle codegen templates, regenerate all 17 domain services,
+   rebuild.
+6. Defaults are unchanged (still =4= everywhere) — this task only adds
+   the knob, it does not lower the default (that's the sibling task).
 
 * Notes
 

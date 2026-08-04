@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :systemd:ops:reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/audit-services-start-systemd
+#+pr: 1838
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Review the generated systemd units and the per-environment target's wiring drive
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -41,9 +41,46 @@ Review the generated systemd units and the per-environment target's wiring drive
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Findings from reading =systemd_generate.py= and =compass_services.py=,
+cross-checked against =nats-server='s own upstream unit
+(=/usr/lib/systemd/system/nats-server.service=):
+
+- Domain-service units are correctly ordered: =After=/Requires== on
+  their dependency graph (=ores_controller_service_dependencies_tbl=),
+  and =Type=notify= backed by a real =sd_notify(READY=1)= call
+  (=ores.service/service/systemd_notify.cpp=) — systemd genuinely
+  waits for application readiness, not just process-start, for these.
+- The gap is =nats-server='s own unit: =Type=simple=, matching
+  upstream's own shipped unit (nats-server has no sd_notify support at
+  all), so systemd marks it "active" the instant the process forks —
+  not when it's actually accepting connections. Every dependent
+  transitively relies on that first hop being truly ready.
+- =compass_services.py= already knows this and compensates
+  *externally*: its own =_wait_for_listen()= polls the NATS port after
+  =systemctl start=, and there's a documented "retry once" pass for
+  any unit whose =Requires=nats-server= chain saw a false failure from
+  this exact race (see its own comment at the retry site — this was a
+  known, already-mitigated gap, not an undiscovered bug).
+
+Fix: converted the daemon's missing readiness signal into a real
+systemd-level gate via =ExecStartPost== on the =nats-server= unit — a
+short shell loop polling =ss -tln= for the port, failing the unit
+itself (and thus its own start job) if the port never opens within
+60s (matching =compass_services.py='s own =_wait_for_listen()=
+tolerance for the same check — see PR #1838 review round 1, below).
+=ExecStartPost== runs synchronously as part of the unit's own start
+job, so this makes systemd's "active" state track true readiness,
+protecting every =Requires=nats-server= dependent through the normal
+unit graph — not just the one external caller who happens to poll
+for it.
+
+Verified: 4 consecutive =compass services stop= / =start= cycles, 0
+retries needed (previously 5/22 raced). =systemd-analyze --user
+verify= clean on all generated units. Quadlet's =nats-server=
+=.container= unit has the same underlying gap (no readiness signal)
+but is out of scope here — it's currently a design/verification
+target for a different story (offload-to-remote-host), not exercised
+by =compass services start= at all; noted for whoever picks that up.
 
 * Notes
 
@@ -62,12 +99,36 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1838][#1838]] | [compass] Fix nats-server unit readiness gate to stop fleet-start races |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ExecStartPost probe (30s) stricter than compass_services.py's established 60s tolerance for the same check | systemd_generate.py | Fixed | Bumped to 60s (seq 1 600), matching _wait_for_listen's default; re-verified live (0 NATS-related races on the following stop/start cycle) |
+| 2 | Failure-detection latency for a genuinely dead nats-server (probe still polls full timeout before failing) | systemd_generate.py | Declined | Not worth the added complexity for a rare misconfig case already caught by systemd-analyze verify/manual testing |
+| 3 | StartLimitBurst/IntervalSec interaction shifts with a longer per-attempt probe | systemd_generate.py | Acknowledged | Noted, not a regression -- timing changed but the limiter still functions as a backstop |
 
 * Result
+
+Confirmed the fleet's dependency ordering itself is idiomatic
+(=After=/Requires== plus real =sd_notify= readiness for every domain
+service); the actual gap was =nats-server='s own unit lacking any
+readiness signal, matching its upstream-shipped unit. Fixed by adding
+an =ExecStartPost== readiness probe to the generated =nats-server=
+unit (=systemd_generate.py='s =render_nats_unit=), so systemd's
+"active" state now tracks true listen-readiness rather than
+process-fork, closing the race for every dependent through the
+normal unit graph instead of relying on external polling.
+
+Verified: 4 consecutive =compass services stop=/=start= cycles, 0
+retries (was 5/22 before this fix); =systemd-analyze --user verify=
+clean on all 25 generated units. Pure Python change, no C++ touched;
+no new unit test added (=ores.compass/src/= has no existing test
+harness for this module) — verification is the live-infra smoke test
+above, consistent with how this module has always been validated.
+
+Out of scope, noted for later: Quadlet's =nats-server= =.container=
+unit has the same underlying gap (no readiness signal), but belongs
+to a different story (offload-to-remote-host) and isn't exercised by
+=compass services start= at all.

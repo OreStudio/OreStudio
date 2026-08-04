@@ -268,7 +268,36 @@ WantedBy={target_name}
     return units
 
 
-def render_nats_unit(checkout_root, env_name, target_name):
+def render_nats_unit(checkout_root, env_name, target_name, nats_port):
+    """nats-server ships Type=simple in its own upstream unit (confirmed
+    against /usr/lib/systemd/system/nats-server.service) -- it has no
+    sd_notify support, so plain Type=simple marks this unit "active" the
+    instant the process forks, not when it's actually accepting
+    connections. Every other unit in the fleet transitively depends on
+    NATS via After=/Requires=, so that gap is a real race: a dependent
+    can be started by systemd before NATS has finished loading certs/
+    JetStream and is actually listening. ExecStartPost= runs
+    synchronously as part of *this* unit's own start job -- a non-zero
+    exit here fails the unit itself, so this converts the daemon's lack
+    of readiness notification into a real systemd-level readiness gate
+    (same TCP-listen check compass_services.py's own _wait_for_listen
+    already does from the outside, just now enforced inside the unit
+    graph so it protects every dependent, not only the one caller that
+    happens to poll for it)."""
+    # 60s, matching compass_services.py's own _wait_for_listen() default --
+    # the exact same TCP-listen check this probe relocates into the unit
+    # graph -- rather than picking a fresh, tighter tolerance: a cold start
+    # slow enough to need the full 60s here previously succeeded quietly
+    # under that external wait, and a stricter probe would newly fail the
+    # unit's own start job (and, via Requires=, every dependent's first
+    # attempt) for exactly the slow-but-fine case this PR is meant to stop
+    # mis-classifying as a race.
+    port_probe = (
+        f'for i in $(seq 1 600); do '
+        f'ss -tlnH "sport = :{nats_port}" | grep -q . && exit 0; '
+        f'sleep 0.1; done; '
+        f'echo "nats-server did not open port {nats_port} within 60s" >&2; exit 1'
+    )
     unit = UNIT_HEADER
     unit += f"""
 [Unit]
@@ -281,6 +310,7 @@ StartLimitBurst=5
 Type=simple
 EnvironmentFile={checkout_root}/.env
 ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{env_name}.conf
+ExecStartPost=/bin/sh -c '{port_probe}'
 Restart=always
 RestartSec=2
 
@@ -365,8 +395,9 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
         path.write_text(content)
         written.append(name)
 
+    nats_port = env.get("ORES_NATS_PORT", "4222")
     write(_unit_basename("nats-server", env_name) + ".service",
-          render_nats_unit(checkout_root, env_name, target_name))
+          render_nats_unit(checkout_root, env_name, target_name, nats_port))
 
     for d in defs:
         deps_on = deps.get(d["service_name"], [])

@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 3A65D8F3-5F81-413C-89D7-1C44C5226F4F
+:END:
+#+title: Test Scenario: Verify counterparty/party logo renders in the Qt detail dialog
+#+description: Confirm the logo/flag now renders in CounterpartyDetailDialog and PartyDetailDialog for entities with a valid image_id, both pre-populated and freshly-picked-and-saved.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:qt:refdata:acme_corporation_followups:sprint_25:v0:
+#+target_dialog: PartyDetailDialog / CounterpartyDetailDialog
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:BF7C9D7C-F974-4EF5-B34D-ABA5618491C4][Fix: counterparty/party logo does not render in the Qt detail dialog]] in [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Acme Corporation must already be provisioned (confirmed done: the
+  =--source acme= run completed with no failed steps). The party
+  =ACMCOR= (Acme Corporation Plc) carries a pre-populated
+  =image_id= (=9cbca3dc-b351-4b4e-8cdf-3e77505f5582=) — verified via
+  =compass sql -- -c "select short_code, full_name, image_id from
+  ores_refdata_parties_tbl where image_id is not null;"= — and is the
+  fixture this scenario uses for the pre-populated case.
+- The build must include the fix under test: =setCounterparty()= /
+  =setParty()= now call =updateFlagDisplay()= after loading the
+  entity (=CounterpartyDetailDialog.cpp=, =PartyDetailDialog.cpp=).
+  Confirm via =compass build ores.qt.exe=.
+- Services must be running (=compass services start=) and the client
+  launched against this scenario doc.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:BF7C9D7C-F974-4EF5-B34D-ABA5618491C4][Fix: counterparty/party logo does not render in the Qt detail dialog]] |
+| Parent story  | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+- Username: =tenant_admin@acme_corporation=
+- Password: =Secure-Password-123=
+- Confirms: login succeeds and the main window loads.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open Acme Corporation Plc's party detail
+
+- Navigate: Refdata > Parties (list window).
+- Search/filter for short code =ACMCOR= (Acme Corporation Plc).
+- Double-click the row to open =PartyDetailDialog=.
+- Confirms: the dialog opens without error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the pre-populated logo renders
+
+- Look at the flag/logo button near the top of the dialog (left of
+  the name/code fields).
+- Confirms: the actual Acme Corporation logo image is shown — not
+  the blank/placeholder "no flag" icon. This is the pre-populated
+  case the fix addresses (=updateFlagDisplay()= is now called from
+  =setParty()= after the entity loads).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Pick and save a new logo, then reopen
+
+- With =PartyDetailDialog= still open, click the flag button to open
+  the flag/image picker.
+- Select any different available image and confirm the picker
+  selection (button shows the orange "changed" outline).
+- Click Save.
+- Close the dialog, then reopen =ACMCOR= from the list again.
+- Confirms: the newly-saved logo renders immediately on reopen (the
+  freshly-picked-and-saved case), not the placeholder.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Repeat the check on a counterparty
+
+- Navigate: Refdata > Counterparties (list window).
+- Open any counterparty's detail dialog (=CounterpartyDetailDialog=).
+- Pick and save a logo via the flag button, close, and reopen the
+  same counterparty.
+- Confirms: the logo renders on reopen here too — the same fix
+  (=setCounterparty()= now calling =updateFlagDisplay()=) covers
+  this dialog as well as =PartyDetailDialog=.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-04T12:03:29Z |
+| Branch        | feature/fix-counterparty-logo-not-rendering |
+| Commit        | 0c8b7de14 |
+| Worktree      | merry_newton |
+
+* Notes

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-counterparty-logo-not-rendering
+#+pr: 1824
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-26
 #+updated: 2026-07-26
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The counterparty/party logo picker (already merged, DONE) must actually display 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-26                               |
 
 * Acceptance
@@ -55,13 +55,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:3A65D8F3-5F81-413C-89D7-1C44C5226F4F][Verify counterparty/party logo renders]] | PASSED | Pre-populated (ACMCOR) + freshly-picked-and-saved, both dialogs. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1824][#1824]] | [qt] Fix counterparty/party logo not rendering in detail dialog |
 
 * Review
 
@@ -70,3 +70,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Root cause: =CounterpartyDetailDialog::setCounterparty()= and
+=PartyDetailDialog::setParty()= updated the entity fields and child
+tables but never called =updateFlagDisplay()=, so the flag button
+never picked up the loaded entity's =image_id= — the ImageCache
+per-request-watcher path itself was already correct (fixed by
+unrelated prior work). Fix: both methods now call
+=updateFlagDisplay()= after refreshing the entity fields, which reads
+=entityImageId()= and triggers =ImageCache::getIcon()= (async
+load-on-miss, already wired to re-invoke =updateFlagDisplay()= via
+the =imageLoaded= signal).
+
+Verified via [[id:3A65D8F3-5F81-413C-89D7-1C44C5226F4F][Verify counterparty/party logo renders]] (PASSED): the
+pre-populated ACMCOR party logo renders on open, and a
+freshly-picked-and-saved logo renders on reopen, for both
+=PartyDetailDialog= and =CounterpartyDetailDialog=.

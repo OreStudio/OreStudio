@@ -9,7 +9,7 @@
 #+created: 2026-08-03
 #+start_date: 2026-08-03
 #+end_date: 2026-08-10
-#+updated: 2026-08-03
+#+updated: 2026-08-04
 #+todo: STARTED | DONE
 
 This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 25*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].

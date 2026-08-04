@@ -24,14 +24,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | DONE                              |
+| Field        | Value                                                                       |
+|--------------+-----------------------------------------------------------------------------|
+| State        | DONE                                                                        |
 | Parent story | [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-08-04                               |
+| Now          | Nothing.                                                                    |
+| Waiting on   | Nothing.                                                                    |
+| Next         | Nothing.                                                                    |
+| Last touched | 2026-08-04                                                                  |
 
 * Acceptance
 
@@ -58,16 +58,17 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1823][#1823]] | [agile] Close hotfix story, file clang-format retrospective task |
+| PR    | Title                                                              |
+|-------+--------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1823][#1823]] | [agile] Close hotfix story, file clang-format retrospective task   |
 | [[https://github.com/OreStudio/OreStudio/pull/1820][#1820]] | [iam] Fix flaky mint_token_respects_the_requested_ttl (1s JWT TTL) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Org-table column alignment broken after editing values without re-aligning. | story.org, task_scaffold_jwt_test_ttl_too_short.org | Accepted | Re-aligned both tables with org-table-align. |
+| 2 | sprint.org and refactor_codegen_cpp/story.org weren't given a bumped #+updated even though edited today. | sprint.org, refactor_codegen_cpp/story.org | Accepted | Bumped both to 2026-08-04. |
 
 * Result
 

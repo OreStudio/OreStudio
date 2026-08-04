@@ -22,14 +22,14 @@ everywhere, every time.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | DONE                              |
-| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Nothing.                               |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing.                               |
-| Last touched  | 2026-08-04                               |
+| Field         | Value      |
+|---------------+------------|
+| State         | DONE       |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]  |
+| Now           | Nothing.   |
+| Waiting on    | Nothing.   |
+| Next          | Nothing.   |
+| Last touched  | 2026-08-04 |
 
 * Acceptance
 
@@ -39,10 +39,10 @@ everywhere, every time.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-| [[id:E9D1441B-211A-424A-B8FF-0B4B75682624][Scaffold story: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | DONE | 2026-08-04 | 2026-08-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0D055056-3497-43C1-8024-4C1B1A532DD7][Implement Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | DONE | 2026-08-04 | 2026-08-04 | Initial task for: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL) |
+| Task                                                                                        | State |      Start |        End | Description                                                                                                        |
+|---------------------------------------------------------------------------------------------+-------+------------+------------+--------------------------------------------------------------------------------------------------------------------|
+| [[id:E9D1441B-211A-424A-B8FF-0B4B75682624][Scaffold story: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | DONE  | 2026-08-04 | 2026-08-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0D055056-3497-43C1-8024-4C1B1A532DD7][Implement Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]]       | DONE  | 2026-08-04 | 2026-08-04 | Initial task for: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)                      |
 
 * Decisions
 

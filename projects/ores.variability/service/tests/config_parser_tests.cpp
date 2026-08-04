@@ -43,7 +43,6 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     const ores::testing::scoped_env_unset env_guard(
         {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
 
-
     const std::vector<std::string> args;
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);

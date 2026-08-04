@@ -8,7 +8,7 @@
 #+filetags: :systemd-resource-management-and-isolation:sprint_25:v0:
 #+owner: marco
 #+branch: feature/investigate-decommission-controller
-#+pr:
+#+pr: 1841
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1841][#1841]] | [agile] Audit ores.controller.service decommission: binary gone, 2 tables dead |
 
 * Review
 

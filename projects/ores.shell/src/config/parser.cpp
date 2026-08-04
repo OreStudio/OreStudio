@@ -72,6 +72,13 @@ options_description make_options_description() {
     const auto tod(telemetry_configuration::make_options_description("ores-shell", ORES_VERSION));
 
     const auto cod(nats_configuration::make_options_description());
+    // Deliberately NOT calling nats_configuration::register_shared_domain()
+    // here: .env already generates a full per-app ORES_SHELL_NATS_* mirror
+    // block for the shell (see env_init.py), so it doesn't need the shared
+    // fallback -- and registering it would make ORES_NATS_URL and
+    // ORES_SHELL_NATS_URL (etc.) both resolve to the same option name
+    // within one parse_environment() call, which boost::program_options
+    // rejects as a duplicate occurrence.
 
     options_description lod2("Login");
     lod2.add_options()(

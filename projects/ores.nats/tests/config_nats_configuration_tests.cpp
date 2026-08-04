@@ -19,8 +19,10 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_configuration.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
 
 namespace {
 
@@ -95,4 +97,67 @@ TEST_CASE("nats_configuration_wire_format_rejects_unknown_value", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
     CHECK_THROWS_AS(parse({"--nats-wire-format", "bson"}), std::invalid_argument);
+}
+
+TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_app", tags) {
+    // Regression test for a real bug caught in review: the shared-domain
+    // fallback must resolve ORES_NATS_URL to the actual registered option
+    // name "nats-url" (not "url"), and must NOT choke on other ORES_NATS_*
+    // variables that are not nats_configuration options at all (e.g. a
+    // hypothetical server-side ORES_NATS_LISTEN_PORT). Exercises the real
+    // parse_environment + store path end to end, the same way a service's
+    // parser.cpp does -- a mapper-only unit test would not have caught
+    // this, since it never runs parse_environment/store against a real
+    // options_description.
+    auto lg(ores::logging::make_logger(test_suite));
+    using namespace boost::program_options;
+    using ores::nats::config::nats_configuration;
+    using ores::utility::program_options::environment_mapper_factory;
+
+    nats_configuration::register_shared_domain();
+
+    setenv("ORES_NATS_URL", "nats://regression-check:4222", 1);
+    setenv("ORES_NATS_LISTEN_PORT", "4222", 1);
+
+    const auto od = nats_configuration::make_options_description();
+    const auto mapper(environment_mapper_factory::make_mapper("SOME_UNRELATED_APP"));
+
+    variables_map vm;
+    REQUIRE_NOTHROW(store(parse_environment(od, mapper), vm));
+    notify(vm);
+
+    const auto result = nats_configuration::read_options(vm);
+    CHECK(result.url == "nats://regression-check:4222");
+
+    unsetenv("ORES_NATS_URL");
+    unsetenv("ORES_NATS_LISTEN_PORT");
+}
+
+TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
+    // Regression test for a real bug caught in review: registering TLS_CA
+    // alone (cert/key stay excluded, genuinely per-service) would let
+    // nats_options.tls_ca_cert resolve non-empty via the shared fallback
+    // while cert/key stay unresolved for services with no per-app mirror
+    // -- tripping client.cpp's mTLS gate at connect time. The whole
+    // nats-tls-* trio stays out of the shared domain until a follow-on
+    // task designs per-service cert/key env wiring alongside it.
+    auto lg(ores::logging::make_logger(test_suite));
+    using namespace boost::program_options;
+    using ores::nats::config::nats_configuration;
+    using ores::utility::program_options::environment_mapper_factory;
+
+    nats_configuration::register_shared_domain();
+    setenv("ORES_NATS_TLS_CA", "/tmp/ca.crt", 1);
+
+    const auto od = nats_configuration::make_options_description();
+    const auto mapper(environment_mapper_factory::make_mapper("SOME_UNRELATED_APP"));
+
+    variables_map vm;
+    REQUIRE_NOTHROW(store(parse_environment(od, mapper), vm));
+    notify(vm);
+
+    const auto result = nats_configuration::read_options(vm);
+    CHECK(result.tls_ca_cert.empty());
+
+    unsetenv("ORES_NATS_TLS_CA");
 }

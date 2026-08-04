@@ -58,6 +58,7 @@ options_description make_options_description() {
     r.add(logging_configuration::make_options_description("ores.compute.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+    nats_configuration::register_shared_domain();
 
     options_description telemetry("Telemetry Options");
     telemetry.add_options()(telemetry_interval_arg.c_str(),

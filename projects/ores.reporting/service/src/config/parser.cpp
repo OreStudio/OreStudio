@@ -62,6 +62,7 @@ options_description make_options_description() {
     r.add(logging_configuration::make_options_description("ores.reporting.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+    nats_configuration::register_shared_domain();
     r.add(storage);
     return r;
 }

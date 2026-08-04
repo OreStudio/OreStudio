@@ -25,6 +25,8 @@ set(files
     "faker_totp_tests.cpp"
     "main.cpp"
     "program_options_common_configuration_tests.cpp"
+    "program_options_environment_mapper_factory_tests.cpp"
+    "program_options_shared_domain_registry_tests.cpp"
     "string_converter_tests.cpp"
     "string_short_code_generator_tests.cpp"
     "tree_builder_tests.cpp"

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 146B7828-89C4-482B-ACB4-3068C35B947D
+:END:
+#+title: Task: Document the single-source-of-truth NATS config flow and prove it with a regression test
+#+description: Update doc/knowledge/architecture/nats_wire_format.org (and any other doc describing the old five-layer threading) to describe the new flow: shared NATS knobs set once in .env, picked up by every service via environment_mapper_factory's shared-prefix fallback tier, with no argv threading required. Add a regression test/test_scenario that adds a new pure-passthrough ORES_NATS_* knob and proves it reaches a running service by touching .env alone, with no code changes to process_supervisor, SQL args_template rows, or systemd_generate.py.
+#+type: task
+#+level: s1
+#+filetags: :controller:process-supervisor:config:tech-debt:environment:podman:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A future engineer adding a new shared NATS knob only has to touch .env and the mapper's fixed prefix list -- never five other files.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Knowledge doc reflects the new architecture; a new test_scenario or automated test demonstrates a passthrough knob reaching a service via .env only.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

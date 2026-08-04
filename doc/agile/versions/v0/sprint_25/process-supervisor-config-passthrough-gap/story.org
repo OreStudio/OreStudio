@@ -1,17 +1,19 @@
 :PROPERTIES:
 :ID: 9E3EC9E2-742F-4830-839D-99EF2C2BC626
 :END:
-#+title: Five independent layers manually re-thread every NATS config knob from .env to each service; environment_mapper_factory's per-app-only prefix is the root cause
+#+title: Story: Collapse NATS config passthrough to a single environment-mapper fallback tier
 #+description: A new pure-passthrough .env config knob (ORES_NATS_WIRE_FORMAT) had to be manually fixed in FIVE independent places before every service actually received it: compass_services.py's controller-launch argv, process_supervisor's default_args_template (C++), five custom args_template rows in controller_service_definitions_populate.sql, ores.qt's (unaudited) client launch, and compass shell's own flag_for mapping + a missing .env mirror variable. Root cause confirmed by reading environment_mapper_factory.cpp: each service's config parser only maps ORES_<APP_NAME>_*-prefixed env vars, with no generic ORES_NATS_* fallback -- so CLI-arg threading is currently the *only* channel for domain services (a deliberate, already-documented design, not a bug), while the controller and ores.shell instead rely on their own per-app .env mirror blocks (ORES_CONTROLLER_SERVICE_NATS_*/ORES_SHELL_NATS_*), which is why shell's fix needed a new mirrored .env variable rather than an argv change. Target end state (explicit end goal): extend environment_mapper_factory with a shared ORES_NATS_*-fallback tier so every service reads config directly from environment with zero CLI argv-threading, collapsing the process_supervisor/SQL-template layers entirely -- both because it removes this whole bug class today, and because it previews the container-native (podman) shape every service will have once ores.controller's spawn-a-child-process architecture is decommissioned.
-#+type: capture
-#+level: cross
-#+filetags: :controller:process-supervisor:config:tech-debt:environment:podman:
-#+created: 2026-07-31
-#+updated: 2026-07-31
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
-* What
+* Goal
 
 process_supervisor::build_args() forwards controller config to spawned
 services via explicit CLI-arg template substitution, not environment
@@ -28,7 +30,82 @@ pure passthrough with no controller-side transformation, instead of this
 two-tier manual re-threading through explicit argv templates at both the
 Python launcher and the C++ supervisor.
 
-* Why
+NATS is the first offender, but the fix must not be NATS-specific: the
+mechanism is a *generic shared-domain fallback tier* in
+=environment_mapper_factory= -- any config module can register itself as
+a shared domain (by prefix) once, and every option it owns then reaches
+every service via =.env= alone. NATS registers as the first domain;
+adding a second shared domain later (telemetry, logging, ...) should
+require no changes to =environment_mapper_factory= itself.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A091A4B9-E54D-4D4F-8F7E-8C6D2437B660][Add a generic shared-domain fallback tier to environment_mapper_factory]] | DONE | 2026-08-04 | 2026-08-04 | Extend environment_mapper_factory with a generic shared-domain fallback tier (config modules register a domain prefix, e.g. NATS; matching is prefix-strip-and-kebab-case, no hardcoded variable names, no NATS-specific code in the mapper itself) so any option a registered shared domain owns reaches every service via .env alone, with zero argv threading. |
+| [[id:F2621728-3E4C-452C-8DDC-91F834E06776][Strip redundant CLI-arg threading for shared NATS knobs]] | BACKLOG | | | Once the environment_mapper_factory fallback tier lands, remove the now-redundant CLI-arg threading of nats-url/nats-subject-prefix/nats-wire-format/nats-tls-ca from: process_supervisor's default_args_template (C++), the five custom args_template rows in controller_service_definitions_populate.sql, systemd_generate.py's placeholder substitution, compass_services.py's legacy launcher, and ores.qt's client launch code. Keep nats-tls-cert/nats-tls-key CLI-supplied since those are per-service file paths, not shared values. Also fix compass shell's flag_for mapping so it relies on the same shared .env variable instead of its own mirrored one. |
+| [[id:146B7828-89C4-482B-ACB4-3068C35B947D][Document the single-source-of-truth NATS config flow and prove it with a regression test]] | BACKLOG | | | Update doc/knowledge/architecture/nats_wire_format.org (and any other doc describing the old five-layer threading) to describe the new flow: shared NATS knobs set once in .env, picked up by every service via environment_mapper_factory's shared-prefix fallback tier, with no argv threading required. Add a regression test/test_scenario that adds a new pure-passthrough ORES_NATS_* knob and proves it reaches a running service by touching .env alone, with no code changes to process_supervisor, SQL args_template rows, or systemd_generate.py. |
+| [[id:E3647ADD-B5F6-4D12-82E4-57A93DA4C8F8][Consolidate duplicated common/logging/database/nats parser boilerplate across domain services]] | BACKLOG | | | The ~17 domain-service config/parser.cpp files (iam, refdata, dq, assets, marketdata, ore, reporting, scheduler, synthetic, telemetry, trading, variability, workflow, analytics, compute.service, workspace, and similar) are one-time codegen scaffolds from cpp_service_config_parser.cpp.mustache that were then hand-maintained -- they are ~95% identical, differing only in service name/namespace/app-specific options. Add a shared ores.service::config::standard_service_options helper that composes common_configuration + logging_configuration + database_configuration + nats_configuration into one options_description and does command-line + environment parsing + help/version handling in one call, returning the four already-read sub-options plus the raw variables_map for app-specific extras. Migrate the domain-service parsers to call it, and update cpp_service_config_parser.cpp.mustache so future scaffolds use it too. This also becomes the single call site for nats_configuration::register_shared_domain(), replacing the one-line-per-file calls added by the mapper fallback-tier task. |
+
+* Decisions
+
+- The fallback mechanism is a registry, not a hardcoded prefix list:
+  =shared_domain_registry= (new ores.utility component) exposes
+  =register_domain(prefix)=/=domains()=; =environment_mapper_factory=
+  consults it generically and never names any specific domain (NATS or
+  otherwise). Registration is an explicit call from each owning config
+  module (=nats_configuration::register_shared_domain()=), not a global
+  static constructor, to avoid static-init-order fragility.
+- Per-service file paths (=nats-tls-cert=/=nats-tls-key=) stay CLI-supplied
+  -- they are genuinely per-service, not shared values, so they are
+  intentionally excluded from the shared-domain fallback.
+- The 20 =register_shared_domain()= call sites added to existing
+  parser.cpp files are provisional: the "Consolidate duplicated
+  common/logging/database/nats parser boilerplate" task collapses them
+  into a single call site inside a new shared ores.service parsing
+  helper.
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-31 in the product backlog; promoted preserving the UUID.
+
+** What
+
+process_supervisor::build_args() forwards controller config to spawned
+services via explicit CLI-arg template substitution, not environment
+inheritance -- and =compass_services.py='s own hand-built launch args for
+the controller and Qt client have the identical problem in a second,
+independent place. Fixing =ORES_NATS_WIRE_FORMAT= took *two* separate
+one-line additions (one in C++'s =default_args_template=, one in Python's
+controller launch args) because both layers manually re-list every NATS
+config value instead of letting each service parse =.env=/CLI/its own
+environment the same way every service's own =boost::program_options=
+config layer already does. The services (and the controller/compass
+launcher) should read =.env= variables directly wherever the value is a
+pure passthrough with no controller-side transformation, instead of this
+two-tier manual re-threading through explicit argv templates at both the
+Python launcher and the C++ supervisor.
+
+** Why
 
 Every new pure-passthrough =.env= config knob currently needs manual
 code changes in *three* separate places to actually reach every
@@ -76,7 +153,7 @@ to podman/containers, =ores.controller= is planned to be
 decommissioned -- so this may not be worth deep investment beyond
 documenting the risk, unless the migration is still some way off.
 
-* Current architecture in detail (why it's this complicated)
+** Current architecture in detail (why it's this complicated)
 
 *CORRECTION after further investigation*: the paragraph originally here
 speculated that Boost.Process v2 might not be inheriting the
@@ -194,7 +271,7 @@ paths, each with its own mechanism for getting a NATS value from
   wire format, requiring both a new =.env=-format version bump and a new
   =flag_for= line.
 
-** Why this matters beyond one config knob
+*** Why this matters beyond one config knob
 
 There is currently no single place that documents, let alone enforces,
 "every value in =ores::nats::config::nats_options= (or any other shared
@@ -208,7 +285,7 @@ one, and the fix required touching Python launcher code, C++ supervisor
 code, and seed SQL, in three different languages/files, to land one
 config knob correctly everywhere.
 
-* Target end state
+** Target end state
 
 Per explicit direction: *services should just read from the process
 environment*, full stop -- eliminating the CLI-argv-templating layers
@@ -268,11 +345,3 @@ is probably not worthwhile -- but option (1) is a small, high-value
 change that is also directly useful groundwork for (and a preview of)
 the target container-native shape, regardless of how soon the podman
 migration actually lands.
-
-* References
-
--
-
-* See also
-
--

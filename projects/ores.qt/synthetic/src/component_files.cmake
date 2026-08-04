@@ -55,6 +55,7 @@ set(files
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/BindingModeLabel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientFxSpotGenerationConfigModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientGmmComponentModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientIrCurveGenerationConfigModel.hpp"
@@ -86,6 +87,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ReturnDistributionChart.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/SamplePricePathsChart.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/SampleShortRatePathsChart.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ScopeLabel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/SyntheticPlugin.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/YieldCurveProcessTypeController.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/YieldCurveProcessTypeDetailDialog.hpp"

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 63F39350-B419-4863-A276-6EF29439F93B
+:END:
+#+title: Task: Add scope (system/tenant/party) and binding_mode (bound/sandboxed) to market_data_generation_config
+#+description: Extend the market_data_generation_config entity model with a scope enum and nullable tenant_id/party_id per level, plus a binding_mode enum (bound/sandboxed). Regenerate across all layers (domain, table I/O, generator, repository, Qt). Add activation-time validation rejecting a bound config that narrows an already-covered instrument at a wider scope.
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-scope-and-binding-mode-to-synthetic-config
+#+pr: 1826
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give =market_data_generation_config= the two orthogonal primitives the
+parent story needs: a =scope= column (system/tenant/party, sharing
+radius) and a =binding_mode= column (bound/sandboxed, authority), plus
+a database-level guard so at most one enabled =bound= config can ever
+cover the same scope at once.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- [X] Entity model, SQL schema, and generated C++ carry scope + binding_mode
+- [X] Activation validation rejects narrower-scope bound conflicts with a clear error
+- [X] compass build and rat pass
+
+* Plan
+
+- Added two hand-written domain enums (=domain::scope=,
+  =domain::binding_mode=) in =ores.synthetic.api=, following the
+  =domain::asset_class= precedent (=ores.marketdata.api=) -- plain C++
+  enum classes, no codegen enum-model facet in use yet for this
+  component.
+- Extended =ores.synthetic.market_data_generation_config.org=: made
+  =party_id= nullable (=std::optional<uuid>=), set
+  =:nullable_tenant_id: true= (tenant scope's =tenant_id= can now be
+  null for system-scope rows), added =scope= and =binding_mode= as
+  =text=/=is_enum= columns with generator blocks (both always generate
+  =party=/=bound= -- the per-column generator has no way to coordinate
+  =scope= with =party_id='s nullability, so tenant/system-scope rows
+  are created explicitly, not via the synthetic generator).
+- Regenerated the entity's full supported set via
+  =compass codegen entity generate market_data_generation_config=.
+- Qt Columns (list model) needed a =formatter= for both new columns --
+  the Qt codegen's =string= column type assumes the C++ field actually
+  is a =std::string= and calls =QString::fromStdString()= directly on
+  it, which doesn't compile against an enum. Added
+  =ores.qt/ScopeLabel.hpp= / =BindingModeLabel.hpp= (small hand-written
+  formatter functions, mirroring the existing
+  =ores.qt/ProcessTypeLabel.hpp= pattern) and wired them via the
+  Columns table's =formatter=/=formatter_include= columns.
+- The reject-at-activation conflict check is cross-row logic, not a
+  per-column FK validation, so it doesn't fit the =Insert trigger /
+  Validations= table mechanism. Used the paste-block mechanism instead
+  (=:implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e=, the same
+  injection point =ores.refdata.business_unit= uses for its
+  cross-column level check) to hand-write a symmetric scope-overlap
+  predicate directly in the insert trigger, positioned before the
+  version-management block so it runs against the still-active prior
+  row and can exclude it by =id=.
+- Verified live: recreated the DB, inserted an enabled tenant-scope
+  bound config, confirmed a conflicting party-scope bound insert for
+  the same tenant is rejected with the expected error, and confirmed a
+  =sandboxed= config for the same tenant/party inserts cleanly
+  (sandbox never participates in the check).
+
+* Notes
+
+- Deliberately did *not* touch Detail fields (the create/edit dialog)
+  for =scope=/=binding_mode= -- no combo-box widget precedent exists
+  yet in this codebase for an enum field, and setting these explicitly
+  through the UI isn't needed until the ACME consolidation task, which
+  can create the tenant-scoped config directly. Follow-up task should
+  revisit if hand-editing scope becomes a real workflow need.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1826][#1826]] | [synthetic] Add scope and binding_mode to market_data_generation_config |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | RLS policies not updated for scope -- tenant/system-scope rows invisible to normal sessions (High) | synthetic_rls_policies_create.sql | Fixed | Both policies now also allow the wider-scope NULL case (tenant_id is null / party_id is null). |
+| 2 | Scope/binding_mode changes invisible in history/diff view | market_data_generation_config_history_field_mapper.cpp | Fixed | Codegen gap: render_is_enum never existed; extended the shared cpp_history_field_mapper.cpp.mustache template (is_enum columns render via rfl::enum_to_string) and fixed has_enum_columns being wrongly nested inside the natural_keys conditional. Regenerated only this entity -- feed_binding/market_series (pre-existing is_enum users) left untouched, not part of this story. |
+| 3 | No CHECK constraint ties scope to tenant_id/party_id nullability | synthetic_market_data_generation_configs_create.sql | Fixed | Added via the entity model's SQL Checks section. |
+| 4 | Qt "Add" flow can create a party-scoped record with no party_id | MarketDataGenerationConfigDetailDialog.cpp | Fixed | setCreateMode() now sets party_id from clientManager_->currentPartyId(), matching sibling dialogs. |
+| 5 | No automated test coverage for the conflict/sandbox-exemption trigger logic | synthetic_market_data_generation_config_scope_test.sql (new) | Fixed | Added a pgTAP test: conflict rejection, sandbox exemption, disabled-config non-conflict, and the new CHECK constraint -- verified against a recreated DB. |
+| 6 | tenant_id nullable in SQL but non-optional in the domain/entity/mapper -- can't actually persist NULL | market_data_generation_config.hpp / _entity.hpp / _mapper.cpp | Declined | Matches the story's own Out-of-scope note (system-scope not exercised end-to-end yet). The suggested precedent (ores.scheduler.job_definition's optional tenant_id) is drifted/stale code, not current codegen output -- the cpp_domain_type_class.hpp.mustache template unconditionally emits the non-optional utility::uuid::tenant_id wrapper for has_tenant_id today, confirmed by reading the template. Making it optional requires a codegen template change with cross-component blast radius (every has_tenant_id entity), which is out of proportion for this task; tracked for a follow-up rather than fixed inline. |
+| 7 | Nit: generator comment placement (between = and the value) | market_data_generation_config_generator.cpp | Declined | Tried moving it; the trailing semicolon the template appends gets absorbed into the last comment line, producing invalid C++ (confirmed by regenerating and inspecting output). The current placement is required, not a style oversight. |
+| 8 | Nit: wireDetailDialogCommon() drops the QPointer-guarded lambda pattern | MarketDataGenerationConfigController.cpp | No change needed | Reviewer's own comment confirms this is safe (Qt auto-disconnects on context-object destruction), not a regression -- informational only. |
+| 9 | (Round 2) RLS WITH CHECK over-widened: a session could WRITE a wider-scope row than its own isolation allows, not just read one (Medium) | synthetic_rls_policies_create.sql | Fixed | Split USING (read visibility, keeps the null-widening) from WITH CHECK (writes, stays strict): tenant policy's WITH CHECK now requires the writer be in system-tenant context to write a null-tenant row; party policy's WITH CHECK drops the null-shortcut entirely, so only a session with no party restriction can write a null-party row. Mirrors scheduler_rls_policies_create.sql's job_instances_write_policy precedent, as the reviewer suggested. Not covered by the new pgTAP test (runs as the DDL user, which bypasses RLS) -- full RLS write-boundary coverage needs session-context (SET ROLE + GUC) test setup, deferred as disproportionate for this task. |
+
+* Result
+
+=market_data_generation_config= now carries =scope= (system/tenant/party)
+and =binding_mode= (bound/sandboxed) end-to-end -- entity, SQL schema,
+domain struct, mapper, generator, Qt list model, and history/diff view
+-- with =party_id= and =tenant_id= nullable to match. A database
+trigger rejects enabling a =bound= config that conflicts with another
+already-enabled =bound= config covering an equal-or-wider scope;
+=sandboxed= configs are exempt. A CHECK constraint enforces the
+scope/nullability invariant the guard depends on, and the RLS policies
+correctly show wider-scope rows to narrower-scope sessions. Covered by
+a new pgTAP regression test. Fixed a pre-existing codegen gap along
+the way: the history-field-mapper template never rendered =is_enum=
+columns.
+
+Review round 1: 5 issues fixed (RLS visibility gap, missing
+history/diff fields, missing CHECK constraint, Qt Add-flow party_id
+gap, no automated test), 3 declined (see =* Review= table for
+reasoning). =compass build= and the =ores.synthetic.*=/=ores.qt.tests=
+C++ suites pass; the new pgTAP test and the full =ores.sql/test= suite
+run clean (pre-existing unrelated failures need Acme fixture data this
+fresh DB doesn't have).

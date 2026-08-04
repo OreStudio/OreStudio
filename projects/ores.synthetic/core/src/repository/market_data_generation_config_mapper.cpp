@@ -36,7 +36,11 @@ market_data_generation_config_mapper::map(const market_data_generation_config_en
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.party_id = v.party_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.party_id)) :
+                     std::nullopt;
+    r.scope = rfl::string_to_enum<domain::scope>(v.scope).value();
+    r.binding_mode = rfl::string_to_enum<domain::binding_mode>(v.binding_mode).value();
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
@@ -61,7 +65,10 @@ market_data_generation_config_mapper::map(const domain::market_data_generation_c
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
+    r.party_id =
+        v.party_id.has_value() ? std::optional(boost::uuids::to_string(*v.party_id)) : std::nullopt;
+    r.scope = rfl::enum_to_string(v.scope);
+    r.binding_mode = rfl::enum_to_string(v.binding_mode);
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;

@@ -20,6 +20,8 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_MARKET_DATA_GENERATION_CONFIG_HPP
 
+#include "ores.synthetic.api/domain/binding_mode.hpp"
+#include "ores.synthetic.api/domain/scope.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -34,8 +36,13 @@ namespace ores::synthetic::domain {
  *
  * A top-level container that owns one or more typed sub-configurations (FX spot
  * now; vol surface, interest-rate curves later). It is the recipe for how
- * synthetic market data is produced. Scoped to a tenant and a party so each
- * party manages its own configurations and its own generated data.
+ * synthetic market data is produced. Carries two orthogonal axes: scope
+ * (system/tenant/party) decides the sharing radius -- who consumes the same
+ * generated data -- and binding_mode (bound/sandboxed) decides whether
+ * that data is authoritative for real feed consumers or reachable only by
+ * explicit selection. tenant_id and party_id are populated per scope
+ * level: system leaves both null, tenant sets tenant_id only, party sets
+ * both.
  */
 struct market_data_generation_config final {
     /**
@@ -54,11 +61,25 @@ struct market_data_generation_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Owning party (legal entity) this configuration belongs to. Not a natural key: a party
-     * can legitimately own several containers (e.g. "Basic" and "Realistic" published from
-     * different DQ datasets), so no uniqueness is enforced beyond the surrogate id.
+     * @brief Owning party (legal entity) this configuration belongs to, when scope is party. Null
+     * for tenant/system scope. Not a natural key: a party can legitimately own several containers
+     * (e.g. "Basic" and "Realistic" published from different DQ datasets), so no uniqueness is
+     * enforced beyond the surrogate id.
      */
-    boost::uuids::uuid party_id;
+    std::optional<boost::uuids::uuid> party_id;
+
+    /**
+     * @brief Sharing radius: who consumes the same generated data. system leaves both tenant_id and
+     * party_id null, tenant sets tenant_id only, party sets both. Orthogonal to binding_mode.
+     */
+    domain::scope scope = domain::scope::party;
+
+    /**
+     * @brief Whether this configuration's generated data is authoritative for real feed consumers
+     * (bound) or reachable only by explicit selection (sandboxed, never resolved into the bound
+     * feed). Orthogonal to scope.
+     */
+    domain::binding_mode binding_mode = domain::binding_mode::bound;
 
     /**
      * @brief Stable name for this configuration, unique per tenant and party.

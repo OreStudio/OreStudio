@@ -175,15 +175,12 @@ void MarketDataGenerationConfigController::onShowHistory(
     showHistoryWindow(market_data_generation_config);
 }
 
-void MarketDataGenerationConfigController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new market data generation config";
-
-    auto* detailDialog = new MarketDataGenerationConfigDetailDialog(mainWindow_);
+void MarketDataGenerationConfigController::wireDetailDialogCommon(
+    MarketDataGenerationConfigDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &MarketDataGenerationConfigDetailDialog::statusMessage,
@@ -193,6 +190,15 @@ void MarketDataGenerationConfigController::showAddWindow() {
             &MarketDataGenerationConfigDetailDialog::errorMessage,
             this,
             &MarketDataGenerationConfigController::errorMessage);
+}
+
+void MarketDataGenerationConfigController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new market data generation config";
+
+    auto* detailDialog = new MarketDataGenerationConfigDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &MarketDataGenerationConfigDetailDialog::market_data_generation_configSaved,
             this,
@@ -233,21 +239,10 @@ void MarketDataGenerationConfigController::showDetailWindow(
                                << boost::uuids::to_string(market_data_generation_config.id);
 
     auto* detailDialog = new MarketDataGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConfig(market_data_generation_config);
 
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::statusMessage,
-            this,
-            &MarketDataGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::errorMessage,
-            this,
-            &MarketDataGenerationConfigController::errorMessage);
     connect(detailDialog,
             &MarketDataGenerationConfigDetailDialog::market_data_generation_configSaved,
             this,
@@ -400,29 +395,9 @@ void MarketDataGenerationConfigController::onOpenVersion(
     }
 
     auto* detailDialog = new MarketDataGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConfig(market_data_generation_config);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::statusMessage,
-            this,
-            [self = QPointer<MarketDataGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::errorMessage,
-            this,
-            [self = QPointer<MarketDataGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -548,24 +523,13 @@ void MarketDataGenerationConfigController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new MarketDataGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_market_data_generation_config = market_data_generation_config;
     reverted_market_data_generation_config.version = 0;
     detailDialog->setConfig(reverted_market_data_generation_config);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::statusMessage,
-            this,
-            &MarketDataGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &MarketDataGenerationConfigDetailDialog::errorMessage,
-            this,
-            &MarketDataGenerationConfigController::errorMessage);
     connect(detailDialog,
             &MarketDataGenerationConfigDetailDialog::market_data_generation_configSaved,
             this,

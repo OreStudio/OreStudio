@@ -40,7 +40,9 @@ struct market_data_generation_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
-    std::string party_id;
+    std::optional<std::string> party_id;
+    std::string scope;
+    std::string binding_mode;
     std::string name;
     std::string description;
     bool enabled = false;

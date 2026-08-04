@@ -133,6 +133,8 @@ void MarketDataGenerationConfigDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
     if (createMode) {
         market_data_generation_config_.id = boost::uuids::random_generator()();
+        if (clientManager_)
+            market_data_generation_config_.party_id = clientManager_->currentPartyId();
     }
     hasChanges_ = false;
     updateSaveButtonState();

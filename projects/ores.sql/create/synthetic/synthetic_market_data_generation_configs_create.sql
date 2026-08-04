@@ -26,15 +26,22 @@
  *
  * A top-level container that owns one or more typed sub-configurations (FX spot
  * now; vol surface, interest-rate curves later). It is the recipe for how
- * synthetic market data is produced. Scoped to a tenant and a party so each
- * party manages its own configurations and its own generated data.
+ * synthetic market data is produced. Carries two orthogonal axes: scope
+ * (system/tenant/party) decides the sharing radius -- who consumes the same
+ * generated data -- and binding_mode (bound/sandboxed) decides whether
+ * that data is authoritative for real feed consumers or reachable only by
+ * explicit selection. tenant_id and party_id are populated per scope
+ * level: system leaves both null, tenant sets tenant_id only, party sets
+ * both.
  */
 
 create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "id" uuid not null,
-    "tenant_id" uuid not null,
+    "tenant_id" uuid,
     "version" integer not null,
-    "party_id" uuid not null,
+    "party_id" uuid null,
+    "scope" text not null,
+    "binding_mode" text not null,
     "name" text not null,
     "description" text not null,
     "enabled" boolean not null,
@@ -45,23 +52,23 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (id, valid_from, valid_to),
     exclude using gist (
-        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ((scope = 'system' and tenant_id is null and party_id is null) or (scope = 'tenant' and tenant_id is not null and party_id is null) or (scope = 'party' and tenant_id is not null and party_id is not null))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists market_data_generation_configs_version_uniq_idx
-on "ores_synthetic_market_data_generation_configs_tbl" (tenant_id, id, version)
+on "ores_synthetic_market_data_generation_configs_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists market_data_generation_configs_id_uniq_idx
-on "ores_synthetic_market_data_generation_configs_tbl" (tenant_id, id)
+on "ores_synthetic_market_data_generation_configs_tbl" (id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists market_data_generation_configs_tenant_idx
@@ -73,16 +80,41 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate tenant_id
-    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    -- Validate tenant_id only when set (system records have NULL tenant_id)
+    if NEW.tenant_id is not null then
+        NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    end if;
 
+    -- At most one enabled bound config per scope. Reject-at-activation:
+    -- ambiguity must never reach a consumer, so a narrower-scope config
+    -- cannot be enabled while a wider (or equal) one already covers it --
+    -- the caller must explicitly supersede (disable/retire) it first.
+    -- sandboxed configs never participate; they cannot conflict.
+    if NEW.enabled and NEW.binding_mode = 'bound' then
+        if exists (
+            select 1 from ores_synthetic_market_data_generation_configs_tbl
+            where id != NEW.id
+              and enabled = true
+              and binding_mode = 'bound'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+              and (
+                  NEW.scope = 'system' or scope = 'system'
+                  or (NEW.scope = 'tenant' and scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
+                  or (scope = 'tenant' and NEW.scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
+                  or (NEW.scope = 'party' and scope = 'party' and tenant_id = NEW.tenant_id and party_id = NEW.party_id)
+              )
+        ) then
+            raise exception 'Conflicting bound synthetic config: another enabled bound config already covers this scope. Supersede (disable or retire) it before activating this one.'
+                using errcode = '23514';
+        end if;
+    end if;
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
     from "ores_synthetic_market_data_generation_configs_tbl"
-    where tenant_id = NEW.tenant_id
+    where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
@@ -94,7 +126,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent
@@ -102,7 +133,7 @@ begin
         -- would collide with itself. clock_timestamp() always advances.
         update "ores_synthetic_market_data_generation_configs_tbl"
         set valid_to = clock_timestamp()
-        where tenant_id = NEW.tenant_id
+        where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
@@ -127,7 +158,7 @@ create or replace rule ores_synthetic_market_data_generation_configs_delete_rule
 on delete to "ores_synthetic_market_data_generation_configs_tbl" do instead (
     update "ores_synthetic_market_data_generation_configs_tbl"
     set valid_to = clock_timestamp()
-    where tenant_id = OLD.tenant_id
+    where (tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class MarketDataGenerationConfigMdiWindow;
+class MarketDataGenerationConfigDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -94,6 +95,14 @@ private:
     void showAddWindow();
     void showDetailWindow(
         const synthetic::domain::market_data_generation_config& market_data_generation_config);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * MarketDataGenerationConfigDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(MarketDataGenerationConfigDetailDialog* detailDialog);
     void showHistoryWindow(
         const synthetic::domain::market_data_generation_config& market_data_generation_config);
 

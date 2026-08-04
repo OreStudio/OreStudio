@@ -1872,6 +1872,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['render_is_optional_timestamp'] = (
                     _render_cpp_type.startswith('std::optional<') and 'time_point' in _render_cpp_type
                 )
+                # Derived from the raw is_enum flag, not the nullable-narrowed
+                # col['is_enum'] above -- render_* flags must match the
+                # domain struct's actual field type (see the module
+                # docstring), and an enum column stays an enum type in the
+                # domain struct regardless of nullability.
+                col['render_is_enum'] = is_enum_type
                 # Mechanical title-case label for templates that render a
                 # human-readable field name (e.g. the history field mapper)
                 # without depending on the Qt profile's curated "Detail
@@ -1894,6 +1900,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     elif cpp_type == 'int':
                         col['default_value'] = '0'
                 col['iter_var'] = iter_var
+            # Unconditional on natural_keys (unlike the other has_* flags
+            # below, which are computed only inside the natural_keys block):
+            # an entity can have enum columns with a surrogate-UUID-only
+            # primary key and no natural keys at all (e.g.
+            # market_data_generation_config), and templates like the
+            # history field mapper need this flag regardless.
+            domain_entity['has_enum_columns'] = any(
+                c.get('is_enum') for c in domain_entity['columns']
+            )
         # Field-group contract: detect identity/audit group annotations and
         # mark each column so templates can emit nested-struct form.
         identity_group_value = domain_entity.get('domain_identity_group', '')
@@ -1966,7 +1981,6 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 and not k.get('is_timestamp') and not k.get('is_date')
                 for k in nks
             )
-            domain_entity['has_enum_columns'] = any(c.get('is_enum') for c in domain_entity.get('columns', []))
             domain_entity['has_date_natural_keys'] = any(k.get('is_date') for k in nks)
             domain_entity['has_date_or_timestamp_natural_keys'] = any(
                 k.get('is_date') or k.get('is_timestamp') for k in nks

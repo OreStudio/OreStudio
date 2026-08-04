@@ -10,6 +10,9 @@
 {{#has_date_natural_keys}}
 #include <format>
 {{/has_date_natural_keys}}
+{{#has_enum_columns}}
+#include <rfl/enums.hpp>
+{{/has_enum_columns}}
 
 namespace ores::{{component}}::presentation {
 
@@ -92,6 +95,9 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{#render_is_double}}
     fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.{{name}})});
 {{/render_is_double}}
+{{#render_is_enum}}
+    fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.{{name}})});
+{{/render_is_enum}}
 {{/is_identity_group_column}}
 {{/columns}}
 {{#has_audit_columns}}

@@ -55,8 +55,10 @@ Grounded in the existing Acme seeder model
 regenerated to SQL via generate_sql.py -- these are auto-generated
 files, never hand-edit the .sql output) and reference data
 (refdata_business_unit_types_populate.sql: DIVISION/BUSINESS_AREA/
-DESK/COST_CENTRE; refdata_regulatory_book_types_populate.sql:
-Trading/Banking only, no separate Hedging type).
+DESK/COST_CENTRE/BRANCH -- BRANCH is a geographic grouping, not
+applicable to a single-location holding-company unit, so it's not
+part of the DIVISION-vs-DESK tradeoff below; refdata_regulatory_book_
+types_populate.sql: Trading/Banking only, no separate Hedging type).
 
 ** Group Treasury book/portfolio shape
 

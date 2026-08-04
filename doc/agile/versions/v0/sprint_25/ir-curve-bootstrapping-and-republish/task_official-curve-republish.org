@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 202295CC-B715-431F-BFCF-DD960CA7D1FE
+:END:
+#+title: Task: Official curve republish: write bootstrapped output as a lineage-stamped market_series
+#+description: Publish the bootstrapper's output curve into its pre-minted output_series_id via market_observations, stamping the observation_lineage table per observation -- the republish/remap half of the story's goal, a transform rather than a passthrough.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Take the bootstrapping engine's output (one discount factor per tenor
+for a given config) and publish it as a real, consumable curve:
+persist each point into =market_observations= under the bootstrap
+config's pre-minted =output_series_id=, and stamp
+=ores_marketdata_observation_lineage_tbl= per observation with
+=derivation_config_id=/=derivation_config_version= (the bootstrap
+config that produced it), =source_as_of= (the raw grid's as-of
+timestamp the bootstrap read), and =source_series_ids= (the
+=source_series_id=, plus the discount curve's series id when this is a
+=PROJECTION= config).
+
+This is the "republish/remap" half of the story's goal: analogous to
+=ores.marketdata='s existing raw-producer-tick remap onto the official
+tenant-scoped stream ([[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]), except the transform
+is a bootstrap rather than a passthrough — downstream consumers read
+=output_series_id= exactly like any other official series, with no
+knowledge that it was derived rather than observed.
+
+Depends on the shared derivation-lineage task (the table being written
+to) and the bootstrapping engine task (the values being written).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- A bootstrap run's output is readable from =output_series_id= via the
+  exact same as-of query (=market_observations_repository::read_as_of()=)
+  the raw-grid viewer already uses — no bespoke read path for
+  bootstrapped curves.
+- Every published discount-factor observation has a corresponding
+  =observation_lineage= row; querying "who produced this point and from
+  what source as-of" is a single join, never a guess from a =source=
+  string.
+- =market_series.derivation_kind = 'IR_CURVE_BOOTSTRAP'= on the output
+  series, matching the shared lineage task's marker convention.
+- Re-running a bootstrap (new raw ticks arrived) produces a new
+  observation generation without corrupting or requiring deletion of
+  the prior one — the existing bitemporal/soft-update convention on
+  =market_observations= already provides this; this task must not
+  special-case it.
+- A =PROJECTION= config's republish is provably sequenced after its
+  =discount_curve_config_id='s own republish has completed for the same
+  bootstrap cycle.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

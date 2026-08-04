@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: D1C9368C-4B32-4074-9A17-3A895DB12F83
+:END:
+#+title: Task: IR curve bootstrapping engine: inverse solve over the raw instrument grid
+#+description: Given a bootstrap config and the raw pillar rates already published by the IR curve family feed, solve tenor-by-tenor for discount factors that reprice each pillar -- the inverse of curve_instrument_pricer's forward rate functions -- applying the configured interpolation method, day-count convention, and Funding-before-Projection build order.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the actual bootstrapper: given an
+=ir_curve_bootstrap_config= + its pillar list, and the raw pillar rates
+already sitting in =market_observations= (published by the IR curve
+family feed — [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]], DONE), solve
+tenor-by-tenor for the discount factors that reprice every pillar at
+its observed rate. This is the *inverse* of
+=ores.analytics.quant::service::curve_instrument_pricer= — that class
+derives a par rate from a discount factor (=deposit_rate=, =fra_rate=,
+=swap_par_rate=, all forward calculations used by the synthetic
+generator); this engine goes the other way, solving for the discount
+factor a published rate implies, tenor by tenor from the short end,
+taking all shorter-maturity discount factors as already known (see
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s bootstrapping section).
+
+Applies the bootstrap config's =interpolation_method= and
+=day_count_convention= within each segment, and honours the
+Funding-before-Projection build order: a =PROJECTION= config's
+bootstrap run reads its =discount_curve_config_id='s *already-published*
+output series to discount its own pillars, rather than bootstrapping in
+isolation (see [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]).
+
+*This task owns enforcing that order at run time* — the config schema
+(bootstrap-config task) only records the dependency; nothing else in
+this story's task breakdown schedules or checks it. Concretely: before
+running a =PROJECTION= config's bootstrap, this engine must confirm its
+=discount_curve_config_id='s output series already has a discount-factor
+generation covering the required as-of, and fail/defer cleanly (not
+silently bootstrap against stale or absent discount factors) if it
+doesn't. Whether that's a same-process dependency check, a small queue,
+or a DAG walk over =discount_curve_config_id= across all of a tenant's
+configs is an implementation decision for this task's =* Plan=, not
+decided up front here.
+
+The existing [[id:4F78BAA7-71A0-4433-AF1E-54180DB0669A][FOMC-dated OIS short end with flat-forward interpolation]]
+task is the concrete first interpolation-method instance this engine
+must support (flat-forward step short end, continuous long end, split
+at =split_tenor_code=) — sequenced after this task, not duplicated by
+it.
+
+Depends on the bootstrap-config task for the config/pillar entities
+this engine reads.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- A pure engine function/class exists (mirroring
+  =curve_instrument_pricer='s pure, discount-factor-in/rate-out shape,
+  inverted) that takes a bootstrap config's pillar list + the raw
+  observed rate per pillar and returns one discount factor per tenor,
+  reproducing each pillar instrument's observed market rate to within a
+  documented numerical tolerance.
+- Day-count conventions are applied per pillar per
+  =day_count_convention=, not a single hardcoded convention across all
+  instrument types.
+- The configured =interpolation_method= governs discount factors
+  between pillars; the FOMC-dated task's flat-forward/continuous split
+  is provable as one configuration of this engine, not special-cased
+  in the engine's code.
+- A =PROJECTION= config's bootstrap consumes its
+  =discount_curve_config_id='s already-published discount factors
+  rather than re-deriving them; a =FUNDING= config's bootstrap has no
+  such dependency.
+- A =PROJECTION= bootstrap attempted before its discount curve's
+  required generation exists fails/defers cleanly rather than running
+  against stale or absent discount factors — this engine, not any
+  other task, owns that check.
+- Unit tests cover at least: a single-segment curve, a two-segment
+  (FOMC-style) curve, and a Projection curve discounted off a
+  previously-bootstrapped Funding curve.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

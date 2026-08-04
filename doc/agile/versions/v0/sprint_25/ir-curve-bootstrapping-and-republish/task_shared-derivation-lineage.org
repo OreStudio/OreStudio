@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 18B74DD5-0A67-4873-A700-B006D4A99FDD
+:END:
+#+title: Task: Shared derivation lineage: market_series marker + observation lineage table
+#+description: A derivation_kind/derivation_config_id/derivation_config_version marker on market_series (sentinel 'OBSERVED', not nullable) plus a new observation_lineage side table for per-observation provenance -- foundational for both the curve bootstrap output and, later, CRM's own derived-cross publishing.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch: feature/ir-curve-bootstrap-design
+#+pr: 1822
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the system one shared way to answer, for any published series or
+observation, "was this observed or computed, and by what" — instead of
+each derivation mechanism (curve bootstrap, and eventually CRM) inventing
+its own ad hoc provenance. Two parts:
+
+- A *catalog-level* marker on =market_series=: =derivation_kind=
+  (not null, sentinel ='OBSERVED'=, matching the =curve_role='NONE'=
+  precedent on =instrument_codes=), =derivation_config_id= (not null,
+  =ores_utility_nil_uuid_fn()= sentinel when =derivation_kind =
+  'OBSERVED'=), =derivation_config_version= (not null, default 0). A new
+  small =ores_refdata_derivation_kinds_tbl= reference table (same shape
+  as =curve_roles=) seeds at least ='OBSERVED'=,
+  ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'= — extensible for future
+  kinds without a schema migration.
+- A *per-observation* lineage side table,
+  =ores_marketdata_observation_lineage_tbl= (tenant_id, party_id,
+  series_id, observation_datetime, point_id [not null, ='''= sentinel
+  for scalar series — a *stricter* rule than =market_observations=,
+  whose own =point_id= column is genuinely nullable and only reaches
+  ='''= via =coalesce(point_id, '')= inside index/trigger predicates,
+  not as a column-level convention; this new table chooses not to
+  carry that nullability forward], derivation_config_id,
+  derivation_config_version, source_as_of, source_series_ids uuid[],
+  valid_from, valid_to), written only alongside a derived observation
+  — never a column on =market_observations_tbl= itself, which is a
+  TimescaleDB hypertable explicitly documented as carrying no audit
+  columns because tick-level volumes make that impractical. A row's
+  existence *is* the "derived" marker; no nullable columns.
+  =party_id= is included in the key because =market_observations_tbl=
+  itself carries =party_id= as part of its own current-row uniqueness
+  index — omitting it here would leave the lineage table unable to
+  uniquely identify the observation it describes whenever a series
+  isn't 1:1 with a single party. =valid_from=/=valid_to= mirror
+  =market_observations='s own bitemporal treatment: a bootstrap or CRM
+  derivation can rerun and produce a new generation at the same
+  =(series_id, observation_datetime, point_id)= natural key (the
+  soft-update trigger closes the prior generation's =market_observations=
+  row rather than overwriting it), so the lineage row for each
+  generation must be equally versioned — otherwise a rerun would
+  either collide or silently overwrite the prior generation's
+  provenance, defeating "which config produced this" for any
+  generation but the latest.
+
+Deliberately generic, not curve-specific: this is what lets a future
+CRM change (persisting derived crosses — currently pull-only, out of
+scope here) stamp the exact same table with =derivation_kind =
+'CRM_DERIVATION'= and reuse =derived_rate::as_of= (already computed
+today, currently discarded once the pull-reply is sent) as
+=source_as_of=, rather than inventing a second lineage mechanism.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- =market_series= carries =derivation_kind=/=derivation_config_id=/
+  =derivation_config_version=, all =not null=; every existing series
+  defaults to ='OBSERVED'= + nil-uuid + 0 with no behaviour change to
+  today's raw-tick/FX-spot publishing.
+- =ores_refdata_derivation_kinds_tbl= exists, seeded with ='OBSERVED'=,
+  ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'=, validated the same way
+  =curve_roles= is (soft FK + validate function).
+- =ores_marketdata_observation_lineage_tbl= exists, is never written on
+  the raw-tick ingest hot path, and supports a query "for this
+  tenant/party/series + observation_datetime (+ point_id), which
+  config/version/source produced it" in one lookup — including when
+  more than one generation exists at the same natural key (proven by a
+  test that reruns a derivation over the same tenor/point and asserts
+  both generations' lineage remain independently queryable).
+- No column added to =market_observations_tbl= itself.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1822][#1822]] | [agile] IR curve bootstrapping: lineage + bootstrap-config design |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | discount_curve_config_id self-reference has no cycle/chain protection (raised independently by all 4 review passes) | task_ir-curve-bootstrap-config.org | Accepted | Added strict two-tier check constraint (referenced config must itself be FUNDING) plus explicit self-reference guard, per Multi-Curve Construction's own stated no-chaining model |
+| 2 | observation_lineage key omits party_id and has no tie to a specific market_observations generation | task_shared-derivation-lineage.org | Accepted | Added party_id to the key and valid_from/valid_to bitemporal columns mirroring market_observations' own soft-update convention, so reruns don't collide or overwrite prior generations' lineage |
+| 3 | No task explicitly owns enforcing Funding-before-Projection ordering at run time | task_ir-curve-bootstrapping-engine.org | Accepted | Added an explicit ownership note and acceptance criterion; mechanism (dependency check/queue/DAG walk) left as an implementation decision for that task's Plan |
+| 4 | Pillar table's unique-active-row index not called out explicitly | task_ir-curve-bootstrap-config.org | Accepted | Added explicit acceptance criterion mirroring ir_curve_template_entries' (tenant_id, party_id, config_id, sequence_index) index |
+| 5 | point_id sentinel described as "matching" market_observations' convention, but that column is nullable there | task_shared-derivation-lineage.org | Accepted | Reworded to describe it as a stricter rule than market_observations, not a literal match |
+
+* Result

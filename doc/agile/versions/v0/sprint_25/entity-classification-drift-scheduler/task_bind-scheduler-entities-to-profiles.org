@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 66997EC9-8A28-4436-8496-181DF8EC0F83
+:END:
+#+title: Task: Bind ores.scheduler entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for the scheduler-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: set service_find_prefix on job_definition; delete leftover hand-written generators/ directory that conflicts with the new template-generated generator/ directory.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-scheduler:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:040527BC-58FA-4A5E-9ADC-3814FA319F5C][Entity classification and drift baseline: ores.scheduler]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every ores.scheduler entity against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:040527BC-58FA-4A5E-9ADC-3814FA319F5C][Entity classification and drift baseline: ores.scheduler]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered via the scheduler-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- The known service_find_prefix gap on job_definition and the leftover generators/ vs generator/ directory conflict are resolved as part of reaching zero drift.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Full local build and ctest green after regeneration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

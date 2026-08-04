@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 3E49EAF7-0545-4A4C-9DD8-34608FC41293
+:END:
+#+title: Story: Entity classification and drift baseline: ores.reporting
+#+description: Apply the ores.refdata pilot's proven pattern to ores.reporting: bind every eligible entity to a variability profile, resolve every drift the zero-diff regen check surfaces, and extend the refdata-codegen-drift CI job to cover reporting-cpp. Supersedes the ad hoc 'Apply safe drift to reporting-cpp' task.
+#+type: story
+#+level: s2
+#+filetags: :codegen:drift:tooling:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring ores.reporting to the same proven state as the ores.refdata pilot: every codegen-eligible entity bound to a profile or recorded as a genuine no-match, zero-diff regeneration verified, and any real gap the check surfaces fixed rather than skipped. Once trusted, reporting-cpp is added to the CI regeneration-drift check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- Every ores.reporting entity is bound to a matching Variability Profile, or recorded as a genuine no-match with a documented reason.
+- Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around.
+- Full local build clean, validate_schemas.sh green, full ctest suite green after regeneration.
+- check_component_drift.py --components is extended to include reporting-cpp, and the refdata-codegen-drift CI job is updated so future PRs touching ores.reporting fail on any regeneration drift.
+- The superseded ad hoc task 'Apply safe drift to reporting-cpp' is marked ABANDONED, pointing here.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:789D58B7-5282-41E0-879E-F5052AB295C6][Bind ores.reporting entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: no model changes expected. |
+
+* Decisions
+
+* Out of scope
+
+-

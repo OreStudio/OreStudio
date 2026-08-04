@@ -27,9 +27,9 @@ generator expression) needs fixing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | ABANDONED                              |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded before implementation started. |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
 | Next         | Start once refdata pattern is merged.  |
 | Last touched | 2026-05-31                             |
@@ -73,3 +73,10 @@ generator expression) needs fixing.
 |   |                 |      |          |       |
 
 * Result
+
+Superseded, not started: replaced by the [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift
+baseline: ores.dq]] story, which applies the fuller ores.refdata-pilot bar
+(profile binding + zero-diff regen + CI drift-check extension) rather than
+this task's narrower "apply known flags, raise PR" scope. This task's known
+starting-point notes (dataset_bundle service flags, HexPrefix typo) carried
+forward into that story's C++ task.

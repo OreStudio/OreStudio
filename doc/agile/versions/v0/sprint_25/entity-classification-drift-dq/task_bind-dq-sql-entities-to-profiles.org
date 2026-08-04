@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 163AC07E-19E4-4486-A503-8170D9B46108
+:END:
+#+title: Task: Bind ores.dq (SQL) entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for the dq catalogue entry (SQL-side model discovery), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Same method as the pilot task (Bind ores.refdata entities to profiles): survey every ores.dq entity under the dq catalogue entry against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered via the dq catalogue entry (projects/ores.dq/modeling, entity/table glob) is surveyed against all Variability Profiles.
+- Every matching entity is rebound (profile property set, explicit per-entity properties the profile covers removed) and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Any pre-existing drift the regen+diff surfaces (template bug, stale checked-in output) is fixed, not worked around.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

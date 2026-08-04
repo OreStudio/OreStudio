@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 4F5CB913-1664-47DA-8D3C-8A5F1B8C8780
+:END:
+#+title: Task: Bind ores.iam (C++) entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for the iam-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point (from the superseded ad hoc task): set service_find_prefix on tenant_type and tenant_status.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-iam:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every ores.iam entity under the iam-cpp catalogue entry against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered via the iam-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- The known service_find_prefix gap on tenant_type and tenant_status is resolved as part of reaching zero drift.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Full local build and ctest green after regeneration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

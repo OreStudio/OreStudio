@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 09618E7F-552A-445E-907D-B9D7589E382B
+:END:
+#+title: Task: Bind ores.analytics entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for the analytics-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: set service_find_by_uuid on pricing_model_config, pricing_model_product, pricing_model_product_parameter; service_find_by_code on pricing_model_config; service_find_prefix on pricing_engine_type.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-analytics:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9ABCB932-9501-4519-BECA-A30A93646770][Entity classification and drift baseline: ores.analytics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every ores.analytics entity against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9ABCB932-9501-4519-BECA-A30A93646770][Entity classification and drift baseline: ores.analytics]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered via the analytics-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- The known service_find_by_uuid/service_find_by_code/service_find_prefix gaps on pricing_model_config, pricing_model_product, pricing_model_product_parameter, and pricing_engine_type are resolved as part of reaching zero drift.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Full local build and ctest green after regeneration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

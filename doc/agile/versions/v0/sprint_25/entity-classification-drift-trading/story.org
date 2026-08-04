@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 914050BE-700A-4799-903F-5E27B44185D1
+:END:
+#+title: Story: Entity classification and drift baseline: ores.trading
+#+description: Apply the ores.refdata pilot's proven pattern to ores.trading: bind every eligible entity (SQL-side 'trade' and C++-side 'trading-cpp') to a variability profile, resolve every drift the zero-diff regen check surfaces, and extend the refdata-codegen-drift CI job to cover trade and trading-cpp. Supersedes the ad hoc 'Apply safe drift to trading-cpp' task.
+#+type: story
+#+level: s2
+#+filetags: :codegen:drift:tooling:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring ores.trading to the same proven state as the ores.refdata pilot: every codegen-eligible entity across both the SQL-side (trade) and C++-side (trading-cpp) catalogue entries bound to a profile or recorded as a genuine no-match, zero-diff regeneration verified, and any real gap the check surfaces fixed rather than skipped. Once trusted, trade and trading-cpp are added to the CI regeneration-drift check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- Every ores.trading entity (both catalogue entries: trade and trading-cpp) is bound to a matching Variability Profile, or recorded as a genuine no-match with a documented reason.
+- Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around.
+- Full local build clean, validate_schemas.sh green, full ctest suite green after regeneration.
+- check_component_drift.py --components is extended to include trade and trading-cpp, and the refdata-codegen-drift CI job is updated so future PRs touching ores.trading fail on any regeneration drift.
+- The superseded ad hoc task 'Apply safe drift to trading-cpp' is marked ABANDONED, pointing here.
+- The known starting-point wrinkles already recorded for trading-cpp (service_pagination/service_batch_get flags, per-model flags on 21 instrument and lookup entities, restoring documented exclusions trade_service and fra_instrument_service) are resolved as part of reaching zero drift, not left outstanding.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading (SQL) entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the trade catalogue entry (SQL-side model discovery), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:4462CA92-57B4-43EA-A01A-8D50A616F05F][Bind ores.trading (C++) entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the trading-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point (from the superseded ad hoc task): add service_pagination/service_batch_get template flags, set per-model flags on 21 instrument and lookup entities, restore documented exclusions trade_service and fra_instrument_service. |
+
+* Decisions
+
+* Out of scope
+
+-

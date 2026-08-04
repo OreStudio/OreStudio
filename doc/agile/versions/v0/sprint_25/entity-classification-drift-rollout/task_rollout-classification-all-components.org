@@ -20,12 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Extend the trusted, refdata-proven tool to every remaining component,
-produce the full quantified drift baseline, and retire everything the tool
-now supersedes: re-scope or close the 14 ad hoc per-component drift tasks
-using real data, and delete =entity_coverage_matrix.org=,
-=entity_evaluation_checklist.org=, and =entity_catalogue.org= — they do not
-survive this story.
+Narrowed 2026-08-04. Originally: extend the trusted, refdata-proven tool to
+every remaining component, produce the full quantified drift baseline, and
+retire everything the tool now supersedes. The re-scoping half is done —
+each of the 14 ad hoc tasks was re-scoped directly against the codegen
+component catalogue rather than a report (see the parent story's
+Decisions). What remains: retire =entity_coverage_matrix.org=,
+=entity_evaluation_checklist.org=, and =entity_catalogue.org=, and decide
+whether the quantified classification report is still worth producing now
+that 12 remediation stories already exist.
 
 * Status
 
@@ -35,22 +38,24 @@ survive this story.
 | Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-31                               |
+| Next         | Decide whether the report is still worth producing; retire the 3 stale docs either way. |
+| Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- The tool runs successfully over every remaining component and produces a
-  single combined drift report with per-component breakdowns and totals.
-- Any component-specific wrinkle the tool doesn't handle (new artefact kind,
-  different tenancy pattern, etc.) is resolved, not skipped or silently
-  scored as N/A.
-- Each of the 14 ad hoc "Fix =<component>= entity model drift" tasks is
-  either closed as covered, or re-scoped with the report's concrete findings
-  replacing its original guess.
+- Each of the 14 ad hoc "Apply safe drift to X-cpp" tasks is closed as
+  covered: 12 re-scoped into their own [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][entity classification and drift
+  baseline]] stories (one per component, composite components split into
+  subcomponent tasks), 1 (=ores.controller=) ABANDONED as decommissioned.
+  *Done.*
 - =entity_coverage_matrix.org=, =entity_evaluation_checklist.org=, and
   =entity_catalogue.org= are deleted; anything from them still useful is
-  captured in the tool/report or its documentation first.
+  captured first (in the 12 stories' notes, or elsewhere).
+- (Optional) The classification tool is run across every remaining
+  component and produces a combined drift report with per-component
+  breakdowns and totals — only if judged still worth producing once the 12
+  stories close; not required to close this task if the per-component
+  stories already supersede its value.
 
 * Plan
 

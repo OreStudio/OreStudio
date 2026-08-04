@@ -21,11 +21,11 @@ Restore the coded defaults (nats://localhost:4222, empty subject prefix) for par
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.            |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance
@@ -39,9 +39,20 @@ Restore the coded defaults (nats://localhost:4222, empty subject prefix) for par
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A979A858-424F-487A-9D3E-EE8D1B79BD35][Scaffold story: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] | DONE | 2026-08-04 | 2026-08-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:EEBC6A1A-8DC3-43D9-879A-02A75FB8313F][Implement Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] | BACKLOG | | | Initial task for: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests |
+| [[id:EEBC6A1A-8DC3-43D9-879A-02A75FB8313F][Implement Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] | DONE | | 2026-08-04 | Initial task for: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests |
 
 * Decisions
+
+- Fixed at the test layer, not the registry: PR #1819's shared-domain
+  fallback tier was working exactly as designed
+  (=nats_configuration::register_shared_domain()= explicitly allows
+  =URL=/=SUBJECT_PREFIX=/=WIRE_FORMAT=), and the leak only surfaced
+  because the affected tests were never actually
+  environment-isolated — they relied on no service parser recognizing
+  a bare =ORES_NATS_URL=, an assumption #1819 correctly invalidated.
+  Restoring hermeticity in the 11 affected tests (=unsetenv= before
+  each "no overrides given" assertion) preserves #1819's intended
+  production behaviour rather than papering over it.
 
 * Out of scope
 

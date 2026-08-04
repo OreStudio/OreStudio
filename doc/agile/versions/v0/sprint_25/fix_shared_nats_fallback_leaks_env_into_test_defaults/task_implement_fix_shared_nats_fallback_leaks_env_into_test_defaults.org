@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix_shared_nats_fallback_leaks_env_into_test_defaults:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: hotfix/fix-shared-nats-fallback-leaks-env-into-test-defaults
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Restore the coded defaults (nats://localhost:4222, empty subject prefix) for par
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -41,9 +41,27 @@ Restore the coded defaults (nats://localhost:4222, empty subject prefix) for par
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Root cause: PR #1819's generic =ORES_NATS_*= shared-domain fallback
+tier is working exactly as designed —
+=nats_configuration::register_shared_domain()= explicitly allows the
+=URL=/=SUBJECT_PREFIX=/=WIRE_FORMAT= suffixes, and all 11 affected
+domain services correctly call it. The bug is in the tests, not the
+registry: their =parse_defaults_returns_expected_values= case asserts
+the coded default (=nats://localhost:4222=, empty subject prefix)
+with zero CLI args, but was never actually environment-isolated — it
+only passed before #1819 because no service parser recognized a bare
+=ORES_NATS_URL=. Once the fallback tier made that generic var visible
+fleet-wide (the PR's actual, intended goal), this checkout's real
+=.env= value leaked into every one of these "no overrides given"
+tests.
+
+Fix: =unsetenv("ORES_NATS_URL")=/=unsetenv("ORES_NATS_SUBJECT_PREFIX")=/
+=unsetenv("ORES_NATS_WIRE_FORMAT")= right before the =parse()= call in
+all 11 affected test files' =parse_defaults_returns_expected_values=
+case, matching the existing =setenv=/=unsetenv= idiom already used in
+=ores.nats/tests/config_nats_configuration_tests.cpp=. No production
+code changed — PR #1819's fallback behaviour for real deployments is
+untouched.
 
 * Notes
 
@@ -71,3 +89,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+11 =config_parser_tests.cpp= files patched
+(=ores.assets/service=, =ores.compute/service=, =ores.dq/service=,
+=ores.iam/service=, =ores.refdata/service=, =ores.reporting/service=,
+=ores.scheduler/service=, =ores.synthetic/service=,
+=ores.telemetry/service=, =ores.trading/service=,
+=ores.variability/service=) — each gains a 3-line =unsetenv= block
+before their =parse_defaults_returns_expected_values= case's
+=parse()= call, plus =#include <cstdlib>= where missing.
+
+Verified: rebuilt clean; all 11 previously-failing test binaries
+individually confirmed passing (=parse_defaults_returns_expected_values=
+filter); full =ctest --preset linux-clang-debug-make= afterward:
+71/71 passed, 0 failed.

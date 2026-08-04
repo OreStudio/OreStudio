@@ -685,17 +685,6 @@ li {
     margin: 0 0 1rem;
 }
 
-.hero-tech {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin: 0;
-}
-
-.hero-tech a {
-    color: var(--text-muted);
-    text-decoration: underline;
-}
-
 .carousel-caption {
     flex-shrink: 0;
     padding: 1rem 1.5rem;

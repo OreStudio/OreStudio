@@ -16,12 +16,11 @@
 #+HTML: <img src="./assets/images/splash-screen.png" alt="ORE Studio">
 #+HTML: <div class="hero-content">
 #+HTML: <h1>Enterprise-grade risk analytics &mdash;<br/>but visual <i>and</i> open-source.</h1>
-#+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) in an intuitive graphical interface - no Python or C++ required.</p>
+#+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) and <a href="https://www.quantlib.org/">QuantLib</a> in an intuitive graphical interface - no Python or C++ required - built on a PostgreSQL-native, C++-performance backend.</p>
 #+HTML: <div class="hero-ctas">
 #+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
 #+HTML: <a class="btn btn-secondary" href="/OreStudio/doc/downloads.html">Download</a>
 #+HTML: </div>
-#+HTML: <p class="hero-tech">Built on <a href="https://github.com/OpenSourceRisk">Open Source Risk Engine</a> &amp; <a href="https://www.quantlib.org/">QuantLib</a> &middot; PostgreSQL-native &middot; C++ performance</p>
 #+HTML: </div>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">

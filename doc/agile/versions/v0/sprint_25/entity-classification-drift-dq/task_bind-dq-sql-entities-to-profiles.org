@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
 #+owner: marco
-#+branch:
+#+branch: feature/bind-dq-sql-entities-to-profiles
 #+pr:
 #+blocked_on:
 #+blocked_since:

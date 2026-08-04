@@ -39,9 +39,49 @@ Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+PR #1741 added a folder-scoped start mechanism
+(=start_feeds_under_folder_request= for FX,
+=start_ir_curve_feed_request= per IR curve) to the Qt Market
+Simulator's "Start at Root -> pick a theme" flow. Reused that exact
+mechanism from =tenant_handler.hpp='s per-office provisioning loop
+instead of building a second, Acme-specific path, per the task's own
+framing.
+
+Resolution chain, all server-side and deterministic (no name
+matching): =synthetic_publish_from_dq.sql= keys the theme's
+=market_data_generation_config= container by =(tenant_id, party_id,
+dataset_id)=, one per theme per party -- so:
+
+1. Look up the dq dataset id for code =synthetic.themes.realistic_2026=
+   (=get_datasets_request=, list + filter by =code=; no server-side
+   filter exists).
+2. Find the =market_data_generation_config= whose =dataset_id= matches
+   (=get_market_data_generation_configs_request=).
+3. Find the folder row with =kind == "collection"= and =collection_id=
+   equal to that config's id (=get_folders_request=) -- this is the
+   theme's collection folder, scoped to the calling party.
+4. =start_feeds_under_folder_request{folder_id}= starts every FX pair
+   in the subtree server-side.
+5. Since the folder-scoped request only resolves
+   =fx_spot_generation_config= rows (documented on the request struct
+   itself), IR curves need the per-curve path: fetch the folder's full
+   subtree (=get_folder_hierarchy_request=), collect every descendant
+   folder id, then call =start_ir_curve_feed_request= for each fetched
+   =ir_curve_generation_config= whose =folder_id= falls in that set
+   and whose =auto_start== is true -- matching the Market Simulator's
+   own folder-cascade exclusion of manual-start-only curves (e.g.
+   legacy IBOR-era ones sharing a folder with RFR siblings).
+
+New helper =start_synthetic_theme_feeds()= added next to =find_party=
+in =tenant_handler.hpp=, called once per office right after that
+office's staff-photos step. Best-effort: logs and returns on any
+resolution miss rather than failing the whole =provision_acme= call
+over this cosmetic-but-important follow-on step -- the party itself
+is already fully provisioned by the time this runs.
+
+Required linking =ores.synthetic.api.lib= and =ores.marketdata.api.lib=
+into =ores.iam.core.lib= (previously only =ores.dq.api.lib= and
+=ores.refdata.api.lib= among the synthetic-adjacent components).
 
 * Notes
 

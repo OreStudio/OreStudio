@@ -103,13 +103,39 @@ plan itself stays — it is the historical record of what we did.)
   =ores.dq.core.lib=/=ores.dq.service.lib= build clean;
   =ores.dq.api.tests= (273/50) and =ores.dq.core.tests= (300/95, incl. 7
   new cases) pass against the live DB.
-- Remaining lookup_entity migrations for this task: lei_entity,
-  lei_relationship (both genuinely depend on =has_artefact_insert_fn=,
-  which =domain_entity= has no equivalent hook for yet -- must be ported,
-  not dropped, per 464B5EC6's own warning), report_definition,
-  synthetic_fx_spot_config. Then the 18-entity profile-binding survey
-  itself (this task's original acceptance) still needs doing across all of
-  dq's entities, migrated or not.
+- Built the =has_artefact_insert_fn= port 464B5EC6 flagged as missing, then
+  migrated =lei_entity=: added a new =ores.sql.schema.domain_entity_artefact_create=
+  archetype (=#+model_types: domain_entity=, disabled by default -- most
+  domain_entity models have no artefact table at all, an entity opts in
+  with =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in
+  its file-level PROPERTIES drawer), ported from the lookup_entity-only
+  =sql_schema_artefact_create.mustache=; wired =has_artefact_insert_fn= and
+  =* Artefact indexes= as domain_entity frontmatter/section support in
+  org_loader.py. Regenerated artefact table matches the pre-existing
+  checked-in one exactly bar two harmless deltas (template-name comment;
+  two redundant =default null= clauses correctly dropped). Idempotent on a
+  second regen. Confirmed the new archetype has zero effect on any other
+  domain_entity (artefact_type and all 5 already-migrated dq entities
+  regenerate byte-identical). Tangle round-trip verified (hand-written
+  =.mustache= matches =compass build --direct tangle_codegen_templates=
+  output exactly).
+- Discovered along the way: =lei_entity= (like the other 3 remaining
+  lookup entities) has never had a "main" bi-temporal table in production
+  -- =dq_lei_entities_create.sql= never existed in the repo; LEI data is
+  queried directly from the artefact table (per
+  =dq_lei_entities_query_functions_create.sql='s own doc comment). Since
+  =domain_entity='s main-table archetype has no per-entity opt-out, it
+  still generates a speculative main table + notify trigger as a
+  byproduct when regenerated at =--address ores.sql.schema= -- correctly
+  left uncommitted (nothing in the codebase would reference it), same
+  treatment given to lei_relationship/report_definition/
+  synthetic_fx_spot_config once each is migrated.
+- Remaining lookup_entity migrations for this task: lei_relationship
+  (depends on =has_artefact_insert_fn=, now ported), report_definition,
+  synthetic_fx_spot_config (both =has_artefact_insert_fn: false= --
+  simpler, closer to =artefact_type='s pattern). Then the 18-entity
+  profile-binding survey itself (this task's original acceptance) still
+  needs doing across all of dq's entities, migrated or not.
 
 * Test Scenarios
 

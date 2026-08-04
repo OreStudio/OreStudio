@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1820][#1820]] | [iam] Fix flaky mint_token_respects_the_requested_ttl (1s JWT TTL) |
 
 * Review
 
@@ -69,3 +69,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolding (story.org, task files, sprint wiring) rode PR #1820
+alongside the implementation task rather than a separate scaffold-only
+PR — the whole story was small enough to land in one PR. Merged.

@@ -56,7 +56,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | BACKLOG | | | Test mints a JWT with a 1-second TTL and validates it immediately with zero verifier leeway; on slower/loaded nightly runners the token expires before validation, causing a spurious failure. |
+| [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | DONE | 2026-08-04 | 2026-08-04 | Test mints a JWT with a 1-second TTL and validates it immediately with zero verifier leeway; on slower/loaded nightly runners the token expires before validation, causing a spurious failure. |
 
 * Achievements
 

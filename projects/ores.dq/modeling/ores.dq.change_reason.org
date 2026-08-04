@@ -10,7 +10,6 @@
 #+entity_singular: change_reason
 #+entity_plural: change_reasons
 #+entity_title: Change Reason
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -24,6 +23,7 @@ external source).
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

@@ -13,7 +13,7 @@
 #+brief: Links a dataset to a bundle.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
+#+profile: tenant-scoped-junction
 #+created: 2026-06-02
 #+updated: 2026-06-02
 

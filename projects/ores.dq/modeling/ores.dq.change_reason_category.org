@@ -10,7 +10,6 @@
 #+entity_singular: change_reason_category
 #+entity_plural: change_reason_categories
 #+entity_title: Change Reason Category
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -23,6 +22,7 @@ authored directly (not mirrored from an external source).
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

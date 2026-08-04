@@ -10,7 +10,6 @@
 #+entity_singular: data_domain
 #+entity_plural: data_domains
 #+entity_title: Data Domain
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -22,6 +21,7 @@ source).
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

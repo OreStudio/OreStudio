@@ -10,7 +10,6 @@
 #+entity_singular: catalog
 #+entity_plural: catalogs
 #+entity_title: Catalog
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -26,6 +25,7 @@ authored directly (not mirrored from an external source).
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

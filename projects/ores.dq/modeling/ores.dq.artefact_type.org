@@ -10,7 +10,6 @@
 #+entity_singular: artefact_type
 #+entity_plural: artefact_types
 #+entity_title: Artefact Type
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-08-04
@@ -25,6 +24,7 @@ an external source).
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

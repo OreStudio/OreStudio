@@ -11,7 +11,6 @@
 #+entity_singular: lei_relationship
 #+entity_plural: lei_relationships
 #+entity_title: LEI Relationship
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+has_artefact_insert_fn: true
@@ -22,6 +21,7 @@ GLEIF LEI corporate hierarchy relationships from RR golden copy files
 
 * Flags
 :PROPERTIES:
+:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

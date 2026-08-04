@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 49BE469F-4191-4DD3-91AE-E7AF04A3354A
+:END:
+#+title: Task: Recapture dedicated carousel screenshots
+#+description: The carousel's first pass reuses old release screenshots (v0.0.24, v0.0.12, v0.0.15, v0.0.20) as stand-ins for org chart, reference data, compute, and shell -- none purpose-built for the carousel. Capture fresh, dedicated composite screenshots (several windows open, current UI/theme) for each carousel topic.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The carousel currently uses whatever composite (multi-window) screenshot
+from an old release happened to fit each topic: v0.0.24 for org
+structure, v0.0.12 for reference data, v0.0.15 for compute, v0.0.20
+for the shell. These are stand-ins, not purpose-built shots -- stale
+UI chrome/theme from past releases, framing chosen for a different
+context. Capture fresh, dedicated composite screenshots (several
+relevant windows arranged together, current UI/theme, current data)
+for each carousel slide.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Fresh composite screenshots captured, current UI/theme, for: org
+  structure/hierarchy, reference data, compute grid, and the shell --
+  replacing the four old-release stand-ins (ore_studio-v0.0.24.png,
+  ore_studio-v0.0.12.png, ore_studio-v0.0.15.png,
+  ore_studio-v0.0.20.png).
+- New images saved under `assets/images/` with descriptive names, and
+  `index.org`'s carousel slides updated to reference them.
+- Consider also recapturing the Cross-Rates Matrix, Market Simulator,
+  and Data Librarian slides at the same time if a cleaner shot is
+  easy to get, though those three are already dedicated/composite
+  shots (not stand-ins) and lower priority than the four above.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

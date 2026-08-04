@@ -9,40 +9,65 @@
 #+options: html-postamble:nil toc:nil num:nil ^:nil title:nil
 #+HTML_DOCTYPE: html5
 
-#+HTML: <section class="hero">
-#+HTML: <img class="banner" src="./assets/images/splash-screen.png" alt="ORE Studio">
-#+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
+#+HTML: <section class="carousel">
+#+HTML: <div class="carousel-inner">
+#+HTML: <div class="carousel-viewport">
+#+HTML: <figure class="carousel-slide hero-slide is-active">
+#+HTML: <img src="./assets/images/splash-screen.png" alt="ORE Studio">
+#+HTML: <div class="hero-content">
 #+HTML: <h1>Enterprise-grade risk analytics &mdash;<br/>but visual <i>and</i> open-source.</h1>
-#+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) in an intuitive graphical interface - no Python or C++ required.</p>
+#+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) and <a href="https://www.quantlib.org/">QuantLib</a> in an intuitive graphical interface - no Python or C++ required - built on a PostgreSQL-native, C++-performance backend.</p>
+#+HTML: <div class="hero-ctas">
+#+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
+#+HTML: <a class="btn btn-secondary" href="/OreStudio/doc/downloads.html">Download</a>
+#+HTML: </div>
+#+HTML: </div>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_cross_rates_matrix.png" alt="Cross-Rates Matrix">
+#+HTML: <figcaption class="carousel-caption"><strong>Live FX Cross-Rates</strong><span>Real-time cross-rates matrices for any currency set, with mini price charts and configurable update intervals.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.24.png" alt="Organisational Structure">
+#+HTML: <figcaption class="carousel-caption"><strong>Organisational Structure</strong><span>Manage parties, accounts, and holding-group hierarchies, visualised live in the Org Explorer.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_ir_synthetic_data_generator.png" alt="Market Simulator: IR curve calibration">
+#+HTML: <figcaption class="carousel-caption"><strong>Market Simulator</strong><span>Calibrate and simulate interest-rate curves with QuantLib-backed stochastic models, previewed live.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_data_librarian_accession_card.png" alt="Data Librarian">
+#+HTML: <figcaption class="carousel-caption"><strong>Data Librarian</strong><span>Track provenance, lineage, and governance for every dataset in the system.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.12.png" alt="Reference Data">
+#+HTML: <figcaption class="carousel-caption"><strong>Reference Data</strong><span>Business centres, portfolios, business units, and counterparties -- the shared foundation every other screen builds on.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.15.png" alt="Compute Grid">
+#+HTML: <figcaption class="carousel-caption"><strong>Distributed Compute</strong><span>Monitor a BOINC-inspired compute grid: hosts, workunits, and applications, live.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.20.png" alt="ores.shell">
+#+HTML: <figcaption class="carousel-caption"><strong>Scriptable Shell</strong><span>Automate provisioning and operations with a scriptable shell, side by side with the GUI.</span></figcaption>
+#+HTML: </figure>
+#+HTML: <button class="carousel-nav prev" aria-label="Previous slide">&#8249;</button>
+#+HTML: <button class="carousel-nav next" aria-label="Next slide">&#8250;</button>
+#+HTML: </div>
+#+HTML: <div class="carousel-dots">
+#+HTML: <button class="carousel-dot is-active" aria-label="Slide 1"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 2"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 3"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 4"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 5"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 6"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 7"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 8"></button>
+#+HTML: </div>
+#+HTML: </div>
 #+HTML: </section>
-
-*ORE Studio* is a new and independent open-source project with the goal of
-providing a graphical wrapper around Acadia's [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]]. ORE itself builds on top of
-[[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]], the de-facto standard open-source library for quantitative finance.
-*ORE Studio* aims to augment ORE's robust analytics to eventually provide full
-life-cycle management for all entities within the trading system,
-point-and-click reporting, trade modelling and market-data management. ORE
-Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
-
-#+ATTR_HTML: :alt ORE Studio Qt User Interface :title ORE Studio Qt User Interface :align center
-#+ATTR_HTML: :width 100% :height 100%
-[[./assets/images/ore_studio-v0.0.24.png]]
-
-#+HTML: <div class="grid">
-#+HTML: <div class="card">
-#+HTML: <h3>QuantLib Inside</h3>
-#+HTML: <p>Benefit from over 20 years of peer-reviewed quantitative-finance models.</p>
-#+HTML: </div>
-#+HTML: <div class="card">
-#+HTML: <h3>ORE Powered</h3>
-#+HTML: <p>Latest pricing and risk analytics including XVAs, sensitivities and regulatory scenarios.</p>
-#+HTML: </div>
-#+HTML: <div class="card">
-#+HTML: <h3>Visual Workflow</h3>
-#+HTML: <p>Manage visually curves, trades and reports. Share results via the reporting management system.</p>
-#+HTML: </div>
-#+HTML: </div>
+#+HTML: <script src="./assets/carousel.js"></script>
 
 #+HTML: <footer>
-#+HTML: © 2025 ORE Studio contributors.
+#+HTML: © 2026 ORE Studio contributors.
 #+HTML: </footer>

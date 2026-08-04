@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1
+:END:
+#+title: Task: Add systemd unit for site start/stop
+#+description: Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+`compass site serve` currently only runs as an ad hoc foreground/background
+shell process (manually backgrounded, killed via `pkill`), unlike every
+other ORE Studio service which is managed through systemd (see
+`systemd_generate.py` and `compass services start/stop/status`). Give the
+site preview server the same treatment: a generated systemd unit and
+`compass site start`/`compass site stop`/`compass site status` commands
+(or equivalent), so it starts/stops/reports cleanly and doesn't leave
+orphaned python http.server processes behind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- A systemd unit for the site-preview server is generated per
+  environment, following the same convention as the other ORE Studio
+  services (`systemd_generate.py`, per-environment scoping/cgroups).
+- `compass site start`/`compass site stop` (or equivalent under the
+  existing `compass site` subcommand group) start/stop the unit
+  instead of a manually backgrounded process.
+- `compass services status` (or `compass site status`) reports the
+  site server's state alongside the other services.
+- No orphaned `python3 -m http.server`/emacs processes left behind
+  after stop.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

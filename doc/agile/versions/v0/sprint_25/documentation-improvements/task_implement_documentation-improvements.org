@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 6CE97DF4-4AC4-42A9-9B8C-D3DCD77FA515
+:END:
+#+title: Task: Add an image carousel to the website homepage
+#+description: Initial task for: Documentation improvements
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a dependency-free HTML/CSS/JS image carousel to the site homepage
+(=index.org=), replacing the old static hero image + standalone
+version screenshot with a single carousel whose first slide is the
+hero (splash image + title/subhead/CTA) and whose remaining slides
+are a hand-curated set of ORE Studio screenshots with captions,
+showcasing the breadth of functionality (market data, org structure,
+quant/analytics, data governance, trade capture, reference data).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Carousel replaces the old hero section + standalone version
+  screenshot at the top of =index.org=, with the hero merged into the
+  carousel's first slide.
+- 7 hand-curated feature screenshots follow, each with a caption.
+- Dependency-free (no CDN/external JS library) vanilla JS controller:
+  auto-advance, pause on hover/focus, prev/next buttons, dot nav.
+- No image is ever stretched or distorted: every slide uses
+  =object-fit: contain= at its native aspect ratio, regardless of
+  source resolution.
+- =compass site serve= actually serves =.js= files (site build had no
+  publish rule for them before this task).
+- Secondary "Download" CTA and a one-line tech credibility strip on
+  the hero, per external UX review.
+- User-approved final visual state (image-top/solid-text-below card
+  layout for every slide, no pillarboxing/black bars, readable text
+  sizing).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped and user-approved. Several rounds of visual iteration beyond
+the initial implementation, each caught by direct feedback and a
+Gemini UX review:
+
+- Fixed a flexbox min-height bug that was clipping/hiding captions on
+  large screenshots.
+- Restored the hero slide's original image-top/text-below layout
+  (initially tried an overlay-on-image style, reverted per feedback).
+- Traced "black bars either side of the hero image" through two
+  false leads (browser cache, then an incomplete flex override) to
+  the real cause: the site-wide generic =img= rule's =margin: auto=,
+  which has free-space-absorbing behaviour in flex layouts and wasn't
+  fully overridden by the carousel-specific rules.
+- Matched the =object-fit: contain= letterbox fill colour to the
+  surrounding box background, eliminating a visible seam.
+- Swapped in real composite (multi-window) screenshots for org
+  chart/ACME, reference data, compute, and shell -- old-release
+  stand-ins, flagged for replacement with purpose-built shots in
+  [[id:49BE469F-4191-4DD3-91AE-E7AF04A3354A][Recapture dedicated carousel screenshots]].
+- Added a second "Download" CTA and a tech credibility strip per an
+  external UX review; deferred nav consolidation and a quickstart
+  snippet to their own tasks rather than scope-creeping this one.

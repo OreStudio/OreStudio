@@ -19,6 +19,7 @@ import json
 import os
 import re
 import shutil
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -5741,6 +5742,19 @@ def _cmd_site_show(path, raw=False, width=100):
     return 0
 
 
+def _lan_ip():
+    """Best-effort LAN IP for this host (no packets actually sent — UDP
+    connect() to a public address just makes the kernel pick the outbound
+    interface/source IP for us). Falls back to 'localhost' if unavailable
+    (e.g. no network)."""
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except OSError:
+        return "localhost"
+
+
 def cmd_site(argv):
     """compass site — Site pillar: build and serve the org-mode site locally."""
     ap = argparse.ArgumentParser(
@@ -5803,7 +5817,12 @@ def cmd_site(argv):
               file=sys.stderr)
         return 1
 
-    print(f"🌐 Serving {build_dir} on http://localhost:{port}/OreStudio/")
+    print(f"🌐 Serving {build_dir}")
+    print(f"   http://localhost:{port}/OreStudio/index.html")
+    lan_ip = _lan_ip()
+    if lan_ip != "localhost":
+        print(f"   http://{lan_ip}:{port}/OreStudio/index.html")
+    sys.stdout.flush()
     handler = functools.partial(http.server.SimpleHTTPRequestHandler,
                                 directory=str(build_dir))
     with http.server.ThreadingHTTPServer(("", port), handler) as httpd:

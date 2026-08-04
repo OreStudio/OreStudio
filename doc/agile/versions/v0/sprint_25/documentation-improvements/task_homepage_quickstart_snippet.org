@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 00289422-24F1-4124-B3D1-1261B52ABCE7
+:END:
+#+title: Task: Add a quickstart CLI snippet to the homepage
+#+description: A short terminal install/quickstart command block on the homepage for fast developer onboarding, per external review. Scope: what the snippet actually shows (git clone + build? a hosted install script?) needs deciding before implementation.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An external (Gemini) UX review of the redesigned homepage suggested a
+short terminal quickstart/install command block for fast developer
+onboarding, directly on the landing page. ORE Studio has no one-line
+install today (it's a full C++ project built from source via
+=compass build=, no packaged installer/curl-pipe-sh script), so the
+first real step here is deciding what the snippet should actually
+show -- a =git clone= + build sequence? A pointer to the pre-built
+downloads from =downloads.org=? Something else? -- before any markup
+changes land.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Decide and document what the snippet shows (build-from-source vs.
+  pre-built download vs. both), matching what actually works today --
+  don't ship a snippet implying an install path that doesn't exist.
+- A styled code block on the homepage (matching the site's existing
+  syntax-highlighted =pre.src= styling) with the chosen command(s).
+- Verify the shown command(s) actually work against a fresh checkout.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

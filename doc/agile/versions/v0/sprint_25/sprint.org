@@ -50,6 +50,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] | BACKLOG | | | Pulled from product backlog: converge compass onto systemd for process lifecycle across the fleet, root-causing the 2026-07-31 reboot's cgroup-unaware process management. |
 | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] | BACKLOG | | | Pulled from product backlog: bootstrap the raw instrument grid into a desk-consumable zero/discount curve and republish it as an official curve stream. |
 | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] | BACKLOG | | | Pulled from product backlog: follow-on from Sprint 23's IR Rates synthetic data generation -- seed a realistic vintage dataset, normalize duplicate floating-index catalogs, extend to dual discount/projection curve, add IR quoting-convention display. |
+| [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] | STARTED | 2026-08-04 | | Ongoing improvements to ORE Studio's documentation and public-facing site. Tasks are added incrementally as ideas come up. |
 
 ** Hotfixes
 

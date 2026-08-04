@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
-#+updated: 2026-07-25
+#+updated: 2026-08-04
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -42,7 +42,7 @@ they are looking at once it is up.
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-07-25                               |
+| Last touched | 2026-08-04                               |
 
 * Acceptance
 
@@ -197,6 +197,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Reporting-line description wrong: Head of Desk/Middle Office/Market Risk don't report directly to Country Head -- accounts.json shows an unmentioned intermediate layer (Head of Trading, Head of Risk, COO) | chapter_acme_corporation.org | Fixed | Verified against accounts.json's reports_to_username chain and the org-chart screenshot; added the missing Head of Trading/Head of Risk roles to Front office/Market risk/Leadership sections and corrected every reporting-chain sentence. |
 | 2 | "Three desks apiece"/"no placeholder rows" overclaims: business_units.json shows UK has 7 DESK units, only the 3 EMEA ones staffed per accounts.json | chapter_acme_corporation.org | Fixed | Verified counts against business_units.json/accounts.json; reworded to state only EMEA is staffed today, Americas/APAC are structural placeholders, and dropped the "no placeholder rows" claim. |
+| 3 | (PR #1830 round 1) #+updated/Last touched still 2026-07-25 despite State moving to DONE and the story's End date being 2026-08-04 -- breaks the convention sibling closed tasks in this story follow | task_write_acme_corporation_manual_chapter.org | Fixed | Bumped both fields to 2026-08-04. |
 
 * Result
 

@@ -57,6 +57,19 @@ std::vector<domain::ibor_index_convention>
 ibor_index_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<ibor_index_convention_entity, domain::ibor_index_convention>(
+            ctx,
+            query,
+            [](const auto& entities) { return ibor_index_convention_mapper::map(entities); },
+            lg(),
+            "Reading latest IBOR index conventions (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<ibor_index_convention_entity>> |

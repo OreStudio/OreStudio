@@ -23,6 +23,7 @@ set(files
     "repository_book_status_repository_tests.cpp"
     "repository_business_unit_repository_tests.cpp"
     "repository_business_unit_type_repository_tests.cpp"
+    "repository_cds_convention_workspace_inheritance_tests.cpp"
     "repository_contact_type_repository_tests.cpp"
     "repository_counterparty_contact_information_repository_tests.cpp"
     "repository_counterparty_identifier_repository_tests.cpp"

@@ -52,6 +52,19 @@ void deposit_convention_repository::write(context ctx,
 std::vector<domain::deposit_convention> deposit_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<deposit_convention_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<deposit_convention_entity, domain::deposit_convention>(
+            ctx,
+            query,
+            [](const auto& entities) { return deposit_convention_mapper::map(entities); },
+            lg(),
+            "Reading latest deposit conventions (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<deposit_convention_entity>> |

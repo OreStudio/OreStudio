@@ -51,6 +51,19 @@ void swap_convention_repository::write(context ctx, const std::vector<domain::sw
 std::vector<domain::swap_convention> swap_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<swap_convention_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<swap_convention_entity, domain::swap_convention>(
+            ctx,
+            query,
+            [](const auto& entities) { return swap_convention_mapper::map(entities); },
+            lg(),
+            "Reading latest swap conventions (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<swap_convention_entity>> |

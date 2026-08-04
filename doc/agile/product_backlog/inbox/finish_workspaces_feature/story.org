@@ -87,9 +87,9 @@ workspace activation in the Qt client.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Audit complete; two follow-up tasks filed. |
-| Waiting on    | Nothing.                               |
-| Next          | Pick up the inheritance-query fix (higher priority) or the coverage backfill. |
+| Now           | Inheritance-query fix landed (8/21 entities verified). |
+| Waiting on    | Nothing directly; the remaining 13 entities depend on a separate pre-existing task (836BB4CE). |
+| Next          | Pick up the coverage backfill task, or the trading-entity regen once 836BB4CE lands. |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance
@@ -118,7 +118,7 @@ workspace activation in the Qt client.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | DONE | 2026-08-04 | 2026-08-04 | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
-| [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | STARTED | 2026-08-04 | | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
+| [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | DONE | 2026-08-04 | 2026-08-05 | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
 | [[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][Backfill workspace_id coverage: book, portfolio, and decide on trading instrument sub-types]] | BACKLOG | | | book and portfolio have codegen models but never got has_workspace_id added despite their SQL tables carrying the column -- backfill the model flag and regenerate. Separately decide whether the ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) get codegen models at all, or stay hand-crafted -- this is a pre-existing not-yet-under-codegen gap, not workspace-specific, but their workspace_id handling is currently unverified either way. |
 
 * Decisions
@@ -162,6 +162,26 @@ workspace activation in the Qt client.
   - Two follow-up tasks filed to close these: fixing the inheritance
     query (affects all 21 covered entities equally, likely the higher-
     priority one), and backfilling the 25-table coverage gap.
+- *Inheritance-query fix landed* (see the task's =* Result=/=* Notes=
+  for full detail). Fixed the template's list-all method to use
+  =workspace_id IN (chain)= when a resolution chain is set (the
+  end-to-end plumbing for this already existed and needed no
+  changes). Verified against the 8 profile-based refdata convention
+  entities: zero-diff regen, clean build, all tests pass including a
+  new permanent test proving inheritance actually works.
+  - The 13 trading =has_workspace_id= entities could not be
+    regenerated/verified in this pass: their models use a legacy
+    primary-key heading format a separate, already-tracked task
+    ([[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+
+    models]]) is responsible for fixing repo-wide. The template fix
+    itself is generic and needs no further work -- once that
+    prerequisite lands, regenerating those 13 entities picks up
+    inheritance automatically.
+  - =reporting.report_definition= has its own hand-written
+    =read_latest_with_resolution= (a per-workspace loop + name-based
+    dedup, appropriate for its name-keyed override semantics) --
+    left untouched; could be migrated onto the now-fixed generated
+    path as a small separate cleanup, not required.
 
 * Out of scope
 

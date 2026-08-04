@@ -35,25 +35,31 @@ through the C++ context/service layer to the repository call.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- =has_workspace_id= list/find queries use
-  =workspace_id = ANY(:resolution_order)= with =DISTINCT ON=
-  deduplication instead of exact match.
+- =has_workspace_id= list queries use =workspace_id = ANY(chain)=
+  instead of exact match, falling back to exact match when no chain
+  is set.
 - Resolution-order array is available end-to-end: computed once
-  (existing recursive CTE), threaded through =database::context=, and
-  reaches every regenerated repository call.
-- Manually verified: a child workspace with no local rows for an
-  entity correctly sees its parent's (or Live's) rows.
-- All 21 currently-covered entities regenerate cleanly and their
-  tests still pass.
+  (existing recursive CTE), threaded through =database::context=
+  (already existed --
+  =context::workspace_resolution()=/=with_workspace_resolution()=),
+  and reaches the regenerated repository call.
+- Manually verified via a real, permanent repository test: a child
+  workspace with no local rows for an entity correctly sees Live's
+  rows.
+- Every entity the template change can currently reach regenerates
+  cleanly (zero-diff, idempotent) and its tests still pass. The 13
+  trading =has_workspace_id= entities are blocked on a separate,
+  already-tracked prerequisite (see =* Notes=) and are explicitly
+  *not* covered by this task's regeneration/test pass.
 
 * Plan
 
@@ -61,7 +67,68 @@ through the C++ context/service layer to the repository call.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. Found the plumbing (=context::workspace_resolution()=,
+   =with_workspace_resolution()=, the =X-Workspace-Resolution= NATS
+   header, =request_context.cpp=) already exists end-to-end and is
+   already used by one hand-crafted service
+   (=report_definition_service.cpp=, via a per-workspace loop +
+   name-based dedup in its repository). The gap really was narrowly:
+   the codegen *template* itself still generates exact-match.
+2. Decided against replicating report_definition's per-workspace-loop
+   pattern in the template. That pattern exists because
+   report_definition rows are keyed by a natural *name* that can
+   legitimately be overridden per-workspace (closest wins). The 13
+   trading =has_workspace_id= entities (and the 8 profile-based
+   refdata conventions) are keyed by their own UUID primary key --
+   there is no cross-workspace name collision to resolve, so a single
+   SQL =workspace_id IN (chain)= query is simpler and correct; no
+   =DISTINCT ON= needed since the primary key already guarantees
+   uniqueness across the result set.
+3. Edited the literate source
+   (=projects/ores.codegen/library/templates/ores.cpp.repository.repository_impl.org=),
+   not the generated =.mustache= directly (caught this before
+   committing); re-tangled with
+   =compass build --direct tangle_codegen_templates=.
+4. Scoped the change to the primary =read_latest(context ctx)=
+   list-all method only (the one exercised by the acceptance
+   criterion "child workspace sees parent's data"). Left every other
+   method (find-by-id, batch read, count, remove, as-of lookups)
+   using exact match -- writes/deletes should never span the
+   inheritance chain, and point lookups by UUID primary key already
+   fully identify which workspace's row is meant.
+5. Attempted to regenerate and test against all 13 trading
+   =has_workspace_id= entities as originally scoped. All 13 (plus
+   =reporting.report_definition=) hit a pre-existing, unrelated
+   validator failure: their =.org= models declare their primary key
+   via an old, no-longer-recognised top-level =* Primary key= heading
+   instead of the current =* Columns= + =:primary_key: true=
+   convention. This is exactly
+   [[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]],
+   a separately-tracked, already-filed task covering 70+ models
+   repo-wide -- not something to duplicate or silently route around
+   here. Regenerated and tested against the 8 profile-based refdata
+   convention entities instead (=workspace-scoped-lookup= profile),
+   which use the modern format and were fully verifiable.
+6. Added a permanent repository test
+   (=repository_cds_convention_workspace_inheritance_tests.cpp=)
+   proving the fix: a row written to Live is visible when queried
+   with a resolution chain =[fresh-random-child-id, Live]=, and a
+   second test confirming the empty-chain (no resolution set) case is
+   unchanged (exact match still works). No repository tests existed
+   for any of these 8 entities before this task.
+
 * Notes
+
+*Blocked follow-up*: regenerating and verifying the 13 trading
+=has_workspace_id= entities (and =reporting.report_definition=, which
+should probably also be migrated off its hand-written
+=read_latest_with_resolution= onto the now-fixed generated path) is
+blocked on
+[[id:836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9][Fix legacy Primary key heading blocking codegen regen on 70+ models]]
+landing first. Once it does, re-run
+=./compass.sh codegen regenerate --component trading --address
+ores.cpp.repository --entity <13 entities>= and re-verify with
+=ctest -R "ores\.trading"=.
 
 * Test Scenarios
 
@@ -87,3 +154,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Fixed the codegen repository template's =has_workspace_id= list-all
+method (=read_latest(context ctx)=) to use =workspace_id = ANY(chain)=
+when a resolution chain is set on the context, falling back to the
+previous exact-match behaviour when it isn't. The end-to-end plumbing
+(recursive-CTE resolution, =X-Workspace-Resolution= NATS header,
+=context::workspace_resolution()=) already existed and needed no
+changes -- only the template's query itself was wrong.
+
+Regenerated and fully verified against the 8 profile-based refdata
+convention entities (=workspace-scoped-lookup=): zero-diff/idempotent
+regeneration, clean build, all 178 tests pass (176 pre-existing + 2
+new), including a new permanent test proving a child workspace with
+no local rows correctly inherits Live's rows.
+
+The 13 trading =has_workspace_id= entities could not be regenerated
+or verified in this task: they (and =reporting.report_definition=)
+hit a separate, already-tracked, pre-existing blocker -- their models
+use a legacy primary-key heading format the current parser doesn't
+recognise (task 836BB4CE-0E1F-4ADD-B8B9-A7AA81753AF9, "Fix legacy
+Primary key heading blocking codegen regen on 70+ models"). The
+template fix itself is generic and will apply to them automatically
+once that prerequisite lands; no further template work is needed,
+only regeneration + re-verification. Documented as a blocked
+follow-up in =* Notes= above and in the parent story's =* Decisions=.

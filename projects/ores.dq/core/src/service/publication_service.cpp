@@ -37,8 +37,7 @@ publication_service::publication_service(context ctx)
     : ctx_(std::move(ctx))
     , dataset_repo_(ctx_)
     , dependency_repo_(ctx_)
-    , publication_repo_(ctx_)
-    , artefact_type_repo_(ctx_) {
+    , publication_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
 }
 
@@ -253,9 +252,9 @@ publication_service::build_artefact_type_cache(const std::vector<domain::dataset
     // Fetch each artefact type once
     std::map<std::string, domain::artefact_type> cache;
     for (const auto& code : artefact_type_codes) {
-        auto artefact_type = artefact_type_repo_.read_by_code(code);
-        if (artefact_type.has_value()) {
-            cache[code] = *artefact_type;
+        auto artefact_types = artefact_type_repo_.read_latest(ctx_, code);
+        if (!artefact_types.empty()) {
+            cache[code] = std::move(artefact_types.front());
         } else {
             BOOST_LOG_SEV(lg(), warn) << "Artefact type not found: " << code;
         }

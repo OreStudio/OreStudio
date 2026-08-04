@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_DQ_CORE_MESSAGING_ARTEFACT_TYPE_REGISTRAR_HPP
+#define ORES_DQ_CORE_MESSAGING_ARTEFACT_TYPE_REGISTRAR_HPP
 
-drop rule if exists ores_dq_artefact_types_delete_rule on "ores_dq_artefact_types_tbl";
-drop trigger if exists ores_dq_artefact_types_insert_trg on "ores_dq_artefact_types_tbl";
-drop function if exists ores_dq_artefact_types_insert_fn;
-drop table if exists "ores_dq_artefact_types_tbl";
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
+
+namespace ores::dq::messaging {
+
+std::vector<ores::nats::service::subscription>
+register_artefact_type_handlers(ores::nats::service::client& nats,
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::dq::messaging
+
+#endif

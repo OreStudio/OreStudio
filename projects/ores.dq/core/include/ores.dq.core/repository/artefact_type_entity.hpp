@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,16 +20,18 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::dq::repository {
 
+using db_timestamp = ores::database::repository::db_timestamp;
+
 /**
- * @brief Represents an artefact_type in the database.
- *
- * This is a simple lookup table - no bitemporal support.
+ * @brief Represents a artefact type in the database.
  */
 struct artefact_type_entity {
     constexpr static const char* schema = "public";
@@ -37,12 +39,19 @@ struct artefact_type_entity {
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
+    int version = 0;
     std::string name;
     std::optional<std::string> description;
     std::optional<std::string> artefact_table;
     std::optional<std::string> target_table;
     std::optional<std::string> target_subject;
     int display_order = 0;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const artefact_type_entity& v);

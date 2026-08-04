@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_DQ_API_GENERATORS_ARTEFACT_TYPE_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_ARTEFACT_TYPE_GENERATOR_HPP
 
-drop rule if exists ores_dq_artefact_types_delete_rule on "ores_dq_artefact_types_tbl";
-drop trigger if exists ores_dq_artefact_types_insert_trg on "ores_dq_artefact_types_tbl";
-drop function if exists ores_dq_artefact_types_insert_fn;
-drop table if exists "ores_dq_artefact_types_tbl";
+#include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
+
+namespace ores::dq::generators {
+
+/**
+ * @brief Generates a synthetic artefact_type.
+ */
+ORES_DQ_API_EXPORT domain::artefact_type
+generate_synthetic_artefact_type(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic artefact_types.
+ */
+ORES_DQ_API_EXPORT std::vector<domain::artefact_type>
+generate_synthetic_artefact_types(std::size_t n, utility::generation::generation_context& ctx);
+
+}
+
+#endif

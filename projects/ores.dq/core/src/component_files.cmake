@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "messaging/artefact_type_registrar.cpp"
     "messaging/badge_definition_registrar.cpp"
     "messaging/badge_severity_registrar.cpp"
     "messaging/catalog_registrar.cpp"
@@ -29,6 +30,7 @@ set(files
     "messaging/publish_from_dq_handler.cpp"
     "messaging/registrar.cpp"
     "messaging/subject_area_registrar.cpp"
+    "presentation/artefact_type_history_field_mapper.cpp"
     "presentation/badge_definition_history_field_mapper.cpp"
     "presentation/badge_severity_history_field_mapper.cpp"
     "presentation/catalog_history_field_mapper.cpp"
@@ -106,6 +108,7 @@ set(files
     "repository/treatment_dimension_entity.cpp"
     "repository/treatment_dimension_mapper.cpp"
     "repository/treatment_dimension_repository.cpp"
+    "service/artefact_type_service.cpp"
     "service/badge_definition_service.cpp"
     "service/badge_service.cpp"
     "service/badge_severity_service.cpp"
@@ -128,6 +131,8 @@ set(files
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/artefact_type_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/artefact_type_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_definition_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_definition_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/badge_handler.hpp"
@@ -161,6 +166,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/subject_area_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/subject_area_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/ores.dq.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/presentation/artefact_type_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/presentation/catalog_history_field_mapper.hpp"
@@ -239,6 +245,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/repository/treatment_dimension_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/repository/treatment_dimension_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/repository/treatment_dimension_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/artefact_type_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_definition_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/service/badge_severity_service.hpp"

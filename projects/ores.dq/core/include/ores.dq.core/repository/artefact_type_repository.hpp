@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,6 +24,8 @@
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
@@ -32,10 +34,7 @@
 namespace ores::dq::repository {
 
 /**
- * @brief Reads artefact_types from data storage.
- *
- * This is a simple lookup table repository - read-only operations.
- * Data is populated via SQL scripts.
+ * @brief Reads and writes artefact types to data storage.
  */
 class ORES_DQ_CORE_EXPORT artefact_type_repository {
 private:
@@ -50,15 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit artefact_type_repository(context ctx);
-
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    std::vector<domain::artefact_type> read_all();
-    std::optional<domain::artefact_type> read_by_code(const std::string& code);
+    /**
+     * @brief Writes artefact types to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::artefact_type& v);
+    void write(context ctx, const std::vector<domain::artefact_type>& v);
+    /**@}*/
 
-private:
-    context ctx_;
+    /**
+     * @brief Reads latest artefact types, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::artefact_type> read_latest(context ctx);
+    std::vector<domain::artefact_type> read_latest(context ctx, const std::string& code);
+    /**@}*/
+
+
+    /**
+     * @brief Reads all artefact types, possibly filtered by primary key.
+     */
+    std::vector<domain::artefact_type> read_all(context ctx, const std::string& code);
+
+    /**
+     * @brief Reads a single artefact type as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::artefact_type>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest artefact types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::artefact_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active artefact types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active artefact types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a artefact type by closing its temporal validity.
+     */
+    void remove(context ctx, const std::string& code);
+
+    /**
+     * @brief Deletes artefact types by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

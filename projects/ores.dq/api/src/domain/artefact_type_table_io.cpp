@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.dq.api/domain/artefact_type_table_io.hpp"
+#include "ores.dq.api/domain/artefact_type_table.hpp"
+#include <ostream>
 
-drop rule if exists ores_dq_artefact_types_delete_rule on "ores_dq_artefact_types_tbl";
-drop trigger if exists ores_dq_artefact_types_insert_trg on "ores_dq_artefact_types_tbl";
-drop function if exists ores_dq_artefact_types_insert_fn;
-drop table if exists "ores_dq_artefact_types_tbl";
+namespace ores::dq::domain {
+
+namespace {
+
+void print_artefact_type_table(std::ostream& s, const std::vector<artefact_type>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<artefact_type>& v) {
+    print_artefact_type_table(s, v);
+    return s;
+}
+
+}

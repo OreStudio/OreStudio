@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: 6D8510CF-B977-4126-9051-5BFA9DE929B3
+:END:
+#+title: ores.dq.artefact_type
+#+description: Codegen entity model for the dq =artefact_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Maps artefact type codes to their NATS dispatch subjects.
+#+entity_singular: artefact_type
+#+entity_plural: artefact_types
+#+entity_title: Artefact Type
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+Artefact types define the mapping between dataset artefact codes and the
+database infrastructure needed to publish them: the artefact table where
+staging data is stored, the target production table where data is
+published, and the NATS subject dispatched by the workflow engine to
+perform the publication. Rows are authored directly (not mirrored from
+an external source).
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Unique code identifying this artefact type.
+
+Examples: "countries", "currencies", "images".
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable name for display purposes.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Artefact Type"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Detailed description of this artefact type.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** artefact_table
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Name of the artefact (staging) table for this type. This is where data
+is staged before publication. Example: "dq_countries_artefact_tbl".
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::word()) + "_artefact_tbl"
+#+end_src
+
+** target_table
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Name of the target (production) table for this type. This is where
+data is published to. Example: "refdata_countries_tbl".
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::word()) + "_tbl"
+#+end_src
+
+** target_subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+NATS subject dispatched by the workflow engine to publish data from
+the DQ artefact table to the target service table. Example:
+"refdata.v1.countries.publish-from-dq".
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::word()) + ".v1.publish-from-dq"
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_artefact_types_tbl
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     display_order
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: type
+:entity_plural_short:   types
+:entity_singular_words: artefact type
+:entity_plural_words:   artefact types
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: at
+:END:
+
+** Table display
+
+| column         | header         |
+|----------------+----------------|
+| code           | Code           |
+| name           | Name           |
+| description    | Description    |
+| artefact_table | Artefact Table |
+| target_table   | Target Table   |
+| target_subject | Target Subject |
+| display_order  | Order          |
+| modified_by    | Modified By    |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

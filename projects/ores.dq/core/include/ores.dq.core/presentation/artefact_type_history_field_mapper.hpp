@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_DQ_CORE_PRESENTATION_ARTEFACT_TYPE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_DQ_CORE_PRESENTATION_ARTEFACT_TYPE_HISTORY_FIELD_MAPPER_HPP
 
-drop rule if exists ores_dq_artefact_types_delete_rule on "ores_dq_artefact_types_tbl";
-drop trigger if exists ores_dq_artefact_types_insert_trg on "ores_dq_artefact_types_tbl";
-drop function if exists ores_dq_artefact_types_insert_fn;
-drop table if exists "ores_dq_artefact_types_tbl";
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.dq.api/domain/artefact_type.hpp"
+#include "ores.dq.core/export.hpp"
+#include <vector>
+
+namespace ores::dq::presentation {
+
+/**
+ * @brief Renders a artefact_type to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_DQ_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_artefact_type_fields(const domain::artefact_type& v);
+
+}
+
+#endif

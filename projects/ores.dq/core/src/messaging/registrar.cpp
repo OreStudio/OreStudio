@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq.core/messaging/registrar.hpp"
+#include "ores.dq.api/messaging/artefact_type_protocol.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
@@ -33,6 +34,7 @@
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
+#include "ores.dq.core/messaging/artefact_type_registrar.hpp"
 #include "ores.dq.core/messaging/badge_definition_registrar.hpp"
 #include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/badge_severity_registrar.hpp"
@@ -136,6 +138,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.insert(subs.end(),
                     std::make_move_iterator(data_domain_subs.begin()),
                     std::make_move_iterator(data_domain_subs.end()));
+    }
+
+    // =========================================================================
+    // Artefact type is on the standard generated stack (see
+    // artefact_type_handler/_registrar), migrated from lookup_entity.
+    // =========================================================================
+
+    {
+        auto artefact_type_subs = register_artefact_type_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(artefact_type_subs.begin()),
+                    std::make_move_iterator(artefact_type_subs.end()));
     }
 
     // =========================================================================

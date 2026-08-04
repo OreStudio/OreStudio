@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -36,42 +36,135 @@ std::string artefact_type_repository::sql() {
     return generate_create_table_sql<artefact_type_entity>(lg());
 }
 
-artefact_type_repository::artefact_type_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+void artefact_type_repository::write(context ctx, const domain::artefact_type& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing artefact type. " << "code: " << v.code;
+    execute_write_query(
+        ctx, artefact_type_mapper::map(v), lg(), "Writing artefact type to database.");
+}
 
-std::vector<domain::artefact_type> artefact_type_repository::read_all() {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all artefact_types";
+void artefact_type_repository::write(context ctx, const std::vector<domain::artefact_type>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing artefact types. Count: " << v.size();
+    execute_write_query(
+        ctx, artefact_type_mapper::map(v), lg(), "Writing artefact types to database.");
+}
 
-    const auto query =
-        sqlgen::read<std::vector<artefact_type_entity>> | order_by("display_order"_c);
+std::vector<domain::artefact_type> artefact_type_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<artefact_type_entity, domain::artefact_type>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return artefact_type_mapper::map(entities); },
         lg(),
-        "Reading all artefact_types");
+        "Reading latest artefact types");
 }
 
-std::optional<domain::artefact_type>
-artefact_type_repository::read_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading artefact_type by code: " << code;
+std::vector<domain::artefact_type> artefact_type_repository::read_latest(context ctx,
+                                                                         const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest artefact type. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
+                       where("code"_c == code && "valid_to"_c == max.value());
 
-    const auto query = sqlgen::read<std::vector<artefact_type_entity>> | where("code"_c == code);
-
-    auto results = execute_read_query<artefact_type_entity, domain::artefact_type>(
-        ctx_,
+    return execute_read_query<artefact_type_entity, domain::artefact_type>(
+        ctx,
         query,
         [](const auto& entities) { return artefact_type_mapper::map(entities); },
         lg(),
-        "Reading artefact_type by code");
+        "Reading latest artefact type by code.");
+}
 
-    if (results.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No artefact_type found for code: " << code;
+
+std::vector<domain::artefact_type> artefact_type_repository::read_all(context ctx,
+                                                                      const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all artefact type versions. " << "code: " << code;
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> | where("code"_c == code) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
+
+    return execute_read_query<artefact_type_entity, domain::artefact_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return artefact_type_mapper::map(entities); },
+        lg(),
+        "Reading all artefact type versions by code.");
+}
+
+std::optional<domain::artefact_type> artefact_type_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading artefact type at version. " << "code: " << code
+                               << " version: " << version;
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
+                       where("code"_c == code && "version"_c == version) | sqlgen::limit(1);
+
+    const auto entities = execute_read_query<artefact_type_entity, domain::artefact_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return artefact_type_mapper::map(entities); },
+        lg(),
+        "Reading artefact type at version.");
+
+    if (entities.empty())
         return std::nullopt;
-    }
-
-    return results.front();
+    return entities.front();
 }
+
+void artefact_type_repository::remove(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing artefact type. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<artefact_type_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing artefact type from database.");
+}
+
+std::vector<domain::artefact_type>
+artefact_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest artefact types with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
+                       where("valid_to"_c == max.value()) | order_by("code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<artefact_type_entity, domain::artefact_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return artefact_type_mapper::map(entities); },
+        lg(),
+        "Reading latest artefact types with pagination.");
+}
+
+std::uint32_t artefact_type_repository::get_total_type_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active artefact type count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<artefact_type_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active artefact type count: " << count;
+    return count;
+}
+
+void artefact_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<artefact_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing artefact types.");
+}
+
 
 }

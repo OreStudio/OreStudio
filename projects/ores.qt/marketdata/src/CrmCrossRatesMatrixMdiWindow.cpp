@@ -499,10 +499,13 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             // per-window equivalent: a persistent, styled indicator that
             // stays up across every failed reload until one finally
             // succeeds, with the actual failure reason in the tooltip
-            // instead of only in the log.
+            // instead of only in the log. Same color/weight as that
+            // indicator's k_error_color (#dc2626, FxSpotGridWindow.cpp)
+            // and its "font-weight: 600" -- one error visual identity
+            // across CRM/FX windows, not a coincidentally-similar one.
             self->footerLabel_->setText(tr("DISCONNECTED"));
             self->footerLabel_->setStyleSheet(
-                QStringLiteral("color: #d32f2f; font-weight: bold;"));
+                QStringLiteral("color: #dc2626; font-weight: 600;"));
             self->footerLabel_->setToolTip(msg);
             return;
         }

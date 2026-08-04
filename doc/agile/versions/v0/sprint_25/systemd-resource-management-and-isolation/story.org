@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :compass:systemd:infrastructure:sprint_25:v0:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-04
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -38,12 +38,12 @@ implementation.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Not yet started -- the one task picked up so far (migrate the Qt client to systemd) was abandoned; see its Result. |
 | Waiting on    | Nothing.                               |
 | Next          | Start with WS-7 change 1 (drop build lock slot c) and WS-1 (per-environment Claude slices). |
-| Last touched  | 2026-07-31                               |
+| Last touched  | 2026-08-04                               |
 
 * Acceptance
 

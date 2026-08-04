@@ -7,41 +7,138 @@
 #+level: s1
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/define-holding-company-treasury-data-model
+#+pr: 1840
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A written, concrete plan for the Group Treasury book/portfolio shape
+and the feed-binding party-scoping approach, so the remaining tasks
+in this story implement against a decided design instead of each
+re-deciding it ad hoc.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Not yet started.                       |
+| Now          | Design complete -- see Plan below.     |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing -- task complete.              |
+| Last touched | 2026-08-04                             |
 
 * Acceptance
 
--
+- The Group Treasury business unit/portfolio/book shape is specified
+  concretely enough to seed (company code, unit code, unit type,
+  book(s), regulatory book type, functional currency).
+- The feed-binding party-scoping approach is decided with reasoning,
+  not left as an open question for the implementation task.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Grounded in the existing Acme seeder model
+(projects/ores.seeder/datasets/acme_corporation/{companies,business_units,portfolios,books}.json,
+regenerated to SQL via generate_sql.py -- these are auto-generated
+files, never hand-edit the .sql output) and reference data
+(refdata_business_unit_types_populate.sql: DIVISION/BUSINESS_AREA/
+DESK/COST_CENTRE/BRANCH -- BRANCH is a geographic grouping, not
+applicable to a single-location holding-company unit, so it's not
+part of the DIVISION-vs-DESK tradeoff below; refdata_regulatory_book_
+types_populate.sql: Trading/Banking only, no separate Hedging type).
+
+** Group Treasury book/portfolio shape
+
+- Company: =acme_group= (companies.json already has =is_holding: true=,
+  jurisdiction GB, HQ London -- so GBP is the natural group functional
+  /reporting currency, matching acme_uk's own GBLO business centre).
+- One business unit, DIVISION type (parallel to how each office's
+  top-level unit is a DIVISION -- "Global Markets", "Risk
+  Management"): unit_code =acme_group.treasury=, name "Group
+  Treasury", business_centre_code GBLO, parent_business_unit_code
+  null. DESK was considered (its description, "direct owner of
+  books", fits) but DIVISION keeps this a single top-level unit
+  without inventing a deeper desk hierarchy the holding company
+  doesn't need yet -- a DESK/BUSINESS_AREA split under it can be
+  added later if the group ever needs more than one treasury desk.
+- One portfolio: portfolio_code =acme_group.treasury=, name "Group
+  Treasury Portfolio", owner_unit_code =acme_group.treasury=,
+  aggregation_ccy GBP, parent_portfolio_code null, is_virtual true
+  (matches the existing per-office top-level portfolios).
+- Two books under that portfolio, both regulatory_book_type
+  "Banking" (not "Trading" -- these aren't held-for-trading positions;
+  Banking is the correct prudential classification for financing and
+  for hedges of non-trading/banking-book exposure, which is exactly
+  what both of these are):
+  1. "Group Intercompany Loans" -- functional_currency GBP,
+     is_sweepable false, cost_center CC-GROUP-TREASURY. Holds
+     intercompany loans/deposits between the holding company and its
+     subsidiaries.
+  2. "Group FX Hedges" -- functional_currency GBP, is_sweepable
+     false, cost_center CC-GROUP-TREASURY. Holds FX forwards/swaps
+     hedging remittance and translation exposure back to the group's
+     reporting currency.
+  No nostro-sweep book (acme_uk's "GBP Nostro Sweep" pattern) at this
+  stage -- cash sweeping is an operating-office concern; add one here
+  only if a later task actually needs it.
+
+** Feed-binding party-scoping decision: tenant-wide consumption
+
+Two options were on the table (see the story's original framing):
+(a) make FX driver ticks tenant-wide for CRM-matching purposes,
+regardless of which party's feed_binding produced them; (b) give the
+holding party its own parallel feed_binding for the same driver
+pairs.
+
+Decision: (a), tenant-wide consumption. Reasoning:
+- FX/IR market data is not genuinely party-specific -- a EUR/USD
+  print is the same real-world rate regardless of which office's
+  feed_binding happens to be subscribed to it. feed_binding's
+  party_id looks like it tracks *who set up* the binding
+  (provenance), not *who's allowed to consume* the resulting ticks --
+  treating it as a consumption gate was very likely accidental, not
+  a deliberate multi-tenant isolation boundary.
+- Option (b) would duplicate the same external rate as N separate
+  NATS subscriptions and N separate market_observations rows per
+  tenant (one per party that wants to see it), for data that is
+  identical across all of them -- wasteful, and every new party
+  needing FX visibility would need its own copy of every feed
+  re-created, which doesn't scale.
+- Safety check: this does NOT leak data across party boundaries.
+  crm_ingest_bridge::update() only ever populates a (tenant, party)
+  engine that *already exists* -- built from that party's own
+  crm_topology_config/crm_driver_pair rows, which are already
+  RLS-gated (crm_driver_pairs_tbl_party_isolation_policy: only
+  parties in ores_iam_visible_party_ids_fn() see them). Feeding a
+  matching tick to every tenant engine that already independently
+  configured that same currency pair as a driver edge doesn't grant
+  any party visibility into a pair it hadn't already configured for
+  itself; it just makes an already-authorized engine actually
+  receive the data.
+- Implementation shape: feed_ingest_loop.cpp's tick handler
+  (subscribe_binding_locked, .cpp:237-255) currently calls
+  crm_bridge_->update() with a single party_uuid taken from the
+  originating feed_binding. crm_ingest_bridge::update() should
+  instead iterate every party within the tick's tenant_id in its
+  engines_ map (not look up one specific (tenant, party) key) and
+  feed each matching engine -- each engine's own rate_engine::update()
+  already no-ops (caught std::invalid_argument) for a pair that
+  isn't one of its configured driver edges, so this is safe to call
+  broadly. The resolve-crm-feed-binding-party-scoping task
+  implements this.
 
 * Notes
 
@@ -60,12 +157,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1840][#1840]] | [agile] Define holding company treasury data model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Reference-data note omits the BRANCH unit type | task_define-holding-company-treasury-data-model.org | Accepted | Fixed in 06a24da55 -- noted BRANCH and why it's not applicable here. |
+| 2 | Book names inconsistent between story.org ("Intercompany Loans, FX Hedges") and the task's Plan ("Group Intercompany Loans", "Group FX Hedges") | story.org | Accepted | Fixed in 06a24da55 -- story.org now uses the "Group "-prefixed canonical names. |
+| 3 | Round-2: same inconsistency missed in this task's own * Result section | task_define-holding-company-treasury-data-model.org | Accepted | Fixed -- Result section now uses the "Group "-prefixed names too. |
 
 * Result
+
+Design complete, no code changes in this task. Two concrete decisions
+for the remaining tasks to implement against:
+1. Group Treasury: one DIVISION-type business unit
+   (=acme_group.treasury=), one portfolio, two Banking-classified
+   books (Group Intercompany Loans, Group FX Hedges), all GBP -- see Plan above
+   for full field-level detail.
+2. Feed-binding scoping: tenant-wide tick consumption for CRM
+   matching, not per-originating-party -- crm_ingest_bridge::update()
+   should iterate every party in the tick's tenant rather than
+   looking up a single (tenant, party) key, since each party's own
+   RLS-gated topology config already controls what it's authorized
+   to see; this doesn't leak anything new, it just lets an
+   already-authorized engine actually receive the data.

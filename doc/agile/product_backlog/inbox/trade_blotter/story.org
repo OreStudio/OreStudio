@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 189E3D42-2702-40B4-A08D-47E37B920ED6
+:END:
+#+title: Story: Trade Blotter
+#+description: Build the Trade Blotter: the primary front-office screen for viewing, booking, amending, and routing trades through their lifecycle. Depends on the workspace story -- production trade import needs a temporary holding location (Pending Book) for trades before they are promoted into the Live workspace. Requires additional design work; first task is to recover and re-validate the prior analysis before scoping implementation.
+#+type: story
+#+level: s2
+#+filetags: :trading:blotter:workspace:product_backlog:inbox:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Build the Trade Blotter: the primary front-office screen from which
+traders, sales, and middle office view, manage, and act on the live
+book of trades -- booking new deals, amending existing ones, and
+routing trades through their lifecycle (expiry, fixing, delivery,
+exercise, settlement). See the target-state reference:
+[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter (knowledge doc)]] -- multi-panel architecture, deal grid,
+deal actions, STP panel, Expiry/Fixing Manager, Barrier Management,
+Delta Jump Screen, Spike Map.
+
+This story depends on [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]]: production
+trade import (Track 2 of the original import-tracks design) needs a
+temporary holding location for trades -- the *Pending Book* -- before
+they are explicitly "promoted" into the Live workspace. That mechanism
+was fully designed but never implemented (see =* Decisions=); this
+story is where it gets built, alongside the wider blotter UI.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started; blocked on the workspace story's audit landing first. |
+| Waiting on    | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Next          | Recover and re-validate the prior design analysis. |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- Prior design analysis recovered, re-read, and re-validated against
+  the current codebase (see design task below) before any
+  implementation is scoped -- this story needs real design work, not
+  a resumed half-finished plan taken at face value.
+- Design confirms/updates the Pending Book + temporary-holding-area
+  mechanism and its exact promotion path into the Live workspace.
+- Resulting scope is broken into its own implementation tasks once the
+  design task lands (not defined yet -- deliberately left open until
+  the design work happens).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9B6C15D0-C393-43FC-AA5C-D33BB0BF0974][Design: recover and re-validate the prior blotter/import analysis]] | BACKLOG | | | Re-read the prior blotter/import design analysis (Data Import Session and Workflow Partial-Success plan), re-establish its connection to workspaces (Track 2: a temporary holding location for trades -- the Pending Book -- before promotion into the Live workspace), and produce an updated design reflecting the current codebase state before implementation is scoped. |
+
+* Decisions
+
+- The prior analysis lives in
+  [[proj:doc/plans/2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] (STATUS: MINED
+  2026-05-25, but only Track 1 -- ORE sample import into a workspace --
+  was ever converted into shipped work; Track 2 below was not).
+  Contains, in full: the Pending Book concept (a system-defined book
+  holding imported trades before enrichment/promotion), the =is_live=
+  marker pattern for non-trade reference data, the =pending= trade FSM
+  state and booking transition, the ~completed_with_warnings~ workflow
+  outcome, a full Data Import Session window UI design (batch/unit
+  selectors, Trades tab with filter/action bars and inspector panel,
+  per-data-type tabs for market data/conventions/curves/pricing), and
+  a detailed analysis of the ORE examples directory structure used to
+  drive the original ORE-sample importer. Re-read this in full as part
+  of the design task below -- it is detailed and largely still
+  applicable, not a blank-slate redesign.
+- Track 2 (production import: FpML, CSV, other TMS -> Pending Book ->
+  promoted to Live) is the part that was never built. Track 1 (ORE
+  sample import -> isolated workspace) was completed in Sprint 18 and
+  is out of scope here (already working).
+- The target-state UI vision for the blotter itself (deal grid,
+  colour coding, deal actions, STP panel, lifecycle management
+  screens) is documented separately in the
+  [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter knowledge doc]] -- a domain reference, not an
+  implementation plan. The design task should reconcile it with the
+  import-session plan above into one coherent design.
+- Loosely related backlog captures that may fold into this story's
+  scope once design work happens (not yet triaged in):
+  - [[id:FA2904B3-814F-466A-8E1F-4C471A063C35][Positions domain model]] (next bucket) -- positions aggregate net
+    exposure derived from the trade blotter.
+  - [[id:671860F1-0671-4DB1-8F5D-320C54F4F660][Separate trade and instrument detail dialogs]] (next bucket) --
+    blotter UX, needs its own brainstorm.
+  - [[id:2DF59230-AD91-45CA-8130-F8856075996F][Extend ores.workflow: trade-expiry workflow]] (deferred bucket) --
+    backend for the blotter's Expiry Manager.
+
+* Out of scope
+
+- Positions domain model, trade/instrument dialog separation, and the
+  trade-expiry workflow (listed above) stay in the backlog as separate
+  captures until the design task determines whether/how they fold in.

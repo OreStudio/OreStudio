@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
@@ -54,8 +54,8 @@ create table if not exists "ores_dq_lei_entities_artefact_tbl" (
     "registration_last_update_date" timestamp with time zone null,
     "registration_next_renewal_date" timestamp with time zone null,
     "registration_registration_status" text null,
-    "entity_transliterated_name_1" text null default null,
-    "entity_transliterated_name_1_type" text null default null
+    "entity_transliterated_name_1" text null,
+    "entity_transliterated_name_1_type" text null
 );
 
 create index if not exists dq_lei_entities_artefact_dataset_idx
@@ -101,8 +101,8 @@ create or replace function ores_dq_lei_entities_artefact_insert_fn(
     p_registration_last_update_date timestamp with time zone,
     p_registration_next_renewal_date timestamp with time zone,
     p_registration_registration_status text,
-    p_entity_transliterated_name_1 text default null,
-    p_entity_transliterated_name_1_type text default null
+    p_entity_transliterated_name_1 text,
+    p_entity_transliterated_name_1_type text
 ) returns void as $$
 begin
     insert into ores_dq_lei_entities_artefact_tbl (

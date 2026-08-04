@@ -1,0 +1,79 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/sql_schema.org. Edit the org source. }}
+{{! Template to generate SQL schema for a domain_entity's artefact/staging table }}
+{{{sql_license}}}
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_artefact_create.mustache
+ * To modify, update the template and regenerate.
+ */
+
+-- =============================================================================
+-- {{domain_entity.description}} - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores_dq_{{domain_entity.entity_plural}}_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "tenant_id" uuid not null,
+    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+    "version" integer not null,
+{{#domain_entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.columns}}
+{{#domain_entity.has_image_id}}
+    ,"image_id" uuid
+{{/domain_entity.has_image_id}}
+{{#domain_entity.has_coding_scheme}}
+    ,"coding_scheme_code" text not null
+{{/domain_entity.has_coding_scheme}}
+);
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_dataset_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (dataset_id);
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_tenant_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (tenant_id);
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{domain_entity.primary_key.column}}_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{domain_entity.primary_key.column}});
+{{#domain_entity.artefact_indexes}}
+
+create index if not exists dq_{{domain_entity.entity_plural}}_artefact_{{name}}_idx
+on ores_dq_{{domain_entity.entity_plural}}_artefact_tbl ({{columns}});
+{{/domain_entity.artefact_indexes}}
+{{#domain_entity.has_artefact_insert_fn}}
+
+-- Function to insert {{domain_entity.entity_plural}} into the artefact table
+create or replace function ores_dq_{{domain_entity.entity_plural}}_artefact_insert_fn(
+    p_dataset_id uuid,
+    p_tenant_id uuid,
+    p_{{domain_entity.primary_key.column}} {{domain_entity.primary_key.type}},
+    p_version integer,
+{{#domain_entity.columns}}
+    p_{{name}} {{type}}{{#default}} default {{{default}}}{{/default}}{{^last}},{{/last}}
+{{/domain_entity.columns}}
+{{#domain_entity.has_image_id}}
+    ,p_image_id uuid default null
+{{/domain_entity.has_image_id}}
+) returns void as $$
+begin
+    insert into ores_dq_{{domain_entity.entity_plural}}_artefact_tbl (
+        dataset_id, tenant_id, {{domain_entity.primary_key.column}}, version,
+{{#domain_entity.columns}}
+        {{name}}{{^last}},{{/last}}
+{{/domain_entity.columns}}
+{{#domain_entity.has_image_id}}
+        ,image_id
+{{/domain_entity.has_image_id}}
+    )
+    values (
+        p_dataset_id, p_tenant_id, p_{{domain_entity.primary_key.column}}, p_version,
+{{#domain_entity.columns}}
+        p_{{name}}{{^last}},{{/last}}
+{{/domain_entity.columns}}
+{{#domain_entity.has_image_id}}
+        ,p_image_id
+{{/domain_entity.has_image_id}}
+    );
+end;
+$$ language plpgsql;
+{{/domain_entity.has_artefact_insert_fn}}

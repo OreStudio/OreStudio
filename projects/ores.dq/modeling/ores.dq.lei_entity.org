@@ -1,0 +1,384 @@
+:PROPERTIES:
+:ID: C9B53884-25FA-4D13-AE8A-6469B1854474
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.lei_entity
+#+description: Codegen entity model for the dq =lei_entity= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: GLEIF LEI entity master data from LEI2 golden copy files
+#+entity_singular: lei_entity
+#+entity_plural: lei_entities
+#+entity_title: LEI Entity
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+has_artefact_insert_fn: true
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+GLEIF LEI entity master data from LEI2 golden copy files
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Columns
+
+** lei
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Legal Entity Identifier — the natural key for this entity.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** entity_legal_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::company::name())
+#+end_src
+
+** entity_entity_category
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** entity_entity_sub_category
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** entity_entity_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** entity_legal_form_entity_legal_form_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(4))
+#+end_src
+
+** entity_legal_form_other_legal_form
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** entity_legal_jurisdiction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::countryCode())
+#+end_src
+
+** entity_legal_address_first_address_line
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::streetAddress())
+#+end_src
+
+** entity_legal_address_city
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::city())
+#+end_src
+
+** entity_legal_address_region
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::state())
+#+end_src
+
+** entity_legal_address_country
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::countryCode())
+#+end_src
+
+** entity_legal_address_postal_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::zipCode())
+#+end_src
+
+** entity_headquarters_address_first_address_line
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::streetAddress())
+#+end_src
+
+** entity_headquarters_address_city
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::city())
+#+end_src
+
+** entity_headquarters_address_region
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::state())
+#+end_src
+
+** entity_headquarters_address_country
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::countryCode())
+#+end_src
+
+** entity_headquarters_address_postal_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::location::zipCode())
+#+end_src
+
+** entity_entity_creation_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_initial_registration_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_last_update_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_next_renewal_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_registration_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** entity_transliterated_name_1
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::company::name())
+#+end_src
+
+** entity_transliterated_name_1_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Artefact indexes
+
+** entity_legal_address_country
+:PROPERTIES:
+:columns: entity_legal_address_country
+:END:
+
+** entity_entity_category
+:PROPERTIES:
+:columns: entity_entity_category
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_lei_entities_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: entity
+:entity_plural_short:   entities
+:entity_singular_words: LEI entity
+:entity_plural_words:   LEI entities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: le
+:END:
+
+** Table display
+
+| column                | header       |
+|-----------------------+--------------|
+| lei                   | LEI          |
+| entity_legal_name     | Legal Name   |
+| entity_entity_status  | Status       |
+| modified_by           | Modified By  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

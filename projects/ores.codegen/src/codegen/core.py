@@ -1806,6 +1806,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # directly — sees scope_system/scope_both/scope_tenant too.
         if 'validation_fn' in sql_table:
             domain_entity['validation_fn'] = sql_table['validation_fn']
+        # Same sync, for the artefact-table archetype (sql_schema_domain_
+        # entity_artefact_create.mustache), which also reads domain_entity.*
+        # directly rather than through this table-context projection.
+        for flag in ('has_coding_scheme', 'has_any_coding_scheme', 'has_image_id'):
+            if flag in sql_table:
+                domain_entity[flag] = sql_table[flag]
+        if 'artefact_indexes' in domain_entity:
+            _mark_last_item(domain_entity['artefact_indexes'])
         if any(
             v.get('cardinality_limit_table')
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])

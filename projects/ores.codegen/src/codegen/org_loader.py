@@ -855,7 +855,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
 
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
-    for k in ("has_tenant_id", "image_id"):
+    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -951,6 +951,22 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 }
                 for r in rows if r.get("name")
             ]
+
+    # Artefact indexes: extra indexes on the artefact/staging table
+    # (sql_schema_domain_entity_artefact_create.mustache), carried over from
+    # the lookup_entity convention this section originates from. A top-level
+    # heading (not nested under SQL), one ``** <name>`` child per index with
+    # a ``:columns:`` property (raw column-list text, verbatim into the
+    # index definition).
+    artefact_section = _section(doc.root, "Artefact indexes")
+    if artefact_section:
+        artefact_indexes: list[dict[str, Any]] = []
+        for node in artefact_section.children:
+            entry = {"name": node.title}
+            for k, v in node.properties.items():
+                entry[k.lower()] = v  # keep columns string verbatim
+            artefact_indexes.append(entry)
+        de["artefact_indexes"] = artefact_indexes
 
     # Used by the C++ repository facet to conditionally include the
     # datetime header only when at least one FK opts into the as-of

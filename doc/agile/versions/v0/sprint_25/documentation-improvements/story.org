@@ -42,6 +42,9 @@ come up rather than scoping the whole story up front.
 | [[id:F5DC0C0A-F1AB-46EA-B1BD-9C6264E81626][Scaffold story: Documentation improvements]] | STARTED | 2026-08-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:6CE97DF4-4AC4-42A9-9B8C-D3DCD77FA515][Add an image carousel to the website homepage]] | BACKLOG | | | Initial task for: Documentation improvements |
 | [[id:65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1][Add systemd unit for site start/stop]] | BACKLOG | | | Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes. |
+| [[id:49BE469F-4191-4DD3-91AE-E7AF04A3354A][Recapture dedicated carousel screenshots]] | BACKLOG | | | The carousel's first pass reuses old release screenshots (v0.0.24, v0.0.12, v0.0.15, v0.0.20) as stand-ins for org chart, reference data, compute, and shell -- none purpose-built for the carousel. Capture fresh, dedicated composite screenshots (several windows open, current UI/theme) for each carousel topic. |
+| [[id:51654120-B8CD-4F6F-8B8E-7DC0350E22C3][Consolidate site top navigation]] | BACKLOG | | | The site-wide nav (Project/Modeling/Developer/Resources dropdowns) fragments the user journey per external review. Group developer technical specs and model definitions under a unified Docs dropdown. Site-wide change (every page, not just the homepage) via ores-build-site.el's site-html-preamble -- deserves its own scoped task/PR, not bolted onto the carousel work. |
+| [[id:00289422-24F1-4124-B3D1-1261B52ABCE7][Add a quickstart CLI snippet to the homepage]] | BACKLOG | | | A short terminal install/quickstart command block on the homepage for fast developer onboarding, per external review. Scope: what the snippet actually shows (git clone + build? a hosted install script?) needs deciding before implementation. |
 
 * Decisions
 

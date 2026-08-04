@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 51654120-B8CD-4F6F-8B8E-7DC0350E22C3
+:END:
+#+title: Task: Consolidate site top navigation
+#+description: The site-wide nav (Project/Modeling/Developer/Resources dropdowns) fragments the user journey per external review. Group developer technical specs and model definitions under a unified Docs dropdown. Site-wide change (every page, not just the homepage) via ores-build-site.el's site-html-preamble -- deserves its own scoped task/PR, not bolted onto the carousel work.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An external (Gemini) UX review of the redesigned homepage flagged the
+site-wide top nav's four dropdowns (Project, Modeling, Developer,
+Resources) as fragmenting the user journey. Group developer technical
+specs and model definitions under a single unified Docs dropdown,
+reducing the top-level dropdown count. This is a site-wide change
+(every page's =site-html-preamble= in =ores-build-site.el=, not just
+=index.org=), so it needs its own careful pass over what's currently
+in each dropdown before restructuring.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Nav dropdown count reduced (fewer than the current 4 top-level
+  groups), with developer technical specs and model definitions
+  consolidated under one Docs-style grouping.
+- Every existing nav link still resolves correctly on every page (the
+  preamble is injected site-wide, so a broken link here breaks every
+  page, not just one).
+- No regression in the site build (=compass build --direct site=
+  clean, no broken id-links).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

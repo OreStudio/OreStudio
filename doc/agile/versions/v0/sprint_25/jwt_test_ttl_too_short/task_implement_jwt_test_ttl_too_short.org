@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 0D055056-3497-43C1-8024-4C1B1A532DD7
+:END:
+#+title: Task: Implement Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)
+#+description: Initial task for: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)
+#+type: task
+#+level: s1
+#+filetags: :jwt_test_ttl_too_short:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-jwt-test-ttl-too-short
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix `mint_token_respects_the_requested_ttl` so it passes reliably on
+every runner, not just fast/idle continuous-build machines.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] |
+| Now          | Fix verified locally.                  |
+| Waiting on   | Nothing.                               |
+| Next         | PR.                                    |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Test passes under `./build/output/linux-clang-debug-make/publish/bin/ores.iam.core.tests`.
+- Test passes under valgrind's memcheck (which reliably reproduced
+  the original failure by slowing execution down enough to blow past
+  the old 1-second TTL).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+1. Reproduce under valgrind: ran the failing test case alone
+   (`ores.iam.core.tests "mint_token_respects_the_requested_ttl"`)
+   under `valgrind --tool=memcheck`. It failed exactly as reported
+   (`claims.has_value()` == false), with 0 memcheck errors and 0
+   leaks — ruling out memory corruption/UB and confirming a pure
+   timing issue.
+2. Root cause: the test mints a JWT with a 1-second
+   `std::chrono::seconds` TTL via `internal_impersonation_service::mint_token`,
+   then immediately calls `jwt_authenticator::validate()`, whose
+   verifier has zero leeway. Under valgrind's ~10-50x slowdown (and,
+   presumably, on a loaded/slow nightly runner), the wall-clock gap
+   between minting and validating can exceed 1 second, so
+   `verifier.verify()` throws with "expired" and `validate()` returns
+   `std::unexpected` — an empty `claims`.
+3. Fix: widened the test's requested TTL from 1s to 60s (and the
+   tolerance check from 2s to 61s) so the mint→validate gap has ample
+   headroom under any realistic scheduling delay, per direction not
+   to mint sub-minute-TTL JWTs even in tests. Left
+   `jwt_authenticator::validate()` untouched — no leeway added to
+   production JWT expiry checking.
+4. Verified: test passes standalone and under valgrind memcheck; full
+   `ores.iam.core.tests` suite (91 test cases, 184 assertions) passes.
+
+* Notes
+
+Root cause: 1-second JWT TTL with zero verifier leeway made the test
+inherently racy against wall-clock time between mint and validate.
+Confirmed by reproducing the failure deterministically under valgrind
+(memcheck reported 0 errors, ruling out memory corruption). Fixed by
+widening the TTL to 60s in the test — production validation logic is
+unchanged.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

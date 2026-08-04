@@ -77,10 +77,10 @@ TEST_CASE("mint_token_respects_the_requested_ttl", tags) {
     });
 
     const auto token = sut.mint_token(
-        h.context(), tenant_id, account_id, party_id, "some.user", std::chrono::seconds{1});
+        h.context(), tenant_id, account_id, party_id, "some.user", std::chrono::seconds{60});
     REQUIRE_FALSE(token.empty());
 
     auto claims = signer.validate(token);
     REQUIRE(claims.has_value());
-    CHECK(claims->expires_at <= claims->issued_at + std::chrono::seconds{2});
+    CHECK(claims->expires_at <= claims->issued_at + std::chrono::seconds{61});
 }

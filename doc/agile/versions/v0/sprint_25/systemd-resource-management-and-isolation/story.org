@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :compass:systemd:infrastructure:sprint_25:v0:
 #+created: 2026-07-31
-#+updated: 2026-07-31
-#+environment:
+#+updated: 2026-08-04
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -40,10 +40,10 @@ implementation.
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Not yet started -- the one task picked up so far (migrate the Qt client to systemd) was abandoned; see its Result. |
 | Waiting on    | Nothing.                               |
 | Next          | Start with WS-7 change 1 (drop build lock slot c) and WS-1 (per-environment Claude slices). |
-| Last touched  | 2026-07-31                               |
+| Last touched  | 2026-08-04                               |
 
 * Acceptance
 
@@ -67,7 +67,7 @@ implementation.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9913E08D-977A-4C36-8376-62BCEA9A41CB][Per-environment systemd resource limits (Claude slices, services, builds)]] | BACKLOG | | | Implement WS-1 through WS-5 and WS-7 of the resource-management plan: per-environment Claude slices with MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight limits (WS-1); converge compass services onto systemctl --user against the generated ores@ENV.target units, staged behind --legacy (WS-2); compass deploys the generated units instead of printing instructions (WS-3); per-environment status/tree/top views (WS-4); protect Emacs and the interactive session via slice drop-ins (WS-5, unprivileged half); reduce build lock to two slots and run builds inside a memory-capped app-build-ENV.slice (WS-7). See systemd-resource-management-plan.org for full analysis, design decisions, and sequencing. WS-6 (PID 1 ownership) is explicitly deferred and out of scope for this task. |
-| [[id:8D87830E-2DD3-4C3E-B743-3410BB0C1B61][Migrate Qt client to a proper systemd unit]] | BACKLOG | | | compass client start/stop currently uses its own PID-file launch/stop path, unlike the rest of the fleet (systemd_generate.py-driven, systemctl --user). Once compass site serve moves to an idiomatic (concrete, non-templated) systemd --user unit, apply the same approach to the client -- one concrete unit per colour instance. |
+| [[id:8D87830E-2DD3-4C3E-B743-3410BB0C1B61][Migrate Qt client to a proper systemd unit]] | ABANDONED | 2026-08-04 | 2026-08-04 | Abandoned: systemd --user sessions on this WSLg/XWayland setup cannot reach the X display (confirmed empirically), a real blocker beyond mere architectural inconsistency. See the task's Result. |
 | [[id:EC737E65-FD0E-46E8-A5A2-807D6BE17E84][Investigate decommissioning ores.controller.service and its DB tables]] | BACKLOG | | | ores.controller.service/process_supervisor's process-launching role was replaced by systemd cascading (split-services-into-per-service-containers story). ores_controller_service_definitions_tbl/ores_controller_service_dependencies_tbl are still in active use as the source of truth systemd_generate.py reads from, but the old controller binary/process_supervisor code and any now-dead controller-specific tables/columns may still be present. Audit what's actually dead vs. still load-bearing (the generator's own data source) before removing anything. |
 
 * Decisions

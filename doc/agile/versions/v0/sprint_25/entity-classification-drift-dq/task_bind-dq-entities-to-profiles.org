@@ -165,8 +165,44 @@ plan itself stays — it is the historical record of what we did.)
   =publication_pipeline.org= knowledge doc, describing the now-retired
   approach -- worth a follow-up doc fix, not blocking this task). All 4
   of dq's lookup_entity models are migrated to domain_entity.
-- Next: the 18-entity profile-binding survey itself (this task's original
-  acceptance) across all of dq's entities, migrated or not.
+- Profile-binding survey run across every =ores.dq= entity/junction (17
+  files: 13 =domain_entity=, 2 =junction=, 1 =field_group= excluded --
+  structurally not an entity, matching the pilot's own precedent for
+  non-entity metatypes). Note on method: none of dq's entities have a
+  =** Qt= drawer except =badge_definition=/=code_domain=/=dataset_bundle=,
+  so for the other 10 the =qt=-namespace half of every profile's
+  Assignments is inert (nothing reads it, since Qt generation is gated by
+  the drawer's presence, not by profile flags) -- match/no-match there
+  turns on the =root=/=sql=-namespace features alone (=has_tenant_id=,
+  =has_workspace_id=, =has_parent_id=).
+
+  *** Bound (9) -- see Result for the commit
+  | Entity/junction | Profile |
+  |---------------------------+-----------------------|
+  | catalog | simple-lookup |
+  | change_reason_category | simple-lookup |
+  | change_reason | simple-lookup |
+  | data_domain | simple-lookup |
+  | artefact_type | simple-lookup |
+  | lei_entity | simple-lookup |
+  | lei_relationship | simple-lookup |
+  | badge_mapping_junction | tenant-scoped-junction |
+  | dataset_bundle_member_junction | tenant-scoped-junction |
+
+  *** No-match (6) -- real data, not a failure; each recorded with its reason
+  | Entity | Reason |
+  |------------------------+---------------------------------------------------|
+  | subject_area | Compound primary key (name + domain_name, both flagged =:primary_key: true=) -- no named profile covers a compound-key shape; matches 464B5EC6's own note that subject_area's key situation (52FE40FA) remains open. |
+  | report_definition | UUID surrogate key, no Qt, no parent/hierarchy relation. No profile fits: simple-lookup/fully-featured-lookup require a text natural key; self-referencing-hierarchy/fk-scoped-child require has_parent_id/parent_entity_singular, neither applicable. |
+  | synthetic_fx_spot_config | Same shape as report_definition (UUID PK, no Qt, no hierarchy) -- same no-match reasoning. |
+  | dataset_bundle | UUID PK *with* Qt (has_uuid_primary_key: true already correctly set), but not hierarchical/parent-scoped -- no profile's Purpose matches an editable, non-hierarchical UUID-keyed entity; forcing self-referencing-hierarchy or fk-scoped-child purely on flag proximity would be wrong the same way business_unit was correctly left unbound in the pilot. |
+  | badge_definition | Qt present, has_uuid_primary_key: false and has_change_reason_cache: true already match simple-lookup, but has_pagination is unset (defaults false) where the profile fixes true. Not treated as an obvious gap like the pilot's leg_type (missing audit trail) -- pagination is a UI/product decision, not a data-integrity omission; recorded as a real, deliberate-looking mismatch rather than force-added. |
+  | code_domain | Qt present, has_uuid_primary_key: false matches simple-lookup, but both has_change_reason_cache and has_pagination are unset (default false) against the profile's true/true. Same reasoning as badge_definition -- a real mismatch, not silently forced. |
+
+  Both Qt gaps (badge_definition, code_domain) are worth a follow-up
+  product conversation (add pagination/change-reason-cache, or the
+  profile genuinely doesn't fit and that's fine) -- out of scope to
+  decide unilaterally here.
 
 * Test Scenarios
 

@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-scope-and-binding-mode-to-synthetic-config
-#+pr:
+#+pr: 1826
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1826][#1826]] | [synthetic] Add scope and binding_mode to market_data_generation_config |
 
 * Review
 

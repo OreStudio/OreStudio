@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 143DA76B-12FD-44B8-8972-D6ACA98FEF4F
+:END:
+#+title: Task: Design and implement a swappable environment-provider abstraction in ores.platform
+#+description: Based on the prior-art research task's findings, design and implement a swappable environment-provider abstraction that ores::platform::environment::environment's get/set/unset go through, so tests can inject isolated fake environment state instead of mutating real process-global environment. Migrate ores::testing::scoped_env_unset (or replace it) to use the new provider. Migrate the 11 domain-service parser tests that currently use scoped_env_unset to the new mechanism.
+#+type: task
+#+level: s1
+#+filetags: :ores.platform:ores.testing:tech-debt:injectable-environment-provider:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Tests can control what environment variables a parser under test sees without touching real process environment, safely even if tests ever run in parallel within one process.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- ores.platform exposes the chosen provider abstraction with a real (process-backed) default implementation and a test-only fake implementation; no test-only code mutates real getenv/setenv/unsetenv state; the 11 migrated domain-service parser tests pass via the new mechanism; existing production call sites of ores::platform::environment::environment are unaffected (same public API or a documented, mechanical migration).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

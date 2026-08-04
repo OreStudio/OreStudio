@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 7D40DDD9-8681-4815-9C64-022503B9A623
+:END:
+#+title: Task: Research prior art for swappable environment-access abstractions in tests
+#+description: Survey how established C++ codebases and test frameworks solve the general problem this story addresses: swapping real process-environment access for injected fake values in tests, safely under parallel test execution. Cover at minimum GoogleTest's ScopedEnvironmentVariable, Abseil's config/flag abstractions, and equivalent patterns in other languages' test frameworks (Python's monkeypatch, Rust's temp-env) as points of comparison, plus any existing precedent already in this codebase for solving analogous global-state problems in tests (e.g. database_helper, scoped_database_helper). Write up findings with at least 2-3 named concrete approaches and their tradeoffs (thread-local override vs. DI'd interface vs. process-per-test isolation).
+#+type: task
+#+level: s1
+#+filetags: :ores.platform:ores.testing:research:injectable-environment-provider:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A written comparison of concrete prior-art approaches exists to ground the design task, instead of inventing the abstraction from scratch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Findings are recorded in this task's Notes (or a linked knowledge doc) with at least 2-3 named approaches, their tradeoffs, and a recommendation for which fits ores.platform's constraints (header-heavy, no exceptions-as-control-flow in hot paths, existing RAII scoped-fixture convention).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

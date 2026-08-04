@@ -26,11 +26,11 @@ Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -109,3 +109,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =start_synthetic_theme_feeds()= to =tenant_handler.hpp=, called
+once per office right after that office's staff-photos step (see
+=* Plan= for the resolution chain). Reuses PR #1741's folder-scoped
+start mechanism instead of a second, Acme-specific path.
+
+Verified end-to-end against a fresh =--source acme= provisioning run:
+all three offices' =synthetic_feeds= steps completed; the
+=ores.synthetic.service= log confirms every FX/IR feed either started
+(UK: 13 FX + 13 IR fresh) or was already running (US/HK: FX/IR feeds
+are tenant-wide, not per-office, so UK's start covers all three) --
+zero skips, zero resolution-miss warnings.
+
+Local build clean (linux-clang-debug-make); ctest 71/71 passed.

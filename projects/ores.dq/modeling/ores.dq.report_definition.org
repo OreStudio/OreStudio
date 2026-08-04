@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: 7CE834E6-4E85-4C8F-BCD0-549819D1F648
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.report_definition
+#+description: Codegen entity model for the dq =report_definition= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: Report Definition artefacts - default report templates for the ORE analytics bundle
+#+entity_singular: report_definition
+#+entity_plural: report_definitions
+#+entity_title: Report Definition
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+has_artefact_insert_fn: false
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+Report Definition artefacts - default report templates for the ORE
+analytics bundle
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate key for the report definition record.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + " Report"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** report_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** schedule_expression
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string("0 0 * * *")
+#+end_src
+
+** concurrency_policy
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* Artefact indexes
+
+** name
+:PROPERTIES:
+:columns: name
+:END:
+
+** report_type
+:PROPERTIES:
+:columns: report_type
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_report_definitions_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: definition
+:entity_plural_short:   definitions
+:entity_singular_words: report definition
+:entity_plural_words:   report definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rd
+:END:
+
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| name                | Name         |
+| report_type         | Type         |
+| schedule_expression | Schedule     |
+| display_order       | Order        |
+| modified_by         | Modified By  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

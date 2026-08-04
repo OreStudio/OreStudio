@@ -2075,6 +2075,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
             # Split description into lines for C++ doxygen comments
             domain_entity['description_lines'] = domain_entity['description'].split('\n')
+            # Single physical line for templates that embed the description in
+            # a one-line SQL comment (e.g. sql_schema_domain_entity_artefact_
+            # create.mustache's "-- {{description}} - Artefact Table --"): a
+            # raw multi-line description would otherwise break out of the
+            # comment mid-line.
+            domain_entity['description_oneline'] = ' '.join(
+                domain_entity['description'].split()
+            )
         # Derive component paths from component + subcomponent
         if 'component' in domain_entity:
             component = domain_entity['component']

@@ -8,7 +8,7 @@
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
 #+branch: feature/documentation-improvements
-#+pr:
+#+pr: 1827
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1827][#1827]] | [doc] Add an image carousel to the website homepage |
 
 * Review
 

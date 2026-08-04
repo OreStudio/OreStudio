@@ -54,17 +54,6 @@ Blotter story) can be scoped from facts rather than assumption:
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-04                               |
 
-* Status
-
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
-
 * Acceptance
 
 - Written table of every workspace-aware entity: has =workspace_id=

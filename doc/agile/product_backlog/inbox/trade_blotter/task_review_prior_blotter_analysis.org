@@ -54,17 +54,6 @@ implementation is scoped:
 | Next         | Begin implementation.                  |
 | Last touched | 2026-08-04                               |
 
-* Status
-
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
-| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
-
 * Acceptance
 
 - Updated design note produced (either as a revision to the existing

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/start-acme-market-feeds-after-1741
+#+pr: 1839
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -39,9 +39,49 @@ Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+PR #1741 added a folder-scoped start mechanism
+(=start_feeds_under_folder_request= for FX,
+=start_ir_curve_feed_request= per IR curve) to the Qt Market
+Simulator's "Start at Root -> pick a theme" flow. Reused that exact
+mechanism from =tenant_handler.hpp='s per-office provisioning loop
+instead of building a second, Acme-specific path, per the task's own
+framing.
+
+Resolution chain, all server-side and deterministic (no name
+matching): =synthetic_publish_from_dq.sql= keys the theme's
+=market_data_generation_config= container by =(tenant_id, party_id,
+dataset_id)=, one per theme per party -- so:
+
+1. Look up the dq dataset id for code =synthetic.themes.realistic_2026=
+   (=get_datasets_request=, list + filter by =code=; no server-side
+   filter exists).
+2. Find the =market_data_generation_config= whose =dataset_id= matches
+   (=get_market_data_generation_configs_request=).
+3. Find the folder row with =kind == "collection"= and =collection_id=
+   equal to that config's id (=get_folders_request=) -- this is the
+   theme's collection folder, scoped to the calling party.
+4. =start_feeds_under_folder_request{folder_id}= starts every FX pair
+   in the subtree server-side.
+5. Since the folder-scoped request only resolves
+   =fx_spot_generation_config= rows (documented on the request struct
+   itself), IR curves need the per-curve path: fetch the folder's full
+   subtree (=get_folder_hierarchy_request=), collect every descendant
+   folder id, then call =start_ir_curve_feed_request= for each fetched
+   =ir_curve_generation_config= whose =folder_id= falls in that set
+   and whose =auto_start== is true -- matching the Market Simulator's
+   own folder-cascade exclusion of manual-start-only curves (e.g.
+   legacy IBOR-era ones sharing a folder with RFR siblings).
+
+New helper =start_synthetic_theme_feeds()= added next to =find_party=
+in =tenant_handler.hpp=, called once per office right after that
+office's staff-photos step. Best-effort: logs and returns on any
+resolution miss rather than failing the whole =provision_acme= call
+over this cosmetic-but-important follow-on step -- the party itself
+is already fully provisioned by the time this runs.
+
+Required linking =ores.synthetic.api.lib= and =ores.marketdata.api.lib=
+into =ores.iam.core.lib= (previously only =ores.dq.api.lib= and
+=ores.refdata.api.lib= among the synthetic-adjacent components).
 
 * Notes
 
@@ -60,12 +100,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1839][#1839]] | [iam] Start Acme's synthetic market feeds during provisioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | List-response `success`/`message` fields (get_market_data_generation_configs, get_folders, get_folder_hierarchy) never checked, so a genuine query failure is indistinguishable from a legitimate not-found | tenant_handler.hpp | Fixed | Each list request now checks `resp.success` and logs `resp.message` on failure, matching the pattern already used for the start requests. |
+| 2 | `<office>.synthetic_feeds` step always reports "completed" regardless of whether start_synthetic_theme_feeds() actually started anything (resolution miss only logged, never surfaced to the caller) | tenant_handler.hpp | Fixed | start_synthetic_theme_feeds() now returns bool; caller adds `<office>.synthetic_feeds.failed` instead of `.completed` on a miss, matching the `.skipped`/`.failed` convention used elsewhere in this handler. |
 
 * Result
+
+Added =start_synthetic_theme_feeds()= to =tenant_handler.hpp=, called
+once per office right after that office's staff-photos step (see
+=* Plan= for the resolution chain). Reuses PR #1741's folder-scoped
+start mechanism instead of a second, Acme-specific path.
+
+Verified end-to-end against a fresh =--source acme= provisioning run:
+all three offices' =synthetic_feeds= steps completed; the
+=ores.synthetic.service= log confirms every FX/IR feed either started
+(UK: 13 FX + 13 IR fresh) or was already running (US/HK: FX/IR feeds
+are tenant-wide, not per-office, so UK's start covers all three) --
+zero skips, zero resolution-miss warnings.
+
+Local build clean (linux-clang-debug-make); ctest 71/71 passed.

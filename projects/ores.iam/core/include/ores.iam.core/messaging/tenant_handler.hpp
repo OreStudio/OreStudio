@@ -24,6 +24,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/party_provisioning_plan.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
@@ -33,6 +34,7 @@
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -42,7 +44,12 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/messaging/folder_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -50,11 +57,13 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 #include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -540,6 +549,28 @@ public:
                 add_step(photo_label, "starting", 0);
                 attach_staff_photos(client, *ctx_expected, tenant_id_str, office.code, username);
                 add_step(photo_label, "completed");
+
+                // Start this office's synthetic FX/IR feeds ticking, via the
+                // same folder-scoped mechanism PR #1741 introduced for the
+                // Qt Market Simulator's "Start at Root -> pick a theme"
+                // flow, so provisioning and manual start share one path
+                // rather than growing a second, Acme-specific one. Without
+                // this, a freshly-provisioned party's CRM cross-rates
+                // matrix and IR curve views sit static/configured but never
+                // ticking.
+                const auto feeds_label = office.code + ".synthetic_feeds";
+                add_step(feeds_label, "starting", 0);
+                if (start_synthetic_theme_feeds(client, "synthetic.themes.realistic_2026")) {
+                    add_step(feeds_label, "completed");
+                } else {
+                    // Best-effort by design (see start_synthetic_theme_feeds's own
+                    // "warn" logging) -- surfaced here too, matching the
+                    // office.code + ".skipped"/".failed" convention used
+                    // elsewhere in this loop, so a resolution miss is visible
+                    // in provision_acme_tenant_response.steps, not just the
+                    // service log.
+                    add_step(feeds_label + ".failed", "see service log for details", 0);
+                }
             }
 
             // Step 7: cross-entity access for the "follow the sun" global-
@@ -558,12 +589,6 @@ public:
                 grant_cross_entity_access(*ctx_expected, tenant_id_str, office_parties);
                 add_step("Step 7: Granting cross-entity access", "completed");
             }
-
-            // Step 8 (starting live market data feeds so CRM/IR actually
-            // tick) deliberately deferred -- PR #1741 (merry_newton) is
-            // independently adding a way to start feeds as part of the
-            // synthetic-theme-as-one-atomic-dataset work. Reassess once
-            // that lands rather than building a second path now.
 
             // Attaching the Barclays demo logo removed from here -- see the
             // "GLEIF import should natively attach counterparty logos when
@@ -649,6 +674,157 @@ private:
             if (p.full_name == full_name)
                 return p;
         return std::nullopt;
+    }
+
+    // Starts every auto-start FX/IR feed under the calling party's
+    // (client's) theme collection folder for the given dq dataset code
+    // (e.g. "synthetic.themes.realistic_2026") -- the same folder-scoped
+    // mechanism the Qt Market Simulator's "Start at Root -> pick a theme"
+    // flow uses (PR #1741), resolved server-side from
+    // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
+    // convention rather than by matching on display name. Best-effort:
+    // logs and returns false on any resolution miss (dataset/config/folder
+    // not found, or a list request itself failing server-side) rather than
+    // failing provisioning over a cosmetic follow-on step -- the party
+    // itself is already fully provisioned by this point. Returns whether
+    // resolution succeeded far enough to attempt starting feeds, so the
+    // caller can surface a miss in its own step list rather than reporting
+    // "completed" for a no-op.
+    static bool start_synthetic_theme_feeds(internal_request_client& client,
+                                            const std::string& dataset_code) {
+        std::optional<boost::uuids::uuid> dataset_id;
+        {
+            dq::messaging::get_datasets_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            for (auto& d : resp.datasets)
+                if (d.code == dataset_code) {
+                    dataset_id = d.id;
+                    break;
+                }
+        }
+        if (!dataset_id) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "start_synthetic_theme_feeds: dataset not found: " << dataset_code;
+            return false;
+        }
+
+        std::optional<boost::uuids::uuid> config_id;
+        {
+            synthetic::messaging::get_market_data_generation_configs_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list market_data_generation_configs "
+                       "failed: "
+                    << resp.message;
+                return false;
+            }
+            for (auto& c : resp.market_data_generation_configs)
+                if (c.dataset_id == dataset_id) {
+                    config_id = c.id;
+                    break;
+                }
+        }
+        if (!config_id) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "start_synthetic_theme_feeds: no market_data_generation_config for dataset "
+                << dataset_code;
+            return false;
+        }
+
+        std::optional<boost::uuids::uuid> folder_id;
+        {
+            synthetic::messaging::get_folders_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list folders failed: " << resp.message;
+                return false;
+            }
+            for (auto& f : resp.folders)
+                if (f.kind == "collection" && f.collection_id == config_id) {
+                    folder_id = f.id;
+                    break;
+                }
+        }
+        if (!folder_id) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "start_synthetic_theme_feeds: no collection folder for dataset "
+                << dataset_code;
+            return false;
+        }
+        const auto folder_id_str = boost::uuids::to_string(*folder_id);
+
+        bool ok = true;
+
+        // FX: one folder-scoped request covers the whole subtree server-side.
+        {
+            marketdata::messaging::start_feeds_under_folder_request req;
+            req.folder_id = folder_id_str;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: start FX folder failed: " << resp.message;
+                ok = false;
+            }
+        }
+
+        // IR: the folder-scoped request only resolves fx_spot_generation_config
+        // rows server-side, so IR curves always go through the per-curve path,
+        // scoped to every folder in this theme's subtree (auto_start=false
+        // curves -- e.g. legacy IBOR-era ones sharing a folder with RFR
+        // siblings -- deliberately excluded, matching the Market Simulator's
+        // own folder-cascade behaviour).
+        std::unordered_set<std::string> subtree_folder_ids{folder_id_str};
+        {
+            synthetic::messaging::get_folder_hierarchy_request req;
+            req.root_id = folder_id_str;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: folder hierarchy lookup failed: "
+                    << resp.message;
+                ok = false;
+            }
+            std::function<void(const ores::utility::domain::hierarchy_node&)> collect =
+                [&](const ores::utility::domain::hierarchy_node& n) {
+                    subtree_folder_ids.insert(boost::uuids::to_string(n.id));
+                    for (const auto& c : n.children)
+                        collect(c);
+                };
+            for (const auto& root : resp.roots)
+                collect(root);
+        }
+        {
+            synthetic::messaging::get_ir_curve_generation_configs_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list ir_curve_generation_configs failed: "
+                    << resp.message;
+                ok = false;
+            }
+            for (auto& ir : resp.ir_curve_generation_configs) {
+                if (!ir.auto_start || !ir.folder_id)
+                    continue;
+                if (!subtree_folder_ids.contains(boost::uuids::to_string(*ir.folder_id)))
+                    continue;
+                synthetic::messaging::start_ir_curve_feed_request start_req;
+                start_req.config_id = boost::uuids::to_string(ir.id);
+                auto start_resp = client.request(start_req);
+                if (!start_resp.success) {
+                    BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                        << "start_synthetic_theme_feeds: start IR curve " << ir.source_name
+                        << " failed: " << start_resp.message;
+                    ok = false;
+                }
+            }
+        }
+        return ok;
     }
 
     // Copies the system-tenant "key" template image into p_tenant_id (if not

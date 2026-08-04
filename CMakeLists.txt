@@ -507,11 +507,21 @@ find_package(ClangTools)
 if (CLANG_FORMAT_FOUND)
     message(STATUS "Found clang-format (${CLANG_FORMAT_BIN}).")
     #
-    # format: run clang-format in-place on all C++ sources under projects/.
+    # format: run clang-format in-place on all C++ sources under projects/,
+    # twice. clang-format is not idempotent in a single pass for some
+    # multi-line trailing-comment patterns (comment spanning several lines
+    # after "field = // ..." before a lambda): the first pass can land on
+    # an intermediate state that a second pass reformats further, before
+    # settling into the true fixed point. Running it twice avoids
+    # producing output that a later, single-pass reformat (e.g. the
+    # nightly-format workflow) would then drift away from.
     # Usage: cmake --build --preset <preset> --target format
     #
     add_custom_target(format
-        COMMENT "Formatting C++ sources with clang-format (in-place)"
+        COMMENT "Formatting C++ sources with clang-format (in-place, two passes)"
+        COMMAND find "${CMAKE_SOURCE_DIR}/projects" -type f
+                    \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
+                    -exec ${CLANG_FORMAT_BIN} -i {} +
         COMMAND find "${CMAKE_SOURCE_DIR}/projects" -type f
                     \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
                     -exec ${CLANG_FORMAT_BIN} -i {} +

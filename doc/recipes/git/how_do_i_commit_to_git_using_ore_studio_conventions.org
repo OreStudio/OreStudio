@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :git:conventions:recipe:
 #+created: 2026-05-23
-#+updated: 2026-05-27
+#+updated: 2026-08-04
 
 ORE Studio uses a structured commit format to ensure that the project history
 remains readable, greppable, and attributable.
@@ -75,9 +75,26 @@ Task-ID: 477F1A3A-7090-4519-937B-2A79176CBAF6
 #+end_example
 
 These trailers make commits discoverable by story/task without parsing
-file paths. Place them after the body, before =Co-Authored-By:=.
+file paths. Place them after the body, before =Environment:= and
+=Co-Authored-By:=.
 
-** 4. Co-Author Attribution
+** 4. Environment Trailer
+
+Every commit must include an =Environment:= trailer naming the worktree
+it was made from -- the =ORES_CHECKOUT_LABEL= value from that
+worktree's =.env= (e.g. =clever_dijkstra=, the same name shown as
+"Your name is: ..." in =compass bearings=):
+
+#+begin_example
+Environment: clever_dijkstra
+#+end_example
+
+This makes a commit's origin traceable across the fleet of worktrees
+without having to cross-reference branch names or journal timestamps --
+essential when diagnosing drift or regressions that trace back to
+"which environment produced this change".
+
+** 5. Co-Author Attribution
 
 When a commit is produced by an LLM (directly or via an agent), it must include
 a =Co-Authored-By:= trailer at the end of the commit message.
@@ -103,6 +120,7 @@ Example commit message:
 
 Story-ID: E6CC19FC-5469-45BD-AA87-9CDBB23A4A7F
 Task-ID: 477F1A3A-7090-4519-937B-2A79176CBAF6
+Environment: clever_dijkstra
 Co-Authored-By: Gemini 2.0 Flash <noreply@google.com>
 #+end_src
 
@@ -114,6 +132,7 @@ git commit -m "[comp] Title" \
   -m "Detail body." \
   -m "Story-ID: STORY-FULL-UUID
 Task-ID: TASK-FULL-UUID
+Environment: $(grep -oP '(?<=^ORES_CHECKOUT_LABEL=).*' .env)
 Co-Authored-By: Your Identity <your@email.com>"
 #+end_src
 

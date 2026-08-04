@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C
+:END:
+#+title: Story: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)
+#+description: Test mints a JWT with a 1-second TTL and validates it immediately with zero verifier leeway; on slower/loaded nightly runners the token expires before validation, causing a spurious failure.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:iam:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+`mint_token_respects_the_requested_ttl` in
+`ores.iam.core.tests` is green on every continuous build (Linux, macOS,
+Windows) but red on the nightly run. Restore a build that is green
+everywhere, every time.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Root cause confirmed, fix applied and verified. |
+| Waiting on    | Nothing.                               |
+| Next          | PR.                                    |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- `mint_token_respects_the_requested_ttl` passes reliably, including
+  under valgrind (which reproduced the failure deterministically by
+  slowing execution down).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E9D1441B-211A-424A-B8FF-0B4B75682624][Scaffold story: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | STARTED | 2026-08-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0D055056-3497-43C1-8024-4C1B1A532DD7][Implement Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL)]] | DONE | 2026-08-04 | 2026-08-04 | Initial task for: Hotfix: mint_token_respects_the_requested_ttl flaky on nightly (1s JWT TTL) |
+
+* Decisions
+
+- Fixed by widening the test's requested JWT TTL from 1 second to 60
+  seconds (per user direction: never mint JWTs with sub-minute
+  validity), rather than adding verifier leeway to production
+  `jwt_authenticator::validate` — this keeps the fix test-only and
+  does not loosen expiry checking for real tokens.
+
+* Out of scope
+
+-

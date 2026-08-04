@@ -39,8 +39,16 @@ jobs:
       - name: Install clang-format
         run: sudo apt-get install -y clang-format
 
-      - name: Run clang-format in-place
+      - name: Run clang-format in-place (twice)
+        # clang-format is not idempotent in a single pass for some
+        # multi-line trailing-comment patterns: the first pass can land
+        # on an intermediate state that a second pass reformats further.
+        # Two passes here matches the `format` CMake target and
+        # ores.codegen's clang_format_files(), so none of the three
+        # drift apart from one another.
         run: |
+          find projects -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) \
+            | xargs clang-format -i
           find projects -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) \
             | xargs clang-format -i
 

@@ -29,12 +29,24 @@ _CLANG_FORMAT_EXTS = {".cpp", ".hpp", ".h", ".cxx", ".cc"}
 
 
 def clang_format_files(paths: list[Path]) -> None:
-    """Run ``clang-format -i`` over the generated C++ files.
+    """Run ``clang-format -i`` over the generated C++ files, twice.
 
     Codegen is a two-step process: render the template, then normalise the
     output with the project's ``.clang-format`` so template whitespace never
     shows up as spurious diffs. SQL/other artefacts are left untouched.
     No-op (with a warning) when clang-format is not installed.
+
+    clang-format is not idempotent in a single pass for some multi-line
+    trailing-comment patterns (e.g. a comment spanning several lines after
+    ``field = // ...`` before a lambda): formatting raw, never-before-
+    formatted text can land on an intermediate state that a second pass
+    then reformats further, before settling into the true fixed point on
+    the third pass onward. Running it twice here means codegen's own
+    output always reaches the same fixed point that reformatting an
+    already-formatted file converges to (verified in
+    doc/agile/versions/v0/sprint_25/jwt_test_ttl_too_short/), so it can't
+    drift from what a plain ``clang-format -i`` on checked-in files
+    produces.
     """
     cpp = [p for p in paths if p.suffix in _CLANG_FORMAT_EXTS]
     if not cpp:
@@ -44,8 +56,10 @@ def clang_format_files(paths: list[Path]) -> None:
         log.warning("clang-format not found on PATH; skipping format of %d "
                     "generated C++ file(s)", len(cpp))
         return
-    subprocess.run([exe, "-i", *[str(p) for p in cpp]], check=True)
-    log.info("clang-formatted %d generated C++ file(s)", len(cpp))
+    str_paths = [str(p) for p in cpp]
+    subprocess.run([exe, "-i", *str_paths], check=True)
+    subprocess.run([exe, "-i", *str_paths], check=True)
+    log.info("clang-formatted %d generated C++ file(s) (two passes)", len(cpp))
 
 # Filter for org files in a component's modeling/ dir: only files whose
 # frontmatter declares a codegen model type are picked up. Other org

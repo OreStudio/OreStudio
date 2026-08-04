@@ -57,10 +57,15 @@ def main() -> int:
             print(f"codegen regenerate failed for component {component!r}", file=sys.stderr)
             return rc
 
-    diff = subprocess.run(["git", "diff", "--exit-code"], cwd=REPO_ROOT, check=False)
-    if diff.returncode != 0:
+    diff = subprocess.run(["git", "diff"], cwd=REPO_ROOT, check=False,
+                          capture_output=True, text=True)
+    if diff.stdout:
+        stat = subprocess.run(["git", "diff", "--stat"], cwd=REPO_ROOT, check=False,
+                              capture_output=True, text=True)
+        print(f"\n--- drifted file(s) ---\n{stat.stdout}", file=sys.stderr)
+        print(f"--- unified diff ---\n{diff.stdout}", file=sys.stderr)
         print(
-            "\nGenerated output does not match what's checked in -- a "
+            "Generated output does not match what's checked in -- a "
             "generated file was hand-edited, or its .org model changed "
             "without running `compass codegen regenerate` afterwards. "
             "Run the regenerate command locally and commit the result.",

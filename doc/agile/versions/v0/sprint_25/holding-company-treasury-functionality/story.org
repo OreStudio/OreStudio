@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -28,11 +28,11 @@ built in this story -- see the investigation task and Out of scope.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Data model design complete -- Group Treasury shape and feed-binding scoping decided. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up "Define holding company treasury data model additions" first -- the other tasks implement its plan. |
+| Next          | Pick up "Publish CRM topology for the holding company party". |
 | Last touched  | 2026-08-04                             |
 
 * Acceptance
@@ -53,7 +53,7 @@ built in this story -- see the investigation task and Out of scope.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:41733D1E-E9B7-457E-8CAE-4F05FB654AF1][Define holding company treasury data model additions]] | BACKLOG | | | Design task: confirm the shape of the Group Treasury book/portfolio for the holding company party, and decide the feed-binding party-scoping approach (tenant-wide feed_bindings vs. the holding party getting its own parallel bindings) before touching provisioning. Produces a written plan the remaining tasks implement against. |
+| [[id:41733D1E-E9B7-457E-8CAE-4F05FB654AF1][Define holding company treasury data model additions]] | DONE | 2026-08-04 | 2026-08-04 | Design task: confirmed the Group Treasury book/portfolio shape (one DIVISION-type unit, one portfolio, two Banking-classified books, all GBP) and decided tenant-wide FX tick consumption for CRM matching over per-party feed bindings. |
 | [[id:1F682C23-F76E-4701-A8CD-520AE073D45A][Publish CRM topology for the holding company party]] | BACKLOG | | | Give Acme Corporation Plc (the holding company) its own CRM topology config (majors at minimum -- GBP/USD/HKD, matching its subsidiaries' currencies) so a treasury user logged in at the default/holding-company party gets FX visibility for remittance and hedging decisions, instead of the Cross-Rates Matrix showing nothing until they switch to an office party. |
 | [[id:D073F237-8280-4B64-8CD4-86B18F32294B][Resolve feed-binding party-scoping so holding company CRM can consume FX ticks]] | BACKLOG | | | crm_ingest_bridge::update() looks up rate engines by (tenant_id, party_id) from the tick's own feed_binding.party_id, and only ever finds a match if that party has crm_topology_config rows. Once the holding company gets its own CRM topology (see the publish-crm-topology task), it also needs FX ticks tagged with its own party_id to actually populate rates -- implement whichever approach the data-model design task settles on (tenant-wide feed_bindings vs. a parallel holding-company binding). |
 | [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] | BACKLOG | | | Create a business unit/portfolio/book under Acme Corporation Plc's party for intercompany loans and FX hedges the parent itself carries -- mirrors how each operating office already gets its own book/portfolio tree via the risk_management bundle, but scoped to genuine parent-level treasury activity (remittance hedges, intercompany lending), not a trading desk. |
@@ -72,6 +72,19 @@ built in this story -- see the investigation task and Out of scope.
   current party) plus this genuine, larger gap: the holding company
   has no treasury footprint at all. The two bugs are fixed there;
   this story covers the holding-company gap.
+- Data model design (see the define-holding-company-treasury-data-model
+  task's Plan for full detail): Group Treasury is one DIVISION-type
+  business unit (=acme_group.treasury=) with one portfolio and two
+  Banking-classified books (Intercompany Loans, FX Hedges), all GBP
+  -- mirroring the existing per-office seeder model in
+  projects/ores.seeder/datasets/acme_corporation/. Feed-binding
+  scoping: FX driver ticks become tenant-wide for CRM-matching
+  purposes (crm_ingest_bridge::update() iterates every party in the
+  tenant, not just the tick's originating feed_binding.party_id) --
+  chosen over giving the holding party its own duplicate feed_binding
+  because FX/IR market data isn't genuinely party-specific, and
+  because each party's own RLS-gated topology config already governs
+  what it's authorized to see, so this doesn't leak anything new.
 
 * Out of scope
 

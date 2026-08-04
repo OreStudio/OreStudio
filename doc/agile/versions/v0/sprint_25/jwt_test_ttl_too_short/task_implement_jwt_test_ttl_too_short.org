@@ -79,6 +79,54 @@ Confirmed by reproducing the failure deterministically under valgrind
 widening the TTL to 60s in the test — production validation logic is
 unchanged.
 
+** refdata-codegen-drift investigation (unrelated, fixed in same PR)
+
+After syncing this branch to latest main, `refdata-codegen-drift`
+started failing in CI with a real, reproducible diff in several
+`ores.refdata` generator files -- comment-continuation-line
+indentation changes, nothing to do with this task's own diff.
+
+Investigation:
+- Ruled out clang-format version mismatch: installed Debian's
+  `clang-format-18` (1:18.1.8-20+b6, matching CI's Ubuntu package
+  major version) alongside the local `clang-format` 21.1.8 and
+  reformatted the checked-in file with both -- byte-identical output
+  from both versions, and both are a no-op on the already-checked-in
+  (post-latest-nightly-format) file.
+- Ruled out a codegen-vs-CLI discrepancy: captured the raw,
+  never-before-formatted output codegen hands to its own
+  `clang_format_files()` (by monkey-patching it mid-`cmd_regenerate`)
+  and ran plain `clang-format -i` on a copy by hand -- identical
+  result to what codegen itself produced.
+- Found the actual cause: clang-format is *not idempotent in one pass*
+  for a multi-line comment trailing an assignment before a lambda
+  (`field = // line1\n// line2\n[idx]{...}`). Proved by chaining
+  passes on the same raw input: pass 1 (raw -> "flat", ~8-space
+  continuation indent) differs from pass 2 (flat -> "aligned",
+  continuation indent matches the first `//`'s column); pass 2 and
+  pass 3 are identical (aligned is the true fixed point). Also proved
+  pass-1 output is byte-identical to what a prior manual fix
+  (8f10230e1) committed after running `compass codegen regenerate`
+  once -- so that commit *was* genuinely zero-diff at the time.
+  `ores.codegen`'s `clang_format_files()`, the nightly-format.yml
+  workflow, and the CMake `format` target each ran clang-format
+  exactly once, so depending on which one last touched a file and
+  what state it started from, the checked-in tree could land on
+  either fixed point -- explaining the oscillation across
+  8f10230e1 (flat) -> d41cf37c4 (aligned, next nightly-format run).
+- Fix: run clang-format twice in all three places
+  (`ores.codegen/src/codegen/generate.py::clang_format_files`,
+  the CMake `format` target, `nightly-format.yml`) so every one of
+  them converges to the same (aligned) fixed point regardless of
+  starting state. Verified `check_component_drift.py --components
+  refdata` now exits 0 with zero file changes needed (main was
+  already at the aligned fixed point); 108/108 `ores.codegen` pytest
+  suite passes.
+- Also updated the git commit convention to require an `Environment:`
+  trailer (worktree's `ORES_CHECKOUT_LABEL`) — this investigation
+  needed to know which worktree authored 8f10230e1 and that
+  information wasn't recoverable from git history at all.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -102,6 +150,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Multiple approving reviews confirmed root cause and fix approach. | service_internal_impersonation_service_tests.cpp | Accepted (no change) | claude-review passed; three review bots independently confirmed the diagnosis and left non-blocking observations. |
 | 2 | Requested TTL (60s) equals mint_token's own default TTL, so the test can no longer catch a regression where the ttl argument stops being forwarded to jwt_claims::with_ttl. | service_internal_impersonation_service_tests.cpp | Accepted | Changed requested TTL from 60s to 120s (tolerance 61s to 121s) -- still >=60s per the no-sub-minute-TTL direction, but distinct from the default so the test still exercises the ttl parameter being threaded through. |
+| 3 | refdata-codegen-drift failed after syncing to latest main; unrelated to this task's diff. | (CI check) | Investigated and fixed | Root-caused to a clang-format non-idempotency bug (see Notes); fixed clang_format_files() (ores.codegen), the CMake format target, and nightly-format.yml to run clang-format twice. Bundled into this PR per direction, since it was blocking CI. |
 
 * Result
 
@@ -117,3 +166,19 @@ checking is unchanged. Verified: test passes standalone and under
 valgrind; full `ores.iam.core.tests` suite (91 cases, 184 assertions)
 passes; full local build + `ctest --preset linux-clang-debug-make`
 (71/71 tests) passes.
+
+Also fixed, in the same PR: `refdata-codegen-drift` started failing
+after syncing to latest main, unrelated to the TTL diff. Root-caused
+(see Notes) to a genuine clang-format non-idempotency on multi-line
+trailing comments after `field = // ...` before a lambda — a single
+`clang-format -i` pass on such content does not always reach its true
+fixed point; codegen's `clang_format_files()`, the CMake `format`
+target, and the `nightly-format.yml` workflow each ran exactly one
+pass and could therefore converge to *different* stable states
+depending on their starting input, causing recurring drift between
+`compass codegen regenerate` output and what the nightly bot commits.
+Fixed by running clang-format twice in all three places. Verified:
+`check_component_drift.py --components refdata` now exits 0 (byte-for-
+byte zero diff against checked-in `main`, no generator file changes
+needed since main already sits at the true fixed point); 108/108
+`ores.codegen` pytest suite passes; full local build green.

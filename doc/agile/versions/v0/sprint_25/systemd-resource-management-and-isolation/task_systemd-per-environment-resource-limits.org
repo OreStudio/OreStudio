@@ -7,43 +7,95 @@
 #+level: s1
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
-#+branch:
+#+branch: feature/systemd-resource-limits-ws7-1
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-07-31
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make =compass= the single wrapper for process lifecycle across the
+fleet, so a runaway environment's memory usage can only kill that
+environment, never Emacs, the host, or another environment's fleet.
+See [[file:../../../../../../systemd-resource-management-plan.org][the design plan]] for the full root-cause analysis (2026-07-31
+machine lockup) and workstream breakdown (WS-1 through WS-7, WS-6
+deferred).
+
+Landed as a sequence of small, independently reviewed PRs following
+the plan's own sequencing, not one large change -- each workstream
+touches a different file/subsystem and has its own verification.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | Not yet started.                       |
+| Now          | WS-7 change 1 (drop build lock slot c) implemented; raising as the first PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-31                               |
+| Next         | WS-1 (per-environment Claude slices with limits). |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
--
+(From the plan's own =* Acceptance=, carried here verbatim as this
+task's bar for DONE.)
+
+- =compass claude= launches into =app-claude-<env>.slice=, and
+  =systemctl --user show= on that slice reports a non-infinite
+  =MemoryMax=.
+- =compass services start= results in service processes whose
+  =/proc/<pid>/cgroup= is under the environment's slice, regardless of
+  whether it was invoked from Emacs, a Claude session, or a bare shell.
+- =compass services status= shows exactly the current environment's
+  fleet, including when nothing is running.
+- Deliberately exhausting memory in one environment kills only that
+  environment; Emacs and other fleets survive. Tested explicitly, with
+  =MemoryMax= temporarily lowered so the test is quick and safe.
+- =compass build --status= reports two slots, and a running build
+  appears under =app-build-<env>.slice= in =systemd-cgls=.
+- No =compass= subcommand requires root for normal operation.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Sequencing per the design plan's =* Sequencing= section:
+
+1. *WS-7 change 1* -- drop build lock slot =c= (two slots instead of
+   three). Small, immediately reduces peak memory.
+2. *WS-1* -- per-environment Claude slices with limits.
+3. *WS-5* (unprivileged half) -- =emacs.service= drop-in.
+4. *WS-4* -- per-environment status/tree/top views.
+5. *WS-7 remainder* -- builds into their own memory-capped slice.
+6. *WS-3* -- =compass systemd deploy=.
+7. *WS-2* -- converge =compass services= onto systemd (the large one,
+   staged behind =--legacy=).
+8. *WS-5* (root half) -- once run with root, verify propagation.
+9. *WS-6* -- deferred; only if still needed after the above.
+
+Each numbered step lands as its own PR against this task's branch
+lineage (a fresh branch per step, closed/reopened as needed), with
+its own local verification and review round, per this repo's normal
+task-to-merged-PR lifecycle.
 
 * Notes
+
+** WS-7 change 1: drop build lock slot 'c'
+
+=BUILD_LOCK_SLOTS= in =projects/ores.compass/src/compass.py= reduced
+from three slots (=a=-j3, b=-j2, c=-j2=, 7 cores in flight) to two
+(=a=-j3, b=-j2=, 5 cores in flight), matching the plan's DD/WS-7
+change 1 exactly. =cmd_build='s docstring and
+=doc/recipes/cmake/how_do_i_build_the_system.org= already described
+"two slots"/"two environments" -- they were already correct, so no
+further doc drift to fix here (the plan's claim that the docstring
+was stale referred to language now already updated). Verified with
+=compass build --status=: shows exactly two slots (=a=, =b=), no =c=.
 
 * Test Scenarios
 

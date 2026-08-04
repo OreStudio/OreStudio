@@ -40,9 +40,9 @@ implementation.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started -- of the two tasks picked up so far, one (migrate the Qt client to systemd) was abandoned and one (decommission audit) is DONE; see their Results. |
+| Now           | Per-environment resource limits task STARTED -- WS-7 change 1 (drop build lock slot c) implemented, first PR in flight. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with WS-7 change 1 (drop build lock slot c) and WS-1 (per-environment Claude slices). |
+| Next          | WS-1 (per-environment Claude slices with limits). |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance
@@ -66,7 +66,7 @@ implementation.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9913E08D-977A-4C36-8376-62BCEA9A41CB][Per-environment systemd resource limits (Claude slices, services, builds)]] | BACKLOG | | | Implement WS-1 through WS-5 and WS-7 of the resource-management plan: per-environment Claude slices with MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight limits (WS-1); converge compass services onto systemctl --user against the generated ores@ENV.target units, staged behind --legacy (WS-2); compass deploys the generated units instead of printing instructions (WS-3); per-environment status/tree/top views (WS-4); protect Emacs and the interactive session via slice drop-ins (WS-5, unprivileged half); reduce build lock to two slots and run builds inside a memory-capped app-build-ENV.slice (WS-7). See systemd-resource-management-plan.org for full analysis, design decisions, and sequencing. WS-6 (PID 1 ownership) is explicitly deferred and out of scope for this task. |
+| [[id:9913E08D-977A-4C36-8376-62BCEA9A41CB][Per-environment systemd resource limits (Claude slices, services, builds)]] | STARTED | 2026-08-05 | | Implement WS-1 through WS-5 and WS-7 of the resource-management plan: per-environment Claude slices with MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight limits (WS-1); converge compass services onto systemctl --user against the generated ores@ENV.target units, staged behind --legacy (WS-2); compass deploys the generated units instead of printing instructions (WS-3); per-environment status/tree/top views (WS-4); protect Emacs and the interactive session via slice drop-ins (WS-5, unprivileged half); reduce build lock to two slots and run builds inside a memory-capped app-build-ENV.slice (WS-7). See systemd-resource-management-plan.org for full analysis, design decisions, and sequencing. WS-6 (PID 1 ownership) is explicitly deferred and out of scope for this task. |
 | [[id:8D87830E-2DD3-4C3E-B743-3410BB0C1B61][Migrate Qt client to a proper systemd unit]] | ABANDONED | 2026-08-04 | 2026-08-04 | Abandoned: systemd --user sessions on this WSLg/XWayland setup cannot reach the X display (confirmed empirically), a real blocker beyond mere architectural inconsistency. See the task's Result. |
 | [[id:EC737E65-FD0E-46E8-A5A2-807D6BE17E84][Investigate decommissioning ores.controller.service and its DB tables]] | DONE | 2026-08-04 | 2026-08-04 | Binary/code confirmed already fully gone (Sprint 24, PR #1806). service_definitions/dependencies_tbl confirmed still load-bearing (systemd_generate.py's source of truth). service_instances_tbl/service_events_tbl confirmed genuinely dead (zero readers/writers repo-wide) -- filed as a follow-up capture rather than dropped speculatively here. See the task's Result. |
 

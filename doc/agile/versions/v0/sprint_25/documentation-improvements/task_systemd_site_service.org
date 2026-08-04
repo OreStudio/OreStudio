@@ -8,7 +8,7 @@
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
 #+branch: feature/systemd-site-service
-#+pr:
+#+pr: 1829
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1829][#1829]] | [compass] Add compass site start/stop/status detached lifecycle |
 
 * Review
 

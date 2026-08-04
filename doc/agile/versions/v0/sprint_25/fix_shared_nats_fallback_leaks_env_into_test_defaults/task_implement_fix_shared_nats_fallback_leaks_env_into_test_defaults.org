@@ -8,7 +8,7 @@
 #+filetags: :fix_shared_nats_fallback_leaks_env_into_test_defaults:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/fix-shared-nats-fallback-leaks-env-into-test-defaults
-#+pr:
+#+pr: 1836
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1836][#1836]] | [testing] Fix parse_defaults tests leaking real .env NATS values |
 
 * Review
 

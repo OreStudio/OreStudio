@@ -8,7 +8,7 @@
 #+filetags: :reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
 #+branch: feature/reduce-db-connection-pool-load
-#+pr:
+#+pr: 1821
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1821][#1821]] | [database,codegen] Make per-service DB connection pool size configurable |
 
 * Review
 

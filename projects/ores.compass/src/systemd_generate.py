@@ -284,11 +284,19 @@ def render_nats_unit(checkout_root, env_name, target_name, nats_port):
     already does from the outside, just now enforced inside the unit
     graph so it protects every dependent, not only the one caller that
     happens to poll for it)."""
+    # 60s, matching compass_services.py's own _wait_for_listen() default --
+    # the exact same TCP-listen check this probe relocates into the unit
+    # graph -- rather than picking a fresh, tighter tolerance: a cold start
+    # slow enough to need the full 60s here previously succeeded quietly
+    # under that external wait, and a stricter probe would newly fail the
+    # unit's own start job (and, via Requires=, every dependent's first
+    # attempt) for exactly the slow-but-fine case this PR is meant to stop
+    # mis-classifying as a race.
     port_probe = (
-        f'for i in $(seq 1 300); do '
+        f'for i in $(seq 1 600); do '
         f'ss -tlnH "sport = :{nats_port}" | grep -q . && exit 0; '
         f'sleep 0.1; done; '
-        f'echo "nats-server did not open port {nats_port} within 30s" >&2; exit 1'
+        f'echo "nats-server did not open port {nats_port} within 60s" >&2; exit 1'
     )
     unit = UNIT_HEADER
     unit += f"""

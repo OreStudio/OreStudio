@@ -165,6 +165,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Reference-data note omits the BRANCH unit type | task_define-holding-company-treasury-data-model.org | Accepted | Fixed in 06a24da55 -- noted BRANCH and why it's not applicable here. |
 | 2 | Book names inconsistent between story.org ("Intercompany Loans, FX Hedges") and the task's Plan ("Group Intercompany Loans", "Group FX Hedges") | story.org | Accepted | Fixed in 06a24da55 -- story.org now uses the "Group "-prefixed canonical names. |
+| 3 | Round-2: same inconsistency missed in this task's own * Result section | task_define-holding-company-treasury-data-model.org | Accepted | Fixed -- Result section now uses the "Group "-prefixed names too. |
 
 * Result
 
@@ -172,7 +173,7 @@ Design complete, no code changes in this task. Two concrete decisions
 for the remaining tasks to implement against:
 1. Group Treasury: one DIVISION-type business unit
    (=acme_group.treasury=), one portfolio, two Banking-classified
-   books (Intercompany Loans, FX Hedges), all GBP -- see Plan above
+   books (Group Intercompany Loans, Group FX Hedges), all GBP -- see Plan above
    for full field-level detail.
 2. Feed-binding scoping: tenant-wide tick consumption for CRM
    matching, not per-originating-party -- crm_ingest_bridge::update()

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Same method as the pilot task (Bind ores.refdata entities to profiles): survey e
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Bring ores.dq to the same proven state as the ores.refdata pilot: every codegen-
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -41,7 +41,7 @@ Bring ores.dq to the same proven state as the ores.refdata pilot: every codegen-
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq (SQL) entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the dq catalogue entry (SQL-side model discovery), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq (SQL) entities to profiles; verify zero-diff regen]] | STARTED | 2026-08-04 | | Implement profile binding for the dq catalogue entry (SQL-side model discovery), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
 | [[id:C4D47809-FC4F-4D89-BB15-B0A88C3FCACB][Bind ores.dq (C++) entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the dq-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point (from the superseded ad hoc task): set service_find_by_uuid and service_find_by_code on dataset_bundle; fix a HexPrefix model typo. |
 
 * Decisions

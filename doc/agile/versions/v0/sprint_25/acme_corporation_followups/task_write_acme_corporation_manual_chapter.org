@@ -8,12 +8,12 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/write-acme-corporation-manual-chapter
-#+pr: 1801
+#+pr: 1830
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-25
-#+updated: 2026-07-25
-#+environment: brave_hopper
+#+updated: 2026-08-04
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,12 +37,12 @@ they are looking at once it is up.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Chapter, Initial Setup, and Shell Provisioning chapters all updated and building cleanly; 2 real screenshots captured, scenario PASSED. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Human review of the prose (content-complete, per doc-add-entity-chapter's scope). |
-| Last touched | 2026-07-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
 
 * Acceptance
 
@@ -188,6 +188,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1830][#1830]] | [agile] Close: Write Acme Corporation manual chapter |
 | [[https://github.com/OreStudio/OreStudio/pull/1801][#1801]] | [docs,agile,sql] Add Acme Corporation manual chapter; document Acme-vs-Manual provisioning fork |
 
 * Review
@@ -196,5 +197,26 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Reporting-line description wrong: Head of Desk/Middle Office/Market Risk don't report directly to Country Head -- accounts.json shows an unmentioned intermediate layer (Head of Trading, Head of Risk, COO) | chapter_acme_corporation.org | Fixed | Verified against accounts.json's reports_to_username chain and the org-chart screenshot; added the missing Head of Trading/Head of Risk roles to Front office/Market risk/Leadership sections and corrected every reporting-chain sentence. |
 | 2 | "Three desks apiece"/"no placeholder rows" overclaims: business_units.json shows UK has 7 DESK units, only the 3 EMEA ones staffed per accounts.json | chapter_acme_corporation.org | Fixed | Verified counts against business_units.json/accounts.json; reworded to state only EMEA is staffed today, Americas/APAC are structural placeholders, and dropped the "no placeholder rows" claim. |
+| 3 | (PR #1830 round 1) #+updated/Last touched still 2026-07-25 despite State moving to DONE and the story's End date being 2026-08-04 -- breaks the convention sibling closed tasks in this story follow | task_write_acme_corporation_manual_chapter.org | Fixed | Bumped both fields to 2026-08-04. |
 
 * Result
+
+Shipped in PR #1801 (merged). New chapter =chapter_acme_corporation.org=
+introduces Acme Corporation directly (no Barclays-replacement framing)
+as the four-legal-entity holding group: structure, business
+units/portfolios/books, staff, and the front office/Middle Office/Market
+Risk departmental split with its seeded RBAC roles -- explicit that
+role enforcement is tenant-level, not desk-scoped. Cross-references
+=provision tenant --source acme=. =chapter_initial_setup.org= and
+=chapter_shell_provisioning.org= updated to document the real
+Acme-vs-Manual fork. Manual PDF and site rebuild cleanly.
+
+Two review rounds found and fixed real accuracy gaps (wrong reporting
+chain, overclaimed desk staffing) against the actual generated
+=accounts.json=/=business_units.json= data -- both verified fixed.
+Screenshot scenario [[id:BDA711D3-0FBB-4439-AB2E-A485D55D0497][PASSED]] (Parties window, Org Chart); the Barclays
+logo section and wizard screenshot were dropped by user decision during
+capture, not left outstanding. Follow-up captures filed for the
+now-stale Barclays screenshots elsewhere in the manual
+([[id:56A3540C-26F8-4A2E-9DE1-616E8D402156][56A3540C]]) and the Qt help =.qch=/=.qhc= caching gotcha hit while
+verifying the rebuilt chapter ([[id:09CC7500-87FA-41BD-B98C-00AED080F9A1][09CC7500]]).

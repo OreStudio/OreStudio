@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :systemd:ops:reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/audit-services-start-systemd
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Review the generated systemd units and the per-environment target's wiring drive
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

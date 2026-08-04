@@ -2,15 +2,16 @@
 :ID: D560FC97-03A3-4169-AA5A-2761E9C017EC
 :END:
 #+title: How do I serve the site locally?
-#+description: Use compass site serve to compile and preview the org-mode site before pushing.
+#+description: Use compass site start/stop/status (systemd-managed) or compass site serve (foreground) to preview the org-mode site before pushing.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:site:website:recipe:
 #+created: 2026-05-21
-#+updated: 2026-06-11
+#+updated: 2026-08-04
 
-Run =compass site serve= to compile (optionally) and preview the org-mode site locally before pushing.
-The equivalent CMake target is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
+Build with =compass build --direct site=, then serve with =compass site
+start= (systemd-managed, background) or =compass site serve= (foreground,
+interactive). The equivalent CMake target is in [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]].
 
 * Question
 
@@ -18,44 +19,76 @@ How do I preview the ORE Studio documentation site on my local machine?
 
 * Answer
 
-*Compile and serve in one step (most common):*
+*Build, then start a systemd-managed background server (most common):*
+
+#+begin_src sh :results verbatim
+./compass.sh build --direct site
+./compass.sh site start
+#+end_src
+
+Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser
+(=ORES_SITE_PORT= comes from =.env=; fallback default is =51004= when
+=ORES_SITE_PORT= is not set). =site start= also prints the LAN URL, for
+checking the preview from another device.
+
+*Check whether it's running, and stop it:*
+
+#+begin_src sh :results verbatim
+./compass.sh site status
+./compass.sh site stop
+#+end_src
+
+*Foreground, interactive use instead (Ctrl-C to stop):*
 
 #+begin_src sh :results verbatim
 ./compass.sh site serve --compile
 #+end_src
 
-Then open =http://localhost:<ORES_SITE_PORT>/OreStudio/= in a browser (=ORES_SITE_PORT= comes from =.env=; fallback default is =51004= when =ORES_SITE_PORT= is not set).
-
-*Serve a previously compiled build without recompiling:*
-
-#+begin_src sh :results verbatim
-./compass.sh site serve
-#+end_src
-
-*Use a different port:*
-
-#+begin_src sh :results verbatim
-./compass.sh site serve --compile --port 9000
-#+end_src
+=--compile= rebuilds first; omit it to serve an already-built =build/output/site/=.
+=--port <N>= overrides the resolved port, same precedence as below.
 
 * How it works
 
-=--compile= runs =emacs -Q --script projects/ores.lisp/src/ores-build-site.el=
-from the repo root, which publishes every =.org= file to HTML under
-=build/output/site/=.
+=compass build --direct site= (equivalently, =compass site serve
+--compile=) runs =emacs -Q --script
+projects/ores.lisp/src/ores-build-site.el= from the repo root, which
+publishes every =.org= file to HTML under =build/output/site/=.
 
-After compiling (or if the build directory already exists), =compass site serve=
-starts Python's built-in HTTP server rooted at =build/output/site/=.  Pages are
-served directly under =/OreStudio/= to match the GitHub Pages URL structure
-(=orestudio.github.io/OreStudio/=).
+=compass site start= renders and deploys a concrete (not templated)
+systemd =--user= unit -- =site-<env>.service=, built directly from
+=ORES_ENV_NAME= in this checkout's own =.env= -- and starts it via
+=systemctl --user=. The unit's =ExecStart= runs =python3 -m
+http.server= directly against =build/output/site/=, no wrapper script
+or PID-file bookkeeping: systemd itself owns the process via its
+cgroup, the same way every other ORE Studio service does (see [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do
+I start the ORE Studio services?]]). Unlike the main fleet, this unit
+is standalone -- not =PartOf=/=Wants=-linked to =ores-<env>.target= --
+since previewing the site is an occasional dev convenience, not
+something every fleet start/stop should cascade to. It does *not*
+rebuild the site itself: run =compass build --direct site= first
+whenever the content changes, then =site start= (or just leave it
+running and rebuild again -- the already-running server picks up the
+new files immediately, since it serves the directory live).
 
-The port is resolved in this order: =--port= flag → =ORES_SITE_PORT= from =.env= →
-=51004= (last-resort default when =ORES_SITE_PORT= is not set).
+=compass site serve= (no =start=/=stop=/=status=) is the older,
+simpler foreground path: still useful for a quick interactive check
+without touching systemd at all, and the only form that supports
+=--compile= directly.
+
+Pages are served directly under =/OreStudio/= to match the GitHub
+Pages URL structure (=orestudio.github.io/OreStudio/=).
+
+The port is resolved in this order: =--port= flag (=serve= only) →
+=ORES_SITE_PORT= from =.env= → =51004= (last-resort default when
+=ORES_SITE_PORT= is not set).
 
 * Prerequisites
 
-Emacs must be on =PATH= (for =--compile=). No CMake configure step
-required — compass runs independently of the build system.
+Emacs must be on =PATH= (for building). =systemctl --user= must be
+available (for =start=/=stop=/=status= -- true on any host already
+running the rest of the ORE Studio fleet via systemd). No CMake
+configure step required — compass runs independently of the build
+system.
 
 * Tested by
 
@@ -67,6 +100,8 @@ Manual preview before pushing documentation changes.  The
 
 - [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — =compass build --direct site= (same
   Emacs step, no HTTP server).
+- [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]] — the same systemd
+  =--user= pattern, for the full service fleet.
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]] — publish Claude Code skills alongside
   the site.
 - [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] — add org files that will appear in the

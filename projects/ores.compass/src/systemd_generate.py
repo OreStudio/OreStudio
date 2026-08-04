@@ -290,6 +290,35 @@ WantedBy={target_name}
     return unit
 
 
+def render_site_unit(checkout_root, env_name, port):
+    """Local doc-site preview server (`compass site start`). Concrete,
+    standalone unit -- not part of ores-<env>.target, since previewing the
+    site is an occasional dev convenience, not something every fleet
+    start/stop should cascade to. python3 -m http.server needs no
+    EnvironmentFile or shell wrapper: the port and directory are both
+    known at generation time, so nothing here depends on runtime env
+    expansion the way the fleet's ExecStart lines do."""
+    site_dir = f"{checkout_root}/build/output/site"
+    unit = UNIT_HEADER
+    unit += f"""
+[Unit]
+Description=ORE Studio site preview server (environment {env_name})
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory={checkout_root}
+ExecStart=/usr/bin/python3 -m http.server {port} --directory {site_dir}
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target
+"""
+    return unit
+
+
 def render_target(defs, env_name):
     wants = [_unit_basename("nats-server", env_name) + ".service"]
     for d in defs:

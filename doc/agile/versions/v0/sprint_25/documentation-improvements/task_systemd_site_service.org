@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1
 :END:
-#+title: Task: Add systemd unit for site start/stop
-#+description: Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes.
+#+title: Task: Add compass site start/stop/status (detached lifecycle)
+#+description: Manage the local site-preview server (compass site serve) as a proper systemd --user unit, started/stopped/reported via compass site start/stop/status -- idiomatic systemd (systemctl-owned cgroup, no PID-file bookkeeping), not a DB-registered service_definition since it's a standalone dev-preview unit.
 #+type: task
 #+level: s1
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/systemd-site-service
+#+pr: 1829
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,43 +21,74 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 `compass site serve` currently only runs as an ad hoc foreground/background
-shell process (manually backgrounded, killed via `pkill`), unlike every
-other ORE Studio service which is managed through systemd (see
-`systemd_generate.py` and `compass services start/stop/status`). Give the
-site preview server the same treatment: a generated systemd unit and
-`compass site start`/`compass site stop`/`compass site status` commands
-(or equivalent), so it starts/stops/reports cleanly and doesn't leave
-orphaned python http.server processes behind.
+shell process (manually backgrounded, killed via `pkill`). Give it a
+proper systemd-managed lifecycle -- `compass site start`/`compass site
+stop`/`compass site status` -- backed by a real `systemctl --user`
+unit, matching every other ORE Studio process's lifecycle instead of
+inventing another bookkeeping mechanism.
+
+(This went through two implementations. The first pass used a
+PID-file lifecycle matching the Qt client's, reasoning by analogy from
+`compass_services.py`'s own docstring -- the client was never
+DB-registered either, and opted out of systemd for that reason. On
+review, that analogy doesn't actually hold: systemd doesn't *need* a
+DB-registered service_definition to manage a process at all -- that
+requirement is specific to the fleet's dependency-graph generator, not
+to systemd itself. A concrete, standalone unit works fine for a
+single local dev tool with no DB dependency, and is strictly better
+than PID files (cgroup-owned process tracking, no PID file to go
+stale, journald logging for free). Redone as a real unit; see `*
+Plan`.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- A systemd unit for the site-preview server is generated per
-  environment, following the same convention as the other ORE Studio
-  services (`systemd_generate.py`, per-environment scoping/cgroups).
-- `compass site start`/`compass site stop` (or equivalent under the
-  existing `compass site` subcommand group) start/stop the unit
-  instead of a manually backgrounded process.
-- `compass services status` (or `compass site status`) reports the
-  site server's state alongside the other services.
-- No orphaned `python3 -m http.server`/emacs processes left behind
-  after stop.
+- `compass site start`/`compass site stop`/`compass site status`
+  start/stop/report the site-preview server via a real `systemctl
+  --user` unit, replacing manual backgrounding (nohup/pkill) and the
+  earlier PID-file lifecycle.
+- No orphaned processes left behind after stop -- systemd owns the
+  process via its cgroup, not a PID file that can go stale.
+- `start` does *not* rebuild the site (that stays a separate `compass
+  build --direct site` step); `compass site serve` (the existing
+  foreground command, `--compile` included) is unchanged for
+  interactive terminal use.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added `render_site_unit()` to `systemd_generate.py`, alongside the
+existing `render_nats_unit()` -- both are concrete, non-DB-driven,
+standalone unit renderers (the module's own docstring already
+explains *why* every unit here is concrete rather than templated: an
+earlier `%i`-specifier version had a real systemd bug that wedged the
+user manager on daemon-reload). `Type=simple`, `ExecStart=/usr/bin/
+python3 -m http.server <port> --directory <build_dir>` directly --
+no shell wrapper or `EnvironmentFile=` needed, since the port and
+directory are both known at generation time. Deliberately *not*
+`PartOf=`/`Wants=`-linked to `ores-<env>.target`: previewing the site
+is an occasional dev convenience, not something every fleet
+start/stop should cascade to.
+
+`compass.py` gained `_site_generate_and_deploy()` (render + write to
+`systemd/units/` + copy to `~/.config/systemd/user/` + `daemon-reload`
+only if changed -- the same add/update-only-if-different shape as
+`systemd_generate.cmd_deploy`, scoped to just this one unit rather
+than re-running the full DB-driven pass) and a
+`_cmd_site_start/stop/status` trio that shells out to `systemctl
+--user start/stop/is-active` on the generated unit name
+(`site-<env>.service`). `start` checks the build directory exists
+first (erroring with the `compass build --direct site` hint if not)
+but never triggers a rebuild itself.
 
 * Notes
 
@@ -76,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1829][#1829]] | [compass] Add compass site start/stop/status detached lifecycle |
 
 * Review
 
@@ -85,3 +116,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Real `systemctl --user`-managed unit (`site-<env>.service`), not PID
+files. Hand-verified: `start` renders+deploys the unit, starts it, and
+prints the URLs; `systemctl --user status` shows a genuine cgroup with
+the correct `python3 -m http.server` command line and a real PID;
+`curl` against the served port returns 200; `stop` cleanly stops the
+unit with no orphaned process; `status` correctly reports
+active/inactive. Deleted the earlier PID-file implementation's stray
+log file (`build/output/site-run/`) and updated [[id:D560FC97-03A3-4169-AA5A-2761E9C017EC][How do I serve the
+site locally?]] and its cross-link from [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio
+services?]] to describe the new approach.

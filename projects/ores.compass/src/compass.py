@@ -5755,6 +5755,16 @@ def _lan_ip():
         return "localhost"
 
 
+def _site_unit_name(env_name):
+    import systemd_generate
+    return systemd_generate._unit_basename("site", env_name)
+
+
+def _site_port(env=None):
+    env = env or _read_env_map()
+    return int(env.get("ORES_SITE_PORT", 51004))
+
+
 def cmd_site(argv):
     """compass site — Site pillar: build and serve the org-mode site locally."""
     ap = argparse.ArgumentParser(
@@ -5762,11 +5772,19 @@ def cmd_site(argv):
         description="Site pillar: build and/or serve the org-mode site locally.")
     sub = ap.add_subparsers(dest="subcmd", metavar="SUBCMD")
 
-    sp = sub.add_parser("serve", help="Serve the site locally (optionally rebuilding first)")
+    sp = sub.add_parser("serve", help="Serve the site locally in the foreground "
+                        "(optionally rebuilding first); Ctrl-C to stop. For a "
+                        "systemd-managed background server, use 'compass site "
+                        "start' (build first with 'compass build --direct site').")
     sp.add_argument("--compile", action="store_true",
                     help="Rebuild the site before serving")
     sp.add_argument("--port", type=int, default=0,
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
+
+    sub.add_parser("start", help="Start the site-preview systemd unit "
+                   "(build first with 'compass build --direct site')")
+    sub.add_parser("stop", help="Stop the site-preview systemd unit")
+    sub.add_parser("status", help="Report the site-preview systemd unit's state")
 
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
@@ -5781,15 +5799,28 @@ def cmd_site(argv):
         return 0
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
+    if args.subcmd == "start":
+        return _cmd_site_start()
+    if args.subcmd == "stop":
+        return _cmd_site_stop()
+    if args.subcmd == "status":
+        return _cmd_site_status()
     if args.subcmd != "serve":
         ap.print_help()
         return 1
 
     env = _read_env_map()
-    port = args.port or int(env.get("ORES_SITE_PORT", 51004))
+    port = args.port or _site_port(env)
     build_dir = PROJECT_ROOT / "build" / "output" / "site"
 
-    # Stop any process already listening on the port.
+    env_name = env.get("ORES_ENV_NAME", "")
+    if env_name and _systemctl_is_active(_site_unit_name(env_name) + ".service"):
+        print(f"❌ The systemd-managed site-preview server is already running "
+              f"on this port. Run 'compass site stop' first, or use "
+              f"'compass site status'.", file=sys.stderr)
+        return 1
+
+    # Stop any (non-systemd) process already listening on the port.
     try:
         result = subprocess.run(["fuser", f"{port}/tcp"],
                                 capture_output=True, text=True)
@@ -5817,12 +5848,7 @@ def cmd_site(argv):
               file=sys.stderr)
         return 1
 
-    print(f"🌐 Serving {build_dir}")
-    print(f"   http://localhost:{port}/OreStudio/index.html")
-    lan_ip = _lan_ip()
-    if lan_ip != "localhost":
-        print(f"   http://{lan_ip}:{port}/OreStudio/index.html")
-    sys.stdout.flush()
+    _print_site_urls(build_dir, port)
     handler = functools.partial(http.server.SimpleHTTPRequestHandler,
                                 directory=str(build_dir))
     with http.server.ThreadingHTTPServer(("", port), handler) as httpd:
@@ -5831,6 +5857,104 @@ def cmd_site(argv):
         except KeyboardInterrupt:
             pass
     return 0
+
+
+def _print_site_urls(build_dir, port):
+    print(f"🌐 Serving {build_dir}")
+    print(f"   http://localhost:{port}/OreStudio/index.html")
+    lan_ip = _lan_ip()
+    if lan_ip != "localhost":
+        print(f"   http://{lan_ip}:{port}/OreStudio/index.html")
+    sys.stdout.flush()
+
+
+def _site_generate_and_deploy(env_name, port):
+    """Render+deploy just the site-preview unit -- not the full DB-driven
+    `compass systemd generate`/`deploy` pass, since the site server has no
+    service_definitions row and previewing the site shouldn't require the
+    DB (or the rest of the fleet) to be reachable at all. Same add/update/
+    daemon-reload-only-if-changed shape as systemd_generate.cmd_deploy,
+    scoped to this one unit."""
+    import filecmp
+    import shutil
+    import systemd_generate
+
+    unit_name = _site_unit_name(env_name) + ".service"
+    content = systemd_generate.render_site_unit(str(PROJECT_ROOT), env_name, port)
+
+    out_dir = PROJECT_ROOT / "systemd" / "units"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    src = out_dir / unit_name
+    src.write_text(content)
+
+    dest_dir = Path.home() / ".config" / "systemd" / "user"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / unit_name
+    changed = not dest.exists() or not filecmp.cmp(src, dest, shallow=False)
+    if changed:
+        shutil.copyfile(src, dest)
+        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+    return unit_name
+
+
+def _cmd_site_start():
+    """Start the site-preview server as a real systemd --user unit --
+    idiomatic in the same sense every other ORE Studio process now is
+    (systemctl-tracked via its own cgroup, no PID-file bookkeeping to go
+    stale). Deliberately does *not* rebuild the site first: unlike the
+    fleet's binaries, the site's HTML is edited/rebuilt far more often
+    mid-session, and folding a 10+ minute Emacs export into every `start`
+    would make the common "just re-serve what's already built" case slow.
+    Run `compass build --direct site` first when the content changed."""
+    env = _read_env_map()
+    env_name = env.get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    build_dir = PROJECT_ROOT / "build" / "output" / "site"
+    if not build_dir.is_dir():
+        print(f"❌ Build directory not found: {build_dir}\n"
+              "   Run: compass build --direct site", file=sys.stderr)
+        return 1
+
+    port = _site_port(env)
+    unit = _site_generate_and_deploy(env_name, port)
+    result = subprocess.run(["systemctl", "--user", "start", unit], check=False)
+    if result.returncode != 0:
+        return 1
+    _print_site_urls(build_dir, port)
+    print(f"   Stop   : compass site stop")
+    return 0
+
+
+def _cmd_site_stop():
+    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    unit = _site_unit_name(env_name) + ".service"
+    result = subprocess.run(["systemctl", "--user", "stop", unit], check=False)
+    return 0 if result.returncode == 0 else 1
+
+
+def _cmd_site_status():
+    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    unit = _site_unit_name(env_name) + ".service"
+    print(f"  {_systemctl_state(unit):<10} {unit}")
+    return 0
+
+
+def _systemctl_state(unit) -> str:
+    result = subprocess.run(["systemctl", "--user", "is-active", unit],
+                            capture_output=True, text=True, check=False)
+    return result.stdout.strip() or "missing"
+
+
+def _systemctl_is_active(unit) -> bool:
+    return _systemctl_state(unit) == "active"
 
 
 # Three build-lock slots so up to three environments on this host can build

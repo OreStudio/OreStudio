@@ -47,7 +47,7 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     CHECK(result->nats.subject_prefix.empty());
     CHECK(result->database.host == "localhost");
     CHECK(result->database.port == 5432);
-    CHECK(result->database.pool_size == 4);
+    CHECK(result->database.pool_size == 2);
     CHECK_FALSE(result->logging.has_value());
 }
 

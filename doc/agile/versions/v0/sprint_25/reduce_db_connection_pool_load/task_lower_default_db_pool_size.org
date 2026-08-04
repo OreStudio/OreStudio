@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/lower-default-db-pool-size
+#+pr: 1828
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,11 +37,11 @@ projects/ores.<component>/service/modeling/component_overview.org
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -50,9 +50,23 @@ projects/ores.<component>/service/modeling/component_overview.org
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Superseded by the sibling task landing first: =pool_size= is no
+longer a per-service codegen literal (PR #1821 collapsed it into a
+single =database_options::pool_size= field). So this task no longer
+needs template edits, re-tangling, or 17-service regeneration — just
+change the two remaining =4= defaults:
+
+1. =projects/ores.database/include/ores.database/domain/database_options.hpp=
+   — =int pool_size = 4;= -> =2=.
+2. =projects/ores.database/src/config/database_configuration.cpp= —
+   the =--db-pool-size= =default_value(4)= -> =default_value(2)=.
+3. Update =database_options_tests.cpp='s default-value assertion
+   (currently checks =4=) to match.
+4. Rebuild, run =ores.database.tests=; no codegen regen needed since
+   all 18 =application.cpp= files already read from =db_opts.pool_size=
+   rather than a literal.
+5. Live verify: start a service via systemd with no override, confirm
+   via =pg_stat_activity= it opens 2 connections instead of 4.
 
 * Notes
 
@@ -71,15 +85,39 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1828][#1828]] | [database] Lower default per-service DB connection pool size |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | test_database_manager.cpp still hardcodes pool_size=4 | test_database_manager.cpp | Declined | Separate literal on context_factory::configuration, not database_options; intentional test-context headroom, out of scope |
+| 2 | pool_size=2 is an aggressive floor, watch for contention under load | (n/a) | Acknowledged | Deliberate product call per parent story, verified live; noted as a follow-up watch item, no code change |
 
 * Result
+
+Shipped per the revised =* Plan= — the sibling task (PR #1821,
+merged) already collapsed =pool_size= into a single
+=database_options= field, so this was two literal changes rather
+than a codegen edit + 17-service regeneration:
+
+- =database_options::pool_size= default =4= -> =2=.
+- =database_configuration='s =--db-pool-size= =default_value(4)= ->
+  =default_value(2)=.
+- Updated the two tests asserting the old default
+  (=database_options_tests.cpp=, =ores.iam.service=
+  =config_parser_tests.cpp=).
+
+Verified: local build clean; =ores.database.tests= 7/7 and
+=ores.iam.service.tests= [config] 12/12 passed; live systemd smoke
+test — restarted =ores.iam.service= with no override, confirmed via
+=pg_stat_activity= it now opens 2 connections (was 4). No codegen
+regeneration was needed since every =application.cpp= already reads
+=pool_size= from options rather than a literal.
+
+Story not closed — "Audit compass services start systemd
+integration" and "Unify application.cpp and service initialisation
+across services" both remain BACKLOG.
 
 * Promoted from capture
 

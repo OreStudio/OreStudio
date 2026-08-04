@@ -63,7 +63,7 @@ TEST_CASE("database_options_default_values", tags) {
     CHECK(sut.port == 5432);
     CHECK(sut.user.empty());
     CHECK(sut.database.empty());
-    CHECK(sut.pool_size == 4);
+    CHECK(sut.pool_size == 2);
 }
 
 TEST_CASE("database_options_custom_values", tags) {

@@ -76,11 +76,15 @@ TEST_CASE("mint_token_respects_the_requested_ttl", tags) {
         return std::vector<boost::uuids::uuid>{};
     });
 
+    // 120s, not mint_token's own 60s default: keeps this test able to
+    // detect a regression where the ttl argument stops being forwarded.
+    // Never below a minute -- a sub-minute TTL races wall-clock scheduling
+    // jitter between mint and validate against the verifier's zero leeway.
     const auto token = sut.mint_token(
-        h.context(), tenant_id, account_id, party_id, "some.user", std::chrono::seconds{60});
+        h.context(), tenant_id, account_id, party_id, "some.user", std::chrono::seconds{120});
     REQUIRE_FALSE(token.empty());
 
     auto claims = signer.validate(token);
     REQUIRE(claims.has_value());
-    CHECK(claims->expires_at <= claims->issued_at + std::chrono::seconds{61});
+    CHECK(claims->expires_at <= claims->issued_at + std::chrono::seconds{121});
 }

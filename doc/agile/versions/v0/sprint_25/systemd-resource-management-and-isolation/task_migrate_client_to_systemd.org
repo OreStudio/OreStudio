@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :systemd-resource-management-and-isolation:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/migrate-client-to-systemd
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,11 +34,11 @@ must preserve that), following the same "site-serve" precedent
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -54,9 +54,10 @@ must preserve that), following the same "site-serve" precedent
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Before implementing, verified empirically whether a GUI Qt process
+can even run under =systemctl --user= on this environment
+(WSLg/XWayland remote X). It cannot -- see =* Result=. Abandoned once
+that was confirmed reproducible; no unit-generation code was written.
 
 * Notes
 
@@ -84,3 +85,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned after empirical testing showed a real, reproducible
+blocker, not just an architectural-consistency nice-to-have:
+
+- Launched =ores.qt= via a transient =systemd-run --user= unit with
+  =DISPLAY= explicitly set (=--setenv=DISPLAY=neumann:11.0=): failed
+  immediately with =qt.qpa.xcb: could not connect to display
+  neumann:11.0=, process aborted (SIGABRT).
+- Retried with =XAUTHORITY= also explicitly set to the working
+  =~/.Xauthority= cookie file (confirmed via =xauth list= to contain
+  a valid =MIT-MAGIC-COOKIE-1= entry for that exact display): same
+  failure, same crash.
+- The identical binary launches and renders correctly via a plain
+  subprocess (i.e. exactly what =compass client start='s current
+  PID-file =_launch= does, and what this whole session's screenshot
+  work relied on) -- so this isn't a broken X server or a broken
+  binary, specifically the =systemd --user= session boundary on this
+  WSLg/XWayland setup isn't inheriting (or isn't authorized for) the
+  interactive login session's X access the same way a normal child
+  process is.
+
+Every other ORE Studio process is headless, so the fleet's migration
+to systemd never had to cross this boundary. Root-causing *why*
+systemd user sessions can't reach the X display here (session
+scoping? cgroup/namespace isolation specific to WSLg? something else
+entirely?) is a real, separate investigation with no guaranteed
+payoff -- and even if solved, the client's per-invocation dynamic args
+(colour, =--open-scenario= path, =--master-password=) are a
+structurally worse fit for systemd's generate-once-at-config-time
+unit model than the fleet's static, DB-driven service definitions
+ever were. The PID-file lifecycle it has today already satisfies the
+actual goal (no orphans, clean start/stop) -- it was inconsistent
+with the rest of the fleet, but not actually broken. Not worth
+pursuing further without a concrete reason beyond consistency.

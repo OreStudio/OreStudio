@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: A3203D42-2981-459B-977E-ED2066B84463
+:END:
+#+title: Story: Injectable environment provider in ores.platform for test-safe, parallel-safe env var access
+#+description: ores::platform::environment::environment wraps raw getenv/setenv/unsetenv against real process-global environment state. Test helpers (e.g. the new ores::testing::scoped_env_unset, added to work around .env leaking ORES_NATS_* into local ctest runs) have to mutate that same global state to control what a parser under test sees -- which is not safe if tests ever run in parallel within one process (Catch2 test cases in the same binary share the process environment; a mutation in one test can race with a read in another). The correct fix is a swappable environment-provider abstraction in ores.platform: production code goes through the real process environment by default, but tests can inject a scoped, thread-local or dependency-injected fake provider with its own key-value map, with zero risk of cross-test interference.
+#+type: story
+#+level: s2
+#+filetags: :ores.platform:ores.testing:tech-debt:testing:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Any code needing environment variables (starting with environment_mapper_factory's consumers, and ores.testing's env-clearing test helpers) can be tested with fully isolated, parallel-safe environment state, instead of mutating the real process environment.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- A short prior-art survey is written up (in this story's Notes, or a linked knowledge doc) before design work starts: how established C++ codebases/test frameworks solve "swap real environment access for a fake one in tests" -- e.g. GoogleTest's ScopedEnvironmentVariable, Abseil's flag/env abstractions, dependency-injected config-provider patterns in other languages' test frameworks (Python's monkeypatch, Rust's temp-env crate), and any prior discussion/precedent already in this codebase (e.g. how database_helper or other scoped test fixtures solve analogous global-state problems). The survey should name at least 2-3 concrete approaches with their tradeoffs (thread-local override vs. DI'd interface vs. process-per-test isolation) so the design task below picks from evaluated options rather than inventing from scratch.
+- ores.platform exposes an environment-provider abstraction (e.g. a virtual interface or a thread-local/DI-swappable default) that ores::platform::environment::environment's get/set/unset calls go through; a test-only provider implementation exists for injecting fake values scoped to a test (RAII or fixture-based) with no real setenv/unsetenv/getenv calls and no cross-test/cross-thread interference; ores::testing::scoped_env_unset (or its replacement) is migrated to use the new provider instead of mutating real process environment; the 11 domain-service parser tests migrated in the parser-boilerplate task continue to pass, now via the injected-provider path.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D40DDD9-8681-4815-9C64-022503B9A623][Research prior art for swappable environment-access abstractions in tests]] | BACKLOG | | | Survey how established C++ codebases and test frameworks solve the general problem this story addresses: swapping real process-environment access for injected fake values in tests, safely under parallel test execution. Cover at minimum GoogleTest's ScopedEnvironmentVariable, Abseil's config/flag abstractions, and equivalent patterns in other languages' test frameworks (Python's monkeypatch, Rust's temp-env) as points of comparison, plus any existing precedent already in this codebase for solving analogous global-state problems in tests (e.g. database_helper, scoped_database_helper). Write up findings with at least 2-3 named concrete approaches and their tradeoffs (thread-local override vs. DI'd interface vs. process-per-test isolation). |
+| [[id:143DA76B-12FD-44B8-8972-D6ACA98FEF4F][Design and implement a swappable environment-provider abstraction in ores.platform]] | BACKLOG | | | Based on the prior-art research task's findings, design and implement a swappable environment-provider abstraction that ores::platform::environment::environment's get/set/unset go through, so tests can inject isolated fake environment state instead of mutating real process-global environment. Migrate ores::testing::scoped_env_unset (or replace it) to use the new provider. Migrate the 11 domain-service parser tests that currently use scoped_env_unset to the new mechanism. |
+
+* Decisions
+
+* Out of scope
+
+-

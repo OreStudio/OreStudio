@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :gleif:refdata:iam:cleanup:acme_corporation_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/gleif-import-should-attach-counterparty-logos
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -50,7 +50,7 @@ step racing the import's own completion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

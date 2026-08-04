@@ -5755,13 +5755,14 @@ def _lan_ip():
         return "localhost"
 
 
-def _site_run_paths():
-    """PID/log file location for `compass site start/stop/status`. Scoped
-    under build/output/ like every other per-checkout artefact -- one
-    site-preview server per checkout, same as one Qt client colour set."""
-    run_dir = PROJECT_ROOT / "build" / "output" / "site-run"
-    run_dir.mkdir(parents=True, exist_ok=True)
-    return run_dir / "site-serve.pid", run_dir / "site-serve.log"
+def _site_unit_name(env_name):
+    import systemd_generate
+    return systemd_generate._unit_basename("site", env_name)
+
+
+def _site_port(env=None):
+    env = env or _read_env_map()
+    return int(env.get("ORES_SITE_PORT", 51004))
 
 
 def cmd_site(argv):
@@ -5773,22 +5774,17 @@ def cmd_site(argv):
 
     sp = sub.add_parser("serve", help="Serve the site locally in the foreground "
                         "(optionally rebuilding first); Ctrl-C to stop. For a "
-                        "detached background server, use 'compass site start'.")
+                        "systemd-managed background server, use 'compass site "
+                        "start' (build first with 'compass build --direct site').")
     sp.add_argument("--compile", action="store_true",
                     help="Rebuild the site before serving")
     sp.add_argument("--port", type=int, default=0,
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
 
-    st = sub.add_parser("start", help="Serve the site detached in the background "
-                        "(optionally rebuilding first)")
-    st.add_argument("--compile", action="store_true",
-                    help="Rebuild the site before serving")
-    st.add_argument("--port", type=int, default=0,
-                    help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
-
-    sub.add_parser("stop", help="Stop the detached site-preview server")
-    sub.add_parser("status", help="Report whether the detached site-preview "
-                   "server is running")
+    sub.add_parser("start", help="Start the site-preview systemd unit "
+                   "(build first with 'compass build --direct site')")
+    sub.add_parser("stop", help="Stop the site-preview systemd unit")
+    sub.add_parser("status", help="Report the site-preview systemd unit's state")
 
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
@@ -5804,7 +5800,7 @@ def cmd_site(argv):
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd == "start":
-        return _cmd_site_start(args)
+        return _cmd_site_start()
     if args.subcmd == "stop":
         return _cmd_site_stop()
     if args.subcmd == "status":
@@ -5865,72 +5861,79 @@ def _print_site_urls(build_dir, port):
     sys.stdout.flush()
 
 
-def _cmd_site_start(args):
-    """Detached counterpart to `compass site serve`: same build-then-bind
-    logic, but the actual HTTP server runs in a background child process
-    (PID-file tracked, like `compass client start`) instead of blocking
-    the caller's terminal. `compass site serve` itself stays a fleet-
-    systemd-free, simple foreground tool for interactive use; a site
-    preview is a single local dev convenience, not a fleet member with
-    DB-registered service_definitions, so it gets the same lightweight
-    PID-file lifecycle as the Qt client rather than a generated systemd
-    unit -- see compass_services.py's module docstring for why the client
-    already made that same call."""
-    import compass_services
+def _site_generate_and_deploy(env_name, port):
+    """Render+deploy just the site-preview unit -- not the full DB-driven
+    `compass systemd generate`/`deploy` pass, since the site server has no
+    service_definitions row and previewing the site shouldn't require the
+    DB (or the rest of the fleet) to be reachable at all. Same add/update/
+    daemon-reload-only-if-changed shape as systemd_generate.cmd_deploy,
+    scoped to this one unit."""
+    import filecmp
+    import shutil
+    import systemd_generate
 
-    pid_file, log_file = _site_run_paths()
-    pid = compass_services._read_pid(pid_file)
-    if pid and compass_services._pid_alive(pid):
-        print(f"  skip    site-serve  PID {pid} (already running)")
-        return 0
+    unit_name = _site_unit_name(env_name) + ".service"
+    content = systemd_generate.render_site_unit(str(PROJECT_ROOT), env_name, port)
 
+    out_dir = PROJECT_ROOT / "systemd" / "units"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    src = out_dir / unit_name
+    src.write_text(content)
+
+    dest_dir = Path.home() / ".config" / "systemd" / "user"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / unit_name
+    changed = not dest.exists() or not filecmp.cmp(src, dest, shallow=False)
+    if changed:
+        shutil.copyfile(src, dest)
+        subprocess.run(["systemctl", "--user", "daemon-reload"], check=False)
+    return unit_name
+
+
+def _cmd_site_start():
+    """Start the site-preview server as a real systemd --user unit --
+    idiomatic in the same sense every other ORE Studio process now is
+    (systemctl-tracked via its own cgroup, no PID-file bookkeeping to go
+    stale). Deliberately does *not* rebuild the site first: unlike the
+    fleet's binaries, the site's HTML is edited/rebuilt far more often
+    mid-session, and folding a 10+ minute Emacs export into every `start`
+    would make the common "just re-serve what's already built" case slow.
+    Run `compass build --direct site` first when the content changed."""
     env = _read_env_map()
-    port = args.port or int(env.get("ORES_SITE_PORT", 51004))
+    env_name = env.get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
     build_dir = PROJECT_ROOT / "build" / "output" / "site"
-
-    if args.compile:
-        rc = _run_emacs_target("deploy_site")
-        if rc != 0:
-            print(f"❌ Site build failed (exit {rc})", file=sys.stderr)
-            return rc
-
     if not build_dir.is_dir():
         print(f"❌ Build directory not found: {build_dir}\n"
-              "   Run with --compile, or: compass build --direct site",
-              file=sys.stderr)
+              "   Run: compass build --direct site", file=sys.stderr)
         return 1
 
-    with open(log_file, "w") as log:
-        proc = subprocess.Popen(
-            [sys.executable, str(Path(__file__).resolve()), "site", "serve",
-             "--port", str(port)],
-            cwd=str(PROJECT_ROOT), stdout=log, stderr=subprocess.STDOUT,
-            start_new_session=True)
-    pid_file.write_text(f"{proc.pid}\n")
-    print(f"  start   site-serve  PID {proc.pid}")
+    port = _site_port(env)
+    unit = _site_generate_and_deploy(env_name, port)
+    result = subprocess.run(["systemctl", "--user", "start", unit], check=False)
+    if result.returncode != 0:
+        return 1
     _print_site_urls(build_dir, port)
-    print(f"   Log    : {log_file}")
+    print(f"   Stop   : compass site stop")
     return 0
 
 
 def _cmd_site_stop():
-    import compass_services
-
-    pid_file, _ = _site_run_paths()
-    compass_services._terminate("site-serve", pid_file, grace=5)
-    return 0
+    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    unit = _site_unit_name(env_name) + ".service"
+    result = subprocess.run(["systemctl", "--user", "stop", unit], check=False)
+    return 0 if result.returncode == 0 else 1
 
 
 def _cmd_site_status():
-    import compass_services
-
-    pid_file, log_file = _site_run_paths()
-    pid = compass_services._read_pid(pid_file)
-    if pid and compass_services._pid_alive(pid):
-        print(f"  running site-serve  PID {pid}")
-        print(f"   Log    : {log_file}")
-    else:
-        print("  stopped site-serve")
+    env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    unit = _site_unit_name(env_name) + ".service"
+    result = subprocess.run(["systemctl", "--user", "is-active", unit],
+                            capture_output=True, text=True, check=False)
+    state = result.stdout.strip() or "missing"
+    print(f"  {state:<10} {unit}")
     return 0
 
 

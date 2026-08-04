@@ -183,3 +183,4 @@ runners.
 - [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] — generate =.env= and NATS certs first.
 - [[id:49F7DA81-ADB7-44ED-BE7E-06DBFBB32A84][How do I set up a development environment?]] — full bootstrap including packages and DB.
 - [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — build binaries before starting services.
+- [[id:D560FC97-03A3-4169-AA5A-2761E9C017EC][How do I serve the site locally?]] — the same systemd =--user= pattern, applied to the doc-site preview server.

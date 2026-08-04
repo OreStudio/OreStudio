@@ -2,12 +2,12 @@
 :ID: E3786E5B-1039-4256-A61B-BFBF34465578
 :END:
 #+title: Story: Find root cause of FX Spot Monitor wire-codec decode mismatch
-#+description: fx_spot_subscription silently fails to decode ticks under msgpack despite both sides resolving msgpack at startup, leaving FX Spot Monitor rows stuck PENDING. Trace logging and a persistent error indicator shipped in sprint 24 as diagnostics; the actual encode/decode mismatch root cause is still open.
+#+description: fx_spot_subscription silently failed to decode ticks under msgpack despite both sides resolving msgpack at startup, leaving FX Spot Monitor rows stuck PENDING. Root cause found and fixed: a hardcoded rfl::json::read<T> call ignoring the negotiated wire codec. Verified live post-fix. Scope extended to cover a second gap surfaced during that same verification pass: CRM topology is blank after tenant/party provisioning because the realistic_2026/base bundle never publishes refdata.crm_topology_bundles.
 #+type: story
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
-#+updated: 2026-08-03
+#+updated: 2026-08-04
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,30 +15,62 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Newly-provisioned tenants get fully working market-data screens out of
+the box: FX Spot Monitor ticks live under the negotiated wire codec
+(no silent PENDING rows), and the CRM screen shows real topology data
+instead of coming up blank.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | FX Spot wire-codec root cause found, fixed, and verified live. CRM topology gap surfaced during that same verification pass; broken out as its own task, still open. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-03                               |
+| Next          | Pick up "Fix CRM topology missing after tenant/party provisioning". |
+| Last touched  | 2026-08-04                             |
 
 * Acceptance
 
--
+- FX Spot Monitor rows tick live under msgpack, with no silent
+  PENDING state caused by a codec mismatch. [DONE]
+- Any future decode failure is surfaced to the user via a persistent
+  per-row error indicator, not just a log line. [DONE]
+- CRM topology (majors/minors/exotics) is populated after
+  'provision system'/'provision party', not blank. [Open — see task]
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | STARTED | 2026-08-03 | | FX Spot Monitor scenario step found the feed stuck PENDING on a wire-codec decode mismatch. Added trace logging and a persistent per-row error indicator; root cause of the actual mismatch still open, continuing next sprint. |
+| [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | DONE | 2026-08-03 | 2026-08-04 | FX Spot Monitor scenario step found the feed stuck PENDING on a wire-codec decode mismatch. Added trace logging and a persistent per-row error indicator. Root cause found and fixed by a separate, concurrent PR (#1809); verified live 2026-08-04. |
+| [[id:460903E8-326F-41FB-8B51-AD738EF12F37][Fix CRM topology missing after tenant/party provisioning]] | BACKLOG | | | CRM topology (majors/minors/exotics) is blank after 'provision system'/'provision party' using the realistic_2026/base bundle -- that bundle never publishes refdata.crm_topology_bundles, only the older marketdata.reference_vintage_2016_02_05 bundle does. Found while verifying the FX Spot Monitor wire-codec fix live: FX Spot ticks correctly, but CRM screen is empty for the same freshly-provisioned tenant. |
 
 * Decisions
+
+- Root cause: fx_spot_subscription.cpp (projects/ores.marketdata/client/src/fx_spot_subscription.cpp)
+  called rfl::json::read<fx_spot_tick> directly instead of
+  default_wire_codec().decode<T>(), ignoring the tenant's negotiated
+  wire codec entirely -- the one NATS-tick call site the original
+  wire-format migration sweep missed, since it's a fire-and-forget
+  subscription handler rather than a request_sync call the sweep
+  grepped for. Fixed by commit 7fe8798452, PR #1809, under
+  Task-ID 1FC899C9-48A9-416C-87D0-FF4BB54F0DB7 / Story-ID
+  1A815B1E-904E-460C-A2FB-31D9E3B392E2 (the NATS wire-format story) --
+  landed the same day this story's diagnostics task was authored, so
+  by the time this story picked up, the fix was already on main.
+  Verified live 2026-08-04: msgpack environment, FX Spot Monitor rows
+  ticking, zero decode-failure warnings in the client log.
+- While verifying the fix live, found a second, unrelated gap: CRM
+  topology (majors/minors/exotics) is blank for freshly-provisioned
+  tenants because the realistic_2026/base bundle used by
+  'provision system'/'provision party' never publishes
+  refdata.crm_topology_bundles -- only the older
+  marketdata.reference_vintage_2016_02_05 bundle does. Rather than
+  file a separate story, folded it into this one's scope as a new
+  task, since it was found in the same verification pass against the
+  same freshly-provisioned tenant.
 
 * Out of scope
 

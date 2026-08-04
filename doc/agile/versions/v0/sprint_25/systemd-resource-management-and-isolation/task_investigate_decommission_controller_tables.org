@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: EC737E65-FD0E-46E8-A5A2-807D6BE17E84
+:END:
+#+title: Task: Investigate decommissioning ores.controller.service and its DB tables
+#+description: ores.controller.service/process_supervisor's process-launching role was replaced by systemd cascading (split-services-into-per-service-containers story). ores_controller_service_definitions_tbl/ores_controller_service_dependencies_tbl are still in active use as the source of truth systemd_generate.py reads from, but the old controller binary/process_supervisor code and any now-dead controller-specific tables/columns may still be present. Audit what's actually dead vs. still load-bearing (the generator's own data source) before removing anything.
+#+type: task
+#+level: s1
+#+filetags: :systemd-resource-management-and-isolation:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The split-services-into-per-service-containers story moved process
+launch/lifecycle from =ores.controller.service=/=process_supervisor=
+to systemd cascading. That story's own follow-up work is tracked
+elsewhere; this task is specifically about auditing what's left over
+in the DB/codebase now that the controller no longer launches
+anything: is the =ores.controller.service= binary/=process_supervisor=
+code itself still built and shipped, and are there any
+=ores_controller_*= tables/columns that are genuinely dead (not the
+=service_definitions=/=service_dependencies= tables, which
+=systemd_generate.py= actively reads as its source of truth)?
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Inventory: is =ores.controller.service=/=process_supervisor= still
+  built/deployed anywhere, or already fully replaced by systemd?
+- Inventory: which =ores_controller_*= DB tables/columns are still
+  load-bearing (=service_definitions=/=service_dependencies=, read by
+  =systemd_generate.py=) vs. genuinely dead.
+- A decision recorded (here or as a follow-up task) on what to
+  actually remove, with nothing removed speculatively before this
+  audit confirms it's dead.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

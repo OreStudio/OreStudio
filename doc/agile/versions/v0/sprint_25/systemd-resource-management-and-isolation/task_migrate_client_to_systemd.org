@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 8D87830E-2DD3-4C3E-B743-3410BB0C1B61
+:END:
+#+title: Task: Migrate Qt client to a proper systemd unit
+#+description: compass client start/stop currently uses its own PID-file launch/stop path, unlike the rest of the fleet (systemd_generate.py-driven, systemctl --user). Once compass site serve moves to an idiomatic (concrete, non-templated) systemd --user unit, apply the same approach to the client -- one concrete unit per colour instance.
+#+type: task
+#+level: s1
+#+filetags: :systemd-resource-management-and-isolation:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every other ORE Studio process is now started/stopped/tracked via
+=systemctl --user= (concrete, non-templated units generated from
+=systemd_generate.py=). The Qt client is the one exception: it still
+uses its own =_launch=/=_terminate= PID-file bookkeeping
+(=compass_services.py=). Give it a real systemd unit -- one concrete
+unit per colour instance (red/green/blue/uncoloured can all run
+simultaneously today under the PID-file scheme; the systemd version
+must preserve that), following the same "site-serve" precedent
+(=compass site start/stop/status=) once that lands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- `compass client start/stop` drives a real `systemctl --user` unit
+  per colour instance (concrete, not templated -- same lesson the
+  fleet's own units already learned about `%i` specifiers), not the
+  current PID-file `_launch`/`_terminate` path.
+- Multiple colour instances (red/green/blue/uncoloured) can still run
+  simultaneously, matching current behaviour.
+- `compass client stop --colour <x>` stops only that instance's unit.
+- No orphaned `ores.qt` processes left behind after stop.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

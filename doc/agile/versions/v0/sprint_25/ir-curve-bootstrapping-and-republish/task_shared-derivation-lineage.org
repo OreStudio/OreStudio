@@ -74,11 +74,11 @@ today, currently discarded once the pull-reply is sent) as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Implementing the design agreed in PR #1822 (merged, docs-only). |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Add derivation_kind/derivation_config_id/derivation_config_version to market_series, the derivation_kinds refdata table, and the observation_lineage table. |
+| Next         | Pick up ir-curve-bootstrap-config, the next task in this story. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -140,3 +140,85 @@ via its "Verifies task" field.
 | 9 | market_series.derivation_kind declared as FK-validated in the Validations table but the insert trigger never called the validation function (pre-existing gap also affecting asset_class, inherited by copying its structure) | ores.marketdata.market_series.org | Accepted | Root cause: Validations table was nested under * SQL instead of the required top-level * Insert trigger heading the codegen parser looks for; moved it, which wires validation for both asset_class and derivation_kind |
 
 * Result
+
+Shipped in two PRs: [[https://github.com/OreStudio/OreStudio/pull/1822][#1822]] (design, docs-only, merged) and
+[[https://github.com/OreStudio/OreStudio/pull/1835][#1835]] (implementation, merged).
+
+** Schema
+
+- New =ores.refdata.derivation_kind= entity (simple-lookup profile),
+  seeded =OBSERVED=/=IR_CURVE_BOOTSTRAP=/=CRM_DERIVATION=, validated
+  the same way =curve_roles= is.
+- =market_series= gained =derivation_kind=/=derivation_config_id=/
+  =derivation_config_version=, all =not null=, paired by a check
+  constraint (=OBSERVED= <-> nil-uuid/zero; any other kind requires
+  all three of =derivation_config_id <> nil=,
+  =derivation_config_version <> 0=, and a valid =derivation_kind=).
+- New =ores.marketdata.observation_lineage= entity: standard
+  bitemporal (not a hypertable), keyed on
+  tenant/party/series/observation_datetime/point_id, with a custom
+  =read_latest_by_observation= repository method.
+- =source_series_ids= modelled as =jsonb= rather than a native
+  =uuid[]= array (no existing precedent for array-typed columns in
+  this codegen framework; jsonb already has precedent elsewhere and
+  keeps this task schema-only, not a codegen-array-support project).
+
+** Codegen
+
+Fixed a genuine, previously-latent template gap surfaced while
+building this: a required (=NOT NULL=) plain =timestamp with time
+zone= column (=observation_lineage.source_as_of=) had no working
+entity-layer representation -- it fell through to a raw
+=std::chrono::time_point= field, which =sqlgen= cannot serialise,
+failing at compile time. Added the missing =is_required_timestamp=
+path (entity type, both mapper directions, and the
+=ores.platform/time/datetime.hpp= include gate) mirroring the
+existing natural-key =std::string= treatment, in both the tangled
+=.mustache= files and their literate =.org= tangle sources (missed
+first pass -- caught by the ~drift~ CI check going red, see review
+round below).
+
+** Review
+
+Two rounds, nine findings total across both PRs, all accepted and
+fixed -- see the =* Review= table above for the full list. Notable
+ones: a real check-constraint gap (derived series could carry
+=derivation_config_version = 0=, a version that can never exist), a
+generated index name exceeding PostgreSQL's 63-byte identifier limit,
+the codegen fix landing only in tangled output and not its tangle
+source, and a pre-existing structural mistake in
+=market_series.org= (the =Validations= table nested under the wrong
+heading, silently skipping the insert trigger's validation call for
+both =asset_class= and the new =derivation_kind=) that got fixed for
+both columns while touching that section anyway.
+
+** Verified
+
+- Local build clean (=linux-clang-debug-make=) after every round.
+- =compass db recreate= + the SQL schema validator clean after every
+  round (one pre-existing-pattern RLS warning shared with
+  =market_observations=' own sibling gap, not introduced by this
+  task).
+- =ctest -R "marketdata|refdata"=: 8/8 test binaries passed both
+  rounds (one unrelated, pre-existing environmental failure in
+  =ores.refdata.service.tests= second round --
+  =config_parser_tests.cpp= asserts a hardcoded NATS default but
+  reads this environment's =.env=-configured value; not a file this
+  task touched).
+- CI green on the final round: check, classify, claude-review,
+  cmake-sources-drift, drift, pr-gate, refdata-codegen-drift,
+  roundtrip, site/site.
+
+** Follow-ons not covered by this task
+
+- The acceptance criterion asking for a test proving "more than one
+  generation exists at the same natural key, both independently
+  queryable" was not written -- =read_latest_by_observation= exists
+  and is exercised by the build/tests, but no dedicated rerun test
+  was added. Worth a task/note when official-curve-republish (the
+  task that will actually rerun a derivation) lands, since that is
+  where this behaviour first gets exercised for real.
+- The generated-identifier-length issue (finding 7) is a
+  pre-existing codegen pattern risk beyond this one table -- worth a
+  capture to hash/shorten long generated identifiers in ~core.py~
+  generally, not just override this one table's name.

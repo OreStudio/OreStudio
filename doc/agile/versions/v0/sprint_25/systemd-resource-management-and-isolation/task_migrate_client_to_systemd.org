@@ -8,7 +8,7 @@
 #+filetags: :systemd-resource-management-and-isolation:sprint_25:v0:
 #+owner: marco
 #+branch: feature/migrate-client-to-systemd
-#+pr:
+#+pr: 1833
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1833][#1833]] | [agile] Abandon Qt client systemd migration: X display unreachable |
 
 * Review
 

@@ -22,6 +22,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -104,6 +105,15 @@ TEST_CASE("parse_custom_database_pool_size", tags) {
 
     REQUIRE(result.has_value());
     CHECK(result->database.pool_size == 8);
+}
+
+TEST_CASE("parse_rejects_non_positive_database_pool_size", tags) {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const std::vector<std::string> args{"--db-pool-size", "0"};
+    std::ostringstream info, err;
+
+    REQUIRE_THROWS_AS(parser{}.parse(args, info, err), std::runtime_error);
 }
 
 TEST_CASE("parse_custom_log_level", tags) {

@@ -20,6 +20,7 @@
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.platform/environment/environment.hpp"
 #include <boost/throw_exception.hpp>
+#include <string>
 
 namespace ores::database {
 
@@ -90,7 +91,12 @@ database_configuration::read_options(const boost::program_options::variables_map
         tenant = environment::get_value_or_default("ORES_TENANT", "");
     }
     r.tenant = tenant;
+
     r.pool_size = vm[database_pool_size_arg].as<int>();
+    if (r.pool_size <= 0)
+        BOOST_THROW_EXCEPTION(std::runtime_error(
+            "db-pool-size must be a positive integer, but was: " +
+            std::to_string(r.pool_size) + ". Set ORES_<APP>_DB_POOL_SIZE env var."));
 
     return r;
 }

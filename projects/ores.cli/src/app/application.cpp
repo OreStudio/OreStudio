@@ -154,7 +154,7 @@ application::make_context(const std::optional<database::database_options>& db_op
     }
 
     context_factory::configuration cfg{.database_options = db_opts.value(),
-                                       .pool_size = static_cast<std::size_t>(db_opts->pool_size),
+                                       .pool_size = static_cast<std::size_t>(db_opts.value().pool_size),
                                        .num_attempts = 10,
                                        .wait_time_in_seconds = 1,
                                        .service_account = db_opts.value().user};

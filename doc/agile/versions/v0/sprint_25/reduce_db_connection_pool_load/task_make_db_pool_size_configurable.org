@@ -101,7 +101,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ores.wt.service silently ignores --db-pool-size | application_context.cpp | Fixed | Now reads db_opts.pool_size, matching ores.cli/ores.http.server |
+| 2 | No validation for non-positive pool_size | database_configuration.cpp | Fixed | Throws on pool_size <= 0; test added |
+| 3 | ores.cli mixes .value()/-> accessor style | application.cpp | Fixed | Normalised to .value() |
+| 4 | Unrelated capture bundled in this PR | (n/a) | Declined | Legitimate drive-by finding from the systemd-docs audit this PR also did; kept bundled as a backlog note, not code |
 
 * Result
 
@@ -126,6 +129,14 @@ Per-service tier shipped, exactly per the =* Plan=:
   =ORES_IAM_SERVICE_DB_POOL_SIZE=8= in =.env=, confirmed via
   =pg_stat_activity= it opened 8 connections vs. the default 4, then
   reverted the override (service back to 4 connections).
+- Review round 1 (see =* Review=): fixed =ores.wt.service= silently
+  ignoring =--db-pool-size= (it has its own hand-written
+  =application_context.cpp=, outside the original 18-file sweep),
+  added =pool_size <= 0= validation with a test, normalised
+  =ores.cli='s accessor style. Also fixed a dangling =:ID:= link in
+  the "Unify application.cpp" task's notes that broke the =site= CI
+  job — it referenced a task doc that only exists on PR #1819's
+  unmerged branch.
 
 Fleet-wide =ORES_DB_POOL_SIZE= fallback tier is out of scope for this
 task — deferred until PR #1819 merges (see =* Status= "Waiting on").

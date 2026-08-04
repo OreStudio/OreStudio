@@ -628,6 +628,19 @@ li {
     justify-content: flex-start;
 }
 
+/* The generic .carousel-slide img rule flex-grows to fill all available
+   height, which -- combined with object-fit: contain on a very wide/short
+   source image -- pillarboxes it (tall box, narrow scaled-down image,
+   black bars either side). The hero image should instead size to its own
+   width-driven aspect ratio and stop, leaving the rest of the slide's
+   height for hero-content below. */
+.hero-slide img {
+    width: 100%;
+    height: auto;
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
 .hero-content {
     position: static;
     z-index: auto;

@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/run-sandboxed-synthetic-configs-end-to-end
-#+pr:
+#+pr: 1844
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1844][#1844]] | [synthetic] Run sandboxed configs end-to-end under a distinct namespace |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -24,11 +24,11 @@ instead of coming up blank.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                |
+| State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | FX Spot wire-codec root cause found, fixed, and verified live. CRM topology gap surfaced during that same verification pass; broken out as its own task, still open. |
+| Now           | FX Spot wire-codec root cause found, fixed, and verified live. CRM investigation found and fixed two real bugs (stale JWT snapshot, party-scoping mismatch); the larger holding-company gap those bugs exposed is scoped as its own story. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up "Fix CRM topology missing after tenant/party provisioning". |
+| Next          | Nothing -- story complete. Follow-on work continues in the holding-company treasury story. |
 | Last touched  | 2026-08-04                             |
 
 * Acceptance
@@ -38,14 +38,19 @@ instead of coming up blank.
 - Any future decode failure is surfaced to the user via a persistent
   per-row error indicator, not just a log line. [DONE]
 - CRM topology (majors/minors/exotics) is populated after
-  'provision system'/'provision party', not blank. [Open — see task]
+  'provision system'/'provision party', not blank. [DONE for the
+  three operating offices -- the original provisioning-bundle premise
+  was already fixed on main. Two further bugs (stale JWT, party
+  scoping) found and fixed live. The holding company itself still has
+  no CRM/treasury data by current provisioning design -- see the
+  follow-on story.]
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0FB6C2C7-BF80-4FAB-9085-7886E5680D46][Add trace logging and surface fx_spot_tick decode failures to the user]] | DONE | 2026-08-03 | 2026-08-04 | FX Spot Monitor scenario step found the feed stuck PENDING on a wire-codec decode mismatch. Added trace logging and a persistent per-row error indicator. Root cause found and fixed by a separate, concurrent PR (#1809); verified live 2026-08-04. |
-| [[id:460903E8-326F-41FB-8B51-AD738EF12F37][Fix CRM topology missing after tenant/party provisioning]] | BACKLOG | | | CRM topology (majors/minors/exotics) is blank after 'provision system'/'provision party' using the realistic_2026/base bundle -- that bundle never publishes refdata.crm_topology_bundles, only the older marketdata.reference_vintage_2016_02_05 bundle does. Found while verifying the FX Spot Monitor wire-codec fix live: FX Spot ticks correctly, but CRM screen is empty for the same freshly-provisioned tenant. |
+| [[id:460903E8-326F-41FB-8B51-AD738EF12F37][Fix CRM topology missing after tenant/party provisioning]] | DONE | 2026-08-04 | 2026-08-04 | Original provisioning-bundle premise was already fixed on main. Live investigation found and fixed two real bugs instead: a stale JWT snapshot and a CRM-picker/reload() party-scoping mismatch. The larger finding -- the holding company has no CRM/treasury data at all -- is scoped as its own story. |
 
 * Decisions
 
@@ -62,15 +67,38 @@ instead of coming up blank.
   by the time this story picked up, the fix was already on main.
   Verified live 2026-08-04: msgpack environment, FX Spot Monitor rows
   ticking, zero decode-failure warnings in the client log.
-- While verifying the fix live, found a second, unrelated gap: CRM
-  topology (majors/minors/exotics) is blank for freshly-provisioned
-  tenants because the realistic_2026/base bundle used by
-  'provision system'/'provision party' never publishes
-  refdata.crm_topology_bundles -- only the older
-  marketdata.reference_vintage_2016_02_05 bundle does. Rather than
-  file a separate story, folded it into this one's scope as a new
-  task, since it was found in the same verification pass against the
-  same freshly-provisioned tenant.
+- While verifying the fix live, the user reported the CRM screen
+  still blank. That premise (a provisioning-bundle gap) turned out to
+  already be fixed on main (commit d49f97f06, 2026-07-30) -- verified
+  via DB query, all three Acme offices have topology configs seeded.
+  Live investigation instead found two real bugs in
+  CrmCrossRatesMatrixMdiWindow/Controller
+  (projects/ores.qt/marketdata/):
+  1. crmClient_'s token_provider snapshotted currentAuthToken() once
+     at construction instead of refreshing it per-request, silently
+     breaking every CRM request ~35+ minutes into a session once the
+     JWT expired (ClientManager's own proactive refresh timer keeps
+     the session's token current, but this window never re-read it).
+     Fixed with a thread-safe token holder refreshed on the GUI
+     thread at the top of every reload().
+  2. The CRM name picker (showMatrix()) queries topology configs
+     across every party visible to the caller (no party filter on
+     get_crm_topology_configs_request), while reload() scopes the
+     actual rates query to only the current party. Picking a name
+     that exists for a different party silently opened a matrix that
+     could never show a row -- a legitimate empty response, not a
+     request failure, so nothing surfaced it as an error. Fixed by
+     filtering the picker to the current party, with an explicit "no
+     CRM configured" message when it has none.
+- Fixing those two bugs surfaced the real, larger gap: the default
+  login party (Acme Corporation Plc, the holding company) genuinely
+  has no CRM/treasury data at all, by current provisioning design
+  (acme_bundle_populate.sql scopes books/portfolios/CRM to the three
+  operating offices only). Whether a holding company should have
+  treasury-level FX/CRM visibility is a product question, not a bug
+  -- discussed with the user and broken out as its own story:
+  [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]],
+  rather than decided unilaterally here.
 
 * Out of scope
 

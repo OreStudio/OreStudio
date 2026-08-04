@@ -13,8 +13,9 @@
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -29,25 +30,62 @@ marketdata.reference_vintage_2016_02_05 bundle already produces.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] |
-| Now          | Not yet started.                       |
+| Now          | Original premise (a provisioning bundle gap) was already fixed on main. Live investigation found and fixed two real bugs instead; the larger holding-company gap those bugs exposed is now its own story. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing -- task complete.              |
+| Last touched | 2026-08-04                             |
 
 * Acceptance
 
 - The realistic_2026/base provisioning bundle publishes refdata.crm_topology_bundles
   (majors/minors/exotics), not just marketdata.reference_vintage_2016_02_05.
+  [Already true on main -- commit d49f97f06, 2026-07-30, predates this
+  task; verified via DB query, all three Acme offices have topology
+  configs seeded.]
 - After 'provision system' or 'provision party' on a fresh tenant, the CRM
   screen shows non-empty topology data without any additional manual step.
+  [Superseded -- see Result: the actual remaining blockers were two live
+  bugs, not a provisioning gap.]
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Investigated live against a freshly-provisioned Acme tenant:
+1. Confirmed CRM topology configs exist in the DB for all three
+   offices (majors/exotics/scandies) -- the provisioning-bundle
+   premise this task started from was already fixed.
+2. User reported the CRM screen was still blank live. Checked the
+   marketdata service log and found repeated "JWT verification
+   failed: token expired" warnings starting ~35 min after login.
+   Traced to CrmCrossRatesMatrixMdiWindow snapshotting the auth token
+   once at construction instead of refreshing it per-request, unlike
+   ClientManager's proactive refresh timer which keeps the session's
+   own token current. Fixed with a small thread-safe token holder
+   refreshed on the GUI thread at the top of every reload().
+3. Even with a fresh token, CRM was still blank. Found the CRM name
+   picker (showMatrix()) queries topology configs across every party
+   visible to the caller (server-side RLS, no party filter on
+   get_crm_topology_configs_request), while reload() scopes the
+   actual rates query to clientManager_->currentPartyId() only. The
+   default login party (Acme Corporation Plc, the holding company)
+   has zero topology configs of its own -- only the three offices do
+   -- so the picker showed real names sourced from other parties that
+   then silently resolved to zero rows (a legitimate empty response,
+   not a request failure, so nothing surfaced it as an error). Fixed
+   by filtering the picker to the current party and showing an
+   explicit "no CRM configured for current party" message when empty.
+4. That fix, once live, confirmed the diagnosis: the holding company
+   genuinely has no CRM/treasury data of its own by current
+   provisioning design (acme_bundle_populate.sql scopes
+   books/portfolios/CRM to the three offices only). Whether that's
+   correct depends on what a real holding company needs -- discussed
+   with the user and broken out as its own story rather than decided
+   unilaterally here.
 
 * Notes
 
@@ -75,3 +113,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two real bugs fixed in CrmCrossRatesMatrixMdiWindow/Controller
+(projects/ores.qt/marketdata/):
+1. Stale JWT snapshot -- crmClient_'s token_provider captured
+   currentAuthToken() once at construction; now refreshed on the GUI
+   thread at the top of every reload() via a thread-safe token
+   holder (safe because ClientManager's session state has no
+   internal synchronization of its own).
+2. CRM name picker/reload() party-scoping mismatch -- the picker
+   queried topology across all visible parties; reload() only ever
+   queries the current party. Picker is now filtered to the current
+   party, with an explicit message when it has none configured.
+
+The original task premise (a provisioning-bundle gap) was already
+fixed on main before this task started. The deeper finding --
+Acme's holding company has no CRM/treasury footprint at all, which
+may not match what a real holding company needs -- is scoped as its
+own story: [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]].

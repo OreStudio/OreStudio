@@ -21,6 +21,7 @@
 #include "ores.qt/CrmCrossRatesMatrixMdiWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include <QComboBox>
@@ -100,6 +101,19 @@ void CrmCrossRatesMatrixController::showMatrix() {
         return;
 
     QPointer<CrmCrossRatesMatrixController> self = this;
+    // get_crm_topology_configs_request has no party filter -- server-side
+    // row-level security returns every party visible to the caller (every
+    // office plus the holding parent for a tenant_admin), not just the
+    // current party. openMatrix()/reload() always scope their actual
+    // rates query to currentPartyId(), so picking a name that exists only
+    // for a *different* visible party silently opens a matrix that will
+    // never show a row: not a request failure (bridge_->resolved_rates()
+    // legitimately returns empty for an unconfigured party), so nothing
+    // downstream would ever flag it as an error. Filter to the current
+    // party here instead, so the picker only ever offers names that will
+    // actually resolve -- snapshotted on the GUI thread since
+    // currentPartyId() is not safe to call from the background thread.
+    const auto currentParty = clientManager_->currentPartyId();
     QFuture<std::expected<std::vector<refdata::domain::crm_topology_config>, QString>> future =
         QtConcurrent::run([self]() {
             if (!self || !self->clientManager_)
@@ -115,7 +129,7 @@ void CrmCrossRatesMatrixController::showMatrix() {
         &QFutureWatcher<
             std::expected<std::vector<refdata::domain::crm_topology_config>, QString>>::finished,
         this,
-        [self, watcher]() {
+        [self, watcher, currentParty]() {
             const auto result = watcher->result();
             watcher->deleteLater();
             if (!self)
@@ -123,11 +137,23 @@ void CrmCrossRatesMatrixController::showMatrix() {
 
             QSet<QString> names;
             if (result) {
-                for (const auto& config : *result)
-                    names.insert(QString::fromStdString(config.name));
+                for (const auto& config : *result) {
+                    if (config.party_id == currentParty)
+                        names.insert(QString::fromStdString(config.name));
+                }
             }
             QStringList sorted(names.begin(), names.end());
             std::sort(sorted.begin(), sorted.end());
+
+            if (sorted.isEmpty()) {
+                MessageBoxHelper::information(
+                    self->mainWindow_,
+                    tr("Cross-Rates Matrix"),
+                    tr("No CRM topology is configured for the current party. Switch to a "
+                       "party that has one, or configure one under Reference Data > CRM "
+                       "Topology Configs."));
+                return;
+            }
 
             QStringList choices;
             choices << all_display_name;

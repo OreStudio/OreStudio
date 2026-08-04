@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: B660460A-682B-4728-9A8F-21B9A9AF52E4
+:END:
+#+title: Story: Documentation improvements
+#+description: Ongoing improvements to ORE Studio's documentation and public-facing site. Tasks are added incrementally as ideas come up.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+An umbrella story for incremental improvements to ORE Studio's
+documentation and public-facing site (the org-mode-exported website
+under `index.org`/`readme.org`/`assets/`). Tasks are added as ideas
+come up rather than scoping the whole story up front.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F5DC0C0A-F1AB-46EA-B1BD-9C6264E81626][Scaffold story: Documentation improvements]] | STARTED | 2026-08-04 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6CE97DF4-4AC4-42A9-9B8C-D3DCD77FA515][Add an image carousel to the website homepage]] | BACKLOG | | | Initial task for: Documentation improvements |
+| [[id:65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1][Add systemd unit for site start/stop]] | BACKLOG | | | Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes. |
+
+* Decisions
+
+* Out of scope
+
+-

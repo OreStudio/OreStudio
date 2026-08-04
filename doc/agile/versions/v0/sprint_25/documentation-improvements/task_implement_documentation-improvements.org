@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 6CE97DF4-4AC4-42A9-9B8C-D3DCD77FA515
+:END:
+#+title: Task: Add an image carousel to the website homepage
+#+description: Initial task for: Documentation improvements
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a dependency-free HTML/CSS/JS image carousel to the site homepage
+(=index.org=), replacing the old static hero image + standalone
+version screenshot with a single carousel whose first slide is the
+hero (splash image + title/subhead/CTA) and whose remaining slides
+are a hand-curated set of ORE Studio screenshots with captions,
+showcasing the breadth of functionality (market data, org structure,
+quant/analytics, data governance, trade capture, reference data).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Core carousel shipped; verifying visual fixes with the user (stale-cache stretch check, gap/aspect-ratio tuning). |
+| Waiting on   | User confirmation on the latest visual tweaks.        |
+| Next         | Confirm rendering looks right, then close out.        |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Carousel replaces the old hero section + standalone version
+  screenshot at the top of =index.org=, with the hero merged into the
+  carousel's first slide.
+- 6 hand-curated feature screenshots follow, each with a caption.
+- Dependency-free (no CDN/external JS library) vanilla JS controller:
+  auto-advance, pause on hover/focus, prev/next buttons, dot nav.
+- Regular slides never stretch (=object-fit: contain=, safe for any
+  native image resolution); the hero slide crops rather than
+  stretches (=object-fit: cover=).
+- =compass site serve= actually serves =.js= files (site build had no
+  publish rule for them before this task).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

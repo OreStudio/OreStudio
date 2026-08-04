@@ -130,8 +130,17 @@ plan itself stays — it is the historical record of what we did.)
   left uncommitted (nothing in the codebase would reference it), same
   treatment given to lei_relationship/report_definition/
   synthetic_fx_spot_config once each is migrated.
-- Remaining lookup_entity migrations for this task: lei_relationship
-  (depends on =has_artefact_insert_fn=, now ported), report_definition,
+- =lei_relationship= migrated using the same hook. Regenerated artefact
+  table matched the checked-in one bar the template-name comment and two
+  artefact-index names: the checked-in file's "start_node_id_idx"/
+  "rel_type_idx" didn't match what its own original lookup_entity model
+  would ever have produced (no =:name:= override on either Artefact-index
+  heading) -- pre-existing drift (hand-shortened after generation, never
+  regenerated since), not something the migration introduced. Verified no
+  other checked-in SQL referenced the old names before accepting the
+  correct, template-derived ones. Idempotent on a second regen. Same
+  no-main-table treatment as =lei_entity=.
+- Remaining lookup_entity migrations for this task: report_definition,
   synthetic_fx_spot_config (both =has_artefact_insert_fn: false= --
   simpler, closer to =artefact_type='s pattern). Then the 18-entity
   profile-binding survey itself (this task's original acceptance) still

@@ -217,7 +217,14 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
          :base-extension "pdf"
          :publishing-directory "./build/output/site/OreStudio/"
          :publishing-function org-publish-attachment)
-        ("site:main" :components("site:pages" "site:images" "site:style" "site:pdf"))))
+        ("site:js"
+         :recursive t
+         :base-directory "./"
+         :exclude "\\(^\\|/\\)\\(\\.packages\\|vcpkg\\|build\\|tmp\\|\\.claude/worktrees\\)/\\|projects/ores.org-js"
+         :base-extension "js"
+         :publishing-directory "./build/output/site/OreStudio/"
+         :publishing-function org-publish-attachment)
+        ("site:main" :components("site:pages" "site:images" "site:style" "site:js" "site:pdf"))))
 
 (defun ores-inject-site-nav (index-file preamble fix-tag)
   "Inject site CSS, PREAMBLE nav, and app-specific FIX-TAG into INDEX-FILE."

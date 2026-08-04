@@ -9,24 +9,54 @@
 #+options: html-postamble:nil toc:nil num:nil ^:nil title:nil
 #+HTML_DOCTYPE: html5
 
-#+HTML: <section class="hero">
-#+HTML: <img class="banner" src="./assets/images/splash-screen.png" alt="ORE Studio">
-#+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
+#+HTML: <section class="carousel">
+#+HTML: <div class="carousel-viewport">
+#+HTML: <figure class="carousel-slide hero-slide is-active">
+#+HTML: <img src="./assets/images/splash-screen.png" alt="ORE Studio">
+#+HTML: <div class="hero-content">
 #+HTML: <h1>Enterprise-grade risk analytics &mdash;<br/>but visual <i>and</i> open-source.</h1>
 #+HTML: <p>ORE Studio wraps the <a href="https://github.com/OpenSourceRisk">Open-Source Risk Engine</a> (ORE) in an intuitive graphical interface - no Python or C++ required.</p>
+#+HTML: <a class="btn" href="https://github.com/orestudio/OREStudio">Explore on GitHub</a>
+#+HTML: </div>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_cross_rates_matrix.png" alt="Cross-Rates Matrix">
+#+HTML: <figcaption class="carousel-caption">Live FX cross-rates matrices with real-time market data and mini price charts.</figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/acme_corporation_org_chart_window.png" alt="Org Chart">
+#+HTML: <figcaption class="carousel-caption">Visualise holding-group corporate structure and staff reporting lines.</figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_ir_synthetic_data_generator.png" alt="Market Simulator: IR curve calibration">
+#+HTML: <figcaption class="carousel-caption">Calibrate and simulate interest-rate curves with QuantLib-backed stochastic models.</figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/sprint_23_data_librarian_accession_card.png" alt="Data Librarian">
+#+HTML: <figcaption class="carousel-caption">Track data provenance, lineage, and governance for every dataset in the system.</figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/new_trade_date_picker.png" alt="New Trade dialog">
+#+HTML: <figcaption class="carousel-caption">Capture trades with a holiday-aware calendar and full instrument detail.</figcaption>
+#+HTML: </figure>
+#+HTML: <figure class="carousel-slide">
+#+HTML: <img src="./assets/images/currency_pair_conventions_main_window.png" alt="Currency Pair Conventions">
+#+HTML: <figcaption class="carousel-caption">Browse and manage reference data — currencies, currency pairs, business units, and more.</figcaption>
+#+HTML: </figure>
+#+HTML: <button class="carousel-nav prev" aria-label="Previous slide">&#8249;</button>
+#+HTML: <button class="carousel-nav next" aria-label="Next slide">&#8250;</button>
+#+HTML: </div>
+#+HTML: <div class="carousel-dots">
+#+HTML: <button class="carousel-dot is-active" aria-label="Slide 1"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 2"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 3"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 4"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 5"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 6"></button>
+#+HTML: <button class="carousel-dot" aria-label="Slide 7"></button>
+#+HTML: </div>
 #+HTML: </section>
-
-*ORE Studio* is a new and independent open-source project with the goal of
-providing a graphical wrapper around Acadia's [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]]. ORE itself builds on top of
-[[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]], the de-facto standard open-source library for quantitative finance.
-*ORE Studio* aims to augment ORE's robust analytics to eventually provide full
-life-cycle management for all entities within the trading system,
-point-and-click reporting, trade modelling and market-data management. ORE
-Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
-
-#+ATTR_HTML: :alt ORE Studio Qt User Interface :title ORE Studio Qt User Interface :align center
-#+ATTR_HTML: :width 100% :height 100%
-[[./assets/images/ore_studio-v0.0.24.png]]
+#+HTML: <script src="./assets/carousel.js"></script>
 
 #+HTML: <div class="grid">
 #+HTML: <div class="card">
@@ -44,5 +74,5 @@ Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].
 #+HTML: </div>
 
 #+HTML: <footer>
-#+HTML: © 2025 ORE Studio contributors.
+#+HTML: © 2026 ORE Studio contributors.
 #+HTML: </footer>

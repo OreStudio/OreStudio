@@ -1677,10 +1677,26 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
     if body:
         e["description"] = body
 
+    # Lookup entities declare their single-column key via a dedicated
+    # ``* Primary key`` heading (:column:/:type:/:is_text: on the heading
+    # itself), not a ``** <name>`` sub-heading with :primary_key: true
+    # under ``* Columns`` (the domain_entity convention _split_columns_section
+    # handles). Every lookup_entity model in the repo uses this heading;
+    # without reading it, entity.primary_key.column renders empty in
+    # sql_schema_table_create.mustache and silently corrupts the DDL.
+    pk_section = _section(doc.root, "Primary key")
+    if pk_section:
+        pk: dict[str, Any] = {"column": pk_section.properties.get("column", "")}
+        if "type" in pk_section.properties:
+            pk["type"] = pk_section.properties["type"]
+        if "is_text" in pk_section.properties:
+            pk["is_text"] = _parse_typed(pk_section.properties["is_text"])
+        e["primary_key"] = pk
+
     cols_section = _section(doc.root, "Columns")
     if cols_section:
         pk_fields, nk_fields, plain_fields = _split_columns_section(cols_section)
-        if pk_fields:
+        if pk_fields and "primary_key" not in e:
             e["primary_key"] = _primary_key_dict(pk_fields)
         if nk_fields:
             e["natural_keys"] = nk_fields

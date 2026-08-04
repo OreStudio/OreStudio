@@ -8,7 +8,7 @@
 #+filetags: :controller:process-supervisor:config:tech-debt:environment:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-shared-nats-env-fallback-tier
-#+pr:
+#+pr: 1819
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1819][#1819]] | [ores.utility,ores.nats] Add generic shared-domain fallback tier to environment_mapper_factory |
 
 * Review
 

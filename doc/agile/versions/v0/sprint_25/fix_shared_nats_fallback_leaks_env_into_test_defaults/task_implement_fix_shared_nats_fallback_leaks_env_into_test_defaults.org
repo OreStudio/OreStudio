@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: EEBC6A1A-8DC3-43D9-879A-02A75FB8313F
+:END:
+#+title: Task: Implement Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests
+#+description: Initial task for: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests
+#+type: task
+#+level: s1
+#+filetags: :fix_shared_nats_fallback_leaks_env_into_test_defaults:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the coded defaults (nats://localhost:4222, empty subject prefix) for parse_defaults tests when no CLI args or per-app env vars are set, without breaking PR #1819's intended generic ORES_NATS_* fallback for real deployments.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- All 11 previously-failing service config_parser test suites pass parse_defaults_returns_expected_values again
+- PR #1819's actual goal (services pick up bare ORES_NATS_* env vars with zero argv threading) is preserved for real deployment use, not just papered over in tests
+- Root cause documented: why the shared-domain fallback tier applies even when the test harness's own environment (not a real per-service override) happens to set ORES_NATS_URL
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: A979A858-424F-487A-9D3E-EE8D1B79BD35
+:END:
+#+title: Task: Scaffold story: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :fix_shared_nats_fallback_leaks_env_into_test_defaults:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/fix-shared-nats-fallback-leaks-env-into-test-defaults
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:BC40520B-4CCF-49B9-B1D2-1908C4915F28][Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story and task docs scaffolded and wired into Sprint 25's Hotfixes
+table. No code — see the "Implement" task for the actual fix.

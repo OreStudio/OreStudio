@@ -1807,7 +1807,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 )
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
-                is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')
+                is_timestamp_type = col.get('type') in (
+                    'timestamp', 'timestamptz', 'timestamp with time zone'
+                )
                 is_enum_type = col.get('is_enum', False)
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
@@ -1817,6 +1819,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
+                # A required (NOT NULL) plain timestamp column needs the same
+                # entity-layer std::string representation natural-key timestamps
+                # already get -- sqlgen cannot serialise a raw
+                # std::chrono::time_point, and is_simple's raw-cpp_type passthrough
+                # (below) doesn't know about timestamps at all. Without this, a
+                # required, non-natural-key timestamp column silently falls
+                # through to is_simple and fails at compile time inside sqlgen's
+                # transpilation layer.
+                col['is_required_timestamp'] = is_timestamp_type and not col.get('nullable', False)
                 col['is_enum'] = is_enum_type and not col.get('nullable', False)
                 col['is_nullable_string'] = (
                     col.get('nullable', False)
@@ -1828,6 +1839,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 col['is_simple'] = (
                     not col.get('nullable', False)
                     and not is_uuid_type
+                    and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
                 )
@@ -1994,6 +2006,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # defaults False so needs_counter below falls back to the primary
             # key check alone.
             domain_entity.setdefault('has_text_natural_keys', False)
+        # A required (NOT NULL) plain timestamp column needs the same
+        # ores.platform/time/datetime.hpp + <chrono>/<format>/<sstream>
+        # includes a timestamp natural key needs -- broaden the flag rather
+        # than require a timestamp natural key to also be present.
+        domain_entity['has_date_or_timestamp_natural_keys'] = (
+            domain_entity.get('has_date_or_timestamp_natural_keys', False)
+            or any(c.get('is_required_timestamp') for c in domain_entity.get('columns', []))
+        )
         # Check primary_key's raw 'type' rather than the derived 'is_text'
         # flag: that flag isn't computed until later in this function, so
         # reading it here would always see False (order-dependency bug —

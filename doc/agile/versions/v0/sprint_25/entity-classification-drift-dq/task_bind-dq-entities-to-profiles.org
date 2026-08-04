@@ -49,6 +49,38 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+- Found and fixed a real codegen bug while establishing the pre-rebind
+  baseline (regen+diff before touching any model, per the pilot method):
+  =load_org_lookup_entity_model()= never read the =* Primary key= heading
+  every =*_lookup_entity.org= model in the repo uses to declare its key
+  (:column:/:type:/:is_text: on the heading itself) -- it only handled the
+  domain_entity convention of a =:primary_key: true=-flagged =** column=
+  sub-heading under =* Columns=. Silent effect: =entity.primary_key.column=
+  rendered empty in =sql_schema_table_create.mustache=, corrupting the
+  generated DDL (empty column name in CREATE TABLE / PRIMARY KEY / CHECK)
+  for every lookup entity component-wide -- not dq-specific. Fixed in
+  =projects/ores.codegen/src/codegen/org_loader.py=, regression-tested in
+  =projects/ores.codegen/tests/test_org_loader_lookup_entity.py=; confirmed
+  zero-diff for =artefact_type= (the previously-broken entity) after the
+  fix. Full codegen test suite (110 tests) green.
+- Baseline check also surfaced pre-existing drift unrelated to the primary-
+  key bug: a stale blank line before a comment in the notify/validation
+  trigger SQL, on 6 tables (change_reasons, code_domains, data_domains,
+  dataset_bundles, subject_areas, change_reason_categories) -- same class
+  as the pilot's currency_calendar finding. Not yet fixed; next step.
+- A full-component regeneration (triggered incidentally by
+  =check_component_drift.py --components dq=, which regenerates every
+  address) additionally surfaced ~130 modified/untracked C++/Qt files
+  across =ores.dq.api=, =ores.dq.core=, and =ores.qt.dq= -- the component's
+  C++/Qt layers appear to have substantial pre-existing drift beyond SQL,
+  including 4 entities (lei_entity, lei_relationship, report_definition,
+  synthetic_fx_spot_config) with no checked-in generated code at all yet.
+  Reverted rather than committed blind -- this is a large, separate
+  investigation (each new table needs drop.sql, notify trigger, population,
+  validation-ignore entries, and full DB/CMake wiring, not just template
+  output) and deserves its own deliberate pass rather than folding into
+  this survey uninspected.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

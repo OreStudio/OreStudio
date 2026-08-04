@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 9913E08D-977A-4C36-8376-62BCEA9A41CB
+:END:
+#+title: Task: Per-environment systemd resource limits (Claude slices, services, builds)
+#+description: Implement WS-1 through WS-5 and WS-7 of the resource-management plan: per-environment Claude slices with MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight limits (WS-1); converge compass services onto systemctl --user against the generated ores@ENV.target units, staged behind --legacy (WS-2); compass deploys the generated units instead of printing instructions (WS-3); per-environment status/tree/top views (WS-4); protect Emacs and the interactive session via slice drop-ins (WS-5, unprivileged half); reduce build lock to two slots and run builds inside a memory-capped app-build-ENV.slice (WS-7). See systemd-resource-management-plan.org for full analysis, design decisions, and sequencing. WS-6 (PID 1 ownership) is explicitly deferred and out of scope for this task.
+#+type: task
+#+level: s1
+#+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-07-31
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-31                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: A226BB18-9C51-4322-BE35-EEC461A2DF81
+:END:
+#+title: Task: Fix Acme staff email domains: proper per-country TLDs, not a raw office code
+#+description: generate_data.py builds staff emails as name.index@office_code.acmecorp.example (e.g. ...@acme_uk.acmecorp.example), which looks wrong, not like a real corporate email. Use a proper per-country domain instead (e.g. acmecorp.co.uk, acmecorp.com, acmecorp.com.hk), matching each OFFICES entry's country.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-27
+#+updated: 2026-07-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Acme Corporation exists to exercise real system functionality realistically; staff emails using a raw internal office code as if it were a domain segment undermines that. Each office (UK/US/HK) should get a locale-appropriate corporate email domain.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-27                               |
+
+* Acceptance
+
+- generate_data.py's OFFICES config carries (or derives) a proper per-country email domain (e.g. acmecorp.co.uk, acmecorp.com, acmecorp.com.hk) instead of office_code.acmecorp.example.
+- Regenerated accounts.json and populate SQL reflect the corrected email domains; existing tests updated if they assert on the old format.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

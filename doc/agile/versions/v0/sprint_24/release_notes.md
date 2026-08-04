@@ -1,5 +1,7 @@
 *August 2026*
 
+Release notes for [Sprint 24](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_24/sprint.html).
+
 ![ore_studio-v0.0.24.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.24.png)
 
 Sprint 24 continued commissioning work across components and pushed on IR generation. Acme Corporation shipped as ORE Studio's fully populated synthetic holding-group test entity, replacing Barclays Plc, with data-driven bundle provisioning. Calendar reference data was completed end to end: a holiday-aware date picker, real QuantLib holiday/adjustment materialisation, and a fix for a silent 100-row list-truncation bug affecting 29 refdata/marketdata entities. A configurable NATS wire format (JSON/MessagePack) rolled out across every service, fixing the base64 overhead problem for every message type. Entity classification and drift measurement was designed, built, and proven on the ores.refdata pilot, replacing several fragmented hand-maintained tracking documents with one automated report. The service runtime was proven containerised and running reproducibly on a remote WSL host. The sprint ran roughly twice its intended 7-day window (two health reviews, both RED) and the "improve IR generation" goal shipped only design work rather than a delivered improvement &#x2013; see the sprint's health reviews for the full analysis.

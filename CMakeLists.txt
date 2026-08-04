@@ -62,7 +62,7 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")
     cmake_diagnostic(SET CMD_UNINITIALIZED IGNORE)
 endif()
 
-project(OreStudio VERSION 0.0.24 LANGUAGES CXX
+project(OreStudio VERSION 0.0.25 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4")

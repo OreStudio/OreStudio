@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 48C10D00-5940-40E0-A8D8-B935B11A24B4
+:END:
+#+title: Task: GLEIF import should natively attach counterparty logos when available
+#+description: Move demo-counterparty-logo attachment into the GLEIF import itself instead of a bolted-on best-effort poll after provision_acme
+#+type: task
+#+level: s1
+#+filetags: :gleif:refdata:iam:cleanup:acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-07-30
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+GLEIF counterparty import should have first-class support for
+attaching a logo/flag image to a counterparty when one is available,
+instead of the demo-only bolt-on this replaces.
+
+The removed code (=tenant_handler.hpp::attach_demo_counterparty_logo=,
+called from =provision_acme= after Step 7) polled
+=get_counterparties_request= every 2 seconds for up to 8 minutes
+waiting for the GLEIF import (Step 2, ~13k rows, by far the largest
+and slowest bundle publish in the whole flow) to land BARCLAYS PLC,
+then copied a hardcoded =demo_counterparty_logo= template image onto
+it. Problems with that approach:
+
+- It's a random, disconnected extra step tacked onto the *end* of
+  =provision_acme=, unrelated to the GLEIF import that actually
+  produces the counterparty rows it depends on.
+- The up-to-8-minute silent poll (only failures log anything) reads
+  exactly like a hang from the caller's side — this cost significant
+  debugging time working out it wasn't actually stuck, just slow.
+- It's hardcoded to one specific counterparty (BARCLAYS PLC) for demo
+  purposes, not a general mechanism.
+
+The fix belongs in the GLEIF import/publish pipeline itself: when a
+GLEIF counterparty entity has a known logo (LEI-keyed or similar),
+attach it as part of that same publish, not as a separate polling
+step racing the import's own completion.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-30                               |
+
+* Acceptance
+
+- GLEIF counterparty publish attaches a logo image to a counterparty
+  when one is available, as part of that same publish pipeline (no
+  separate post-hoc polling step in =provision_acme= or elsewhere).
+- BARCLAYS PLC (or whichever counterparty is used to demonstrate this)
+  ends up with a rendering logo after a normal =--source acme=
+  provisioning run, with no unbounded/silent wait.
+- =attach_demo_counterparty_logo= and its call site in
+  =tenant_handler.hpp= (already removed as part of this discovery) stay
+  removed; the replacement lives in the GLEIF/refdata layer.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

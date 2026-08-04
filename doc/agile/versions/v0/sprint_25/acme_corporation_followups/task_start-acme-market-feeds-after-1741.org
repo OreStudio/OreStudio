@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 1A5B53EF-36A6-4A14-9B78-747A00F58EB0
+:END:
+#+title: Task: Start Acme's synthetic market feeds during provisioning (after PR #1741 lands)
+#+description: Acme's synthetic_realistic_2026 market data is published as configuration only (fx_spot_generation_config, ir_curve_generation_config rows) -- nothing actually starts the feed producers, so CRM cross-rates and IR curves sit static/dead for a freshly-provisioned Acme party. A working implementation (start_feeds_under_folder_request for FX, per-config start_ir_curve_feed_request for IR) was drafted and then deliberately backed out uncommitted: PR #1741 (merry_newton) is independently adding a way to start feeds as part of the synthetic-theme-as-one-atomic-dataset work, and we don't want two parallel paths for the same thing.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-29
+#+updated: 2026-07-29
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Once PR #1741 merges, reassess: either call whatever feed-starting mechanism it introduces from provision_acme's per-office loop, or confirm it already covers Acme's case and no extra step is needed. Acme is not genuinely 'ready to use' until CRM/IR data ticks live for a freshly provisioned tenant, not just sits configured.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-07-29                               |
+
+* Acceptance
+
+- After a fresh --source acme provisioning run, every office's FX cross-rates matrix and IR curve views show ticking (live-updating) data, not static zero values; the mechanism used is the same one #1741 introduces for the rest of the system, not a second Acme-specific implementation.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -12,6 +12,8 @@
 
 /August 2026/
 
+Release notes for [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]].
+
 [[proj:assets/images/ore_studio-v0.0.24.png]]
 
 Sprint 24 continued commissioning work across components and pushed

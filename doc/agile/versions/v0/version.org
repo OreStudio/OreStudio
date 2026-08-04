@@ -58,4 +58,5 @@ the current sprint; the rest are closed.
 | [[id:C34A07B2-6BE6-40E5-B1A5-640D5369CECD][Sprint 21]] | 2026-06-12 | 2026-07-02 | Commission ores.refdata entity library; codegen C++ drift correction.           |
 | [[id:0924A6E7-FAF0-4A51-8CC1-74B103725E96][Sprint 22]] | 2026-07-02 | 2026-07-10 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
 | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] | 2026-07-11 | 2026-07-21 | Continue commissioning ores.refdata entities; codegen C++ drift correction.     |
-| [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] | 2026-07-21 |            | Continue commissioning work across components; improve IR generation.          |
+| [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] | 2026-07-21 | 2026-08-03 | Continue commissioning work across components; improve IR generation.          |
+| [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] | 2026-08-03 |            | Resolve sprint drift on as many components as possible; progress IR curves.    |

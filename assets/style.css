@@ -553,58 +553,43 @@ li {
     transform: translateY(-1px);
 }
 
-/* Index page: feature grid */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
-    margin: 2.5rem 0;
-}
-
-.card {
-    background-color: var(--bg-secondary);
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1.25rem 1.35rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent-dim);
-    box-shadow: 0 6px 18px var(--shadow-card);
-}
-
-.card h3 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: var(--accent);
-    font-size: 1.05rem;
-}
-
-.card p {
-    margin-bottom: 0;
-    color: var(--text-muted);
-    font-size: 0.92rem;
-    line-height: 1.55;
+.btn-secondary:hover {
+    background-color: var(--bg-accent);
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
 /* Index page: screenshot carousel */
+/* #content constrains everything to var(--max-width) (920px); break the
+   outer section out full-bleed to the viewport, then re-center an inner
+   wrapper capped at 1200px, so screenshots render large enough to
+   actually read without the two competing width constraints fighting. */
 .carousel {
+    width: 100vw;
+    margin: 0 calc(50% - 50vw) 2.5rem;
+}
+
+.carousel-inner {
     width: 100%;
-    max-width: var(--max-width);
-    margin: 0 0 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .carousel-viewport {
     position: relative;
     width: 100%;
-    aspect-ratio: 21 / 9;
+    aspect-ratio: 16 / 10;
     background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--accent-dim);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 6px 18px var(--shadow-card);
+    box-shadow: 0 10px 28px var(--shadow-card);
 }
 
 .carousel-slide {
@@ -622,54 +607,92 @@ li {
     visibility: visible;
 }
 
+/* Standard "card" layout for every slide: image on top at its natural
+   aspect ratio (never cropped or stretched, regardless of source
+   resolution), a solid caption/text block below -- not overlaid on the
+   image, since screenshots have unpredictable bright/light regions
+   that would fight with overlaid text for contrast. */
 .carousel-slide img {
     width: 100%;
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;    /* flex items don't shrink below intrinsic size by
+                         default; without this a large screenshot's
+                         natural height overflows the slide, pushing
+                         the caption below it out of view. */
     object-fit: contain;
     background-color: var(--bg-primary);
 }
 
 .hero-slide {
-    justify-content: center;
-}
-
-.hero-slide img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.35);
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 34rem;
+    position: static;
+    z-index: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 38rem;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 1.25rem 1.5rem;
     text-align: center;
 }
 
 .hero-content h1 {
-    font-size: 2rem;
+    font-size: 2.25rem;
     line-height: 1.25;
-    margin: 0 0 0.75rem;
+    margin: 0 0 0.85rem;
     border-bottom: none;
 }
 
 .hero-content p {
-    color: var(--text-primary);
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.5;
     margin: 0 0 1.25rem;
 }
 
+.hero-ctas {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 0 0 1rem;
+}
+
+.hero-tech {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.hero-tech a {
+    color: var(--text-muted);
+    text-decoration: underline;
+}
+
 .carousel-caption {
-    padding: 0.75rem 1.1rem;
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
     background-color: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
-    color: var(--text-muted);
-    font-size: 0.9rem;
     text-align: center;
+}
+
+.carousel-caption strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    margin-bottom: 0.3rem;
+}
+
+.carousel-caption span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.5;
 }
 
 .carousel-nav {

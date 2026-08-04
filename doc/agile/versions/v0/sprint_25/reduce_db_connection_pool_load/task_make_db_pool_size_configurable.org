@@ -38,11 +38,11 @@ services.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
-| Now          | Per-service tier implemented and building green; fleet-wide tier deferred. |
+| Now          | Nothing. |
 | Waiting on   | PR #1819 (bright_faraday, https://github.com/OreStudio/OreStudio/pull/1819, "[ores.utility,ores.nats] Add generic shared-domain fallback tier to environment_mapper_factory") to merge, for the fleet-wide fallback tier. |
-| Next         | Once PR #1819 lands, register a DB shared domain and add the ORES_DB_POOL_SIZE fleet-wide fallback tier. |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -104,6 +104,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Per-service tier shipped, exactly per the =* Plan=:
+
+- =pool_size= added to =database_options= (default =4=, unchanged).
+- =--db-pool-size= CLI flag added to =database_configuration=;
+  =ORES_<APP>_DB_POOL_SIZE= falls out for free via the existing
+  prefix-based env mapper — no separate wiring needed.
+- =component-service= codegen archetype and all 18 =application.cpp=
+  files (17 domain services + =ores.http.server=) updated to read
+  =pool_size= from options instead of the =4= literal. Two files
+  (=ores.cli=, =ores.http.server=) had a differently-shaped
+  =make_context= signature that a blanket edit broke; fixed by hand
+  and the shape divergence spun off as a follow-up task (below).
+- Unit tests added: =database_options_tests.cpp= (default + custom
+  =pool_size=), =ores.iam.service= =config_parser_tests.cpp=
+  (=--db-pool-size= CLI parsing).
+- Verified locally: =compass build --preset linux-clang-debug-make=
+  clean; =ctest --preset linux-clang-debug-make= 71/71 passed; live
+  systemd smoke test — started =ores.iam.service= with
+  =ORES_IAM_SERVICE_DB_POOL_SIZE=8= in =.env=, confirmed via
+  =pg_stat_activity= it opened 8 connections vs. the default 4, then
+  reverted the override (service back to 4 connections).
+
+Fleet-wide =ORES_DB_POOL_SIZE= fallback tier is out of scope for this
+task — deferred until PR #1819 merges (see =* Status= "Waiting on").
+Spun off two related follow-ups, both filed under this story: "Unify
+application.cpp and service initialisation across services" (the
+shape-divergence problem this task exposed) and a backlog capture to
+drop the stale =controller_service_*= DB tables in favour of a
+codegen model.
 
 * Promoted from capture
 

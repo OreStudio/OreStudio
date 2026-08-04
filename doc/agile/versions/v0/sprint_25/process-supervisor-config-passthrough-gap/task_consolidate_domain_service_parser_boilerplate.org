@@ -8,7 +8,7 @@
 #+filetags: :controller:process-supervisor:config:tech-debt:codegen:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/consolidate-domain-service-parser-boilerplate
-#+pr:
+#+pr: 1832
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1832][#1832]] | [ores.service,ores.testing] Consolidate parser boilerplate across domain services |
 
 * Review
 

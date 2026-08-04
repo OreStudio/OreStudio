@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277
+:END:
+#+title: Story: Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed
+#+description: Add orthogonal scope (system/tenant/party) and binding-mode (bound/sandboxed) axes to synthetic market data generation configs, so tenants like ACME can share one synthetic reality across parties instead of each party diverging, while a sandboxed mode lets synthetic data be generated and consumed for testing without affecting real feeds. Consolidates ACME's 3 party-level configs into one tenant-level config, fixes the Market Simulator viewer-scope visibility leak, and documents (without building) a future workspace-scoped binding direction.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:market_data:architecture:acme:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give synthetic market data generation two orthogonal primitives -- scope (system/tenant/party) and binding mode (bound/sandboxed) -- so a tenant can choose to share one synthetic reality across its parties (ACME's case), and so synthetic data can later be generated for testing (new ORE configs, quant models) without silently overriding real system behaviour.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- market_data_generation_config carries a scope (system/tenant/party) and a binding_mode (bound/sandboxed), each correctly nullable/FK'd per scope level
+- Activating a bound config that narrows an already-covered instrument at a wider scope is rejected, requiring explicit supersession -- never silent override
+- Sandboxed configs generate and publish data end-to-end under a distinct namespace, provably excluded from bound-feed resolution used by real consumers
+- ACME's 3 existing party-level configs (UK/US/HK) are consolidated into a single tenant-level bound config; ACME parties share one synthetic reality
+- Market Simulator tree filters by viewer scope (own party's configs plus any tenant/system configs visible to them) instead of showing every party's configs unfiltered
+- Design doc records the future workspace-scoped binding direction (live workspace = real feeds, user workspaces bind to sandboxed synthetic runs) without implementing it
+
+* Plan
+
+** Problem
+
+=market_data_generation_config= is party-scoped only, with no distinction
+between "authoritative shared reality" and "sandboxed test data". This
+causes ACME's three subsidiary parties (UK/US/HK) to each run their own
+diverging synthetic setup instead of sharing one reality, and the Market
+Simulator UI leaks every party's configs to any viewer regardless of who
+is asking.
+
+** Two orthogonal axes
+
+- *Scope* -- =system= / =tenant= / =party=. Defines the sharing radius: who
+  consumes the same generated data. Corresponding tenant_id/party_id
+  columns are nullable per level (system: both null, tenant: tenant_id
+  only, party: both set).
+- *Binding mode* -- =bound= / =sandboxed=. Defines authority: =bound=
+  configs are resolved into the feed real consumers see; =sandboxed=
+  configs generate and publish data reachable only by explicit selection,
+  never touching bound-feed resolution.
+
+These are independent: a config can be any (scope, binding_mode) pair.
+
+** Conflict resolution
+
+At most one =bound= config may be active per (instrument, scope) at a
+time. Activating a narrower-scope bound config for an instrument already
+covered by a wider-scope bound config is *rejected* at activation time --
+the caller must explicitly supersede (stop/retire) the wider one first.
+No silent narrowest-scope-wins resolution: ambiguity must never reach a
+consumer. =sandboxed= configs never participate in this check -- they
+cannot conflict with anything.
+
+** Sandbox primitive (partial, by design)
+
+=sandboxed= configs are runnable end-to-end: they generate and publish
+under a distinct namespace, provably excluded from the bound-feed
+resolution path. What is deliberately *not* built: any UI/UX for a
+consumer (an ORE run, a model test) to select and attach to a specific
+sandboxed config/run. That consumption side is real, separate work.
+
+** ACME migration
+
+Consolidate the existing UK/US/HK party-level configs into a single
+tenant-level =bound= config; retire the three party-level ones. ACME's
+holding-group parties then share one synthetic reality.
+
+** Visibility fix (folded in, supersedes existing capture)
+
+The Market Simulator tree currently shows every party's configs
+unfiltered to any viewer -- this is a scope leak, not just noise. Once
+scope exists on the entity, filter the tree by viewer scope: the
+viewer's own party's configs, plus any tenant/system-level configs
+visible to them. This supersedes the open capture "Market Simulator:
+scope folders to current party, clarify feed-start UX"
+(compass show 275824BB-0DCE-4EA4-964D-9C86B0498509).
+
+** Future direction (documented only, not built)
+
+=ores.workspace= today is user-scoped UI layout/preference state, not a
+data-binding concept. It may later become a binding target in its own
+right: a "live" workspace holding real (bound) feeds, with users able to
+create their own workspaces and bind sandboxed synthetic runs into them
+for undisturbed experimentation. The sandbox namespace introduced here
+should stay generic (not FX-spot-specific, not tied to a single scope
+level) so a later workspace-scoped binding can reuse it without rework.
+No workspace changes are made in this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:63F39350-B419-4863-A276-6EF29439F93B][Add scope (system/tenant/party) and binding_mode (bound/sandboxed) to market_data_generation_config]] | STARTED | 2026-08-04 | | Extend the market_data_generation_config entity model with a scope enum and nullable tenant_id/party_id per level, plus a binding_mode enum (bound/sandboxed). Regenerate across all layers (domain, table I/O, generator, repository, Qt). Add activation-time validation rejecting a bound config that narrows an already-covered instrument at a wider scope. |
+| [[id:45AB05B7-45D4-4F94-8011-8F293B9C676B][Run sandboxed synthetic configs end-to-end under a distinct namespace]] | BACKLOG | | | Wire ores.synthetic.service to generate and publish data for sandboxed configs under a namespace distinct from bound feeds, and prove the bound-feed resolution path used by real consumers never picks up sandboxed output. No consumer-side selection UI in this task. |
+| [[id:78B24A7B-8FBC-4B7C-AABB-5DF11E205F58][Consolidate ACME's UK/US/HK party configs into one tenant-level bound config]] | BACKLOG | | | Pick/merge one canonical config from ACME's three existing party-level synthetic configs, promote it to tenant scope with binding_mode=bound, and retire the other two party-level configs. Verify all three ACME parties then observe the same synthetic reality. |
+| [[id:601A7F49-E2A5-4DCB-992F-19665472E629][Filter Market Simulator tree by viewer scope (supersedes existing capture)]] | BACKLOG | | | Market Simulator currently shows every party's synthetic configs unfiltered to any viewer. Filter the tree to the viewer's own party's configs plus any tenant/system-level configs visible to them, using the new scope field. Supersedes capture 275824BB-0DCE-4EA4-964D-9C86B0498509 (Market Simulator: scope folders to current party, clarify feed-start UX) -- close/link that capture as superseded once this lands. |
+
+* Decisions
+
+- Conflict resolution is reject-at-activation, not resolve-at-read
+  (narrowest-scope-wins was considered and rejected: two feeds silently
+  generating for the same instrument risks confusing debugging and
+  wastes compute).
+- Sandbox mode ships runnable (generate + publish under a namespace),
+  not merely a schema placeholder -- validates the primitive actually
+  works end-to-end, even with no consumer UI yet.
+- ACME's three party configs are consolidated in this story, not
+  deferred -- otherwise the story ships the primitive but ACME's UX is
+  unchanged.
+
+* Out of scope
+
+- Any UI/UX for a consumer (ORE run, model test) to select and attach
+  to a specific sandboxed config/run.
+- Workspace-scoped bindings -- =ores.workspace= is not touched by this
+  story; only documented as a future direction.
+- System-level (cross-tenant) configs being exercised end-to-end by any
+  real scenario -- the scope value is supported by the data model and
+  resolution logic, but no current tenant needs it activated.

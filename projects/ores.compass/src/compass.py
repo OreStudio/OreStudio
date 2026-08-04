@@ -5755,6 +5755,15 @@ def _lan_ip():
         return "localhost"
 
 
+def _site_run_paths():
+    """PID/log file location for `compass site start/stop/status`. Scoped
+    under build/output/ like every other per-checkout artefact -- one
+    site-preview server per checkout, same as one Qt client colour set."""
+    run_dir = PROJECT_ROOT / "build" / "output" / "site-run"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    return run_dir / "site-serve.pid", run_dir / "site-serve.log"
+
+
 def cmd_site(argv):
     """compass site — Site pillar: build and serve the org-mode site locally."""
     ap = argparse.ArgumentParser(
@@ -5762,11 +5771,24 @@ def cmd_site(argv):
         description="Site pillar: build and/or serve the org-mode site locally.")
     sub = ap.add_subparsers(dest="subcmd", metavar="SUBCMD")
 
-    sp = sub.add_parser("serve", help="Serve the site locally (optionally rebuilding first)")
+    sp = sub.add_parser("serve", help="Serve the site locally in the foreground "
+                        "(optionally rebuilding first); Ctrl-C to stop. For a "
+                        "detached background server, use 'compass site start'.")
     sp.add_argument("--compile", action="store_true",
                     help="Rebuild the site before serving")
     sp.add_argument("--port", type=int, default=0,
                     help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
+
+    st = sub.add_parser("start", help="Serve the site detached in the background "
+                        "(optionally rebuilding first)")
+    st.add_argument("--compile", action="store_true",
+                    help="Rebuild the site before serving")
+    st.add_argument("--port", type=int, default=0,
+                    help="Port to serve on (default: ORES_SITE_PORT from .env, else 51004)")
+
+    sub.add_parser("stop", help="Stop the detached site-preview server")
+    sub.add_parser("status", help="Report whether the detached site-preview "
+                   "server is running")
 
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
@@ -5781,6 +5803,12 @@ def cmd_site(argv):
         return 0
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
+    if args.subcmd == "start":
+        return _cmd_site_start(args)
+    if args.subcmd == "stop":
+        return _cmd_site_stop()
+    if args.subcmd == "status":
+        return _cmd_site_status()
     if args.subcmd != "serve":
         ap.print_help()
         return 1
@@ -5817,12 +5845,7 @@ def cmd_site(argv):
               file=sys.stderr)
         return 1
 
-    print(f"🌐 Serving {build_dir}")
-    print(f"   http://localhost:{port}/OreStudio/index.html")
-    lan_ip = _lan_ip()
-    if lan_ip != "localhost":
-        print(f"   http://{lan_ip}:{port}/OreStudio/index.html")
-    sys.stdout.flush()
+    _print_site_urls(build_dir, port)
     handler = functools.partial(http.server.SimpleHTTPRequestHandler,
                                 directory=str(build_dir))
     with http.server.ThreadingHTTPServer(("", port), handler) as httpd:
@@ -5830,6 +5853,84 @@ def cmd_site(argv):
             httpd.serve_forever()
         except KeyboardInterrupt:
             pass
+    return 0
+
+
+def _print_site_urls(build_dir, port):
+    print(f"🌐 Serving {build_dir}")
+    print(f"   http://localhost:{port}/OreStudio/index.html")
+    lan_ip = _lan_ip()
+    if lan_ip != "localhost":
+        print(f"   http://{lan_ip}:{port}/OreStudio/index.html")
+    sys.stdout.flush()
+
+
+def _cmd_site_start(args):
+    """Detached counterpart to `compass site serve`: same build-then-bind
+    logic, but the actual HTTP server runs in a background child process
+    (PID-file tracked, like `compass client start`) instead of blocking
+    the caller's terminal. `compass site serve` itself stays a fleet-
+    systemd-free, simple foreground tool for interactive use; a site
+    preview is a single local dev convenience, not a fleet member with
+    DB-registered service_definitions, so it gets the same lightweight
+    PID-file lifecycle as the Qt client rather than a generated systemd
+    unit -- see compass_services.py's module docstring for why the client
+    already made that same call."""
+    import compass_services
+
+    pid_file, log_file = _site_run_paths()
+    pid = compass_services._read_pid(pid_file)
+    if pid and compass_services._pid_alive(pid):
+        print(f"  skip    site-serve  PID {pid} (already running)")
+        return 0
+
+    env = _read_env_map()
+    port = args.port or int(env.get("ORES_SITE_PORT", 51004))
+    build_dir = PROJECT_ROOT / "build" / "output" / "site"
+
+    if args.compile:
+        rc = _run_emacs_target("deploy_site")
+        if rc != 0:
+            print(f"❌ Site build failed (exit {rc})", file=sys.stderr)
+            return rc
+
+    if not build_dir.is_dir():
+        print(f"❌ Build directory not found: {build_dir}\n"
+              "   Run with --compile, or: compass build --direct site",
+              file=sys.stderr)
+        return 1
+
+    with open(log_file, "w") as log:
+        proc = subprocess.Popen(
+            [sys.executable, str(Path(__file__).resolve()), "site", "serve",
+             "--port", str(port)],
+            cwd=str(PROJECT_ROOT), stdout=log, stderr=subprocess.STDOUT,
+            start_new_session=True)
+    pid_file.write_text(f"{proc.pid}\n")
+    print(f"  start   site-serve  PID {proc.pid}")
+    _print_site_urls(build_dir, port)
+    print(f"   Log    : {log_file}")
+    return 0
+
+
+def _cmd_site_stop():
+    import compass_services
+
+    pid_file, _ = _site_run_paths()
+    compass_services._terminate("site-serve", pid_file, grace=5)
+    return 0
+
+
+def _cmd_site_status():
+    import compass_services
+
+    pid_file, log_file = _site_run_paths()
+    pid = compass_services._read_pid(pid_file)
+    if pid and compass_services._pid_alive(pid):
+        print(f"  running site-serve  PID {pid}")
+        print(f"   Log    : {log_file}")
+    else:
+        print("  stopped site-serve")
     return 0
 
 

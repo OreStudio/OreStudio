@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 65AFA471-36B7-468C-AAF9-3BE7BF6C5BA1
 :END:
-#+title: Task: Add systemd unit for site start/stop
-#+description: Manage the local site-preview server (compass site serve) as a systemd unit, with proper start/stop commands, instead of ad hoc background processes.
+#+title: Task: Add compass site start/stop/status (detached lifecycle)
+#+description: Manage the local site-preview server (compass site serve) with a proper detached start/stop/status lifecycle instead of ad hoc background processes -- PID-file based, matching the Qt client's pattern rather than the DB-driven systemd fleet (the site server was never a registered service_definition to begin with).
 #+type: task
 #+level: s1
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/systemd-site-service
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,43 +21,59 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 `compass site serve` currently only runs as an ad hoc foreground/background
-shell process (manually backgrounded, killed via `pkill`), unlike every
-other ORE Studio service which is managed through systemd (see
-`systemd_generate.py` and `compass services start/stop/status`). Give the
-site preview server the same treatment: a generated systemd unit and
-`compass site start`/`compass site stop`/`compass site status` commands
-(or equivalent), so it starts/stops/reports cleanly and doesn't leave
-orphaned python http.server processes behind.
+shell process (manually backgrounded, killed via `pkill`). Give it a
+proper detached lifecycle -- `compass site start`/`compass site stop`/
+`compass site status` -- so it starts/stops/reports cleanly and
+doesn't leave orphaned python http.server processes behind. (Initially
+framed as "add a systemd unit"; see `* Plan` for why a PID-file
+lifecycle, matching the Qt client, turned out to be the right call
+instead.)
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- A systemd unit for the site-preview server is generated per
-  environment, following the same convention as the other ORE Studio
-  services (`systemd_generate.py`, per-environment scoping/cgroups).
-- `compass site start`/`compass site stop` (or equivalent under the
-  existing `compass site` subcommand group) start/stop the unit
-  instead of a manually backgrounded process.
-- `compass services status` (or `compass site status`) reports the
-  site server's state alongside the other services.
-- No orphaned `python3 -m http.server`/emacs processes left behind
-  after stop.
+- `compass site start`/`compass site stop`/`compass site status`
+  start/stop/report the site-preview server, replacing manual
+  backgrounding (nohup/pkill).
+- No orphaned `python3 -m http.server` (or emacs build) processes
+  left behind after stop.
+- =compass site serve= (the existing foreground command) is
+  unchanged, for interactive terminal use.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=compass_services.py='s own module docstring already documents a
+precedent that changes this task's original systemd-unit framing: the
+DB-driven, per-replica systemd fleet (=systemd_generate.py=,
+=compass services start/stop/status=) is for *registered
+service_definitions* -- and the Qt client, a single local dev-facing
+process with no DB registration, deliberately opted out of that and
+kept its own lightweight PID-file =_launch=/=_terminate= lifecycle
+instead (see the "Qt client is unaffected" note in that docstring).
+
+The site-preview server is architecturally the same shape as the
+client -- a single, local, per-checkout dev convenience, not a fleet
+member -- so it gets the client's PID-file pattern rather than a
+generated systemd unit for a service that was never registered in the
+DB to begin with. Implemented directly in =compass.py= (a
+=_cmd_site_start/stop/status= trio next to the existing
+=cmd_site=/=_lan_ip=), reusing =compass_services=' =_read_pid=/
+=_pid_alive=/=_terminate= helpers rather than duplicating them.
+=start= runs the same build-then-bind logic as =serve=, but spawns the
+actual HTTP server as a detached child (re-execing
+=compass.py site serve --port N=, stdout/stderr to a log file,
+=start_new_session=True=) and writes a PID file under
+=build/output/site-run/= instead of blocking the caller's terminal.
 
 * Notes
 
@@ -85,3 +101,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added `compass site start`/`stop`/`status`, PID-file based (same
+lifecycle pattern as `compass client start/stop`), not a generated
+systemd unit -- see `* Plan` for why that's the right call given the
+site server was never a DB-registered service to begin with.
+Hand-verified: `start` returns immediately with URLs printed and a
+live PID; `status` correctly reports running/stopped; a second
+`start` while already running skips cleanly; `stop` gracefully
+terminates with no orphaned process or stale PID file left behind.
+`compass site serve` (foreground) is untouched.

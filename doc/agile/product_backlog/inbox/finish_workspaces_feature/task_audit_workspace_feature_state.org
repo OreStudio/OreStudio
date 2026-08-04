@@ -8,7 +8,7 @@
 #+filetags: :finish_workspaces_feature:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/audit-workspace-feature-state
-#+pr: 1831
+#+pr: 1837
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -198,6 +198,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1837][#1837]] | [agile] Complete workspace-feature audit; file two follow-up tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/1831][#1831]] | [agile] Consolidate workspace captures into one story; add Trade Blotter |
 
 * Review

@@ -36,6 +36,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <utility>
@@ -172,6 +173,22 @@ private:
     /// Warmed once at construction (this window's own tenant), consulted by
     /// displayService_ on every reload -- see crm_rate_display_service.
     std::shared_ptr<ores::refdata::service::cache::currency_pair_convention_cache> conventionCache_;
+
+    /// Thread-safe holder for the current auth token, refreshed on the GUI
+    /// thread at the top of every reload() and read from crmClient_'s
+    /// token_provider on reload()'s QtConcurrent background thread.
+    /// ClientManager::currentAuthToken() itself must only ever be called
+    /// from the GUI thread -- the nats_client auth state it reads is a
+    /// plain std::optional with no internal synchronization, mutated
+    /// in-place by ClientManager's proactive refresh timer (also GUI
+    /// thread). A shared_ptr (not a captured `this`/QPointer) so the
+    /// holder outlives any in-flight background request even if this
+    /// window closes mid-reload.
+    struct token_holder {
+        std::mutex mutex;
+        std::string token;
+    };
+    std::shared_ptr<token_holder> tokenHolder_ = std::make_shared<token_holder>();
 
     /// The "underlying CRM" -- thin authenticated facade over the
     /// marketdata.v1.crm.rates NATS request. Owned here (not by

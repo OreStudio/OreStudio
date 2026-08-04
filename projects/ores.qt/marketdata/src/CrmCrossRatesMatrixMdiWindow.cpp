@@ -123,8 +123,8 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
     connect(autoRefreshTimer_, &QTimer::timeout, this, &CrmCrossRatesMatrixMdiWindow::reload);
 
     if (clientManager_) {
-        // Snapshot the token synchronously on the GUI thread rather than
-        // handing the cache a token_provider that would re-read
+        // conventionCache_'s token is snapshotted synchronously on the GUI
+        // thread rather than handed a token_provider that would re-read
         // ClientManager's session state from load()'s own background
         // thread later (a real data race against the GUI thread's
         // proactive token-refresh timer) -- safe here specifically
@@ -134,8 +134,22 @@ CrmCrossRatesMatrixMdiWindow::CrmCrossRatesMatrixMdiWindow(ClientManager* client
         conventionCache_ =
             std::make_shared<ores::refdata::service::cache::currency_pair_convention_cache>(
                 clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
+        // crmClient_ is different: it issues a fresh request every
+        // reload(), for as long as this window stays open (hours, in
+        // practice, with a 5s default auto-refresh). A one-time snapshot
+        // here would silently start failing every request the moment the
+        // token expires -- which is exactly what was happening (see the
+        // CRM topology provisioning task's Decisions). tokenHolder_ is
+        // refreshed on the GUI thread at the top of every reload() and
+        // read here from the background thread under its own mutex,
+        // avoiding a direct race against ClientManager's session state.
+        tokenHolder_->token = authToken;
+        auto tokenHolder = tokenHolder_;
         crmClient_ = std::make_unique<marketdata_client::crm_client>(
-            clientManager_->nats_client(), [authToken](bool /*force*/) { return authToken; });
+            clientManager_->nats_client(), [tokenHolder](bool /*force*/) {
+                std::lock_guard lock(tokenHolder->mutex);
+                return tokenHolder->token;
+            });
         auto* crmClient = crmClient_.get();
         auto conventionCache = conventionCache_;
         displayService_ =
@@ -439,6 +453,16 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
     reloadAction_->setEnabled(false);
     emit statusChanged(tr("Loading cross-rates matrix..."));
 
+    // Refresh the token snapshot crmClient_'s token_provider reads, here
+    // on the GUI thread where currentAuthToken() is safe to call -- see
+    // tokenHolder_'s doc comment. Must happen on every reload(), not just
+    // at construction: this window can stay open far longer than any
+    // single token's lifetime.
+    if (tokenHolder_) {
+        std::lock_guard lock(tokenHolder_->mutex);
+        tokenHolder_->token = clientManager_->currentAuthToken();
+    }
+
     const auto tenant_id = clientManager_->currentTenantId();
     const auto party_id = boost::uuids::to_string(clientManager_->currentPartyId());
     const auto crm_name = crmName_.toStdString();
@@ -467,7 +491,22 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
                                                        QString::fromStdString(result.error);
             BOOST_LOG_SEV(lg(), error) << msg.toStdString();
             emit self->errorOccurred(msg);
+            // Bold red text + tooltip, not just plain text: the status-bar
+            // errorOccurred signal above is transient and gets stomped by
+            // this window's own 5s auto-refresh well before a user notices
+            // it -- see FxSpotGridWindow's FeedStatus::Error indicator for
+            // the same reasoning applied to a per-row case. This is the
+            // per-window equivalent: a persistent, styled indicator that
+            // stays up across every failed reload until one finally
+            // succeeds, with the actual failure reason in the tooltip
+            // instead of only in the log. Same color/weight as that
+            // indicator's k_error_color (#dc2626, FxSpotGridWindow.cpp)
+            // and its "font-weight: 600" -- one error visual identity
+            // across CRM/FX windows, not a coincidentally-similar one.
             self->footerLabel_->setText(tr("DISCONNECTED"));
+            self->footerLabel_->setStyleSheet(
+                QStringLiteral("color: #dc2626; font-weight: 600;"));
+            self->footerLabel_->setToolTip(msg);
             return;
         }
 
@@ -637,6 +676,8 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
         self->displayedRates_ = std::move(exportedRates);
 
         self->footerLabel_->setText(tr("CONNECTED | %1 Currencies").arg(allCurrencies.size()));
+        self->footerLabel_->setStyleSheet(QString());
+        self->footerLabel_->setToolTip(QString());
 
         BOOST_LOG_SEV(lg(), debug) << "CRM cross-rates matrix: " << result.rows.size()
                                    << " rate(s), " << allCurrencies.size() << " currencies";

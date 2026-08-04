@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-03
-#+updated: 2026-08-03
+#+updated: 2026-08-04
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,23 +28,24 @@ decode, instead of the row silently sitting at PENDING forever.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:E3786E5B-1039-4256-A61B-BFBF34465578][Find root cause of FX Spot Monitor wire-codec decode mismatch]] |
-| Now          | Trace logging and FeedStatus::Error UI shipped; root cause of the actual encode/decode mismatch still open. |
+| Now          | Trace logging and FeedStatus::Error UI shipped and confirmed working; superseded as a root-cause tool by the fix landing directly (see parent story Decisions). |
 | Waiting on   | Nothing.                               |
-| Next         | Enable trace logging live, capture the resolved wire_codec format on both sides, find where they diverge. |
-| Last touched | 2026-08-03                               |
+| Next         | Nothing — task complete.               |
+| Last touched | 2026-08-04                             |
 
 * Acceptance
 
 - fx_spot_feed.cpp (publisher) and fx_spot_subscription.cpp
   (subscriber) both log the resolved wire_codec format at
-  trace level on every encode/decode call.
+  trace level on every encode/decode call. [DONE]
 - FxSpotGridWindow shows a persistent per-row error indicator
   (distinct from PENDING) with the decode failure reason in a
-  tooltip, when a tick fails to deserialise.
+  tooltip, when a tick fails to deserialise. [DONE]
 - Root cause of the live encode/decode format mismatch found and
-  fixed (deferred to next sprint).
+  fixed. [DONE — landed via a separate, concurrent task/PR; see
+  parent story Decisions and Result for the fix commit.]
 
 * Plan
 
@@ -78,3 +79,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Trace logging and the persistent FeedStatus::Error indicator shipped
+as planned. The actual root cause -- fx_spot_subscription.cpp calling
+rfl::json::read<T> directly instead of default_wire_codec().decode<T>(),
+ignoring the negotiated wire format entirely -- was found and fixed
+by commit 7fe8798452 ("[marketdata,qt] Fix fx_spot_subscription
+hardcoded rfl::json, ignoring wire codec"), PR #1809, under
+Task-ID 1FC899C9-48A9-416C-87D0-FF4BB54F0DB7 / Story-ID
+1A815B1E-904E-460C-A2FB-31D9E3B392E2 (the NATS wire-format story),
+merged the same day this diagnostics task was authored. Verified
+2026-08-04: launched the Qt client against a live msgpack
+environment, logged in as tenant_admin@acme_corporation, opened FX
+Spot Monitor -- rows tick live, wire format resolves to msgpack, zero
+"Failed to deserialise fx_spot_tick" warnings in the client log.

@@ -8,12 +8,12 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1825
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-27
 #+updated: 2026-07-27
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Acme Corporation exists to exercise real system functionality realistically; sta
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-27                               |
 
 * Acceptance
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1825][#1825]] | [agile] Close: Fix Acme staff email domains |
 
 * Review
 
@@ -70,3 +70,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Already implemented — no new code needed. Verified against the
+current tree:
+
+- =generate_data.py='s =OFFICES= entries each carry an =email_domain=
+  matching the office's country (=acmecorp.co.uk= for UK,
+  =acmecorp.com= for US, =acmecorp.hk= for HK), used to build each
+  staff email in =gen_person=.
+- =accounts.json= reflects the corrected domains (e.g.
+  =adrian.vance@acmecorp.com=, =leanne.shaw@acmecorp.co.uk=) — no raw
+  office code appears in any email.
+
+This landed as part of the original Acme Bank → Acme Corporation
+rename (commit =fbc9fe2c0=), which is why the capture describing the
+old =office_code.acmecorp.example= format was already stale by the
+time this task was picked up.

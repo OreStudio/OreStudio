@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/start-acme-market-feeds-after-1741
-#+pr:
+#+pr: 1839
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1839][#1839]] | [iam] Start Acme's synthetic market feeds during provisioning |
 
 * Review
 

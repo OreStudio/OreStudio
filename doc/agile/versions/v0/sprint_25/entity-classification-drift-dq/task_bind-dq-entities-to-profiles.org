@@ -140,11 +140,22 @@ plan itself stays — it is the historical record of what we did.)
   other checked-in SQL referenced the old names before accepting the
   correct, template-derived ones. Idempotent on a second regen. Same
   no-main-table treatment as =lei_entity=.
-- Remaining lookup_entity migrations for this task: report_definition,
-  synthetic_fx_spot_config (both =has_artefact_insert_fn: false= --
-  simpler, closer to =artefact_type='s pattern). Then the 18-entity
-  profile-binding survey itself (this task's original acceptance) still
-  needs doing across all of dq's entities, migrated or not.
+- =report_definition= migrated (UUID primary key this time -- =:type:
+  uuid= on the =id= column is all that's needed, =is_uuid=/=cpp_type=
+  derived automatically). Surfaced and fixed a real template bug: its
+  two-line prose body broke the artefact template's single-line SQL
+  comment (embedded newline exits the comment mid-line into bare SQL).
+  Added =domain_entity.description_oneline= (whitespace-joined) alongside
+  the existing =description_formatted=, pointed the artefact template at
+  it; verified zero effect on lei_entity/lei_relationship (already
+  single-line) or any other domain_entity. Tangle round-trip re-verified.
+  Regenerated artefact table byte-identical to checked-in bar the
+  template-name comment. Idempotent.
+- Remaining lookup_entity migration for this task: synthetic_fx_spot_config
+  (=has_artefact_insert_fn: false=, closer to =report_definition='s
+  pattern). Then the 18-entity profile-binding survey itself (this task's
+  original acceptance) still needs doing across all of dq's entities,
+  migrated or not.
 
 * Test Scenarios
 

@@ -80,6 +80,36 @@ plan itself stays — it is the historical record of what we did.)
   validation-ignore entries, and full DB/CMake wiring, not just template
   output) and deserves its own deliberate pass rather than folding into
   this survey uninspected.
+- Root-caused the C++ gap via deep analysis (user-requested) rather than
+  patching lookup_entity's own C++ path further: =lookup_entity= is
+  deliberately being retired, not maintained. Task 464B5EC6 (DONE) already
+  proved and executed the fix -- migrate each remaining =lookup_entity=
+  model to =domain_entity= (=has_uuid_primary_key: false=), which gets a
+  complete, mature SQL+C++ projection for free. Task AEFAE247 (BACKLOG) is
+  the pre-existing, already-filed follow-up covering exactly dq's 5
+  remaining lookup entities plus 10 more outside dq. Adopted AEFAE247's
+  plan here instead of patching lookup_entity's C++ generation (the
+  approach DDBD522D already tried and explicitly abandoned).
+- =artefact_type= migrated to =domain_entity= (commit on this branch),
+  following the 464B5EC6/catalog playbook exactly: one address at a time
+  (SQL schema + notify trigger, domain/json_io/table, repository/entity/
+  mapper, service, protocol, NATS handler/registrar/event-registrar,
+  presentation, generator), each reviewed before the next, idempotency
+  verified (zero additional diff on a second regenerate pass). Repository
+  moved from stateful (ctx in constructor) to the standard stateless (ctx
+  per call) shape; =publication_service= (its one caller) updated
+  accordingly. Wired into =registrar.cpp= alongside catalog/data_domain.
+  Added =repository_artefact_type_repository_tests.cpp=. =ores.dq.api.lib=/
+  =ores.dq.core.lib=/=ores.dq.service.lib= build clean;
+  =ores.dq.api.tests= (273/50) and =ores.dq.core.tests= (300/95, incl. 7
+  new cases) pass against the live DB.
+- Remaining lookup_entity migrations for this task: lei_entity,
+  lei_relationship (both genuinely depend on =has_artefact_insert_fn=,
+  which =domain_entity= has no equivalent hook for yet -- must be ported,
+  not dropped, per 464B5EC6's own warning), report_definition,
+  synthetic_fx_spot_config. Then the 18-entity profile-binding survey
+  itself (this task's original acceptance) still needs doing across all of
+  dq's entities, migrated or not.
 
 * Test Scenarios
 

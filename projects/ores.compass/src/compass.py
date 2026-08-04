@@ -5810,10 +5810,17 @@ def cmd_site(argv):
         return 1
 
     env = _read_env_map()
-    port = args.port or int(env.get("ORES_SITE_PORT", 51004))
+    port = args.port or _site_port(env)
     build_dir = PROJECT_ROOT / "build" / "output" / "site"
 
-    # Stop any process already listening on the port.
+    env_name = env.get("ORES_ENV_NAME", "")
+    if env_name and _systemctl_is_active(_site_unit_name(env_name) + ".service"):
+        print(f"❌ The systemd-managed site-preview server is already running "
+              f"on this port. Run 'compass site stop' first, or use "
+              f"'compass site status'.", file=sys.stderr)
+        return 1
+
+    # Stop any (non-systemd) process already listening on the port.
     try:
         result = subprocess.run(["fuser", f"{port}/tcp"],
                                 capture_output=True, text=True)
@@ -5922,6 +5929,9 @@ def _cmd_site_start():
 
 def _cmd_site_stop():
     env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
     unit = _site_unit_name(env_name) + ".service"
     result = subprocess.run(["systemctl", "--user", "stop", unit], check=False)
     return 0 if result.returncode == 0 else 1
@@ -5929,12 +5939,22 @@ def _cmd_site_stop():
 
 def _cmd_site_status():
     env_name = _read_env_map().get("ORES_ENV_NAME", "")
+    if not env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
     unit = _site_unit_name(env_name) + ".service"
+    print(f"  {_systemctl_state(unit):<10} {unit}")
+    return 0
+
+
+def _systemctl_state(unit) -> str:
     result = subprocess.run(["systemctl", "--user", "is-active", unit],
                             capture_output=True, text=True, check=False)
-    state = result.stdout.strip() or "missing"
-    print(f"  {state:<10} {unit}")
-    return 0
+    return result.stdout.strip() or "missing"
+
+
+def _systemctl_is_active(unit) -> bool:
+    return _systemctl_state(unit) == "active"
 
 
 # Three build-lock slots so up to three environments on this host can build

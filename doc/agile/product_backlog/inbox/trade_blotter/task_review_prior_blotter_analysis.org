@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 9B6C15D0-C393-43FC-AA5C-D33BB0BF0974
+:END:
+#+title: Task: Design: recover and re-validate the prior blotter/import analysis
+#+description: Re-read the prior blotter/import design analysis (Data Import Session and Workflow Partial-Success plan), re-establish its connection to workspaces (Track 2: a temporary holding location for trades -- the Pending Book -- before promotion into the Live workspace), and produce an updated design reflecting the current codebase state before implementation is scoped.
+#+type: task
+#+level: s1
+#+filetags: :trade_blotter:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Re-familiarise with the prior analysis and turn it into a design that
+reflects where the codebase actually is today, before any
+implementation is scoped:
+
+1. Re-read [[proj:doc/plans/2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] in full --
+   it's detailed (Pending Book, is_live marker, pending FSM state,
+   Data Import Session UI, ORE-examples directory analysis) and was
+   never invalidated, just never built for Track 2.
+2. Re-read [[proj:doc/plans/2026-05-17-workspace-design.org][Workspace — Isolated Data Context Design]]'s "Import Track
+   Mapping" section and re-confirm exactly how Track 2 (production
+   import -> Pending Book -> promoted to Live) relates to the
+   workspace mechanism Track 1 already uses.
+3. Check what has moved since May 2026 (trade status FSM, workflow
+   service, booking-adjacent code) that the original plan's "Files to
+   Change" section may now be stale against.
+4. Reconcile with the [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter knowledge doc]]'s target-state UI
+   vision so the blotter and the import/promotion mechanism are one
+   coherent design, not two independent plans bolted together.
+5. Decide whether the three loosely-related backlog captures
+   (positions domain model, trade/instrument dialog split,
+   trade-expiry workflow) fold into this story's scope or stay
+   separate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Updated design note produced (either as a revision to the existing
+  plan doc or a fresh one) covering: Pending Book schema/lifecycle,
+  is_live marker mechanism, promotion-to-Live flow, and how it
+  connects to the existing Track 1/workspace machinery.
+- Explicit call on each of the three loosely-related backlog captures
+  (in/out of this story's scope).
+- Findings distilled into the parent story's =* Decisions=; resulting
+  implementation scope broken into new tasks under this story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

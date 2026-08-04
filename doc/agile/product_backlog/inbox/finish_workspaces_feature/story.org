@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: 603F4845-B4A0-41EB-ACF9-B0FC1387E1C4
+:END:
+#+title: Story: Workspaces: finish the feature
+#+description: Consolidates all workspace-related captures and stories into one place. Objective: get the Live workspace properly set up and allow users to create stand-alone/temporary workspaces (e.g. for importing ORE samples). First step is a code audit establishing what already exists, including UI support, before further implementation work is scoped.
+#+type: story
+#+level: s2
+#+filetags: :workspace:codegen:qt:product_backlog:inbox:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Finish the workspace feature. Two concrete user-visible outcomes:
+
+1. The *Live workspace* is properly set up and every workspace-aware
+   entity behaves correctly under it (the default, always-on data
+   context every user starts in).
+2. Users can create *stand-alone / temporary workspaces* -- isolated,
+   named data contexts that inherit from Live but don't pollute it --
+   for use cases like importing ORE samples to explore without
+   touching production data.
+
+This story consolidates every workspace-related capture and story
+scattered across the backlog and past sprints (see =* Decisions= for
+the full inventory) into one place, so the feature can be finished as
+a single coherent piece of work instead of drip-feeding partial
+pieces.
+
+* Prior work already done (do not re-do)
+
+- Sprint 17 "Workspace" (id:77BF049F-ED38-4998-AFA3-672E25895F9A):
+  bitemporal schema, service layer, CRUD UI, lifecycle operations
+  (archive/etc), codegen propagation of =workspace_id= (Phases 1-4),
+  Data Workshop UI tree (Open/Add/Edit/Archive/Delete). DONE.
+- Sprint 18 "Add support for running ORE samples"
+  (id:34671668-4AEA-46E5-AB28-59DFB169F68E): workspace promoted to a
+  full standard entity (history, generated detail dialog); ORE sample
+  import creates a named, isolated workspace end-to-end (Track 1 of
+  the original import-tracks design); Data Import Session window;
+  results surfaced back in the workspace context. DONE.
+- Sprint 20 codegen org-model migration for the workspace model. DONE.
+- Sprint 23 workspace history-dialog migration to the generic
+  =HistoryDialog=. ABANDONED -- superseded by the Qt-commissioning
+  task folded into this story (see Tasks).
+
+Current architecture (already implemented, see
+=projects/ores.workspace/core/modeling/multi_workspace.org=): Live
+workspace is a per-tenant row using the well-known sentinel UUID
+=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa=, seeded automatically for every
+tenant; workspace hierarchy/inheritance resolution via a recursive
+CTE; three-tier permission model; session-wide (not yet per-window)
+workspace activation in the Qt client.
+
+* What's explicitly NOT done yet (the actual gap)
+
+- *Track 2 -- production live trade import*: Pending Book, =is_live=
+  markers on reference data, a generalised Data Import Session UI
+  (FpML/CSV/manual sources, not just ORE XML), a =pending= trade FSM
+  state, and the booking/promotion workflow that moves a trade from a
+  temporary holding area into the Live workspace. Fully designed in
+  [[proj:doc/plans/2026-05-16-trade-import-failed-state.org][Data Import Session and Workflow Partial-Success]] (STATUS: MINED,
+  but only Track 1 was ever converted into shipped work -- Track 2 was
+  explicitly out of scope of the Sprint 18 story) -- never
+  implemented. This is the connection point with the Trade Blotter
+  story below: a temporary holding location for trades before they
+  are "promoted" into the Live workspace.
+- Per-window workspace selector (side-by-side comparison of the same
+  data under two workspaces) -- deferred/future in the architecture
+  doc.
+- "Clone to workspace" action on report definitions -- unchecked in
+  the original design's Phase 4.
+- Workspace storage/size reporting (Baobab-style visualisation) --
+  open question, deferred.
+- Whether every workspace-impacted entity actually has full,
+  consistent, *codegen-generated* workspace-aware UI/service/repo
+  support (vs. hand-patched per entity) is unknown -- this is exactly
+  what the audit task below establishes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- Code audit complete: every entity that should be workspace-aware is
+  inventoried, along with whether it has codegen-generated
+  workspace-scoping support (analogous to the existing pagination/page
+  codegen support) or hand-patched support, and what common
+  hand-crafted logic exists that codegen should absorb so new entities
+  get workspace support automatically.
+- Live workspace confirmed correct end-to-end for every
+  workspace-aware entity (no silent fallback bugs, no entity that
+  forgot the =workspace_id= column or query filter).
+- Users can create a stand-alone/temporary workspace and import ORE
+  samples into it without touching Live data (this already works per
+  Sprint 18 -- acceptance here is confirming it still holds and is not
+  regressed, plus closing the open codegen-drift/commissioning
+  follow-ups below).
+- The three open codegen follow-up items are resolved: workspace
+  entity model drift fixed, workspace-cpp safe drift applied
+  (=has_party_id= + hand-crafted service/repository/protocol restored
+  correctly), and =ores.qt.workspace= fully commissioned into codegen.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | BACKLOG | | | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
+
+* Decisions
+
+- Three pre-existing tasks are left in place under their current
+  parent stories rather than re-parented here (re-parenting would
+  break their branch metadata and blocked_on links) -- tracked as
+  in-flight component work this story depends on:
+  - [[id:EF349D87-4D3A-4F98-A454-7DBB2A80E48B][Fix workspace entity model drift]] (Codegen developer experience
+    improvements story) -- mirrors the refdata drift-fix that
+    succeeded; now unblocked.
+  - [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] (Refactor ores.codegen C++
+    generation story, Sprint 25) -- =has_party_id= flag, restore
+    hand-crafted service/repository/protocol. Its =Waiting on= still
+    points at a stale pilot-task reference; needs re-triage when
+    picked up (the pilot's real-world equivalent -- refdata's
+    zero-diff drift -- is already achieved via a different,
+    superseding initiative).
+  - [[id:C02D4D5F-F743-4390-A753-E10C47F5D0B4][Commission ores.qt.workspace into codegen]] (own inbox story) --
+    inventory ores.qt.workspace entities, run full-stack codegen,
+    migrate history dialogs to the generic HistoryDialog.
+- The audit task's finding on "common hand-crafted code reused by
+  codegen" should follow the same pattern as pagination/page support:
+  a template flag (e.g. an eventual =has_workspace_id= widget flag,
+  distinct from the existing has_workspace_id SQL/domain flag) that
+  generates the Qt-side workspace-scoping boilerplate automatically,
+  the same way pagination is generated today, rather than every entity
+  hand-wiring it.
+
+* Out of scope
+
+- Track 2 / production live trade import mechanics themselves --
+  tracked in the separate, dependent [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story.

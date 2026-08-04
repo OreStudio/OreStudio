@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 6F7F9183-A104-4EF9-BDD6-A28D997971E1
+:END:
+#+title: Task: Audit: current state of the workspace feature (backend + UI)
+#+description: Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free.
+#+type: task
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce a written inventory of exactly where the workspace feature
+stands today, so the rest of this story (and the dependent Trade
+Blotter story) can be scoped from facts rather than assumption:
+
+1. Every table/entity carrying =workspace_id= (cross-reference against
+   =projects/ores.workspace/core/modeling/multi_workspace.org='s
+   "affected categories" list -- trading, reference data, market data,
+   curve config, pricing engine, today's market, reporting).
+2. For each: does its Qt widget/dialog actually respect and surface
+   workspace scoping (e.g. workspace chip/badge, correct filtering),
+   is that support codegen-generated or hand-patched, and is it
+   consistent with the entities that already got it right?
+3. What hand-crafted C++/Qt code exists purely to bolt workspace
+   support onto an entity after the fact -- this is the candidate set
+   for a new codegen template flag (the "much like page support"
+   pattern the user asked for: pagination is already a flag entities
+   opt into and get for free; workspace-awareness should work the same
+   way).
+4. Cross-check against the three known open codegen follow-ups
+   (workspace entity model drift, workspace-cpp safe drift,
+   ores.qt.workspace commissioning) -- confirm they cover what the
+   audit finds, or surface gaps they don't.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Written table of every workspace-aware entity: has =workspace_id=
+  column (Y/N), Qt widget respects workspace scope (Y/N/partial),
+  generated vs hand-patched, notes.
+- Candidate codegen template flag(s) proposed for the hand-crafted
+  patterns found, with an estimate of how many entities would benefit.
+- Explicit reconciliation against the three known open tasks (see
+  parent story's =* Decisions=) -- confirmed covered, or new
+  follow-up tasks filed for gaps they miss.
+- Findings distilled into the parent story's =* Decisions= to drive
+  the next task(s) this story needs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

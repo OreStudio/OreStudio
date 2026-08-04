@@ -112,6 +112,7 @@ options_description make_options_description() {
                       "Defaults to 'http://localhost:{port}'.");
 
     const auto natsd(nats_configuration::make_options_description());
+    nats_configuration::register_shared_domain();
     const auto dod(database_configuration::make_options_description());
 
     options_description r;

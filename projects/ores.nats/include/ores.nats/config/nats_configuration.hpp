@@ -56,6 +56,15 @@ public:
      * @return nats_options populated from the variables map.
      */
     static nats_options read_options(const boost::program_options::variables_map& vm);
+
+    /**
+     * @brief Registers "NATS" as a shared config domain with
+     * ores::utility::program_options::shared_domain_registry, so unprefixed
+     * ORES_NATS_* environment variables reach every application's
+     * environment_mapper_factory fallback tier. Idempotent; call once from
+     * each application's own config parser setup, before parsing options.
+     */
+    static void register_shared_domain();
 };
 
 }

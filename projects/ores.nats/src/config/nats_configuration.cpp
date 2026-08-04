@@ -19,6 +19,7 @@
  */
 #include "ores.nats/config/nats_configuration.hpp"
 #include "ores.nats/domain/wire_format.hpp"
+#include "ores.utility/program_options/shared_domain_registry.hpp"
 #include <boost/throw_exception.hpp>
 #include <format>
 #include <stdexcept>
@@ -84,6 +85,10 @@ nats_options nats_configuration::read_options(const boost::program_options::vari
     r.format = *parsed;
 
     return r;
+}
+
+void nats_configuration::register_shared_domain() {
+    ores::utility::program_options::shared_domain_registry::register_domain("NATS");
 }
 
 }

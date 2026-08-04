@@ -72,6 +72,7 @@ options_description make_options_description() {
     const auto tod(telemetry_configuration::make_options_description("ores-shell", ORES_VERSION));
 
     const auto cod(nats_configuration::make_options_description());
+    nats_configuration::register_shared_domain();
 
     options_description lod2("Login");
     lod2.add_options()(

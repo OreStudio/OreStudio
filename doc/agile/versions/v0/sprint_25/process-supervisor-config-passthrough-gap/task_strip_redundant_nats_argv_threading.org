@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: F2621728-3E4C-452C-8DDC-91F834E06776
+:END:
+#+title: Task: Strip redundant CLI-arg threading for shared NATS knobs
+#+description: Once the environment_mapper_factory fallback tier lands, remove the now-redundant CLI-arg threading of nats-url/nats-subject-prefix/nats-wire-format/nats-tls-ca from: process_supervisor's default_args_template (C++), the five custom args_template rows in controller_service_definitions_populate.sql, systemd_generate.py's placeholder substitution, compass_services.py's legacy launcher, and ores.qt's client launch code. Keep nats-tls-cert/nats-tls-key CLI-supplied since those are per-service file paths, not shared values. Also fix compass shell's flag_for mapping so it relies on the same shared .env variable instead of its own mirrored one.
+#+type: task
+#+level: s1
+#+filetags: :controller:process-supervisor:config:tech-debt:environment:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Collapse five independent argv-threading layers down to the single environment_mapper_factory fallback tier for every genuinely shared NATS knob.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Regenerated systemd units no longer pass --nats-url/--nats-subject-prefix/--nats-wire-format/--nats-tls-ca explicitly (services pick them up from EnvironmentFile= via the shared-prefix mapper); services still start and connect correctly; compass shell and ores.qt client still connect correctly without their own bespoke mirrors.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

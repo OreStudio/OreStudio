@@ -18,29 +18,43 @@
  *
  */
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "ores.utility/program_options/shared_domain_registry.hpp"
 #include <algorithm>
 #include <ranges>
 
 namespace ores::utility::program_options {
 
+namespace {
+
+std::string strip_prefix_to_option_name(const std::string& env_var, const std::string& prefix) {
+    auto env_body = env_var | std::views::drop(prefix.size());
+    std::string option_name;
+
+    std::ranges::transform(env_body, std::back_inserter(option_name), [](unsigned char c) -> char {
+        if (c == '_')
+            return '-';
+        return std::tolower(c);
+    });
+
+    return option_name;
+}
+
+}
+
 std::function<std::string(const std::string&)>
 environment_mapper_factory::make_mapper(const std::string app_name) {
     return [app_name](const std::string& env_var) -> std::string {
-        const std::string prefix = "ORES_" + app_name + "_";
-        if (!env_var.starts_with(prefix))
-            return {};
+        const std::string app_prefix = "ORES_" + app_name + "_";
+        if (env_var.starts_with(app_prefix))
+            return strip_prefix_to_option_name(env_var, app_prefix);
 
-        auto env_body = env_var | std::views::drop(prefix.size());
-        std::string option_name;
+        for (const auto& domain : shared_domain_registry::domains()) {
+            const std::string domain_prefix = "ORES_" + domain + "_";
+            if (env_var.starts_with(domain_prefix))
+                return strip_prefix_to_option_name(env_var, domain_prefix);
+        }
 
-        std::ranges::transform(
-            env_body, std::back_inserter(option_name), [](unsigned char c) -> char {
-                if (c == '_')
-                    return '-';
-                return std::tolower(c);
-            });
-
-        return option_name;
+        return {};
     };
 }
 

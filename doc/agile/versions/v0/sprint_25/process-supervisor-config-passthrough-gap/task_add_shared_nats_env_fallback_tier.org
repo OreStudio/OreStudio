@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: A091A4B9-E54D-4D4F-8F7E-8C6D2437B660
+:END:
+#+title: Task: Add a generic shared-domain fallback tier to environment_mapper_factory
+#+description: Extend environment_mapper_factory so that, after the per-app ORES_APP_* prefix check fails, it also matches against a set of registered "shared domain" prefixes (e.g. NATS) -- generically, by prefix-strip-and-kebab-case, the same transform already used for the per-app tier -- not a fixed list of specific variable names. A config module (e.g. nats_configuration) declares itself a shared domain once; every option it registers, present or future, then reaches every service via .env alone, with zero argv threading. NATS is the first domain to register; the mechanism must not name NATS anywhere in environment_mapper_factory itself, so the next shared domain (telemetry, logging, ...) is a one-line registration, not new mapper code.
+#+type: task
+#+level: s1
+#+filetags: :controller:process-supervisor:config:tech-debt:environment:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-shared-nats-env-fallback-tier
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generic shared-domain fallback tier in environment_mapper_factory, with NATS
+registered as its first shared domain: every service picks up a new fleet-wide
+ORES_NATS_* knob straight from .env, without any CLI argv threading -- and
+registering a second shared domain later requires no changes to
+environment_mapper_factory itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- A new ores.utility component, shared_domain_registry, exposes register_domain(prefix) and domains() (Meyer's-singleton-backed, no static-init-order dependency -- registration happens via an explicit bootstrap call at each service's parser setup, not global static construction).
+- environment_mapper_factory::make_mapper's fallback tier consults shared_domain_registry::domains() generically (prefix-strip-and-kebab-case, the same transform as the per-app tier) -- no per-variable-name logic and no mention of NATS anywhere in environment_mapper_factory or shared_domain_registry.
+- nats_configuration exposes register_shared_domain() (calls shared_domain_registry::register_domain("NATS")); every service's parser.cpp calls it once before parsing, covering nats-url, nats-subject-prefix, nats-wire-format, nats-tls-ca (nats-tls-cert/nats-tls-key stay excluded/per-service -- genuinely per-service file paths, not shared values).
+- Unit tests cover: shared_domain_registry registers/lists domains idempotently; environment_mapper_factory's per-app prefix still wins when both tiers match; shared-domain fallback resolves any ORES_<DOMAIN>_* option generically for a registered domain; an ORES_<DOMAIN>_* var for an unregistered domain still returns empty; a second, hypothetical shared domain can be registered and resolved without touching environment_mapper_factory's implementation.
+
+* Plan
+
+- Added ores::utility::program_options::shared_domain_registry (new
+  ores.utility component): register_domain(prefix) / domains(), backed by
+  a function-local static set (Meyer's singleton) -- no static-init-order
+  dependency, since registration happens via an explicit call, not a
+  global constructor.
+- Extended environment_mapper_factory::make_mapper's returned lambda: try
+  the per-app ORES_<APP>_* prefix first (unchanged behaviour, still wins);
+  if that fails, loop over shared_domain_registry::domains() and try
+  ORES_<DOMAIN>_* generically, using the same prefix-strip-and-kebab-case
+  transform. No domain name (NATS or otherwise) appears in this file.
+- Added nats_configuration::register_shared_domain(), which calls
+  shared_domain_registry::register_domain("NATS"). Wired a call to it
+  into all 20 parser.cpp files that build a nats_configuration options
+  block (17 near-identical domain-service parsers via a scripted edit,
+  plus ores.wt.service, ores.http.server, and ores.shell handled
+  individually due to their differently-named local variables), right
+  next to where each already calls
+  nats_configuration::make_options_description().
+- Added two new unit test files under ores.utility/tests: one exercising
+  environment_mapper_factory's two-tier resolution (app prefix wins,
+  shared-domain fallback resolves generically, unregistered domains stay
+  empty, a second hypothetical domain works with zero mapper changes),
+  one exercising shared_domain_registry's idempotent registration.
+- Regenerated component_files.cmake everywhere via
+  regenerate_cmake_component_files.py --all (also picked up unrelated
+  pre-existing drift across the tree).
+- Verified: `ores.utility.tests` full suite green (471 assertions/139
+  cases); a full `compass build` (all targets, including every touched
+  service) completes at 100% with no errors.
+- Noted while implementing: this leaves ORES_NATS_WIRE_FORMAT genuinely
+  redundant in .env going forward for services that don't need a
+  per-service override -- task 3 (strip redundant CLI-arg threading) is
+  the follow-on that actually removes the now-unnecessary argv threading
+  this task makes possible.
+
+* Notes
+
+- The per-file `nats_configuration::register_shared_domain();` call this
+  task adds to 20 parser.cpp files is intentionally provisional: task
+  "Consolidate duplicated common/logging/database/nats parser boilerplate
+  across domain services" collapses these into a single call site inside
+  a new shared ores.service parsing helper. Don't be surprised to see
+  these per-file calls disappear again once that task lands.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped a generic shared-domain fallback tier in
+=environment_mapper_factory=, backed by a new =shared_domain_registry=
+component in ores.utility. NATS is registered as the first (and only)
+domain today via =nats_configuration::register_shared_domain()=, called
+once per service. All four acceptance criteria are met: the registry is
+domain-agnostic and Meyer's-singleton-backed; the mapper's fallback tier
+has no per-variable-name logic and never mentions NATS; NATS registers
+correctly, covering the four shared knobs while leaving
+=nats-tls-cert=/=nats-tls-key= per-service; and unit tests cover idempotent
+registration, precedence, generic fallback resolution, and a
+second-domain smoke test. Full build green across all touched services;
+=ores.utility.tests= green (471/139). Any new =ORES_NATS_*= knob now
+reaches every service via =.env= alone -- task 3 will remove the argv
+threading this makes redundant.

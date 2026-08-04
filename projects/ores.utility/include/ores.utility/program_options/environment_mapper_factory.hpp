@@ -39,6 +39,12 @@ public:
      * Maps environment variables with ORES_ prefix to command-line option
      * names. For example: ORES_DB_PASSWORD -> db-password
      *
+     * Tries the per-app prefix ORES_<app_name>_* first (so a per-app
+     * override always wins), then falls back to any domain registered via
+     * shared_domain_registry (e.g. ORES_NATS_* once "NATS" is registered),
+     * using the same prefix-strip-and-kebab-case transform. This class has
+     * no knowledge of what domains exist -- see shared_domain_registry.
+     *
      * @param app_name name of the app, in capitals, e.g. CLI.
      *
      * @return Function that maps environment variable names to option names.

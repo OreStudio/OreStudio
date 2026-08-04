@@ -56,6 +56,7 @@ options_description make_options_description() {
     const auto lod(logging_configuration::make_options_description("ores.wt.service.log"));
     const auto dod(database_configuration::make_options_description());
     const auto nod(ores::nats::config::nats_configuration::make_options_description());
+    ores::nats::config::nats_configuration::register_shared_domain();
 
     options_description r;
     r.add(god).add(lod).add(dod).add(nod);

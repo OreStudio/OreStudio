@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 18B74DD5-0A67-4873-A700-B006D4A99FDD
+:END:
+#+title: Task: Shared derivation lineage: market_series marker + observation lineage table
+#+description: A derivation_kind/derivation_config_id/derivation_config_version marker on market_series (sentinel 'OBSERVED', not nullable) plus a new observation_lineage side table for per-observation provenance -- foundational for both the curve bootstrap output and, later, CRM's own derived-cross publishing.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the system one shared way to answer, for any published series or
+observation, "was this observed or computed, and by what" — instead of
+each derivation mechanism (curve bootstrap, and eventually CRM) inventing
+its own ad hoc provenance. Two parts:
+
+- A *catalog-level* marker on =market_series=: =derivation_kind=
+  (not null, sentinel ='OBSERVED'=, matching the =curve_role='NONE'=
+  precedent on =instrument_codes=), =derivation_config_id= (not null,
+  =ores_utility_nil_uuid_fn()= sentinel when =derivation_kind =
+  'OBSERVED'=), =derivation_config_version= (not null, default 0). A new
+  small =ores_refdata_derivation_kinds_tbl= reference table (same shape
+  as =curve_roles=) seeds at least ='OBSERVED'=,
+  ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'= — extensible for future
+  kinds without a schema migration.
+- A *per-observation* lineage side table,
+  =ores_marketdata_observation_lineage_tbl= (tenant_id, series_id,
+  observation_datetime, point_id [not null, ='''= sentinel for scalar
+  series, matching =market_observations='s own
+  =coalesce(point_id, '')= convention], derivation_config_id,
+  derivation_config_version, source_as_of, source_series_ids uuid[]),
+  written only alongside a derived observation — never a column on
+  =market_observations_tbl= itself, which is a TimescaleDB hypertable
+  explicitly documented as carrying no audit columns because tick-level
+  volumes make that impractical. A row's existence *is* the "derived"
+  marker; no nullable columns.
+
+Deliberately generic, not curve-specific: this is what lets a future
+CRM change (persisting derived crosses — currently pull-only, out of
+scope here) stamp the exact same table with =derivation_kind =
+'CRM_DERIVATION'= and reuse =derived_rate::as_of= (already computed
+today, currently discarded once the pull-reply is sent) as
+=source_as_of=, rather than inventing a second lineage mechanism.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- =market_series= carries =derivation_kind=/=derivation_config_id=/
+  =derivation_config_version=, all =not null=; every existing series
+  defaults to ='OBSERVED'= + nil-uuid + 0 with no behaviour change to
+  today's raw-tick/FX-spot publishing.
+- =ores_refdata_derivation_kinds_tbl= exists, seeded with ='OBSERVED'=,
+  ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'=, validated the same way
+  =curve_roles= is (soft FK + validate function).
+- =ores_marketdata_observation_lineage_tbl= exists, is never written on
+  the raw-tick ingest hot path, and supports a query "for this series +
+  observation_datetime (+ point_id), which config/version/source
+  produced it" in one lookup.
+- No column added to =market_observations_tbl= itself.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

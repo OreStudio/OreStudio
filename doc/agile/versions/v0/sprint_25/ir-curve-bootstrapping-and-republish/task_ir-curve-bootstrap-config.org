@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 5255E8A6-9EE6-44FA-A5CB-41ABD508ED37
+:END:
+#+title: Task: IR curve bootstrap config: refdata entities for the bootstrap recipe
+#+description: New ores.refdata entities (bootstrap config + pillar children, mirroring ir_curve_template_entries' shape but source-independent) recording how a curve is bootstrapped: source series, curve family role (Funding/Projection), the discount_curve_config_id build-order link, interpolation method, day-count convention, and split tenor.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Record *how* a curve is bootstrapped as a named, inspectable artefact —
+the "curve template" concept [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] calls for — owned by
+=ores.refdata= (matching where every other recipe/config entity lives
+in this codebase: =crm_topology_config=, =curve_role=, =tenor=,
+=overnight_index_convention=; not =ores.marketdata=, which owns only
+the generic value store).
+
+- =ores_refdata_ir_curve_bootstrap_configs_tbl=: =source_series_id=
+  (the raw =RATES/YIELD= =market_series= this bootstraps),
+  =output_series_id= (not null — *minted at config-creation time*,
+  never deferred, so there is no "not yet published" null state to
+  sentinel around), =curve_family_role= (='FUNDING'= | ='PROJECTION'=
+  — a new axis, distinct from the existing instrument-pricing
+  =curve_role=), =discount_curve_config_id= (self-referencing;
+  =ores_utility_nil_uuid_fn()= sentinel when =curve_family_role =
+  'FUNDING'=, a required FK when ='PROJECTION'= — this is what encodes
+  [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
+  dependency as data), =interpolation_method=, =day_count_convention=,
+  =split_tenor_code= (a genuine tenor value, not a sentinel — for a
+  single-segment method it equals the curve's own last pillar's
+  =end_tenor_code=, matching the spirit of =ir_curve_template_entries='s
+  existing ='SPOT'= tenor, which its own doc comment is explicit isn't
+  a sentinel hack).
+- =ores_refdata_ir_curve_bootstrap_pillars_tbl=: =bootstrap_config_id=,
+  =sequence_index=, =start_tenor_code=/=end_tenor_code= (FK to
+  =ores_refdata_tenors_tbl.code=), =curve_role_code= (FK to
+  =ores_refdata_curve_roles_tbl.code= — DEPOSIT/FRA/SWAP). Same
+  one-parent-many-children shape as =ir_curve_template_entries=, but
+  source-independent: it names a raw series + pillar list to bootstrap
+  from, not a synthetic generation recipe.
+
+Depends on the shared derivation-lineage task for the
+=ores_refdata_derivation_kinds_tbl= values this config's output series
+will be stamped with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Both tables exist in =ores.refdata=, tenant/party-scoped, versioned,
+  following the standard temporal-entity convention (=valid_from=/
+  =valid_to=, GIST exclusion, soft-update/delete triggers) already used
+  by =ir_curve_template_entries= and =crm_topology_configs=.
+- Creating a bootstrap config mints its =output_series_id= =market_series=
+  row atomically — no code path can observe a config with a null/absent
+  output series.
+- =discount_curve_config_id= is enforced (check constraint) to be
+  nil-uuid iff =curve_family_role = 'FUNDING'=, and a valid FK to
+  another config's id iff ='PROJECTION'=.
+- Pillar rows validate =start_tenor_code=/=end_tenor_code= against
+  =ores_refdata_tenors_tbl= and =curve_role_code= against
+  =ores_refdata_curve_roles_tbl=, exactly as =ir_curve_template_entries=
+  already does for its own tenor/instrument_code references.
+- No new tenor or curve-role concepts invented — both are read-only
+  references into the existing reference data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -40,6 +40,54 @@ not the bootstrapped curve a desk would price off of. Promoted from
 an inbox capture into a real Sprint 24 story now that Sprint 24's
 mission includes improving IR generation.
 
+** Design: derivation lineage, bootstrap config, build order
+
+Working through what a persisted, bootstrapped curve object actually
+is (see [[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]]'s "curve template" requirement)
+surfaced a gap this story must close rather than inherit: reusing the
+existing =market_series=/=market_observations= tables for bootstrapped
+output (the same pattern the CRM's computed crosses would eventually
+use, and the same shape =ores.synthetic='s raw-tick storage already
+uses) is architecturally correct — it is the established pattern here,
+applied a third time, not a new one — but doing so *without* a
+lineage mechanism would leave "was this point observed or computed,
+and by what" unanswerable except by guessing from the =source= string,
+which is exactly CRM's current soft spot (CRM's derived crosses are
+pull-only today — see =crm_handler='s "never broadcast the full
+derived set as ticks" — so this gap is latent there, not yet realised
+in storage; this story should not add a second, curve-specific version
+of the same weakness).
+
+Three design decisions this story now commits to, detailed in the
+tasks below:
+
+- *Shared, generic lineage* — a =derivation_kind= marker on
+  =market_series= (sentinel ='OBSERVED'=, matching the existing
+  =curve_role='NONE'= convention on =instrument_codes= rather than a
+  nullable column) plus a per-observation =observation_lineage= side
+  table, deliberately generic so CRM can reuse it unchanged whenever
+  it starts persisting derived crosses — not this story's job to
+  change CRM itself, but its job not to build something CRM would
+  later have to duplicate.
+- *Bootstrap config as refdata*, not marketdata — recipe/config
+  entities consistently live in =ores.refdata= in this codebase
+  (=crm_topology_config=, =curve_role=, =tenor=); the bootstrap
+  config follows that placement, reusing =tenor= and =curve_role=
+  directly rather than inventing parallel concepts.
+- *Build order as data* — the Funding-before-Projection dependency
+  ([[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]) is encoded via a self-referencing
+  =discount_curve_config_id= on the bootstrap config (nil-uuid sentinel
+  for Funding, required for Projection), so a Projection curve's
+  bootstrap run has an explicit, queryable dependency rather than an
+  implicit ordering assumption.
+
+Every nullable field considered during design was replaced with either
+a sentinel paired to a discriminator column (=curve_family_role=
+FUNDING -> nil =discount_curve_config_id=; ='OBSERVED'= -> nil
+=derivation_config_id=) or, where the null represented a genuinely
+avoidable gap (=output_series_id= before first publish), removed by
+minting the output series row at config-creation time instead.
+
 * Status
 
 | Field         | Value                                  |
@@ -60,12 +108,30 @@ mission includes improving IR generation.
   ores.marketdata's existing raw-producer-tick remap onto the
   official tenant-scoped stream, so downstream consumers read a real
   usable curve rather than raw ticks.
+- A shared, generic derivation-lineage mechanism exists on
+  =market_series=/a new =observation_lineage= table, such that any
+  published series or observation can be queried for "was this
+  observed or derived, and by what config/version/source" without
+  guessing from the =source= string — usable unchanged by CRM's own
+  derived-cross publishing whenever that lands (not this story's
+  scope to change CRM itself).
+- The bootstrap recipe (source series, pillar list, interpolation
+  method, day-count convention, curve family role, discount-curve
+  dependency) is a first-class, inspectable =ores.refdata= entity, not
+  implicit in code or ad hoc per bootstrap run.
+- The Funding-before-Projection build order is enforced/encoded as
+  data (a config's discount-curve dependency), not left as an
+  implicit ordering assumption in the engine.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4F78BAA7-71A0-4433-AF1E-54180DB0669A][FOMC-dated OIS short end with flat-forward interpolation]] | BACKLOG | | | Bootstrap the SOFR OIS short end off FOMC-meeting-dated pillars with a flat-forward (step) interpolation method, transitioning to a continuous method (log-linear/spline) at the long-end swap pillars. |
+| [[id:18B74DD5-0A67-4873-A700-B006D4A99FDD][Shared derivation lineage: market_series marker + observation lineage table]] | BACKLOG | | | A derivation_kind/derivation_config_id/derivation_config_version marker on market_series (sentinel 'OBSERVED', not nullable) plus a new observation_lineage side table for per-observation provenance -- foundational for both the curve bootstrap output and, later, CRM's own derived-cross publishing. |
+| [[id:5255E8A6-9EE6-44FA-A5CB-41ABD508ED37][IR curve bootstrap config: refdata entities for the bootstrap recipe]] | BACKLOG | | | New ores.refdata entities (bootstrap config + pillar children, mirroring ir_curve_template_entries' shape but source-independent) recording how a curve is bootstrapped: source series, curve family role (Funding/Projection), the discount_curve_config_id build-order link, interpolation method, day-count convention, and split tenor. |
+| [[id:D1C9368C-4B32-4074-9A17-3A895DB12F83][IR curve bootstrapping engine: inverse solve over the raw instrument grid]] | BACKLOG | | | Given a bootstrap config and the raw pillar rates already published by the IR curve family feed, solve tenor-by-tenor for discount factors that reprice each pillar -- the inverse of curve_instrument_pricer's forward rate functions -- applying the configured interpolation method, day-count convention, and Funding-before-Projection build order. |
+| [[id:202295CC-B715-431F-BFCF-DD960CA7D1FE][Official curve republish: write bootstrapped output as a lineage-stamped market_series]] | BACKLOG | | | Publish the bootstrapper's output curve into its pre-minted output_series_id via market_observations, stamping the observation_lineage table per observation -- the republish/remap half of the story's goal, a transform rather than a passthrough. |
 
 * Decisions
 
@@ -74,6 +140,14 @@ mission includes improving IR generation.
 - Modelling the raw instrument grid itself and its publishing
   pipeline — already delivered by [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data generation]]
   (Sprint 23, DONE).
+- Changing CRM itself to persist derived crosses — CRM's derived rates
+  are pull-only today (=crm_handler='s explicit "never broadcast the
+  full derived set as ticks" architecture decision), so there is
+  nothing to retrofit yet. This story's shared derivation-lineage
+  table is deliberately generic so that whenever CRM persistence does
+  land, it becomes a schema-only follow-on (stamp =derivation_kind =
+  'CRM_DERIVATION'=, reuse =derived_rate::as_of= as =source_as_of=) —
+  not a task this story needs to do.
 
 * References
 

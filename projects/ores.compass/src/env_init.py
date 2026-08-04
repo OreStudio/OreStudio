@@ -877,12 +877,17 @@ ORES_CONNECTIONS_MASTER_PASSWORD={connections_master_password}
     print("Next steps:")
     print("  1. Create the database (first time only):")
     print("       ./projects/ores.compass/compass.sh db recreate -y\n")
-    print("  2. Start NATS:")
-    print(f"       nats-server --config build/config/nats-{label_lower}.conf\n")
-    print("  3. In Emacs, set up SQL connections:")
+    print("  2. In Emacs, set up SQL connections:")
     print("       M-x ores-db/setup-connections\n")
-    print("  4. Start services via prodigy — they read ORES_PRESET and "
-          "credentials from .env.\n")
+    print("  3. Start the service fleet via systemd:")
+    print("       ./projects/ores.compass/compass.sh services start\n")
+    print("     This brings up NATS and every service unit "
+          "(ores-<env>.target); starting an\n"
+          "     individual unit (systemctl --user start "
+          f"ores.<svc>.service-{label_lower}) pulls\n"
+          "     in NATS automatically via its Requires= dependency. "
+          "They read ORES_PRESET\n"
+          "     and credentials from .env.\n")
     print("Logging:")
     print("  Enable:  compass env configure --enable-logging [level]")
     print("  Disable: compass env configure --disable-logging")

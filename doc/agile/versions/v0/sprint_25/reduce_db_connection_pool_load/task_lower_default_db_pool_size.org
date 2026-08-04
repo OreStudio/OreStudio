@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: E3E201CD-6A62-4772-8307-730D763BBEE9
+:END:
+#+title: Task: Lower default per-service DB connection pool size
+#+description: Reduce the hardcoded pool_size (4) in the service-app codegen template to shrink each environment's steady-state Postgres connection footprint.
+#+type: task
+#+level: s1
+#+filetags: :reduce_db_connection_pool_load:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The per-service DB connection pool size is hardcoded to =pool_size = 4=
+in the =component-service= codegen archetype
+(=projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org=,
+tangled to
+=projects/ores.codegen/library/templates/cpp_service_app_application.cpp.mustache=),
+and generated identically into all 17 domain services' =application.cpp=
+(=ores.refdata=, =ores.trading=, =ores.iam=, =ores.dq=, etc). Lower the
+literal to a smaller default (e.g. =2=), re-tangle with
+=compass build --direct tangle_codegen_templates=, then regenerate each
+service with =codegen.sh generate --model
+projects/ores.<component>/service/modeling/component_overview.org
+--profile component-service= and rebuild.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-07-03 in the product backlog; promoted preserving the UUID.
+
+** What
+
+The per-service DB connection pool size is hardcoded to =pool_size = 4=
+in the =component-service= codegen archetype
+(=projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org=,
+tangled to
+=projects/ores.codegen/library/templates/cpp_service_app_application.cpp.mustache=),
+and generated identically into all 17 domain services' =application.cpp=
+(=ores.refdata=, =ores.trading=, =ores.iam=, =ores.dq=, etc). Lower the
+literal to a smaller default (e.g. =2=), re-tangle with
+=compass build --direct tangle_codegen_templates=, then regenerate each
+service with =codegen.sh generate --model
+projects/ores.<component>/service/modeling/component_overview.org
+--profile component-service= and rebuild.
+
+** Why
+
+Each running environment holds a steady-state connection floor of
+roughly (services × pool_size) Postgres connections regardless of
+actual load — about 80 connections/env at pool_size=4. When several
+ORE Studio dev environments run concurrently (observed ~10 worktrees
+in the fleet), this floor multiplies fast and exhausts
+=max_connections=, surfacing as "remaining connection slots are
+reserved for roles with the SUPERUSER attribute" during ordinary
+service startup or synthetic-data workflow runs. Halving pool_size to
+2 roughly halves that floor (~80 -> ~40/env) with no code beyond the
+template change, buying headroom without needing to raise
+=max_connections= as aggressively on a host that's already memory
+constrained (observed 2.9GB free / 16GB swap in use).
+
+** References
+
+- doc/recipes/sql/how_do_i_solve_postgres_max_connections.org
+
+** See also
+
+- [[id:A54DB993-A61C-44D3-AEE0-964EBD457D0E][Make DB connection pool size runtime-configurable]] — companion capture: the durable configurable fix

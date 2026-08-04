@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: A54DB993-A61C-44D3-AEE0-964EBD457D0E
+:END:
+#+title: Task: Make DB connection pool size runtime-configurable
+#+description: Move pool_size out of the codegen template literal into database_options/database_configuration, sourced from a CLI flag and ORES_<APP>_DB_POOL_SIZE env var.
+#+type: task
+#+level: s1
+#+filetags: :reduce_db_connection_pool_load:sprint_25:v0:
+#+owner: marco
+#+branch: feature/reduce-db-connection-pool-load
+#+pr: 1821
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =pool_size= (and possibly =num_attempts=/=wait_time_in_seconds=)
+to =ores::database::database_options= and
+=database_configuration::read_options=
+(=projects/ores.database/src/config/database_configuration.cpp=),
+sourced from a new =--db-pool-size= CLI flag and/or
+=ORES_<APP>_DB_POOL_SIZE= env var, following the existing
+=ORES_<APP>_DB_*= convention (see =database_user_arg=,
+=database_password_arg= etc in that file), defaulting to =4=. Update
+the =component-service= codegen archetype
+(=projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org=)
+so generated =application.cpp= emits =.pool_size = db_opts.pool_size=
+instead of a literal, then re-tangle and regenerate all 17 domain
+services.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
+| Now          | Nothing. |
+| Waiting on   | PR #1819 (bright_faraday, https://github.com/OreStudio/OreStudio/pull/1819, "[ores.utility,ores.nats] Add generic shared-domain fallback tier to environment_mapper_factory") to merge, for the fleet-wide fallback tier. |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Two-tier design (Option B) was chosen over the capture's original
+plan: a fleet-wide default falling back per-service. This task scopes
+*only* the per-service tier — the fleet-wide default tier is deferred
+until bright_faraday's PR adding "global options common to all
+services" lands, since that PR will provide the natural home for it.
+
+Per-service tier, following the existing =db-host=/=db-port= pattern
+in =database_configuration=:
+
+1. Add =int pool_size = 4;= to =database_options=.
+2. Add a =--db-pool-size= CLI option (default =4=) to
+   =database_configuration::make_options_description=.
+3. Read it into =database_options::pool_size= in
+   =database_configuration::read_options=. The =ORES_<APP>_DB_*= env
+   var mapping is generic (prefix-based), so
+   =ORES_<APP>_DB_POOL_SIZE= falls out for free once the CLI option
+   exists — no separate env var wiring needed.
+4. Update the =component-service= codegen archetype
+   (=ores.cpp.service-app.application_impl.org= /
+   =cpp_service_app_application.cpp.mustache=) so generated
+   =application.cpp= emits =.pool_size = db_opts.pool_size= instead of
+   the =4= literal.
+5. Re-tangle codegen templates, regenerate all 17 domain services,
+   rebuild.
+6. Defaults are unchanged (still =4= everywhere) — this task only adds
+   the knob, it does not lower the default (that's the sibling task).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1821][#1821]] | [database,codegen] Make per-service DB connection pool size configurable |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | ores.wt.service silently ignores --db-pool-size | application_context.cpp | Fixed | Now reads db_opts.pool_size, matching ores.cli/ores.http.server |
+| 2 | No validation for non-positive pool_size | database_configuration.cpp | Fixed | Throws on pool_size <= 0; test added |
+| 3 | ores.cli mixes .value()/-> accessor style | application.cpp | Fixed | Normalised to .value() |
+| 4 | Unrelated capture bundled in this PR | (n/a) | Declined | Legitimate drive-by finding from the systemd-docs audit this PR also did; kept bundled as a backlog note, not code |
+
+* Result
+
+Per-service tier shipped, exactly per the =* Plan=:
+
+- =pool_size= added to =database_options= (default =4=, unchanged).
+- =--db-pool-size= CLI flag added to =database_configuration=;
+  =ORES_<APP>_DB_POOL_SIZE= falls out for free via the existing
+  prefix-based env mapper — no separate wiring needed.
+- =component-service= codegen archetype and all 18 =application.cpp=
+  files (17 domain services + =ores.http.server=) updated to read
+  =pool_size= from options instead of the =4= literal. Two files
+  (=ores.cli=, =ores.http.server=) had a differently-shaped
+  =make_context= signature that a blanket edit broke; fixed by hand
+  and the shape divergence spun off as a follow-up task (below).
+- Unit tests added: =database_options_tests.cpp= (default + custom
+  =pool_size=), =ores.iam.service= =config_parser_tests.cpp=
+  (=--db-pool-size= CLI parsing).
+- Verified locally: =compass build --preset linux-clang-debug-make=
+  clean; =ctest --preset linux-clang-debug-make= 71/71 passed; live
+  systemd smoke test — started =ores.iam.service= with
+  =ORES_IAM_SERVICE_DB_POOL_SIZE=8= in =.env=, confirmed via
+  =pg_stat_activity= it opened 8 connections vs. the default 4, then
+  reverted the override (service back to 4 connections).
+- Review round 1 (see =* Review=): fixed =ores.wt.service= silently
+  ignoring =--db-pool-size= (it has its own hand-written
+  =application_context.cpp=, outside the original 18-file sweep),
+  added =pool_size <= 0= validation with a test, normalised
+  =ores.cli='s accessor style. Also fixed a dangling =:ID:= link in
+  the "Unify application.cpp" task's notes that broke the =site= CI
+  job — it referenced a task doc that only exists on PR #1819's
+  unmerged branch.
+
+Fleet-wide =ORES_DB_POOL_SIZE= fallback tier is out of scope for this
+task — deferred until PR #1819 merges (see =* Status= "Waiting on").
+Spun off two related follow-ups, both filed under this story: "Unify
+application.cpp and service initialisation across services" (the
+shape-divergence problem this task exposed) and a backlog capture to
+drop the stale =controller_service_*= DB tables in favour of a
+codegen model.
+
+* Promoted from capture
+
+Captured 2026-07-03 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Add =pool_size= (and possibly =num_attempts=/=wait_time_in_seconds=)
+to =ores::database::database_options= and
+=database_configuration::read_options=
+(=projects/ores.database/src/config/database_configuration.cpp=),
+sourced from a new =--db-pool-size= CLI flag and/or
+=ORES_<APP>_DB_POOL_SIZE= env var, following the existing
+=ORES_<APP>_DB_*= convention (see =database_user_arg=,
+=database_password_arg= etc in that file), defaulting to =4=. Update
+the =component-service= codegen archetype
+(=projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org=)
+so generated =application.cpp= emits =.pool_size = db_opts.pool_size=
+instead of a literal, then re-tangle and regenerate all 17 domain
+services.
+
+** Why
+
+=pool_size= is currently a compile-time literal duplicated identically
+across all 17 generated =application.cpp= files, so tuning it requires
+a template edit, full codegen regeneration, and rebuild of every
+service. Making it configurable lets pool size be dialed per
+environment without a rebuild — small pools for hosts running many
+concurrent dev environments (fleet observed with ~10 worktrees), large
+pools for a single perf-testing environment — and is the durable fix
+behind the quicker mitigation of just lowering the template default.
+
+** References
+
+- doc/recipes/sql/how_do_i_solve_postgres_max_connections.org
+
+** See also
+
+- [[id:E3E201CD-6A62-4772-8307-730D763BBEE9][Lower default per-service DB connection pool size]] — companion capture: the quick template-literal fix

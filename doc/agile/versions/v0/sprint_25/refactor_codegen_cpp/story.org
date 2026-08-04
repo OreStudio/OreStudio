@@ -8,7 +8,7 @@
 #+filetags: :tooling:codegen:sprint_25:v0:
 #+branch: feature/refactor-codegen-cpp
 #+created: 2026-05-30
-#+updated: 2026-06-12
+#+updated: 2026-08-04
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -159,6 +159,7 @@ trading, iam, dq, and all remaining components.
 | [[id:950FB9D4-48E0-45A4-BC71-F9668D42BE9A][Apply safe drift to workspace-cpp]] | BACKLOG | | | Add has_party_id template flag; restore workspace_service, workspace_repository, workspace_protocol. |
 | [[id:51E65D05-7F22-4DE1-9509-D50A9D98A503][Apply safe drift to compute-cpp]] | BACKLOG | | | Heaviest exclusion catalogue: restore all 6 services + 6 other files. |
 | [[id:A0A1834D-F274-4066-A38D-D597A8827C8D][Apply safe drift to marketdata-cpp]] | BACKLOG | | | The 75-model drift catalog never audited ores.marketdata; market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main. Audit and apply safe drift following the refdata-cpp pilot pattern. |
+| [[id:E5EEFA91-BE41-4E0B-A69E-DDF965A7F39F][Retrospective: clang-format non-idempotency causing refdata codegen drift]] | BACKLOG | | | Write up the clang-format single-pass non-idempotency bug found and fixed while unblocking PR #1820's CI, and audit for other affected patterns/components beyond ores.refdata. |
 
 * Notes
 

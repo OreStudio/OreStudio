@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: E5EEFA91-BE41-4E0B-A69E-DDF965A7F39F
+:END:
+#+title: Task: Retrospective: clang-format non-idempotency causing refdata codegen drift
+#+description: Write up the clang-format single-pass non-idempotency bug found and fixed while unblocking PR #1820's CI, and audit for other affected patterns/components beyond ores.refdata.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+While unblocking PR #1820's `refdata-codegen-drift` CI failure, found
+and fixed a genuine clang-format bug: `clang-format` is not idempotent
+in a single pass for a multi-line comment trailing an assignment
+before a lambda (`field = // line1\n// line2\n[idx]{...}`) -- pass 1
+on raw codegen output lands on a "flat" continuation indent, pass 2
+re-indents it to "aligned" (matching the first `//`'s column) and is
+the true fixed point from pass 2 onward. Fixed by running
+clang-format twice in `ores.codegen`'s `clang_format_files()`, the
+CMake `format` target, and `nightly-format.yml`.
+
+This task is the retrospective/audit follow-up, not the fix itself
+(already merged in #1820): write up the investigation properly (root
+cause, how it was proven, why a single pass can leave codegen output
+and the nightly-format bot disagreeing) for the team/future readers,
+and check whether the same non-idempotent comment pattern exists in
+other components beyond `ores.refdata` (whose drift check is the only
+one currently exercised in CI) where it could cause the same
+oscillation once/if their drift checks are turned on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- A knowledge doc (or an addition to an existing one) captures the
+  root cause, the proof (multi-pass reformatting experiment), and the
+  fix, so a future occurrence of this class of drift is fast to
+  diagnose instead of requiring a from-scratch investigation.
+- Every other component's generator templates are checked for the
+  same multi-line trailing-comment-before-lambda pattern; any hits
+  are either fixed at the model/template source (avoid the pattern)
+  or noted as latent risk once that component's own codegen-drift
+  check is enabled.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

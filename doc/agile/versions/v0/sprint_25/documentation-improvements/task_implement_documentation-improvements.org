@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ quant/analytics, data governance, trade capture, reference data).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
-| Now          | Core carousel shipped; verifying visual fixes with the user (stale-cache stretch check, gap/aspect-ratio tuning). |
-| Waiting on   | User confirmation on the latest visual tweaks.        |
-| Next         | Confirm rendering looks right, then close out.        |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                                               |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -44,14 +44,19 @@ quant/analytics, data governance, trade capture, reference data).
 - Carousel replaces the old hero section + standalone version
   screenshot at the top of =index.org=, with the hero merged into the
   carousel's first slide.
-- 6 hand-curated feature screenshots follow, each with a caption.
+- 7 hand-curated feature screenshots follow, each with a caption.
 - Dependency-free (no CDN/external JS library) vanilla JS controller:
   auto-advance, pause on hover/focus, prev/next buttons, dot nav.
-- Regular slides never stretch (=object-fit: contain=, safe for any
-  native image resolution); the hero slide crops rather than
-  stretches (=object-fit: cover=).
+- No image is ever stretched or distorted: every slide uses
+  =object-fit: contain= at its native aspect ratio, regardless of
+  source resolution.
 - =compass site serve= actually serves =.js= files (site build had no
   publish rule for them before this task).
+- Secondary "Download" CTA and a one-line tech credibility strip on
+  the hero, per external UX review.
+- User-approved final visual state (image-top/solid-text-below card
+  layout for every slide, no pillarboxing/black bars, readable text
+  sizing).
 
 * Plan
 
@@ -85,3 +90,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped and user-approved. Several rounds of visual iteration beyond
+the initial implementation, each caught by direct feedback and a
+Gemini UX review:
+
+- Fixed a flexbox min-height bug that was clipping/hiding captions on
+  large screenshots.
+- Restored the hero slide's original image-top/text-below layout
+  (initially tried an overlay-on-image style, reverted per feedback).
+- Traced "black bars either side of the hero image" through two
+  false leads (browser cache, then an incomplete flex override) to
+  the real cause: the site-wide generic =img= rule's =margin: auto=,
+  which has free-space-absorbing behaviour in flex layouts and wasn't
+  fully overridden by the carousel-specific rules.
+- Matched the =object-fit: contain= letterbox fill colour to the
+  surrounding box background, eliminating a visible seam.
+- Swapped in real composite (multi-window) screenshots for org
+  chart/ACME, reference data, compute, and shell -- old-release
+  stand-ins, flagged for replacement with purpose-built shots in
+  [[id:49BE469F-4191-4DD3-91AE-E7AF04A3354A][Recapture dedicated carousel screenshots]].
+- Added a second "Download" CTA and a tech credibility strip per an
+  external UX review; deferred nav consolidation and a quickstart
+  snippet to their own tasks rather than scope-creeping this one.

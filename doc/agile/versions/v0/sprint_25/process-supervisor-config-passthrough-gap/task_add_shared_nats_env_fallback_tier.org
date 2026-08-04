@@ -111,7 +111,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shared-domain fallback would map any ORES_<DOMAIN>_* var, including ones that aren't options at all (e.g. ORES_NATS_PORT) -> parse_environment rejects them as unrecognised, breaking every service that registers a domain | environment_mapper_factory.cpp, shared_domain_registry.hpp/cpp, nats_configuration.cpp | Accepted | shared_domain_registry now stores exact allowed suffixes per domain, not a blanket prefix; nats_configuration registers only {URL, SUBJECT_PREFIX, WIRE_FORMAT, TLS_CA} |
+| 2 | ores.shell registers the NATS domain while also keeping its own full ORES_SHELL_NATS_* mirror -> both env vars resolve to the same option name within one parse_environment() call, which boost::program_options rejects as a duplicate occurrence | ores.shell/src/config/parser.cpp | Accepted | Removed the register_shared_domain() call from shell's parser; shell's existing per-app mirror already covers its needs and the shared fallback was unnecessary there |
+| 3 | (self-caught while reproducing #1/#2) Shared-domain option-name derivation stripped the whole ORES_<DOMAIN>_ prefix, dropping the domain name from the resulting option name (e.g. "url" instead of the actually-registered "nats-url") -- broke every service, reproduced directly against rebuilt binaries | environment_mapper_factory.cpp | Fixed | Shared-domain tier now strips only the fixed ORES_ prefix, letting the domain name fall through into the option name, matching nats_configuration's own "nats-*" naming; added a regression test exercising the real parse_environment+store path |
 
 * Result
 

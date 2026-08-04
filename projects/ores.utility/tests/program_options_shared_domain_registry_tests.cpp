@@ -18,7 +18,6 @@
  *
  */
 #include "ores.utility/program_options/shared_domain_registry.hpp"
-#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -30,16 +29,26 @@ using ores::utility::program_options::shared_domain_registry;
 }
 
 TEST_CASE("register_domain_makes_it_appear_in_domains", tags) {
-    shared_domain_registry::register_domain("SPROCKET");
+    shared_domain_registry::register_domain("SPROCKET", {"COLOUR"});
     REQUIRE(shared_domain_registry::domains().contains("SPROCKET"));
 }
 
-TEST_CASE("registering_the_same_domain_twice_is_idempotent", tags) {
-    shared_domain_registry::register_domain("COG");
-    shared_domain_registry::register_domain("COG");
+TEST_CASE("registered_domain_carries_its_allowed_suffixes", tags) {
+    shared_domain_registry::register_domain("COG", {"SIZE", "MATERIAL"});
 
-    const auto count = std::ranges::count(shared_domain_registry::domains(), "COG");
-    REQUIRE(count == 1);
+    const auto& suffixes = shared_domain_registry::domains().at("COG");
+    REQUIRE(suffixes.contains("SIZE"));
+    REQUIRE(suffixes.contains("MATERIAL"));
+    REQUIRE_FALSE(suffixes.contains("COLOUR"));
+}
+
+TEST_CASE("registering_the_same_domain_twice_merges_suffixes", tags) {
+    shared_domain_registry::register_domain("RATCHET", {"SIZE"});
+    shared_domain_registry::register_domain("RATCHET", {"TORQUE"});
+
+    const auto& suffixes = shared_domain_registry::domains().at("RATCHET");
+    REQUIRE(suffixes.contains("SIZE"));
+    REQUIRE(suffixes.contains("TORQUE"));
 }
 
 TEST_CASE("unregistered_domain_is_absent", tags) {

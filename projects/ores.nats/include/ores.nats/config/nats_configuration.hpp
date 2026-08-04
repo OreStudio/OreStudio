@@ -59,10 +59,17 @@ public:
 
     /**
      * @brief Registers "NATS" as a shared config domain with
-     * ores::utility::program_options::shared_domain_registry, so unprefixed
-     * ORES_NATS_* environment variables reach every application's
-     * environment_mapper_factory fallback tier. Idempotent; call once from
-     * each application's own config parser setup, before parsing options.
+     * ores::utility::program_options::shared_domain_registry, covering
+     * unprefixed ORES_NATS_URL, ORES_NATS_SUBJECT_PREFIX,
+     * ORES_NATS_WIRE_FORMAT, and ORES_NATS_TLS_CA -- so those reach every
+     * application's environment_mapper_factory fallback tier. Deliberately
+     * excludes ORES_NATS_TLS_CERT/KEY (per-service file paths, not shared
+     * values) and every other ORES_NATS_* variable that is not a
+     * nats_configuration option (e.g. ORES_NATS_PORT, the server's own
+     * listen port -- matching it here would make parse_environment reject
+     * it as an unrecognised option for client applications). Idempotent;
+     * call once from each application's own config parser setup, before
+     * parsing options.
      */
     static void register_shared_domain();
 };

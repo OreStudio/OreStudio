@@ -23,15 +23,20 @@ namespace ores::utility::program_options {
 
 namespace {
 
-std::set<std::string>& mutable_domains() {
-    static std::set<std::string> r;
+std::map<std::string, std::set<std::string>>& mutable_domains() {
+    static std::map<std::string, std::set<std::string>> r;
     return r;
 }
 
 }
 
-void shared_domain_registry::register_domain(const std::string& prefix) { mutable_domains().insert(prefix); }
+void shared_domain_registry::register_domain(const std::string& prefix,
+                                              const std::set<std::string>& allowed_suffixes) {
+    mutable_domains()[prefix].insert(allowed_suffixes.begin(), allowed_suffixes.end());
+}
 
-const std::set<std::string>& shared_domain_registry::domains() { return mutable_domains(); }
+const std::map<std::string, std::set<std::string>>& shared_domain_registry::domains() {
+    return mutable_domains();
+}
 
 }

@@ -46,13 +46,27 @@ TEST_CASE("unregistered_domain_variable_returns_empty", tags) {
 }
 
 TEST_CASE("registered_shared_domain_variable_falls_back_generically", tags) {
-    shared_domain_registry::register_domain("WIDGET");
+    shared_domain_registry::register_domain("WIDGET", {"COLOUR"});
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
-    REQUIRE(mapper("ORES_WIDGET_COLOUR") == "colour");
+
+    // Only the fixed ORES_ prefix is stripped, not the domain prefix: the
+    // domain name is part of the registered option name itself (mirrors
+    // how nats_configuration names its own options "nats-url", not "url").
+    REQUIRE(mapper("ORES_WIDGET_COLOUR") == "widget-colour");
+}
+
+TEST_CASE("shared_domain_variable_outside_allowed_suffixes_returns_empty", tags) {
+    // A domain's raw environment namespace can contain variables that are
+    // not options at all (e.g. a server-side setting alongside client
+    // options) -- only explicitly registered suffixes should resolve, or
+    // parse_environment would reject the rest as unrecognised options.
+    shared_domain_registry::register_domain("SPROCKET", {"COLOUR"});
+    const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
+    REQUIRE(mapper("ORES_SPROCKET_LISTEN_PORT").empty());
 }
 
 TEST_CASE("app_prefix_wins_over_shared_domain_when_both_match", tags) {
-    shared_domain_registry::register_domain("IAM_SERVICE");
+    shared_domain_registry::register_domain("IAM_SERVICE", {"FOO"});
     const auto mapper(environment_mapper_factory::make_mapper("IAM_SERVICE"));
 
     // ORES_IAM_SERVICE_FOO matches the app prefix directly; the shared-domain
@@ -62,7 +76,7 @@ TEST_CASE("app_prefix_wins_over_shared_domain_when_both_match", tags) {
 }
 
 TEST_CASE("a_second_shared_domain_resolves_without_mapper_changes", tags) {
-    shared_domain_registry::register_domain("GADGET");
+    shared_domain_registry::register_domain("GADGET", {"SIZE"});
     const auto mapper(environment_mapper_factory::make_mapper("SOME_APP"));
-    REQUIRE(mapper("ORES_GADGET_SIZE") == "size");
+    REQUIRE(mapper("ORES_GADGET_SIZE") == "gadget-size");
 }

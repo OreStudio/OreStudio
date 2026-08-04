@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: D52CA518-F255-46EA-8BF0-03FFD223F579
+:END:
+#+title: Drop dead ores_controller_service_instances_tbl/events_tbl
+#+description: Two controller-era tables (service instances, service events) have no remaining readers/writers now that systemd owns process lifecycle -- confirmed by full-repo grep during the controller-decommission DB audit.
+#+type: capture
+#+level: cross
+#+filetags: :controller:systemd:tech-debt:sql:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Drop =ores_controller_service_instances_tbl= and
+=ores_controller_service_events_tbl=
+(=projects/ores.sql/create/controller/=,
+=projects/ores.sql/drop/controller/=) along with their create/drop
+SQL and any populate scripts. A full-repo grep for both table names
+(excluding =build/= and =venv/=) found zero readers or writers left
+in C++, Python, or SQL -- they were the controller's own Kubernetes-
+style Pod/Event-log bookkeeping (PID, phase, restart count, event
+history) for processes it launched and supervised itself; systemd now
+owns that role via its own unit state and journal, so nothing
+populates or queries these tables anymore.
+
+* Why
+
+=ores.controller.service=/=process_supervisor= was fully decommissioned
+in Sprint 24 (PR #1806), but its DB schema was left behind. Unlike
+=ores_controller_service_definitions_tbl=/=dependencies_tbl= --
+which stayed genuinely load-bearing as the data source
+=systemd_generate.py='s =fetch_service_definitions()=/
+=fetch_dependencies()= read from -- =service_instances_tbl= and
+=service_events_tbl= have no equivalent successor consumer. Leaving
+dead tables (one a TimescaleDB hypertable with its own retention
+policy) in the schema is pure confusion for anyone reading it cold,
+and quiet drift risk if something is ever mistakenly pointed at them
+again.
+
+* References
+
+- projects/ores.sql/create/controller/controller_service_instances_create.sql
+- projects/ores.sql/create/controller/controller_service_events_create.sql
+- projects/ores.sql/drop/controller/controller_service_instances_drop.sql
+- projects/ores.sql/drop/controller/controller_service_events_drop.sql
+- projects/ores.compass/src/systemd_generate.py (the two tables that
+  are *not* dead -- definitions/dependencies -- for contrast)
+
+* See also
+
+- [[id:6E3720AB-A07B-42B4-B076-0A0DF22275C9][Drop controller_service_* tables, move service registry to codegen model]] -- the sibling capture for the two definitions/dependencies tables that are still in active use; that one needs a codegen migration first, this one can just be dropped.
+- [[id:EC737E65-FD0E-46E8-A5A2-807D6BE17E84][Task: Investigate decommissioning ores.controller.service and its DB tables]] -- the audit task that found this.

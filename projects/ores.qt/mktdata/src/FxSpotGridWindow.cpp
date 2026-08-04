@@ -490,9 +490,9 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                         // bar faster than a user can read it, leaving the row
                         // stuck showing PENDING with no visible explanation.
                         self->applyError(ore_key, reason);
-                        emit self->errorOccurred(
-                            tr("Failed to parse FX tick for %1: %2")
-                                .arg(QString::fromStdString(ore_key), QString::fromStdString(reason)));
+                        emit self->errorOccurred(tr("Failed to parse FX tick for %1: %2")
+                                                     .arg(QString::fromStdString(ore_key),
+                                                          QString::fromStdString(reason)));
                     },
                     Qt::QueuedConnection);
             });

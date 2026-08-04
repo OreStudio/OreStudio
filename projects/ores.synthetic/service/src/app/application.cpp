@@ -84,10 +84,14 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
     const auto fxs = fx_repo.read_latest(ctx);
     const auto comps = comp_repo.read_latest(ctx);
 
-    std::set<boost::uuids::uuid> enabled_feeds;
+    // Keyed by container id rather than a plain set, so each fx rate's
+    // binding_mode (bound/sandboxed) can be looked up when starting it —
+    // see the "Synthetic data scope and binding" story.
+    std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
+        enabled_feeds;
     for (const auto& f : feeds)
         if (f.enabled)
-            enabled_feeds.insert(f.id);
+            enabled_feeds.emplace(f.id, f);
 
     // Group components by their parent FX config id; note the field asymmetry —
     // gmm_component::fx_spot_config_id keys against fx_spot_generation_config::id.
@@ -97,7 +101,8 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
 
     int started = 0;
     for (const auto& fx : fxs) {
-        if (!fx.enabled || !enabled_feeds.contains(fx.config_id))
+        const auto container = enabled_feeds.find(fx.config_id);
+        if (!fx.enabled || container == enabled_feeds.end())
             continue;
         const auto it = by_fx.find(fx.id);
         if (it == by_fx.end() || it->second.empty()) {
@@ -118,7 +123,12 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
                                   std::move(weights),
                                   fx.gmm_initial_price,
                                   static_cast<double>(fx.ticks_per_hour),
-                                  fx.process_type);
+                                  fx.process_type,
+                                  {},
+                                  {},
+                                  nullptr,
+                                  {},
+                                  container->second.binding_mode);
         if (r == feed_controller::start_result::started)
             ++started;
     }
@@ -257,8 +267,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         // here would silently never take effect there.
         admin.ensure_stream(nats.make_stream_name("synthetic_curve_ticks"),
                             {nats.make_subject("synthetic.v1.curve_family.>")});
-        BOOST_LOG_SEV(lg(), info)
-            << "JetStream streams ready: synthetic_ticks, synthetic_curve_ticks";
+        // Sandboxed feeds (binding_mode::sandboxed, see feed_controller's
+        // synthetic_producer_subject) publish under a distinct
+        // "synthetic.v1.sandbox.tick.>" subject, not covered by
+        // synthetic_ticks's "synthetic.v1.tick.>" filter -- js_publish to a
+        // subject with no matching stream throws, so this needs its own
+        // stream just like synthetic_curve_ticks above.
+        admin.ensure_stream(nats.make_stream_name("synthetic_sandbox_ticks"),
+                            {nats.make_subject("synthetic.v1.sandbox.tick.>")});
+        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, "
+                                    "synthetic_curve_ticks, synthetic_sandbox_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
         throw;

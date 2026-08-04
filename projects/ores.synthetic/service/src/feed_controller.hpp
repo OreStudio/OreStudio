@@ -28,6 +28,7 @@
 #include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -40,11 +41,40 @@
 #include <memory>
 #include <mutex>
 #include <random>
+#include <rfl/enums.hpp>
 #include <string>
 #include <thread>
 #include <vector>
 
 namespace ores::synthetic::service {
+
+/**
+ * @brief Build the producer subject from source_name and binding_mode. '.'
+ * is kept (it is the NATS hierarchy separator and source names are dotted),
+ * but any character that is not a safe subject token — whitespace, wildcards
+ * ('*', '>'), or non-alphanumerics other than '.', '_', '-' — is replaced
+ * with '_' so a stray value cannot produce surprise routing or a publish
+ * error.
+ *
+ * sandboxed feeds publish under a distinct "synthetic.v1.sandbox.tick."
+ * prefix rather than "synthetic.v1.tick." -- the marketdata ingest loop's
+ * subscription subject is always derived from a feed_binding's source_name
+ * as "synthetic.v1.tick." + source_name (see feed_ingest_loop.cpp), so a
+ * sandboxed feed's ticks are structurally unreachable from the bound-feed
+ * resolution path regardless of whether a feed_binding for this source_name
+ * exists.
+ */
+inline std::string synthetic_producer_subject(const std::string& source_name,
+                                               ores::synthetic::domain::binding_mode binding_mode) {
+    std::string token;
+    token.reserve(source_name.size());
+    for (unsigned char c : source_name) {
+        const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
+        token += safe ? static_cast<char>(c) : '_';
+    }
+    const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
+    return sandboxed ? "synthetic.v1.sandbox.tick." + token : "synthetic.v1.tick." + token;
+}
 
 /**
  * @brief Runs the synthetic producer feeds; one tick thread per feed.
@@ -112,6 +142,20 @@ public:
      * calling user's tenant/party context — market_observation is
      * tenant-scoped (RLS), and this service's own service-account token is
      * bound to the system tenant, which cannot see another tenant's data.
+     *
+     * @p binding_mode selects the publish namespace: =bound= (the default —
+     * matches every existing caller, including the ad-hoc NATS control-plane,
+     * which has no config/binding_mode concept) publishes on
+     * "synthetic.v1.tick.<source>", the subject the marketdata ingest loop
+     * subscribes real feed_binding rows to. =sandboxed= publishes on
+     * "synthetic.v1.sandbox.tick.<source>" instead — a different subject the
+     * ingest loop never subscribes to, regardless of any feed_binding row —
+     * and skips auto-creating a feed_binding entirely, since a binding
+     * naming this source would misleadingly claim ingestion is happening on
+     * the bound subject when it is not. This is what "provably excluded from
+     * bound-feed resolution" means here: the exclusion is structural (a
+     * different subject the consumer never listens to), not merely a
+     * missing opt-in.
      */
     start_result start(const std::string& ore_key,
                        const std::string& source_name,
@@ -124,7 +168,9 @@ public:
                        const std::string& vintage_source = {},
                        const std::string& vintage_date = {},
                        std::string* error_detail = nullptr,
-                       const std::string& caller_bearer_token = {}) {
+                       const std::string& caller_bearer_token = {},
+                       ores::synthetic::domain::binding_mode binding_mode =
+                           ores::synthetic::domain::binding_mode::bound) {
         if (!vintage_source.empty()) {
             std::string detail;
             double resolved_price = 0.0;
@@ -162,15 +208,20 @@ public:
                     std::move(weights),
                     initial_price,
                     seed);
-                auto feed = std::make_shared<fx_spot_feed>(
-                    nats_, ore_key, producer_subject(key), std::move(process), ticks_per_hour);
+                auto feed = std::make_shared<fx_spot_feed>(nats_,
+                                                           ore_key,
+                                                           synthetic_producer_subject(key, binding_mode),
+                                                           std::move(process),
+                                                           ticks_per_hour);
                 running_feed rf;
                 rf.feed = feed;
+                rf.binding_mode = binding_mode;
                 rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
                 feeds_.emplace(key, std::move(rf));
                 BOOST_LOG_SEV(lg(), ores::logging::info)
                     << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key
-                    << "' subject='" << producer_subject(key)
+                    << "' subject='" << synthetic_producer_subject(key, binding_mode) << "' binding_mode='"
+                    << rfl::enum_to_string(binding_mode)
                     << "' ticks_per_hour=" << ticks_per_hour << " — now " << feeds_.size()
                     << " feed(s) running";
                 if (!status_thread_.joinable()) {
@@ -182,8 +233,12 @@ public:
         // after mu_ has been released, for both outcomes, so a caller
         // re-starting an already-running feed (e.g. "enable all") never
         // blocks every other start()/stop()/running_count()/list() call for
-        // the duration of that round-trip.
-        ensure_feed_binding(ore_key, key, caller_bearer_token);
+        // the duration of that round-trip. Skipped entirely for sandboxed
+        // feeds: a feed_binding on this source_name would claim ingestion is
+        // happening on the bound subject, which is not true (see start()'s
+        // doc comment on binding_mode).
+        if (binding_mode == ores::synthetic::domain::binding_mode::bound)
+            ensure_feed_binding(ore_key, key, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
     }
 
@@ -430,29 +485,16 @@ private:
             const auto count = rf.feed ? rf.feed->publish_count() : 0;
             BOOST_LOG_SEV(lg(), ores::logging::info)
                 << "SYNTHETIC STATUS: source='" << key << "' ore_key='" << rf.feed->ore_key()
-                << "' subject='" << producer_subject(key) << "' published=" << count;
+                << "' subject='" << synthetic_producer_subject(key, rf.binding_mode) << "' published=" << count;
         }
     }
 
     struct running_feed {
         std::shared_ptr<fx_spot_feed> feed;
         std::thread thread;
+        ores::synthetic::domain::binding_mode binding_mode =
+            ores::synthetic::domain::binding_mode::bound;
     };
-
-    // Build the producer subject from source_name. '.' is kept (it is the NATS
-    // hierarchy separator and source names are dotted), but any character that
-    // is not a safe subject token — whitespace, wildcards ('*', '>'), or
-    // non-alphanumerics other than '.', '_', '-' — is replaced with '_' so a
-    // stray value cannot produce surprise routing or a publish error.
-    static std::string producer_subject(const std::string& source_name) {
-        std::string token;
-        token.reserve(source_name.size());
-        for (unsigned char c : source_name) {
-            const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
-            token += safe ? static_cast<char>(c) : '_';
-        }
-        return "synthetic.v1.tick." + token;
-    }
 
     static void join_and_clear(running_feed& rf) {
         if (rf.feed)

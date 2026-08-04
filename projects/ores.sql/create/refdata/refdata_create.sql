@@ -129,6 +129,10 @@
 \ir ./refdata_instrument_codes_create.sql
 \ir ./refdata_instrument_codes_notify_trigger_create.sql
 
+-- Derivation kinds: before marketdata's market_series (FK via validation function).
+\ir ./refdata_derivation_kinds_create.sql
+\ir ./refdata_derivation_kinds_notify_trigger_create.sql
+
 -- Party and counterparty tables
 \ir ./refdata_parties_create.sql
 \ir ./refdata_parties_notify_trigger_create.sql

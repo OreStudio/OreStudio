@@ -31,6 +31,15 @@
  *
  * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
  * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ *
+ * derivation_kind/derivation_config_id/derivation_config_version mark
+ * whether this series is directly observed (the sentinel OBSERVED) or
+ * derived by a named mechanism (e.g. IR_CURVE_BOOTSTRAP,
+ * CRM_DERIVATION) -- so any published series answers "was this observed
+ * or computed, and by what" without guessing from the source tag on its
+ * observations. Per-observation lineage (which source series/as-of a
+ * specific derived point came from) is a separate concern, tracked by
+ * observation_lineage, not this catalog-level marker.
  */
 
 create table if not exists "ores_marketdata_market_series_tbl" (
@@ -44,6 +53,9 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "asset_class" text not null,
     "series_subclass" text not null,
     "is_scalar" boolean not null,
+    "derivation_kind" text not null,
+    "derivation_config_id" uuid not null,
+    "derivation_config_version" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -62,7 +74,8 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     check ("metric" <> ''),
     check ("qualifier" <> ''),
     check ("asset_class" <> ''),
-    check ("series_subclass" <> '')
+    check ("series_subclass" <> ''),
+    check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn()))
 );
 
 -- Composite natural key: unique combination for active records
@@ -109,7 +122,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent

@@ -50,6 +50,9 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
     r.asset_class = rfl::string_to_enum<domain::asset_class>(v.asset_class).value();
     r.series_subclass = rfl::string_to_enum<domain::series_subclass>(v.series_subclass).value();
     r.is_scalar = v.is_scalar;
+    r.derivation_kind = v.derivation_kind;
+    r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
+    r.derivation_config_version = v.derivation_config_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -81,6 +84,9 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
     r.asset_class = rfl::enum_to_string(v.asset_class);
     r.series_subclass = rfl::enum_to_string(v.series_subclass);
     r.is_scalar = v.is_scalar;
+    r.derivation_kind = v.derivation_kind;
+    r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
+    r.derivation_config_version = v.derivation_config_version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

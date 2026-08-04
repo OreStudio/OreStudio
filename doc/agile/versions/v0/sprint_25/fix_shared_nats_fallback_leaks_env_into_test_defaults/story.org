@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: BC40520B-4CCF-49B9-B1D2-1908C4915F28
+:END:
+#+title: Story: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests
+#+description: PR #1819's generic ORES_NATS_* shared-domain fallback tier makes 11 service config_parser test suites fail their parse_defaults_returns_expected_values case, because the checkout's real .env NATS URL/subject-prefix now leaks in as a fallback where the test expects the coded default with no overrides.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:testing:nats:environment_mapper:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the coded defaults (nats://localhost:4222, empty subject prefix) for parse_defaults tests when no CLI args or per-app env vars are set, without breaking PR #1819's intended generic ORES_NATS_* fallback for real deployments.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- All 11 previously-failing service config_parser test suites pass parse_defaults_returns_expected_values again
+- PR #1819's actual goal (services pick up bare ORES_NATS_* env vars with zero argv threading) is preserved for real deployment use, not just papered over in tests
+- Root cause documented: why the shared-domain fallback tier applies even when the test harness's own environment (not a real per-service override) happens to set ORES_NATS_URL
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A979A858-424F-487A-9D3E-EE8D1B79BD35][Scaffold story: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] | DONE | 2026-08-04 | 2026-08-04 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EEBC6A1A-8DC3-43D9-879A-02A75FB8313F][Implement Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests]] | DONE | | 2026-08-04 | Initial task for: Hotfix: shared NATS fallback tier leaks .env into parse-defaults tests |
+
+* Decisions
+
+- Fixed at the test layer, not the registry: PR #1819's shared-domain
+  fallback tier was working exactly as designed
+  (=nats_configuration::register_shared_domain()= explicitly allows
+  =URL=/=SUBJECT_PREFIX=/=WIRE_FORMAT=), and the leak only surfaced
+  because the affected tests were never actually
+  environment-isolated — they relied on no service parser recognizing
+  a bare =ORES_NATS_URL=, an assumption #1819 correctly invalidated.
+  Restoring hermeticity in the 11 affected tests (=unsetenv= before
+  each "no overrides given" assertion) preserves #1819's intended
+  production behaviour rather than papering over it.
+
+* Out of scope
+
+-

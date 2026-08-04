@@ -89,7 +89,7 @@ nats_options nats_configuration::read_options(const boost::program_options::vari
 
 void nats_configuration::register_shared_domain() {
     ores::utility::program_options::shared_domain_registry::register_domain(
-        "NATS", {"URL", "SUBJECT_PREFIX", "WIRE_FORMAT", "TLS_CA"});
+        "NATS", {"URL", "SUBJECT_PREFIX", "WIRE_FORMAT"});
 }
 
 }

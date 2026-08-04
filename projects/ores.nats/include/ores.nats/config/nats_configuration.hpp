@@ -60,16 +60,24 @@ public:
     /**
      * @brief Registers "NATS" as a shared config domain with
      * ores::utility::program_options::shared_domain_registry, covering
-     * unprefixed ORES_NATS_URL, ORES_NATS_SUBJECT_PREFIX,
-     * ORES_NATS_WIRE_FORMAT, and ORES_NATS_TLS_CA -- so those reach every
-     * application's environment_mapper_factory fallback tier. Deliberately
-     * excludes ORES_NATS_TLS_CERT/KEY (per-service file paths, not shared
-     * values) and every other ORES_NATS_* variable that is not a
-     * nats_configuration option (e.g. ORES_NATS_PORT, the server's own
-     * listen port -- matching it here would make parse_environment reject
-     * it as an unrecognised option for client applications). Idempotent;
-     * call once from each application's own config parser setup, before
-     * parsing options.
+     * unprefixed ORES_NATS_URL, ORES_NATS_SUBJECT_PREFIX, and
+     * ORES_NATS_WIRE_FORMAT -- so those reach every application's
+     * environment_mapper_factory fallback tier. Deliberately excludes
+     * ORES_NATS_TLS_CA/CERT/KEY: cert/key are genuinely per-service file
+     * paths that cannot be shared, and CA is kept grouped with them rather
+     * than resolved independently -- registering CA alone would make
+     * nats_options.tls_ca_cert non-empty via the shared fallback while
+     * cert/key stay unresolved for the 19 services with no per-app mirror,
+     * and client.cpp's mTLS gate throws at connect time if CA is set but
+     * cert/key are not. The whole TLS trio is deferred to the follow-on
+     * task that removes the CLI-arg threading these currently still rely
+     * on, once per-service cert/key env wiring is designed alongside it.
+     * Also deliberately excludes every other ORES_NATS_* variable that is
+     * not a nats_configuration option (e.g. ORES_NATS_PORT, the server's
+     * own listen port -- matching it here would make parse_environment
+     * reject it as an unrecognised option for client applications).
+     * Idempotent; call once from each application's own config parser
+     * setup, before parsing options.
      */
     static void register_shared_domain();
 };

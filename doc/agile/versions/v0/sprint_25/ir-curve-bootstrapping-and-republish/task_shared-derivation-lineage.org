@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch: feature/ir-curve-bootstrap-design
-#+pr: 1822
+#+branch: feature/shared-derivation-lineage
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -74,11 +74,11 @@ today, currently discarded once the pull-reply is sent) as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Implementing the design agreed in PR #1822 (merged, docs-only). |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add derivation_kind/derivation_config_id/derivation_config_version to market_series, the derivation_kinds refdata table, and the observation_lineage table. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance

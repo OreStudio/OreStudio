@@ -19,7 +19,7 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
@@ -51,13 +51,13 @@ on ores_dq_lei_relationships_artefact_tbl (dataset_id);
 create index if not exists dq_lei_relationships_artefact_tenant_idx
 on ores_dq_lei_relationships_artefact_tbl (tenant_id);
 
-create index if not exists dq_lei_relationships_artefact_start_node_id_idx
+create index if not exists dq_lei_relationships_artefact_relationship_start_node_node_id_idx
 on ores_dq_lei_relationships_artefact_tbl (relationship_start_node_node_id);
 
 create index if not exists dq_lei_relationships_artefact_relationship_end_node_node_id_idx
 on ores_dq_lei_relationships_artefact_tbl (relationship_end_node_node_id);
 
-create index if not exists dq_lei_relationships_artefact_rel_type_idx
+create index if not exists dq_lei_relationships_artefact_relationship_relationship_type_idx
 on ores_dq_lei_relationships_artefact_tbl (relationship_relationship_type);
 
 -- Function to insert lei_relationships into the artefact table

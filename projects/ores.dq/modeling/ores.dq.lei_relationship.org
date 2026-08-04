@@ -1,0 +1,242 @@
+:PROPERTIES:
+:ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.dq.lei_relationship
+#+description: Codegen entity model for the dq =lei_relationship= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: dq
+#+filetags: :model:entity:dq:
+#+brief: GLEIF LEI corporate hierarchy relationships from RR golden copy files
+#+entity_singular: lei_relationship
+#+entity_plural: lei_relationships
+#+entity_title: LEI Relationship
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+has_artefact_insert_fn: true
+#+created: 2026-08-04
+#+updated: 2026-08-04
+
+GLEIF LEI corporate hierarchy relationships from RR golden copy files
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: dq
+:END:
+
+* Columns
+
+** relationship_start_node_node_id
+:PROPERTIES:
+:type:      text
+:cpp_type:  std::string
+:primary_key: true
+:END:
+
+Legal Entity Identifier of the relationship's start node — the natural
+key for this entity.
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** relationship_start_node_node_id_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** relationship_end_node_node_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::string::alphanumeric(20))
+#+end_src
+
+** relationship_end_node_node_id_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** relationship_relationship_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** relationship_relationship_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** relationship_period_1_start_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** relationship_period_1_end_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_initial_registration_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_last_update_date
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** registration_registration_status
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** registration_validation_sources
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+* Artefact indexes
+
+** relationship_end_node_node_id
+:PROPERTIES:
+:columns: relationship_end_node_node_id
+:END:
+
+** relationship_relationship_type
+:PROPERTIES:
+:columns: relationship_relationship_type
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_dq_lei_relationships_tbl
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:tenant_read_scope: shared
+:entity_singular_short: relationship
+:entity_plural_short:   relationships
+:entity_singular_words: LEI relationship
+:entity_plural_words:   LEI relationships
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: lr
+:END:
+
+** Table display
+
+| column                              | header       |
+|--------------------------------------+--------------|
+| relationship_start_node_node_id      | Start Node   |
+| relationship_end_node_node_id        | End Node     |
+| relationship_relationship_type       | Type         |
+| modified_by                          | Modified By  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

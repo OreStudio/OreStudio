@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: C4D47809-FC4F-4D89-BB15-B0A88C3FCACB
+:ID: 4DDA81C4-4306-4022-A022-75A3A23BE4A0
 :END:
-#+title: Task: Bind ores.dq (C++) entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the dq-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point (from the superseded ad hoc task): set service_find_by_uuid and service_find_by_code on dataset_bundle; fix a HexPrefix model typo.
+#+title: Task: Bind ores.iam entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for ores.iam's org-mode entity set (the iam and iam-cpp catalogue entries share the same modeling_dir, projects/ores.iam/modeling -- one survey, not two), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. Known starting point (from the superseded ad hoc task): set service_find_prefix on tenant_type and tenant_status.
 #+type: task
 #+level: s1
-#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-iam:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Same method as the pilot task: survey every ores.dq entity under the dq-cpp catalogue entry against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+Survey every ores.iam entity (projects/ores.iam/modeling) against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] |
+| Parent story | [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,11 +35,11 @@ Same method as the pilot task: survey every ores.dq entity under the dq-cpp cata
 
 * Acceptance
 
-- Every entity discovered via the dq-cpp catalogue entry (projects/ores.dq/modeling, domain_entity glob) is surveyed against all Variability Profiles.
+- Every entity discovered under projects/ores.iam/modeling is surveyed against all Variability Profiles.
 - Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
-- The known dataset_bundle service_find_by_uuid/service_find_by_code gap and the HexPrefix model typo are resolved as part of reaching zero drift.
 - No-match entities are recorded with their actual feature values, not silently dropped.
-- Full local build and ctest green after regeneration.
+- The tenant_type has_tenant_id model/table drift is resolved as part of this survey, not carried forward as a separate open item.
+- The known service_find_prefix gap on tenant_type and tenant_status is resolved as part of reaching zero drift.
 
 * Plan
 

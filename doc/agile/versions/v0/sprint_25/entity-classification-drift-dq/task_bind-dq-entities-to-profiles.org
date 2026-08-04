@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 163AC07E-19E4-4486-A503-8170D9B46108
 :END:
-#+title: Task: Bind ores.dq (SQL) entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the dq catalogue entry (SQL-side model discovery), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly.
+#+title: Task: Bind ores.dq entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for ores.dq's org-mode entity set (the dq and dq-cpp catalogue entries share the same modeling_dir, projects/ores.dq/modeling -- one survey, not two), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Same method as the pilot task (Bind ores.refdata entities to profiles): survey every ores.dq entity under the dq catalogue entry against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+Same method as the pilot task (Bind ores.refdata entities to profiles): survey every ores.dq entity (projects/ores.dq/modeling) against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
 
 * Status
 
@@ -35,10 +35,11 @@ Same method as the pilot task (Bind ores.refdata entities to profiles): survey e
 
 * Acceptance
 
-- Every entity discovered via the dq catalogue entry (projects/ores.dq/modeling, entity/table glob) is surveyed against all Variability Profiles.
+- Every entity discovered under projects/ores.dq/modeling is surveyed against all Variability Profiles.
 - Every matching entity is rebound (profile property set, explicit per-entity properties the profile covers removed) and regenerated with zero additional diff versus its pre-rebind checked-in output.
 - No-match entities are recorded with their actual feature values, not silently dropped.
 - Any pre-existing drift the regen+diff surfaces (template bug, stale checked-in output) is fixed, not worked around.
+- The known dataset_bundle service_find_by_uuid/service_find_by_code gap and the HexPrefix model typo (carried over from the superseded ad hoc task) are resolved as part of reaching zero drift.
 
 * Plan
 

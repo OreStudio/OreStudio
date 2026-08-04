@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 4462CA92-57B4-43EA-A01A-8D50A616F05F
+:ID: 62B120E9-AE25-4786-B90B-1BDE8A4ACC34
 :END:
-#+title: Task: Bind ores.trading (C++) entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the trading-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point (from the superseded ad hoc task): add service_pagination/service_batch_get template flags, set per-model flags on 21 instrument and lookup entities, restore documented exclusions trade_service and fra_instrument_service.
+#+title: Task: Bind ores.trading entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for ores.trading's org-mode entity set (the trade and trading-cpp catalogue entries share the same modeling_dir, projects/ores.trading/modeling -- one survey, not two), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-trading:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Survey every ores.trading entity under the trading-cpp catalogue entry against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+Survey every ores.trading entity (projects/ores.trading/modeling) against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
 
 * Status
 
@@ -35,11 +35,11 @@ Survey every ores.trading entity under the trading-cpp catalogue entry against t
 
 * Acceptance
 
-- Every entity discovered via the trading-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every entity discovered under projects/ores.trading/modeling is surveyed against all Variability Profiles.
 - Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- No-match entities are recorded with their actual feature values, not silently dropped.
 - The known service_pagination/service_batch_get and per-model flag gaps on the 21 instrument/lookup entities are resolved as part of reaching zero drift.
 - The documented trade_service and fra_instrument_service exclusions are restored correctly, verified rather than assumed.
-- No-match entities are recorded with their actual feature values, not silently dropped.
 - Full local build and ctest green after regeneration.
 
 * Plan

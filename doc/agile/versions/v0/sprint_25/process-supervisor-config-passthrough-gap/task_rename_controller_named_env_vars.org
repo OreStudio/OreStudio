@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 4D0BFCD4-2AC9-4A61-A484-141113419131
+:END:
+#+title: Task: Rename still-functionally-used ORES_CONTROLLER_SERVICE_* env vars
+#+description: ORES_CONTROLLER_SERVICE_WT_PORT and ORES_CONTROLLER_SERVICE_HTTP_PORT are still genuinely read by systemd_generate.py's {wt_port}/{http_port} substitution for ores.wt.service/ores.http.server, despite the controller process itself no longer existing -- the names are pure legacy mislabeling now that decommissioning (prior task) has removed everything else controller-related. Rename them to something that describes what they actually are (e.g. ORES_WT_SERVICE_PORT, reusing the existing ORES_HTTP_PORT for the HTTP one if it is already redundant -- check env_init.py for both) in env_init.py's generated .env, bump the .env-format version per the existing convention, and update systemd_generate.py's substitution to match.
+#+type: task
+#+level: s1
+#+filetags: :compass:environment:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No ORES_CONTROLLER_SERVICE_* environment variable exists anywhere once the controller process itself has been fully decommissioned.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- env_init.py no longer emits ORES_CONTROLLER_SERVICE_*; .env-format version bumped with a log entry per the existing convention; systemd_generate.py's {wt_port}/{http_port} substitution updated to the new variable names; compass env configure regenerates .env cleanly; ores.wt.service and ores.http.server still bind to the correct ports after regenerating and restarting.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

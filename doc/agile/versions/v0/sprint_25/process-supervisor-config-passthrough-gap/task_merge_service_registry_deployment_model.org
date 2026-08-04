@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 79F3E3F0-1F11-4A1D-AFB0-8CF9DD6C9972
+:END:
+#+title: Task: Merge service deployment config into service_registry.org as a new aspect
+#+description: service_registry.org currently models only DB-access aspects per service (psql_var, env_key, iam_role, DML/select/execute grant prefixes), keyed by short names (iam, refdata, ...). Extend it in place to also carry a deployment aspect per service (replicas, enabled, description, depends_on, and an optional Extra args list of genuinely per-service CLI flags), one heading per fleet process the systemd generator needs to know about. Rename headings to full binary names (ores.iam.service, not iam) since that is the join key compass systemd generate actually needs (TLS cert/key filenames, unit basenames). Add the 4 processes that have no DB role (ores.http.server, ores.wt.service, ores.wt.service, ores.compute.wrapper) as deployment-only entries (no psql_var/iam_role/etc.), and drop the stale controller entry (no binary exists for it anymore). Extend org_loader.py's load_org_service_registry_model to parse and return the new deployment fields alongside the existing DB-grant fields. This is a pure model+parser change -- no consumer (systemd_generate.py, the SQL grant generator) is touched in this task, so it is safely reviewable in isolation as long as both aspects round-trip correctly.
+#+type: task
+#+level: s1
+#+filetags: :codegen:modeling:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One org file models each service's full identity (DB access + how to launch it) as separate optional aspects on the same entity, instead of two separately-keyed files describing overlapping sets of the same services.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- service_registry.org has one heading per fleet process (all 20), keyed by full binary name; DB-grant aspect fields are present only for the ~16 services with their own NATS-domain-service DB role; deployment aspect fields (replicas/enabled/description/depends_on/extra args) are present for all 20; the stale controller entry is removed; load_org_service_registry_model returns both aspects correctly (unit-tested or verified via a scratch script); no consumer code changed in this task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

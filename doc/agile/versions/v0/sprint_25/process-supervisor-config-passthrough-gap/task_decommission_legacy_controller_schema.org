@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 26ABA6BB-85F6-4AE8-8592-A1292FEDBB3D
+:END:
+#+title: Task: Decommission the legacy controller SQL schema
+#+description: Once systemd_generate.py no longer reads ores_controller_service_definitions_tbl/ores_controller_service_dependencies_tbl, delete the entire legacy controller schema: the 5 tables (service_definitions, service_dependencies, service_instances, service_events, rls_policies) and their create/drop/populate SQL files under projects/ores.sql/{create,drop,populate}/controller/, the controller_service IAM role/grants in the (now-merged) service registry model and iam_service_db_grants_create.sql, any controller RLS policy wiring in rls_create.sql/rls_drop.sql, and their includes from create.sql/drop.sql. Also check foundation_populate.sql for any controller-specific seeding. This is a from-scratch decommission with no backwards-compat shims: the controller binary/process_supervisor.cpp is already gone from the codebase, so nothing should reference it anymore.
+#+type: task
+#+level: s1
+#+filetags: :sql:tech-debt:decommission:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No trace of the decommissioned controller process/architecture remains in the DB schema or SQL codebase.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- grep for 'controller' across projects/ores.sql turns up nothing service-controller-related (Qt MVC controller classes elsewhere in the repo are unrelated and untouched); compass db recreate succeeds cleanly with the controller schema gone; every remaining service still starts and connects correctly end to end.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

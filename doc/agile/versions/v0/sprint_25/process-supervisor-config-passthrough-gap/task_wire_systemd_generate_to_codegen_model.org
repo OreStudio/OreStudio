@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: ED259270-CEAF-4456-A6C9-8974E9E5B8B2
+:END:
+#+title: Task: Wire systemd generate to the codegen model and strip redundant NATS CLI threading
+#+description: Once service_registry.org carries the deployment aspect, migrate systemd_generate.py's fetch_service_definitions/fetch_dependencies from live psql queries against ores_controller_service_definitions_tbl/ores_controller_service_dependencies_tbl to loading the org model directly (import codegen.org_loader, no DB round-trip). Then strip the now-redundant --nats-url/--nats-subject-prefix/--nats-wire-format CLI threading from DEFAULT_ARGS_TEMPLATE and every service's Extra args (services already read these from .env via the shared-domain fallback tier from the mapper fallback-tier task) -- this was task 3's original goal. Also strip compass shell's flag_for CLI threading for the same three flags (shell's own parser already reads its ORES_SHELL_NATS_* mirror directly). Keep the whole nats-tls-* trio CLI-supplied, out of scope per the mapper task's Decisions.
+#+type: task
+#+level: s1
+#+filetags: :codegen:compass:systemd:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass systemd generate has zero DB dependency and every service picks up its NATS URL/prefix/wire-format from .env alone, collapsing the last of the five original argv-threading layers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- systemd_generate.py no longer queries postgres; compass systemd generate works against the org model alone; regenerated units for all 20 services no longer pass --nats-url/--nats-subject-prefix/--nats-wire-format; compass shell no longer passes them either; every service (systemd-launched domain services, compass shell) still starts and connects to NATS correctly; ores.qt client launch is confirmed to already pass none of these (no change needed there).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

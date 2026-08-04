@@ -560,8 +560,17 @@ public:
                 // ticking.
                 const auto feeds_label = office.code + ".synthetic_feeds";
                 add_step(feeds_label, "starting", 0);
-                start_synthetic_theme_feeds(client, "synthetic.themes.realistic_2026");
-                add_step(feeds_label, "completed");
+                if (start_synthetic_theme_feeds(client, "synthetic.themes.realistic_2026")) {
+                    add_step(feeds_label, "completed");
+                } else {
+                    // Best-effort by design (see start_synthetic_theme_feeds's own
+                    // "warn" logging) -- surfaced here too, matching the
+                    // office.code + ".skipped"/".failed" convention used
+                    // elsewhere in this loop, so a resolution miss is visible
+                    // in provision_acme_tenant_response.steps, not just the
+                    // service log.
+                    add_step(feeds_label + ".failed", "see service log for details", 0);
+                }
             }
 
             // Step 7: cross-entity access for the "follow the sun" global-
@@ -674,10 +683,14 @@ private:
     // flow uses (PR #1741), resolved server-side from
     // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
     // convention rather than by matching on display name. Best-effort:
-    // logs and returns on any resolution miss (dataset/config/folder not
-    // found) rather than failing provisioning over a cosmetic follow-on
-    // step -- the party itself is already fully provisioned by this point.
-    static void start_synthetic_theme_feeds(internal_request_client& client,
+    // logs and returns false on any resolution miss (dataset/config/folder
+    // not found, or a list request itself failing server-side) rather than
+    // failing provisioning over a cosmetic follow-on step -- the party
+    // itself is already fully provisioned by this point. Returns whether
+    // resolution succeeded far enough to attempt starting feeds, so the
+    // caller can surface a miss in its own step list rather than reporting
+    // "completed" for a no-op.
+    static bool start_synthetic_theme_feeds(internal_request_client& client,
                                             const std::string& dataset_code) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
@@ -693,7 +706,7 @@ private:
         if (!dataset_id) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
                 << "start_synthetic_theme_feeds: dataset not found: " << dataset_code;
-            return;
+            return false;
         }
 
         std::optional<boost::uuids::uuid> config_id;
@@ -701,6 +714,13 @@ private:
             synthetic::messaging::get_market_data_generation_configs_request req;
             req.limit = 1000;
             auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list market_data_generation_configs "
+                       "failed: "
+                    << resp.message;
+                return false;
+            }
             for (auto& c : resp.market_data_generation_configs)
                 if (c.dataset_id == dataset_id) {
                     config_id = c.id;
@@ -711,7 +731,7 @@ private:
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
                 << "start_synthetic_theme_feeds: no market_data_generation_config for dataset "
                 << dataset_code;
-            return;
+            return false;
         }
 
         std::optional<boost::uuids::uuid> folder_id;
@@ -719,6 +739,11 @@ private:
             synthetic::messaging::get_folders_request req;
             req.limit = 1000;
             auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list folders failed: " << resp.message;
+                return false;
+            }
             for (auto& f : resp.folders)
                 if (f.kind == "collection" && f.collection_id == config_id) {
                     folder_id = f.id;
@@ -729,18 +754,22 @@ private:
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
                 << "start_synthetic_theme_feeds: no collection folder for dataset "
                 << dataset_code;
-            return;
+            return false;
         }
         const auto folder_id_str = boost::uuids::to_string(*folder_id);
+
+        bool ok = true;
 
         // FX: one folder-scoped request covers the whole subtree server-side.
         {
             marketdata::messaging::start_feeds_under_folder_request req;
             req.folder_id = folder_id_str;
             auto resp = client.request(req);
-            if (!resp.success)
+            if (!resp.success) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
                     << "start_synthetic_theme_feeds: start FX folder failed: " << resp.message;
+                ok = false;
+            }
         }
 
         // IR: the folder-scoped request only resolves fx_spot_generation_config
@@ -754,6 +783,12 @@ private:
             synthetic::messaging::get_folder_hierarchy_request req;
             req.root_id = folder_id_str;
             auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: folder hierarchy lookup failed: "
+                    << resp.message;
+                ok = false;
+            }
             std::function<void(const ores::utility::domain::hierarchy_node&)> collect =
                 [&](const ores::utility::domain::hierarchy_node& n) {
                     subtree_folder_ids.insert(boost::uuids::to_string(n.id));
@@ -767,6 +802,12 @@ private:
             synthetic::messaging::get_ir_curve_generation_configs_request req;
             req.limit = 1000;
             auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "start_synthetic_theme_feeds: list ir_curve_generation_configs failed: "
+                    << resp.message;
+                ok = false;
+            }
             for (auto& ir : resp.ir_curve_generation_configs) {
                 if (!ir.auto_start || !ir.folder_id)
                     continue;
@@ -775,12 +816,15 @@ private:
                 synthetic::messaging::start_ir_curve_feed_request start_req;
                 start_req.config_id = boost::uuids::to_string(ir.id);
                 auto start_resp = client.request(start_req);
-                if (!start_resp.success)
+                if (!start_resp.success) {
                     BOOST_LOG_SEV(tenant_handler_lg(), warn)
                         << "start_synthetic_theme_feeds: start IR curve " << ir.source_name
                         << " failed: " << start_resp.message;
+                    ok = false;
+                }
             }
         }
+        return ok;
     }
 
     // Copies the system-tenant "key" template image into p_tenant_id (if not

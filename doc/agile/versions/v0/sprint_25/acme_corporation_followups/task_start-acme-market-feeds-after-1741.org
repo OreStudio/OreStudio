@@ -106,7 +106,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | List-response `success`/`message` fields (get_market_data_generation_configs, get_folders, get_folder_hierarchy) never checked, so a genuine query failure is indistinguishable from a legitimate not-found | tenant_handler.hpp | Fixed | Each list request now checks `resp.success` and logs `resp.message` on failure, matching the pattern already used for the start requests. |
+| 2 | `<office>.synthetic_feeds` step always reports "completed" regardless of whether start_synthetic_theme_feeds() actually started anything (resolution miss only logged, never surfaced to the caller) | tenant_handler.hpp | Fixed | start_synthetic_theme_feeds() now returns bool; caller adds `<office>.synthetic_feeds.failed` instead of `.completed` on a miss, matching the `.skipped`/`.failed` convention used elsewhere in this handler. |
 
 * Result
 

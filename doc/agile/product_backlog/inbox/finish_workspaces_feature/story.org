@@ -8,7 +8,7 @@
 #+filetags: :workspace:codegen:qt:product_backlog:inbox:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -85,11 +85,11 @@ workspace activation in the Qt client.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Not yet started.                       |
+| Now           | Audit complete; two follow-up tasks filed. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Pick up the inheritance-query fix (higher priority) or the coverage backfill. |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance
@@ -117,7 +117,9 @@ workspace activation in the Qt client.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | BACKLOG | | | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
+| [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | DONE | 2026-08-04 | 2026-08-04 | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
+| [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | BACKLOG | | | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
+| [[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][Backfill workspace_id coverage: book, portfolio, and decide on trading instrument sub-types]] | BACKLOG | | | book and portfolio have codegen models but never got has_workspace_id added despite their SQL tables carrying the column -- backfill the model flag and regenerate. Separately decide whether the ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) get codegen models at all, or stay hand-crafted -- this is a pre-existing not-yet-under-codegen gap, not workspace-specific, but their workspace_id handling is currently unverified either way. |
 
 * Decisions
 
@@ -138,13 +140,28 @@ workspace activation in the Qt client.
   - [[id:C02D4D5F-F743-4390-A753-E10C47F5D0B4][Commission ores.qt.workspace into codegen]] (own inbox story) --
     inventory ores.qt.workspace entities, run full-stack codegen,
     migrate history dialogs to the generic HistoryDialog.
-- The audit task's finding on "common hand-crafted code reused by
-  codegen" should follow the same pattern as pagination/page support:
-  a template flag (e.g. an eventual =has_workspace_id= widget flag,
-  distinct from the existing has_workspace_id SQL/domain flag) that
-  generates the Qt-side workspace-scoping boilerplate automatically,
-  the same way pagination is generated today, rather than every entity
-  hand-wiring it.
+- *Audit complete* (see the audit task's =* Result=/=* Notes= for full
+  detail). Corrects the initial hypothesis above: there is *no* missing
+  Qt-side codegen flag to build, unlike pagination -- workspace scoping
+  is already generic and shared at the network layer
+  (=WorkspaceContext=/=EntityController=/=ClientManager= injecting
+  =X-Workspace-Id= on every request), so every Qt widget is
+  workspace-aware for free regardless of whether its entity is
+  hand-crafted or generated. The real, per-entity gap is entirely in
+  the *service/repository query layer*:
+  - Of 46 tables carrying =workspace_id=, only 21 have codegen
+    coverage (13 raw flag + 8 via the =workspace-scoped-lookup=
+    profile); 25 don't, including =book=/=portfolio= (models exist,
+    flag was simply never added) and ~20 hand-crafted trading
+    instrument sub-types with no model at all.
+  - *Biggest finding*: the =has_workspace_id= repository template
+    generates an exact-match predicate, not the resolution-order
+    inheritance query the architecture doc describes as the target
+    design -- so single-parent inheritance, the headline feature of
+    the whole concept, does not function for any entity today.
+  - Two follow-up tasks filed to close these: fixing the inheritance
+    query (affects all 21 covered entities equally, likely the higher-
+    priority one), and backfilling the 25-table coverage gap.
 
 * Out of scope
 

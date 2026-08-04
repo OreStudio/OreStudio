@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/ir-curve-bootstrap-design
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -8,7 +8,7 @@
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
 #+branch: feature/define-holding-company-treasury-data-model
-#+pr:
+#+pr: 1840
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -155,7 +155,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1840][#1840]] | [agile] Define holding company treasury data model |
 
 * Review
 

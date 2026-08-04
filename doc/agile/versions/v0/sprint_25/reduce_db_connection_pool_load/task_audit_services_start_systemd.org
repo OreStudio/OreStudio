@@ -8,7 +8,7 @@
 #+filetags: :systemd:ops:reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
 #+branch: feature/audit-services-start-systemd
-#+pr:
+#+pr: 1838
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1838][#1838]] | [compass] Fix nats-server unit readiness gate to stop fleet-start races |
 
 * Review
 

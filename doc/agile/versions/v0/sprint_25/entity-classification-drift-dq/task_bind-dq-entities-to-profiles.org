@@ -151,11 +151,22 @@ plan itself stays — it is the historical record of what we did.)
   single-line) or any other domain_entity. Tangle round-trip re-verified.
   Regenerated artefact table byte-identical to checked-in bar the
   template-name comment. Idempotent.
-- Remaining lookup_entity migration for this task: synthetic_fx_spot_config
-  (=has_artefact_insert_fn: false=, closer to =report_definition='s
-  pattern). Then the 18-entity profile-binding survey itself (this task's
-  original acceptance) still needs doing across all of dq's entities,
-  migrated or not.
+- =synthetic_fx_spot_config= migrated -- last of the 4. Boolean/double
+  precision column types and an auto-quoted text default (=price_source=
+  =vintage=) all rendered correctly through the domain_entity column
+  pipeline unchanged. Regenerated artefact table matched the checked-in
+  one bar the template-name comment and the header text: the checked-in
+  file's comment silently truncated the model's two-sentence body to its
+  first sentence -- same stale-checked-in-file drift class seen
+  throughout this task, not a template bug. Idempotent. Verified zero
+  effect on the other 3 migrated entities or any other domain_entity.
+- =grep -rl "ores.codegen.lookup_entity" projects/ores.dq/modeling/*.org=
+  now returns zero live models (only a stale prose mention in the
+  =publication_pipeline.org= knowledge doc, describing the now-retired
+  approach -- worth a follow-up doc fix, not blocking this task). All 4
+  of dq's lookup_entity models are migrated to domain_entity.
+- Next: the 18-entity profile-binding survey itself (this task's original
+  acceptance) across all of dq's entities, migrated or not.
 
 * Test Scenarios
 

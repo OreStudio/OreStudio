@@ -35,16 +35,33 @@ its own ad hoc provenance. Two parts:
   ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'= — extensible for future
   kinds without a schema migration.
 - A *per-observation* lineage side table,
-  =ores_marketdata_observation_lineage_tbl= (tenant_id, series_id,
-  observation_datetime, point_id [not null, ='''= sentinel for scalar
-  series, matching =market_observations='s own
-  =coalesce(point_id, '')= convention], derivation_config_id,
-  derivation_config_version, source_as_of, source_series_ids uuid[]),
-  written only alongside a derived observation — never a column on
-  =market_observations_tbl= itself, which is a TimescaleDB hypertable
-  explicitly documented as carrying no audit columns because tick-level
-  volumes make that impractical. A row's existence *is* the "derived"
-  marker; no nullable columns.
+  =ores_marketdata_observation_lineage_tbl= (tenant_id, party_id,
+  series_id, observation_datetime, point_id [not null, ='''= sentinel
+  for scalar series — a *stricter* rule than =market_observations=,
+  whose own =point_id= column is genuinely nullable and only reaches
+  ='''= via =coalesce(point_id, '')= inside index/trigger predicates,
+  not as a column-level convention; this new table chooses not to
+  carry that nullability forward], derivation_config_id,
+  derivation_config_version, source_as_of, source_series_ids uuid[],
+  valid_from, valid_to), written only alongside a derived observation
+  — never a column on =market_observations_tbl= itself, which is a
+  TimescaleDB hypertable explicitly documented as carrying no audit
+  columns because tick-level volumes make that impractical. A row's
+  existence *is* the "derived" marker; no nullable columns.
+  =party_id= is included in the key because =market_observations_tbl=
+  itself carries =party_id= as part of its own current-row uniqueness
+  index — omitting it here would leave the lineage table unable to
+  uniquely identify the observation it describes whenever a series
+  isn't 1:1 with a single party. =valid_from=/=valid_to= mirror
+  =market_observations='s own bitemporal treatment: a bootstrap or CRM
+  derivation can rerun and produce a new generation at the same
+  =(series_id, observation_datetime, point_id)= natural key (the
+  soft-update trigger closes the prior generation's =market_observations=
+  row rather than overwriting it), so the lineage row for each
+  generation must be equally versioned — otherwise a rerun would
+  either collide or silently overwrite the prior generation's
+  provenance, defeating "which config produced this" for any
+  generation but the latest.
 
 Deliberately generic, not curve-specific: this is what lets a future
 CRM change (persisting derived crosses — currently pull-only, out of
@@ -74,9 +91,12 @@ today, currently discarded once the pull-reply is sent) as
   ='IR_CURVE_BOOTSTRAP'=, ='CRM_DERIVATION'=, validated the same way
   =curve_roles= is (soft FK + validate function).
 - =ores_marketdata_observation_lineage_tbl= exists, is never written on
-  the raw-tick ingest hot path, and supports a query "for this series +
-  observation_datetime (+ point_id), which config/version/source
-  produced it" in one lookup.
+  the raw-tick ingest hot path, and supports a query "for this
+  tenant/party/series + observation_datetime (+ point_id), which
+  config/version/source produced it" in one lookup — including when
+  more than one generation exists at the same natural key (proven by a
+  test that reruns a derivation over the same tenor/point and asserts
+  both generations' lineage remain independently queryable).
 - No column added to =market_observations_tbl= itself.
 
 * Plan
@@ -108,6 +128,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | discount_curve_config_id self-reference has no cycle/chain protection (raised independently by all 4 review passes) | task_ir-curve-bootstrap-config.org | Accepted | Added strict two-tier check constraint (referenced config must itself be FUNDING) plus explicit self-reference guard, per Multi-Curve Construction's own stated no-chaining model |
+| 2 | observation_lineage key omits party_id and has no tie to a specific market_observations generation | task_shared-derivation-lineage.org | Accepted | Added party_id to the key and valid_from/valid_to bitemporal columns mirroring market_observations' own soft-update convention, so reruns don't collide or overwrite prior generations' lineage |
+| 3 | No task explicitly owns enforcing Funding-before-Projection ordering at run time | task_ir-curve-bootstrapping-engine.org | Accepted | Added an explicit ownership note and acceptance criterion; mechanism (dependency check/queue/DAG walk) left as an implementation decision for that task's Plan |
+| 4 | Pillar table's unique-active-row index not called out explicitly | task_ir-curve-bootstrap-config.org | Accepted | Added explicit acceptance criterion mirroring ir_curve_template_entries' (tenant_id, party_id, config_id, sequence_index) index |
+| 5 | point_id sentinel described as "matching" market_observations' convention, but that column is nullable there | task_shared-derivation-lineage.org | Accepted | Reworded to describe it as a stricter rule than market_observations, not a literal match |
 
 * Result

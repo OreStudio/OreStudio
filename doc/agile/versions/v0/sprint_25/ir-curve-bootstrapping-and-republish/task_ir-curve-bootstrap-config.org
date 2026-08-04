@@ -37,7 +37,15 @@ the generic value store).
   =ores_utility_nil_uuid_fn()= sentinel when =curve_family_role =
   'FUNDING'=, a required FK when ='PROJECTION'= — this is what encodes
   [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
-  dependency as data), =interpolation_method=, =day_count_convention=,
+  dependency as data. *Strict two-tier only*: the referenced config
+  must itself have =curve_family_role = 'FUNDING'=, enforced by check
+  constraint/trigger — Multi-Curve Construction is explicit that a
+  Projection Curve depends on the Funding Curve only, never on another
+  Projection Curve, and names basis-linked/cyclic Projection
+  dependencies as an out-of-scope modelling gap, not something this
+  design should silently permit by leaving the FK's target
+  unconstrained; also guarded against self-reference,
+  =discount_curve_config_id <> id=), =interpolation_method=, =day_count_convention=,
   =split_tenor_code= (a genuine tenor value, not a sentinel — for a
   single-segment method it equals the curve's own last pillar's
   =end_tenor_code=, matching the spirit of =ir_curve_template_entries='s
@@ -47,7 +55,9 @@ the generic value store).
   =sequence_index=, =start_tenor_code=/=end_tenor_code= (FK to
   =ores_refdata_tenors_tbl.code=), =curve_role_code= (FK to
   =ores_refdata_curve_roles_tbl.code= — DEPOSIT/FRA/SWAP). Same
-  one-parent-many-children shape as =ir_curve_template_entries=, but
+  one-parent-many-children shape as =ir_curve_template_entries=,
+  including its unique-active-row index on
+  =(tenant_id, party_id, bootstrap_config_id, sequence_index)= — but
   source-independent: it names a raw series + pillar list to bootstrap
   from, not a synthetic generation recipe.
 
@@ -77,11 +87,18 @@ will be stamped with.
   output series.
 - =discount_curve_config_id= is enforced (check constraint) to be
   nil-uuid iff =curve_family_role = 'FUNDING'=, and a valid FK to
-  another config's id iff ='PROJECTION'=.
+  another config's id iff ='PROJECTION'= — and, when set, that
+  referenced config's own =curve_family_role= must be ='FUNDING'=
+  (strict two-tier, no chaining) and must not equal the referencing
+  config's own id (no self-reference). Proven by a test attempting a
+  PROJECTION-to-PROJECTION chain and a self-referencing row, both
+  rejected.
 - Pillar rows validate =start_tenor_code=/=end_tenor_code= against
   =ores_refdata_tenors_tbl= and =curve_role_code= against
   =ores_refdata_curve_roles_tbl=, exactly as =ir_curve_template_entries=
-  already does for its own tenor/instrument_code references.
+  already does for its own tenor/instrument_code references, and carry
+  the same =(tenant_id, party_id, bootstrap_config_id, sequence_index)=
+  unique-active-row index =ir_curve_template_entries= has.
 - No new tenor or curve-role concepts invented — both are read-only
   references into the existing reference data.
 

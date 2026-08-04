@@ -41,6 +41,18 @@ bootstrap run reads its =discount_curve_config_id='s *already-published*
 output series to discount its own pillars, rather than bootstrapping in
 isolation (see [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]).
 
+*This task owns enforcing that order at run time* — the config schema
+(bootstrap-config task) only records the dependency; nothing else in
+this story's task breakdown schedules or checks it. Concretely: before
+running a =PROJECTION= config's bootstrap, this engine must confirm its
+=discount_curve_config_id='s output series already has a discount-factor
+generation covering the required as-of, and fail/defer cleanly (not
+silently bootstrap against stale or absent discount factors) if it
+doesn't. Whether that's a same-process dependency check, a small queue,
+or a DAG walk over =discount_curve_config_id= across all of a tenant's
+configs is an implementation decision for this task's =* Plan=, not
+decided up front here.
+
 The existing [[id:4F78BAA7-71A0-4433-AF1E-54180DB0669A][FOMC-dated OIS short end with flat-forward interpolation]]
 task is the concrete first interpolation-method instance this engine
 must support (flat-forward step short end, continuous long end, split
@@ -80,6 +92,10 @@ this engine reads.
   =discount_curve_config_id='s already-published discount factors
   rather than re-deriving them; a =FUNDING= config's bootstrap has no
   such dependency.
+- A =PROJECTION= bootstrap attempted before its discount curve's
+  required generation exists fails/defers cleanly rather than running
+  against stale or absent discount factors — this engine, not any
+  other task, owns that check.
 - Unit tests cover at least: a single-segment curve, a two-segment
   (FOMC-style) curve, and a Projection curve discounted off a
   previously-bootstrapped Funding curve.

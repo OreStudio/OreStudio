@@ -46,6 +46,7 @@ itself handles a rerun.
 :product:       ores
 :component:     marketdata
 :has_tenant_id: true
+:natural_keys_composite_name: party_series_obs_point
 :END:
 
 * Columns
@@ -187,6 +188,14 @@ std::string("[]")
 :PROPERTIES:
 :tablename: ores_marketdata_observation_lineages_tbl
 :END:
+
+The top-level =* Flags= drawer's =natural_keys_composite_name:
+party_series_obs_point= overrides the default auto-concatenated
+natural-key index name
+(=party_id_series_id_observation_datetime_point_id=, 62 characters
+before the =observation_lineages_=/=_uniq_idx= prefix/suffix), which
+exceeds PostgreSQL's 63-byte =NAMEDATALEN= identifier limit and would
+otherwise be silently truncated.
 
 ** Checks
 

@@ -75,7 +75,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     check ("qualifier" <> ''),
     check ("asset_class" <> ''),
     check ("series_subclass" <> ''),
-    check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn()))
+    check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0))
 );
 
 -- Composite natural key: unique combination for active records
@@ -103,6 +103,12 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate asset_class
+    NEW.asset_class := ores_refdata_validate_asset_class_fn(NEW.tenant_id, NEW.asset_class);
+
+    -- Validate derivation_kind
+    NEW.derivation_kind := ores_refdata_validate_derivation_kind_fn(NEW.tenant_id, NEW.derivation_kind);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

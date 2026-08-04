@@ -82,6 +82,9 @@ struct {{entity_singular}}_entity {
 {{#is_optional_timestamp}}
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> {{name}};
 {{/is_optional_timestamp}}
+{{#is_required_timestamp}}
+    std::string {{name}};
+{{/is_required_timestamp}}
 {{#is_nullable_string}}
     std::optional<std::string> {{name}};
 {{/is_nullable_string}}

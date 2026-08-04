@@ -228,14 +228,15 @@ The derivation config's version this series was produced under -- =0=
 | "qualifier" <> ''   |
 | "asset_class" <> '' |
 | "series_subclass" <> '' |
-| ("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn()) |
+| ("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0) |
 
+* Insert trigger
 ** Validations
 
-| column          | validation_function                        | nullable |
-|-----------------+--------------------------------------------+----------|
-| asset_class     | ores_refdata_validate_asset_class_fn       | false    |
-| derivation_kind | ores_refdata_validate_derivation_kind_fn   | false    |
+| column          | validation_function                        |
+|-----------------+---------------------------------------------|
+| asset_class     | ores_refdata_validate_asset_class_fn       |
+| derivation_kind | ores_refdata_validate_derivation_kind_fn   |
 
 * C++
 

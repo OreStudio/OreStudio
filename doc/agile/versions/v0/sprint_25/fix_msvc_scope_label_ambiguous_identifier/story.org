@@ -21,11 +21,11 @@ Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-08-05                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BCE63A39-4C66-4DE5-A845-C9B0B3BB12C4][Implement Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] | STARTED | 2026-08-05 | | Initial task for: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier |
+| [[id:BCE63A39-4C66-4DE5-A845-C9B0B3BB12C4][Implement Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] | DONE | 2026-08-05 | 2026-08-05 | Initial task for: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier |
 
 * Decisions
 

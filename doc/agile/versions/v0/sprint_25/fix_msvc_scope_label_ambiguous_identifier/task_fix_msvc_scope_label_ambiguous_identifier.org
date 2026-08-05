@@ -26,11 +26,11 @@ Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:07179FD0-044E-48B6-8526-D456EFA99443][Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -78,5 +78,19 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Task state should be DONE, fill in Result section before merging | task_fix_msvc_scope_label_ambiguous_identifier.org | Accepted | Will close task via agile-close-task after review round |
 | 2 | Rename 's' to more descriptive name (scopeValue), matching BindingModeLabel.hpp convention | ScopeLabel.hpp | Accepted | Renamed to scopeValue in 1d72787de |
+| 3 | Task state still STARTED/empty Result; close task and fill Result before merge | task_fix_msvc_scope_label_ambiguous_identifier.org | Accepted | Task closed, Result filled |
 
 * Result
+
+=ScopeLabel.hpp= patched: parameter renamed from =scope= to =scopeValue=
+to disambiguate from the =using ores::synthetic::domain::scope;=
+declaration. MSVC resolved =scope= in =switch (scope)= as the type
+rather than the variable, producing C2059/C2143/C2046 cascade errors.
+
+One file changed, 2 lines. No behavioural change — the function returns
+the same labels for =system=, =tenant=, =party=, and the fallback
+=Unknown= case. Clang and GCC accept both forms.
+
+Verified: Linux CI green (all 8 checks pass). Windows/MSVC verification
+is on the PR's CI — the fix resolves the specific MSVC name-resolution
+ambiguity this compiler is known to reject.

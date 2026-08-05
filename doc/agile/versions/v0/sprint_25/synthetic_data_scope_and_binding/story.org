@@ -112,7 +112,7 @@ No workspace changes are made in this story.
 |------+-------+-------+-----+-------------|
 | [[id:63F39350-B419-4863-A276-6EF29439F93B][Add scope (system/tenant/party) and binding_mode (bound/sandboxed) to market_data_generation_config]] | DONE | 2026-08-04 | 2026-08-04 | Extend the market_data_generation_config entity model with a scope enum and nullable tenant_id/party_id per level, plus a binding_mode enum (bound/sandboxed). Regenerate across all layers (domain, table I/O, generator, repository, Qt). Add activation-time validation rejecting a bound config that narrows an already-covered instrument at a wider scope. |
 | [[id:45AB05B7-45D4-4F94-8011-8F293B9C676B][Run sandboxed synthetic configs end-to-end under a distinct namespace]] | DONE | 2026-08-04 | 2026-08-05 | Wire ores.synthetic.service to generate and publish data for sandboxed configs under a namespace distinct from bound feeds, and prove the bound-feed resolution path used by real consumers never picks up sandboxed output. No consumer-side selection UI in this task. |
-| [[id:78B24A7B-8FBC-4B7C-AABB-5DF11E205F58][Consolidate ACME's UK/US/HK party configs into one tenant-level bound config]] | STARTED | 2026-08-05 | | Pick/merge one canonical config from ACME's three existing party-level synthetic configs, promote it to tenant scope with binding_mode=bound, and retire the other two party-level configs. Verify all three ACME parties then observe the same synthetic reality. |
+| [[id:78B24A7B-8FBC-4B7C-AABB-5DF11E205F58][Consolidate ACME's UK/US/HK party configs into one tenant-level bound config]] | DONE | 2026-08-05 | 2026-08-05 | Pick/merge one canonical config from ACME's three existing party-level synthetic configs, promote it to tenant scope with binding_mode=bound, and retire the other two party-level configs. Verify all three ACME parties then observe the same synthetic reality. |
 | [[id:601A7F49-E2A5-4DCB-992F-19665472E629][Filter Market Simulator tree by viewer scope (supersedes existing capture)]] | BACKLOG | | | Market Simulator currently shows every party's synthetic configs unfiltered to any viewer. Filter the tree to the viewer's own party's configs plus any tenant/system-level configs visible to them, using the new scope field. Supersedes capture 275824BB-0DCE-4EA4-964D-9C86B0498509 (Market Simulator: scope folders to current party, clarify feed-start UX) -- close/link that capture as superseded once this lands. |
 
 * Decisions
@@ -154,6 +154,39 @@ No workspace changes are made in this story.
   service. Worth remembering for any future new-subject work in this
   service: a new producer subject needs its own =ensure_stream=, not
   just a passing unit test.
+- The conflict-guard trigger from the first task was fixed to no longer
+  block two enabled bound configs at the *same* party -- an
+  established, legitimate, pre-existing pattern (multiple named
+  containers per party, e.g. "Basic"/"Realistic"), broken by the
+  original over-broad guard and only surfaced by actually
+  provisioning ACME rather than by unit/pgTAP tests alone.
+- The guard's remaining granularity is per-*tenant*, not per-*theme*:
+  promoting one container to tenant scope requires retiring *every*
+  other enabled bound party-scope container in that tenant, not just
+  duplicates of the same theme. Consolidating ACME meant retiring all
+  six pre-existing party-level containers (two themes x three
+  parties), not just the two directly-duplicated ones -- a real, known
+  consequence of the guard having no per-instrument visibility (see
+  the trigger's own comment). Live-testing against real ACME data is
+  what surfaced this; it would not have been obvious from the
+  original design discussion alone.
+- RLS read-widening (added for the container in the first task) had to
+  be extended one layer down to =fx_spot_generation_config= and
+  =gmm_component= -- promoting the container's scope alone does not
+  make its sub-configs visible to other parties; their own
+  =party_id=-based RLS needed the identical read-widen/write-stays-
+  strict treatment, joined through to the parent container's scope.
+- No new tooling/API was built to make consolidation itself repeatable
+  -- executed as documented, reproducible SQL against a live database,
+  going through the same versioned-insert path (and hence the same
+  conflict guard) the app's own writes use. Automating this into
+  provisioning, or exposing it as a "supersede and consolidate" action,
+  is future work.
+- Found and fixed four pre-existing bugs while getting ACME
+  provisioning to actually run (two schema-drift issues in
+  =ores.marketdata= unrelated to this story, one regression in this
+  story's own first task): each was small, contained, and directly
+  blocking, so fixed inline rather than deferred as separate captures.
 
 * Out of scope
 

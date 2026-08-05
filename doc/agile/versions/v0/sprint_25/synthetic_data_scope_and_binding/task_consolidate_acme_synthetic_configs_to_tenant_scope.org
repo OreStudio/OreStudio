@@ -20,31 +20,139 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Consolidate ACME's UK/US/HK party-level synthetic configs into one
+tenant-scoped bound config, so the three parties observe one shared
+synthetic reality instead of three independently-seeded copies -- the
+concrete case the parent story exists to fix.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
-- One tenant-scoped bound config exists for ACME; the three party-level configs are retired
-- Market Simulator confirms UK/US/HK parties see identical generated data for shared instruments
+- [X] One tenant-scoped bound config exists for ACME; the three party-level configs are retired
+- [X] Market Simulator confirms UK/US/HK parties see identical generated data for shared instruments (verified via direct RLS-scoped query per party; see Plan)
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Getting real ACME data to work with (four pre-existing bugs found and fixed)
+
+Provisioning ACME from scratch (=provision tenant --source acme=) is the
+only way to get realistic party-level synthetic configs to consolidate.
+It failed for every party, for reasons layered on top of each other --
+each fixed in turn, hand-authored SQL (no codegen marker on any of
+these files):
+
+1. =marketdata_publish_from_dq_create.sql= hardcoded the stale
+   asset_class literals ='fx'=/='rates'=, rejected by
+   =ores_refdata_validate_asset_class_fn= (now expects title-case:
+   =ForeignExchange=/=InterestRate=). Fixed the literals.
+2. The same function's =insert into market_series= never set
+   =derivation_kind=/=derivation_config_id=/=derivation_config_version=
+   -- added by the shared-derivation-lineage work (PR #1835), both
+   =not null= with no column default. Fixed by inserting the
+   =OBSERVED= sentinel triple the entity model documents.
+3. =synthetic_publish_from_dq_create.sql='s own
+   =insert into market_data_generation_config= never set the new
+   =scope=/=binding_mode= columns added by this story's first task --
+   a regression in that task, only surfaced by actually running
+   provisioning. Fixed: =scope='party', binding_mode='bound'= (matches
+   this function's existing per-party-publish semantics; consolidating
+   several parties onto one wider-scope container is this task's own
+   separate, explicit step, not something the publish path should do
+   implicitly).
+4. The conflict-guard trigger from the first task was *too coarse*:
+   it blocked two enabled bound configs at the *same* party, which is
+   an established, legitimate, pre-existing pattern (a party owns
+   several named containers, e.g. "Basic"/"Realistic" -- documented on
+   =party_id='s own doc comment). Confirmed by ACME provisioning
+   itself failing on its second theme ("ore_samples_2016") once the
+   first ("realistic_2026") activated. Fixed by dropping the
+   party-vs-party clause from the guard entirely -- it has no
+   visibility into per-container instrument overlap anyway (see the
+   trigger's updated comment), so it was only ever a blunt, incorrect
+   proxy. Added pgTAP Test 6 covering this.
+
+Filed nothing further as a capture -- all four are fixed directly in
+this branch, not deferred.
+
+** Consolidation itself
+
+With ACME provisioned cleanly, six party-level containers existed: two
+"themes" ("2026 Realistic", "2016 ORE Samples") x three parties, each
+with an *identical* set of ~13 currency-pair sub-configs and identical
+source-name conventions per theme (confirmed by direct query -- e.g.
+="synthetic.2026realistic.eurusd"= appears once per party, verbatim).
+
+The story's guard (at most one enabled bound config per
+wider-scope-vs-narrower-scope pair) turned out to apply per *tenant*,
+not per *theme*: promoting any one container to tenant scope while
+*any* other enabled bound party-scope container exists in that tenant
+is rejected, regardless of which theme it belongs to. So consolidating
+to "one tenant-scoped bound config for ACME" (as literally stated in
+the acceptance) meant retiring *all six* party-level containers, not
+just the two duplicate "2026 Realistic" ones -- a real, if narrower
+than initially expected, reading of "one config" that the guard's
+current (deliberately simple, container-level-only) design forces.
+"2016 ORE Samples" (a secondary/legacy dataset) is retired rather than
+also promoted; "2026 Realistic" -- the flagship, currently-referenced
+theme -- is the one kept.
+
+Executed via direct SQL, going through the same versioned-insert path
+the app's own repository "write" uses (same id, version 0 -- the
+insert trigger resolves the version bump and, critically, *is* the
+real conflict guard, so this exercises it for real rather than
+bypassing it):
+
+1. Picked UK's "2026 Realistic" container as canonical.
+2. Retired (new version, =enabled=false=) the other five: US/HK's
+   "2026 Realistic", and UK/US/HK's "2016 ORE Samples".
+3. Promoted UK's container: new version with =scope='tenant',
+   party_id=null=.
+
+** RLS needed the same USING/WITH-CHECK widening one layer down
+
+Promoting the *container* alone wasn't sufficient: its own RLS was
+already fixed by the first task, but =fx_spot_generation_config= and
+=gmm_component= carry their *own* =party_id=-based RLS, unaware of
+their parent container's scope. A US/HK-party session would still have
+been blocked from reading UK's now-canonical sub-config rows even
+though the container itself said "tenant-scoped". Fixed both policies
+with the same read-widen/write-stays-strict pattern as the container
+(join to the parent container -- one hop for
+=fx_spot_generation_config=, two hops through it for =gmm_component= --
+and allow the read when the container's scope is =tenant=/=system=).
+
+Verified live: connected as each of the three ACME parties in turn (via
+=SET ROLE= to the actual RLS-enforced =readonly_user=, plus the real
+GUCs =app.current_tenant_id=/=app.visible_party_ids= the application
+sets per-request) and confirmed all three see the *same* 13 sub-configs
+under the *same* container id -- the acceptance criterion, verified
+directly rather than through the Qt client (no fresh DB/Acme
+provisioning currently in place for a full Qt smoke pass; the RLS-level
+proof is the actual mechanism the Market Simulator's own queries run
+through, so it's a faithful stand-in).
 
 * Notes
+
+- No new shell/NATS command was built to make this consolidation
+  repeatable as a one-click operation -- it was executed as documented,
+  reproducible SQL (see Plan) against a live database. Automating this
+  into the provisioning script itself, or exposing it as a proper
+  "supersede and consolidate" API action, is natural future work but
+  out of scope here.
+- The conflict-guard's per-tenant (not per-theme) granularity is a
+  known, documented simplification from the parent story's Decisions
+  -- this task is the first real case where it forced consolidating
+  more than the two directly-duplicated containers.
 
 * Test Scenarios
 
@@ -68,5 +176,28 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
+
+* Result
+
+ACME's six party-level synthetic containers (2 themes x 3 parties) are
+consolidated to one tenant-scoped bound config (UK's "2026 Realistic",
+promoted; the other five retired). Verified live: all three parties'
+sessions see the identical 13 FX sub-configs under the same container
+id via direct RLS-scoped queries.
+
+Along the way, found and fixed four pre-existing bugs blocking ACME
+provisioning entirely (two unrelated schema-drift issues in
+=ores.marketdata=, one regression in this story's own first task, one
+over-broad conflict-guard bug also from this story's first task) --
+see Plan for detail. Fixed the conflict guard to no longer block
+same-party multi-container (a legitimate, pre-existing pattern), and
+extended the RLS read-widening from the first task down into
+=fx_spot_generation_config=/=gmm_component=, which needed the same
+treatment the container itself already had.
+
+=compass build= clean; =ores.synthetic.*=, =ores.marketdata.*=, and
+=ores.qt.tests= C++ suites pass; the pgTAP suite (now 6 cases) passes;
+full ACME provisioning runs clean end-to-end for the first time since
+this story's first task landed.
 
 * Result

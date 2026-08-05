@@ -83,12 +83,24 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- A sub-config's own party_id is irrelevant once its parent container is
+-- tenant/system-scoped -- the container's scope, not this row's party_id,
+-- is what makes generated data shared across a tenant's parties (see the
+-- "Synthetic data scope and binding" story). Read-side only, matching the
+-- container's own USING/WITH CHECK split: writes still require actual
+-- party membership (or an unrestricted session).
 create policy fx_spot_generation_configs_party_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
 as restrictive
 for all using (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or exists (
+        select 1 from ores_synthetic_market_data_generation_configs_tbl c
+        where c.id = config_id
+          and c.scope in ('tenant', 'system')
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
 )
 with check (
     ores_iam_visible_party_ids_fn() is null
@@ -109,12 +121,22 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Same widening as fx_spot_generation_configs above, one hop further:
+-- gmm_component -> fx_spot_generation_config -> market_data_generation_config.
 create policy gmm_components_party_isolation_policy
 on ores_synthetic_gmm_components_tbl
 as restrictive
 for all using (
     ores_iam_visible_party_ids_fn() is null
     or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or exists (
+        select 1 from ores_synthetic_fx_spot_generation_configs_tbl f
+        join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
+        where f.id = fx_spot_config_id
+          and c.scope in ('tenant', 'system')
+          and f.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+    )
 )
 with check (
     ores_iam_visible_party_ids_fn() is null

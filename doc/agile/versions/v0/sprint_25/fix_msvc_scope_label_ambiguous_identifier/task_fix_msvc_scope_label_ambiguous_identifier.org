@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: BCE63A39-4C66-4DE5-A845-C9B0B3BB12C4
+:END:
+#+title: Task: Implement Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier
+#+description: Initial task for: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier
+#+type: task
+#+level: s1
+#+filetags: :fix_msvc_scope_label_ambiguous_identifier:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-msvc-scope-label-ambiguous-identifier
+#+pr: 1870
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:07179FD0-044E-48B6-8526-D456EFA99443][Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so MSVC can compile it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:07179FD0-044E-48B6-8526-D456EFA99443][Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- Windows CI goes green on the ScopeLabel.hpp translation unit
+- Linux (Clang/GCC) build remains green
+- No behavioural change — the function returns the same labels as before
+
+* Plan
+
+Root cause: =ScopeLabel.hpp= declares =using ores::synthetic::domain::scope;=
+and the parameter is also named =scope=. MSVC resolves =scope= in
+=switch (scope)= as the type rather than the variable, producing
+C2059/C2143/C2046 cascade errors. Clang and GCC accept the construct
+without warning — it's a portability bug, not a logic bug.
+
+Fix: rename the parameter to =scopeValue=, disambiguating it from the
+=using=-declared type while keeping a descriptive name that matches the
+convention in the sibling file =BindingModeLabel.hpp= (which uses
+=bindingMode= for the same pattern). No callers are affected since
+parameter names are not part of the call convention.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1870][#1870]] | [ores.qt.synthetic] Fix MSVC build: disambiguate scope identifier in ScopeLabel.hpp |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Task state should be DONE, fill in Result section before merging | task_fix_msvc_scope_label_ambiguous_identifier.org | Accepted | Will close task via agile-close-task after review round |
+| 2 | Rename 's' to more descriptive name (scopeValue), matching BindingModeLabel.hpp convention | ScopeLabel.hpp | Accepted | Renamed to scopeValue in 1d72787de |
+| 3 | Task state still STARTED/empty Result; close task and fill Result before merge | task_fix_msvc_scope_label_ambiguous_identifier.org | Accepted | Task closed, Result filled |
+
+* Result
+
+=ScopeLabel.hpp= patched: parameter renamed from =scope= to =scopeValue=
+to disambiguate from the =using ores::synthetic::domain::scope;=
+declaration. MSVC resolved =scope= in =switch (scope)= as the type
+rather than the variable, producing C2059/C2143/C2046 cascade errors.
+
+One file changed, 2 lines. No behavioural change — the function returns
+the same labels for =system=, =tenant=, =party=, and the fallback
+=Unknown= case. Clang and GCC accept both forms.
+
+Verified: Linux CI green (all 8 checks pass). Windows/MSVC verification
+is on the PR's CI — the fix resolves the specific MSVC name-resolution
+ambiguity this compiler is known to reject.

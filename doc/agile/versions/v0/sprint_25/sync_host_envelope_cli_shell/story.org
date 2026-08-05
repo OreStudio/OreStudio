@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 6481A516-8BBB-4BFC-82A0-1F4A69438FD6
+:END:
+#+title: Story: Extract a sync sibling of run_host_async for ores.cli/ores.shell
+#+description: ores.cli and ores.shell's host.cpp bodies share ~70% structure with each other (parse/init-logging/log/try-construct-run/catch-diagnostic) despite being correctly excluded from the async run_host_async helper; a construction-callable-parameterised sync sibling could close that remaining gap.
+#+type: story
+#+level: s2
+#+filetags: :codegen:cpp:service-app:cli:shell:sprint_25:v0:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Extract a sync sibling of =run_host_async= that both =ores.cli= and
+=ores.shell='s =host.cpp= can use, closing the ~70% structural
+duplication between them (parse args -> check config -> init
+=lifecycle_manager= -> log args/config -> =try { construct; run; }
+catch { diagnostic_information dance }=) without forcing either tool
+onto the async daemon helper — per the investigation in
+[[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]],
+sync execution is load-bearing for both. The helper must be
+parameterised by an application-construction *callable* (neither
+tool's constructor is uniform with the other) plus an optional
+early-exit hook (for cli's DB-free =ore_roundtrip= branch).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.            |
+| Last touched  | 2026-08-05                               |
+
+* Acceptance
+
+- New sync sibling helper (parameterised by an application-construction callable and an optional early-exit hook) extracted, covering the shared parse/init-logging/log/try-construct-run/catch-diagnostic shape
+- =ores.cli='s =host::execute= rebuilt on the new helper, preserving its =output_stream_= reference-member constructor and its DB-free =ore_roundtrip= branch (via the early-exit hook)
+- =ores.shell='s =host::execute= rebuilt on the new helper, preserving its REPL semantics
+- No behavioural change to either tool; existing tests pass unchanged
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D3B698D1-2525-424A-B04B-D5B67B05A66C][Design and implement the sync host envelope helper for ores.cli/ores.shell]] | DONE | 2026-08-05 | 2026-08-05 | Extract a sync sibling of run_host_async, parameterised by an application-construction callable and an optional early-exit hook, and rebuild ores.cli/ores.shell's host.cpp on it. |
+
+* Decisions
+
+- Early-exit must run *before* the shared try/catch, not inside a
+  runner lambda wrapped by it — folding cli's roundtrip branch inside
+  the generic try/catch would double-log its errors (once via its own
+  catch, once via the generic "Error:"/"Failed to execute command."
+  pair), changing observable behaviour.
+- No attempt to unify application construction across the two tools;
+  the shared helper only owns the parse/init-logging/log/try-catch
+  envelope, with construction+run delegated entirely to a per-tool
+  callable.
+
+* Out of scope
+
+- Moving either tool onto the async =run_host_async= helper (rejected by the investigation: sync execution is load-bearing for both)
+- Any change to the daemon fleet's async envelope

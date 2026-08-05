@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: D3B698D1-2525-424A-B04B-D5B67B05A66C
+:END:
+#+title: Task: Design and implement the sync host envelope helper for ores.cli/ores.shell
+#+description: Extract a sync sibling of run_host_async, parameterised by an application-construction callable and an optional early-exit hook, and rebuild ores.cli/ores.shell's host.cpp on it.
+#+type: task
+#+level: s1
+#+filetags: :sync_host_envelope_cli_shell:sprint_25:v0:
+#+owner: marco
+#+branch: feature/design-implement-sync-host-envelope
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extract the shared parse/init-logging/log/try-construct-run/catch-diagnostic
+shape common to =ores.cli= and =ores.shell='s =host::execute= into a
+new sync sibling of =run_host_async=, parameterised by an
+application-construction callable (since neither tool's constructor
+is uniform with the other) and an optional early-exit hook (for
+cli's DB-free =ore_roundtrip= branch). Rebuild both tools' =host.cpp=
+on the new helper without changing observable behaviour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- New sync host envelope helper implemented, taking an application-construction callable and an optional early-exit hook
+- =ores.cli='s =host::execute= rebuilt on the helper; =output_stream_= constructor and =ore_roundtrip= branch preserved via the hook
+- =ores.shell='s =host::execute= rebuilt on the helper; REPL semantics unchanged
+- Existing tests for both tools pass unchanged; no behavioural change
+
+* Plan
+
+Added =ores.service='s =run_host_sync= (=host_runner_sync.hpp=/=_impl.hpp=),
+a template sibling of the existing async =run_host_async=, in the same
+component so both live next to each other:
+
+- Signature: =run_host_sync<Parser>(args, std_output, error_output, lg,
+  early_exit, run_application, opts)=. =early_exit= is a callable
+  =(const cfg&) -> std::optional<int>= run *before* the try/catch, so a
+  handled branch never goes through the generic failure-log path — this is
+  what keeps =ores.cli='s =ore_roundtrip= branch's own "Roundtrip error:"
+  logging isolated from the generic "Error:"/"Failed to execute command."
+  pair, preserving its current behaviour exactly. =run_application= is a
+  callable =(const cfg&) -> void= that owns application construction and
+  the run() call — deliberately *not* unified across the two tools, since
+  =ores.cli='s constructor takes an output stream + database options while
+  =ores.shell='s takes NATS/login/script options.
+- =ores.cli/app/host.cpp=: =early_exit= wraps the roundtrip branch verbatim
+  (same try/catch, same output formatting); =run_application= constructs
+  =application(std_output, cfg.database)= and calls =app.run(cfg)=.
+- =ores.shell/app/host.cpp=: =early_exit= is a no-op lambda returning
+  =std::nullopt=; =run_application= constructs
+  =application(cfg.connection, cfg.login, cfg.script_path)= and calls
+  =app.run()=.
+- Both tools now link =ores.service.lib= (previously unused by either);
+  wired via =target_link_libraries= in each =src/CMakeLists.txt=, and the
+  two new headers added to =ores.service='s =component_files.cmake=
+  (regenerated via =regenerate_cmake_component_files.py=, no drift
+  elsewhere).
+- Verified via full rebuild of =ores.cli.exe=/=ores.shell.exe=/
+  =*.tests= and running both test binaries against the local DB:
+  =ores.cli.tests= 382 assertions/119 cases passed, =ores.shell.tests= 80
+  assertions/26 cases passed — both unchanged from pre-refactor baselines,
+  confirming no behavioural change.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Extracted =ores::service::service::run_host_sync= (new
+=host_runner_sync.hpp=/=_impl.hpp= in =ores.service=), a sync sibling of
+=run_host_async=, parameterised by an application-construction callable and
+an optional early-exit hook. Rebuilt =ores.cli= and =ores.shell='s
+=host::execute= on it, closing the ~70% structural duplication between
+their =host.cpp= bodies identified in the parent investigation. No
+behavioural change: both tools' existing test suites pass unchanged
+(=ores.cli.tests= 382/119, =ores.shell.tests= 80/26), and =ores.cli='s
+DB-free =ore_roundtrip= branch keeps its own isolated error logging via
+the early-exit hook, exactly as before. All four acceptance criteria met.
+
+* Result

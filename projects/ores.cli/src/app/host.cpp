@@ -21,54 +21,28 @@
 #include "ores.cli/app/application.hpp"
 #include "ores.cli/config/parser.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.service/service/host_runner_sync.hpp"
 #include <boost/exception/diagnostic_information.hpp>
-#include <cstdlib>
-#include <iostream>
+#include <optional>
 #include <ostream>
 
 namespace ores::cli::app {
 
-using namespace ores::logging;
 using ores::cli::config::parser;
-using ores::telemetry::log::lifecycle_manager;
+using ores::service::service::run_host_sync;
 
 int host::execute(const std::vector<std::string>& args,
                   std::ostream& std_output,
                   std::ostream& error_output) {
-    /*
-     * Create the configuration from command line options.
-     */
-    parser p;
-    const auto ocfg(p.parse(args, std_output, error_output));
-
-    /*
-     * If we have no configuration, then there is nothing to do. This can only
-     * happen if the user requested some valid options such as help or version;
-     * any errors at the command line level are treated as exceptions, and all
-     * other cases must result in a configuration object.
-     */
-    if (!ocfg)
-        return EXIT_SUCCESS;
-
-    /*
-     * Since we have a configuration, we can now attempt to initialise the
-     * logging subsystem.
-     */
-    const auto& cfg(*ocfg);
-    lifecycle_manager lm(cfg.logging);
-
-    /*
-     * Log the configuration and command line arguments.
-     */
-    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+    using namespace ores::logging;
 
     /*
      * DB-free commands are intercepted here, before constructing application.
      */
-    if (cfg.ore_roundtrip.has_value()) {
+    const auto early_exit = [&std_output](const auto& cfg) -> std::optional<int> {
+        if (!cfg.ore_roundtrip.has_value())
+            return std::nullopt;
+
         try {
             const auto& opts = *cfg.ore_roundtrip;
             const auto s = ores::ore::xml::exporter::roundtrip(opts.input_dir, opts.output_dir);
@@ -97,30 +71,15 @@ int host::execute(const std::vector<std::string>& args,
             }
             throw;
         }
-    }
+    };
 
-    try {
+    const auto run_application = [&std_output](const auto& cfg) {
         ores::cli::app::application app(std_output, cfg.database);
         app.run(cfg);
-        return EXIT_SUCCESS;
-    } catch (const std::exception& e) {
-        /*
-         * Try to dump useful, but less user-friendly information by
-         * interrogating the exception. Note that we must catch by
-         * std::exception and cast the boost exception; if we were to catch
-         * boost exception, we would not have access to the what() method and
-         * thus could not provide the exception message to the console.
-         */
-        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be != nullptr) {
-            using boost::diagnostic_information;
-            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
-        }
-        BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
-        throw;
-    }
+    };
+
+    return run_host_sync<parser>(args, std_output, error_output, lg(), early_exit,
+        run_application);
 }
 
 }

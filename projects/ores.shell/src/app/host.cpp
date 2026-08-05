@@ -20,73 +20,26 @@
 #include "ores.shell/app/host.hpp"
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <boost/exception/diagnostic_information.hpp>
-#include <cstdlib>
+#include "ores.service/service/host_runner_sync.hpp"
+#include <optional>
 
 namespace ores::shell::app {
 
-using namespace ores::logging;
 using ores::shell::config::parser;
-using ores::telemetry::log::lifecycle_manager;
+using ores::service::service::run_host_sync;
 
 int host::execute(const std::vector<std::string>& args,
                   std::ostream& std_output,
                   std::ostream& error_output) {
-    /*
-     * Create the configuration from command line options.
-     */
-    parser p;
-    const auto ocfg(p.parse(args, std_output, error_output));
+    const auto early_exit = [](const auto&) -> std::optional<int> { return std::nullopt; };
 
-    /*
-     * If we have no configuration, then there is nothing to do. This can only
-     * happen if the user requested some valid options such as help or version;
-     * any errors at the command line level are treated as exceptions, and all
-     * other cases must result in a configuration object.
-     */
-    if (!ocfg)
-        return EXIT_SUCCESS;
-
-    /*
-     * Since we have a configuration, we can now attempt to initialise the
-     * logging subsystem.
-     */
-    const auto& cfg(*ocfg);
-    lifecycle_manager lm(cfg.logging);
-
-    /*
-     * Log the configuration and command line arguments.
-     */
-    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
-
-    /*
-     * Execute the application.
-     */
-    try {
+    const auto run_application = [](const auto& cfg) {
         ores::shell::app::application app(cfg.connection, cfg.login, cfg.script_path);
         app.run();
-        return EXIT_SUCCESS;
-    } catch (const std::exception& e) {
-        /*
-         * Try to dump useful, but less user-friendly information by
-         * interrogating the exception. Note that we must catch by
-         * std::exception and cast the boost exception; if we were to catch
-         * boost exception, we would not have access to the what() method and
-         * thus could not provide the exception message to the console.
-         */
-        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be != nullptr) {
-            using boost::diagnostic_information;
-            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
-        }
-        BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
-        throw;
-    }
+    };
+
+    return run_host_sync<parser>(args, std_output, error_output, lg(), early_exit,
+        run_application);
 }
 
 }

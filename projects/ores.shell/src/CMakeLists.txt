@@ -55,6 +55,7 @@ target_link_libraries(${lib_target_name}
         ores.workflow.api.lib
         ores.nats.lib
         ores.orgmode.lib
+        ores.service.lib
         cli::cli)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

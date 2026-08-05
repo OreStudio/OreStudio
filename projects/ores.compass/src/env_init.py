@@ -179,15 +179,31 @@ def _upper(component: str) -> str:
     return component.upper().replace("-", "_")
 
 
-def _service_names(registry: Path, excludes=("wt",)) -> list:
-    """Service names from the org-mode service registry: each service is a
-    top-level heading (=* <name>=); level-2 headings (DML/Select prefixes)
-    are ignored."""
+def _service_names(registry: Path) -> list:
+    """Component keys (used to derive ORES_<KEY>_SERVICE_DB_* env vars and
+    the matching ores_<label>_<key>_service postgres role) for every
+    service_registry entry that has the DB-access aspect (:psql_var:).
+
+    Routes through codegen.org_loader instead of independently regexing
+    heading text: service_registry.org's headings are now the full binary
+    name (e.g. ores.iam.service), not a bare component key, and some
+    entries (e.g. ores.http.server) are deployment-only with no DB role at
+    all -- both of those the old regex-based approach got wrong. psql_var
+    is always "<key>_service" (e.g. "iam_service"); stripping the suffix
+    recovers the short key this function has always returned."""
+    src = str(registry.parent.parent / "ores.codegen" / "src")
+    if src not in sys.path:
+        sys.path.insert(0, src)
+    from codegen.org_loader import load_org_service_registry_model  # noqa: PLC0415
+
+    model = load_org_service_registry_model(registry)
     names = []
-    for line in registry.read_text().splitlines():
-        m = re.match(r"^\* (\S+)\s*$", line)
-        if m and m.group(1) not in excludes:
-            names.append(m.group(1))
+    for svc in model["service_registry"]["services"]:
+        psql_var = svc.get("psql_var")
+        if not psql_var:
+            continue
+        suffix = "_service"
+        names.append(psql_var[: -len(suffix)] if psql_var.endswith(suffix) else psql_var)
     return names
 
 

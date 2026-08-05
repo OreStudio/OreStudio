@@ -335,6 +335,10 @@
 
 ** Extra args
 
+Bundled into one bullet (not one-flag-per-bullet like other entries):
+the leading =--= is Wt's own arg-separator token and must stay
+attached to the group that follows it as a single shell-quoted unit.
+
 - -- --http-address 0.0.0.0 --docroot . --http-port {wt_port}
 
 * ores.compute.wrapper

@@ -88,7 +88,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | env_init.py's _service_names() independently regexes raw org headings (bypassing org_loader.py entirely), so the heading rename to full binary names breaks it: dots survive its _upper(), producing invalid env-var/role names, and the 3 new DB-less entries spuriously get DB credentials generated | env_init.py | Accepted | Rewrote _service_names() to route through load_org_service_registry_model, filter on presence of psql_var, and derive the short component key by stripping the "_service" suffix from psql_var instead of parsing heading text |
+| 2 | The 4 SQL/shell mustache templates (sql_service_users_create, sql_service_accounts_populate, sql_service_account_roles_populate, sql_service_db_grants, shell_service_vars) unconditionally reference psql_var/env_key/email/name with no guard, so regenerating from the widened model would emit broken SQL (undefined psql vars, colliding identifiers) for the 3 DB-less entries, and shell_service_vars would emit full binary names instead of the short component keys downstream consumers expect | 5 org template sources + their tangled .mustache | Accepted | Added a service_registry_db_services filtered+freshly-last-marked list in core.py (avoids the dangling-comma risk of filtering after the 'last' marker is set) and a computed 'component' field (psql_var minus its _service suffix); switched all 5 templates to iterate the filtered list. Verified by regenerating into the actual checked-in files and diffing: only the stale controller entry disappears, byte-identical otherwise for all 16 real services -- confirmed via git diff, then reverted the regenerated artifacts themselves (not committed in this task) because doing so would have silently discarded an unrelated, legitimately hand-added grant for the Acme provisioner (PR #1758) that predates this task and that the templates have no construct to represent; regenerating+committing that file is out of scope here |
+| 3 | doc_service_registry.org.mustache (the scaffold for bootstrapping a new service-registry-shaped model) still only shows the old DB-access-only shape | ores.doc.modeling.service_registry.org | Accepted | Updated the scaffold's description and example entry to show both aspects (:replicas:/:enabled:/:depends_on:, Extra args) so a future author copying it doesn't get a stale shape |
+| 4 | Extra args bullet granularity is inconsistent (one flag per bullet vs. wt.service's single bundled bullet) with no explanation | service_registry.org | Accepted | Added a short prose note under wt.service's Extra args heading explaining the leading -- is Wt's own arg-separator token and must stay attached to the group as one shell-quoted unit |
 
 * Result
 
@@ -99,6 +102,22 @@ all 19). Headings renamed to full binary names, the stale controller
 entry dropped. load_org_service_registry_model extended to parse and
 return both aspects; verified via a scratch script and 9 new pytest
 cases (all pass), plus the full existing ores.codegen suite (117/117
-green) confirming no regression to DB-grant generation. No consumer
-code touched -- systemd_generate.py still queries postgres, migrating
-it is the next task in the chain.
+green) confirming no regression to DB-grant generation.
+
+Review caught that "no consumer touched" was too strong a claim: two
+consumers not named in the original description would have broken --
+env_init.py's independent regex-based heading parser (fixed to route
+through org_loader.py instead), and 5 SQL/shell mustache templates that
+unconditionally referenced fields the 3 new DB-less entries don't have
+(fixed with a filtered+re-marked service_registry_db_services list and
+a computed short 'component' field in core.py). Verified both fixes by
+regenerating the real downstream artifacts and diffing against what's
+committed -- confirmed byte-identical except for the stale controller
+entry disappearing -- then deliberately did not commit the regenerated
+artifacts themselves, since doing so would have silently discarded an
+unrelated, legitimately hand-added grant (PR #1758) the templates have
+no construct to represent; regenerating+committing that is out of scope
+here and belongs with whoever next touches that grant's own model gap.
+
+systemd_generate.py itself remains untouched and still queries postgres
+-- migrating it is the next task in the chain.

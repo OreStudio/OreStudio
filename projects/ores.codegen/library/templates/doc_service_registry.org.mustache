@@ -11,15 +11,22 @@
 
 (One paragraph: what services are catalogued here and how this file is consumed.)
 
-* example_service
+* ores.example.service
 :PROPERTIES:
 :psql_var:    example_service
 :env_key:     EXAMPLE_SERVICE
 :iam_role:    ExampleService
 :description: Example Service
 :email:       example_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_example_
+
+** Extra args
+
+- --example-flag value

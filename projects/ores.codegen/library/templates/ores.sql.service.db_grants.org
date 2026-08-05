@@ -104,26 +104,21 @@ end $$;
 -- ---------------------------------------------------------------------------
 grant usage, select on all sequences in schema public
     to
-{{#service_registry}}
-{{#services}}
+{{#service_registry_db_services}}
     :{{psql_var}}_user{{^last}},{{/last}}{{#last}};{{/last}}
-{{/services}}
-{{/service_registry}}
+{{/service_registry_db_services}}
 
 alter default privileges in schema public
     grant usage, select on sequences
     to
-{{#service_registry}}
-{{#services}}
+{{#service_registry_db_services}}
     :{{psql_var}}_user{{^last}},{{/last}}{{#last}};{{/last}}
-{{/services}}
-{{/service_registry}}
+{{/service_registry_db_services}}
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
 -- ---------------------------------------------------------------------------
-{{#service_registry}}
-{{#services}}
+{{#service_registry_db_services}}
 -- ---------------------------------------------------------------------------
 -- {{psql_var}}: {{description}} domain service
 -- ---------------------------------------------------------------------------
@@ -140,8 +135,7 @@ select _ores_grant_select_fn('{{prefix}}', :'{{psql_var}}_user');
 select _ores_grant_execute_fn('{{prefix}}', :'{{psql_var}}_user');
 {{/execute_prefixes}}
 
-{{/services}}
-{{/service_registry}}
+{{/service_registry_db_services}}
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions
 -- ---------------------------------------------------------------------------

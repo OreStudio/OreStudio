@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/prune-merged-branches
+#+pr: 1866
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Give developers a single compass command to safely prune git branches that have 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -44,9 +44,29 @@ Give developers a single compass command to safely prune git branches that have 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added a new self-contained =compass branches= command
+(=src/compass_branches.py=, dispatched from =compass.py= alongside
+the other lazily-imported command modules like =compass_services=):
+
+- =compass branches= / =compass branches report= — read-only report.
+  =git fetch --prune origin=, then classify every local
+  (=git for-each-ref refs/heads=) and remote
+  (=git for-each-ref refs/remotes/origin=, stripping =origin/= and
+  skipping the =origin/HEAD= symref) branch against
+  =git branch --merged origin/main= / =git branch -r --merged
+  origin/main=, and against the live fleet (=git worktree list
+  --porcelain=, same source =compass fleet= uses). Buckets: safe to
+  delete, or kept with a reason (=current=, =main=,
+  =fleet:<worktree>=, =unmerged=).
+- =compass branches prune [-y]= — dry-run by default (prints what
+  would be deleted); with =-y=, deletes the safe set local
+  (=git branch -d=, not =-D=, so unmerged-commit branches are
+  refused even if the =--merged= computation were ever wrong) then
+  remote (=git push origin --delete=), then reprints what's left
+  alone and why.
+
+Manually exercised against the live 43-branch set (see Result) —
+matched the manual workflow's expected outcome.
 
 * Notes
 
@@ -153,12 +173,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1866][#1866]] | [compass] Add compass branches: report/prune git branches merged into origin/main |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Batch git branch -d / push --delete return non-zero on partial failure but code treated whole batch as undeleted ("0 deleted") | compass_branches.py | Fixed | Recompute deleted set from before/after local_branches()/remote_branches() diff instead of trusting the batch return code |
+| 1 | fleet_active_branches doesn't check subprocess returncode, unlike the _git() helper used elsewhere | compass_branches.py | Fixed | Added explicit returncode check, consistent with _git() |
+| 1 | No dedicated unit tests for classify() | compass_branches.py | Declined | Matches existing convention -- no other compass_*.py command module has dedicated tests either; covered by manual exercise against the live branch set |
+| 1 | fetch_prune failure is non-fatal for prune -y, could work off stale origin/main | compass_branches.py | Declined | Judgment call flagged by reviewer, not a bug; git branch -d's own safety net (refuses unmerged branches) still applies even with a stale view |
+| 1 | _MAIN_BRANCHES includes "master", dead weight since merge-base is hardcoded to origin/main | compass_branches.py | Declined | Harmless; kept for defence-in-depth in case a checkout ever has a stray master branch |
 
 * Result
+
+Added =compass branches= (report/prune) and its recipe
+([[id:F3E0B7C8-7896-4BEC-869E-C3C8950342EE][How do I prune merged git branches with compass?]]). Manually
+exercised against the live branch set in this worktree: report
+correctly bucketed 42 safe-to-delete branches (41 local + 1
+remote-only, =bot/nightly-format=) against 32 kept branches (9
+fleet-owned across other worktrees, =main= local+remote, 21
+unmerged/active); =prune -y= deleted exactly that safe set (=git
+branch -d= locally, =git push origin --delete= for the remote) and
+left every fleet-owned/unmerged/current/main branch untouched,
+matching the reference session's expected asymmetry (merged-but-
+fleet-owned branches are reported, not force-deleted). All acceptance
+criteria met.

@@ -6641,6 +6641,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "systemd":
         import systemd_generate
         sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "branches":
+        import compass_branches
+        sys.exit(compass_branches.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "client":
         import compass_services
         sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
@@ -6686,7 +6689,7 @@ def main():
             "list", "show", "add", "sprint", "story", "task", "journal",
             "env", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
-            "orient", "timeline", "capture", "lint", "codegen",
+            "orient", "timeline", "capture", "lint", "codegen", "branches",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -6784,6 +6787,11 @@ def main():
                                          help="Show what every git worktree is doing: branch, story, task, PR")
     fleet_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
                               help="Output format: pretty (default) or json")
+
+    subparsers.add_parser("branches",
+                          help="Report/prune git branches merged into origin/main; "
+                               "'branches prune -y' deletes local+remote, fleet-owned "
+                               "branches always kept; 'branches --help'")
 
     # Registered for discoverability in --help; actually handled by the
     # short-circuit above (which forwards all args to their handlers).

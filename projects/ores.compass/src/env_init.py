@@ -639,6 +639,15 @@ def run(argv, project_root: Path) -> int:
         print("Backed up existing .env to .env.old")
 
     env_version = current_version(checkout_root)
+    # Unlike ORES_ENV_VERSION (always stamped to latest — configure self-heals
+    # .env schema drift), ORES_ENV_ACTIVITY is preserved across regenerations
+    # like a reused secret: activities are often manual/privileged steps
+    # configure cannot safely re-apply, so only a genuinely fresh .env (no
+    # prior value) is stamped to "caught up as of now" rather than 0 (which
+    # would wrongly demand every historical activity from a brand-new
+    # checkout). See doc/knowledge/architecture/environment_activity_log.org.
+    import env_activity
+    env_activity_num = existing.get("ORES_ENV_ACTIVITY") or str(env_activity.current_activity(checkout_root))
     print(f"Writing {env_file}...")
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     out = []
@@ -653,6 +662,13 @@ def run(argv, project_root: Path) -> int:
 #   compass env configure --preset <preset> -y
 # ---------------------------------------------------------------------------
 ORES_ENV_VERSION={env_version}
+
+# ---------------------------------------------------------------------------
+# Environment activity — one-off manual setup steps this checkout has
+# acknowledged. See doc/knowledge/architecture/environment_activity_log.org.
+# Preserved across regenerations; bump with: compass env activity ack <N>
+# ---------------------------------------------------------------------------
+ORES_ENV_ACTIVITY={env_activity_num}
 
 # ---------------------------------------------------------------------------
 # Checkout identity

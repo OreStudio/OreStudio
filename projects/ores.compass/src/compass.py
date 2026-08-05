@@ -4469,6 +4469,9 @@ def cmd_env(argv):
     if argv and argv[0] == "upgrade":
         import env_upgrade
         return env_upgrade.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "activity":
+        import env_activity
+        return env_activity.run(argv[1:], PROJECT_ROOT)
     # No/unknown subcommand: render help (and error on unknown).
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
@@ -4486,6 +4489,9 @@ def cmd_env(argv):
     sub.add_parser("version", help="Show the .env-format version; 'version new <desc>' records a new one")
     sub.add_parser("upgrade", help="Promote a light environment to full (C++/vcpkg): "
                                    "patches .env, initialises vcpkg submodule, runs cmake configure")
+    sub.add_parser("activity", help="List outstanding environment activities for this "
+                                    "checkout; 'activity new <title> <recipe-id>' records "
+                                    "one, 'activity ack <N>' acknowledges it")
     ap.parse_args(argv or ["--help"])
     return 0
 
@@ -5096,6 +5102,19 @@ def cmd_bearings(argv):
             elif _current_envver > _required_envver:
                 print(f"  {_C_YELLOW}⚠  .env version v{_current_envver} is newer "
                       f"than required v{_required_envver} — proceeding.{_C_RESET}")
+        except Exception:
+            pass
+        try:
+            import env_activity as _env_activity
+            _checkout_activity = _env_activity.checkout_activity(PROJECT_ROOT)
+            _pending_activities = _env_activity.pending(PROJECT_ROOT, _checkout_activity)
+            if _pending_activities:
+                print(f"  {_C_YELLOW}⚠  {len(_pending_activities)} environment "
+                      f"activit{'y' if len(_pending_activities) == 1 else 'ies'} "
+                      f"outstanding for this checkout:{_C_RESET}")
+                for _num, _date, _title, _recipe_id in _pending_activities:
+                    print(f"     {_num}. {_title}  —  compass show {_recipe_id}")
+                print(f"     Then: {_ycmd('compass env activity ack ' + str(_pending_activities[-1][0]))}")
         except Exception:
             pass
         try:
@@ -6726,7 +6745,8 @@ def main():
         "  sprint:   status | audit (orient)\n"
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
-        "  env:      provision | deprovision | configure | diff | list | version [new]\n"
+        "  env:      provision | deprovision | configure | diff | list | version [new] | "
+        "activity [new|ack]\n"
         "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
         "  sql:      alias for db sql — run SQL in the environment\n"
         "  services: start | stop | status | clear-logs (operate)\n"

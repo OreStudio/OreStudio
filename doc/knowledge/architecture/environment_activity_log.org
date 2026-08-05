@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: DABAA638-1090-4727-AE4D-26A523767683
+:END:
+#+title: Environment activity log
+#+description: Canonical, parseable log of one-off environment setup activities (privileged, manual, or otherwise non-auto-appliable steps) an existing checkout must perform after pulling. compass bearings compares ORES_ENV_ACTIVITY against the highest row and lists what is outstanding; compass env activity ack records completion.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:environment:versioning:compass:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+* Summary
+
+This document is the single source of truth for *environment
+activities* — one-off setup steps an existing checkout must perform
+after pulling a change, when the step can't be auto-applied by
+=compass env configure= (it needs root, a manual verification, or a
+decision only a human can make). It is the sibling of the
+[[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][.env format version log]], which covers the narrower case of the
+=.env= *schema* changing. The *current activity is the highest row* in
+the table below. =compass bearings= compares a checkout's
+=ORES_ENV_ACTIVITY= against it and lists every outstanding row, each
+linking to the recipe with the actual steps. Record a new activity
+with =compass env activity new "<title>" <recipe-id>=; acknowledge one
+as done, per checkout, with =compass env activity ack <N>=.
+
+* Detail
+
+** Why a separate mechanism from the .env format version
+
+The =.env= format version (=ORES_ENV_VERSION=) is auto-fixed by
+re-running =compass env configure= — it always writes the current
+version, so a stale checkout self-heals on the next regeneration.
+Activities are different in kind: they are often privileged (e.g. a
+root-owned systemd drop-in), destructive-adjacent (e.g. a one-time
+migration), or otherwise something =compass= cannot safely re-run
+unattended on every =configure=. Conflating the two would either force
+every =.env= schema bump to also demand a manual step, or make
+=configure= silently claim a manual step was done just because it
+regenerated =.env= — neither is safe, so activities get their own
+version counter, log, and acknowledgement step.
+
+** How a checkout picks this up
+
+1. =compass bearings= reads =ORES_ENV_ACTIVITY= from =.env= (defaults
+   to 0 if unset — a fresh environment has none outstanding by
+   construction, since =compass env provision=/=configure= stamp the
+   current activity number into a brand-new =.env=).
+2. It compares that against the highest row below and lists every row
+   with a higher number, each with its linked recipe.
+3. Follow the recipe, then run =compass env activity ack <N>= to
+   record that this checkout has performed it — deliberately a manual,
+   per-checkout opt-in, not something =configure= bumps automatically,
+   so a checkout can't claim to have done a privileged step it never
+   ran.
+
+** Adding a new activity
+
+Whenever a change requires existing checkouts to perform a manual
+step (a root-owned systemd drop-in, a one-time local migration, a
+package to install by hand, ...), write the recipe first (the
+activity log links to it, it doesn't duplicate its steps), then:
+
+#+begin_src sh
+compass env activity new "<short title>" <recipe-id-or-prefix>
+#+end_src
+
+This appends a dated row below. Existing checkouts see it the next
+time they run =compass bearings=.
+
+* Activities
+
+The table is machine-parsed: each data row is =| <integer> | <date> |
+<title> | <recipe-id> |=. Do not edit it by hand — use
+=compass env activity new=.
+
+| Activity | Date | Title | Recipe |
+|----------+------+-------+--------|
+| 1 | 2026-08-05 | Protect the interactive session at the root level (WS-5 root half) | 0e135a6c |
+
+* See also
+
+- [[id:BFE330BD-2AF8-43A4-BE8C-D066BD3FB1FD][Environment format version log]] — the sibling mechanism for =.env=
+  schema drift, auto-fixed by =compass env configure= rather than
+  manually acknowledged.
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — the
+  =compass env= commands, including =activity=.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the toolkit that owns env provisioning and bearings.

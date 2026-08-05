@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 4A5CD068-168D-4695-8A11-6DC266FA6FC9
+:END:
+#+title: Task: Environment activity log: track manual post-pull setup steps per checkout
+#+description: New compass env activity mechanism (sibling of the .env-format version log): a numbered, org-roam-linked log of one-off environment setup activities (often privileged/manual, e.g. root systemd drop-ins) that compass bearings surfaces as outstanding until a checkout runs 'compass env activity ack'. Includes the .env-format version bump for the new ORES_ENV_ACTIVITY var and the WS-5 root-half recipe as the log's first real entry.
+#+type: task
+#+level: s1
+#+filetags: :compass_quality_of_life_followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/environment-activity-log-mechanism
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give =compass bearings= a way to tell a checkout "you need to perform
+these manual setup steps" after pulling a change that can't be
+auto-applied by =compass env configure= (root-owned systemd
+drop-ins, one-time local migrations, ...). Motivated directly by
+today's WS-5 root-half systemd step (protect the interactive session
+via a root-owned =user-1000.slice.d/= drop-in): every other
+environment in the fleet needs to run it, and until now there was no
+mechanism to tell them so beyond an ad hoc chat message.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
+| Now          | Implementation done, verified live; committing. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, build/test, raise PR.          |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- A new =doc/knowledge/architecture/environment_activity_log.org=
+  carries a machine-parsed table of activities, each linking to the
+  recipe with its actual steps — sibling of the existing =.env=
+  format version log, not merged into it (see the doc's own
+  =* Detail= for why).
+- =ORES_ENV_VERSION= bumped (new =.env= var =ORES_ENV_ACTIVITY=);
+  =compass env configure= writes it, *preserving* an existing value
+  across regenerations (unlike =ORES_ENV_VERSION=, which always
+  stamps latest) — a manual/privileged activity can't be safely
+  auto-reapplied on every =configure=.
+- =compass env activity= (bare: list outstanding; =new <title>
+  <recipe-id>=: record one; =ack <N>=: acknowledge one for this
+  checkout).
+- =compass bearings= surfaces every activity newer than the
+  checkout's =ORES_ENV_ACTIVITY=, each with its recipe link and the
+  =ack= command to run afterwards.
+- The WS-5 root-half step registered as the log's first real entry
+  (activity 1), with a proper recipe
+  ([[id:0E135A6C-F705-4C07-A5FA-CCE65FA138FF][How do I protect the interactive session at the root level?]]).
+- Verified live end-to-end: fresh =.env= regeneration stamps
+  =ORES_ENV_ACTIVITY= correctly; a simulated stale checkout
+  (=ORES_ENV_ACTIVITY=0=) shows the correct =bearings= warning;
+  =ack= rejects an out-of-range number.
+
+* Plan
+
+1. New module =env_activity.py=, mirroring =env_init.py='s
+   =current_version=/=new_version= parsing shape
+   (=_parse_activity_rows=, =current_activity=, =new_activity=) plus
+   the two things unique to activities: =checkout_activity= (reads
+   =ORES_ENV_ACTIVITY= from =.env=) and =ack= (writes it back,
+   deliberately not auto-bumped by =configure=).
+2. Wire =compass env activity [new|ack]= into =cmd_env= in
+   =compass.py=, same dispatch shape as the existing =version=
+   subcommand.
+3. =env_init.py='s =.env= writer: reuse =existing.get("ORES_ENV_ACTIVITY")=
+   if present (like a reused secret), else stamp
+   =env_activity.current_activity()= — a genuinely fresh checkout
+   starts "caught up", not demanded to perform every historical
+   activity.
+4. =compass bearings=: new section next to the existing =.env is
+   stale= check, reusing the same yellow-warning style.
+5. Record the =.env= schema change itself via
+   =compass env version new= (version 20) — this addition is exactly
+   the kind of change that mechanism exists for.
+6. Author the WS-5 root-half recipe
+   (=doc/recipes/compass/how_do_i_protect_the_interactive_session_at_the_root_level.org=)
+   and register it as activity 1 via =compass env activity new=, to
+   both give the fleet a real first entry and validate the mechanism
+   end-to-end.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

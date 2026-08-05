@@ -8,7 +8,7 @@
 #+filetags: :gleif:refdata:iam:cleanup:acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/gleif-import-should-attach-counterparty-logos
-#+pr:
+#+pr: 1852
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1852][#1852]] | [refdata] GLEIF import should natively attach counterparty logos |
 
 * Review
 

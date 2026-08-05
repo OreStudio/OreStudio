@@ -118,11 +118,17 @@ begin
         order by dq.series_type, dq.metric, dq.qualifier
     loop
         if r.series_type = 'FX' and r.metric = 'RATE' then
-            v_asset_class := 'ForeignExchange';
+            -- 'fx', not the FpML 'ForeignExchange': asset_class is
+            -- validated against ores_refdata_asset_class_codes_tbl (the
+            -- short-code table mirroring ores::marketdata::domain::
+            -- asset_class exactly -- see marketdata_market_series_
+            -- create.sql's insert trigger), not the unrelated FpML
+            -- Bond/Commodity/.../ForeignExchange/... taxonomy.
+            v_asset_class := 'fx';
             v_series_subclass := 'spot';
             v_is_scalar := true;
         elsif r.series_type = 'RATES' and r.metric = 'YIELD' then
-            v_asset_class := 'InterestRate';
+            v_asset_class := 'rates';
             v_series_subclass := 'yield';
             v_is_scalar := false;
         else

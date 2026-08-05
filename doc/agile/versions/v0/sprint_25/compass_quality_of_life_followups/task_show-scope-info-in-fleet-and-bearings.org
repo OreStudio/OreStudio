@@ -8,7 +8,7 @@
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/show-scope-info-in-fleet-and-bearings
-#+pr:
+#+pr: 1871
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -67,7 +67,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1871][#1871]] | [compass] Show systemd scope/slice info in fleet and bearings |
 
 * Review
 

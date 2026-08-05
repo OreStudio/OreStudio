@@ -8,7 +8,7 @@
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/prune-merged-branches
-#+pr:
+#+pr: 1866
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -173,7 +173,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1866][#1866]] | [compass] Add compass branches: report/prune git branches merged into origin/main |
 
 * Review
 

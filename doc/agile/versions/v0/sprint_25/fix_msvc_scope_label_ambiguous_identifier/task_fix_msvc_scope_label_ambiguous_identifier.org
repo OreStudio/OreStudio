@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: BCE63A39-4C66-4DE5-A845-C9B0B3BB12C4
+:END:
+#+title: Task: Implement Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier
+#+description: Initial task for: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier
+#+type: task
+#+level: s1
+#+filetags: :fix_msvc_scope_label_ambiguous_identifier:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-msvc-scope-label-ambiguous-identifier
+#+pr: 1870
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:07179FD0-044E-48B6-8526-D456EFA99443][Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so MSVC can compile it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:07179FD0-044E-48B6-8526-D456EFA99443][Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- Windows CI goes green on the ScopeLabel.hpp translation unit
+- Linux (Clang/GCC) build remains green
+- No behavioural change — the function returns the same labels as before
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1870][#1870]] | [ores.qt.synthetic] Fix MSVC build: disambiguate scope identifier in ScopeLabel.hpp |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

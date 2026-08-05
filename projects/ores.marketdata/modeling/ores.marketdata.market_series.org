@@ -235,7 +235,7 @@ The derivation config's version this series was produced under -- =0=
 
 | column          | validation_function                        |
 |-----------------+---------------------------------------------|
-| asset_class     | ores_refdata_validate_asset_class_fn       |
+| asset_class     | ores_refdata_validate_asset_class_code_fn  |
 | derivation_kind | ores_refdata_validate_derivation_kind_fn   |
 
 * C++

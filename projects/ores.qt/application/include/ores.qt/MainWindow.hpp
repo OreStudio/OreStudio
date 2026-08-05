@@ -60,7 +60,7 @@ class ShellMdiWindow;
  * @brief Main application window providing the MDI interface.
  *
  * Owns shared infrastructure (ClientManager, caches, event bus) and drives the
- * plugin lifecycle.  Domain entity management is delegated to AdminPlugin,
+ * plugin lifecycle.  Domain entity management is delegated to IamPlugin,
  * domain-specific plugins via the IPlugin interface.
  */
 class MainWindow : public QMainWindow {
@@ -84,7 +84,7 @@ public:
      * @param openScenarioPath If non-empty, a =test_scenario= doc to
      * load into the Scenario Runner on startup (=--open-scenario=).
      * Taken as a constructor parameter, not a post-construction
-     * setter, because =AdminPlugin::setup_menus()= — where the
+     * setter, because =IamPlugin::setup_menus()= — where the
      * Scenario Runner is actually built — runs synchronously inside
      * this constructor, before any caller could call a setter.
      * @param cliMasterPassword If non-empty, a connections.db master

@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 5D5A7D90-34CC-4D16-8969-06D86B8FA257
+:END:
+#+title: Test Scenario: Verify CRM topology for the holding company party
+#+description: Manual Qt client verification that Acme Corporation Plc (the holding company) now gets its own majors/exotics/scandies CRM topology after provisioning, matching the three operating offices, instead of the Cross-Rates Matrix picker showing no options for the default login party.
+#+type: test_scenario
+#+level: s1
+#+filetags: :holding-company-treasury-functionality:sprint_25:v0:
+#+target_dialog: CrmCrossRatesMatrixMdiWindow
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1F682C23-F76E-4701-A8CD-520AE073D45A][Publish CRM topology for the holding company party]] in [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned via =--source acme=:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps (=acme_group.crm_topology:
+  ... completed= should appear for the holding company alongside
+  acme_uk/acme_us/acme_hk) before starting.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1F682C23-F76E-4701-A8CD-520AE073D45A][Publish CRM topology for the holding company party]] |
+| Parent story  | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow             |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+- Login dialog: username =tenant_admin@acme_corporation=, password
+  =Secure-Password-123=.
+- On the party picker, confirm the default/quick-login party is
+  "Acme Corporation Plc" (the holding company) — this scenario
+  specifically tests that party, not one of the offices. If quick-login
+  selects a different party, use the party switcher to select "Acme
+  Corporation Plc" before continuing.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Cross-Rates Matrix picker
+
+- Menu: Market Data > Cross-Rates Matrix (or the equivalent toolbar
+  action).
+- Confirm the picker dialog shows three named options —
+  =majors=, =exotics=, =scandies= — plus "All", not a "no CRM
+  configured" message and not just "All" alone.
+- This is the main regression check: before the fix, the holding
+  company party had zero topology configs of its own, so this picker
+  either showed nothing or (pre the party-scoping fix from PR #1834)
+  misleadingly showed names sourced from other parties.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the majors matrix and check the footer
+
+- Pick =majors= and click Open.
+- Confirm the matrix window opens without an error dialog.
+- Confirm the footer shows =CONNECTED | N Currencies= (not the red
+  =DISCONNECTED= indicator) — currencies present should include at
+  least EUR/GBP/USD/AUD/NZD/CAD/CHF/JPY/SEK, matching the majors
+  topology's driver + derived pairs.
+- Rows may show dashes/no live rate if no synthetic feed is currently
+  running — that's expected and not part of this scenario; only the
+  topology/connectivity is under test here, not live ticking.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Repeat for exotics and scandies
+
+- Close the majors window, reopen the picker, select =exotics=, Open.
+  Confirm footer shows CONNECTED with USD/ZAR/MXN/INR present.
+- Repeat once more for =scandies=. Confirm footer shows CONNECTED
+  with EUR/USD/SEK/NOK/DKK present.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-05T15:32:19Z |
+| Branch        | feature/publish-crm-topology-for-holding-company |
+| Commit        | f45a1b983 |
+| Worktree      | solid_dirac |
+
+* Notes

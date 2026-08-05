@@ -42,7 +42,7 @@ controllers.
 
 * Entry points
 
-- =include/ores.qt/AdminPlugin.hpp= — plugin class; contributes to System menu.
+- =include/ores.qt/IamPlugin.hpp= — plugin class; contributes to System menu.
 - =include/ores.qt/AccountController.hpp= — account entity controller.
 - =include/ores.qt/TenantController.hpp= — tenant entity controller.
 - =include/ores.qt/TenantOnboardingWizard.hpp= — multi-step tenant provisioning.

@@ -443,6 +443,59 @@ public:
                     attach_staff_photos(
                         client, *ctx_expected, tenant_id_str, "acme_group", username);
                     add_step("acme_group.staff_photos", "completed");
+
+                    // Market data: same plan as each office below (crm_topology
+                    // + synthetic theme configs + FX driver rates, minus
+                    // risk_management -- the holding company's own book/
+                    // portfolio tree is hand-seeded separately, not sourced
+                    // from that generic demo-org bundle). Without this, the
+                    // holding party has no CRM (Cross-Rates Matrix) at all:
+                    // a treasury user logged in at the default/holding-company
+                    // party saw a blank matrix with no way to get FX
+                    // visibility short of switching party to an office.
+                    auto group_mkt_plan = dq::messaging::party_provisioning_bundle_plan();
+                    std::erase_if(group_mkt_plan, [](const auto& step) {
+                        return step.bundle_code == "risk_management";
+                    });
+                    std::string current_group_mkt_step;
+                    dq::messaging::publish_party_provisioning_plan(
+                        group_mkt_plan,
+                        holding->id,
+                        [&](const std::string& bundle_code, const std::string& params_json)
+                            -> std::optional<dq::messaging::publish_bundle_response> {
+                            dq::messaging::publish_bundle_request req;
+                            req.bundle_code = bundle_code;
+                            req.published_by = username;
+                            req.atomic = true;
+                            req.params_json = params_json;
+                            auto pub = client.request(req);
+                            const auto mkt_label = "acme_group." + bundle_code;
+                            if (!pub.success) {
+                                add_step(mkt_label + ".failed", pub.error_message, 0);
+                                return std::nullopt;
+                            }
+                            add_step(mkt_label,
+                                     "dispatched",
+                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
+                            return pub;
+                        },
+                        [&](const std::string& instance_id, std::size_t expected) {
+                            const auto mkt_label = "acme_group." + current_group_mkt_step;
+                            return client.wait_for_workflow_instance(instance_id,
+                                                                     std::chrono::seconds{120},
+                                                                     expected,
+                                                                     progress(mkt_label));
+                        },
+                        [&](const auto& step) {
+                            current_group_mkt_step = step.bundle_code;
+                            add_step("acme_group." + step.bundle_code, "starting", 0);
+                        });
+                    // Best-effort, like the per-office market-data plan is
+                    // NOT (that one aborts the whole office on failure) --
+                    // deliberately less strict here since Step 3 already
+                    // committed to activating the holding party and
+                    // publishing its group-level staff by this point; a
+                    // failed market-data publish shouldn't undo that.
                 }
             }
 

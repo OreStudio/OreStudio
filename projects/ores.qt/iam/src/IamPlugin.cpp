@@ -16,7 +16,7 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/AdminPlugin.hpp"
+#include "ores.qt/IamPlugin.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AccountController.hpp"
@@ -51,7 +51,7 @@ using namespace ores::logging;
 namespace {
 
 auto& lg() {
-    static auto instance = make_logger("ores.qt.admin_plugin");
+    static auto instance = make_logger("ores.qt.iam_plugin");
     return instance;
 }
 
@@ -61,16 +61,16 @@ auto ico(Icon icon) {
 
 }
 
-AdminPlugin::AdminPlugin(QObject* parent)
+IamPlugin::IamPlugin(QObject* parent)
     : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
-AdminPlugin::~AdminPlugin() {
+IamPlugin::~IamPlugin() {
     BOOST_LOG_SEV(lg(), debug) << "Plugin shutdown.";
 }
 
-void AdminPlugin::show_onboarding_wizard() {
+void IamPlugin::show_onboarding_wizard() {
     if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
         MessageBoxHelper::warning(
             ctx_.main_window, "Disconnected", "Cannot onboard a tenant while disconnected.");
@@ -93,7 +93,7 @@ void AdminPlugin::show_onboarding_wizard() {
     wizard->show();
 }
 
-void AdminPlugin::on_login(const plugin_context& ctx) {
+void IamPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
@@ -129,7 +129,7 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     connect(tenantController_.get(),
             &TenantController::onboardRequested,
             this,
-            &AdminPlugin::show_onboarding_wizard);
+            &IamPlugin::show_onboarding_wizard);
 
     tenantTypeController_ = std::make_unique<TenantTypeController>(ctx_.main_window,
                                                                    ctx_.mdi_area,
@@ -148,7 +148,7 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     connectControllerSignals(systemSettingController_.get());
 }
 
-void AdminPlugin::setup_menus(const shared_menus_context& smc) {
+void IamPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " file=" << (smc.file_menu ? "ok" : "null")
                                << " user_accounts=" << (smc.user_accounts_menu ? "ok" : "null");
@@ -214,7 +214,7 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     admin->addSeparator();
 
     auto* actOnboardTenant = admin->addAction(tr("&Onboard Tenant..."));
-    connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
+    connect(actOnboardTenant, &QAction::triggered, this, &IamPlugin::show_onboarding_wizard);
 
     // ---- File > System > Test Scenario Runner ------------------------------
     // A local, file-based testing tool (parses/rewrites test_scenario org
@@ -334,21 +334,21 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
     act_reset_system_->setEnabled(false); // enabled on login
-    connect(act_reset_system_, &QAction::triggered, this, &AdminPlugin::on_reset_system);
+    connect(act_reset_system_, &QAction::triggered, this, &IamPlugin::on_reset_system);
 }
 
-QList<QMenu*> AdminPlugin::create_menus() {
+QList<QMenu*> IamPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "No standalone menus — all entries contributed via shared menus.";
     return {}; // all items contributed via setup_menus()
 }
 
-QList<QAction*> AdminPlugin::toolbar_actions() {
+QList<QAction*> IamPlugin::toolbar_actions() {
     if (!act_accounts_ || !act_tenants_ || !act_system_settings_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
     return {act_accounts_, act_tenants_, act_system_settings_};
 }
 
-void AdminPlugin::on_reset_system() {
+void IamPlugin::on_reset_system() {
     if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
         MessageBoxHelper::warning(
             ctx_.main_window, "Disconnected", "Cannot reset system while disconnected.");
@@ -372,7 +372,7 @@ void AdminPlugin::on_reset_system() {
         return;
     }
 
-    QPointer<AdminPlugin> self = this;
+    QPointer<IamPlugin> self = this;
     using ResetResult = std::pair<bool, std::string>;
 
     auto task = [self]() -> ResetResult {
@@ -420,7 +420,7 @@ void AdminPlugin::on_reset_system() {
     watcher->setFuture(future);
 }
 
-void AdminPlugin::on_logout() {
+void IamPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     systemSettingController_.reset();
     tenantTypeController_.reset();

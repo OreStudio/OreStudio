@@ -26,12 +26,12 @@ Collapse five independent argv-threading layers down to the single environment_m
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
@@ -69,3 +69,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned in favour of a proper split, once implementation revealed the
+real scope: the SQL-backed ores_controller_service_definitions_tbl this
+task's args-template edits targeted is itself legacy infrastructure
+(the controller/process_supervisor.cpp it served no longer exists in the
+codebase) that should be decommissioned via a codegen-driven model, not
+patched. Also found that service_registry.org (DB-grants) and a
+newly-drafted "service_deployment_registry.org" would have described
+overlapping sets of the same services from two separately-keyed files --
+per direct feedback, these belong in one model with several aspects, not
+two files. Split into four separately-reviewable tasks, in dependency
+order: merge_service_registry_deployment_model (A),
+wire_systemd_generate_to_codegen_model (B, carries this task's original
+argv-threading goal), decommission_legacy_controller_schema (C),
+rename_controller_named_env_vars (D). A backlog capture was filed for
+future Windows/macOS service-install generators consuming the same
+platform-agnostic model.

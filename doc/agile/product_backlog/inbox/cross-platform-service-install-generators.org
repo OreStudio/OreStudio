@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0531FF74-A8EF-4084-AF72-C9944CC24CB2
+:END:
+#+title: Cross-platform service-install generators (Windows, macOS) from the service deployment registry
+#+description: Once service_registry.org's deployment aspect (replicas, enabled, extra args, depends_on) exists as the single source of truth for the fleet (see process-supervisor-config-passthrough-gap story), it is deliberately platform-agnostic -- nothing in the model is systemd-specific. compass systemd generate is the first consumer (Linux/systemd). Add equivalent generators for Windows (e.g. sc.exe/NSSM-based service installers, or a PowerShell script) and macOS (launchd plist generation), consuming the exact same org model, so ORE Studio's fleet can be installed as native services on all three platforms without re-modeling anything.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:systemd:cross-platform:deployment:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

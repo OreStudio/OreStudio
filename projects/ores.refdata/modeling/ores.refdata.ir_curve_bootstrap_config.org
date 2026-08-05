@@ -85,12 +85,14 @@ Surrogate UUID uniquely identifying this bootstrap config.
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
-:natural_key: true
 :END:
 
-Owning party (legal entity) this bootstrap config belongs to.
-
-Set server-side from the authenticated session. Enforced by RLS.
+Owning party (legal entity) this bootstrap config belongs to. Set
+server-side from the authenticated session, enforced by RLS.
+Deliberately *not* part of the natural key below: uniqueness on
+=output_series_id= is enforced tenant-wide, not per-party -- two
+different parties must not each be able to hold an active config
+claiming the same output series.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -120,9 +122,10 @@ ctx.generate_uuid()
 
 Soft reference to the official, bootstrapped-curve =market_series=
 (in =ores.marketdata=) this config publishes into -- minted at
-config-creation time, never deferred. A natural key alongside
-=party_id=: exactly one active bootstrap config may produce any given
-output series.
+config-creation time, never deferred. The sole natural key: exactly
+one active bootstrap config, tenant-wide, may produce any given
+output series -- not merely one per party, since two different
+parties must not each be able to claim the same output series.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -155,12 +158,12 @@ std::string("FUNDING")
 :END:
 
 Self-referencing: the =FUNDING= config this config's own pillars
-discount off during bootstrap, when =curve_family_role = 'PROJECTION'=
--- =ores_utility_nil_uuid_fn()= sentinel when =curve_family_role =
-'FUNDING'=. Strict two-tier only (validated in the insert trigger,
-not just shape-checked): the referenced config must itself have
-=curve_family_role = 'FUNDING'=, and must not equal this config's own
-=id=.
+discount off during bootstrap, when this config's own
+=curve_family_role= is =PROJECTION= -- the =ores_utility_nil_uuid_fn()=
+sentinel when it is =FUNDING= instead. Strict two-tier only (validated
+in the insert trigger, not just shape-checked): the referenced config
+must itself have a =curve_family_role= of =FUNDING=, and must not
+equal this config's own =id=.
 
 #+begin_src cpp :name generator
 boost::uuids::nil_uuid()
@@ -251,7 +254,15 @@ std::string("1Y")
 Enforces what the shape-level check constraint above cannot: that a
 =PROJECTION= config's =discount_curve_config_id= actually points at a
 config whose own =curve_family_role= is =FUNDING= (strict two-tier,
-no chaining), not merely at *some* other row.
+no chaining), not merely at *some* other row. Also guards the reverse
+direction: because every write to this bitemporal table -- including
+an edit to an existing row -- runs through this same insert trigger
+(a new version is a fresh INSERT closing the prior row, never an
+UPDATE), an edit that changes an existing =FUNDING= config's own
+=curve_family_role= away from =FUNDING= while one or more active
+=PROJECTION= configs still reference it is rejected here too --
+otherwise those referencing rows would silently end up pointing at a
+config that is no longer =FUNDING=, with nothing left to catch it.
 
 #+begin_src sql :name body :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
     if NEW.curve_family_role = 'PROJECTION' then
@@ -263,6 +274,19 @@ no chaining), not merely at *some* other row.
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid discount_curve_config_id: %. Must reference an active FUNDING config -- chaining a PROJECTION config off another PROJECTION config is not supported.', NEW.discount_curve_config_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    if NEW.curve_family_role <> 'FUNDING' then
+        if exists (
+            select 1 from "ores_refdata_ir_curve_bootstrap_configs_tbl"
+            where tenant_id = NEW.tenant_id
+              and discount_curve_config_id = NEW.id
+              and curve_family_role = 'PROJECTION'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Cannot change curve_family_role away from FUNDING for %: still referenced as the discount curve by one or more active PROJECTION configs.', NEW.id
                 using errcode = '23503';
         end if;
     end if;

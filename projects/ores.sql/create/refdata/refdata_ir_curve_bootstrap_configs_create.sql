@@ -78,8 +78,8 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
-    "party_id" uuid not null,
     "output_series_id" uuid not null,
+    "party_id" uuid not null,
     "source_series_id" uuid not null,
     "curve_family_role" text not null,
     "discount_curve_config_id" uuid not null,
@@ -107,9 +107,9 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()))
 );
 
--- Composite natural key: unique combination for active records
-create unique index if not exists ir_curve_bootstrap_configs_party_id_output_series_id_uniq_idx
-on "ores_refdata_ir_curve_bootstrap_configs_tbl" (tenant_id, party_id, output_series_id)
+-- Unique output_series_id for active records
+create unique index if not exists ir_curve_bootstrap_configs_output_series_id_uniq_idx
+on "ores_refdata_ir_curve_bootstrap_configs_tbl" (tenant_id, output_series_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -145,6 +145,19 @@ begin
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             raise exception 'Invalid discount_curve_config_id: %. Must reference an active FUNDING config -- chaining a PROJECTION config off another PROJECTION config is not supported.', NEW.discount_curve_config_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    if NEW.curve_family_role <> 'FUNDING' then
+        if exists (
+            select 1 from "ores_refdata_ir_curve_bootstrap_configs_tbl"
+            where tenant_id = NEW.tenant_id
+              and discount_curve_config_id = NEW.id
+              and curve_family_role = 'PROJECTION'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Cannot change curve_family_role away from FUNDING for %: still referenced as the discount curve by one or more active PROJECTION configs.', NEW.id
                 using errcode = '23503';
         end if;
     end if;

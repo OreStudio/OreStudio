@@ -98,18 +98,21 @@ struct ir_curve_bootstrap_config final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Owning party (legal entity) this bootstrap config belongs to.
-     *
-     * Set server-side from the authenticated session. Enforced by RLS.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
      * @brief Soft reference to the official, bootstrapped-curve market_series (in ores.marketdata)
-     * this config publishes into -- minted at config-creation time, never deferred. A natural key
-     * alongside party_id: exactly one active bootstrap config may produce any given output series.
+     * this config publishes into -- minted at config-creation time, never deferred. The sole
+     * natural key: exactly one active bootstrap config, tenant-wide, may produce any given output
+     * series -- not merely one per party, since two different parties must not each be able to
+     * claim the same output series.
      */
     boost::uuids::uuid output_series_id;
+
+    /**
+     * @brief Owning party (legal entity) this bootstrap config belongs to. Set server-side from the
+     * authenticated session, enforced by RLS. Deliberately *not* part of the natural key below:
+     * uniqueness on output_series_id is enforced tenant-wide, not per-party -- two different
+     * parties must not each be able to hold an active config claiming the same output series.
+     */
+    boost::uuids::uuid party_id;
 
     /**
      * @brief Soft reference to the raw RATES/YIELD market_series (in ores.marketdata) this config
@@ -128,10 +131,10 @@ struct ir_curve_bootstrap_config final {
 
     /**
      * @brief Self-referencing: the FUNDING config this config's own pillars discount off during
-     * bootstrap, when curve_family_role  'PROJECTION'= -- ores_utility_nil_uuid_fn() sentinel when
-     * curve_family_role 'FUNDING'. Strict two-tier only (validated in the insert trigger, not just
-     * shape-checked): the referenced config must itself have curve_family_role = 'FUNDING', and
-     * must not equal this config's own id=.
+     * bootstrap, when this config's own curve_family_role is PROJECTION -- the
+     * ores_utility_nil_uuid_fn() sentinel when it is FUNDING instead. Strict two-tier only
+     * (validated in the insert trigger, not just shape-checked): the referenced config must itself
+     * have a curve_family_role of FUNDING, and must not equal this config's own id.
      */
     boost::uuids::uuid discount_curve_config_id = boost::uuids::nil_uuid();
 

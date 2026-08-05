@@ -40,8 +40,8 @@ generate_synthetic_ir_curve_bootstrap_config(utility::generation::generation_con
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.party_id = ctx.generate_uuid();
     r.output_series_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.source_series_id = ctx.generate_uuid();
     r.curve_family_role = std::string("FUNDING");
     r.discount_curve_config_id = boost::uuids::nil_uuid();

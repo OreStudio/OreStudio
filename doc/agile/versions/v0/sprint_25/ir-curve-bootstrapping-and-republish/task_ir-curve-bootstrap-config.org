@@ -151,16 +151,29 @@ for this task).
 - =ir_curve_bootstrap_pillar=: one-parent-many-children pillar list,
   FK to the parent config, =curve_role_code= validated against the
   existing =curve_role= table.
-- =output_series_id= is a natural key alongside =party_id= (exactly
-  one active config per output series) -- caught and fixed after the
-  first codegen pass produced a wrong one-config-per-party unique
-  index instead.
-- Two-tier =discount_curve_config_id= enforcement: a check constraint
-  shape-validates (nil-uuid iff =FUNDING=; non-nil and not
-  self-referencing iff =PROJECTION=), and a custom insert-trigger
+- =output_series_id= is the sole natural key, tenant-wide (not scoped
+  by =party_id=): exactly one active config, across the whole tenant,
+  may produce a given output series. Went through two review-round
+  fixes to get here: the first codegen pass produced a wrong
+  one-config-per-party unique index; the round-1 review fix
+  (=party_id= + =output_series_id=) still left two different parties
+  able to each hold an active config for the same output series,
+  fixed properly in the PR's review round by dropping =party_id= from
+  the natural key entirely.
+- Two-tier =discount_curve_config_id= enforcement, both directions:
+  a check constraint shape-validates (nil-uuid iff =FUNDING=; non-nil
+  and not self-referencing iff =PROJECTION=); a custom insert-trigger
   block validates the *referenced* config is itself =FUNDING= (no
-  chaining), using the same per-entity =:implements <uuid>= paste-marker
-  mechanism =curve_role='s =Extra drops= already uses.
+  chaining) when inserting/editing a =PROJECTION= config; and a second
+  guard in the same trigger block rejects the reverse case -- editing
+  an existing =FUNDING= config's own =curve_family_role= away from
+  =FUNDING= while one or more active =PROJECTION= configs still
+  reference it (every edit to this bitemporal table runs through the
+  same insert trigger, so this closes a temporal-consistency gap the
+  review round caught: nothing originally stopped a referenced
+  =FUNDING= config from later being edited into something else). Uses
+  the same per-entity =:implements <uuid>= paste-marker mechanism
+  =curve_role='s =Extra drops= already uses.
 - Dual RLS (tenant + party isolation) on both tables, matching
   =ir_curve_template_entry='s own precedent for a party-scoped table.
 
@@ -196,3 +209,13 @@ for this task).
   the rejection paths yet. Worth adding when the bootstrapping engine
   task starts writing real bootstrap configs and needs fixtures
   anyway.
+- Acceptance also stated pillar rows "validate =start_tenor_code=/
+  =end_tenor_code= against =ores_refdata_tenors_tbl=." As implemented,
+  those two columns are soft (undeclared at the DB level) references,
+  validated only through the =tenor_resolution= machinery at the
+  application layer -- exactly matching =ir_curve_template_entries='s
+  own precedent (confirmed: that sibling table's insert trigger
+  doesn't DB-validate its tenor columns either), so this isn't a
+  design flaw, but the acceptance bullet overstated what's actually
+  enforced at the DB layer. Flagging the gap between the bullet's
+  wording and the implementation rather than leaving it unstated.

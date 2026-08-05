@@ -36,10 +36,9 @@ ir_curve_bootstrap_config_mapper::map(const ir_curve_bootstrap_config_entity& v)
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-
     r.output_series_id = boost::lexical_cast<boost::uuids::uuid>(v.output_series_id);
 
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.source_series_id = boost::lexical_cast<boost::uuids::uuid>(v.source_series_id);
     r.curve_family_role = v.curve_family_role;
     r.discount_curve_config_id =
@@ -65,10 +64,9 @@ ir_curve_bootstrap_config_mapper::map(const domain::ir_curve_bootstrap_config& v
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-
     r.output_series_id = boost::uuids::to_string(v.output_series_id);
 
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.source_series_id = boost::uuids::to_string(v.source_series_id);
     r.curve_family_role = v.curve_family_role;
     r.discount_curve_config_id = boost::uuids::to_string(v.discount_curve_config_id);

@@ -90,7 +90,9 @@ struct named_rate_view {
  * since feed_ingest_loop must not fail a tick's persist+remap because of
  * an unrelated CRM lookup) -- a single tick may feed several of a
  * party's named engines at once (e.g. EUR/USD is very likely a driver
- * edge of both a "majors" and an "exotics" CRM).
+ * edge of both a "majors" and an "exotics" CRM), and -- unlike every
+ * other method here -- feeds every *party* within the tenant too, not
+ * just one; see update()'s own doc for why.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT crm_ingest_bridge {
 private:
@@ -108,11 +110,18 @@ public:
     /// crm_topology_config_changed_event/crm_driver_pair_changed_event.
     void refresh();
 
-    /// Feeds one driver tick into every named engine for the (tenant,
-    /// party) that has it as a driver edge. See class doc for why this
-    /// never throws.
+    /// Feeds one driver tick into every named engine, for every party,
+    /// within the given tenant that has it as a driver edge -- tenant-wide,
+    /// not scoped to whichever party's feed_binding happened to produce
+    /// the tick. FX/IR market data isn't genuinely party-specific (a
+    /// EUR/USD print is the same real-world rate no matter who's
+    /// subscribed to it); feed_binding.party_id tracks who set up the
+    /// binding, not who's authorized to consume the resulting ticks --
+    /// that's already governed by each party's own crm_topology_config/
+    /// crm_driver_pair rows (RLS-gated), which is exactly what an entry
+    /// existing in this map for a given party already represents. See
+    /// the class doc for why a non-edge pair never throws.
     void update(const std::string& tenant_id_str,
-                const std::string& party_id_str,
                 const std::string& base_currency_code,
                 const std::string& quote_currency_code,
                 double rate,

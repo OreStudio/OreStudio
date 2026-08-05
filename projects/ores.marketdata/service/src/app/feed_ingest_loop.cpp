@@ -229,11 +229,12 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
                     << "Failed to persist observation for " << ore_key_copy << ": " << e.what();
             }
 
-            // Offer the tick to the CRM as a candidate driver update. A
-            // no-op if this (tenant, party) has no CRM configured, or the
-            // pair isn't one of its driver edges -- see
-            // crm_ingest_bridge's own class doc for why this never fails
-            // the tick's persist+remap above.
+            // Offer the tick to the CRM as a candidate driver update,
+            // tenant-wide -- every party in the tenant with a matching
+            // driver edge gets it, not just the party that owns this
+            // feed_binding; see crm_ingest_bridge's own class doc for why.
+            // A no-op if no party in this tenant has a CRM configured, or
+            // the pair isn't a driver edge of any of them.
             if (crm_bridge_) {
                 try {
                     const auto kp = parse_ore_key(ore_key_copy);
@@ -241,7 +242,6 @@ void feed_ingest_loop::subscribe_binding_locked(const std::string& ore_key,
                         const auto slash = kp.qualifier.find('/');
                         if (slash != std::string::npos) {
                             crm_bridge_->update(tenant_ctx.tenant_id().to_string(),
-                                                boost::uuids::to_string(party_uuid),
                                                 kp.qualifier.substr(0, slash),
                                                 kp.qualifier.substr(slash + 1),
                                                 tick->mid,

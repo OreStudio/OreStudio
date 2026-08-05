@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 7BB756CA-3453-48F2-9A8C-5A38883C09AA
+:END:
+#+title: Evaluate migrating codegen mustache templates to Handlebars
+#+description: Assess whether ores.codegen's pystache-based templates should move to Handlebars for real boolean-logic helpers, reducing hand-computed OR-flags in core.py.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:templates:tooling:tech-debt:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Evaluate whether =ores.codegen='s ~80 checked-in mustache templates
+(rendered via =pystache=) should migrate to Handlebars. Handlebars offers
+real boolean-logic helpers (=if=/=unless=/comparisons/subexpressions)
+that mustache lacks — mustache only supports truthy/falsy
+section-existence checks, so any OR/AND/derived condition has to be
+hand-computed as a boolean flag in =core.py= and stashed onto the
+domain_entity dict before rendering (e.g. =has_uuid_include= added
+during the =service_find_by_uuid=/=service_find_by_code= template work,
+sprint 25). If this pattern keeps recurring as templates grow more
+cross-cutting conditionals, the number of these derived flags could
+become its own maintenance burden. Python Handlebars support
+(=pybars3=) is weak/unmaintained compared to =pystache=/=chevron=, so
+migration would be a real, non-trivial cost — this is an evaluation, not
+a decision to migrate.
+
+* Why
+
+Discovered as a tangent while adding four new per-model service/repository
+template flags (=service_find_by_uuid=, =service_find_by_code=,
+=service_list_by_uuid_parent=, =service_find_prefix=) to
+=cpp_service.hpp/.cpp.mustache= and the repository templates — each new
+cross-cutting condition needed a Python-side derived flag rather than an
+inline template expression. Not urgent; only worth acting on if this
+friction keeps showing up.
+
+* References
+
+- =projects/ores.codegen/src/codegen/core.py='s =has_uuid_include=
+  derivation (added sprint 25, task "Apply safe drift to refdata-cpp
+  (pilot)").
+- =projects/ores.codegen/library/templates/*.org= — the literate mustache
+  template sources.
+
+* See also
+
+-

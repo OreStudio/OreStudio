@@ -194,12 +194,11 @@ std::string("LOG_LINEAR_DISCOUNT")
 :nullable: false
 :END:
 
-References =day_count_fraction_type.code= (e.g. =ACT/360=,
-=ACT/365=) -- the day-count convention applied per pillar during
-bootstrap.
+References =day_count_fraction_type.code= (e.g. =A360=, =A365=) --
+the day-count convention applied per pillar during bootstrap.
 
 #+begin_src cpp :name generator
-std::string("ACT/365")
+std::string("A365")
 #+end_src
 
 ** split_tenor_code

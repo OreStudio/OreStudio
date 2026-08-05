@@ -146,8 +146,8 @@ struct ir_curve_bootstrap_config final {
     std::string interpolation_method = "LOG_LINEAR_DISCOUNT";
 
     /**
-     * @brief References day_count_fraction_type.code (e.g. ACT/360, ACT/365) -- the day-count
-     * convention applied per pillar during bootstrap.
+     * @brief References day_count_fraction_type.code (e.g. A360, A365) -- the day-count convention
+     * applied per pillar during bootstrap.
      */
     std::string day_count_convention;
 

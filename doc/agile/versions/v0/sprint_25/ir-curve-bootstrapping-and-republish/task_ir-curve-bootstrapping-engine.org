@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ir-curve-bootstrapping-engine
+#+pr: 1863
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -66,12 +66,12 @@ this engine reads.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
@@ -106,7 +106,91 @@ this engine reads.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Two new pure, static, data-oriented components in
+=ores.analytics.quant::service=, in the same style as the existing
+=curve_instrument_pricer= (no classes with state, no inheritance,
+explicit structs passed by value):
+
+- =day_count_calculator::year_fraction(start, end, convention_code)=
+  — supports A360, A365, A365F, and 30/360 for v1; throws for any
+  other code (including the seeded-but-unimplemented ActAct*, 30E/360,
+  Business252) rather than silently guessing. Adding a convention later
+  is a self-contained addition to this one function's dispatch, no
+  interface change.
+- =curve_bootstrap_engine::bootstrap(value_date, pillars,
+  day_count_convention, interpolation_method, discount_curve = nullptr)=
+  — walks pillars in maturity order and algebraically inverts
+  =curve_instrument_pricer='s existing forward formulas
+  (=deposit_rate=, =fra_rate=, =swap_par_rate=) to solve the one new
+  discount factor each pillar's observed rate implies, given
+  everything solved so far (interpolating where a needed date isn't an
+  exact prior pillar). Plus a standalone
+  =interpolate_discount_factor(points, query_date, interpolation_method)=,
+  independently testable.
+
+Scoping decisions made explicit here rather than silently narrowed:
+
+- *Single-curve, self-discounting only.* =curve_instrument_pricer='s
+  forward formulas take one homogeneous discount-factor concept used
+  identically on both legs — there is no formula today for
+  discounting a PROJECTION curve's cashflows off a separate FUNDING
+  curve's discount factors while the PROJECTION curve's own solved
+  values represent forward-rate projections. Genuine dual-curve
+  discounting needs new pricer math beyond this task's scope; it
+  mirrors the already-tracked "Dual-curve (discount + projection)
+  short-rate model" task on the generation side. What this engine
+  *does* implement for a =discount_curve= parameter is the
+  Funding-before-Projection *build-order check* the acceptance
+  criteria call for: an optional external curve that must already
+  cover every pillar's dates, raising =discount_curve_required_error=
+  (distinct from =std::invalid_argument=, since it's a "defer, don't
+  crash" signal for the future official-curve-republish task) when it
+  doesn't. It is not yet wired into any actual discounting math.
+- *=LOG_LINEAR_DISCOUNT= and =FLAT_FORWARD_THEN_LOG_LINEAR= are one
+  code path.* For interpolating between two already-bootstrapped
+  points, flat-forward (constant instantaneous forward over the
+  segment) and log-linear-on-discount-factor are the same formula —
+  proven by a dedicated equivalence test rather than asserted. The two
+  labels only need to diverge once a non-local method (e.g. a spline)
+  exists for the long end, which is exactly the FOMC-dated task's
+  concern, sequenced after this one. =CUBIC_SPLINE= is named but not
+  implemented; it throws.
+- *SWAP fixed-leg schedules must align with the curve's own tenor
+  grid.* An intermediate fixed-leg payment date falling strictly
+  between the last bootstrapped point and the current pillar's own
+  (unsolved) maturity is a genuine algebraic circularity under
+  log-linear interpolation — its discount factor would itself be a
+  fractional power of the still-unknown =df_end=. That only resolves
+  via iterative root-finding (e.g. Newton-Raphson), deliberately not
+  implemented here. The engine instead requires such intermediate
+  dates to coincide with a previously-bootstrapped pillar and raises a
+  specific, clear error otherwise (distinct from the generic
+  "beyond-frontier" error for DEPOSIT/FRA start dates).
+- Not a QuantLib port: independently derived from
+  =curve_instrument_pricer='s existing forward formulas and standard
+  bootstrapping identities, not from reading QuantLib's own
+  implementation. Reconciling against QuantLib's actual functionality
+  to find gaps is a reasonable follow-on task, not done here.
+
 * Notes
+
+Interpolation method, day-count convention, and curve role are all
+strongly typed enums (=day_count_convention_code=,
+=interpolation_method_code=, =bootstrap_curve_role_code=), not plain
+strings, at the engine's own API boundary — an invalid or malformed
+code cannot compile into a call site, only fail at the one explicit
+=parse_*_code()= function that translates a refdata code string into
+its enum on the way in. Enumerator names are spelled identically to
+their refdata =code= string (e.g. =DEPOSIT=, =A365=,
+=LOG_LINEAR_DISCOUNT=) so each parser is a one-line delegation to
+=magic_enum::enum_cast= (already the codebase's standard for this,
+see =ores.utility=, =ores.marketdata=, =ores.cli=); the one exception
+is =30/360=, renamed to the enumerator =THIRTY_360= since ='/'= is not
+a valid identifier character, mapped by hand before falling back to
+=magic_enum=. This is still the extension seam for the future (a new
+day-count convention or interpolation method is a new enumerator plus
+a new =switch= arm, not a signature change) — it just fails at
+compile time for typos instead of only at runtime.
 
 * Test Scenarios
 
@@ -123,12 +207,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1863][#1863]] | [analytics.quant] IR curve bootstrapping engine: inverse solve over the raw instrument grid |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DEPOSIT pillar silently assumes start_date == value_date | curve_bootstrap_engine.cpp | Accepted | Added explicit validation throwing std::invalid_argument, plus a rejection test. |
+| 2 | thirty_three_sixty reads as "33/60" not "30/360" | day_count_calculator.cpp | Accepted | Renamed to thirty_360. |
+| 3 | No sanity bound on observed_rate producing a non-positive discount factor | curve_bootstrap_engine.cpp | Declined | Deferred -- engine inverts already-observed market rates; bad upstream data validation is a separate concern. |
+| 4 | interpolate_discount_factor does two linear scans per call | curve_bootstrap_engine.cpp | Declined | Fine at today's curve sizes (tens of pillars); binary search is a follow-up if this becomes a hot path. |
+| 5 | discount_curve coverage check assumes the vector is sorted ascending, undocumented on the parameter | curve_bootstrap_engine.cpp | Declined | Always the output of a prior bootstrap() call; documenting further is a minor follow-up, not blocking. |
 
 * Result
+
+Implemented =day_count_calculator= and =curve_bootstrap_engine= in
+=ores.analytics.quant::service=, pure/static, algebraically inverting
+=curve_instrument_pricer='s forward formulas to bootstrap DEPOSIT/FRA/SWAP
+pillars tenor-by-tenor from the short end. =day_count_calculator=
+supports A360/A365/A365F/30-360, throwing on any other code.
+=curve_bootstrap_engine= supports =LOG_LINEAR_DISCOUNT= and
+=FLAT_FORWARD_THEN_LOG_LINEAR= (proven equivalent for local
+interpolation by a dedicated test), throws on =CUBIC_SPLINE=, and
+enforces the Funding-before-Projection build order via an optional
+=discount_curve= parameter that raises =discount_curve_required_error=
+when a PROJECTION config's dependency isn't already covered — the
+build-order *check* only; genuine dual-curve discounting math is
+out of scope (see =* Plan= scoping decisions). All acceptance
+criteria met, including single-segment, two-segment (FOMC-style),
+and Projection-discounted-off-Funding unit test coverage. 229/229
+=ores.analytics.quant.tests= cases passed locally.

@@ -46,7 +46,7 @@ generate_synthetic_ir_curve_bootstrap_config(utility::generation::generation_con
     r.curve_family_role = std::string("FUNDING");
     r.discount_curve_config_id = boost::uuids::nil_uuid();
     r.interpolation_method = std::string("LOG_LINEAR_DISCOUNT");
-    r.day_count_convention = std::string("ACT/365");
+    r.day_count_convention = std::string("A365");
     r.split_tenor_code = std::string("1Y");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

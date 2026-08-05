@@ -71,9 +71,40 @@ step racing the import's own completion.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=attach_demo_counterparty_logo= and its call site were already removed
+from =tenant_handler.hpp= before this task started (see the task's own
+description) -- the remaining work was adding the replacement, not
+removing the old code.
+
+Implemented directly in
+=ores_refdata_publish_lei_counterparties_from_dq_fn= (in
+=refdata_publish_from_dq_create.sql=), the same SQL function that
+inserts the GLEIF counterparty rows themselves -- part of the one
+publish, not a second pass:
+
+- A small, extensible =(lei, image_key)= VALUES list of known logos.
+  One entry today: Barclays Plc's real LEI
+  (=213800LBQA1Y9L22JB70=) -> the =demo_counterparty_logo= template
+  key. LEI chosen over =short_code= as the join key since LEIs are
+  the dataset's own stable identifier -- short codes are generated
+  per-import (=ores_utility_generate_short_code_fn=) and can
+  theoretically collide/renumber, LEIs never do.
+- Each tenant gets its own copy of the system-tenant template image
+  (via =ores_assets_get_template_image_fn=, the existing
+  cross-tenant-isolation reader), created once per tenant and reused
+  on subsequent publishes into the same tenant (looked up first by
+  =(tenant_id, key)= before copying) -- mirrors how the old C++
+  =copy_template_image= worked, just done in SQL now.
+- After the per-depth-level counterparty insert loop, one small
+  block loops the logo map, skips LEIs not present in this import's
+  =lei_counterparty_uuid_map= temp table, resolves/copies the
+  per-tenant image, and =UPDATE=s the matching counterparty's
+  =image_id=.
+
+No unbounded/silent wait: the whole thing runs inline in the same
+transaction as the counterparty insert, so a counterparty with a
+known LEI has its logo the instant the import completes -- nothing
+racing GLEIF's own ~13k-row import in a separate polling loop.
 
 * Notes
 

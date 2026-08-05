@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E
+:END:
+#+title: Test Scenario: Verify GLEIF import attaches counterparty logo natively
+#+description: Confirm Barclays Plc gets its logo attached as part of the GLEIF LEI counterparty publish itself, with no separate polling step, after a normal --source acme provisioning run.
+#+type: test_scenario
+#+level: s1
+#+filetags: :manual:gleif:refdata:acme_corporation_followups:sprint_25:v0:
+#+target_dialog: CounterpartyDetailDialog
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:48C10D00-5940-40E0-A8D8-B935B11A24B4][GLEIF import should natively attach counterparty logos when available]] in [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- The database must be freshly provisioned via =--source acme=
+  (confirmed done: the run completed with no failed steps except the
+  unrelated =marketdata.fx_driver_rates_2026= "Invalid asset_class:
+  fx" failure, a pre-existing bug in a different pipeline). Verified
+  server-side already: =select short_code, full_name, image_id from
+  ores_refdata_counterparties_tbl where short_code = 'BRCLYS';=
+  returns a non-null =image_id= for both rows (parent and any
+  duplicate).
+- The build must include the fix under test:
+  =ores_refdata_publish_lei_counterparties_from_dq_fn= (in
+  =refdata_publish_from_dq_create.sql=) now attaches a per-tenant copy
+  of the =demo_counterparty_logo= template image to any counterparty
+  whose LEI matches the function's known-logo map, inline in the same
+  publish. Confirm via =compass db recreate -y -k= completing without
+  SQL errors.
+- Services must be running (=compass services start=) and the client
+  launched against this scenario doc.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:48C10D00-5940-40E0-A8D8-B935B11A24B4][GLEIF import should natively attach counterparty logos when available]] |
+| Parent story  | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+- Username: =tenant_admin@acme_corporation=
+- Password: =Secure-Password-123=
+- Confirms: login succeeds and the main window loads.
+
+** Open Barclays Plc's counterparty detail
+
+- Navigate: Refdata > Counterparties (list window).
+- Search/filter for short code =BRCLYS= (BARCLAYS PLC).
+- Double-click the row to open =CounterpartyDetailDialog=.
+- Confirms: the dialog opens without error.
+
+** Confirm the GLEIF-attached logo renders
+
+- Look at the flag/logo button near the top of the dialog.
+- Confirms: the Barclays logo image is shown -- not the blank/
+  placeholder "no flag" icon. This confirms both fixes together: the
+  GLEIF import attached =image_id= natively (this task), and the
+  counterparty dialog now renders it on open (the earlier logo-
+  rendering fix in this same story).
+
+** Confirm no other GLEIF counterparty has a logo
+
+- Open a handful of other counterparties from the same list (any
+  short code other than =BRCLYS=).
+- Confirms: their flag buttons show the placeholder "no flag" icon --
+  the known-logo map is scoped to Barclays' LEI only, not applied
+  blanket across the whole GLEIF import.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

@@ -2253,6 +2253,67 @@ begin
         end loop;
     end;
 
+    -- Attach a logo to any newly-inserted counterparty whose LEI is in
+    -- the known-logo map below, as part of this same publish -- not a
+    -- separate post-hoc step racing this import's own completion (see
+    -- the "GLEIF import should natively attach counterparty logos"
+    -- task). One entry today (Barclays Plc, the Acme Corporation demo's
+    -- real trading counterparty); extend the VALUES list as further
+    -- logos are sourced. Each tenant gets its own copy of the
+    -- system-tenant template image (ores_assets_get_template_image_fn),
+    -- created once and reused on subsequent publishes into the same
+    -- tenant.
+    declare
+        v_logo_map record;
+        v_template record;
+        v_image_id uuid;
+    begin
+        for v_logo_map in
+            select * from (values
+                ('213800LBQA1Y9L22JB70', 'demo_counterparty_logo')
+            ) as m(lei, image_key)
+        loop
+            if not exists (
+                select 1 from lei_counterparty_uuid_map where lei = v_logo_map.lei
+            ) then
+                continue;
+            end if;
+
+            select image_id into v_image_id
+            from ores_assets_images_tbl
+            where tenant_id = p_target_tenant_id
+              and key = v_logo_map.image_key
+              and valid_to = ores_utility_infinity_timestamp_fn();
+
+            if v_image_id is null then
+                select * into v_template
+                from ores_assets_get_template_image_fn(v_logo_map.image_key);
+
+                if v_template is not null then
+                    v_image_id := gen_random_uuid();
+                    insert into ores_assets_images_tbl (
+                        image_id, tenant_id, version, key, description, mime_type, data,
+                        modified_by, performed_by, change_reason_code, change_commentary
+                    ) values (
+                        v_image_id, p_target_tenant_id, 0, v_logo_map.image_key,
+                        v_template.description, v_template.mime_type, v_template.data,
+                        coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                        'system.external_data_import',
+                        'Copied from system-tenant template: ' || v_logo_map.image_key
+                    );
+                end if;
+            end if;
+
+            if v_image_id is not null then
+                update ores_refdata_counterparties_tbl
+                set image_id = v_image_id
+                where tenant_id = p_target_tenant_id
+                  and id = (select counterparty_uuid from lei_counterparty_uuid_map where lei = v_logo_map.lei)
+                  and valid_to = ores_utility_infinity_timestamp_fn();
+            end if;
+        end loop;
+    end;
+
     insert into ores_refdata_counterparty_identifiers_tbl (
         tenant_id,
         id, version, counterparty_id, id_scheme, id_value,

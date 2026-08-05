@@ -62,7 +62,8 @@ public:
      * Idempotent; re-registering the same prefix merges in any new
      * suffixes.
      */
-    static void register_domain(const std::string& prefix, const std::set<std::string>& allowed_suffixes);
+    static void register_domain(const std::string& prefix,
+                                const std::set<std::string>& allowed_suffixes);
 
     /**
      * @brief Returns every registered domain prefix mapped to its allowed

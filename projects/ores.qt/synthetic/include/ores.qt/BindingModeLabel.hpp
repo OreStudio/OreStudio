@@ -32,8 +32,10 @@ namespace ores::qt {
 inline QString bindingModeLabel(const ores::synthetic::domain::binding_mode& bindingMode) {
     using ores::synthetic::domain::binding_mode;
     switch (bindingMode) {
-    case binding_mode::bound:     return QCoreApplication::translate("BindingModeLabel", "Bound");
-    case binding_mode::sandboxed: return QCoreApplication::translate("BindingModeLabel", "Sandboxed");
+        case binding_mode::bound:
+            return QCoreApplication::translate("BindingModeLabel", "Bound");
+        case binding_mode::sandboxed:
+            return QCoreApplication::translate("BindingModeLabel", "Sandboxed");
     }
     return QCoreApplication::translate("BindingModeLabel", "Unknown");
 }

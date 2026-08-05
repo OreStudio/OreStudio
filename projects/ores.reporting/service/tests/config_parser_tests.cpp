@@ -18,9 +18,9 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_env_unset.hpp"
 #include "ores.reporting.service/config/parser.hpp"
 #include "ores.reporting.service/config/parser_exception.hpp"
+#include "ores.testing/scoped_env_unset.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <sstream>

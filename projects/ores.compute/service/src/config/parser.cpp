@@ -47,7 +47,8 @@ options_description make_options_description() {
                             "Compute grid telemetry sample interval in seconds (0 = disabled)");
 
     using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.compute.service.log", telemetry);
+    return standard_service_options::make_options_description("ores.compute.service.log",
+                                                              telemetry);
 }
 
 void print_help(const options_description& od, std::ostream& info) {

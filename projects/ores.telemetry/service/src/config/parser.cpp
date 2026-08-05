@@ -49,7 +49,7 @@ options_description make_options_description() {
 
     using ores::service::config::standard_service_options;
     return standard_service_options::make_options_description("ores.telemetry.service.log",
-                                                               monitor_opts);
+                                                              monitor_opts);
 }
 
 void print_help(const options_description& od, std::ostream& info) {

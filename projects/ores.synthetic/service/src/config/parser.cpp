@@ -18,8 +18,8 @@
  *
  */
 #include "ores.synthetic.service/config/parser.hpp"
-#include "ores.synthetic.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
+#include "ores.synthetic.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>

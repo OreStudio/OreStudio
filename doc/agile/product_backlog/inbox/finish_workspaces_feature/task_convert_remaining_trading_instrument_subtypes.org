@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: F560ADDF-260A-4ECC-81EB-1C83A32CD5AA
+:END:
+#+title: Task: Convert remaining ~19 hand-crafted trading instrument sub-types to codegen models
+#+description: Bring the remaining ~19 hand-crafted trading instrument sub-types (bond, most equity_*/fx_* variants, commodity, composite + composite_legs, credit, scripted, swap_legs) under codegen, following the equity_position_instrument pilot's proven pattern. Most of these use the legacy Primary key heading format and need task 836BB4CE resolved or worked around per-entity first.
+#+type: task
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring the remaining ~19 hand-crafted trading instrument sub-types
+under codegen, matching what the
+[[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][equity_position_instrument
+pilot]] already proved: author a modern-format model for each,
+regenerate every facet (SQL/domain/entity/mapper/repository/service/
+generator) zero-diff against the hand-crafted original, and land the
+=has_workspace_id= inheritance query (already fixed generically in
+PR #1846) for every one of them. Most of these entities carry the
+legacy top-level =* Primary key= heading, so task 836BB4CE (or a
+per-entity rewrite into the modern column-property format, as the
+pilot did) is a prerequisite for each one individually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- Every remaining hand-crafted trading instrument sub-type (bond,
+  remaining equity_*/fx_* variants, commodity, composite +
+  composite_legs, credit, scripted, swap_legs) has a codegen model
+  authored in the modern format.
+- Each regenerates zero-diff against its hand-crafted original
+  (beyond genuine, systemic template improvements already proven safe
+  by the pilot).
+- Full project build green and full test suite passing after each
+  batch of conversions (not just at the very end).
+- Workspace inheritance (PR #1846) verified working for every
+  converted entity.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

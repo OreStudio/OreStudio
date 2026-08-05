@@ -107,15 +107,22 @@ std::optional<domain::{{entity_singular}}>
     if (results.empty()) return std::nullopt;
     return results.front();
 }
+{{#has_batch_read}}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_service::get_{{entity_plural_short}}({{{primary_key.batch_params}}}) {
+    return repo_.read_latest(ctx_, {{{primary_key.batch_args}}});
+}
+{{/has_batch_read}}
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.is_uuid}}
-    if (v.{{primary_key.column}}.is_nil())
+    if (v.{{#primary_key.is_identity_group_column}}identity.{{/primary_key.is_identity_group_column}}{{primary_key.column}}.is_nil())
         throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
 {{#primary_key.columns}}
-    if (v.{{column}}.empty())
+    if (v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.empty())
         throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/primary_key.columns}}
 {{/primary_key.is_uuid}}
@@ -130,13 +137,13 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
 {{#primary_key.is_uuid}}
     for (const auto& e : {{entity_plural_short}})
-        if (e.{{primary_key.column}}.is_nil())
+        if (e.{{#primary_key.is_identity_group_column}}identity.{{/primary_key.is_identity_group_column}}{{primary_key.column}}.is_nil())
             throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
 {{/primary_key.is_uuid}}
 {{^primary_key.is_uuid}}
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
-        if (e.{{column}}.empty())
+        if (e.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.empty())
             throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/primary_key.columns}}
     }

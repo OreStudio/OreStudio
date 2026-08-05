@@ -19,6 +19,7 @@
  */
 #include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,31 +31,91 @@ using namespace ores::logging;
 equity_position_instrument_service::equity_position_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
+std::vector<domain::equity_position_instrument>
+equity_position_instrument_service::list_equity_position_instruments(std::uint32_t offset,
+                                                                     std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all equity position instruments";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t equity_position_instrument_service::count_equity_position_instruments() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total equity position instruments count";
+    return repo_.get_total_equity_position_instrument_count(ctx_);
+}
+
+
 std::optional<domain::equity_position_instrument>
-equity_position_instrument_service::get_equity_position_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting equity_position_instrument: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+equity_position_instrument_service::get_equity_position_instrument_at_version(
+    const std::string& instrument_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting equity position instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    return repo_.read_at_version(ctx_, instrument_id, version);
+}
+
+std::optional<domain::equity_position_instrument>
+equity_position_instrument_service::get_equity_position_instrument(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting equity position instrument. "
+                               << "instrument_id: " << instrument_id;
+    auto results = repo_.read_latest(ctx_, instrument_id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
+std::vector<domain::equity_position_instrument>
+equity_position_instrument_service::get_equity_position_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    return repo_.read_latest(ctx_, instrument_ids);
+}
+
 void equity_position_instrument_service::save_equity_position_instrument(
     const domain::equity_position_instrument& v) {
     if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument("Equity position instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity_position_instrument: " << v.identity.instrument_id;
+        throw std::invalid_argument("Equity Position Instrument instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving equity position instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity_position_instrument: " << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved equity position instrument. "
+                              << "instrument_id: " << v.identity.instrument_id;
 }
 
+void equity_position_instrument_service::save_equity_position_instruments(
+    const std::vector<domain::equity_position_instrument>& equity_position_instruments) {
+    for (const auto& e : equity_position_instruments)
+        if (e.identity.instrument_id.is_nil())
+            throw std::invalid_argument(
+                "Equity Position Instrument instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_position_instruments.size()
+                               << " equity position instruments";
+    auto ts = equity_position_instruments;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void equity_position_instrument_service::delete_equity_position_instrument(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing equity position instrument. "
+                               << "instrument_id: " << instrument_id;
+    repo_.remove(ctx_, instrument_id);
+    BOOST_LOG_SEV(lg(), info) << "Removed equity position instrument. "
+                              << "instrument_id: " << instrument_id;
+}
+
+void equity_position_instrument_service::delete_equity_position_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    repo_.remove(ctx_, instrument_ids);
+}
 
 std::vector<domain::equity_position_instrument>
-equity_position_instrument_service::get_equity_position_instruments(
-    const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+equity_position_instrument_service::get_equity_position_instrument_history(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for equity position instrument. "
+                               << "instrument_id: " << instrument_id;
+    return repo_.read_all(ctx_, instrument_id);
 }
 
 }

@@ -79,6 +79,87 @@ to) and the bootstrapping engine task (the values being written).
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+*Trigger: on-demand service call*, not NATS-per-tick and not
+scheduler-only. A bootstrap is a batch recompute over a presumed-complete
+grid, unlike =curve_feed_ingest_loop='s per-tick remap; re-bootstrapping
+mid-grid-publish before every pillar has landed would be wrong. Exposed
+as =curve_republish_service::republish(bootstrap_config_id, as_of)=, a
+pure orchestration method callable from a NATS request/reply handler
+(so shell/CLI/scheduler can all call it the same way) -- not gated by
+any review/approval step; that is
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][a separate follow-on task]] layered on top of this
+always-auto-publishing mechanism.
+
+*Component placement*: =ores.marketdata.service=, alongside
+=curve_feed_ingest_loop=. Confirmed via its own CMakeLists that it
+already depends on both =ores.refdata.core.lib= (the bootstrap
+config/pillar repositories) and =ores.analytics.quant.lib= (the
+bootstrap engine) -- no new cross-component dependency needed. Neither
+=ores.marketdata.core= nor =ores.refdata.core= alone can see both
+sides.
+
+*Split into a pure resolver + a thin DB-touching orchestrator*,
+mirroring =ores.synthetic='s =ir_curve_template_resolver= exactly (its
+=resolve()= is unit-tested without a database; its
+=build_ir_curve_refdata_context()= is not):
+- =curve_republish_resolver::resolve_bootstrap_pillars(pillars,
+  refdata_context, raw_rates_by_point_id)= -- pure, unit-testable.
+  Resolves each pillar's =start_tenor_code=/=end_tenor_code= to dates via
+  the existing =tenor_resolution= machinery (=resolve_end_date=), same
+  T+0 horizon==spot simplification the generation-side resolver already
+  uses, and produces the engine's own =bootstrap_pillar= list.
+- =curve_republish_service= -- reads the config + its pillars (client-
+  side filtered by =bootstrap_config_id=, no parent-filtered repository
+  method exists yet -- same pattern
+  =ir_curve_feed_config_handler= already uses for
+  =ir_curve_template_entry=), reads the raw grid via
+  =market_observations_repository::read_as_of(source_series_id,
+  as_of)=, calls the resolver then =curve_bootstrap_engine::bootstrap=,
+  writes the output points + one =observation_lineage= row per point.
+
+*SWAP fixed-leg schedule needs no new payment-frequency field.*
+=ir_curve_bootstrap_pillar= (unlike =ir_curve_generation_config=) has
+none, and =curve_bootstrap_engine= only requires each intermediate
+fixed-leg date to resolve at or before the curve's current bootstrapped
+frontier (interpolation is fine; exact pillar match is not required --
+confirmed by reading the engine's own SWAP branch, not just its doc
+comment). So a SWAP pillar's =fixed_leg_dates= is simply every prior
+pillar's own resolved =end_date= (the config's own tenor grid, already
+naturally ascending since pillars are processed in =sequence_index=
+order) plus this pillar's own =end_date= -- the pillar list *is* the
+fixed-leg schedule, no separate concept invented.
+
+*Funding-before-Projection build order*: for a =PROJECTION= config,
+read the =discount_curve_config_id='s own =output_series_id= via
+=read_as_of()= at the same =as_of=, convert to
+=vector<bootstrapped_point>=, pass as the engine's =discount_curve=
+parameter. A =discount_curve_required_error= (empty/stale/missing
+coverage) propagates out of =republish()= uncaught -- "fails/defers
+cleanly", per the engine's own documented contract for this task to
+honour, not swallowed into a generic error.
+
+*=market_series.derivation_kind= stamping*: confirmed the prior task
+(bootstrap config refdata entities) does *not* actually mint a
+=market_series= row with =derivation_kind = 'IR_CURVE_BOOTSTRAP'= at
+config-creation time -- its own doc comment describes the intent, but
+no service code does it (only the test generator sets a random
+=output_series_id= with no backing row). Re-opening that task is out of
+scope here; instead, =republish()= itself ensures the invariant: read
+the existing =market_series= row by =output_series_id= (it must already
+exist -- a missing row is a config-integrity error, not
+auto-fabricated, since this service has none of series_type/metric/
+qualifier to invent one from) and, if its =derivation_kind= is still
+the default =OBSERVED= sentinel, update it to =IR_CURVE_BOOTSTRAP= with
+this config's =id=/=version= on the first successful republish. Treated
+as "this republish run claims the series", not a per-run write.
+
+*Re-run / bitemporal convention*: no special-casing --
+=market_observations_repository::write()= and
+=observation_lineage_service::save_observation_lineages()= already
+apply the existing soft-update trigger per their own bitemporal
+convention; a second =republish()= call for the same config naturally
+produces a new generation.
+
 * Notes
 
 * Test Scenarios

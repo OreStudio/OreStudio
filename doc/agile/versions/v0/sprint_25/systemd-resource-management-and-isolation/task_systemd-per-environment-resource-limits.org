@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
-#+branch: feature/systemd-resource-limits-ws4
+#+branch: feature/systemd-resource-limits-ws7-rest
 #+pr: 1853
 #+blocked_on:
 #+blocked_since:
@@ -37,9 +37,9 @@ touches a different file/subsystem and has its own verification.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-4 (per-environment tree/top views) implemented; raising as the fourth PR. WS-3 and WS-2 both discovered already implemented (see Notes). |
-| Waiting on   | Nothing.                               |
-| Next         | WS-7 remainder (builds into a memory-capped slice). |
+| Now          | WS-7 remainder (memory-capped build slice) implemented; raising as the fifth PR. All unprivileged workstreams (WS-1, WS-4, WS-5 unpriv, WS-7) now complete; WS-2/WS-3 confirmed already done pre-existing. |
+| Waiting on   | Someone with root, for WS-5's root half.  |
+| Next         | WS-5 (root half, needs root) and the plan's explicit deliberate-OOM acceptance test; WS-6 stays deferred. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -237,6 +237,43 @@ same way -- which would abort the *entire* =cgls= call (fleet
 subtrees included) for any environment with no active Claude session.
 Fixed with a new =_slice_is_loaded()= check; verified directly
 against both a real loaded slice and a fabricated nonexistent one.
+
+** WS-7 remainder: memory-capped build slice
+
+New checked-in drop-in,
+=projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf=
+(same dash-truncated-template mechanism as WS-1's
+=app-claude-.slice.d/=). *Values are this task's own estimate, not
+measured* -- the plan explicitly left build-slice numbers as an open
+question (same caveat WS-1's starting 6G/9G came with); documented in
+the drop-in's own header, sized for the heavier build-lock slot
+(=a=, -j3): =MemoryHigh=8G=/=MemoryMax=12G=/=MemorySwapMax=3G=/
+=CPUWeight=100=. Revisit from real =systemd-cgtop= peaks once this
+has run for a while, per the plan's own suggestion.
+
+In =compass.py=: =_ensure_build_slice_deployed()= (manifest-of-one,
+same copy-if-changed pattern as WS-1/WS-5, deliberately kept separate
+from =compass_claude.py='s manifest -- build-lifecycle deployment
+belongs with the build code) and =_build_slice_name()=. =cmd_build=
+now wraps only the actual =cmake --build= step (not the configure
+step) in =systemd-run --user --scope --slice=app-build-<env>.slice=
+when a user systemd manager is available (=_has_user_systemd()=,
+same check =compass_claude.py= uses) and it isn't a dry run;
+=--direct= builds (Emacs scripts, no cmake) are unaffected, matching
+the plan's own scope (WS-7 is about =cmake --build= specifically).
+
+Verified live end-to-end with a real (small, fast) build,
+=compass build ores.utility.lib=: confirmed
+=app-build-brave_hopper.slice= existed and was =active= while the
+build was running (=systemctl --user list-units=); confirmed via
+=systemctl --user show= that all four limits applied exactly
+(=MemoryMax=12884901888= = 12G, =MemoryHigh=8589934592= = 8G,
+=MemorySwapMax=3221225472= = 3G, =CPUWeight=100=); build completed
+successfully (=Built target ores.utility.lib=); re-ran the deploy
+helper directly and confirmed the drop-in file already matched (no
+redundant reload). =compass build --dry-run= confirmed unaffected --
+no =systemd-run= wrapping shown, matching existing behaviour (no
+lock acquired, no slot known, nothing to wrap).
 
 * Test Scenarios
 

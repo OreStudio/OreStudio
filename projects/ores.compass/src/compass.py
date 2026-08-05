@@ -13,6 +13,7 @@ Pillars:
 import argparse
 import csv
 import datetime
+import filecmp
 import functools
 import http.server
 import json
@@ -5966,6 +5967,51 @@ def _systemctl_is_active(unit) -> bool:
 BUILD_LOCK_SLOTS = (("a", 3), ("b", 2))
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
+# WS-7 change 2: dash-truncated template drop-in (same mechanism as
+# compass_claude.py's app-claude-.slice.d/) so every app-build-<env>.slice
+# systemd creates on demand picks up a memory ceiling -- see the drop-in's
+# own header for the sizing rationale. No parent app-build.slice unit is
+# deployed (unlike app-claude.slice): the drop-in alone is enough for
+# systemd to apply the limits to the implicitly-created per-environment
+# slice, and there's no separate accounting-only parent this needs.
+_BUILD_SLICE_ROOT = "app-build"
+_BUILD_LIMITS_DROPIN_REL = Path(f"{_BUILD_SLICE_ROOT}-.slice.d") / "50-limits.conf"
+_BUILD_LIMITS_DROPIN_SRC = (Path(__file__).resolve().parent / "systemd"
+                            / _BUILD_LIMITS_DROPIN_REL)
+
+
+def _build_slice_name(env_name: str) -> str:
+    return f"{_BUILD_SLICE_ROOT}-{env_name}.slice"
+
+
+def _ensure_build_slice_deployed() -> None:
+    """Sync the build-slice limits drop-in to ~/.config/systemd/user/ if
+    missing or stale, daemon-reloading only if it changed -- same
+    copy-if-changed pattern as compass_claude.py's _ensure_slice_deployed,
+    kept separate rather than sharing its manifest since build-lifecycle
+    deployment belongs with the build code, not the Claude-launch code."""
+    dest = (Path.home() / ".config" / "systemd" / "user"
+            / _BUILD_LIMITS_DROPIN_REL)
+    if dest.exists() and filecmp.cmp(_BUILD_LIMITS_DROPIN_SRC, dest, shallow=False):
+        return
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(_BUILD_LIMITS_DROPIN_SRC, dest)
+    subprocess.run(["systemctl", "--user", "daemon-reload"],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    check=False)
+
+
+def _has_user_systemd() -> bool:
+    if shutil.which("systemd-run") is None:
+        return False
+    try:
+        subprocess.run(
+            ["systemctl", "--user", "show-environment"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        return True
+    except (subprocess.CalledProcessError, OSError):
+        return False
+
 
 def _build_lock_path(slot_name):
     return Path(f"/tmp/ores-build.lock.{slot_name}")
@@ -6174,6 +6220,13 @@ def cmd_build(argv):
     concurrent cmake builds beyond that contend for the same CPUs and
     have been observed to corrupt shared library outputs. --jobs
     overrides whichever slot's job count would otherwise apply.
+
+    The actual `cmake --build` step (not the configure step) also runs
+    inside its own memory-capped app-build-<env>.slice when a user systemd
+    manager is available (see _ensure_build_slice_deployed) -- an
+    overrunning build is killed by its own cgroup OOM instead of pushing
+    the whole machine into swap, same rationale as compass claude's
+    per-environment slice.
     """
     ap = argparse.ArgumentParser(
         prog="compass build",
@@ -6278,6 +6331,20 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     build_cmd += ["-j", str(jobs)]
+    if not args.dry_run and slot_name is not None and _has_user_systemd():
+        # WS-7 change 2: the actual `cmake --build` step (not the
+        # configure step) runs inside its own memory-capped
+        # app-build-<env>.slice, so an overrunning build is killed by its
+        # own cgroup OOM instead of pushing the whole machine into swap.
+        import compass_claude
+        env_name = compass_claude._env_name(PROJECT_ROOT)
+        _ensure_build_slice_deployed()
+        build_cmd = [
+            "systemd-run", "--user", "--scope", "-q", "--collect",
+            f"--unit=build-{env_name}-{slot_name}-{os.getpid()}",
+            f"--slice={_build_slice_name(env_name)}",
+            f"--description=ORE Studio build ({env_name}, slot {slot_name})",
+        ] + build_cmd
     commands.append(build_cmd)
 
     log_path = _build_log_path(slot_name) if slot_name else None

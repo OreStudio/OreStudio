@@ -78,6 +78,19 @@ rather than killing it or falling back to a raw =cmake --build=.
 different value for one invocation. =--dry-run= does not take a lock
 or write a log.
 
+The actual =cmake --build= step (not the configure step) also runs
+inside its own memory-capped =app-build-<env>.slice= when a user
+systemd manager is available — deployed on demand from a checked-in
+dash-truncated template drop-in (same mechanism as [[id:3FED1AAE-009B-4307-866C-E1C092EA17BE][How do I launch
+Claude Code inside a systemd scope?]]'s =app-claude-.slice.d/=), so an
+overrunning build is killed by its own cgroup OOM instead of pushing
+the whole machine into swap. Inspect with:
+
+#+begin_src sh :results verbatim
+systemd-cgls --user-unit=app-build-<env>.slice
+systemctl --user show app-build-<env>.slice -p MemoryMax -p CPUWeight
+#+end_src
+
 ** Direct CMake
 
 Only for local single-environment work where you know no other
@@ -96,7 +109,10 @@ cmake --build --preset <preset> [--target <target_name>]
 =cmake --build --preset=. Locking is =_acquire_build_lock=/
 =BUILD_LOCK_SLOTS= in the same file — two =flock=-based slots
 (=-j2=/=-j3=) under =/tmp/ores-build.lock.<slot>=, shared by every
-worktree on the host.
+worktree on the host. The memory cap comes from
+=_ensure_build_slice_deployed=/=_build_slice_name= in the same file,
+syncing
+[[proj:projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf][=projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf=]].
 
 * Tested by
 

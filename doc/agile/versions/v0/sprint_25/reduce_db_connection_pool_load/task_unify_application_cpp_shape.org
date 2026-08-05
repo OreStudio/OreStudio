@@ -143,12 +143,16 @@ implementation here:
    (=ores.cpp.service-app.host_impl.org=) so future-generated
    =host.cpp= files call the shared helper too, instead of embedding
    the envelope inline.
-5. Leave =ores.cli=/=ores.shell=/=ores.compute/wrapper= as hand-written
-   =host.cpp= — their differences (sync execution + custom
-   constructor args + cli's interception branch) are real, not
-   boilerplate drift, and forcing them onto the shared helper would
-   need parameterising away genuine behavioural differences rather
-   than removing duplication.
+5. Leave =ores.cli=/=ores.shell= as hand-written =host.cpp=. Their
+   differences (sync execution, no =io_context=; custom
+   =application= constructor args instead of default-construction;
+   cli's DB-free =ore_roundtrip= interception branch before the main
+   try block) are structural, not boilerplate drift — migrating them
+   would mean adding parameters/hooks to the shared helper to
+   accommodate a different calling convention, the opposite of
+   deduplication. (=ores.compute/wrapper= turned out to fit the
+   uniform async/default-constructed shape after all and was migrated
+   along with the 17 domain services — see =* Result=.)
 6. File a follow-up capture/task for E3647ADD's design
    recommendation (composable opt-in option blocks) rather than
    implementing it here.
@@ -163,16 +167,26 @@ Shipped the =host.cpp= shared-code win from =* Plan=:
   catch envelope as a template function over =Parser=/=Application=,
   with an optional =host_runner_options= (before/success hooks,
   failure message) for services needing customisation.
-- Migrated all 18 async-shaped =host.cpp= files (17 domain services +
-  =ores.http.server=) to call it. =ore.service=/=workflow.service='s
-  drift (silently skipped log line for non-boost exceptions) is fixed
-  as a side effect of sharing one implementation.
+- Migrated all 18 async-shaped =host.cpp= files (17 domain services,
+  including =ores.compute/wrapper=, + =ores.http.server=) to call it.
+  =ore.service=/=workflow.service='s drift (silently skipped log line
+  for non-boost exceptions) is fixed as a side effect of sharing one
+  implementation.
 - Updated the =component-service= codegen archetype
   (=ores.cpp.service-app.host_impl.org=) so future-generated services
   use the shared helper from day one.
-- Left =ores.cli=/=ores.shell=/=ores.compute/wrapper= hand-written —
-  confirmed real behavioural divergence (sync execution, custom
-  constructor args, cli's DB-free interception branch), not drift.
+- Left only =ores.cli=/=ores.shell= hand-written — confirmed real
+  structural divergence (sync execution with no =io_context=, custom
+  =application= constructor args instead of default-construction,
+  cli's DB-free =ore_roundtrip= interception branch), not boilerplate
+  drift. (=ores.compute/wrapper= was originally scoped as a third
+  hand-written tool alongside these two — that was a mistake caught
+  in PR #1855 review: its =host.cpp= already matched the uniform
+  async/default-constructed shape, so it migrated cleanly with the
+  other 17. Filed [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp
+  divergence is load-bearing or historical]] to determine whether
+  these two's remaining differences are actually necessary or just
+  how they were originally written.)
 - Filed [[id:03EBF563-B711-4B61-8785-A15C41CB004A][Design standard_service_options as composable opt-in blocks]]
   as the follow-up for E3647ADD's design, per =* Plan= item 6.
 
@@ -249,4 +263,4 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Docs claim ores.compute/wrapper left hand-written, but it was actually migrated | task_unify_application_cpp_shape.org, story.org | Fixed | Corrected "left hand-written" list to ores.cli/ores.shell only in both docs; filed a follow-up capture to properly review whether cli/shell's divergence is load-bearing or historical |

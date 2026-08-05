@@ -78,9 +78,13 @@ first start attempt.
   than also implementing =config/options.hpp= composition
   unification — that overlaps with E3647ADD's (PR #1819)
   =standard_service_options= territory; filed a design recommendation
-  there instead of a second implementation. =ores.cli=/=ores.shell=/
-  =ores.compute/wrapper= kept hand-written since their differences are
-  real behavioural divergence, not boilerplate drift.
+  there instead of a second implementation. Only =ores.cli=/
+  =ores.shell= kept hand-written, confirmed real structural
+  divergence (sync execution, custom constructor args), not
+  boilerplate drift — =ores.compute/wrapper= turned out to fit the
+  uniform shape after all (caught in PR #1855 review, corrected from
+  an initial mis-scoping) and migrated along with the 17 domain
+  services.
 
 * Out of scope
 

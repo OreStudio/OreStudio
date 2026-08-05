@@ -131,7 +131,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Garbled doc comment -- verbatim span with an embedded literal =, same markup bug hit twice already in the shared-derivation-lineage task | ir_curve_bootstrap_config.org | Accepted | Reworded to avoid embedding = inside a verbatim span |
+| 2 | Acceptance criteria claim pillar tenor validation is DB-enforced; implementation is a soft, application-layer reference matching ir_curve_template_entry's own precedent | task_ir-curve-bootstrap-config.org | Accepted | Added to Follow-ons, flagging the acceptance-bullet/implementation gap explicitly |
+| 3 | Temporal consistency gap: nothing stopped an existing FUNDING config from being edited into PROJECTION (or any other role) while still referenced by active PROJECTION configs | ir_curve_bootstrap_config.org | Accepted | Added a second guard to the same insert-trigger block, since every edit to this bitemporal table runs through it as a fresh INSERT |
+| 4 | output_series_id uniqueness scoped by (tenant_id, party_id), not tenant-wide -- two different parties could each claim the same output series | ir_curve_bootstrap_config.org | Accepted | Dropped party_id from the natural key entirely; output_series_id is now the sole, tenant-wide natural key |
+| 5 | Long generated index identifier (79 chars) exceeds PostgreSQL's 63-byte NAMEDATALEN limit on the pillar table | refdata_ir_curve_bootstrap_pillars_create.sql | Declined | Pre-existing, shared codegen-template naming gap (confirmed the same issue on ir_curve_template_entries and other siblings) -- not a regression this task introduces, tracked as a follow-up against the shared template, not fixed one-off here |
+| 6 | No dedicated automated test for the two-tier rejection paths | (none, hand-written trigger logic) | Declined | Matches current project convention for other recent codegen entities (curve_role, crm_topology_config, tenor -- none have per-entity trigger tests either); verified instead via generated-SQL review and a clean db recreate, already disclosed in the PR description |
 
 * Result
 

@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Orphaned \set controller_service_pw left in generated file | projects/ores.sql/populate/iam/iam_service_accounts_populate.sql:59 | Fixed | Regenerated the file from the service registry model via ores.codegen (ores.sql.service address); the generator drops the line. Grants file deliberately NOT regenerated: it carries hand-added cross-service grants (Acme provisioner logo access, refdata party image soft-FK) that the generator does not emit — regeneration would lose them. |
 
 * Result
 

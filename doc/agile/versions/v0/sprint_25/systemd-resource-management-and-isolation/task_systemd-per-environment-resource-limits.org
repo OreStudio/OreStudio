@@ -8,11 +8,11 @@
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
 #+branch: feature/systemd-resource-limits-ws7-rest
-#+pr: 1856
+#+pr: 1862
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,11 +35,11 @@ touches a different file/subsystem and has its own verification.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-7 remainder (memory-capped build slice) implemented; raising as the fifth PR. All unprivileged workstreams (WS-1, WS-4, WS-5 unpriv, WS-7) now complete; WS-2/WS-3 confirmed already done pre-existing. |
-| Waiting on   | Someone with root, for WS-5's root half.  |
-| Next         | WS-5 (root half, needs root) and the plan's explicit deliberate-OOM acceptance test; WS-6 stays deferred. |
+| Now          | Nothing. |
+| Waiting on   | Someone with root, for WS-5's root half -- left as a follow-up, not blocking this task's close. |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -290,6 +290,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1862][#1862]] | [agile] Close systemd resource limits task, cascade story DONE |
 | [[https://github.com/OreStudio/OreStudio/pull/1856][#1856]] | [compass] WS-7 remainder: memory-capped build slice |
 | [[https://github.com/OreStudio/OreStudio/pull/1853][#1853]] | [compass] WS-4: per-environment tree/top views for compass services |
 | [[https://github.com/OreStudio/OreStudio/pull/1849][#1849]] | [compass] WS-5 (unprivileged half): protect Emacs via systemd drop-in |
@@ -306,5 +307,21 @@ via its "Verifies task" field.
 | 4 | cmd_tree adds the Claude slice to --user-unit unconditionally, with no existence check unlike the fleet units -- would abort the whole cgls call (including fleet subtrees) for any environment with no active Claude session | compass_services.py | Fixed | Added _slice_is_loaded() (systemctl is-active without the .service-suffix mangling _unit_active_state applies) and gated the slice's inclusion on it; verified directly against both a real loaded slice and a made-up nonexistent one. |
 | 5 | _has_user_systemd() in compass.py is a byte-for-byte duplicate of compass_claude._has_user_systemd() (flagged by all 3 review passes) | compass.py | Fixed | Removed the duplicate; cmd_build now calls compass_claude._has_user_systemd() directly (compass_claude was already imported on the same code path for _env_name). Re-verified live (dry-run unaffected; real build still wraps correctly in the build slice, exit 0). |
 | 6 | app-build-.slice.d/50-limits.conf omits TasksMax/ManagedOOMMemoryPressure=kill present in the sibling app-claude-.slice.d/ drop-in, with no comment explaining the difference | 50-limits.conf | Fixed | Added a one-line rationale: a build's task count is bounded by -j (nowhere near TasksMax's headroom, unlike an open-ended interactive session), and pressure-based killing mid-build would produce a confusing partial/corrupted build rather than a clean MemoryMax-triggered failure. |
+| 7 | Status table's "State \vert DONE" row trailing pipe not re-padded to the shorter value (cosmetic) | task_systemd-per-environment-resource-limits.org | Fixed | Re-padded to match the other rows' column width. |
+| 8 | #+updated header (2026-07-31) not bumped alongside "Last touched" (2026-08-05) | task_systemd-per-environment-resource-limits.org | Fixed | Bumped #+updated to 2026-08-05. |
+| 9 | "Waiting on" field doesn't say the WS-5 root-half wait is non-blocking, unlike the parent story's equivalent field | task_systemd-per-environment-resource-limits.org | Fixed | Reworded to match story.org's phrasing: "left as a follow-up, not blocking this task's close." |
 
 * Result
+
+All unprivileged workstreams of the resource-management plan shipped
+across five PRs (#1842, #1845, #1849, #1853, #1856): WS-7 change 1
+(two build-lock slots), WS-1 (per-environment Claude slices with
+MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight), WS-5 unprivileged half
+(Emacs protection drop-in), WS-4 (=compass services tree=/=top=), and
+WS-7 remainder (memory-capped =app-build-<env>.slice= wrapping
+=cmake --build=). WS-2 and WS-3 were discovered already implemented
+predating this task (Sprint 24, PR #1806) -- confirmed rather than
+reimplemented. All acceptance criteria met except the two explicitly
+out of this task's reach: WS-5's root half (needs root, not yet run)
+and the deliberate-OOM acceptance test (depends on the root half).
+WS-6 (PID 1 ownership) remains deferred, as scoped from the start.

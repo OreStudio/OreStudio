@@ -8,7 +8,7 @@
 #+filetags: :codegen:sql:iam:tech-debt:sprint_25:v0:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,7 +26,7 @@ generator output exactly.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -52,7 +52,7 @@ generator output exactly.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F3B1D6CE-BC84-4E64-A7B1-AF37A20D0FF7][Investigate and close the iam_service_db_grants_create.sql generator drift]] | BACKLOG | | | iam_service_db_grants_create.sql (generated via ores.codegen ores.sql.service address from the service registry model) carries four hand-added cross-service grants the generator does not emit: iam_service select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service select on ores_assets_ (party image soft-FK). A regeneration silently drops them. Investigate the root cause (model/template cannot express cross-domain grants), decide the fix (per-service cross-domain grant lists in the model, or a generator guard), implement it, and prove regeneration is now lossless (regenerate = no-op diff). |
+| [[id:F3B1D6CE-BC84-4E64-A7B1-AF37A20D0FF7][Investigate and close the iam_service_db_grants_create.sql generator drift]] | STARTED | 2026-08-05 | | iam_service_db_grants_create.sql (generated via ores.codegen ores.sql.service address from the service registry model) carries four hand-added cross-service grants the generator does not emit: iam_service select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service select on ores_assets_ (party image soft-FK). A regeneration silently drops them. Investigate the root cause (model/template cannot express cross-domain grants), decide the fix (per-service cross-domain grant lists in the model, or a generator guard), implement it, and prove regeneration is now lossless (regenerate = no-op diff). |
 
 * Decisions
 

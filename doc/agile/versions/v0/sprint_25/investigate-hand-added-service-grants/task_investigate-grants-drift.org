@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :investigate-hand-added-service-grants:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/investigate-grants-drift
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,7 +30,7 @@ impossible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

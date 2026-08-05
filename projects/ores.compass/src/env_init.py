@@ -634,6 +634,7 @@ def run(argv, project_root: Path) -> int:
     # PEM as a single line with literal \n separators (awk '{printf "%s\\n",$0}').
     jwt_key_oneline = "".join(l + "\\n" for l in iam_key.read_text().splitlines())
 
+    is_fresh_env = not env_file.is_file()
     if env_file.is_file():
         (env_file.parent / ".env.old").write_text(env_file.read_text())
         print("Backed up existing .env to .env.old")
@@ -643,11 +644,18 @@ def run(argv, project_root: Path) -> int:
     # .env schema drift), ORES_ENV_ACTIVITY is preserved across regenerations
     # like a reused secret: activities are often manual/privileged steps
     # configure cannot safely re-apply, so only a genuinely fresh .env (no
-    # prior value) is stamped to "caught up as of now" rather than 0 (which
-    # would wrongly demand every historical activity from a brand-new
-    # checkout). See doc/knowledge/architecture/environment_activity_log.org.
+    # .env file existed before this run) is stamped to "caught up as of
+    # now". An *existing* checkout whose .env simply predates this variable
+    # must default to 0, not "caught up" — otherwise re-running configure
+    # for an unrelated reason (rotating a password, switching a preset)
+    # would silently mark outstanding activities as acknowledged without
+    # anyone having performed them. See
+    # doc/knowledge/architecture/environment_activity_log.org.
     import env_activity
-    env_activity_num = existing.get("ORES_ENV_ACTIVITY") or str(env_activity.current_activity(checkout_root))
+    if is_fresh_env:
+        env_activity_num = str(env_activity.current_activity(checkout_root))
+    else:
+        env_activity_num = existing.get("ORES_ENV_ACTIVITY") or "0"
     print(f"Writing {env_file}...")
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     out = []

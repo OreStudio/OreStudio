@@ -5106,7 +5106,10 @@ def cmd_bearings(argv):
             pass
         try:
             import env_activity as _env_activity
-            _checkout_activity = _env_activity.checkout_activity(PROJECT_ROOT)
+            try:
+                _checkout_activity = int(_env.get("ORES_ENV_ACTIVITY", "0"))
+            except ValueError:
+                _checkout_activity = 0
             _pending_activities = _env_activity.pending(PROJECT_ROOT, _checkout_activity)
             if _pending_activities:
                 print(f"  {_C_YELLOW}⚠  {len(_pending_activities)} environment "

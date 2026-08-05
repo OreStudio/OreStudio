@@ -14,7 +14,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from env_init import _read_env  # noqa: PLC0415 — private, shared on purpose (see env_create.py)
+from env_init import _read_env  # private, shared on purpose (see env_create.py:53)
 
 
 def _activity_log_doc(project_root: Path) -> Path:
@@ -69,6 +69,11 @@ def new_activity(project_root: Path, title: str, recipe_id: str) -> int:
     the recipe that carries the actual steps, and writes it back. The recipe
     should already exist — this only records that checkouts need to run it.
     """
+    if "|" in title:
+        print("Error: title must not contain '|' (it is a literal org-table "
+              "column separator and would corrupt the log's row parsing).",
+              file=sys.stderr)
+        return 1
     doc = _activity_log_doc(project_root)
     if not doc.is_file():
         print(f"Error: activity log not found: {doc}", file=sys.stderr)

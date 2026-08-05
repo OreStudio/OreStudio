@@ -8,7 +8,7 @@
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
 #+branch: feature/systemd-resource-limits-ws7-rest
-#+pr: 1853
+#+pr: 1856
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -290,6 +290,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1856][#1856]] | [compass] WS-7 remainder: memory-capped build slice |
 | [[https://github.com/OreStudio/OreStudio/pull/1853][#1853]] | [compass] WS-4: per-environment tree/top views for compass services |
 | [[https://github.com/OreStudio/OreStudio/pull/1849][#1849]] | [compass] WS-5 (unprivileged half): protect Emacs via systemd drop-in |
 | [[https://github.com/OreStudio/OreStudio/pull/1845][#1845]] | [compass] WS-1: per-environment Claude slices with limits |

@@ -188,6 +188,17 @@ table is owned by =ores.reporting=, not =ores.dq=. This model exists
 to describe the DQ import/staging shape only; a =ores.dq=-owned main
 table would be a wrongly-owned duplicate.
 
+No Qt UI: this is a DQ-side staging view onto data that isn't
+authoritative here (see above) -- an editable window in =ores.dq= would
+be a second, confusing, edit-capable copy of import data whose real home
+is =ores.reporting=. See the Physical space table below.
+
+* Physical space
+
+| Address      | Enabled |
+|--------------+---------|
+| ores.cpp.qt  | false   |
+
 * See also
 
 - [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

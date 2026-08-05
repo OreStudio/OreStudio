@@ -200,6 +200,48 @@ faker::number::integer(1, 100)
 
 ** Custom repository methods
 
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/artefact_type.hpp
+:domain_class:           dq::domain::artefact_type
+:protocol_include:       ores.dq.api/messaging/artefact_type_protocol.hpp
+:collection_name:        types
+:item_var:               type
+:key_field:              code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_artefact_types_request
+:get_response_class:     dq::messaging::get_artefact_types_response
+:get_message_type:       get_artefact_types_request
+:save_request_class:     dq::messaging::save_artefact_type_request
+:save_response_class:    dq::messaging::save_artefact_type_response
+:save_message_type:      save_artefact_type_request
+:delete_request_class:   dq::messaging::delete_artefact_type_request
+:delete_response_class:  dq::messaging::delete_artefact_type_response
+:delete_message_type:    delete_artefact_type_request
+:history_request_class:  dq::messaging::get_artefact_type_history_request
+:history_response_class: dq::messaging::get_artefact_type_history_response
+:history_message_type:   get_artefact_type_history_request
+:settings_group:         ArtefactTypeListWindow
+:window_title:           Artefact Types
+:icon:                   Table
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Columns (Qt model)
+
+| enum_name     | field          | header         | type      | width |
+|---------------+----------------+----------------+-----------+-------|
+| Code          | code           | Code           | string    | 150   |
+| Name          | name           | Name           | string    | 200   |
+| ArtefactTable | artefact_table | Artefact Table | string    | 200   |
+| TargetTable   | target_table   | Target Table   | string    | 200   |
+| TargetSubject | target_subject | Target Subject | string    | 220   |
+| DisplayOrder  | display_order  | Order          | int       | 80    |
+| Version       | version        | Version        | int       | 80    |
+| ModifiedBy    | modified_by    | Modified By    | string    | 120   |
+| RecordedAt    | recorded_at    | Recorded At    | timestamp | 150   |
+
 * See also
 
 - [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

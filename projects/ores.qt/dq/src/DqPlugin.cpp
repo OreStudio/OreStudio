@@ -20,8 +20,15 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/BadgeDefinitionController.hpp"
 #include "ores.qt/BadgeSeverityController.hpp"
+#include "ores.qt/CatalogController.hpp"
+#include "ores.qt/ChangeReasonCategoryController.hpp"
+#include "ores.qt/ChangeReasonController.hpp"
 #include "ores.qt/CodeDomainController.hpp"
+#include "ores.qt/DataDomainController.hpp"
+#include "ores.qt/DatasetBundleController.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LeiEntityController.hpp"
+#include "ores.qt/LeiRelationshipController.hpp"
 #include <QAction>
 #include <QMenu>
 
@@ -79,6 +86,66 @@ void DqPlugin::on_login(const plugin_context& ctx) {
                                                                    ctx_.username,
                                                                    this);
     connectControllerSignals(codeDomainController_.get());
+
+    catalogController_ = std::make_unique<CatalogController>(ctx_.main_window,
+                                                              ctx_.mdi_area,
+                                                              ctx_.client_manager,
+                                                              ctx_.change_reason_cache,
+                                                              ctx_.username,
+                                                              this);
+    connectControllerSignals(catalogController_.get());
+
+    changeReasonCategoryController_ =
+        std::make_unique<ChangeReasonCategoryController>(ctx_.main_window,
+                                                          ctx_.mdi_area,
+                                                          ctx_.client_manager,
+                                                          ctx_.change_reason_cache,
+                                                          ctx_.username,
+                                                          this);
+    connectControllerSignals(changeReasonCategoryController_.get());
+
+    changeReasonController_ =
+        std::make_unique<ChangeReasonController>(ctx_.main_window,
+                                                  ctx_.mdi_area,
+                                                  ctx_.client_manager,
+                                                  ctx_.change_reason_cache,
+                                                  ctx_.username,
+                                                  this);
+    connectControllerSignals(changeReasonController_.get());
+
+    dataDomainController_ = std::make_unique<DataDomainController>(ctx_.main_window,
+                                                                    ctx_.mdi_area,
+                                                                    ctx_.client_manager,
+                                                                    ctx_.change_reason_cache,
+                                                                    ctx_.username,
+                                                                    this);
+    connectControllerSignals(dataDomainController_.get());
+
+    datasetBundleController_ =
+        std::make_unique<DatasetBundleController>(ctx_.main_window,
+                                                   ctx_.mdi_area,
+                                                   ctx_.client_manager,
+                                                   ctx_.change_reason_cache,
+                                                   ctx_.username,
+                                                   this);
+    connectControllerSignals(datasetBundleController_.get());
+
+    leiEntityController_ = std::make_unique<LeiEntityController>(ctx_.main_window,
+                                                                  ctx_.mdi_area,
+                                                                  ctx_.client_manager,
+                                                                  ctx_.change_reason_cache,
+                                                                  ctx_.username,
+                                                                  this);
+    connectControllerSignals(leiEntityController_.get());
+
+    leiRelationshipController_ =
+        std::make_unique<LeiRelationshipController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     this);
+    connectControllerSignals(leiRelationshipController_.get());
 
     // BadgeDefinitionController cross-domain relays: toolbar buttons on
     // BadgeDefinitionMdiWindow open the related badge catalogue windows,
@@ -146,6 +213,67 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
                 codeDomainController_->showListWindow();
         });
     }
+
+    // &Governance submenu: foundational DQ lookups that every other entity
+    // in the system leans on (catalog ownership, change-reason taxonomy,
+    // data domains) -- distinct from Badges (severity/classification) and
+    // Classifications (coding schemes/code domains) above.
+    auto* governance = dq->addMenu(tr("&Governance"));
+
+    auto* actCatalogs = governance->addAction(tr("&Catalogs"));
+    connect(actCatalogs, &QAction::triggered, this, [this]() {
+        if (catalogController_)
+            catalogController_->showListWindow();
+    });
+
+    auto* actDataDomains = governance->addAction(tr("&Data Domains"));
+    connect(actDataDomains, &QAction::triggered, this, [this]() {
+        if (dataDomainController_)
+            dataDomainController_->showListWindow();
+    });
+
+    auto* actChangeReasons = governance->addAction(tr("Change &Reasons"));
+    connect(actChangeReasons, &QAction::triggered, this, [this]() {
+        if (changeReasonController_)
+            changeReasonController_->showListWindow();
+    });
+
+    auto* actChangeReasonCategories = governance->addAction(tr("Change Reason &Categories"));
+    connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
+        if (changeReasonCategoryController_)
+            changeReasonCategoryController_->showListWindow();
+    });
+
+    // Dataset Bundles: top-level entry point, same tier as Badges -- it is
+    // the primary DQ management concept for grouping installable datasets.
+    auto* actDatasetBundles = dq->addAction(tr("Dataset &Bundles"));
+    connect(actDatasetBundles, &QAction::triggered, this, [this]() {
+        if (datasetBundleController_)
+            datasetBundleController_->showListWindow();
+    });
+
+    // &LEI Registry submenu: the two GLEIF LEI entities (entity + corporate
+    // hierarchy relationship) belong together as a single registry concept,
+    // distinct from the generic badge/coding-scheme governance above.
+    auto* leiRegistry = dq->addMenu(tr("&LEI Registry"));
+
+    auto* actLeiEntities = leiRegistry->addAction(tr("LEI &Entities"));
+    connect(actLeiEntities, &QAction::triggered, this, [this]() {
+        if (leiEntityController_)
+            leiEntityController_->showListWindow();
+    });
+
+    auto* actLeiRelationships = leiRegistry->addAction(tr("LEI &Relationships"));
+    connect(actLeiRelationships, &QAction::triggered, this, [this]() {
+        if (leiRelationshipController_)
+            leiRelationshipController_->showListWindow();
+    });
+
+    // report_definition/synthetic_fx_spot_config deliberately have no menu
+    // entry here: they are DQ-side staging views with no Qt UI of their own
+    // (ores.cpp.qt disabled -- see each model's "* Physical space" table).
+    // Their authoritative, editable home is ores.reporting/ores.synthetic
+    // respectively.
 }
 
 QList<QMenu*> DqPlugin::create_menus() {
@@ -160,6 +288,13 @@ QList<QMenu*> DqPlugin::create_menus() {
 
 void DqPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
+    leiRelationshipController_.reset();
+    leiEntityController_.reset();
+    datasetBundleController_.reset();
+    dataDomainController_.reset();
+    changeReasonController_.reset();
+    changeReasonCategoryController_.reset();
+    catalogController_.reset();
     codeDomainController_.reset();
     badgeSeverityController_.reset();
     badgeDefinitionController_.reset();

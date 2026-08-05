@@ -32,7 +32,11 @@ set(files
     "messaging/data_domain_event_registrar.cpp"
     "messaging/dataset_bundle_event_registrar.cpp"
     "messaging/event_registrar.cpp"
+    "messaging/lei_entity_event_registrar.cpp"
+    "messaging/lei_relationship_event_registrar.cpp"
+    "messaging/report_definition_event_registrar.cpp"
     "messaging/subject_area_event_registrar.cpp"
+    "messaging/synthetic_fx_spot_config_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -54,6 +58,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/data_domain_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_entity_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/report_definition_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/subject_area_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/messaging/synthetic_fx_spot_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.service/ores.dq.service.hpp"
 )

@@ -2,6 +2,9 @@
 :ID: C9B53884-25FA-4D13-AE8A-6469B1854474
 :profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.qt.detail_dialog_header.enabled: false
+:ores.cpp.qt.detail_dialog_impl.enabled: false
+:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.dq.lei_entity
 #+description: Codegen entity model for the dq =lei_entity= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -50,7 +53,7 @@ std::string(faker::string::alphanumeric(20))
 :END:
 
 #+begin_src cpp :name generator
-std::string(faker::company::name())
+std::string(faker::company::companyName())
 #+end_src
 
 ** entity_entity_category
@@ -292,7 +295,7 @@ std::string(faker::word::noun())
 :END:
 
 #+begin_src cpp :name generator
-std::string(faker::company::name())
+std::string(faker::company::companyName())
 #+end_src
 
 ** entity_transliterated_name_1_type
@@ -378,6 +381,32 @@ std::string(faker::word::noun())
 | modified_by           | Modified By  |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.dq.api/domain/lei_entity.hpp
+:domain_class:                dq::domain::lei_entity
+:protocol_include:            ores.dq.api/messaging/lei_entity_protocol.hpp
+:collection_name:             entities
+:item_var:                    entity
+:key_field:                   lei
+:get_request_class:           dq::messaging::get_lei_entities_request
+:get_response_class:          dq::messaging::get_lei_entities_response
+:get_message_type:            get_lei_entities_request
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:settings_group:               LeiEntityListWindow
+:window_title:                 LEI Entities
+:icon:                         Table
+:END:
+
+*** Columns (Qt model)
+
+| enum_name  | field                | header      | type   | width |
+|------------+----------------------+-------------+--------+-------|
+| Lei        | lei                  | LEI         | string |   150 |
+| LegalName  | entity_legal_name    | Legal Name  | string |   250 |
+| Status     | entity_entity_status | Status      | string |   120 |
 
 * Notes
 

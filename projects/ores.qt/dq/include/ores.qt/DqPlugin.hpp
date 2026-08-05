@@ -30,12 +30,27 @@ namespace ores::qt {
 
 class BadgeDefinitionController;
 class BadgeSeverityController;
+class CatalogController;
+class ChangeReasonCategoryController;
+class ChangeReasonController;
 class CodeDomainController;
+class DataDomainController;
+class DatasetBundleController;
+class LeiEntityController;
+class LeiRelationshipController;
 
 /**
  * @brief Qt plugin owning the ores.dq badge-governance entities' Qt
  * layer: badge_definition, badge_severity, code_domain (and, via
- * CodeDomainDetailDialog's BadgeMappingsTab, badge_mapping).
+ * CodeDomainDetailDialog's BadgeMappingsTab, badge_mapping); plus
+ * dataset_bundle (dataset installation grouping) and the LEI registry
+ * (lei_entity/lei_relationship, read-only browse windows).
+ *
+ * report_definition/synthetic_fx_spot_config are deliberately NOT here:
+ * they are DQ-side staging views whose authoritative home is another
+ * component (ores.reporting/ores.synthetic respectively) -- see each
+ * model's "* Notes"/"* Physical space" sections, which disable
+ * ores.cpp.qt for them entirely.
  *
  * Every entity this plugin owns is modeled in ores.dq -- the plugin
  * boundary lines up with the C++ component boundary, per the same
@@ -72,7 +87,14 @@ private:
 
     std::unique_ptr<BadgeDefinitionController> badgeDefinitionController_;
     std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
+    std::unique_ptr<CatalogController> catalogController_;
+    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
+    std::unique_ptr<ChangeReasonController> changeReasonController_;
     std::unique_ptr<CodeDomainController> codeDomainController_;
+    std::unique_ptr<DataDomainController> dataDomainController_;
+    std::unique_ptr<DatasetBundleController> datasetBundleController_;
+    std::unique_ptr<LeiEntityController> leiEntityController_;
+    std::unique_ptr<LeiRelationshipController> leiRelationshipController_;
 };
 
 }

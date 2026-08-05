@@ -30,7 +30,6 @@
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
-#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
@@ -51,10 +50,13 @@
 #include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dimension_handler.hpp"
 #include "ores.dq.core/messaging/fsm_handler.hpp"
-#include "ores.dq.core/messaging/lei_entity_handler.hpp"
+#include "ores.dq.core/messaging/lei_entity_registrar.hpp"
+#include "ores.dq.core/messaging/lei_relationship_registrar.hpp"
 #include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
 #include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
 #include "ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
 #include "ores.dq.core/service/badge_definition_service.hpp"
@@ -421,15 +423,36 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              [cs](ores::nats::message msg) { cs->history(std::move(msg)); }));
 
     // =========================================================================
-    // LEI Entities
+    // LEI Entities, LEI Relationships, Report Definitions, Synthetic FX Spot
+    // Configs are on the standard generated stack (see their own
+    // *_handler/_registrar pairs), migrated from lookup_entity.
     // =========================================================================
 
-    auto lei = std::make_shared<lei_entity_handler>(nats, ctx, verifier);
-
-    subs.push_back(
-        nats.queue_subscribe(get_lei_entities_summary_request::nats_subject,
-                             queue_group,
-                             [lei](ores::nats::message msg) { lei->summary(std::move(msg)); }));
+    {
+        auto lei_entity_subs = register_lei_entity_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(lei_entity_subs.begin()),
+                    std::make_move_iterator(lei_entity_subs.end()));
+    }
+    {
+        auto lei_relationship_subs = register_lei_relationship_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(lei_relationship_subs.begin()),
+                    std::make_move_iterator(lei_relationship_subs.end()));
+    }
+    {
+        auto report_definition_subs = register_report_definition_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(report_definition_subs.begin()),
+                    std::make_move_iterator(report_definition_subs.end()));
+    }
+    {
+        auto synthetic_fx_spot_config_subs =
+            register_synthetic_fx_spot_config_handlers(nats, ctx, verifier);
+        subs.insert(subs.end(),
+                    std::make_move_iterator(synthetic_fx_spot_config_subs.begin()),
+                    std::make_move_iterator(synthetic_fx_spot_config_subs.end()));
+    }
 
     // =========================================================================
     // Report Definition Templates (served from DQ artefact tables)

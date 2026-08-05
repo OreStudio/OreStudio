@@ -2,6 +2,9 @@
 :ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
 :profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.qt.detail_dialog_header.enabled: false
+:ores.cpp.qt.detail_dialog_impl.enabled: false
+:ores.cpp.qt.detail_dialog_ui.enabled: false
 :END:
 #+title: ores.dq.lei_relationship
 #+description: Codegen entity model for the dq =lei_relationship= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -237,6 +240,32 @@ std::string(faker::word::noun())
 | modified_by                          | Modified By  |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.dq.api/domain/lei_relationship.hpp
+:domain_class:                dq::domain::lei_relationship
+:protocol_include:            ores.dq.api/messaging/lei_relationship_protocol.hpp
+:collection_name:             relationships
+:item_var:                    relationship
+:key_field:                   relationship_start_node_node_id
+:get_request_class:           dq::messaging::get_lei_relationships_request
+:get_response_class:          dq::messaging::get_lei_relationships_response
+:get_message_type:            get_lei_relationships_request
+:has_pagination:              true
+:has_readonly_paginated_list: true
+:settings_group:               LeiRelationshipListWindow
+:window_title:                 LEI Relationships
+:icon:                         Table
+:END:
+
+*** Columns (Qt model)
+
+| enum_name   | field                            | header     | type   | width |
+|-------------+----------------------------------+------------+--------+-------|
+| StartNode   | relationship_start_node_node_id  | Start Node | string |   150 |
+| EndNode     | relationship_end_node_node_id    | End Node   | string |   150 |
+| RelType     | relationship_relationship_type   | Type       | string |   150 |
 
 * Notes
 

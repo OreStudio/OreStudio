@@ -29,11 +29,11 @@ without hand-editing =.env=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -85,3 +85,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in commit 0863b91af, raised as a PR from
+=feature/remove-controller-from-recreate-required-vars= and merged to
+main:
+
+- Regenerated =projects/ores.sql/service_vars.sh= from the service
+  registry model — =controller= was already absent from the model, so
+  regeneration alone removed it from =SERVICE_NAMES=; the file was a
+  stale generated artefact.
+- Removed the controller service user block from
+  =service_users_create.sql=, the controller entries from
+  =iam_service_db_grants_create.sql= (grant lists + DML grant block),
+  and the controller service account / role assignment from the IAM
+  populate files — all referenced the =:'controller_service_user'= psql
+  variables that =compass db recreate= no longer passes.
+
+All acceptance criteria met, verified on festive_dijkstra:
+=compass db recreate -y -k= completes all three phases on a fresh
+=.env= with no controller credentials present (1m 58s); local build
+clean (linux-clang-debug-make), ctest 71/71 passed.
+
+Out of scope, left for the sibling decommission task: the
+=ores_controller_service_*_tbl= tables, RLS policies, ControllerService
+IAM role/permissions rows, and the
+=ORES_CONTROLLER_SERVICE_{HTTP,WT}_PORT= env vars (covered by the
+rename task).

@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | Not yet started.                       |
+| Now          | 1/19 converted: equity_variance_swap_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Convert the next flat instrument (e.g. fx_forward, equity_forward, fx_accumulator). |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -67,7 +67,76 @@ pilot did) is a prerequisite for each one individually.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+Converting entities one at a time (or in small batches), each fully
+verified (build + tests + zero-diff on a second regen pass) before
+moving to the next, following the equity_position_instrument pilot's
+approach exactly. Picking flat, leg-free instruments first (simplest,
+matches the pilot's shape 1:1); composite_instrument/composite_leg
+and any swap-leg-bearing entities (which carry genuine custom
+transactional service logic beyond plain CRUD) are deferred until the
+codegen service template gains proper support for hand-written
+extension points -- see Notes.
+
 * Notes
+
+** Composite/leg-bearing entities need a template feature, not just a model
+
+Attempted =composite_instrument= first (after the pilot) since it's
+the smallest remaining domain struct (49 lines). Regeneration failed
+to build: the hand-crafted =composite_instrument_handler.hpp=
+messaging dispatcher calls custom service methods
+(=save_composite_instrument(data, legs)=,
+=remove_composite_instrument=, =get_legs=/=get_legs_batch=) that
+manage the parent + =composite_leg= child relationship
+transactionally -- genuine custom logic no codegen service template
+currently reproduces. The =Custom repository methods= org heading
+exists in the model schema but isn't actually consumed by any
+template today (confirmed by grep), so this isn't a quick fix.
+
+=fra_instrument= has the identical pattern with =swap_leg= (custom
+=get_swap_legs=/=get_swap_legs_batch=/save-with-legs methods hand-
+patched onto its "generated" service file) -- and because
+=fra_instrument.org= is permanently blocked from regeneration by task
+836BB4CE, this drift has never actually been caught or verified. Any
+entity with a *_leg child table (composite_instrument, and
+presumably every swap-leg-bearing swap/swaption entity) shares this
+gap.
+
+Decision: defer composite_instrument/composite_leg and any other
+leg-bearing entities to a follow-up once the service template gains
+a genuine paste-block/custom-method extension mechanism (or the
+custom methods are otherwise formalised) -- don't force a hand-patch
+that would just recreate the same silent-drift problem fra_instrument
+already has. Picking flat, single-table instruments first instead.
+
+Also discovered along the way: the shared
+=ores.trading.instrument_identity= field-group struct hardcodes the
+=instrument_id= field name, so it only fits entities whose primary key
+column is literally named =instrument_id= (as in the pilot). Entities
+like =composite_instrument= whose PK column is =id= don't fit that
+group and would need either a rename (bigger blast radius, changes
+the DB column) or to stay flat with no identity grouping (fine --
+small entities don't need the C1202 nesting anyway).
+
+** equity_variance_swap_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children, matches the pilot's shape exactly
+(instrument_identity + audit_record groups, has_batch_read,
+has_workspace_id). Two =date=-typed columns (=start_date=/
+=maturity_date=) modelled as =std::string= with =:cpp_type: std::string=,
+following the precedent already used by =cap_floor_instrument.org=
+and others (ISO 8601 date strings, not =std::chrono::year_month_day=).
+
+Zero-diff regeneration across all facets (SQL, domain, entity,
+mapper, repository, service, generator) beyond the same systemic
+template improvements already proven safe by the pilot and the
+follow-up workspace_id/batch-remove fixes (PR #1857). Verified with a
+second regeneration pass producing byte-identical output. Full
+project build green; =ores.trading.*= tests pass; full repo =ctest=
+71/71 test binaries pass (the one pre-existing, unrelated
+=ores.marketdata.core.tests= failure from live DB schema drift
+persists, unrelated to this work -- confirmed zero diff in any
+marketdata file).
 
 * Test Scenarios
 

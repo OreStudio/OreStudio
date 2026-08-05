@@ -31,7 +31,7 @@ std::map<std::string, std::set<std::string>>& mutable_domains() {
 }
 
 void shared_domain_registry::register_domain(const std::string& prefix,
-                                              const std::set<std::string>& allowed_suffixes) {
+                                             const std::set<std::string>& allowed_suffixes) {
     mutable_domains()[prefix].insert(allowed_suffixes.begin(), allowed_suffixes.end());
 }
 

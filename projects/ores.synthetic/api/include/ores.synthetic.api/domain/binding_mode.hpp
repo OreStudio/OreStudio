@@ -29,11 +29,11 @@ namespace ores::synthetic::domain {
  * Orthogonal to scope, which decides how widely the data is shared.
  */
 enum class binding_mode {
-    bound,     ///< Resolved into the feed real consumers see. At most one
-               ///< bound config may be active per (instrument, scope).
-    sandboxed  ///< Generated and published under a distinct namespace,
-               ///< reachable only by explicit selection; never resolved
-               ///< into the bound feed.
+    bound,    ///< Resolved into the feed real consumers see. At most one
+              ///< bound config may be active per (instrument, scope).
+    sandboxed ///< Generated and published under a distinct namespace,
+              ///< reachable only by explicit selection; never resolved
+              ///< into the bound feed.
 };
 
 }

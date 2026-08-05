@@ -504,8 +504,7 @@ void CrmCrossRatesMatrixMdiWindow::reload() {
             // and its "font-weight: 600" -- one error visual identity
             // across CRM/FX windows, not a coincidentally-similar one.
             self->footerLabel_->setText(tr("DISCONNECTED"));
-            self->footerLabel_->setStyleSheet(
-                QStringLiteral("color: #dc2626; font-weight: 600;"));
+            self->footerLabel_->setStyleSheet(QStringLiteral("color: #dc2626; font-weight: 600;"));
             self->footerLabel_->setToolTip(msg);
             return;
         }

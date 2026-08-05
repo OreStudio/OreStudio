@@ -46,7 +46,8 @@ options_description make_options_description() {
                           "Base URL of the storage HTTP API");
 
     using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.marketdata.service.log", storage);
+    return standard_service_options::make_options_description("ores.marketdata.service.log",
+                                                              storage);
 }
 
 void print_help(const options_description& od, std::ostream& info) {

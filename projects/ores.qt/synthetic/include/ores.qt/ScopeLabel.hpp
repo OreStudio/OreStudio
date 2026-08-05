@@ -32,9 +32,12 @@ namespace ores::qt {
 inline QString scopeLabel(const ores::synthetic::domain::scope& scope) {
     using ores::synthetic::domain::scope;
     switch (scope) {
-    case scope::system: return QCoreApplication::translate("ScopeLabel", "System");
-    case scope::tenant: return QCoreApplication::translate("ScopeLabel", "Tenant");
-    case scope::party:  return QCoreApplication::translate("ScopeLabel", "Party");
+        case scope::system:
+            return QCoreApplication::translate("ScopeLabel", "System");
+        case scope::tenant:
+            return QCoreApplication::translate("ScopeLabel", "Tenant");
+        case scope::party:
+            return QCoreApplication::translate("ScopeLabel", "Party");
     }
     return QCoreApplication::translate("ScopeLabel", "Unknown");
 }

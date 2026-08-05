@@ -752,8 +752,7 @@ private:
         }
         if (!folder_id) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                << "start_synthetic_theme_feeds: no collection folder for dataset "
-                << dataset_code;
+                << "start_synthetic_theme_feeds: no collection folder for dataset " << dataset_code;
             return false;
         }
         const auto folder_id_str = boost::uuids::to_string(*folder_id);

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.workspace.service/config/parser.hpp"
-#include "ores.workspace.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.workspace.service/config/parser_exception.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <ostream>

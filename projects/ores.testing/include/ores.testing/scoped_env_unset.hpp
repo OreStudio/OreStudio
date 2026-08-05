@@ -42,7 +42,8 @@ namespace ores::testing {
  */
 class scoped_env_unset final {
 public:
-    explicit scoped_env_unset(std::vector<std::string> names) : names_(std::move(names)) {
+    explicit scoped_env_unset(std::vector<std::string> names)
+        : names_(std::move(names)) {
         using ores::platform::environment::environment;
         for (const auto& name : names_) {
             previous_.emplace_back(name, environment::get_value(name));

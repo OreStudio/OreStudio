@@ -65,9 +65,9 @@ public:
      * "ores.iam.service.log").
      * @param extra_options App-specific options to merge in, if any.
      */
-    static boost::program_options::options_description make_options_description(
-        const std::string& log_file,
-        const boost::program_options::options_description& extra_options = {});
+    static boost::program_options::options_description
+    make_options_description(const std::string& log_file,
+                             const boost::program_options::options_description& extra_options = {});
 
     /**
      * @brief Parses @p arguments against @p od via
@@ -83,8 +83,8 @@ public:
      */
     static boost::program_options::variables_map
     parse(const boost::program_options::options_description& od,
-         const std::vector<std::string>& arguments,
-         const std::string& app_name);
+          const std::vector<std::string>& arguments,
+          const std::string& app_name);
 
     /**
      * @brief Reads the standard logging/nats/database sub-options from a

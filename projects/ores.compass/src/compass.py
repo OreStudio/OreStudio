@@ -6449,13 +6449,16 @@ def cmd_shell(argv):
 
     cmd = [str(binary)]
 
+    # --nats-url/--nats-subject-prefix/--nats-wire-format are deliberately
+    # NOT threaded here: ores.shell's own parser already reads its
+    # ORES_SHELL_NATS_* mirror directly via its app-prefix mapper (see
+    # ores.shell/src/config/parser.cpp), so passing them again on the
+    # command line would be redundant. The TLS trio stays CLI-supplied,
+    # out of scope per the mapper fallback-tier task's Decisions.
     flag_for = {
-        "ORES_SHELL_NATS_URL": "--nats-url",
-        "ORES_SHELL_NATS_SUBJECT_PREFIX": "--nats-subject-prefix",
         "ORES_SHELL_NATS_TLS_CA": "--nats-tls-ca",
         "ORES_SHELL_NATS_TLS_CERT": "--nats-tls-cert",
         "ORES_SHELL_NATS_TLS_KEY": "--nats-tls-key",
-        "ORES_SHELL_NATS_WIRE_FORMAT": "--nats-wire-format",
     }
     for key, flag in flag_for.items():
         if env.get(key):

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:compass:systemd:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/wire-systemd-generate-to-codegen-model
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ compass systemd generate has zero DB dependency and every service picks up its N
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:79F3E3F0-1F11-4A1D-AFB0-8CF9DD6C9972][Merge service deployment config into service_registry.org as a new aspect]] -- needs the deployment aspect to exist before systemd_generate.py can read it. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,46 @@ compass systemd generate has zero DB dependency and every service picks up its N
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- systemd_generate.py: replaced fetch_service_definitions/
+  fetch_dependencies's psql queries against
+  ores_controller_service_definitions_tbl/
+  ores_controller_service_dependencies_tbl with a new
+  load_service_registry(project_root), which imports
+  codegen.org_loader.load_org_service_registry_model and reads
+  projects/modeling/service_registry.org directly -- no DB round-trip.
+  fetch_service_definitions/fetch_dependencies now take the loaded
+  services list instead of env, and derive desired_replicas/enabled/
+  depends_on/args_template straight from the model's deployment
+  aspect (binary_name is always identical to service_name, confirmed
+  against the old populate script's seed data, so no separate lookup
+  is needed).
+- Stripped --nats-url/--nats-subject-prefix/--nats-wire-format from
+  DEFAULT_ARGS_TEMPLATE and from _substitute_args's placeholder
+  substitutions -- every service already resolves these from .env via
+  the shared-domain fallback tier (task A of this story's earlier
+  chain). Kept the nats-tls-* trio CLI-supplied via {nats_tls_args},
+  out of scope per the mapper fallback-tier task's Decisions.
+- compass_services.py's _service_units() called
+  systemd_generate.fetch_service_definitions(ctx.env) directly with
+  the old signature -- a second, not-otherwise-mentioned consumer this
+  task's migration would have broken. Fixed to
+  load_service_registry(ctx.root) + fetch_service_definitions(services).
+- compass.py's shell subcommand: removed ORES_SHELL_NATS_URL/
+  ORES_SHELL_NATS_SUBJECT_PREFIX/ORES_SHELL_NATS_WIRE_FORMAT from
+  flag_for -- ores.shell's own parser (parser.cpp) already reads its
+  ORES_SHELL_NATS_* mirror via its "SHELL" app-prefix mapper, so
+  passing them again on argv was redundant. Left the TLS trio
+  threaded, same scope boundary as above.
+- Verified end-to-end rather than just at the Python level:
+  `compass systemd generate` (no DB touched, confirmed by reading the
+  generated units -- no --nats-url/--nats-subject-prefix/
+  --nats-wire-format anywhere, e.g. ores.iam.service's ExecStart=),
+  `compass systemd quadlet`, `compass systemd deploy`, `compass
+  services start` (all 23 units + nats-server reach active/ready),
+  `compass services status` (all running), and `compass shell
+  --dry-run` (only the TLS trio threaded). Ran the full ores.codegen
+  (117/117) and ores.compass (43/43) pytest suites; no existing
+  systemd_generate.py test coverage existed to extend.
 
 * Notes
 
@@ -69,3 +106,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+compass systemd generate/quadlet now read
+projects/modeling/service_registry.org's deployment aspect directly via
+codegen.org_loader -- zero DB dependency, closing the last of the five
+original argv-threading layers. All 19 fleet processes' rendered units
+(25 concrete units total, including compute.wrapper's 5 replicas) no
+longer pass --nats-url/--nats-subject-prefix/--nats-wire-format;
+compass shell no longer threads them either. Verified live: generated,
+deployed, and started the full fleet (23 running units + nats-server),
+all reaching active/ready and connecting to NATS correctly purely via
+.env's shared-domain fallback, exactly as the acceptance criteria
+require. Also found and fixed a second consumer
+(compass_services.py's _service_units()) that called the old
+fetch_service_definitions(env) signature directly and would have
+broken on this migration.

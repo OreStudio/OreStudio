@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F7C4A1E-2B6D-4E9A-8C5F-1D6E9A2B7C4F
+:profile: uuid-surrogate-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.synthetic_fx_spot_config
@@ -11,7 +12,6 @@
 #+entity_singular: synthetic_fx_spot_config
 #+entity_plural: synthetic_fx_spot_configs
 #+entity_title: Synthetic FX Spot Config
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+has_artefact_insert_fn: false
@@ -26,6 +26,7 @@ Synthetic FX Spot Config artefacts - denormalized parent+child FX generation con
 :product:   ores
 :component: dq
 :END:
+
 
 * Columns
 
@@ -244,6 +245,17 @@ std::string("2016-02-05")
 | modified_by         | Modified By  |
 
 ** Custom repository methods
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] (alongside its shape profile): this
+artefact type's own row in =ores_dq_artefact_types_tbl=
+(=synthetic_theme=, covering =synthetic_fx_spot_configs= among its
+sibling asset-class tables) publishes to =target_table:
+synthetic_market_data_generation_configs_tbl= -- the authoritative
+production table is owned by =ores.synthetic=, not =ores.dq=. This
+model exists to describe the DQ import/staging shape only; a
+=ores.dq=-owned main table would be a wrongly-owned duplicate.
 
 * See also
 

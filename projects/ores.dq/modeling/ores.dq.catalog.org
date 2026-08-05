@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 55C9F620-03D7-421C-BC6B-911CF956AC7F
+:profile: simple-lookup
 :END:
 #+title: ores.dq.catalog
 #+description: Codegen entity model for the dq =catalog= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -25,7 +26,6 @@ authored directly (not mirrored from an external source).
 
 * Flags
 :PROPERTIES:
-:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq

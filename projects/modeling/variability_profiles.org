@@ -30,10 +30,12 @@ abstract.
 | [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]] | =book= | UUID surrogate key, tenant+workspace scope, basic Qt, explorer-child of a parent entity. |
 | [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]] | =counterparty= | UUID surrogate key, standard Qt tier, self-referencing =has_parent_id= tree. |
 | [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]] | =currency= | Text natural key, rich Qt tier: CSV/XML import-export, version navigation. |
+| [[id:32F5391B-C8C6-4D5E-BB35-B5DF08B9EB6E][UUID surrogate lookup]] | =dataset_bundle= | UUID surrogate key, tenant-scoped, standard Qt tier, no relationships -- the UUID-keyed counterpart to Simple lookup. |
 | [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]] | =market_observation= | No Qt, TimescaleDB hypertable, write-heavy measurement stream. |
 | [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]] | =cds_convention= | Text natural key, tenant+workspace scope, standard Qt tier. |
 | [[id:9618DCF1-2FE8-4AE2-A841-F671A97E764E][Tenant-scoped junction]] | =currency_calendar= | Plain many-to-many association, tenant-scoped, no Qt surface. The one profile anchored to the =junction= metatype rather than =domain_entity=. |
 | [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]] | =pricing_model_config= | UUID surrogate key, tenant scope, standard Qt tier, no parent or workspace. The UUID-keyed counterpart of =simple-lookup=. |
+| [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] | =lei_entity= | Enablement-only: no main table, only the artefact/staging table. Carries no feature Assignments -- bind it *alongside* a shape profile (=:profile: simple-lookup, artefact-staging-only=), not in place of one. |
 
 * See also
 

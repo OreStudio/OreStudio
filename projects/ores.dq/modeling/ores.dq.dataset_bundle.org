@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B
+:profile: uuid-surrogate-lookup
 :END:
 #+title: ores.dq.dataset_bundle
 #+description: Codegen entity model for the dq =dataset_bundle= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -27,7 +28,6 @@ Examples:
 :schema:        public
 :product:       ores
 :component:     dq
-:has_tenant_id: true
 :END:
 
 * Columns
@@ -162,6 +162,8 @@ std::string(faker::lorem::sentence())
 :settings_group:         DatasetBundleListWindow
 :window_title:           Dataset Bundles
 :icon:                   Folder
+:has_change_reason_cache: true
+:has_pagination:         true
 :END:
 
 *** Columns (Qt model)

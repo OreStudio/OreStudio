@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
+:profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.lei_relationship
@@ -21,11 +22,11 @@ GLEIF LEI corporate hierarchy relationships from RR golden copy files
 
 * Flags
 :PROPERTIES:
-:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq
 :END:
+
 
 * Columns
 
@@ -236,6 +237,15 @@ std::string(faker::word::noun())
 | modified_by                          | Modified By  |
 
 ** Custom repository methods
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] (alongside its shape profile): this
+artefact type's own row in =ores_dq_artefact_types_tbl=
+(=lei_relationships=) has =target_table=/=target_subject= both null --
+explicitly terminal, not published anywhere. GLEIF LEI
+corporate-hierarchy data is queried directly from the artefact table;
+a same-component main table would be an orphan nobody designed for.
 
 * See also
 

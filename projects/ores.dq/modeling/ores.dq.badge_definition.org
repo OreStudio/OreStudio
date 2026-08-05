@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7BEB786A-A573-474E-9677-64C869A64E47
+:profile: simple-lookup
 :END:
 #+title: ores.dq.badge_definition
 #+description: Codegen entity model for the dq =badge_definition= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -26,7 +27,6 @@ reference data and looked up at render time via BadgeCache.
 :schema:        public
 :product:       ores
 :component:     dq
-:has_tenant_id: true
 :END:
 
 * Columns
@@ -226,6 +226,7 @@ faker::number::integer(1, 100)
 :window_title:           Badge Definitions
 :icon:                   Tag
 :has_change_reason_cache: true
+:has_pagination:         true
 :END:
 
 *** Detail fields

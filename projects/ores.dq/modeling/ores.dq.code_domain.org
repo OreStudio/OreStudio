@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 17FF90EF-64C4-4FF2-B30F-C0714A79FFD4
+:profile: simple-lookup
 :END:
 #+title: ores.dq.code_domain
 #+description: Codegen entity model for the dq =code_domain= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -27,7 +28,6 @@ can reference this table.
 :schema:        public
 :product:       ores
 :component:     dq
-:has_tenant_id: true
 :END:
 
 * Columns
@@ -158,6 +158,8 @@ faker::number::integer(1, 100)
 :settings_group:         CodeDomainListWindow
 :window_title:           Code Domains
 :icon:                   Table
+:has_change_reason_cache: true
+:has_pagination:         true
 :END:
 
 *** Columns (Qt model)

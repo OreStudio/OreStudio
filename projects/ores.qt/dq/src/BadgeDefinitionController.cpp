@@ -171,15 +171,11 @@ void BadgeDefinitionController::onShowHistory(const dq::domain::badge_definition
     showHistoryWindow(QString::fromStdString(definition.code));
 }
 
-void BadgeDefinitionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new badge definition";
-
-    auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+void BadgeDefinitionController::wireDetailDialogCommon(BadgeDefinitionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BadgeDefinitionDetailDialog::statusMessage,
@@ -189,6 +185,15 @@ void BadgeDefinitionController::showAddWindow() {
             &BadgeDefinitionDetailDialog::errorMessage,
             this,
             &BadgeDefinitionController::errorMessage);
+}
+
+void BadgeDefinitionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new badge definition";
+
+    auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BadgeDefinitionDetailDialog::definitionSaved,
             this,
@@ -225,21 +230,10 @@ void BadgeDefinitionController::showDetailWindow(const dq::domain::badge_definit
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << definition.code;
 
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::statusMessage,
-            this,
-            &BadgeDefinitionController::statusMessage);
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::errorMessage,
-            this,
-            &BadgeDefinitionController::errorMessage);
     connect(detailDialog,
             &BadgeDefinitionDetailDialog::definitionSaved,
             this,
@@ -379,29 +373,9 @@ void BadgeDefinitionController::onOpenVersion(const dq::domain::badge_definition
     }
 
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setDefinition(definition);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -520,24 +494,13 @@ void BadgeDefinitionController::onRevertVersion(const dq::domain::badge_definiti
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_definition = definition;
     reverted_definition.version = 0;
     detailDialog->setDefinition(reverted_definition);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::statusMessage,
-            this,
-            &BadgeDefinitionController::statusMessage);
-    connect(detailDialog,
-            &BadgeDefinitionDetailDialog::errorMessage,
-            this,
-            &BadgeDefinitionController::errorMessage);
     connect(detailDialog,
             &BadgeDefinitionDetailDialog::definitionSaved,
             this,

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 7CE834E6-4E85-4C8F-BCD0-549819D1F648
+:profile: uuid-surrogate-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.report_definition
@@ -11,7 +12,6 @@
 #+entity_singular: report_definition
 #+entity_plural: report_definitions
 #+entity_title: Report Definition
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+has_artefact_insert_fn: false
@@ -177,6 +177,16 @@ faker::number::integer(1, 100)
 | modified_by         | Modified By  |
 
 ** Custom repository methods
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] (alongside its shape profile): this
+artefact type's own row in =ores_dq_artefact_types_tbl=
+(=report_definitions=) publishes to =target_table:
+reporting_report_definitions_tbl= -- the authoritative production
+table is owned by =ores.reporting=, not =ores.dq=. This model exists
+to describe the DQ import/staging shape only; a =ores.dq=-owned main
+table would be a wrongly-owned duplicate.
 
 * See also
 

@@ -68,16 +68,22 @@ from .manifest import is_codegen_entity_org as _is_codegen_entity_org  # noqa: E
 
 
 def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
-    """The model's file-level ``:PROPERTIES:`` drawer (org models only).
+    """The model's file-level ``:PROPERTIES:`` drawer (org models only),
+    merged with its effective ``* Physical space`` table overrides (its own
+    table, plus its bound profile's table as defaults -- see
+    ``read_physical_space_overrides``).
 
-    This is where an entity's ``:ores.*.enabled:`` activation overrides live;
-    JSON models carry no drawer, so they get an empty dict."""
+    This is where an entity's ``:ores.*.enabled:`` activation overrides live
+    (as plain drawer properties, or via the table mechanism); JSON models
+    carry no drawer, so they get an empty dict."""
     if model_path.suffix != ".org":
         return {}
     try:
-        from .org_loader import parse_org  # noqa: PLC0415
+        from .org_loader import parse_org, read_physical_space_overrides  # noqa: PLC0415
         doc = parse_org(model_path.read_text(encoding="utf-8"))
-        return dict(doc.file_properties)
+        properties = dict(doc.file_properties)
+        properties.update(read_physical_space_overrides(doc))
+        return properties
     except Exception:  # noqa: BLE001 — a malformed drawer must not break codegen
         return {}
 

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 5D3A6D13-73E0-41A5-9E08-0C8C11BD609E
+:END:
+#+title: Profile: Artefact staging only
+#+description: Enablement-only profile: no main bi-temporal table, only the artefact/staging table -- for entities that are permanently import/staging surfaces, never a same-component production store.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models an entity whose real production data lives somewhere other than
+a same-component bi-temporal table: either it is queried directly from
+the DQ artefact/staging table with no publish step at all (its own
+=ores_dq_artefact_types_tbl= row has null =target_table=/
+=target_subject=), or its artefact-type row publishes onward to a
+table owned by a *different* component. Either way, generating the
+standard domain_entity main table (SQL create/drop, notify trigger)
+alongside the artefact table would produce an orphan nobody designed
+for -- a duplicate, wrongly-owned table with no reader or writer.
+
+Deliberately *enablement-only*: this profile carries no feature
+Assignments (no opinion on tenant scope, Qt tier, key shape -- those
+vary per entity). It exists to be bound *alongside* a shape profile
+(e.g. =:profile: simple-lookup, artefact-staging-only=), composing two
+orthogonal traits rather than duplicating one profile's shape logic
+into another.
+
+* Reference entity
+
+[[id:C9B53884-25FA-4D13-AE8A-6469B1854474][lei_entity]] — GLEIF LEI golden-copy data queried directly from
+=dq_lei_entities_artefact_tbl=; its own artefact-type row has null
+=target_table=/=target_subject=, i.e. explicitly terminal.
+
+* Assignments
+
+This profile carries no feature Assignments -- see Purpose. Its only
+effect is the Physical space table below.
+
+* Physical space
+
+One row per physical-space address this profile fixes admission for --
+any address not listed here is left to whatever else resolves it (a
+more specific/general override on the binding entity, or the node's
+own =#+default:=). A bound entity's own Physical space table (if any)
+always wins over these.
+
+| Address | Enabled |
+|---------------------------------------+---------|
+| ores.sql.schema.domain_entity_create  | false   |
+| ores.sql.schema.domain_entity_drop    | false   |
+| ores.sql.schema.notify_trigger        | false   |
+| ores.sql.schema.notify_trigger_drop   | false   |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.

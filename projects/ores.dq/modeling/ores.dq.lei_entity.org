@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: C9B53884-25FA-4D13-AE8A-6469B1854474
+:profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.lei_entity
@@ -21,7 +22,6 @@ GLEIF LEI entity master data from LEI2 golden copy files
 
 * Flags
 :PROPERTIES:
-:profile:   simple-lookup
 :schema:    public
 :product:   ores
 :component: dq
@@ -378,6 +378,19 @@ std::string(faker::word::noun())
 | modified_by           | Modified By  |
 
 ** Custom repository methods
+
+* Notes
+
+Bound to [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] (alongside its shape profile): this
+artefact type's own row in =ores_dq_artefact_types_tbl=
+(=lei_entities=) has =target_table=/=target_subject= both null --
+explicitly terminal, not published anywhere. GLEIF LEI golden-copy
+data is queried directly from the artefact table
+(=dq_lei_entities_query_functions_create.sql=); a same-component main
+table would be an orphan nobody designed for. Two *other* artefact-type
+rows (=lei_counterparties=, =lei_parties=) publish this same artefact
+data onward, but to =ores.refdata='s own tables, not a
+=ores.dq=-owned one.
 
 * See also
 

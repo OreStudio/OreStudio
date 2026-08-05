@@ -7,41 +7,84 @@
 #+level: s1
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/resolve-crm-feed-binding-party-scoping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-08-06
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The holding company's CRM shows live-ticking rates fed by the
+operating offices' FX feeds, not just static/unavailable topology
+configuration -- crm_ingest_bridge::update() feeds every party in a
+tick's tenant, not just the party that owns the originating
+feed_binding.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                   |
+|--------------+------------------------------------------|
+| State        | DONE                                      |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Now          | Implemented, verified end-to-end and live via a Qt client test scenario (4/4 steps PASSED). |
+| Waiting on   | Nothing.                                  |
+| Next         | Nothing -- task complete.                 |
+| Last touched | 2026-08-06                                |
 
 * Acceptance
 
--
+- A live FX tick from any office's feed updates every party's CRM
+  engine in the same tenant that has that pair as a driver edge, not
+  just the originating feed_binding's own party. [DONE -- unit test +
+  live verification.]
+- The holding company's CRM (majors/exotics/scandies) shows visibly
+  changing rates within seconds of opening, not static/unavailable.
+  [DONE -- test scenario 4/4 PASSED.]
+- The offices' own CRM ticking is unaffected by the change. [DONE --
+  test scenario step 4.]
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Implemented the tenant-wide approach the data-model design task
+settled on. crm_ingest_bridge (ores.marketdata.service):
+- update() dropped its party_id_str parameter -- takes tenant_id_str
+  only now.
+- engines_map is keyed by (tenant_id_str, party_id_str) in a
+  std::map, whose default ordering on std::pair<string,string> sorts
+  by tenant_id_str first -- every party in a tenant is a contiguous
+  run starting at lower_bound({tenant_id_str, ""}). update() scans
+  just that run (not the whole map), feeding every named engine at
+  every party that has the tick's pair as a driver edge.
+- feed_ingest_loop.cpp's tick handler no longer passes party_uuid to
+  update() (still used elsewhere in the same handler for series/
+  observation writes, so no unused-variable fallout).
+- Added a new unit test constructing two parties in one tenant, each
+  with their own "majors" config and an EUR/USD driver edge, asserting
+  one update() call feeds both.
+
+Getting a clean live re-verification required fixing a second,
+freshly-introduced regression: another PR landed on main
+(ba638c24d, "Consolidate ACME's UK/US/HK configs into one
+tenant-scoped config") that independently "fixed" the same original
+asset_class-validator bug this story's publish-crm-topology task
+found (d606ccc90), but from the opposite end -- instead of fixing the
+validator wiring (my PR #1864), it changed
+marketdata_publish_from_dq_create.sql's writer to emit FpML-style
+literals ('ForeignExchange'/'InterestRate') matching what the *old*
+(pre-#1864) validator expected. Both merged, so main ended up with a
+validator expecting short codes and a writer emitting FpML names --
+reverted the writer back to the short codes ('fx'/'rates') matching
+the now-correct validator.
 
 * Notes
 
@@ -54,7 +97,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:40D164E3-D3AA-40E9-B008-F65DFE348056][Verify holding company CRM ticks live]] | PASSED | 4/4 steps passed |
 
 * PRs
 
@@ -69,3 +112,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+crm_ingest_bridge::update() is now tenant-wide: a live FX tick from
+any office feeds every party in the same tenant with a matching
+driver edge, not just the party whose feed_binding produced the
+tick. Verified with a new unit test (two parties, one tenant, one
+update() call feeds both) and live: fresh end-to-end provisioning,
+holding company logged in as the default party, majors/exotics/
+scandies all visibly ticking within seconds -- Qt client test
+scenario ([[id:40D164E3-D3AA-40E9-B008-F65DFE348056][Verify holding company CRM ticks live]]) 4/4 steps PASSED.
+
+Also fixed a second regression discovered during live
+re-verification: another PR on main (ba638c24d) had independently
+"fixed" the same asset_class-validator mismatch this story's
+publish-crm-topology task already fixed (PR #1864), but by changing
+the writer to FpML-style literals instead of the validator wiring --
+incompatible with #1864's fix once both merged. Reverted the writer
+back to the short codes matching the correct validator.

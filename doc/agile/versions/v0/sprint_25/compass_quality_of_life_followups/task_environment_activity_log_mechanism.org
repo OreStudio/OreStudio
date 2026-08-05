@@ -33,11 +33,11 @@ mechanism to tell them so beyond an ad hoc chat message.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Implementation done, verified live; committing. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, build/test, raise PR.          |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -119,3 +119,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped the full mechanism in one PR: new =env_activity.py= module
+(mirroring =env_init.py='s version-log parsing shape),
+=compass env activity [new|ack]=, a =compass bearings= section, the
+=.env= schema bump (=ORES_ENV_VERSION= 20, new =ORES_ENV_ACTIVITY=
+var), and the WS-5 root-half recipe registered as activity 1 — this
+checkout's own =.env= now reports "activity 1 (log highest: 1),
+nothing outstanding" after acknowledging the root step performed
+earlier today. Verified live: fresh regeneration stamps the var
+correctly; a simulated stale checkout (=ORES_ENV_ACTIVITY=0=) makes
+=bearings= print the expected warning with a working recipe link;
+=ack= rejects an out-of-range activity number.

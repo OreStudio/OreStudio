@@ -130,6 +130,12 @@
 -- Derivation kinds: after marketdata's market_series (which references it via validation function).
 \ir ./refdata_derivation_kinds_notify_trigger_drop.sql
 \ir ./refdata_derivation_kinds_drop.sql
+
+-- IR curve bootstrap recipe: pillars before config (which they FK to).
+\ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_drop.sql
+\ir ./refdata_ir_curve_bootstrap_pillars_drop.sql
+\ir ./refdata_ir_curve_bootstrap_configs_notify_trigger_drop.sql
+\ir ./refdata_ir_curve_bootstrap_configs_drop.sql
 \ir ./refdata_purpose_types_notify_trigger_drop.sql
 \ir ./refdata_purpose_types_drop.sql
 \ir ./refdata_party_id_schemes_notify_trigger_drop.sql

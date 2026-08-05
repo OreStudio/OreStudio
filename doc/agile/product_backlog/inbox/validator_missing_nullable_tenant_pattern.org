@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: A13F9AB5-AF0E-4D04-A5D7-3D6B00762381
+:END:
+#+title: SQL schema validator doesn't recognize nullable-tenant-id scope pattern
+#+description: TENANT_002/TENANT_003 checks flag any table whose tenant_id isn't in the PK/EXCLUDE constraint, but don't recognize the legitimate nullable-tenant-id-for-system/tenant/party-scope shape several tables already use by design, forcing a per-table ignore entry instead of recognizing the shape as a category.
+#+type: capture
+#+level: cross
+#+filetags: :sql:validation:codegen:tooling:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.sql/utility/validate_schemas.sh='s =TENANT_002=/=TENANT_003=
+checks flag any table whose =tenant_id= isn't part of the primary
+key/EXCLUDE constraint, with no awareness of the legitimate
+*nullable-tenant-id* shape: a table supporting system/tenant/party
+scope levels (system-scope rows leave =tenant_id= null so they're
+shared across every tenant) genuinely cannot put a nullable column in
+a =not null= PK/EXCLUDE clause. =ores_scheduler_job_definitions_tbl=,
+=ores_mq_queues_tbl=, and =ores_synthetic_market_data_generation_configs_tbl=
+already use this shape by design, and each needed its own hand-written
+=TENANT_002=/=TENANT_003= entry in =validation_ignore.txt= rather than
+the validator recognising it as a category. Codegen already has a name
+for this exact shape --
+=domain_entity.sql.nullable_tenant_id= -- consumed by the SQL/C++
+templates for exactly this scoping pattern. Teach the validator to
+check that flag (or infer it the same way the templates do: =tenant_id
+uuid= with no =not null=) and skip =TENANT_002=/=003= automatically
+for tables built that way, rather than requiring a per-table ignore
+entry every time a new nullable-tenant-id table is added.
+
+* Why
+
+Surfaced while working the =ir-curve-bootstrap-config= task
+([[id:5255E8A6-9EE6-44FA-A5CB-41ABD508ED37][task]]) in the
+[[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story
+(Sprint 25): =compass db recreate= surfaced two pre-existing warnings
+on =ores_synthetic_market_data_generation_configs_tbl= (from an
+unrelated PR, #1826) that turned out to be an intentional design, not
+a bug -- fixed for now with a documented =validation_ignore.txt=
+entry, but the underlying gap (the validator not recognising a
+category codegen itself already names) will keep recurring for every
+future nullable-tenant-id table until the validator understands the
+pattern generically.
+
+* References
+
+- =projects/ores.sql/utility/validation_ignore.txt= -- the
+  =TENANT_002=/=TENANT_003= entries for
+  =ores_synthetic_market_data_generation_configs_tbl=,
+  =ores_scheduler_job_definitions_tbl=, and =ores_mq_queues_tbl=,
+  each explaining the same shape independently.
+- =projects/ores.codegen/library/templates/*.mustache= --
+  =domain_entity.sql.nullable_tenant_id= usage, the existing codegen
+  name for this pattern.
+
+* See also
+
+- [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] -- the story
+  whose task surfaced this.

@@ -67,17 +67,29 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Observation Lineage (codegen-generated table)
+-- Observation Lineage (codegen-generated table, dual RLS: tenant + party isolation)
 -- -----------------------------------------------------------------------------
 alter table ores_marketdata_observation_lineages_tbl enable row level security;
 
-create policy observation_lineages_tbl_tenant_isolation_policy
+create policy observation_lineages_tenant_isolation_policy
 on ores_marketdata_observation_lineages_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy observation_lineages_party_isolation_policy
+on ores_marketdata_observation_lineages_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------

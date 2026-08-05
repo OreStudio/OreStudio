@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ir-curve-bootstrap-config
+#+pr: 1847
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -69,12 +69,12 @@ will be stamped with.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Pick up ir-curve-bootstrapping-engine, the next task in this story. |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
@@ -125,12 +125,102 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1847][#1847]] | [refdata,sql] IR curve bootstrap config recipe entities |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Garbled doc comment -- verbatim span with an embedded literal =, same markup bug hit twice already in the shared-derivation-lineage task | ir_curve_bootstrap_config.org | Accepted | Reworded to avoid embedding = inside a verbatim span |
+| 2 | Acceptance criteria claim pillar tenor validation is DB-enforced; implementation is a soft, application-layer reference matching ir_curve_template_entry's own precedent | task_ir-curve-bootstrap-config.org | Accepted | Added to Follow-ons, flagging the acceptance-bullet/implementation gap explicitly |
+| 3 | Temporal consistency gap: nothing stopped an existing FUNDING config from being edited into PROJECTION (or any other role) while still referenced by active PROJECTION configs | ir_curve_bootstrap_config.org | Accepted | Added a second guard to the same insert-trigger block, since every edit to this bitemporal table runs through it as a fresh INSERT |
+| 4 | output_series_id uniqueness scoped by (tenant_id, party_id), not tenant-wide -- two different parties could each claim the same output series | ir_curve_bootstrap_config.org | Accepted | Dropped party_id from the natural key entirely; output_series_id is now the sole, tenant-wide natural key |
+| 5 | Long generated index identifier (79 chars) exceeds PostgreSQL's 63-byte NAMEDATALEN limit on the pillar table | refdata_ir_curve_bootstrap_pillars_create.sql | Declined | Pre-existing, shared codegen-template naming gap (confirmed the same issue on ir_curve_template_entries and other siblings) -- not a regression this task introduces, tracked as a follow-up against the shared template, not fixed one-off here |
+| 6 | No dedicated automated test for the two-tier rejection paths | (none, hand-written trigger logic) | Declined | Matches current project convention for other recent codegen entities (curve_role, crm_topology_config, tenor -- none have per-entity trigger tests either); verified instead via generated-SQL review and a clean db recreate, already disclosed in the PR description |
 
 * Result
+
+Shipped: two new =ores.refdata= entities (schema + generated C++
+domain/repository/service/messaging layer, no Qt UI -- out of scope
+for this task).
+
+** Schema
+
+- =ir_curve_bootstrap_config=: source/output series (soft
+  cross-component references into =ores.marketdata='s
+  =market_series=), =curve_family_role= (=FUNDING=/=PROJECTION=),
+  self-referencing =discount_curve_config_id=, =interpolation_method=,
+  =day_count_convention= (validated against the existing
+  =day_count_fraction_type= table), =split_tenor_code= (soft tenor
+  reference, matching =ir_curve_template_entry='s own tenor columns).
+- =ir_curve_bootstrap_pillar=: one-parent-many-children pillar list,
+  FK to the parent config, =curve_role_code= validated against the
+  existing =curve_role= table.
+- =output_series_id= is the sole natural key, tenant-wide (not scoped
+  by =party_id=): exactly one active config, across the whole tenant,
+  may produce a given output series. Went through two review-round
+  fixes to get here: the first codegen pass produced a wrong
+  one-config-per-party unique index; the round-1 review fix
+  (=party_id= + =output_series_id=) still left two different parties
+  able to each hold an active config for the same output series,
+  fixed properly in the PR's review round by dropping =party_id= from
+  the natural key entirely.
+- Two-tier =discount_curve_config_id= enforcement, both directions:
+  a check constraint shape-validates (nil-uuid iff =FUNDING=; non-nil
+  and not self-referencing iff =PROJECTION=); a custom insert-trigger
+  block validates the *referenced* config is itself =FUNDING= (no
+  chaining) when inserting/editing a =PROJECTION= config; and a second
+  guard in the same trigger block rejects the reverse case -- editing
+  an existing =FUNDING= config's own =curve_family_role= away from
+  =FUNDING= while one or more active =PROJECTION= configs still
+  reference it (every edit to this bitemporal table runs through the
+  same insert trigger, so this closes a temporal-consistency gap the
+  review round caught: nothing originally stopped a referenced
+  =FUNDING= config from later being edited into something else). Uses
+  the same per-entity =:implements <uuid>= paste-marker mechanism
+  =curve_role='s =Extra drops= already uses.
+- Dual RLS (tenant + party isolation) on both tables, matching
+  =ir_curve_template_entry='s own precedent for a party-scoped table.
+
+** Verified
+
+- Local build clean (=linux-clang-debug-make=).
+- =compass db recreate= + SQL schema validator clean (0 warnings) --
+  also closed out the =observation_lineages= =RLS_002= gap left over
+  from the previous task, and filed a capture for two pre-existing,
+  unrelated, by-design warnings on
+  =synthetic_market_data_generation_configs_tbl= rather than papering
+  over them silently.
+- =refdata-codegen-drift= check (=check_component_drift.py=) clean --
+  regenerated output matches what's committed exactly.
+- =ctest -R "refdata"=: 4/4 test binaries passed.
+
+** Follow-ons not covered by this task
+
+- Acceptance called for "creating a bootstrap config mints its
+  =output_series_id= row atomically." This task only makes
+  =output_series_id= a required column -- the actual cross-component
+  orchestration (a service call into =ores.marketdata= to create the
+  =market_series= row before/alongside the config insert) is not
+  implemented. That orchestration is inherently part of a later task
+  (=ir-curve-bootstrapping-engine= or =official-curve-republish=,
+  whichever ends up owning config creation), not schema work.
+  Flagging explicitly rather than letting the acceptance bullet imply
+  it's done.
+- Acceptance also called for tests proving a PROJECTION-to-PROJECTION
+  chain and a self-referencing row are both rejected. The trigger
+  logic was verified by reading the generated SQL and by a clean
+  =compass db recreate=, but no automated test (SQL or C++) exercises
+  the rejection paths yet. Worth adding when the bootstrapping engine
+  task starts writing real bootstrap configs and needs fixtures
+  anyway.
+- Acceptance also stated pillar rows "validate =start_tenor_code=/
+  =end_tenor_code= against =ores_refdata_tenors_tbl=." As implemented,
+  those two columns are soft (undeclared at the DB level) references,
+  validated only through the =tenor_resolution= machinery at the
+  application layer -- exactly matching =ir_curve_template_entries='s
+  own precedent (confirmed: that sibling table's insert trigger
+  doesn't DB-validate its tenor columns either), so this isn't a
+  design flaw, but the acceptance bullet overstated what's actually
+  enforced at the DB layer. Flagging the gap between the bullet's
+  wording and the implementation rather than leaving it unstated.

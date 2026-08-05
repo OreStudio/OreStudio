@@ -1,0 +1,336 @@
+:PROPERTIES:
+:ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
+:END:
+#+title: ores.refdata.ir_curve_bootstrap_config
+#+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: ir_curve_bootstrap_config
+#+entity_plural: ir_curve_bootstrap_configs
+#+entity_title: IR Curve Bootstrap Config
+#+brief: The recipe that bootstraps one raw instrument grid into a discount curve -- source series, family role, build order, interpolation, day-count, split tenor.
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+Records *how* a curve is bootstrapped as a named, inspectable
+artefact -- the "curve template" concept
+[[id:A26CFA71-21C0-4E98-ABC4-25F0EAD517E3][Multicurve Management]] calls for. Owned by =ores.refdata=, matching
+where every other recipe/config entity lives in this codebase
+(=crm_topology_config=, =curve_role=, =tenor=), not =ores.marketdata=,
+which owns only the generic value store the bootstrap output is
+written into.
+
+=source_series_id= and =output_series_id= are soft, cross-component
+references into =ores.marketdata='s =market_series= table (the raw
+instrument grid this config bootstraps, and the official curve series
+it publishes into) -- deliberately not hard FK constraints, matching
+the same soft-reference principle already used for
+=market_series.derivation_config_id= and =ir_curve_tick='s own
+producer/config identity: the referenced table lives in a different
+component/schema. =output_series_id= is minted (the =market_series=
+catalog row created) at config-creation time by the owning service,
+never left null/deferred -- there is no "not yet published" state to
+guard against.
+
+=curve_family_role= (=FUNDING=/=PROJECTION=) and
+=discount_curve_config_id= (self-referencing, nil-uuid sentinel for
+=FUNDING=) encode
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]]'s Funding-before-Projection build-order
+dependency as data: a =PROJECTION= config's =discount_curve_config_id=
+must point at a =FUNDING= config (strict two-tier, no chaining --
+Multi-Curve Construction names basis-linked/cyclic Projection
+dependencies as an explicit out-of-scope modelling gap, not something
+this design should silently permit), and must not reference itself.
+
+=interpolation_method= and =curve_family_role= are small,
+fixed-vocabulary fields intrinsic to this record (not references to
+another entity), following the same plain-check-constraint pattern
+=ir_curve_generation_config.role='s ='self_discounting'=/=discount=/
+=projection= vocabulary already establishes -- no lookup table for a
+handful of values with no independent lifecycle of their own.
+=day_count_convention= references the existing
+=day_count_fraction_type= reference table. =split_tenor_code=
+references =tenor.code=, following the same soft (undeclared,
+documentation-only) tenor reference =ir_curve_template_entry='s own
+=start_tenor_code=/=end_tenor_code= already use -- tenor validation
+happens through the =tenor_resolution= machinery at the application
+layer, not a per-consumer DB-level FK, consistent with that sibling
+entity. For a single-segment =interpolation_method=, =split_tenor_code=
+is a genuine value (the curve's own last pillar's =end_tenor_code=),
+not a fabricated sentinel -- matching the spirit of
+=ir_curve_template_entries='s own ='SPOT'= tenor, which its own doc
+comment is explicit isn't a sentinel hack either.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this bootstrap config.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+Owning party (legal entity) this bootstrap config belongs to. Set
+server-side from the authenticated session, enforced by RLS.
+Deliberately *not* part of the natural key below: uniqueness on
+=output_series_id= is enforced tenant-wide, not per-party -- two
+different parties must not each be able to hold an active config
+claiming the same output series.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** source_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Soft reference to the raw =RATES/YIELD= =market_series= (in
+=ores.marketdata=) this config bootstraps.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** output_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:END:
+
+Soft reference to the official, bootstrapped-curve =market_series=
+(in =ores.marketdata=) this config publishes into -- minted at
+config-creation time, never deferred. The sole natural key: exactly
+one active bootstrap config, tenant-wide, may produce any given
+output series -- not merely one per party, since two different
+parties must not each be able to claim the same output series.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** curve_family_role
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "FUNDING"
+:END:
+
+Whether this config bootstraps the discounting anchor curve of its
+family (=FUNDING=) or a dependent curve discounted off one
+(=PROJECTION=) -- see [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]]. Fixed 2-value
+vocabulary intrinsic to this record, not a reference to another
+entity -- no soft FK, validated by a plain SQL check.
+
+#+begin_src cpp :name generator
+std::string("FUNDING")
+#+end_src
+
+** discount_curve_config_id
+:PROPERTIES:
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:nullable:      false
+:default_value: boost::uuids::nil_uuid()
+:END:
+
+Self-referencing: the =FUNDING= config this config's own pillars
+discount off during bootstrap, when this config's own
+=curve_family_role= is =PROJECTION= -- the =ores_utility_nil_uuid_fn()=
+sentinel when it is =FUNDING= instead. Strict two-tier only (validated
+in the insert trigger, not just shape-checked): the referenced config
+must itself have a =curve_family_role= of =FUNDING=, and must not
+equal this config's own =id=.
+
+#+begin_src cpp :name generator
+boost::uuids::nil_uuid()
+#+end_src
+
+** interpolation_method
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "LOG_LINEAR_DISCOUNT"
+:END:
+
+Interpolation method for discount factors between pillars
+(=LOG_LINEAR_DISCOUNT=, =CUBIC_SPLINE=, or the two-segment
+=FLAT_FORWARD_THEN_LOG_LINEAR= the FOMC-dated short-end task uses).
+Fixed vocabulary intrinsic to this record, not a reference to another
+entity.
+
+#+begin_src cpp :name generator
+std::string("LOG_LINEAR_DISCOUNT")
+#+end_src
+
+** day_count_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+References =day_count_fraction_type.code= (e.g. =ACT/360=,
+=ACT/365=) -- the day-count convention applied per pillar during
+bootstrap.
+
+#+begin_src cpp :name generator
+std::string("ACT/365")
+#+end_src
+
+** split_tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+References =tenor.code= -- the pillar tenor at which this curve
+transitions from a short-end interpolation segment to a continuous
+long-end one. For a single-segment =interpolation_method=, this
+equals the curve's own last pillar's =end_tenor_code= (a genuine
+value, not a sentinel). Soft reference, undeclared at the DB level --
+matching =ir_curve_template_entry='s own =start_tenor_code=/
+=end_tenor_code= tenor references, validated through the
+=tenor_resolution= machinery at the application layer.
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_ir_curve_bootstrap_configs_tbl
+:END:
+
+** Checks
+
+| expression                                                                |
+|-----------------------------------------------------------------------------|
+| "curve_family_role" in ('FUNDING', 'PROJECTION')                          |
+| "day_count_convention" <> ''                                               |
+| "split_tenor_code" <> ''                                                   |
+| "discount_curve_config_id" <> "id"                                        |
+| ("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()) |
+
+* Insert trigger
+** Validations
+
+| column               | validation_function                              |
+|----------------------+---------------------------------------------------|
+| day_count_convention | ores_refdata_validate_day_count_fraction_type_fn |
+
+*** discount_curve_config_id strict two-tier + no-chain guard
+:PROPERTIES:
+:ID: B6A2E7C3-1D4F-4A9B-8E7C-3A6B2D9E5F14
+:END:
+
+Enforces what the shape-level check constraint above cannot: that a
+=PROJECTION= config's =discount_curve_config_id= actually points at a
+config whose own =curve_family_role= is =FUNDING= (strict two-tier,
+no chaining), not merely at *some* other row. Also guards the reverse
+direction: because every write to this bitemporal table -- including
+an edit to an existing row -- runs through this same insert trigger
+(a new version is a fresh INSERT closing the prior row, never an
+UPDATE), an edit that changes an existing =FUNDING= config's own
+=curve_family_role= away from =FUNDING= while one or more active
+=PROJECTION= configs still reference it is rejected here too --
+otherwise those referencing rows would silently end up pointing at a
+config that is no longer =FUNDING=, with nothing left to catch it.
+
+#+begin_src sql :name body :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    if NEW.curve_family_role = 'PROJECTION' then
+        if not exists (
+            select 1 from "ores_refdata_ir_curve_bootstrap_configs_tbl"
+            where tenant_id = NEW.tenant_id
+              and id = NEW.discount_curve_config_id
+              and curve_family_role = 'FUNDING'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid discount_curve_config_id: %. Must reference an active FUNDING config -- chaining a PROJECTION config off another PROJECTION config is not supported.', NEW.discount_curve_config_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    if NEW.curve_family_role <> 'FUNDING' then
+        if exists (
+            select 1 from "ores_refdata_ir_curve_bootstrap_configs_tbl"
+            where tenant_id = NEW.tenant_id
+              and discount_curve_config_id = NEW.id
+              and curve_family_role = 'PROJECTION'
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Cannot change curve_family_role away from FUNDING for %: still referenced as the discount curve by one or more active PROJECTION configs.', NEW.id
+                using errcode = '23503';
+        end if;
+    end if;
+
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bootstrap_config
+:entity_plural_short:   bootstrap_configs
+:entity_singular_words: IR curve bootstrap config
+:entity_plural_words:   IR curve bootstrap configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]] -- the (different) instrument-pricing role axis.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_EQUITY_FORWARD_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_EQUITY_FORWARD_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_FORWARD_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_FORWARD_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -70,10 +71,23 @@ struct equity_forward_instrument final {
      */
     std::string settlement_type;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for equity_forward_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const equity_forward_instrument&) {
+    return "ores.trading.equity_forward_instrument";
+}
 
 }
 

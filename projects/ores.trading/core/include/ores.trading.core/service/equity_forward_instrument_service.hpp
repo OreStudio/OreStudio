@@ -17,19 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_EQUITY_FORWARD_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_EQUITY_FORWARD_INSTRUMENT_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_EQUITY_FORWARD_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_EQUITY_FORWARD_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/equity_forward_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::trading::service {
 
+/**
+ * @brief Service for managing equity forward instruments.
+ *
+ * Provides a higher-level interface for equity forward instrument operations,
+ * wrapping the underlying repository.
+ */
 class ORES_TRADING_CORE_EXPORT equity_forward_instrument_service {
 private:
     inline static std::string_view logger_name =
@@ -44,15 +53,91 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a equity_forward_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit equity_forward_instrument_service(context ctx);
 
-    std::optional<domain::equity_forward_instrument>
-    get_equity_forward_instrument(const std::string& id);
-
-    void save_equity_forward_instrument(const domain::equity_forward_instrument& v);
-
+    /**
+     * @brief Lists equity forward instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of equity forward instruments for the requested page.
+     */
     std::vector<domain::equity_forward_instrument>
-    get_equity_forward_instruments(const std::vector<std::string>& ids);
+    list_equity_forward_instruments(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active equity forward instruments.
+     *
+     * @return Total number of active equity forward instruments.
+     */
+    std::uint32_t count_equity_forward_instruments();
+
+
+    /**
+     * @brief Retrieves a single equity forward instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The equity forward instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::equity_forward_instrument>
+    get_equity_forward_instrument_at_version(const std::string& instrument_id,
+                                             std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single equity forward instrument by its primary key.
+     *
+     * @return The equity forward instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::equity_forward_instrument>
+    get_equity_forward_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Retrieves a batch of equity forward instruments by primary key.
+     */
+    std::vector<domain::equity_forward_instrument>
+    get_equity_forward_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Saves a equity forward instrument (creates or updates).
+     *
+     * @param equity_forward_instrument The equity forward instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_equity_forward_instrument(
+        const domain::equity_forward_instrument& equity_forward_instrument);
+
+    /**
+     * @brief Saves a batch of equity forward instruments.
+     *
+     * @param equity_forward_instruments The equity forward instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_equity_forward_instruments(
+        const std::vector<domain::equity_forward_instrument>& equity_forward_instruments);
+
+    /**
+     * @brief Deletes a equity forward instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_equity_forward_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Deletes equity forward instruments by their primary keys.
+     */
+    void delete_equity_forward_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a equity forward instrument.
+     */
+    std::vector<domain::equity_forward_instrument>
+    get_equity_forward_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;

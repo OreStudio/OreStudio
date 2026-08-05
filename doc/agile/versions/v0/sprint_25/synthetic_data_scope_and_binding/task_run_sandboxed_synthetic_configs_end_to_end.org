@@ -7,45 +7,102 @@
 #+level: s1
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/run-sandboxed-synthetic-configs-end-to-end
+#+pr: 1844
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Wire =ores.synthetic.service= to run =sandboxed= configs (per the
+=binding_mode= primitive added by the previous task) end-to-end:
+generating and publishing ticks under a distinct namespace that the
+marketdata ingest loop (the real, bound-feed resolution path) never
+subscribes to, regardless of any feed_binding row -- the exclusion is
+structural, not merely a missing opt-in.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
-- A sandboxed config can be started and produces ticks/observations under its own namespace
-- A test demonstrates bound-feed resolution excludes sandboxed output for the same instrument
-- compass build and rat pass
+- [X] A sandboxed config can be started and produces ticks/observations under its own namespace
+- [X] A test demonstrates bound-feed resolution excludes sandboxed output for the same instrument
+- [X] compass build and rat pass
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =feed_controller::start()= gained a =binding_mode= parameter
+  (default =bound=, so every existing caller -- including the ad-hoc
+  NATS control-plane, which has no config/binding_mode concept --
+  keeps its current behaviour unchanged).
+- Extracted the private =producer_subject= method into a free function
+  =synthetic_producer_subject(source_name, binding_mode)= in
+  =feed_controller.hpp=, directly unit-testable without a live
+  controller instance (mirrors the =ir_curve_feeds_conflict= free-function
+  pattern already used in =curve_feed_controller_tests.cpp=).
+  =sandboxed= publishes on ="synthetic.v1.sandbox.tick.<source>"=
+  instead of ="synthetic.v1.tick.<source>"=.
+- =start()= skips =ensure_feed_binding(...)= entirely for =sandboxed=
+  configs -- a =feed_binding= on that source_name would claim
+  ingestion is happening on the bound subject, which would not be
+  true. Belt-and-suspenders: the marketdata ingest loop's subscribe
+  subject is *always* derived as ="synthetic.v1.tick." + source_name=
+  from a feed_binding row (see =feed_ingest_loop.cpp=), so even a
+  stray/buggy binding for a sandboxed source would still not reach it
+  -- the two mechanisms (no binding, distinct subject) are independently
+  sufficient.
+- =auto_start_enabled_feeds= (=application.cpp=) now keeps the full
+  =market_data_generation_config= row (not just a set of enabled ids)
+  so it can read the container's =binding_mode= and forward it to
+  =ctrl.start(...)=.
+- *Live-verification bug found and fixed*: the JetStream stream
+  =synthetic_ticks= only covers the ="synthetic.v1.tick.>"= subject
+  filter. Publishing to the new sandbox subject with no matching
+  stream made =js_publish= throw, which crashed the tick thread
+  unhandled -- systemd was silently crash-looping the whole service
+  (SIGABRT, restart counter climbing) the entire time the fix was
+  "working" per its logs. Added a dedicated
+  =synthetic_sandbox_ticks= stream for ="synthetic.v1.sandbox.tick.>"=,
+  mirroring the existing =synthetic_curve_ticks= pattern (a new stream,
+  not appended to =synthetic_ticks=, since =ensure_stream= only creates,
+  never updates, an existing stream's subject list).
+- Added =feed_controller_tests.cpp= covering
+  =synthetic_producer_subject=: bound vs sandboxed subjects never
+  collide (across several source-name shapes, including one needing
+  sanitisation), and the sandboxed subject correctly falls under a
+  prefix the ingest loop's hardcoded subscribe pattern never matches.
+- *Live end-to-end verification* (after the JetStream fix): seeded a
+  =sandboxed=, =party=-scope =market_data_generation_config= +
+  =fx_spot_generation_config= + =gmm_component= directly via SQL,
+  started the full service fleet, and confirmed: the feed auto-started
+  with =binding_mode='sandboxed'= and the sandbox subject (service
+  log); ticks published successfully (=SYNTHETIC PUBLISH= log, no
+  crash); the marketdata ingest loop logged =no active
+  subscriptions= throughout; no =feed_binding= row exists for the
+  source; no =market_series=/=market_observation= row was ever
+  created for the ORE key. Cleaned up via a full DB recreate.
 
 * Notes
+
+- No consumer-side UI/selection for sandboxed runs, as scoped --
+  ticks are published and provably isolated, but nothing currently
+  reads them back. That is deliberately future work (see the parent
+  story's Out of scope and Future direction sections).
 
 * Test Scenarios
 
@@ -62,12 +119,51 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1844][#1844]] | [synthetic] Run sandboxed configs end-to-end under a distinct namespace |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | folder_feed_control_handler's "start everything under this folder" never forwards binding_mode -- every feed it starts silently defaults to bound | folder_feed_control_handler.hpp | Fixed | Mirrors auto_start_enabled_feeds: queries market_data_generation_config_repository, maps by container id, forwards container.binding_mode into ctrl_->start(). |
+| 2 | Already-running branch of start() gates ensure_feed_binding on the *current call's* binding_mode argument, not the feed's actual stored mode -- a binding_mode-unaware caller restarting an already-sandboxed feed would still create a real feed_binding for it | feed_controller.hpp | Fixed | Extracted should_ensure_feed_binding(already_running, requested, stored) as a directly-testable free function; gated on the feed's stored binding_mode when already running, on the requested one only for a brand-new feed. |
+| 3 | Dead #include <set> in application.cpp after enabled_feeds moved to a map | application.cpp | Fixed | Removed. |
+| 4 | No automated test for the already-running/ensure_feed_binding interaction | feed_controller_tests.cpp | Fixed | Added 3 cases for should_ensure_feed_binding covering brand-new, already-running-sandboxed, and already-running-bound. |
+| 5 | Didn't re-verify build/tests in one review pass (no build environment in that job) | (n/a) | No action needed | Informational -- other review passes and this round's own local verification cover it. |
 
 * Result
+
+=ores.synthetic.service= now runs =sandboxed= configs end-to-end:
+=feed_controller::start()= takes a =binding_mode= (default =bound=,
+matching every prior caller), publishes sandboxed ticks on a distinct
+="synthetic.v1.sandbox.tick."= subject via the new
+=synthetic_producer_subject()= free function, and skips creating a
+=feed_binding= entirely for them. =auto_start_enabled_feeds= forwards
+the container's persisted =binding_mode= automatically. A dedicated
+JetStream stream (=synthetic_sandbox_ticks=) was added after live
+testing surfaced that =js_publish= to an uncovered subject crashes the
+process -- covered by =synthetic_curve_ticks='s existing "new stream,
+not appended" precedent.
+
+Verified live against a running fleet: a sandboxed feed auto-starts,
+publishes ticks successfully, and is provably excluded from the bound
+path -- the marketdata ingest loop never subscribes to it, no
+feed_binding is created, and no market_series/market_observation ever
+appears for its ORE key. =feed_controller_tests.cpp= (7 cases total)
+covers the subject-naming primitive and the should_ensure_feed_binding
+decision matrix directly. =compass build= clean; =ores.synthetic.*=,
+=ores.marketdata.*=, and =ores.qt.tests= C++ suites pass, including a
+second live re-verification of the sandboxed auto-start path after
+review round 1's fixes.
+
+Review round 1: two real gaps found and fixed -- the folder-based
+bulk-start handler never forwarded =binding_mode= (every feed started
+that way silently defaulted to bound), and the already-running branch
+of =start()= re-derived the binding decision from the current call's
+argument instead of the running feed's actual stored mode (a
+binding_mode-unaware caller restarting an already-sandboxed feed would
+have created a real feed_binding for it). Both fixed; the second is
+now covered by a directly-testable free function
+(=should_ensure_feed_binding=) with 3 new unit test cases, since the
+original PR's live verification only exercised the auto-start path in
+isolation, not a second start() call through a different handler.

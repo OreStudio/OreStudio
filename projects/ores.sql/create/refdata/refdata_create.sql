@@ -131,6 +131,13 @@
 
 -- Derivation kinds: before marketdata's market_series (FK via validation function).
 \ir ./refdata_derivation_kinds_create.sql
+
+-- IR curve bootstrap recipe: config before pillars (FK); depends on
+-- day_count_fraction_types (validation function) and curve_roles (pillar validation).
+\ir ./refdata_ir_curve_bootstrap_configs_create.sql
+\ir ./refdata_ir_curve_bootstrap_configs_notify_trigger_create.sql
+\ir ./refdata_ir_curve_bootstrap_pillars_create.sql
+\ir ./refdata_ir_curve_bootstrap_pillars_notify_trigger_create.sql
 \ir ./refdata_derivation_kinds_notify_trigger_create.sql
 
 -- Party and counterparty tables

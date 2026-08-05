@@ -1091,6 +1091,58 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- IR Curve Bootstrap Configs (dual RLS: tenant + party isolation)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_ir_curve_bootstrap_configs_tbl enable row level security;
+
+create policy ir_curve_bootstrap_configs_tenant_isolation_policy
+on ores_refdata_ir_curve_bootstrap_configs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ir_curve_bootstrap_configs_party_isolation_policy
+on ores_refdata_ir_curve_bootstrap_configs_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
+-- IR Curve Bootstrap Pillars (dual RLS: tenant + party isolation)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_ir_curve_bootstrap_pillars_tbl enable row level security;
+
+create policy ir_curve_bootstrap_pillars_tenant_isolation_policy
+on ores_refdata_ir_curve_bootstrap_pillars_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ir_curve_bootstrap_pillars_party_isolation_policy
+on ores_refdata_ir_curve_bootstrap_pillars_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- Floating Index Types (moved from ores.trading)
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_floating_index_types_tbl enable row level security;

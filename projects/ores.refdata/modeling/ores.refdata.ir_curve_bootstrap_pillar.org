@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 5DC8A225-A2FD-4ECC-8284-C1D333F0EB3A
+:END:
+#+title: ores.refdata.ir_curve_bootstrap_pillar
+#+description: Codegen entity model for the refdata ir_curve_bootstrap_pillar table; one (tenor, curve-role) pillar of an IR curve bootstrap config's recipe.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: ir_curve_bootstrap_pillar
+#+entity_plural: ir_curve_bootstrap_pillars
+#+entity_title: IR Curve Bootstrap Pillar
+#+brief: One (tenor, curve-role) pillar of an IR curve bootstrap config's recipe.
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+One row of a bootstrap config's pillar list: which tenor period,
+priced/bootstrapped as which curve role (deposit-equivalent,
+FRA-equivalent, swap-equivalent -- see
+[[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]]), in what order. Same one-parent-many-children shape
+=ir_curve_template_entry= uses for =ores.synthetic='s generation
+recipe, but source-independent: this names the pillar list a
+bootstrap reads from the raw instrument grid, not a generation
+recipe. =start_tenor_code=/=end_tenor_code= are soft (undeclared)
+tenor references, matching =ir_curve_template_entry='s own tenor
+columns exactly -- tenor validation happens through the
+=tenor_resolution= machinery at the application layer, not a
+per-consumer DB-level FK.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this pillar row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Owning party (legal entity) this pillar's config belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** bootstrap_config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Parent =ir_curve_bootstrap_config= this pillar contributes to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** sequence_index
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:default_value: 0
+:natural_key:   true
+:END:
+
+Zero-based ordinal of this pillar within its parent's list (short-end
+to long-end).
+
+#+begin_src cpp :name generator
+faker::number::integer(0, 20)
+#+end_src
+
+** start_tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenor label marking the start of this pillar's period (references
+=tenor.code=). ='SPOT'= for point instruments (deposits, swaps); the
+period's own front tenor (e.g. ='3M'=) for interval instruments
+(FRAs) -- same convention as =ir_curve_template_entry=.
+
+#+begin_src cpp :name generator
+std::string("SPOT")
+#+end_src
+
+** end_tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Tenor label marking the end (maturity) of this pillar's period
+(references =tenor.code=, e.g. "1M", "2Y").
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** curve_role_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Instrument-pricing role this tenor bootstraps as (references
+=curve_role.code=: =DEPOSIT=, =FRA=, or =SWAP= -- see
+[[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]]) -- determines which inverse-pricing derivation the
+bootstrapping engine applies at this pillar.
+
+#+begin_src cpp :name generator
+std::string("SWAP")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_ir_curve_bootstrap_pillars_tbl
+:END:
+
+** Checks
+
+| expression                |
+|----------------------------|
+| "start_tenor_code" <> '' |
+| "end_tenor_code" <> ''   |
+| "curve_role_code" <> ''  |
+
+* Foreign keys
+
+** bootstrap_config_id
+:PROPERTIES:
+:table:         ores_refdata_ir_curve_bootstrap_configs_tbl
+:error_message: Invalid bootstrap_config_id: %. No active ir_curve_bootstrap_config found with this id.
+:nullable:      false
+:END:
+
+* Insert trigger
+** Validations
+
+| column          | validation_function                    |
+|-----------------+-----------------------------------------|
+| curve_role_code | ores_refdata_validate_curve_role_fn    |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: pillar
+:entity_plural_short:   pillars
+:entity_singular_words: IR curve bootstrap pillar
+:entity_plural_words:   IR curve bootstrap pillars
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][IR Curve Bootstrap Config]] -- the parent this pillar belongs to.
+- [[id:D9A9B2C5-2C22-456A-851F-B458E0568CD3][Curve Role]] -- the instrument-pricing role this pillar carries.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

@@ -78,9 +78,6 @@ select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'marketdata_service_user', 'MarketdataService');
 
 select ores_iam_account_role_assign_fn(
-    ores_utility_system_tenant_id_fn(), :'controller_service_user', 'ControllerService');
-
-select ores_iam_account_role_assign_fn(
     ores_utility_system_tenant_id_fn(), :'analytics_service_user', 'AnalyticsService');
 
 -- Summary

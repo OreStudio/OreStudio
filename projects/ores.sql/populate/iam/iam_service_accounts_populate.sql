@@ -209,13 +209,6 @@ select ores_iam_service_accounts_upsert_fn(
 );
 
 select ores_iam_service_accounts_upsert_fn(
-    :'controller_service_user',
-    'controller_service@system.ores',
-    'System service account for Service Controller NATS domain service',
-    :'controller_service_pw'
-);
-
-select ores_iam_service_accounts_upsert_fn(
     :'analytics_service_user',
     'analytics_service@system.ores',
     'System service account for Analytics NATS domain service',

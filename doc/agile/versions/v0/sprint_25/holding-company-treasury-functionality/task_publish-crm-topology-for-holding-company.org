@@ -8,7 +8,7 @@
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
 #+branch: feature/publish-crm-topology-for-holding-company
-#+pr:
+#+pr: 1864
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1864][#1864]] | [iam,qt,marketdata,synthetic] Publish CRM topology for the holding company party |
 
 * Review
 

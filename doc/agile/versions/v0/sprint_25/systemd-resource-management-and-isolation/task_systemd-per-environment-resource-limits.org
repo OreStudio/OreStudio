@@ -220,12 +220,23 @@ Verified: =compass services tree= printed one =systemd-cgls= subtree
 per loaded unit for this environment (nats-server plus all 23 service
 units, including the =ores.compute.wrapper= replicas), confirmed
 against the running fleet; =compass services top -1 -b= ran cleanly
-(exit 0) against the per-environment Claude slice path, currently
-empty because this session's own Claude process predates the WS-1
-per-environment nesting (same caveat noted in WS-1's own verification
--- not a bug); the underlying =systemd-cgtop <path>= mechanism was
-separately confirmed to produce real rows when pointed at a populated
-parent path (=app.slice=) during manual testing.
+(exit 0) against the per-environment Claude slice path.
+
+*Correction from review round 1* (see =* Review= #3/#4): the initial
+verification's "empty" =top= output was wrongly attributed entirely
+to "no session predates WS-1 nesting" -- review correctly identified
+a real path-construction bug (=_claude_slice_path= skipped the
+intermediate =app-claude.slice= segment systemd's dash-hierarchy
+actually requires) that would have made =top= point at a
+non-existent cgroup regardless of whether any session was running.
+Fixed, and re-verified live: =top= now reports a real, non-empty row
+for =app-claude-brave_hopper.slice=. =tree= had a related latent bug
+-- it added the Claude slice to =--user-unit= unconditionally, with
+no existence check, unlike the fleet units it already guards the
+same way -- which would abort the *entire* =cgls= call (fleet
+subtrees included) for any environment with no active Claude session.
+Fixed with a new =_slice_is_loaded()= check; verified directly
+against both a real loaded slice and a fabricated nonexistent one.
 
 * Test Scenarios
 
@@ -253,5 +264,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Docstring names the future drop-in dir "app-claude.slice.d/" (missing trailing dash), inconsistent with the actual dash-truncated template it describes | compass_claude.py | Fixed | Corrected to "app-claude-.slice.d/". |
 | 2 | Env names containing a literal dash would create an extra implicit intermediate slice level (harmless -- the drop-in still applies at every level, and no current env name uses dashes) | compass_claude.py | Declined | Genuinely latent, not hit by any real environment today (all use underscores); not worth a speculative guard for an input that can't currently occur. |
+| 3 | _claude_slice_path is missing the intermediate app-claude.slice hierarchy segment -- top would always point at a non-existent cgroup (flagged by all 3 review passes) | compass_services.py | Fixed | Inserted the missing segment; re-verified live -- top now reports a real row (48K, non-empty) instead of the previous empty output. |
+| 4 | cmd_tree adds the Claude slice to --user-unit unconditionally, with no existence check unlike the fleet units -- would abort the whole cgls call (including fleet subtrees) for any environment with no active Claude session | compass_services.py | Fixed | Added _slice_is_loaded() (systemctl is-active without the .service-suffix mangling _unit_active_state applies) and gated the slice's inclusion on it; verified directly against both a real loaded slice and a made-up nonexistent one. |
 
 * Result

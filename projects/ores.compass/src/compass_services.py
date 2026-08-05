@@ -549,10 +549,24 @@ def _claude_slice_name(ctx) -> str:
 def _claude_slice_path(ctx) -> str:
     """Absolute cgroupfs path (unified hierarchy) for this environment's
     Claude slice -- systemd-cgtop takes real paths, not unit names, unlike
-    systemd-cgls's --user-unit."""
+    systemd-cgls's --user-unit. app-claude-<env>.slice nests INSIDE the
+    static app-claude.slice parent (systemd's dash-hierarchy convention,
+    see compass_claude.py's own docstring) -- both segments are required,
+    not just the leaf."""
     uid = os.getuid()
     return (f"/user.slice/user-{uid}.slice/user@{uid}.service/app.slice/"
-            f"{_claude_slice_name(ctx)}")
+            f"app-claude.slice/{_claude_slice_name(ctx)}")
+
+
+def _slice_is_loaded(slice_name) -> bool:
+    """Whether a (possibly transient, e.g. app-claude-<env>.slice) slice
+    unit is currently loaded. Unlike _unit_active_state, does NOT append
+    .service -- slice names already carry .slice, and systemd garbage-
+    collects a dash-truncated-drop-in-backed transient slice entirely
+    once its last leaf scope exits, so an environment with no active
+    Claude session genuinely has no such unit for cgls/cgtop to find."""
+    out = _systemctl(["is-active", slice_name], check=False)
+    return out.stdout.strip() == "active"
 
 
 def cmd_tree(ctx, args):
@@ -566,8 +580,15 @@ def cmd_tree(ctx, args):
         return 1
     units = [_nats_unit(ctx)] + [u for u, _ in _service_units(ctx)]
     loaded = [u for u in units if _unit_active_state(u) != "missing"]
-    user_units = [f"--user-unit={_claude_slice_name(ctx)}"]
+    user_units = []
+    slice_name = _claude_slice_name(ctx)
+    if _slice_is_loaded(slice_name):
+        user_units.append(f"--user-unit={slice_name}")
     user_units += [f"--user-unit={u}.service" for u in loaded]
+    if not user_units:
+        print(f"Nothing loaded for environment '{ctx.env_name}' "
+              f"(no active Claude session, no fleet units running).")
+        return 0
     result = subprocess.run(["systemd-cgls"] + user_units + args.extra,
                             check=False)
     return result.returncode

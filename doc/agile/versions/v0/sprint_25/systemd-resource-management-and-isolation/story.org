@@ -40,9 +40,9 @@ implementation.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Per-environment resource limits task STARTED -- WS-7 change 1, WS-1, and WS-5 (unprivileged half) merged/in flight; WS-3 discovered already implemented. |
+| Now           | Per-environment resource limits task STARTED -- WS-7 change 1, WS-1, WS-5 (unprivileged half), and WS-4 merged/in flight; WS-3 and WS-2 both discovered already implemented (predate this story, Sprint 24 PR #1806). |
 | Waiting on    | Nothing.                               |
-| Next          | WS-4 (per-environment status/tree/top views). |
+| Next          | WS-7 remainder (builds into a memory-capped slice). |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance

@@ -75,6 +75,23 @@ with systemd?
    log), =starting= (active, not ready yet), =stopped= (not active),
    =missing= (unit not loaded at all -- run =services start= first).
 
+   For a process-tree or live-usage view instead of a status table:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh services tree
+   ./projects/ores.compass/compass.sh services top -1 -b
+   #+end_src
+
+   =tree= runs =systemd-cgls= across this environment's Claude session
+   slice (=app-claude-<env>.slice=, see [[id:3FED1AAE-009B-4307-866C-E1C092EA17BE][How do I launch Claude Code
+   inside a systemd scope?]]) plus every unit this environment's fleet
+   aggregates, printed as one subtree per unit -- fleet services don't
+   have a per-environment slice of their own (yet), only Claude
+   sessions and, once builds move into their own cgroup, builds do.
+   =top= runs =systemd-cgtop= filtered to that same Claude slice for
+   live CPU/memory usage; both forward extra flags verbatim (=-a=/=-l=
+   for =tree=, =-1=/=-b=/=-m= for =top=, etc).
+
 4. /Stop services/:
 
    #+begin_src sh :results verbatim
@@ -165,9 +182,9 @@ whole fleet, or watch a live journal.
 
 * Script
 
-=compass services start/stop/status/clear-logs= -- generate+deploy the
-systemd units and drive them, with readiness waiting and a status
-table.
+=compass services start/stop/status/tree/top/clear-logs= -- generate+deploy
+the systemd units and drive them, with readiness waiting, a status
+table, and per-environment process-tree/usage views.
 =compass systemd generate/deploy= -- render and install the units
 without starting anything.
 =systemctl --user start/stop/status <unit>= -- drive one unit or the

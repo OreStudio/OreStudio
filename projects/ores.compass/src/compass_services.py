@@ -541,6 +541,71 @@ def cmd_status(ctx, args):
     return 0
 
 
+def _claude_slice_name(ctx) -> str:
+    import compass_claude
+    return compass_claude._slice_name(ctx.env_name)
+
+
+def _claude_slice_path(ctx) -> str:
+    """Absolute cgroupfs path (unified hierarchy) for this environment's
+    Claude slice -- systemd-cgtop takes real paths, not unit names, unlike
+    systemd-cgls's --user-unit. app-claude-<env>.slice nests INSIDE the
+    static app-claude.slice parent (systemd's dash-hierarchy convention,
+    see compass_claude.py's own docstring) -- both segments are required,
+    not just the leaf."""
+    uid = os.getuid()
+    return (f"/user.slice/user-{uid}.slice/user@{uid}.service/app.slice/"
+            f"app-claude.slice/{_claude_slice_name(ctx)}")
+
+
+def _slice_is_loaded(slice_name) -> bool:
+    """Whether a (possibly transient, e.g. app-claude-<env>.slice) slice
+    unit is currently loaded. Unlike _unit_active_state, does NOT append
+    .service -- slice names already carry .slice, and systemd garbage-
+    collects a dash-truncated-drop-in-backed transient slice entirely
+    once its last leaf scope exits, so an environment with no active
+    Claude session genuinely has no such unit for cgls/cgtop to find."""
+    out = _systemctl(["is-active", slice_name], check=False)
+    return out.stdout.strip() == "active"
+
+
+def cmd_tree(ctx, args):
+    """WS-4: process tree for this environment -- the Claude session slice
+    (per-environment since WS-1) plus every unit this environment's fleet
+    aggregates. Fleet service units have no per-environment slice of their
+    own yet (only Claude sessions and, once WS-7's remainder lands,
+    builds do) -- each unit's own cgroup is shown individually instead."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    units = [_nats_unit(ctx)] + [u for u, _ in _service_units(ctx)]
+    loaded = [u for u in units if _unit_active_state(u) != "missing"]
+    user_units = []
+    slice_name = _claude_slice_name(ctx)
+    if _slice_is_loaded(slice_name):
+        user_units.append(f"--user-unit={slice_name}")
+    user_units += [f"--user-unit={u}.service" for u in loaded]
+    if not user_units:
+        print(f"Nothing loaded for environment '{ctx.env_name}' "
+              f"(no active Claude session, no fleet units running).")
+        return 0
+    result = subprocess.run(["systemd-cgls"] + user_units + args.extra,
+                            check=False)
+    return result.returncode
+
+
+def cmd_top(ctx, args):
+    """WS-4: systemd-cgtop filtered to this environment's Claude slice --
+    the only per-environment cgroup that exists today (see cmd_tree's
+    docstring on fleet services not having one yet)."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    result = subprocess.run(["systemd-cgtop"] + args.extra + [_claude_slice_path(ctx)],
+                            check=False)
+    return result.returncode
+
+
 def cmd_clear_logs(ctx, args):
     if not ctx.log_dir.is_dir():
         print(f"Nothing to clear: log directory does not exist "
@@ -646,6 +711,22 @@ def run(argv, project_root: Path) -> int:
                                        "plus readiness log lines")
     _common(su)
 
+    tr = sub.add_parser("tree", help="Process tree for this environment: "
+                                     "Claude session slice + fleet units "
+                                     "(systemd-cgls)")
+    _common(tr)
+    tr.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="Extra flags forwarded verbatim to systemd-cgls "
+                         "(e.g. -a, -l)")
+
+    tp = sub.add_parser("top", help="Live resource usage for this "
+                                    "environment's Claude slice "
+                                    "(systemd-cgtop)")
+    _common(tp)
+    tp.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="Extra flags forwarded verbatim to systemd-cgtop "
+                         "(e.g. -1, -b, -m)")
+
     cl = sub.add_parser("clear-logs", help="Delete all *.log / *.err under "
                                            "the preset's log directory")
     _common(cl)
@@ -656,6 +737,7 @@ def run(argv, project_root: Path) -> int:
     ctx = Ctx(project_root, env, args.preset)
 
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
+            "tree": cmd_tree, "top": cmd_top,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)
 
 

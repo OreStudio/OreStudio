@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :gleif:refdata:iam:cleanup:acme_corporation_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/gleif-import-should-attach-counterparty-logos
+#+pr: 1852
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -50,11 +50,11 @@ step racing the import's own completion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -71,9 +71,40 @@ step racing the import's own completion.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=attach_demo_counterparty_logo= and its call site were already removed
+from =tenant_handler.hpp= before this task started (see the task's own
+description) -- the remaining work was adding the replacement, not
+removing the old code.
+
+Implemented directly in
+=ores_refdata_publish_lei_counterparties_from_dq_fn= (in
+=refdata_publish_from_dq_create.sql=), the same SQL function that
+inserts the GLEIF counterparty rows themselves -- part of the one
+publish, not a second pass:
+
+- A small, extensible =(lei, image_key)= VALUES list of known logos.
+  One entry today: Barclays Plc's real LEI
+  (=213800LBQA1Y9L22JB70=) -> the =demo_counterparty_logo= template
+  key. LEI chosen over =short_code= as the join key since LEIs are
+  the dataset's own stable identifier -- short codes are generated
+  per-import (=ores_utility_generate_short_code_fn=) and can
+  theoretically collide/renumber, LEIs never do.
+- Each tenant gets its own copy of the system-tenant template image
+  (via =ores_assets_get_template_image_fn=, the existing
+  cross-tenant-isolation reader), created once per tenant and reused
+  on subsequent publishes into the same tenant (looked up first by
+  =(tenant_id, key)= before copying) -- mirrors how the old C++
+  =copy_template_image= worked, just done in SQL now.
+- After the per-depth-level counterparty insert loop, one small
+  block loops the logo map, skips LEIs not present in this import's
+  =lei_counterparty_uuid_map= temp table, resolves/copies the
+  per-tenant image, and =UPDATE=s the matching counterparty's
+  =image_id=.
+
+No unbounded/silent wait: the whole thing runs inline in the same
+transaction as the counterparty insert, so a counterparty with a
+known LEI has its logo the instant the import completes -- nothing
+racing GLEIF's own ~13k-row import in a separate polling loop.
 
 * Notes
 
@@ -86,13 +117,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E][Verify GLEIF import attaches counterparty logo natively]] | PASSED | Barclays Plc gets its logo from the GLEIF publish itself; other counterparties don't. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1852][#1852]] | [refdata] GLEIF import should natively attach counterparty logos |
 
 * Review
 
@@ -101,3 +132,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented in =ores_refdata_publish_lei_counterparties_from_dq_fn=
+(=refdata_publish_from_dq_create.sql=) -- see =* Plan= for the full
+mechanism. Verified end-to-end against a fresh =--source acme=
+provisioning run: BARCLAYS PLC (short_code =BRCLYS=) has =image_id=
+set immediately after the GLEIF publish completes, with no separate
+polling step. Manual scenario [[id:07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E][Verify GLEIF import attaches counterparty
+logo natively]] (PASSED, 4/4 steps): the logo renders in
+=CounterpartyDetailDialog= (confirming this fix together with the
+earlier logo-rendering fix in this story), and no other counterparty
+picked up a logo -- the known-logo map stays scoped to Barclays' LEI.
+
+Side finding during manual verification, filed separately rather than
+fixed here: the Counterparties list has no search, making it hard to
+locate a specific record among ~13k GLEIF-imported rows -- [[id:B3FD623C-D87B-491F-9FA2-08B26D67114F][Add
+server-side search/filter to list windows across entities]].
+
+Local build clean (linux-clang-debug-make); ctest 71/71 passed.

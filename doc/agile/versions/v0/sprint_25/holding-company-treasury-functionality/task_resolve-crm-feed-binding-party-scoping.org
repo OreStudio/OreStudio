@@ -8,7 +8,7 @@
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
 #+branch: feature/resolve-crm-feed-binding-party-scoping
-#+pr:
+#+pr: 1872
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1872][#1872]] | [marketdata,sql] Make CRM tick consumption tenant-wide |
 
 * Review
 

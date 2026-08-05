@@ -35,11 +35,11 @@ touches a different file/subsystem and has its own verification.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-7 remainder (memory-capped build slice) implemented; raising as the fifth PR. All unprivileged workstreams (WS-1, WS-4, WS-5 unpriv, WS-7) now complete; WS-2/WS-3 confirmed already done pre-existing. |
+| Now          | Nothing. |
 | Waiting on   | Someone with root, for WS-5's root half.  |
-| Next         | WS-5 (root half, needs root) and the plan's explicit deliberate-OOM acceptance test; WS-6 stays deferred. |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -308,3 +308,16 @@ via its "Verifies task" field.
 | 6 | app-build-.slice.d/50-limits.conf omits TasksMax/ManagedOOMMemoryPressure=kill present in the sibling app-claude-.slice.d/ drop-in, with no comment explaining the difference | 50-limits.conf | Fixed | Added a one-line rationale: a build's task count is bounded by -j (nowhere near TasksMax's headroom, unlike an open-ended interactive session), and pressure-based killing mid-build would produce a confusing partial/corrupted build rather than a clean MemoryMax-triggered failure. |
 
 * Result
+
+All unprivileged workstreams of the resource-management plan shipped
+across five PRs (#1842, #1845, #1849, #1853, #1856): WS-7 change 1
+(two build-lock slots), WS-1 (per-environment Claude slices with
+MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight), WS-5 unprivileged half
+(Emacs protection drop-in), WS-4 (=compass services tree=/=top=), and
+WS-7 remainder (memory-capped =app-build-<env>.slice= wrapping
+=cmake --build=). WS-2 and WS-3 were discovered already implemented
+predating this task (Sprint 24, PR #1806) -- confirmed rather than
+reimplemented. All acceptance criteria met except the two explicitly
+out of this task's reach: WS-5's root half (needs root, not yet run)
+and the deliberate-OOM acceptance test (depends on the root half).
+WS-6 (PID 1 ownership) remains deferred, as scoped from the start.

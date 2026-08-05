@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: C96740B8-89CA-44C1-98F1-38EF97886EDC
+:ID: 68FFB616-C71D-4701-AEA1-52DE4973D2AB
 :END:
-#+title: Task: Show systemd slice/scope info in compass fleet and bearings
-#+description: Add systemd slice/scope information to compass fleet and compass bearings output
+#+title: Task: Show blocked story dependency tree in compass where
+#+description: compass where shows STARTED items but not blocked chains (story C blocked by B blocked by A); surface the dependency tree with root causes in the Orient output.
 #+type: task
 #+level: s1
-#+filetags: :compass-quality-of-life-improvements-followups:next:product_backlog:
+#+filetags: :compass:orient:ux:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-07-29
-#+updated: 2026-07-29
+#+created: 2026-08-05
+#+updated: 2026-08-05
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Surface each environment's systemd scope in compass fleet and compass bearings output, so it is visible which cgroup or scope a session is running under without manually querying systemctl.
+(Describe what user-visible-or-internal change this task produces.)
 
 * Status
 
@@ -31,11 +31,11 @@ Surface each environment's systemd scope in compass fleet and compass bearings o
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
-- compass fleet lists the scope name per worktree/session where available; compass bearings shows the current session's own scope/slice; falls back gracefully when a session has no named scope.
+-
 
 * Plan
 

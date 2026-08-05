@@ -5,7 +5,7 @@
 #+description: Add a compass git subcommand (e.g. 'compass branches prune' or similar) that deletes all fully-merged local and remote git branches, and separately reports which branches are stale/unmerged, mapping each to the fleet worktree/environment currently using it if any. Formalises a manual git-branch cleanup workflow performed ad hoc in this session (fetch --prune, diff local/remote against origin/main, cross-reference against 'compass fleet' to avoid deleting a branch another environment has checked out, then git branch -d / git push origin --delete for the safe set).
 #+type: task
 #+level: s1
-#+filetags: :compass-quality-of-life-improvements-followups:next:product_backlog:
+#+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
 #+branch:
 #+pr:

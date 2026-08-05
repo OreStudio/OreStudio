@@ -75,9 +75,8 @@ TEST_CASE("should_ensure_feed_binding: a brand-new feed is gated on the requeste
 }
 
 TEST_CASE("should_ensure_feed_binding: an already-running feed is gated on its stored binding "
-          "mode, not the requested one -- a binding_mode-unaware caller (e.g. the ad-hoc NATS "
-          "control-plane, which always passes bound) restarting an already-sandboxed feed must "
-          "not create a feed_binding for it",
+          "mode, not the requested one -- an unaware caller restarting an already-sandboxed "
+          "feed must not create a bound feed_binding for it",
           tags) {
     CHECK_FALSE(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::sandboxed));
     CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));

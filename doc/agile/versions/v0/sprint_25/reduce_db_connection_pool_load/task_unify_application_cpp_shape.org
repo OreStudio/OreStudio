@@ -198,6 +198,22 @@ clear an unrelated stale-schema issue (a prior migration not yet
 applied locally) that was masking real verification the first time
 around.
 
+*Second unrelated bug hit and fixed during full-suite verification*:
+=ores.synthetic.service.tests= crashed deterministically (unhandled
+=boost::filesystem::filesystem_error=, EINVAL on
+=create_directories=) on a =feed_controller_tests.cpp= test added by
+PR #1844 (merged into =main= same day, unrelated to this task's own
+diff). Root cause: =ores.testing='s =logging_listener.cpp= uses the
+raw Catch2 test name as a log filename with no length cap; that
+test's name was 289 bytes, over the 255-byte =NAME_MAX= most Linux
+filesystems enforce per path component. Fixed by shortening the test
+name to 212 bytes. Filed
+[[id:A6CF498D-56A9-4DAF-B294-686C3AC3F395][Sanitize Catch2 test names used as log filenames]] for the general
+fix (cap/sanitise in =logging_listener.cpp= itself, so this can't
+recur for any future long test name repo-wide) rather than
+implementing it here — out of this task's scope, and a shared-infra
+change deserves its own review.
+
 * Notes
 
 Overlaps with [[id:E3647ADD-B5F6-4D12-82E4-57A93DA4C8F8][Consolidate duplicated common/logging/database/nats parser
@@ -234,5 +250,3 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result

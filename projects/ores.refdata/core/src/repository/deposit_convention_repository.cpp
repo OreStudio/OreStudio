@@ -194,8 +194,10 @@ std::uint32_t deposit_convention_repository::get_total_deposit_convention_count(
 void deposit_convention_repository::remove(context ctx, const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<deposit_convention_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing deposit conventions.");
 }
 

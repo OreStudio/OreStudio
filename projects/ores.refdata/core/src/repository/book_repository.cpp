@@ -269,8 +269,10 @@ std::uint32_t book_repository::get_total_book_count(context ctx) {
 void book_repository::remove(context ctx, const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<book_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::delete_from<book_entity> | where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                                                 "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing books.");
 }
 

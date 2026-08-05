@@ -1975,6 +1975,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             col['is_identity_group_column'] = (
                 has_identity_group and col.get('group', '') == 'identity'
             )
+        # Primary-key columns live in a separate 'primary_key' dict, not in
+        # 'columns' (see org_loader._parse_columns), so they need the same
+        # flag set independently -- otherwise repository-layer helpers like
+        # value_log_fields below would reference a flat field that the
+        # identity-grouped domain struct no longer has.
+        pk_dict = domain_entity.get('primary_key', {})
+        for col in [pk_dict] + list(pk_dict.get('columns', [])):
+            col['is_identity_group_column'] = (
+                has_identity_group and col.get('group', '') == 'identity'
+            )
         # Auto-inject identity/audit group headers into cpp.includes.domain so
         # models only need to list their own direct (non-group-field) includes.
         if has_identity_group or has_audit_group:
@@ -2359,7 +2369,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f'{c["column"]}: " << {c["column"]}' for c in pk_columns
             )
             pk['value_log_fields'] = '"' + ' << " '.join(
-                f'{c["column"]}: " << v.{c["column"]}' for c in pk_columns
+                f'{c["column"]}: " << v.'
+                + ('identity.' if c.get('is_identity_group_column') else '')
+                + c["column"]
+                for c in pk_columns
             )
             # Batch (vector) overloads: sqlgen has no tuple/composite IN, so
             # the query fetches a per-column .in() candidate superset (a

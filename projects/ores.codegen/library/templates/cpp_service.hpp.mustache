@@ -140,6 +140,14 @@ public:
      */
     std::optional<domain::{{entity_singular}}>
     get_{{entity_singular_short}}({{{primary_key.params}}});
+{{#has_batch_read}}
+
+    /**
+     * @brief Retrieves a batch of {{entity_plural_words}} by primary key.
+     */
+    std::vector<domain::{{entity_singular}}>
+    get_{{entity_plural_short}}({{{primary_key.batch_params}}});
+{{/has_batch_read}}
 
     /**
      * @brief Saves a {{entity_singular_words}} (creates or updates).

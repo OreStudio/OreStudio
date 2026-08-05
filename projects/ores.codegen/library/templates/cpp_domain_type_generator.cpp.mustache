@@ -32,42 +32,42 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 
     domain::{{entity_singular}} r;
 {{#has_audit_columns}}
-    r.version = 0;
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}version = 0;
 {{/has_audit_columns}}
 {{#has_tenant_id}}
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
 {{/has_tenant_id}}
 {{#has_workspace_id}}
-    r.workspace_id = utility::uuid::live_workspace_id();
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}workspace_id = utility::uuid::live_workspace_id();
 {{/has_workspace_id}}
 {{#primary_key.is_text}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{#primary_key.generator_expr}}
-    r.{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}{{primary_key.column}} = {{{primary_key.generator_expr}}} + "-"
         + std::to_string(idx);
 {{/primary_key.generator_expr}}
 {{^primary_key.generator_expr}}
-    r.{{primary_key.column}} = std::string(faker::word::noun()) + "-"
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}{{primary_key.column}} = std::string(faker::word::noun()) + "-"
         + std::to_string(idx);
 {{/primary_key.generator_expr}}
 {{/primary_key.is_text}}
 {{#primary_key.is_uuid}}
-    r.{{primary_key.column}} = ctx.generate_uuid();
+    r.{{#has_identity_group}}identity.{{/has_identity_group}}{{primary_key.column}} = ctx.generate_uuid();
 {{#has_text_natural_keys}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{/has_text_natural_keys}}
 {{/primary_key.is_uuid}}
 {{#primary_key.extra_columns}}
 {{#is_uuid}}
-    r.{{column}} = ctx.generate_uuid();
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = ctx.generate_uuid();
 {{/is_uuid}}
 {{^is_uuid}}
 {{#generator_expr}}
-    r.{{column}} = {{{generator_expr}}};
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{{generator_expr}}};
 {{/generator_expr}}
 {{^generator_expr}}
-    r.{{column}} = std::string(faker::word::noun());
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = std::string(faker::word::noun());
 {{/generator_expr}}
 {{/is_uuid}}
 {{/primary_key.extra_columns}}
@@ -124,24 +124,24 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/natural_keys}}
 {{#columns}}
 {{#generator_expr}}
-    r.{{name}} = {{{generator_expr}}};
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}};
 {{/generator_expr}}
 {{^generator_expr}}
 {{#is_uuid}}
-    r.{{name}} = ctx.generate_uuid();
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = ctx.generate_uuid();
 {{/is_uuid}}
 {{#is_plain_string}}
-    r.{{name}} = std::string(faker::word::noun());
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = std::string(faker::word::noun());
 {{/is_plain_string}}
 {{/generator_expr}}
 {{/columns}}
 {{#has_audit_columns}}
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}modified_by = modified_by;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}performed_by = modified_by;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}change_reason_code = "system.test";
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}change_commentary = "Synthetic test data";
 {{/has_audit_columns}}
-    r.recorded_at = ctx.past_timepoint();
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}recorded_at = ctx.past_timepoint();
     return r;
 }
 

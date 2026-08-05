@@ -56,6 +56,10 @@ pilot did) is a prerequisite for each one individually.
   batch of conversions (not just at the very end).
 - Workspace inheritance (PR #1846) verified working for every
   converted entity.
+- Add a repository test proving batch remove() doesn't cross
+  workspace boundaries (flagged during PR #1857 review as missing --
+  the fix itself was verified correct by inspection across 11
+  entities, but no test exercises it).
 
 * Plan
 

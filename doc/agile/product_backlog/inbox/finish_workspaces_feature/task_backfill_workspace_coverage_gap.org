@@ -8,7 +8,7 @@
 #+filetags: :finish_workspaces_feature:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/backfill-workspace-coverage-gap
-#+pr:
+#+pr: 1857
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1857][#1857]] | [codegen,trading] Bring equity_position_instrument under codegen |
 
 * Review
 

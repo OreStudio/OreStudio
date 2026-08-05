@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 91ED2388-6CC8-433B-95E5-795C8D0D6346
 :END:
-#+title: Task: Backfill workspace_id coverage: book, portfolio, and decide on trading instrument sub-types
-#+description: book and portfolio have codegen models but never got has_workspace_id added despite their SQL tables carrying the column -- backfill the model flag and regenerate. Separately decide whether the ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) get codegen models at all, or stay hand-crafted -- this is a pre-existing not-yet-under-codegen gap, not workspace-specific, but their workspace_id handling is currently unverified either way.
+#+title: Task: Decide fate of ~20 hand-crafted trading instrument sub-types missing codegen models
+#+description: ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) carry workspace_id in SQL but have no codegen model at all. Decide whether to bring them under codegen (large, separate effort) or explicitly accept them as permanently hand-crafted -- either way, verify their hand-written repository/service code actually filters by workspace_id correctly today. (book/portfolio, originally scoped here, turned out to already be correctly covered via the fk-scoped-child profile -- see the audit task's correction note -- and were regenerated/verified in PR #1846, so they're no longer part of this task.)
 #+type: task
 #+level: s1
 #+filetags: :finish_workspaces_feature:inbox:product_backlog:
@@ -20,22 +20,20 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Close the gap between what SQL actually has and what codegen models
-declare for =workspace_id=:
+Decide -- and record the decision -- on the ~20 hand-crafted trading
+instrument sub-types (bond, every equity_* variant, every fx_*
+variant, commodity, composite + composite_legs, credit, scripted,
+swap_legs) that carry =workspace_id= in SQL but have no codegen model
+at all: bring them under codegen (large, separate effort) or
+explicitly accept them as permanently hand-crafted and move on.
+Either way, verify their hand-written repository/service code
+actually filters by =workspace_id= correctly today.
 
-1. =ores.refdata.book.org= and =ores.refdata.portfolio.org= both have
-   real codegen models but neither declares =has_workspace_id= (or the
-   =workspace-scoped-lookup= profile), despite =refdata_books_tbl= and
-   =refdata_portfolios_tbl= carrying the column in production. Add the
-   flag, regenerate, confirm zero-diff.
-2. Decide -- and record the decision -- on the ~20 hand-crafted
-   trading instrument sub-types (bond, every equity_* variant, every
-   fx_* variant, commodity, composite + composite_legs, credit,
-   scripted, swap_legs) that carry =workspace_id= in SQL but have no
-   codegen model at all: bring them under codegen (large, separate
-   effort) or explicitly accept them as permanently hand-crafted and
-   move on. Either way, verify their hand-written repository/service
-   code actually filters by =workspace_id= correctly today.
+(=book=/=portfolio= were originally scoped into this task too, on the
+mistaken belief they lacked =has_workspace_id=. They don't lack it --
+both inherit it from the =fk-scoped-child= profile, and were
+regenerated/verified with the inheritance-query fix in PR #1846. See
+the audit task's correction note.)
 
 * Status
 
@@ -50,8 +48,6 @@ declare for =workspace_id=:
 
 * Acceptance
 
-- =book= and =portfolio= models declare workspace-awareness and
-  regenerate with zero diff against production SQL.
 - Explicit written decision on the ~20 uncovered trading instrument
   sub-types, recorded in this task's =* Result= and the parent story's
   =* Decisions=.

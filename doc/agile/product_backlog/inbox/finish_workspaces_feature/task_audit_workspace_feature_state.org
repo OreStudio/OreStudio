@@ -85,27 +85,37 @@ Of those, codegen model coverage breaks down as:
 |----------+-------+-----------|
 | Raw =has_workspace_id: true= flag | 13 | =ores.trading= instrument/trade entities: balance_guaranteed_swap, callable_swap, cap_floor, fra, inflation_swap, knock_out_swap, rpa, swaption, vanilla_swap, trade, trade_identifier, lifecycle_event, plus =reporting.report_definition= |
 | =:profile: workspace-scoped-lookup= | 8 | =ores.refdata= convention lookups: cds, deposit, fra, ibor_index, ois, overnight_index, swap, zero conventions |
-| *No codegen model at all* | *25* | See below -- entirely hand-crafted or unmodelled |
+| =:profile: fk-scoped-child= (defaults =has_workspace_id: true=) | 2 | =ores.refdata.book=, =ores.refdata.portfolio= -- *correction below*, this was missed in the first pass |
+| *No codegen model at all* | *23* | See below -- entirely hand-crafted or unmodelled |
 
-*** The 25 uncovered tables
+**** Correction (found while landing the inheritance-query fix, PR #1846)
 
-- =refdata_books=, =refdata_portfolios= -- have real codegen models
-  (=ores.refdata.book.org=, =ores.refdata.portfolio.org=) but *neither
-  declares* =has_workspace_id= or the profile, despite their SQL
-  tables carrying the column. This is genuine drift: the column was
-  hand-added to production SQL (during the original Sprint 17/18
-  workspace rollout, before these entities were verified under
-  codegen) and never backfilled into the model. Regenerating either
-  entity today would silently drop the column from the generated SQL
-  if anyone ran a raw regen without noticing.
-- ~20 =ores.trading= instrument sub-types (bond, every equity_*
-  variant, every fx_* variant, commodity, composite +
-  composite_legs, credit, scripted, swap_legs) -- *no codegen model
-  file exists at all* (confirmed: no matching =.org= under
-  =projects/ores.trading/modeling/=). These are entirely hand-crafted
-  C++ across domain/repository/service/Qt, independent of workspace
-  specifically -- a pre-existing "not yet brought under codegen" gap
-  that happens to also carry =workspace_id=.
+The first pass of this audit claimed =book=/=portfolio= "neither
+declares =has_workspace_id= nor the profile" -- *wrong*. Both declare
+=:profile: fk-scoped-child=, and that profile's own Assignments table
+(=projects/modeling/variability_fk_scoped_child.org=) sets
+=has_workspace_id: true= as a default every adopting entity inherits
+without repeating the flag in its own file. The original audit only
+grepped for the literal string =has_workspace_id= directly in entity
+files and for the =workspace-scoped-lookup= profile by name -- it
+never checked what *other* profiles supply as defaults. CI's
+=refdata-codegen-drift= check caught this correctly when the
+inheritance-query template fix (PR #1846) regenerated =book=/
+=portfolio= with the new resolution-chain logic and the checked-in
+files (generated before the fix, but still =has_workspace_id=-active)
+didn't match. Both are now correctly counted as covered, and were
+regenerated/verified as part of that PR -- no separate backfill task
+needed for them.
+
+*** The 23 uncovered tables
+
+~20 =ores.trading= instrument sub-types (bond, every equity_* variant,
+every fx_* variant, commodity, composite + composite_legs, credit,
+scripted, swap_legs) -- *no codegen model file exists at all*
+(confirmed: no matching =.org= under =projects/ores.trading/modeling/=).
+These are entirely hand-crafted C++ across domain/repository/service/Qt,
+independent of workspace specifically -- a pre-existing "not yet
+brought under codegen" gap that happens to also carry =workspace_id=.
 
 ** Qt layer: no per-entity codegen flag exists -- and none is needed
 

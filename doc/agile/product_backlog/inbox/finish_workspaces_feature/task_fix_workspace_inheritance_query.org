@@ -169,6 +169,20 @@ regeneration, clean build, all 178 tests pass (176 pre-existing + 2
 new), including a new permanent test proving a child workspace with
 no local rows correctly inherits Live's rows.
 
+*Follow-up after CI caught real drift*: =refdata-codegen-drift=
+failed on the first push -- =book=/=portfolio= also carry
+=has_workspace_id= (via the =fk-scoped-child= profile's own
+defaults, missed in the earlier audit; see that task's correction
+note) and needed regenerating too. Found the complete picture by
+grepping every profile's Assignments table for
+=has_workspace_id: true= rather than per-entity string matching;
+regenerated both, then ran the full =check_component_drift.py
+--components refdata= (all 60 models, not just the 10 touched
+directly) to confirm zero drift repo-wide, not just for the entities
+I expected to be affected. Rebuilt and re-ran the full
+=ores.refdata.core.tests= suite (178/178 still green) after this
+correction.
+
 The 13 trading =has_workspace_id= entities could not be regenerated
 or verified in this task: they (and =reporting.report_definition=)
 hit a separate, already-tracked, pre-existing blocker -- their models

@@ -66,11 +66,11 @@ this engine reads.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Engine + tests implemented and passing; ready for PR. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR for review.                   |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -216,3 +216,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =day_count_calculator= and =curve_bootstrap_engine= in
+=ores.analytics.quant::service=, pure/static, algebraically inverting
+=curve_instrument_pricer='s forward formulas to bootstrap DEPOSIT/FRA/SWAP
+pillars tenor-by-tenor from the short end. =day_count_calculator=
+supports A360/A365/A365F/30-360, throwing on any other code.
+=curve_bootstrap_engine= supports =LOG_LINEAR_DISCOUNT= and
+=FLAT_FORWARD_THEN_LOG_LINEAR= (proven equivalent for local
+interpolation by a dedicated test), throws on =CUBIC_SPLINE=, and
+enforces the Funding-before-Projection build order via an optional
+=discount_curve= parameter that raises =discount_curve_required_error=
+when a PROJECTION config's dependency isn't already covered — the
+build-order *check* only; genuine dual-curve discounting math is
+out of scope (see =* Plan= scoping decisions). All acceptance
+criteria met, including single-segment, two-segment (FOMC-style),
+and Projection-discounted-off-Funding unit test coverage. 229/229
+=ores.analytics.quant.tests= cases passed locally.

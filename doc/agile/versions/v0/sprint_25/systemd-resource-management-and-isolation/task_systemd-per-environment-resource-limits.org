@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
-#+branch: feature/systemd-resource-limits-ws1
+#+branch: feature/systemd-resource-limits-ws5-unpriv
 #+pr: 1845
 #+blocked_on:
 #+blocked_since:
@@ -37,9 +37,9 @@ touches a different file/subsystem and has its own verification.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-1 (per-environment Claude slices with limits) implemented; raising as the second PR. |
+| Now          | WS-5 (unprivileged half) implemented; raising as the third PR. |
 | Waiting on   | Nothing.                               |
-| Next         | WS-5 (unprivileged half): emacs.service protection drop-in. |
+| Next         | WS-4 (per-environment status/tree/top views). |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -72,7 +72,9 @@ Sequencing per the design plan's =* Sequencing= section:
 3. *WS-5* (unprivileged half) -- =emacs.service= drop-in.
 4. *WS-4* -- per-environment status/tree/top views.
 5. *WS-7 remainder* -- builds into their own memory-capped slice.
-6. *WS-3* -- =compass systemd deploy=.
+6. *WS-3* -- =compass systemd deploy=. Discovered already implemented
+   when WS-5's deploy logic was folded into it; no separate PR needed
+   (see the WS-5 note below).
 7. *WS-2* -- converge =compass services= onto systemd (the large one,
    staged behind =--legacy=).
 8. *WS-5* (root half) -- once run with root, verify propagation.
@@ -130,6 +132,42 @@ itself is unaffected (=MemoryMax=infinity=, accounting only), and
 that pre-existing, already-running Claude sessions (launched before
 this change) correctly remain under the old flat slice — no live
 session was disrupted by testing this.
+
+** WS-5 (unprivileged half): protect Emacs
+
+New checked-in drop-in,
+=projects/ores.compass/src/systemd/emacs.service.d/50-protect.conf=,
+carrying =MemoryMin=1G=/=MemoryLow=2G=/=CPUWeight=10000= verbatim
+from the plan. Unlike WS-1's drop-in, this one isn't per-environment
+(there's one Emacs daemon per host, not per checkout), so it's a
+plain static file rather than a dash-truncated template.
+
+Deployment folded into the existing =compass systemd deploy=
+(=systemd_generate.py='s =cmd_deploy=) rather than a new command: a
+=STATIC_DROPINS= manifest of =(source, dest)= pairs, synced with the
+same copy-if-changed logic already used for the generated per-
+environment units, sharing the same =added=/=updated=/=removed=
+report and the same single =daemon-reload= gate. This also confirms,
+incidentally, that *WS-3 was already done* before this task started
+-- =compass systemd deploy= already installs generated units and
+runs =daemon-reload= only when something changed (the plan describes
+this as still-to-build, but it was already implemented; no separate
+WS-3 PR is needed).
+
+Verified: =compass systemd deploy= reported =Added: 1= with
+=+ emacs.service.d/50-protect.conf=; confirmed the file landed
+correctly at =~/.config/systemd/user/emacs.service.d/50-protect.conf=
+with the right content; =systemctl --user show emacs.service -p
+MemoryMin -p MemoryLow -p CPUWeight= reports =CPUWeight=10000=,
+=MemoryMin=1073741824= (1G), =MemoryLow=2147483648= (2G) --
+=CPUWeight= is proportional and unprivileged so it's already fully
+effective; =MemoryMin=/=MemoryLow= are set at this level but per the
+plan's own caveat are clamped by ancestor cgroups until the WS-5
+*root* half (=/etc/systemd/system/user-1000.slice.d/50-marco.conf=,
+requires root, not part of this PR) also lands -- documented in the
+drop-in's own header so this isn't mistaken for a completed
+protection. Re-ran =compass systemd deploy= and confirmed it reports
+=Nothing changed; skipped daemon-reload.= (idempotent).
 
 * Test Scenarios
 

@@ -40,9 +40,9 @@ implementation.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Per-environment resource limits task STARTED -- WS-7 change 1, WS-1, WS-5 (unprivileged half), and WS-4 merged/in flight; WS-3 and WS-2 both discovered already implemented (predate this story, Sprint 24 PR #1806). |
-| Waiting on    | Nothing.                               |
-| Next          | WS-7 remainder (builds into a memory-capped slice). |
+| Now           | Per-environment resource limits task STARTED -- all unprivileged workstreams (WS-7, WS-1, WS-5 unpriv, WS-4) merged/in flight; WS-3 and WS-2 both discovered already implemented (predate this story, Sprint 24 PR #1806). |
+| Waiting on    | Someone with root, for WS-5's root half.  |
+| Next          | WS-5 (root half) and the plan's explicit deliberate-OOM acceptance test; WS-6 stays deferred. |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance

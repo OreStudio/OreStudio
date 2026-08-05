@@ -177,6 +177,15 @@ curve_bootstrap_engine::bootstrap(std::chrono::year_month_day value_date,
         double df_end;
         switch (p.curve_role) {
         case bootstrap_curve_role_code::DEPOSIT: {
+            // curve_instrument_pricer::deposit_rate(df, yf) is documented as
+            // P(0, tau) -- always anchored at the valuation date, df_start ==
+            // 1.0 -- so a DEPOSIT pillar's start_date must be value_date
+            // itself; anything else would silently discount from the wrong
+            // base rather than failing loudly like every other check here.
+            if (std::chrono::sys_days(p.start_date) != std::chrono::sys_days(value_date))
+                throw std::invalid_argument(
+                    "curve_bootstrap_engine: DEPOSIT pillar '" + p.point_id +
+                    "' must have start_date == value_date");
             const double yf =
                 day_count_calculator::year_fraction(p.start_date, p.end_date, day_count_convention);
             // Inverts curve_instrument_pricer::deposit_rate(df, yf) = (1/df - 1)/yf.

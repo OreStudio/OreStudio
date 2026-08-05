@@ -272,6 +272,17 @@ TEST_CASE("bootstrap rejects pillars supplied in strictly decreasing maturity or
         std::invalid_argument);
 }
 
+TEST_CASE("bootstrap rejects a DEPOSIT pillar whose start_date is not value_date",
+          "[curve_bootstrap_engine]") {
+    const auto value_date = 2026y / January / 1d;
+    const auto d_spot = 2026y / January / 3d;
+    const auto d_3m = 2026y / April / 3d;
+    std::vector<bootstrap_pillar> pillars{{"3M", DEPOSIT, 0.03, d_spot, d_3m, {}}};
+    CHECK_THROWS_AS(
+        curve_bootstrap_engine::bootstrap(value_date, pillars, A365, LOG_LINEAR_DISCOUNT),
+        std::invalid_argument);
+}
+
 TEST_CASE("bootstrap rejects a SWAP pillar with an empty fixed_leg_dates",
           "[curve_bootstrap_engine]") {
     const auto value_date = 2026y / January / 1d;

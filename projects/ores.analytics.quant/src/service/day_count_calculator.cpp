@@ -32,7 +32,7 @@ long days_between(std::chrono::year_month_day start, std::chrono::year_month_day
 // US (bond-basis) 30/360: each month treated as 30 days, year as 360. The
 // end-of-month adjustment rule below is the common simplified form (not the
 // full ISDA 30/360 ruleset, which also special-cases February).
-double thirty_three_sixty(std::chrono::year_month_day start, std::chrono::year_month_day end) {
+double thirty_360(std::chrono::year_month_day start, std::chrono::year_month_day end) {
     int y1 = int(start.year()), m1 = unsigned(start.month()), d1 = unsigned(start.day());
     int y2 = int(end.year()), m2 = unsigned(end.month()), d2 = unsigned(end.day());
 
@@ -62,7 +62,7 @@ double day_count_calculator::year_fraction(std::chrono::year_month_day start,
     case day_count_convention_code::A365F:
         return static_cast<double>(days_between(start, end)) / 365.0;
     case day_count_convention_code::THIRTY_360:
-        return thirty_three_sixty(start, end);
+        return thirty_360(start, end);
     }
     throw std::invalid_argument("day_count_calculator: unrecognized day_count_convention_code");
 }

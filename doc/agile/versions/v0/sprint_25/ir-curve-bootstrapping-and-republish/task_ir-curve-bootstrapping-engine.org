@@ -213,7 +213,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | DEPOSIT pillar silently assumes start_date == value_date | curve_bootstrap_engine.cpp | Accepted | Added explicit validation throwing std::invalid_argument, plus a rejection test. |
+| 2 | thirty_three_sixty reads as "33/60" not "30/360" | day_count_calculator.cpp | Accepted | Renamed to thirty_360. |
+| 3 | No sanity bound on observed_rate producing a non-positive discount factor | curve_bootstrap_engine.cpp | Declined | Deferred -- engine inverts already-observed market rates; bad upstream data validation is a separate concern. |
+| 4 | interpolate_discount_factor does two linear scans per call | curve_bootstrap_engine.cpp | Declined | Fine at today's curve sizes (tens of pillars); binary search is a follow-up if this becomes a hot path. |
+| 5 | discount_curve coverage check assumes the vector is sorted ascending, undocumented on the parameter | curve_bootstrap_engine.cpp | Declined | Always the output of a prior bootstrap() call; documenting further is a minor follow-up, not blocking. |
 
 * Result
 

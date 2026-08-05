@@ -40,9 +40,9 @@ implementation.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Per-environment resource limits task STARTED -- WS-7 change 1 (drop build lock slot c) implemented, first PR in flight. |
+| Now           | Per-environment resource limits task STARTED -- WS-7 change 1 (merged) and WS-1 (per-environment Claude slices) implemented, second PR in flight. |
 | Waiting on    | Nothing.                               |
-| Next          | WS-1 (per-environment Claude slices with limits). |
+| Next          | WS-5 (unprivileged half): emacs.service protection drop-in. |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance

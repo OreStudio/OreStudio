@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
-#+branch: feature/systemd-resource-limits-ws7-1
-#+pr: 1842
+#+branch: feature/systemd-resource-limits-ws1
+#+pr: 1845
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -37,9 +37,9 @@ touches a different file/subsystem and has its own verification.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-7 change 1 (drop build lock slot c) implemented; raising as the first PR. |
+| Now          | WS-1 (per-environment Claude slices with limits) implemented; raising as the second PR. |
 | Waiting on   | Nothing.                               |
-| Next         | WS-1 (per-environment Claude slices with limits). |
+| Next         | WS-5 (unprivileged half): emacs.service protection drop-in. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -97,6 +97,40 @@ further doc drift to fix here (the plan's claim that the docstring
 was stale referred to language now already updated). Verified with
 =compass build --status=: shows exactly two slots (=a=, =b=), no =c=.
 
+** WS-1: per-environment Claude slices with limits
+
+=compass_claude.py= changes, matching the plan's three changes
+exactly:
+
+1. =_SLICE_NAME= (module constant) replaced with =_slice_name(env_name)=,
+   nesting each session in =app-claude-<env>.slice= instead of the flat
+   =app-claude.slice=. systemd creates the per-environment slice
+   implicitly from the =--slice=app-claude-<env>.slice= passed to
+   =systemd-run=; no new unit file needed.
+2. New checked-in drop-in source,
+   =projects/ores.compass/src/systemd/app-claude-.slice.d/50-limits.conf=
+   (dash-truncated template — applies to every =app-claude-<env>.slice=
+   with one file), carrying =MemoryHigh=6G=/=MemoryMax=9G=/
+   =MemorySwapMax=2G=/=CPUWeight=100= verbatim from the plan.
+3. =_ensure_slice_deployed()= generalised from a single
+   =(source, dest)= pair to a manifest list, so the slice unit and the
+   limits drop-in both sync (independently — only copies+reloads what
+   actually changed) in one pass.
+
+Verified directly (not via a live =compass claude= launch, to avoid
+disrupting this session's own running scope): called
+=compass_claude._ensure_slice_deployed()= directly, confirmed both
+files land correctly under =~/.config/systemd/user/=, then started a
+throwaway =systemd-run --user --scope --slice=app-claude-brave_hopper.slice
+/bin/true= and confirmed via =systemctl --user show= that
+=MemoryMax=9663676416= (9G), =MemoryHigh=6442450944= (6G),
+=MemorySwapMax=2147483648= (2G), =CPUWeight=100= all apply —
+matching the plan's own worked example. Confirmed =app-claude.slice=
+itself is unaffected (=MemoryMax=infinity=, accounting only), and
+that pre-existing, already-running Claude sessions (launched before
+this change) correctly remain under the old flat slice — no live
+session was disrupted by testing this.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -112,12 +146,14 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1845][#1845]] | [compass] WS-1: per-environment Claude slices with limits |
 | [[https://github.com/OreStudio/OreStudio/pull/1842][#1842]] | [compass] WS-7 change 1: reduce build lock to two slots |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Docstring names the future drop-in dir "app-claude.slice.d/" (missing trailing dash), inconsistent with the actual dash-truncated template it describes | compass_claude.py | Fixed | Corrected to "app-claude-.slice.d/". |
+| 2 | Env names containing a literal dash would create an extra implicit intermediate slice level (harmless -- the drop-in still applies at every level, and no current env name uses dashes) | compass_claude.py | Declined | Genuinely latent, not hit by any real environment today (all use underscores); not worth a speculative guard for an input that can't currently occur. |
 
 * Result

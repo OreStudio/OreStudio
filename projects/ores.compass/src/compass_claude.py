@@ -12,10 +12,15 @@ emacs.service under app.slice rather than a child, so oomd evaluates it as its
 own kill candidate and takes out the actual offender instead of the editor.
 A scope contains all descendants, so anything Claude spawns is isolated too.
 
-The slice itself (app-claude.slice, see systemd/app-claude.slice next to this
-file) turns on accounting only -- no MemoryHigh/MemoryMax -- this is
-isolation, not a resource cap; the OOM killer still does its job at the finer
-per-scope granularity.
+Each session actually lands in a per-environment child slice,
+app-claude-<env>.slice (app-claude.slice itself, see systemd/app-claude.slice
+next to this file, turns on accounting only, no caps). The per-environment
+slice carries the real limits, from the app-claude-.slice.d/50-limits.conf
+drop-in next to this file: MemoryHigh/MemoryMax/MemorySwapMax/CPUWeight. That
+is the difference between isolation (which slice a session is a sibling of)
+and containment (a memory ceiling that makes the cgroup-local OOM fire before
+kernel-wide OOM does) -- see systemd-resource-management-plan.org for why
+both matter.
 
 This is opt-in: it changes nothing for anyone invoking the regular `claude`
 binary directly. Use `compass claude` (or `compass.sh claude`) when you want
@@ -33,8 +38,23 @@ import shutil
 import subprocess
 from pathlib import Path
 
-_SLICE_NAME = "app-claude.slice"
-_SLICE_SRC = Path(__file__).resolve().parent / "systemd" / _SLICE_NAME
+_SLICE_ROOT = "app-claude"
+_SLICE_NAME = f"{_SLICE_ROOT}.slice"
+_SYSTEMD_SRC_DIR = Path(__file__).resolve().parent / "systemd"
+_SLICE_SRC = _SYSTEMD_SRC_DIR / _SLICE_NAME
+_LIMITS_DROPIN_REL = Path(f"{_SLICE_ROOT}-.slice.d") / "50-limits.conf"
+_LIMITS_DROPIN_SRC = _SYSTEMD_SRC_DIR / _LIMITS_DROPIN_REL
+
+
+def _slice_name(env_name: str) -> str:
+    """The per-environment slice a Claude session for env_name lands in.
+
+    systemd creates app-claude-<env>.slice (and its app-claude.slice
+    parent) implicitly from this name -- no per-environment unit file is
+    needed, only the dash-truncated drop-in at
+    app-claude-.slice.d/50-limits.conf (see _ensure_slice_deployed).
+    """
+    return f"{_SLICE_ROOT}-{env_name}.slice"
 
 
 def run(argv, project_root=None) -> int:
@@ -50,7 +70,7 @@ def run(argv, project_root=None) -> int:
         cmd = [
             "systemd-run", "--user", "--scope", "-q", "--collect",
             f"--unit=claude-{env_name}-{os.getpid()}",
-            f"--slice={_SLICE_NAME}",
+            f"--slice={_slice_name(env_name)}",
             f"--description=Claude Code session ({env_name}, pid {os.getpid()})",
             real, *argv,
         ]
@@ -97,17 +117,30 @@ def _has_user_systemd() -> bool:
 
 
 def _ensure_slice_deployed() -> None:
-    """Copy the checked-in slice unit to ~/.config/systemd/user/ if it is
-    missing or stale, and daemon-reload so systemd-run sees it immediately.
+    """Copy every checked-in unit/drop-in this module owns to
+    ~/.config/systemd/user/ if missing or stale, and daemon-reload once if
+    anything changed so systemd-run sees it immediately.
+
+    Manifest of (source, destination-relative-path) pairs -- add future
+    app-claude-.slice.d/ drop-ins here rather than writing a new one-off
+    deploy function.
     """
     dest_dir = Path.home() / ".config" / "systemd" / "user"
-    dest = dest_dir / _SLICE_NAME
+    manifest = [
+        (_SLICE_SRC, Path(_SLICE_NAME)),
+        (_LIMITS_DROPIN_SRC, _LIMITS_DROPIN_REL),
+    ]
 
-    if dest.exists() and filecmp.cmp(_SLICE_SRC, dest, shallow=False):
-        return
+    changed = False
+    for src, dest_rel in manifest:
+        dest = dest_dir / dest_rel
+        if dest.exists() and filecmp.cmp(src, dest, shallow=False):
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dest)
+        changed = True
 
-    dest_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(_SLICE_SRC, dest)
-    subprocess.run(["systemctl", "--user", "daemon-reload"],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                    check=False)
+    if changed:
+        subprocess.run(["systemctl", "--user", "daemon-reload"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        check=False)

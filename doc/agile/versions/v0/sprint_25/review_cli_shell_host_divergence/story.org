@@ -41,11 +41,11 @@ Specifically examine:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Investigating ores.cli/ores.shell's host.cpp divergence. |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Complete the investigation task.       |
+| Next          | Nothing.                               |
 | Last touched  | 2026-08-05                               |
 
 * Acceptance
@@ -56,9 +56,22 @@ Specifically examine:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A7DAEE5D-49D7-4015-9425-3E3D26D205B0][Investigate whether ores.cli/ores.shell's host.cpp divergence is load-bearing]] | STARTED | 2026-08-05 | | Side-by-side review of ores.cli and ores.shell's host.cpp/application shape against the shared run_host_async helper, to determine whether their sync execution model and custom application constructors are genuine requirements or just historical. |
+| [[id:A7DAEE5D-49D7-4015-9425-3E3D26D205B0][Investigate whether ores.cli/ores.shell's host.cpp divergence is load-bearing]] | DONE | 2026-08-05 | 2026-08-05 | Side-by-side review of ores.cli and ores.shell's host.cpp/application shape against the shared run_host_async helper, to determine whether their sync execution model and custom application constructors are genuine requirements or just historical. |
 
 * Decisions
+
+- Keep =ores.cli=/=ores.shell='s =host.cpp= bespoke, do not force
+  either onto =run_host_async= — sync-vs-async is the one real,
+  load-bearing distinction for both from the daemon fleet
+  (=ores.cli=: no concurrency to gain from a batch tool;
+  =ores.shell=: REPL semantics, blocks on stdin). The "custom
+  constructor" objection held up for =ores.cli= (a mandatory
+  reference member) but not for =ores.shell= (already
+  all-default-optional, so already default-constructible) — the
+  original task's framing had conflated the two tools' reasons.
+  Filed [[id:80C2A6CC-1CAF-4250-A807-85390C798266][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
+  for the real remaining duplication between just these two, rather
+  than implementing it as part of this investigation.
 
 * Out of scope
 

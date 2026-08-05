@@ -26,11 +26,11 @@ Read both tools' actual runtime requirements (not just current code shape) to de
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -42,9 +42,79 @@ Read both tools' actual runtime requirements (not just current code shape) to de
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** ores.cli
+
+Read =host.cpp=, =app/application.hpp=. One-shot batch tool: parses
+args, dispatches on subcommand (import/export/delete/add/roundtrip),
+writes results, exits. Zero use of =boost::asio::io_context= or
+coroutines anywhere in the component — every operation is a blocking
+DB call or blocking file I/O, done once per invocation.
+
+- =application= holds a *mandatory* =std::ostream& output_stream_=
+  reference member, used directly (not via the logger) across ~30
+  private =export_*=/=delete_*=/=add_*= methods to write CLI output
+  as each subcommand executes. A reference member can't be
+  default-initialised then reseated later — this genuinely requires
+  construction-time arguments, not just "how it happens to be
+  called".
+- The =cfg.ore_roundtrip= branch in =host::execute= is a second,
+  DB-free code path with its own try/catch and console-formatted
+  summary output, entirely before =application= is even constructed
+  — real CLI-specific control flow, not boilerplate duplication of
+  the daemon envelope.
+
+*Determination*: sync execution is load-bearing (no concurrent I/O
+to overlap; async would add coroutine machinery for zero benefit).
+The custom constructor is also load-bearing, not just historical —
+=output_stream_= being a reference member is a real design choice,
+not an oversight.
+
+** ores.shell
+
+Read =host.cpp=, =app/application.hpp=. Interactive REPL:
+=run()='s own doc comment says "Starts the REPL and blocks until the
+user exits" — reads from stdin in a loop, prints results, one
+command at a time. Also zero =io_context=/coroutine usage; even
+though it's a NATS *client*, its RPC calls are blocking wrappers, not
+driven by an outer event loop the way a NATS *service*'s inbound
+request dispatch is.
+
+- =application='s constructor
+  (=explicit application(std::optional<nats::config::nats_options>
+  connection_config = std::nullopt, std::optional<config::login_options>
+  login_config = std::nullopt, std::optional<std::string> script_path
+  = std::nullopt)=) has *every* parameter defaulted to
+  =std::nullopt=. It is, today, already fully compatible with plain
+  default-construction (=application app;= compiles and is
+  equivalent to the no-args case). The "custom constructor args"
+  framing in the original task's docs was overstated for this tool —
+  =host::execute= passing =cfg.connection=/=cfg.login=/
+  =cfg.script_path= positionally isn't a structural constraint, it's
+  just how it happens to be called.
+
+*Determination*: sync execution is load-bearing (REPL semantics —
+one interactive user, one command at a time, no concurrency to
+gain). The constructor-shape objection does *not* hold up — it was a
+red herring from surface-level pattern matching against a
+default-args signature, not a genuine blocker.
+
+** Shared finding
+
+Despite both being correctly excluded from =run_host_async= (sync
+vs. async is the one real, load-bearing distinction from the daemon
+fleet), =ores.cli='s and =ores.shell='s own =host.cpp= bodies still
+share roughly 70% of their *own* structure with each other — parse
+-> check =ocfg= -> init =lifecycle_manager= -> log args/config ->
+=try { construct; run; } catch { diagnostic_information dance }= —
+duplication that exists between exactly these two, independent of
+the (correctly separate) daemon envelope. A "sync sibling" of
+=run_host_async=, parameterised by an application-construction
+*callable* (rather than assuming default-constructibility, since
+neither tool's constructor is uniform with the other) plus an
+optional early-exit hook (for cli's =ore_roundtrip= branch), could
+close that remaining gap — but that is itself a new, separately-
+scoped piece of shared-code work, not something to fold into this
+investigation task.
 
 * Notes
 
@@ -72,3 +142,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Pure documentation/analysis task, no code changed — findings and
+determinations are recorded in full in =* Plan= above. Summary:
+
+- =ores.cli=: sync execution *and* the custom constructor are both
+  genuinely load-bearing (one-shot batch tool, no concurrency to
+  gain; =output_stream_= is a mandatory reference member used across
+  ~30 methods, plus a whole extra DB-free =ore_roundtrip= branch).
+- =ores.shell=: sync execution is load-bearing (REPL, blocks on
+  stdin), but the "custom constructor" framing in the original
+  task's docs was overstated — every constructor parameter already
+  defaults to =std::nullopt=, so it's already compatible with plain
+  default-construction. Not a real blocker.
+- Shared finding: =cli=/=shell='s own =host.cpp= bodies still share
+  ~70% structure with *each other* despite correctly staying off
+  =run_host_async=. Filed
+  [[id:80C2A6CC-1CAF-4250-A807-85390C798266][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
+  as the follow-up rather than implementing it here.
+
+*Recommendation*: keep both bespoke — do not force either onto
+=run_host_async=; sync-vs-async is the one real, load-bearing
+distinction from the daemon fleet for both tools. A sync-sibling
+helper scoped to just these two is a legitimate small future win,
+now captured separately.

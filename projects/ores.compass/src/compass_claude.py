@@ -122,7 +122,7 @@ def _ensure_slice_deployed() -> None:
     anything changed so systemd-run sees it immediately.
 
     Manifest of (source, destination-relative-path) pairs -- add future
-    app-claude.slice.d/ drop-ins here rather than writing a new one-off
+    app-claude-.slice.d/ drop-ins here rather than writing a new one-off
     deploy function.
     """
     dest_dir = Path.home() / ".config" / "systemd" / "user"

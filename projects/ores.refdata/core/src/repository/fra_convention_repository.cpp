@@ -51,6 +51,19 @@ void fra_convention_repository::write(context ctx, const std::vector<domain::fra
 std::vector<domain::fra_convention> fra_convention_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<fra_convention_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<fra_convention_entity, domain::fra_convention>(
+            ctx,
+            query,
+            [](const auto& entities) { return fra_convention_mapper::map(entities); },
+            lg(),
+            "Reading latest FRA conventions (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<fra_convention_entity>> |

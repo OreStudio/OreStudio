@@ -57,6 +57,16 @@ std::vector<domain::{{entity_singular}}>
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();
 {{#has_workspace_id}}
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+            where("tenant_id"_c == tid && "workspace_id"_c.in(chain) && "valid_to"_c == max.value()) |
+            order_by({{{primary_key.order_by_cols}}});
+        return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+            ctx, query,
+            [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+            lg(), "Reading latest {{entity_plural_words}} (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
@@ -70,6 +80,16 @@ std::vector<domain::{{entity_singular}}>
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
 {{#has_workspace_id}}
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+            where("workspace_id"_c.in(chain) && "valid_to"_c == max.value()) |
+            order_by({{{primary_key.order_by_cols}}});
+        return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+            ctx, query,
+            [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+            lg(), "Reading latest {{entity_plural_words}} (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("workspace_id"_c == wid && "valid_to"_c == max.value()) |

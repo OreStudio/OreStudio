@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-05-30
 #+updated: 2026-06-12
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
@@ -123,16 +124,53 @@ git diff --exit-code   # must be zero
 The commit message lists every file restored from HEAD with one-line reason
 (see "Restore exclusions" above).
 
+* Notes
+
+** Re-triage (2026-08-05)
+
+Resumed after this task's blocker (=D85E2B30=, org-mode migration) went
+DONE. Before restarting the original plan, checked how much of it prior
+work already covers:
+
+- *Already done*: =party_repository='s custom methods
+  (=read_system_party=, paginated =read_latest=, =get_total_party_count=,
+  =read_descendants=) are now generated from
+  =projects/ores.refdata/modeling/ores.refdata.party.org='s custom-method
+  sections, not restored from HEAD. This was the specific blocker the
+  =Waiting on= field named, and it is resolved — regenerating the whole
+  =refdata= component (including =party_repository.{hpp,cpp}=) against
+  =check_component_drift.py= produces zero diff and no untracked files.
+- *Not done*: the plan's actual deliverable — four new service-layer
+  template flags (=service_find_by_uuid=, =service_find_by_code=,
+  =service_list_by_uuid_parent=, =service_find_prefix=) and the per-model
+  table applying them to 12 refdata models — was never implemented.
+  =party.org= carries two of the flag names as properties
+  (=service_find_by_uuid: true=, =service_find_by_code_column: short_code=,
+  lines 343-344) but they are dead: =cpp_service.hpp.mustache= doesn't
+  read them, and =party_service.hpp= has no =find_party(uuid)= or
+  =find_party_by_code= method — only =get_party(id)=. No refdata service
+  header anywhere has a =find_X(uuid)=-shaped method. These are leftover
+  debris from the stashed WIP the old =Now= field referenced, not a sign
+  the feature landed.
+- Confirmed via full build (=compass build --preset
+  linux-clang-debug-make=, exit 0) and =ctest -R "ores\.refdata"=
+  (4/4 suites, 100%, 218.71s) that the current zero-diff state is
+  genuinely green — this rules out "drift check is broken" as an
+  explanation for the missing methods.
+
+Net: the blocker is cleared, but the task's core work is still ahead of
+us. Left STARTED rather than closing it.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Paused. WIP stashed (=git stash list= shows refdata-cpp template + 25 model updates + restored exclusions). |
-| Waiting on   | [[id:615B7214-F87B-49D3-866E-CDC198FF2A06][Org-mode codegen POC]] (custom methods need a first-class mechanism before refdata can ship cleanly). |
-| Next         | Resume once org-mode mechanism lands; party_repository custom methods will then come from the org file instead of a HEAD-restore. |
-| Last touched | 2026-05-31                             |
+| Now          | Unblocked (org-mode POC is DONE); custom methods for =party_repository= now come from the org model. Core service methods (=find_X(uuid)=, =find_X_by_code=, =list_X_by_Y=, prefix search) from the plan's step 2/3 are not yet implemented anywhere in refdata. |
+| Waiting on   | Nothing.                               |
+| Next         | Decide whether to implement the plan's template flags + per-model updates, or descope/rewrite the plan against current reality. |
+| Last touched | 2026-08-05                             |
 
 * Acceptance
 
@@ -160,4 +198,5 @@ The commit message lists every file restored from HEAD with one-line reason
 
 * Result
 
-(Populated when task is complete.)
+(Not yet complete — see =* Notes= for the re-triage findings from this
+session. Task remains STARTED, not closed.)

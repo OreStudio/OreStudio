@@ -8,7 +8,7 @@
 #+filetags: :process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/remove-controller-from-recreate-required-vars
-#+pr:
+#+pr: 1867
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1867][#1867]] | [sql] Remove decommissioned controller from db recreate pipeline |
 
 * Review
 

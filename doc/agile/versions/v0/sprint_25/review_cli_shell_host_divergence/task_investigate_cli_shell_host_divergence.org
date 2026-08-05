@@ -8,7 +8,7 @@
 #+filetags: :codegen:cpp:service-app:cli:shell:review_cli_shell_host_divergence:sprint_25:v0:
 #+owner: marco
 #+branch: feature/review-cli-shell-host-divergence
-#+pr:
+#+pr: 1861
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1861][#1861]] | [agile] Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing |
 
 * Review
 

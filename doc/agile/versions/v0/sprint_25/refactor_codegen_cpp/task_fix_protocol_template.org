@@ -7,40 +7,50 @@
 #+level: s1
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-protocol-template
+#+pr: 1865
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
 #+updated: 2026-06-12
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Fix =cpp_protocol.hpp.mustache='s four stated gaps versus production
+(missing offset/limit pagination, missing success/message on responses,
+underscore NATS subjects, wrong response-field naming) so the refdata
+protocol exclusions can be removed and refdata is zero-diff.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-05-31                               |
 
 * Acceptance
 
--
+- =cpp_protocol.hpp.mustache= list requests carry =offset=/=limit=.
+- Every response struct carries =success=/=message=.
+- NATS subjects are hyphen/underscore-clean, matching production convention.
+- Response data field naming matches production for every entity.
+- =check_component_drift.py --components refdata= reports zero drift.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Explored the template and a broad sample of production refdata protocol
+files (plain, =as_of=, compound-name, and text-PK entities) plus the
+junction/entity template sections, and ran the component's drift check
+before writing any code. All four gaps were already absent from both the
+template and every production file checked — no template edit was needed.
 
 * Notes
 
@@ -48,7 +58,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1865][#1865]] | [agile] Close fix_protocol_template: gaps already resolved |
 
 * Review
 
@@ -57,3 +67,26 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Already fixed, no code change needed. All four gaps this task describes
+(missing offset/limit, missing success/message, underscore NATS subjects,
+wrong response-field naming) were resolved by commit =540c548cf9=
+([refdata] Fix messaging templates and generate country messaging
+artefacts, 2026-06-26) — after this task doc's =#+updated: 2026-06-12=
+timestamp, which is why it was never flipped to DONE at the time.
+
+Verification performed this session:
+- Read =cpp_protocol.hpp.mustache= end to end (=domain_entity=, =junction=,
+  =entity= sections): pagination, success/message, and hyphen-clean
+  subjects present throughout.
+- Ran =check_component_drift.py --components refdata=: zero drift (=git
+  diff= empty except this task's own bookkeeping edits; =git status=
+  confirmed no untracked/new files either, so junction entities
+  legitimately don't emit a protocol facet — not a gap).
+- Manually diffed/spot-checked =asset_class_code=, =book_status=, =book=,
+  =calendar=, =currency=, and =currency_pair_convention= protocol headers
+  against template output — all match exactly, including the
+  =entity_plural_short= response-field convention.
+
+No template change, no refdata model change, no removal of exclusions
+needed since none currently exist for refdata protocol generation.

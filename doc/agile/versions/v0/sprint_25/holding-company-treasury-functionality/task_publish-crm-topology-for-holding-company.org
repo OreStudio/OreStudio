@@ -7,41 +7,79 @@
 #+level: s1
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-crm-topology-for-holding-company
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-08-05
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Acme Corporation Plc (the holding company) gets its own CRM topology
+(majors/exotics/scandies) when the tenant is provisioned, so a
+treasury user logged in at the default/holding-company party sees FX
+rates for remittance and hedging decisions, matching what each
+operating office already gets.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| Field        | Value                                   |
+|--------------+------------------------------------------|
+| State        | DONE                                      |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Now          | Implemented, verified end-to-end via the real provisioning orchestration and a Qt client test scenario (4/4 steps PASSED). |
+| Waiting on   | Nothing.                                  |
+| Next         | Nothing -- task complete.                 |
+| Last touched | 2026-08-05                                |
 
 * Acceptance
 
--
+- After 'provision tenant --source acme', the holding company party
+  (Acme Corporation Plc) has majors/exotics/scandies CRM topology
+  configs, matching the three operating offices. [DONE -- verified via
+  DB query and the CRM picker live.]
+- A treasury user logged in at the default (holding company) party
+  can open all three CRMs without an error, each showing CONNECTED
+  with the expected currencies. [DONE -- test scenario 4/4 PASSED.]
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The actual fix (ores.iam.core/messaging/tenant_handler.hpp): added the
+same market-data plan publish to Step 3 (the holding company block)
+that every office already gets in the Step 4+ loop --
+party_provisioning_bundle_plan() minus risk_management (the holding
+company's own book/portfolio tree is scaffolded separately, not
+sourced from that generic demo-org bundle) -- for the holding party
+specifically. Best-effort (doesn't abort Step 3 on failure), unlike
+the per-office loop, since by that point the holding party is already
+activated and its group-level staff already published.
+
+Getting there live surfaced four unrelated, pre-existing regressions
+(all from required columns added to tables without updating every
+insert path) that blocked the plan from ever reaching the crm_topology
+step for *any* party, not just the holding company -- fixed separately,
+see commit 268c94288:
+1. market_series.asset_class validated against the wrong reference
+   table (FpML taxonomy instead of the matching short-code table).
+2. marketdata_publish_from_dq_create.sql never set derivation_kind
+   (added not-null by the shared-derivation-lineage work).
+3-4. synthetic_publish_from_dq_create.sql never set scope or
+   binding_mode (added not-null when that pair was introduced).
+
+Also hit and fixed, unrelated to this task but blocking manual
+verification: PluginRegistry loading both a stale libores.qt.admin.so
+and the current libores.qt.iam.so, registering every shared menu
+(including the Scenario Runner used to verify this task) twice --
+see commit c78955d6c.
 
 * Notes
 
@@ -54,7 +92,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:5D5A7D90-34CC-4D16-8969-06D86B8FA257][Verify CRM topology for the holding company party]] | PASSED | 4/4 steps passed |
 
 * PRs
 
@@ -69,3 +107,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Acme Corporation Plc (the holding company) now gets majors/exotics/
+scandies CRM topology during 'provision tenant --source acme', via
+the same market-data plan every operating office already runs
+(ores.iam.core/messaging/tenant_handler.hpp, commit tbd). Verified via
+a fresh end-to-end provisioning run (DB query: 3 topology configs for
+the holding party, matching each office) and a Qt client test scenario
+([[id:5D5A7D90-34CC-4D16-8969-06D86B8FA257][Verify CRM topology for the holding company party]], 4/4 steps
+PASSED).
+
+Getting a clean end-to-end run required fixing four unrelated,
+pre-existing regressions blocking every party's provisioning (not
+just the holding company's) -- asset_class validator mismatch,
+missing derivation_kind/scope/binding_mode on DQ-publish inserts --
+plus a duplicate-menu bug (stale AdminPlugin build artifact) that
+was blocking manual verification specifically. See commits
+268c94288 and c78955d6c.

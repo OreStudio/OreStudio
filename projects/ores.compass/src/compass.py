@@ -2512,20 +2512,19 @@ def _env_systemd_scopes():
     Missing keys mean no scope is running for that environment.
     """
     try:
-        import json as _json
         result = subprocess.run(
             ["systemctl", "--user", "list-units", "--type=scope",
              "--no-legend", "--output=json"],
             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             text=True, timeout=5)
-        units = _json.loads(result.stdout)
+        units = json.loads(result.stdout)
     except Exception:
         return {}
 
     scopes = {}
     # claude-<env>-<pid>.scope  /  build-<env>-<slot>-<pid>.scope
     env_re = re.compile(
-        r"^(claude|build)-([a-zA-Z0-9_.]+?)-(?:[ab]-)?(\d+)\.scope$")
+        r"^(claude|build)-([a-zA-Z0-9_.-]+?)-(?:[ab]-)?(\d+)\.scope$")
 
     for u in units:
         name = u.get("unit", "")
@@ -2572,10 +2571,10 @@ def _current_session_scope():
 
 def cmd_fleet(args):
     worktrees = list_worktrees()
-    scope_map = _env_systemd_scopes()
     if not worktrees:
         print("❌ Could not enumerate git worktrees.", file=sys.stderr)
         sys.exit(1)
+    scope_map = _env_systemd_scopes()
     here = str(PROJECT_ROOT)
     pr_map = open_prs_by_branch()
 
@@ -2600,6 +2599,7 @@ def cmd_fleet(args):
                 task_title, story_title = task_for_branch(path, branch)
 
         pr = pr_map.get(branch) if branch else None
+        env_name = _worktree_env_value(path, "ORES_ENV_NAME")
         rows.append({
             "worktree": Path(path).name,
             "path": path,
@@ -2616,9 +2616,8 @@ def cmd_fleet(args):
                    if pr else None),
             "staleness": branch_staleness(path),
             "provision_type": _worktree_env_value(path, "ORES_PROVISION_TYPE"),
-            "env_name": _worktree_env_value(path, "ORES_ENV_NAME"),
-            "scope": scope_map.get(
-                _worktree_env_value(path, "ORES_ENV_NAME") or "", "—"),
+            "env_name": env_name,
+            "scope": scope_map.get(env_name) if env_name else None,
         })
 
     if args.format == "json":
@@ -5170,7 +5169,7 @@ def cmd_bearings(argv):
             _slice_info = f"  (slice: {_slice})" if _slice else ""
             print(f"  Scope    : {_scope}{_slice_info}")
         else:
-            print(f"  Scope    : (no named systemd scope — running unscoped)")
+            print("  Scope    : (no named systemd scope — running unscoped)")
         try:
             import env_init as _env_init
             _required_envver = _env_init.current_version(PROJECT_ROOT)

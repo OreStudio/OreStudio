@@ -179,7 +179,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Batch git branch -d / push --delete return non-zero on partial failure but code treated whole batch as undeleted ("0 deleted") | compass_branches.py | Fixed | Recompute deleted set from before/after local_branches()/remote_branches() diff instead of trusting the batch return code |
+| 1 | fleet_active_branches doesn't check subprocess returncode, unlike the _git() helper used elsewhere | compass_branches.py | Fixed | Added explicit returncode check, consistent with _git() |
+| 1 | No dedicated unit tests for classify() | compass_branches.py | Declined | Matches existing convention -- no other compass_*.py command module has dedicated tests either; covered by manual exercise against the live branch set |
+| 1 | fetch_prune failure is non-fatal for prune -y, could work off stale origin/main | compass_branches.py | Declined | Judgment call flagged by reviewer, not a bug; git branch -d's own safety net (refuses unmerged branches) still applies even with a stale view |
+| 1 | _MAIN_BRANCHES includes "master", dead weight since merge-base is hardcoded to origin/main | compass_branches.py | Declined | Harmless; kept for defence-in-depth in case a checkout ever has a stray master branch |
 
 * Result
 

@@ -84,6 +84,8 @@ def fleet_active_branches(project_root):
                               capture_output=True, text=True, cwd=str(project_root), timeout=15)
     except (OSError, subprocess.SubprocessError):
         return {}
+    if out.returncode != 0:
+        return {}
     active, path = {}, None
     for line in out.stdout.splitlines():
         if line.startswith("worktree "):
@@ -206,21 +208,25 @@ def cmd_prune(project_root, confirmed):
         print(f"\nRe-run with {_ycmd('-y')} to actually delete.")
         return 0
 
+    # `git branch -d`/`git push origin --delete` process each ref
+    # independently and return non-zero if ANY one fails, even when the
+    # rest succeeded -- so the deleted set is computed from the actual
+    # before/after branch list rather than trusted from the return code.
     deleted_local, deleted_remote = [], []
     if to_local:
         p = subprocess.run(["git", "branch", "-d"] + to_local, cwd=str(project_root))
-        if p.returncode == 0:
-            deleted_local = to_local
-        else:
-            print(f"{RED}⚠️  local branch deletion failed (some branches may have "
+        still_present = set(local_branches(project_root))
+        deleted_local = [name for name in to_local if name not in still_present]
+        if p.returncode != 0:
+            print(f"{RED}⚠️  some local branch deletions failed (may have "
                   f"unmerged commits despite the --merged check).{RESET}", file=sys.stderr)
 
     if to_remote:
         p = subprocess.run(["git", "push", "origin", "--delete"] + to_remote, cwd=str(project_root))
-        if p.returncode == 0:
-            deleted_remote = to_remote
-        else:
-            print(f"{RED}⚠️  remote branch deletion failed.{RESET}", file=sys.stderr)
+        still_present = set(remote_branches(project_root))
+        deleted_remote = [name for name in to_remote if name not in still_present]
+        if p.returncode != 0:
+            print(f"{RED}⚠️  some remote branch deletions failed.{RESET}", file=sys.stderr)
 
     print(f"\n{GREEN}✅ Deleted {len(deleted_local)} local, "
           f"{len(deleted_remote)} remote branch(es).{RESET}")

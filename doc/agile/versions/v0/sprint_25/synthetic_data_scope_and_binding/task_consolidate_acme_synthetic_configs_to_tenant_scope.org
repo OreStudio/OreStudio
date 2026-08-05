@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/consolidate-acme-synthetic-configs-to-tenant-scope
-#+pr:
+#+pr: 1860
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -169,7 +169,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1860][#1860]] | [synthetic] Consolidate ACME's UK/US/HK configs into one tenant-scoped config |
 
 * Review
 

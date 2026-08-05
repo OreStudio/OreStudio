@@ -118,11 +118,11 @@ begin
         order by dq.series_type, dq.metric, dq.qualifier
     loop
         if r.series_type = 'FX' and r.metric = 'RATE' then
-            v_asset_class := 'fx';
+            v_asset_class := 'ForeignExchange';
             v_series_subclass := 'spot';
             v_is_scalar := true;
         elsif r.series_type = 'RATES' and r.metric = 'YIELD' then
-            v_asset_class := 'rates';
+            v_asset_class := 'InterestRate';
             v_series_subclass := 'yield';
             v_is_scalar := false;
         else
@@ -144,10 +144,12 @@ begin
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 series_type, metric, qualifier, asset_class, series_subclass, is_scalar,
+                derivation_kind, derivation_config_id, derivation_config_version,
                 modified_by, performed_by, change_reason_code, change_commentary
             ) values (
                 p_target_tenant_id, v_series_id, 0, v_target_party_id,
                 r.series_type, r.metric, r.qualifier, v_asset_class, v_series_subclass, v_is_scalar,
+                'OBSERVED', ores_utility_nil_uuid_fn(), 0,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             );

@@ -85,11 +85,22 @@ begin
         NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
     end if;
 
-    -- At most one enabled bound config per scope. Reject-at-activation:
-    -- ambiguity must never reach a consumer, so a narrower-scope config
-    -- cannot be enabled while a wider (or equal) one already covers it --
-    -- the caller must explicitly supersede (disable/retire) it first.
-    -- sandboxed configs never participate; they cannot conflict.
+    -- At most one enabled bound config per *wider-scope-vs-narrower-scope*
+    -- pair. Reject-at-activation: ambiguity must never reach a consumer,
+    -- so a narrower-scope config cannot be enabled while a wider (or
+    -- equal-but-different-owner) one already covers it -- the caller must
+    -- explicitly supersede (disable/retire) it first. sandboxed configs
+    -- never participate; they cannot conflict.
+    --
+    -- Deliberately does NOT block two enabled bound configs at the SAME
+    -- party -- a party legitimately owns several named containers (e.g.
+    -- "Basic" and "Realistic", published from different DQ datasets; see
+    -- this entity's party_id doc comment). This check has no visibility
+    -- into which instruments each container's sub-configs actually cover
+    -- (that information lives one layer down, in fx_spot_generation_config
+    -- et al, which don't exist yet at container-insert time), so it can
+    -- only guard the scope-widening case this story is actually about --
+    -- not per-instrument overlap within one party's own containers.
     if NEW.enabled and NEW.binding_mode = 'bound' then
         if exists (
             select 1 from ores_synthetic_market_data_generation_configs_tbl
@@ -101,7 +112,6 @@ begin
                   NEW.scope = 'system' or scope = 'system'
                   or (NEW.scope = 'tenant' and scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
                   or (scope = 'tenant' and NEW.scope in ('tenant', 'party') and tenant_id = NEW.tenant_id)
-                  or (NEW.scope = 'party' and scope = 'party' and tenant_id = NEW.tenant_id and party_id = NEW.party_id)
               )
         ) then
             raise exception 'Conflicting bound synthetic config: another enabled bound config already covers this scope. Supersede (disable or retire) it before activating this one.'

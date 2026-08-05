@@ -191,11 +191,16 @@ begin
 
     if v_config_id is null then
         v_config_id := gen_random_uuid();
+        -- scope='party', binding_mode='bound': publish-from-dq always
+        -- creates a party-owned, authoritative container -- consolidating
+        -- several parties onto one wider-scope (tenant/system) container
+        -- is a separate, explicit operation, not something this per-party
+        -- publish path does implicitly.
         insert into ores_synthetic_market_data_generation_configs_tbl (
-            tenant_id, id, version, party_id, name, description, enabled, dataset_id,
-            modified_by, performed_by, change_reason_code, change_commentary
+            tenant_id, id, version, party_id, scope, binding_mode, name, description, enabled,
+            dataset_id, modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            p_target_tenant_id, v_config_id, 0, v_party_id,
+            p_target_tenant_id, v_config_id, 0, v_party_id, 'party', 'bound',
             v_config_name,
             'Published from DQ dataset: ' || v_dataset_name,
             true, p_dataset_id,

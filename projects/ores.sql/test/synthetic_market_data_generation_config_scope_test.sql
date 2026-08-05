@@ -28,7 +28,7 @@
 
 begin;
 
-select plan(5);
+select plan(6);
 
 -- =============================================================================
 -- Test 1: A tenant-scope bound config followed by a conflicting
@@ -97,6 +97,32 @@ select throws_ok(
     '23514',
     NULL,
     'scope=system with a non-null party_id violates the scope/nullability check constraint'
+);
+
+-- =============================================================================
+-- Test 6: Two enabled bound configs for the SAME party never conflict --
+-- a party legitimately owns several named containers (e.g. "Basic" and
+-- "Realistic", published from separate DQ datasets). The guard has no
+-- visibility into per-container instrument overlap (that lives in
+-- fx_spot_generation_config, one layer down), so it only ever guards
+-- the scope-widening case, never same-party multi-container.
+--
+-- Retire Test 1's still-active tenant-wide config first: otherwise its
+-- (correct, unrelated) tenant-vs-party conflict would fire here instead
+-- of isolating the same-party case this test is actually about.
+-- =============================================================================
+
+delete from ores_synthetic_market_data_generation_configs_tbl where name = 'scope_test_tenant_wide';
+
+insert into ores_synthetic_market_data_generation_configs_tbl
+(id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+values ('44444444-4444-4444-4444-444444444444', ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_first_container', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity');
+
+select lives_ok(
+    $$insert into ores_synthetic_market_data_generation_configs_tbl
+      (id, tenant_id, version, party_id, scope, binding_mode, name, description, enabled, dataset_id, modified_by, performed_by, change_reason_code, change_commentary, valid_from, valid_to)
+      values (gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, '55555555-5555-5555-5555-555555555555', 'party', 'bound', 'scope_test_same_party_second_container', 'test', true, null, 'ores_prime_origin_ddl_user', 'ores_prime_origin_ddl_user', 'system.initial_load', 'seed', now(), 'infinity')$$,
+    'a second enabled bound container for the same party does not conflict with the first'
 );
 
 select * from finish();

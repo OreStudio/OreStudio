@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F3E0B7C8-7896-4BEC-869E-C3C8950342EE
+:END:
+#+title: How do I prune merged git branches with compass?
+#+description: Use compass branches to report and safely delete git branches fully merged into origin/main, without touching fleet-owned or unmerged branches.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:git:worktrees:recipe:bearings:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+The /Orient/ pillar of the [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][compass tool]]. Formalises the manual fetch/diff/cross-reference-against-fleet/delete workflow used for git-branch hygiene.
+
+* Question
+
+How do I find and delete git branches (local and remote) that are already merged into origin/main, without accidentally deleting a branch another worktree is using?
+
+* Answer
+
+Run =compass.sh branches= (or =branches report=) for a read-only report:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh branches report
+#+end_src
+
+It fetches with =--prune=, computes branches merged into =origin/main= for both local refs and =origin/*= remote refs, and buckets every branch:
+
+- *Safe to delete* -- merged into =origin/main=, not the current branch, not =main=, and not checked out by any other fleet worktree.
+- *Kept* -- with a reason: =is the current branch=, =is main=, =checked out by WORKTREE_NAME= (cross-referenced via =git worktree list=, same source =compass fleet= uses), or =unmerged/active work=.
+
+Then prune the safe set:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh branches prune
+#+end_src
+
+Without =-y= this is a dry run -- it only prints what would be deleted. Add =-y= to actually delete, local first (=git branch -d=, which refuses branches with unmerged commits as a safety net even if the =--merged= computation above was somehow wrong) then remote (=git push origin --delete=), printing what was deleted and, again, what was left alone and why.
+
+* Script
+
+=projects/ores.compass/compass.sh branches= calls =src/compass_branches.py= (=run=/=cmd_report=/=cmd_prune=), using =git for-each-ref=/=git branch --merged origin/main= for the merge computation and =git worktree list --porcelain= for fleet cross-reference (same source as =compass fleet=).
+
+* Tested by
+
+Manually exercised against the live branch set (43 local/remote candidates): report and prune matched the expected safe-delete set, correctly leaving fleet-owned, unmerged, main, and current branches alone.
+
+* See also
+
+- [[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]] -- the fleet cross-reference this recipe relies on.

@@ -644,13 +644,28 @@ void {{entity_singular}}_repository::remove(
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 {{#has_tenant_id}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.batch_in_and}}}
+              && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where("tenant_id"_c == tid && {{{primary_key.batch_in_and}}}
               && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
 {{^has_tenant_id}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
+        where("workspace_id"_c == wid && {{{primary_key.batch_in_and}}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::delete_from<{{entity_singular}}_entity> |
         where({{{primary_key.batch_in_and}}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
 {{/has_tenant_id}}
     execute_delete_query(ctx, query, lg(), "Batch removing {{entity_plural_words}}.");
 {{/primary_key.is_compound}}

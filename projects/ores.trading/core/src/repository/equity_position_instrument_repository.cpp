@@ -237,9 +237,10 @@ void equity_position_instrument_repository::remove(context ctx,
                                                    const std::vector<std::string>& instrument_ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<equity_position_instrument_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing equity position instruments.");
 }
 

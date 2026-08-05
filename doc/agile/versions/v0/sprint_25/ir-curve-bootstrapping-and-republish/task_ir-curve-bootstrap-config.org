@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
 #+branch: feature/ir-curve-bootstrap-config
-#+pr:
+#+pr: 1847
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1847][#1847]] | [refdata,sql] IR curve bootstrap config recipe entities |
 
 * Review
 

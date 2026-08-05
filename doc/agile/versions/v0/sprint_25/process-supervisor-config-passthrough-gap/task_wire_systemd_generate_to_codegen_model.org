@@ -8,7 +8,7 @@
 #+filetags: :codegen:compass:systemd:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/wire-systemd-generate-to-codegen-model
-#+pr:
+#+pr: 1859
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1859][#1859]] | [ores.compass] Wire systemd generate to the codegen model, strip redundant NATS CLI threading |
 
 * Review
 

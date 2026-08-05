@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: B3FD623C-D87B-491F-9FA2-08B26D67114F
+:END:
+#+title: Add server-side search/filter to list windows across entities
+#+description: List windows only support offset/limit pagination with no search field, making it impractical to find a specific record in large tables (e.g. ~13k GLEIF-imported counterparties) without paging through hundreds of pages.
+#+type: capture
+#+level: cross
+#+filetags: :qt:refdata:ux:list-windows:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a server-side search/filter capability to entity list windows,
+consistently across all entities rather than one-off per window.
+Today's list-request messages (e.g.
+=refdata::messaging::get_counterparties_request=,
+=projects/ores.refdata/api/include/ores.refdata.api/messaging/counterparty_protocol.hpp=)
+only carry =offset=/=limit= -- no filter field at all -- so the Qt
+list windows (e.g. =CounterpartyMdiWindow=) only ever page through
+rows server-side; the =QSortFilterProxyModel= they use is wired for
+column sorting only, not text filtering, since filtering client-side
+would require the whole table loaded, defeating pagination. A couple
+of other windows (=MarketSeriesMdiWindow=, =WorkflowMdiWindow=) do
+wire =QSortFilterProxyModel::setFilterFixedString= to a dropdown, but
+only over already-paginated client-side data (a combo-box exact-match
+filter, not free-text search across the full server-side table).
+
+Likely shape: a =filter_text= (or similar) field added to each
+paginated list request's protocol struct, consumed server-side as a
+SQL =WHERE ... ILIKE=/=full-text search= clause on the entity's
+natural-key/display columns, plus a search box wired into each list
+window's toolbar. Given the number of entities involved, this reads
+as `codegen` work (the Qt =has_pagination= knob already exists per
+entity -- see Codegen entity meta-model) rather than a per-entity
+hand-edit.
+
+* Why
+
+Found while trying to find BARCLAYS PLC (short_code =BRCLYS=) among
+~13k GLEIF-imported counterparties to manually verify [[id:48C10D00-5940-40E0-A8D8-B935B11A24B4][GLEIF import
+should natively attach counterparty logos when available]] -- with no
+search, the only way to locate it was computing its row position
+under the list's default sort directly in SQL and jumping to that
+page number. Any table seeded from a large external dataset (GLEIF,
+cryptocurrencies, IP-to-country, ...) has this same problem; it will
+only get more common as more bulk-imported reference data lands.
+
+* References
+
+- =projects/ores.refdata/api/include/ores.refdata.api/messaging/counterparty_protocol.hpp=
+  -- =get_counterparties_request=, no filter field.
+- =projects/ores.qt/refdata/src/CounterpartyMdiWindow.cpp= --
+  =QSortFilterProxyModel= used for sorting only.
+- =projects/ores.qt/mktdata/src/MarketSeriesMdiWindow.cpp=,
+  =projects/ores.qt/workflow/src/WorkflowMdiWindow.cpp= -- existing
+  (client-side, combo-box) filter precedent to generalise from.
+- [[id:07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E][Test Scenario: Verify GLEIF import attaches counterparty logo natively]]
+  -- where this gap was hit.
+
+* See also
+
+-

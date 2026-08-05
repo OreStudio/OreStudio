@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 71A11111-D7E6-481F-9A17-C4E7039EE62A
+:END:
+#+title: Story: Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql
+#+description: While removing the controller from the db recreate pipeline (task 3620F51C, PR #1867), regenerating iam_service_db_grants_create.sql from the service registry model (ores.codegen ores.sql.service address) revealed the committed file carries hand-added grants with explanatory comments that the generator does not emit: iam_service gets select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service gets select on ores_assets_ (party image soft-FK validation). A wholesale regeneration would silently drop these load-bearing grants — the file no longer matches generator output and the next codegen run produces an unexpected diff. Investigate whether the registry model/template should express per-service cross-domain grants so generation is lossless, whether these grants are correctly placed, and how to close the drift so regeneration never silently drops grants.
+#+type: story
+#+level: s2
+#+filetags: :codegen:sql:iam:tech-debt:sprint_25:v0:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Understand why =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
+carries hand-added cross-service grants that the ores.codegen generator
+does not emit, and close the drift so that a regeneration from the
+service registry model is lossless — no load-bearing grant is ever
+silently dropped by a codegen run, and the committed file matches
+generator output exactly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-05                               |
+
+* Acceptance
+
+- Root cause documented: why the four hand-added grants exist
+  (Acme provisioner logo access, party image soft-FK validation,
+  cross-entity party membership), why the generator does not emit
+  them, and whether they are correctly placed in the file.
+- A decision on the fix: extend the registry model/template with
+  per-service cross-domain grant lists (generation becomes lossless),
+  or an alternative that guarantees regeneration never silently drops
+  grants (e.g. a generator guard that fails on unexpected manual
+  content).
+- The committed file matches what the generator produces (regeneration
+  is a no-op diff), or the drift is closed by an explicit mechanism
+  with a test proving it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F3B1D6CE-BC84-4E64-A7B1-AF37A20D0FF7][Investigate and close the iam_service_db_grants_create.sql generator drift]] | BACKLOG | | | iam_service_db_grants_create.sql (generated via ores.codegen ores.sql.service address from the service registry model) carries four hand-added cross-service grants the generator does not emit: iam_service select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service select on ores_assets_ (party image soft-FK). A regeneration silently drops them. Investigate the root cause (model/template cannot express cross-domain grants), decide the fix (per-service cross-domain grant lists in the model, or a generator guard), implement it, and prove regeneration is now lossless (regenerate = no-op diff). |
+
+* Decisions
+
+* Out of scope
+
+- Removing or re-justifying the controller-era grants themselves —
+  that is the decommission task's scope (26ABA6BB).
+- Any runtime grant changes beyond making generation lossless.

@@ -25,8 +25,24 @@
 
 ** Select prefixes
 
+# The Acme provisioner (internal-impersonation orchestrator) checks the
+# new tenant's own images for an already-copied logo (RLS-visible, just
+# needs the table grant), then reads the system-tenant template via a
+# security-definer function (see Execute prefixes below).
 - ores_assets_
+
+# grant_cross_entity_access (tenant_handler.hpp) reads role/
+# business_unit_code straight from the DQ accounts artefact tables
+# already published by the office loop, to identify which staff get
+# cross-entity party membership -- ores_iam_accounts_tbl itself carries
+# no business-unit reference to query this from post-publish.
 - ores_dq_
+
+** Execute prefixes
+
+# Security-definer function that reads the system-tenant template image
+# across the tenant-isolation RLS policy (see ores_assets_get_template_image_fn).
+- ores_assets_get_template_image_
 
 * ores.refdata.service
 :PROPERTIES:
@@ -47,6 +63,10 @@
 ** Select prefixes
 
 - ores_variability_
+
+# Parties/counterparties validate image_id as a soft FK against
+# ores_assets_images_tbl (see refdata_parties_create.sql).
+- ores_assets_
 
 ** Execute prefixes
 

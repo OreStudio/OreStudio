@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: F3B1D6CE-BC84-4E64-A7B1-AF37A20D0FF7
+:END:
+#+title: Task: Investigate and close the iam_service_db_grants_create.sql generator drift
+#+description: iam_service_db_grants_create.sql (generated via ores.codegen ores.sql.service address from the service registry model) carries four hand-added cross-service grants the generator does not emit: iam_service select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service select on ores_assets_ (party image soft-FK). A regeneration silently drops them. Investigate the root cause (model/template cannot express cross-domain grants), decide the fix (per-service cross-domain grant lists in the model, or a generator guard), implement it, and prove regeneration is now lossless (regenerate = no-op diff).
+#+type: task
+#+level: s1
+#+filetags: :investigate-hand-added-service-grants:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the drift in =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
+so that regenerating it from the service registry model is lossless —
+the hand-added cross-service grants are either expressible in the
+model/template, or a generator guard makes silent grant loss
+impossible.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- Root cause documented: why the four grants are hand-added (the
+  generator cannot express cross-service =dml_prefixes= or
+  =select_prefixes=), where each is load-bearing (Acme provisioner
+  logo copy, party image soft-FK, cross-entity party membership), and
+  whether they are correctly placed.
+- The chosen fix is implemented: either per-service cross-domain
+  grant lists in =projects/modeling/service_registry.org= +
+  template, or a generator guard that fails regeneration when it
+  would drop content the model cannot express.
+- Regeneration is proven lossless: running the generator produces a
+  no-op diff against the committed file (or a test asserts the
+  guard fires on the current hand-added content).
+- The four grants still exist after the change — nothing load-bearing
+  is removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

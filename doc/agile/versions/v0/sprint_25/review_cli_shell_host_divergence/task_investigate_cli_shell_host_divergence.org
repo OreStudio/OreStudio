@@ -158,8 +158,9 @@ determinations are recorded in full in =* Plan= above. Summary:
 - Shared finding: =cli=/=shell='s own =host.cpp= bodies still share
   ~70% structure with *each other* despite correctly staying off
   =run_host_async=. Filed
-  [[id:80C2A6CC-1CAF-4250-A807-85390C798266][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
-  as the follow-up rather than implementing it here.
+  [[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
+  as the follow-up rather than implementing it here (later done as
+  its own story).
 
 *Recommendation*: keep both bespoke — do not force either onto
 =run_host_async=; sync-vs-async is the one real, load-bearing

@@ -69,9 +69,10 @@ Specifically examine:
   reference member) but not for =ores.shell= (already
   all-default-optional, so already default-constructible) — the
   original task's framing had conflated the two tools' reasons.
-  Filed [[id:80C2A6CC-1CAF-4250-A807-85390C798266][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
+  Filed [[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]]
   for the real remaining duplication between just these two, rather
-  than implementing it as part of this investigation.
+  than implementing it as part of this investigation (later done as
+  its own story).
 
 * Out of scope
 

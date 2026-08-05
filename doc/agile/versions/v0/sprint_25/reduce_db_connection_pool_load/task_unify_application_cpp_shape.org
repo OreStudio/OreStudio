@@ -8,7 +8,7 @@
 #+filetags: :codegen:cpp:service-app:refactor:tech-debt:reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
 #+branch: feature/unify-application-cpp-shape
-#+pr:
+#+pr: 1855
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -243,7 +243,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1855][#1855]] | [ores.service,codegen] Extract shared host.cpp envelope, fix drift bug |
 
 * Review
 

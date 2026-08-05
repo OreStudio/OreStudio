@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | 4/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument. |
+| Now          | 5/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. fx_vanilla_option, equity_swap). |
+| Next         | Convert the next flat instrument (e.g. equity_swap, fx_barrier_option). |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -156,6 +156,12 @@ Flat instrument, no leg children. Its =trade_type_code= check is a
 single-value equality (== 'FxAccumulator'=), not an =in (...)= list --
 modelled accordingly in =* SQL / ** Checks=. Same zero-diff outcome,
 verified with a second regeneration pass (byte-identical output) and
+=ores.trading.*= tests green.
+
+** fx_vanilla_option_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children. Same zero-diff outcome, verified
+with a second regeneration pass (byte-identical output) and
 =ores.trading.*= tests green.
 
 * Test Scenarios

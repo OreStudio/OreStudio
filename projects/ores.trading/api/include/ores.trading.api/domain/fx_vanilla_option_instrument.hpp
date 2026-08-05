@@ -17,20 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_VANILLA_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_VANILLA_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_VANILLA_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_VANILLA_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Vanilla Option instrument (European and American).
  *
- * Represents FxOption trades. Strike is implicit in bought/sold amounts;
- * there is no separate strike field in ORE's FxOptionData.
+ * Represents FxOption trades. Strike is implicit in bought/sold
+ * amounts; there is no separate strike field in ORE's FxOptionData.
  */
 struct fx_vanilla_option_instrument final {
     instrument_identity identity;
@@ -75,10 +76,23 @@ struct fx_vanilla_option_instrument final {
      */
     std::string settlement;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_vanilla_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_vanilla_option_instrument&) {
+    return "ores.trading.fx_vanilla_option_instrument";
+}
 
 }
 

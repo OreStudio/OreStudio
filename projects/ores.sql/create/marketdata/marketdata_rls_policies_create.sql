@@ -80,7 +80,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
-create policy observation_lineages_party_isolation_policy
+-- Party isolation (RESTRICTIVE -- ANDed with the permissive tenant
+-- policy above). party_id is mandatory on this table (unlike the
+-- synthetic configs it derives from), so no NULL-party passthrough
+-- branch is needed on the USING side; the visible_party_ids-is-null
+-- passthrough still applies for sessions with no party restriction
+-- (e.g. tenant admins, derivation-bootstrapping service contexts).
+create policy observation_lineages_tbl_party_isolation_policy
 on ores_marketdata_observation_lineages_tbl
 as restrictive
 for all using (

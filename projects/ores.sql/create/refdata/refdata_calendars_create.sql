@@ -50,6 +50,7 @@ create table if not exists "ores_refdata_calendars_tbl" (
     "source" text not null default 'quantlib',
     "is_editable" boolean not null default false,
     "base_calendar_code" text null,
+    "coding_scheme_code" text,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -91,6 +92,16 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
 
     -- Validate calendar_type
     NEW.calendar_type := ores_refdata_validate_calendar_type_fn(NEW.tenant_id, NEW.calendar_type);

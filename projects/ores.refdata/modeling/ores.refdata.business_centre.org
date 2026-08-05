@@ -9,7 +9,7 @@
 #+entity_singular: business_centre
 #+entity_plural: business_centres
 #+entity_title: Business Centre
-#+coding_scheme: required
+#+coding_scheme: none
 #+image_id: false
 #+brief: Financial trading location used for holiday calendar determination (FpML-style code).
 #+created: 2026-07-13

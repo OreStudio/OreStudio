@@ -374,16 +374,12 @@ RLS_001 ores_workspaces_tbl
 RLS_001 ores_workspace_trade_scope_tbl
 
 # =============================================================================
-# Market data generation config table - tenant_id nullable by design.
-# Carries three orthogonal scope levels (system/tenant/party): system-scope
-# configs leave tenant_id (and party_id) null so they can be shared across
-# every tenant. A NOT-NULL PK/EXCLUDE column can't express that legitimately-
-# absent tenant, the same nullable_tenant_id shape ores_scheduler_job_definitions_tbl
-# and ores_mq_queues_tbl already use above for the identical reason. The
-# validator's TENANT_002/003 heuristic doesn't yet recognise this shape as a
-# category (only per-table ignores exist for it so far); teaching it about
-# nullable_tenant_id generally is a follow-up (capture filed), not something
-# to fix by weakening this table's intentional scoping design.
+# Synthetic market data generation configs - tenant_id/party_id nullable by
+# design (same rationale as scheduler_job_definitions_tbl above): scope column
+# spans system/tenant/party, system-scope rows have both null, tenant-scope
+# rows have tenant_id only. See synthetic_rls_policies_create.sql's own
+# tenant+party RESTRICTIVE policy pair, which already enforces isolation
+# across all three scope levels independently of PK/EXCLUDE membership.
 # =============================================================================
 TENANT_002 ores_synthetic_market_data_generation_configs_tbl
 TENANT_003 ores_synthetic_market_data_generation_configs_tbl

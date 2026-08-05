@@ -69,12 +69,12 @@ will be stamped with.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Pick up ir-curve-bootstrapping-engine, the next task in this story. |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
@@ -134,3 +134,65 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: two new =ores.refdata= entities (schema + generated C++
+domain/repository/service/messaging layer, no Qt UI -- out of scope
+for this task).
+
+** Schema
+
+- =ir_curve_bootstrap_config=: source/output series (soft
+  cross-component references into =ores.marketdata='s
+  =market_series=), =curve_family_role= (=FUNDING=/=PROJECTION=),
+  self-referencing =discount_curve_config_id=, =interpolation_method=,
+  =day_count_convention= (validated against the existing
+  =day_count_fraction_type= table), =split_tenor_code= (soft tenor
+  reference, matching =ir_curve_template_entry='s own tenor columns).
+- =ir_curve_bootstrap_pillar=: one-parent-many-children pillar list,
+  FK to the parent config, =curve_role_code= validated against the
+  existing =curve_role= table.
+- =output_series_id= is a natural key alongside =party_id= (exactly
+  one active config per output series) -- caught and fixed after the
+  first codegen pass produced a wrong one-config-per-party unique
+  index instead.
+- Two-tier =discount_curve_config_id= enforcement: a check constraint
+  shape-validates (nil-uuid iff =FUNDING=; non-nil and not
+  self-referencing iff =PROJECTION=), and a custom insert-trigger
+  block validates the *referenced* config is itself =FUNDING= (no
+  chaining), using the same per-entity =:implements <uuid>= paste-marker
+  mechanism =curve_role='s =Extra drops= already uses.
+- Dual RLS (tenant + party isolation) on both tables, matching
+  =ir_curve_template_entry='s own precedent for a party-scoped table.
+
+** Verified
+
+- Local build clean (=linux-clang-debug-make=).
+- =compass db recreate= + SQL schema validator clean (0 warnings) --
+  also closed out the =observation_lineages= =RLS_002= gap left over
+  from the previous task, and filed a capture for two pre-existing,
+  unrelated, by-design warnings on
+  =synthetic_market_data_generation_configs_tbl= rather than papering
+  over them silently.
+- =refdata-codegen-drift= check (=check_component_drift.py=) clean --
+  regenerated output matches what's committed exactly.
+- =ctest -R "refdata"=: 4/4 test binaries passed.
+
+** Follow-ons not covered by this task
+
+- Acceptance called for "creating a bootstrap config mints its
+  =output_series_id= row atomically." This task only makes
+  =output_series_id= a required column -- the actual cross-component
+  orchestration (a service call into =ores.marketdata= to create the
+  =market_series= row before/alongside the config insert) is not
+  implemented. That orchestration is inherently part of a later task
+  (=ir-curve-bootstrapping-engine= or =official-curve-republish=,
+  whichever ends up owning config creation), not schema work.
+  Flagging explicitly rather than letting the acceptance bullet imply
+  it's done.
+- Acceptance also called for tests proving a PROJECTION-to-PROJECTION
+  chain and a self-referencing row are both rejected. The trigger
+  logic was verified by reading the generated SQL and by a clean
+  =compass db recreate=, but no automated test (SQL or C++) exercises
+  the rejection paths yet. Worth adding when the bootstrapping engine
+  task starts writing real bootstrap configs and needs fixtures
+  anyway.

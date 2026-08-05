@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-scope-info-in-fleet-and-bearings
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Surface each environment's systemd scope in compass fleet and compass bearings o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation complete; pending review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-29                               |
+| Next         | Test and raise PR.                     |
+| Last touched | 2026-08-05                               |
 
 * Acceptance
 
@@ -39,9 +39,16 @@ Surface each environment's systemd scope in compass fleet and compass bearings o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added in compass.py:
+
+- =_env_systemd_scopes()= — queries =systemctl --user list-units --type=scope --output=json= once and maps each env_name to its running scope types (claude/build/both). Matches =claude-<env>-<pid>.scope= and =build-<env>-<slot>-<pid>.scope= patterns via regex. Returns a =dict=; missing keys mean no scope is running for that env.
+- =_current_session_scope()= — reads =/proc/self/cgroup= and extracts the innermost scope unit name and its parent slice, returning =(scope, slice)= or =(None, None)= on failure.
+
+=cmd_fleet=: calls =_env_systemd_scopes()= once, adds a =SCOPE= column (max 14 chars) showing =claude=, =build=, =build,claude=, or =—= per worktree. Also included in =--format json=.
+
+=cmd_bearings=: shows the current session's scope and slice under the environment section (=Scope : claude-merry_newton-*.scope (slice: app-claude-merry_newton.slice)=), or a fallback message when running unscoped.
+
+Both fall back gracefully when systemd is unavailable (=systemctl= missing, =/proc/self/cgroup= unreadable, or no named scope).
 
 * Notes
 

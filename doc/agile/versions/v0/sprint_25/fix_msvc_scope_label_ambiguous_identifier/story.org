@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 07179FD0-044E-48B6-8526-D456EFA99443
+:END:
+#+title: Story: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier
+#+description: Windows (MSVC) build breaks on ScopeLabel.hpp:34 — the using-declaration 'using ores::synthetic::domain::scope' and the parameter also named 'scope' collide. MSVC resolves 'scope' in 'switch (scope)' as the type rather than the variable, producing C2059/C2143/C2046 cascade errors. Clang and GCC accept the construct without warning.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:msvc:sprint_25:v0:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows build by disambiguating the identifier in ScopeLabel.hpp so MSVC can compile it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-05                               |
+
+* Acceptance
+
+- Windows CI goes green on the ScopeLabel.hpp translation unit
+- Linux (Clang/GCC) build remains green
+- No behavioural change — the function returns the same labels as before
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BCE63A39-4C66-4DE5-A845-C9B0B3BB12C4][Implement Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier]] | STARTED | 2026-08-05 | | Initial task for: Hotfix: MSVC rejects ScopeLabel.hpp due to ambiguous scope identifier |
+
+* Decisions
+
+* Out of scope
+
+-

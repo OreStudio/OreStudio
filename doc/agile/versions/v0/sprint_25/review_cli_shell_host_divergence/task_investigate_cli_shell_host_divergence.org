@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: A7DAEE5D-49D7-4015-9425-3E3D26D205B0
+:END:
+#+title: Task: Investigate whether ores.cli/ores.shell's host.cpp divergence is load-bearing
+#+description: Side-by-side review of ores.cli and ores.shell's host.cpp/application shape against the shared run_host_async helper, to determine whether their sync execution model and custom application constructors are genuine requirements or just historical.
+#+type: task
+#+level: s1
+#+filetags: :codegen:cpp:service-app:cli:shell:review_cli_shell_host_divergence:sprint_25:v0:
+#+owner: marco
+#+branch: feature/review-cli-shell-host-divergence
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Read both tools' actual runtime requirements (not just current code shape) to determine: is sync execution genuinely required, or could they run on an io_context like the daemons do; is the custom application constructor shape necessary, or could it be refactored to fit default-construction plus a setter/init call; is cli's ore_roundtrip interception branch something that could live inside application::run() instead of host::execute(). Produce a clear recommendation: keep bespoke (with rationale), or a concrete plan to bring one or both onto the shared helper (or a new sync sibling helper).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- ores.cli and ores.shell's actual runtime requirements documented, not just their current code shape
+- Explicit determination for each: sync execution requirement is load-bearing or removable
+- Explicit determination for each: custom application constructor shape is load-bearing or removable
+- Clear recommendation with rationale: keep bespoke, or concrete follow-on plan to unify
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,17 +1,19 @@
 :PROPERTIES:
 :ID: DAA69C0E-E1E6-4441-954A-037ACB494F04
 :END:
-#+title: Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical
+#+title: Story: Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical
 #+description: ores.cli and ores.shell are the only two tools left out of the shared run_host_async helper (sync execution, custom application constructor args, cli's DB-free interception branch) -- review in detail whether these differences are genuinely necessary or just how the tools happened to be written, and what's actually common between the two.
-#+type: capture
-#+level: cross
-#+filetags: :codegen:cpp:service-app:cli:shell:
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
 #+created: 2026-08-05
 #+updated: 2026-08-05
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
-* What
+* Goal
 
 After extracting =ores::service::run_host_async()= and migrating all
 17 domain services + =ores.http.server= + =ores.compute/wrapper=
@@ -35,7 +37,62 @@ Specifically examine:
   =app.run()= with no arguments (no =io_ctx=, no =cfg=) — REPL/
   interactive, not request-driven like the others.
 
-* Why
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Investigating ores.cli/ores.shell's host.cpp divergence. |
+| Waiting on    | Nothing.                               |
+| Next          | Complete the investigation task.       |
+| Last touched  | 2026-08-05                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A7DAEE5D-49D7-4015-9425-3E3D26D205B0][Investigate whether ores.cli/ores.shell's host.cpp divergence is load-bearing]] | STARTED | 2026-08-05 | | Side-by-side review of ores.cli and ores.shell's host.cpp/application shape against the shared run_host_async helper, to determine whether their sync execution model and custom application constructors are genuine requirements or just historical. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-08-05 in the product backlog; promoted preserving the UUID.
+
+** What
+
+After extracting =ores::service::run_host_async()= and migrating all
+17 domain services + =ores.http.server= + =ores.compute/wrapper=
+onto it, =ores.cli= and =ores.shell= are the only two tools left
+with hand-written =host.cpp=. Do a proper side-by-side review of
+both: what's genuinely common between them (both are sync,
+console-facing tools, unlike the NATS-service fleet), what's
+different, and — critically — whether their divergence from the
+shared async shape is *load-bearing* (a real product requirement) or
+just *historical* (nobody has revisited it since they were first
+written, and a sync wrapper over =run_host_async= or a dedicated
+sync sibling helper could actually fit).
+
+Specifically examine:
+- =ores.cli=: sync =int host::execute(...)=, constructs
+  =application(std_output, cfg.database)= (not default-constructed),
+  plus a pre-application =cfg.ore_roundtrip= DB-free interception
+  branch with its own try/catch before the main block.
+- =ores.shell=: sync =int host::execute(...)=, constructs
+  =application(cfg.connection, cfg.login, cfg.script_path)=, calls
+  =app.run()= with no arguments (no =io_ctx=, no =cfg=) — REPL/
+  interactive, not request-driven like the others.
+
+** Why
 
 =task_unify_application_cpp_shape.org= (story
 [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]]) originally
@@ -53,12 +110,12 @@ product shape from a NATS daemon) or find that some of the
 "differences" (e.g. the constructor args) are removable with a
 small, deliberate change rather than assumed permanent.
 
-* References
+** References
 
 - projects/ores.cli/src/app/host.cpp
 - projects/ores.shell/src/app/host.cpp
 - projects/ores.service/include/ores.service/service/host_runner.hpp
 
-* See also
+** See also
 
 - [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — the task that surfaced this

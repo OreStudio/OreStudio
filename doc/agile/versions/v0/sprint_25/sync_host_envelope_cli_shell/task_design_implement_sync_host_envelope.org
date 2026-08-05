@@ -8,7 +8,7 @@
 #+filetags: :sync_host_envelope_cli_shell:sprint_25:v0:
 #+owner: marco
 #+branch: feature/design-implement-sync-host-envelope
-#+pr:
+#+pr: 1868
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1868][#1868]] | [ores.service,ores.cli,ores.shell] Extract sync sibling of run_host_async for ores.cli/ores.shell |
 
 * Review
 

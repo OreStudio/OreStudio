@@ -20,78 +20,30 @@
 #include "ores.http.server/app/host.hpp"
 #include "ores.http.server/app/application.hpp"
 #include "ores.http.server/config/parser.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.service/service/host_runner.hpp"
 #include "ores.utility/version/version.hpp"
-#include <boost/exception/diagnostic_information.hpp>
-#include <cstdlib>
 
 namespace ores::http_server::app {
 
 using namespace ores::logging;
 using ores::http_server::config::parser;
-using ores::telemetry::log::lifecycle_manager;
 
 boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
                                           std::ostream& std_output,
                                           std::ostream& error_output,
                                           boost::asio::io_context& io_ctx) {
-    /*
-     * Create the configuration from command line options.
-     */
-    parser p;
-    const auto ocfg(p.parse(args, std_output, error_output));
-
-    /*
-     * If we have no configuration, then there is nothing to do. This can only
-     * happen if the user requested some valid options such as help or version;
-     * any errors at the command line level are treated as exceptions, and all
-     * other cases must result in a configuration object.
-     */
-    if (!ocfg)
-        co_return EXIT_SUCCESS;
-
-    /*
-     * Since we have a configuration, we can now attempt to initialise the
-     * logging subsystem.
-     */
-    const auto& cfg(*ocfg);
-    lifecycle_manager lm(cfg.logging);
-
-    /*
-     * Log the configuration and command line arguments.
-     */
-    BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION << " starting ("
-                              << ores::utility::version::build_info() << ")...";
-    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
-
-    /*
-     * Execute the application.
-     */
-    try {
-        ores::http_server::app::application app;
-        co_await app.run(io_ctx, cfg);
+    ores::service::service::host_runner_options opts;
+    opts.on_before_log = [] {
+        BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION << " starting ("
+                                  << ores::utility::version::build_info() << ")...";
+    };
+    opts.on_success = [] {
         BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server stopped successfully";
-        co_return EXIT_SUCCESS;
-    } catch (const std::exception& e) {
-        /*
-         * Try to dump useful, but less user-friendly information by
-         * interrogating the exception. Note that we must catch by
-         * std::exception and cast the boost exception; if we were to catch
-         * boost exception, we would not have access to the what() method and
-         * thus could not provide the exception message to the console.
-         */
-        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be != nullptr) {
-            using boost::diagnostic_information;
-            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
-        }
-        BOOST_LOG_SEV(lg(), error) << "Failed to execute HTTP server.";
-        throw;
-    }
+    };
+    opts.failure_message = "Failed to execute HTTP server.";
+
+    return ores::service::service::run_host_async<parser, application>(
+        args, std_output, error_output, io_ctx, lg(), opts);
 }
 
 }

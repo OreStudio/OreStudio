@@ -20,48 +20,18 @@
 #include "ores.iam.service/app/host.hpp"
 #include "ores.iam.service/app/application.hpp"
 #include "ores.iam.service/config/parser.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include <boost/exception/diagnostic_information.hpp>
-#include <cstdlib>
+#include "ores.service/service/host_runner.hpp"
 
 namespace ores::iam::service::app {
 
-using namespace ores::logging;
 using ores::iam::service::config::parser;
-using ores::telemetry::log::lifecycle_manager;
 
 boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
                                           std::ostream& std_output,
                                           std::ostream& error_output,
                                           boost::asio::io_context& io_ctx) {
-    parser p;
-    const auto ocfg(p.parse(args, std_output, error_output));
-
-    if (!ocfg)
-        co_return EXIT_SUCCESS;
-
-    const auto& cfg(*ocfg);
-    lifecycle_manager lm(cfg.logging);
-
-    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
-    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
-
-    try {
-        application app;
-        co_await app.run(io_ctx, cfg);
-        co_return EXIT_SUCCESS;
-    } catch (const std::exception& e) {
-        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be != nullptr) {
-            using boost::diagnostic_information;
-            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
-        }
-        BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
-        throw;
-    }
+    return ores::service::service::run_host_async<parser, application>(
+        args, std_output, error_output, io_ctx, lg());
 }
 
 }

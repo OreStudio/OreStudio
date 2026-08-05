@@ -26,12 +26,12 @@ first start attempt.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Start the "Lower default per-service DB connection pool size" task. |
-| Last touched  | 2026-08-04                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-05                               |
 
 * Acceptance
 
@@ -52,7 +52,7 @@ first start attempt.
 | [[id:17CCD236-D3F3-49F6-8250-FFDCD94625A2][Audit compass services start systemd integration]] | DONE | 2026-08-04 | 2026-08-04 | Review how compass services start manages systemd units and the service target, confirm it still follows idiomatic systemd practice, and fix any drift. |
 | [[id:E3E201CD-6A62-4772-8307-730D763BBEE9][Lower default per-service DB connection pool size]] | DONE | 2026-08-04 | 2026-08-04 | Reduce the hardcoded pool_size (4) in the service-app codegen template to shrink each environment's steady-state Postgres connection footprint. |
 | [[id:A54DB993-A61C-44D3-AEE0-964EBD457D0E][Make DB connection pool size runtime-configurable]] | DONE | 2026-08-04 | 2026-08-04 | Move pool_size out of the codegen template literal into database_options/database_configuration, sourced from a CLI flag and ORES_<APP>_DB_POOL_SIZE env var. |
-| [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] | STARTED | 2026-08-05 | | Clean up application.cpp and service initialisation across all services (including the divergent ores.cli, ores.shell, ores.compute/wrapper shapes), finding commonalities: extract common code to a shared utility, codegen boilerplate that is identical across services, and reduce remaining variation to a minimum handled via variability switches. |
+| [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] | DONE | 2026-08-05 | 2026-08-05 | Clean up application.cpp and service initialisation across all services (including the divergent ores.cli, ores.shell, ores.compute/wrapper shapes), finding commonalities: extract common code to a shared utility, codegen boilerplate that is identical across services, and reduce remaining variation to a minimum handled via variability switches. |
 
 * Decisions
 
@@ -71,6 +71,16 @@ first start attempt.
   dependency graph. Fixed with an =ExecStartPost== port-listen probe
   on the generated =nats-server= unit rather than touching the
   domain-service units, which were already correctly ordered.
+
+- =application.cpp=/=host.cpp= unification scoped to the one clear
+  shared-code win (=host.cpp='s parse/log/construct/run/catch
+  envelope, extracted to =ores::service::run_host_async()=) rather
+  than also implementing =config/options.hpp= composition
+  unification — that overlaps with E3647ADD's (PR #1819)
+  =standard_service_options= territory; filed a design recommendation
+  there instead of a second implementation. =ores.cli=/=ores.shell=/
+  =ores.compute/wrapper= kept hand-written since their differences are
+  real behavioural divergence, not boilerplate drift.
 
 * Out of scope
 

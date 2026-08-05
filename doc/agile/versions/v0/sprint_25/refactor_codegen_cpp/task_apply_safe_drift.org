@@ -165,23 +165,30 @@ us. Left STARTED rather than closing it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Unblocked (org-mode POC is DONE); custom methods for =party_repository= now come from the org model. Core service methods (=find_X(uuid)=, =find_X_by_code=, =list_X_by_Y=, prefix search) from the plan's step 2/3 are not yet implemented anywhere in refdata. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide whether to implement the plan's template flags + per-model updates, or descope/rewrite the plan against current reality. |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                             |
 
 * Acceptance
 
 - Template flags added (=service_find_by_uuid=, =service_find_by_code=,
-  =service_list_by_uuid_parent=, =service_find_prefix=).
-- Refdata models updated per the plan table.
+  =service_list_by_uuid_parent= (implemented as a =list_by_uuid= overload
+  on the existing foreign-key =list_by= mechanism rather than a new
+  standalone flag — see =* Result=), =service_find_prefix=).
+- Refdata models updated per the plan table, with two corrections (see
+  =* Result=): =business_unit= uses its real natural key
+  (=party_id=/=unit_name=) instead of the plan's nullable, non-unique
+  =unit_code=; the four child entities' =service_find_by_code= is a
+  composite (parent uuid + code) lookup, not a bare code lookup, since
+  their natural key is the pair.
 - =cmake --build --preset linux-clang-debug-make= passes (exit 0).
 - =ctest -R "ores\.refdata"= passes.
-- Final zero-diff invariant holds: =git diff --exit-code= clean after
-  regenerate + restore exclusions.
-- =party_repository.{hpp,cpp}= exclusions documented in commit message.
+- Final zero-diff invariant holds: regenerating twice in a row produces
+  byte-identical output (idempotency confirmed) — =party_repository=
+  needs no HEAD-restore exclusion any more (see =* Result=).
 - PR raised, reviewed, merged.
 
 * PRs
@@ -198,5 +205,95 @@ us. Left STARTED rather than closing it.
 
 * Result
 
-(Not yet complete — see =* Notes= for the re-triage findings from this
-session. Task remains STARTED, not closed.)
+Implemented the plan's four service-layer template flags as additive
+overloads (confirmed with the user up front: new methods alongside the
+existing string-typed API, not a breaking replacement) and applied them
+across the 12 refdata models, with two corrections to the stale plan
+caught during implementation.
+
+** Template flags added
+
+All in =cpp_service.hpp/.cpp.mustache= (org sources:
+=ores.cpp.service.service_header/service_impl.org=); =service_find_by_code=
+also touches =cpp_domain_type_repository.hpp/.cpp.mustache=:
+
+- =service_find_by_uuid= (bool) — additive =find_X(uuid)=, =remove_X(uuid)=,
+  and a =get_X_history(uuid)= overload, converting to string internally
+  and delegating to the existing string-typed repository methods (no
+  repository template change needed for this flag).
+- =service_find_by_code= ({column} or {column, parent_column}) — additive
+  =find_X_by_code(...)= in the service plus =read_latest_by_code(...)= in
+  the repository. Single-column form for entities whose natural key really
+  is that one column (=party.short_code=, =counterparty.short_code=);
+  composite =(parent_column, column)= form for entities whose natural key
+  is a pair — see Corrections below.
+- =service_list_by_uuid_parent= — implemented as a =list_by_uuid: true=
+  sibling flag on the *existing* foreign-key =list_by= mechanism (not a
+  new standalone construct): adds a uuid-typed overload of the
+  already-generated =list_X_by_Y=/=count_X_by_Y= string-typed methods.
+  Repository stays string-typed; the service converts uuid → string
+  before delegating, same pattern as =service_find_by_uuid=.
+- =service_find_prefix= (bool) — renames the single-record accessor
+  =get_X= → =find_X= for string-PK lookup entities. Verified zero
+  production callers of the four affected entities' =get_X= before
+  applying (grepped the whole tree), so this is a safe rename, not
+  additive.
+- =has_uuid_include= (derived, =core.py=) — gates the shared
+  =<boost/uuid/uuid.hpp>=/=<boost/uuid/uuid_io.hpp>= includes across all
+  of the above plus the pre-existing =has_parent_id= hierarchy code.
+
+** Corrections to the stale plan
+
+Two of the plan's per-model specifics didn't hold up against the current
+schema and were corrected rather than implemented as literally written
+(both flagged to and confirmed by the user before implementing):
+
+- *=business_unit='s find-by-code column*: the plan named =unit_code=,
+  but =unit_code= is nullable and not part of the natural key — the real
+  natural key is (=party_id=, =unit_name=). Used that pair instead;
+  documented the discrepancy directly in =business_unit.org='s Flags
+  section.
+- *The four child entities' find-by-code* (=party_contact_information=,
+  =party_identifier=, =counterparty_contact_information=,
+  =counterparty_identifier=): the plan named a single column
+  (=contact_type=/=id_scheme=), but each entity's actual natural key is a
+  *composite* — e.g. "one contact record per type per party" means
+  uniqueness is (=party_id=, =contact_type=), not =contact_type= alone.
+  A bare =find_X_by_code(contact_type)= would have been genuinely
+  ambiguous (arbitrary row among every party sharing that type).
+  Implemented =find_X_by_code(parent_uuid, code)= instead via
+  =service_find_by_code_parent_column= in the org model.
+
+** Per-model application (12 models, per the corrected table above)
+
+=party= already carried =service_find_by_uuid=/=service_find_by_code=
+from the earlier stashed WIP (dead until this session's template work).
+Added to =counterparty=, =business_unit=, =portfolio=,
+=party_contact_information=, =party_identifier=,
+=counterparty_contact_information=, =counterparty_identifier=,
+=contact_type=, =party_type=, =party_status=, =party_id_scheme=.
+
+** Verification
+
+- Re-tangled all codegen templates (=compass build --direct
+  tangle_codegen_templates=) and regenerated refdata twice in a row
+  (=check_component_drift.py --components refdata=): byte-identical
+  output both times — idempotency confirmed, no stray formatting drift
+  once a stale blank-line issue in the repository impl template was
+  fixed.
+- =compass build --preset linux-clang-debug-make=: clean, exit 0, no
+  broken callers anywhere in the tree (Qt, NATS handlers, tests) from
+  the =get_X= → =find_X= rename on the four lookup entities.
+- =ctest -R "ores\.refdata"=: 4/4 suites passed (api, client, core,
+  service; 100%, ~200s).
+- =party_repository.{hpp,cpp}= need *no* HEAD-restore exclusion any
+  more — its custom methods (=read_system_party=,
+  paginated =read_latest=, =get_total_party_count=, =read_descendants=)
+  come from =party.org='s custom-method mechanism, landed by the
+  now-DONE org-mode migration blocker. Step 5/8's exclusion-restore is
+  moot; dropped from the final regen check.
+
+Scope: 6 template/codegen files (2 mustache pairs regenerated from their
+=.org= sources + =core.py= + =org_loader.py=), 12 refdata model =.org=
+files, and 47 generated repository/service =.hpp=/=.cpp= files across
+the 12 models.

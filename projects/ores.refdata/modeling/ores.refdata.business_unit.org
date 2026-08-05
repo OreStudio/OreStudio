@@ -222,8 +222,16 @@ std::string("Active")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:                       api
+:service_find_by_uuid:               true
+:service_find_by_code_column:        unit_name
+:service_find_by_code_parent_column: party_id
 :END:
+
+Note: the plan this flag traces to (task_apply_safe_drift.org) named
+=unit_code= as the find-by-code column, but =unit_code= is nullable and
+not part of the natural key -- (=party_id=, =unit_name=) is. Using
+=unit_name= (with =party_id=) instead keeps the lookup unambiguous.
 
 ** Repository
 :PROPERTIES:

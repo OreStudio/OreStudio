@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -94,6 +95,13 @@ public:
     std::optional<domain::portfolio> get_portfolio(const std::string& id);
 
     /**
+     * @brief Retrieves a single portfolio by its uuid primary key.
+     *
+     * @return The portfolio if found, std::nullopt otherwise.
+     */
+    std::optional<domain::portfolio> find_portfolio(const boost::uuids::uuid& id);
+
+    /**
      * @brief Saves a portfolio (creates or updates).
      *
      * @param portfolio The portfolio to save.
@@ -117,6 +125,13 @@ public:
     void delete_portfolio(const std::string& id);
 
     /**
+     * @brief Removes a portfolio by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_portfolio(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes portfolios by their primary keys.
      */
     void delete_portfolios(const std::vector<std::string>& ids);
@@ -125,6 +140,12 @@ public:
      * @brief Retrieves all historical versions of a portfolio.
      */
     std::vector<domain::portfolio> get_portfolio_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a portfolio
+     * by its uuid primary key.
+     */
+    std::vector<domain::portfolio> get_portfolio_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

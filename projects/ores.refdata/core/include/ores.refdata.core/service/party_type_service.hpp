@@ -91,7 +91,7 @@ public:
      *
      * @return The party type if found, std::nullopt otherwise.
      */
-    std::optional<domain::party_type> get_type(const std::string& code);
+    std::optional<domain::party_type> find_type(const std::string& code);
 
     /**
      * @brief Saves a party type (creates or updates).

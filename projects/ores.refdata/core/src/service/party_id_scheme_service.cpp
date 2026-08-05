@@ -51,7 +51,7 @@ party_id_scheme_service::get_scheme_at_version(const std::string& code, std::uin
 }
 
 std::optional<domain::party_id_scheme>
-party_id_scheme_service::get_scheme(const std::string& code) {
+party_id_scheme_service::find_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting party ID scheme. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())

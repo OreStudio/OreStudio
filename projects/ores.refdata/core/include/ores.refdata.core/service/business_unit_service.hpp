@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -95,6 +96,23 @@ public:
     std::optional<domain::business_unit> get_business_unit(const std::string& id);
 
     /**
+     * @brief Retrieves a single business unit by its uuid primary key.
+     *
+     * @return The business unit if found, std::nullopt otherwise.
+     */
+    std::optional<domain::business_unit> find_business_unit(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single business unit by its
+     * party_id and unit_name (this entity's natural key is the
+     * pair, not unit_name alone).
+     *
+     * @return The business unit if found, std::nullopt otherwise.
+     */
+    std::optional<domain::business_unit>
+    find_business_unit_by_code(const boost::uuids::uuid& party_id, const std::string& unit_name);
+
+    /**
      * @brief Saves a business unit (creates or updates).
      *
      * @param business_unit The business unit to save.
@@ -118,6 +136,13 @@ public:
     void delete_business_unit(const std::string& id);
 
     /**
+     * @brief Removes a business unit by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_business_unit(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes business units by their primary keys.
      */
     void delete_business_units(const std::vector<std::string>& ids);
@@ -126,6 +151,12 @@ public:
      * @brief Retrieves all historical versions of a business unit.
      */
     std::vector<domain::business_unit> get_business_unit_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a business unit
+     * by its uuid primary key.
+     */
+    std::vector<domain::business_unit> get_business_unit_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

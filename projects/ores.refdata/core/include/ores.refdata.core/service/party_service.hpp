@@ -95,6 +95,20 @@ public:
     std::optional<domain::party> get_party(const std::string& id);
 
     /**
+     * @brief Retrieves a single party by its uuid primary key.
+     *
+     * @return The party if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party> find_party(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single party by its short_code.
+     *
+     * @return The party if found, std::nullopt otherwise.
+     */
+    std::optional<domain::party> find_party_by_code(const std::string& short_code);
+
+    /**
      * @brief Saves a party (creates or updates).
      *
      * @param party The party to save.
@@ -118,6 +132,13 @@ public:
     void delete_party(const std::string& id);
 
     /**
+     * @brief Removes a party by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_party(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes parties by their primary keys.
      */
     void delete_parties(const std::vector<std::string>& ids);
@@ -126,6 +147,12 @@ public:
      * @brief Retrieves all historical versions of a party.
      */
     std::vector<domain::party> get_party_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a party
+     * by its uuid primary key.
+     */
+    std::vector<domain::party> get_party_history(const boost::uuids::uuid& id);
 
     /**
      * @brief Gets the party hierarchy (as a forest of trees) rooted

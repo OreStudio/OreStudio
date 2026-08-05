@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -102,6 +103,28 @@ public:
     count_counterparty_contact_informations_by_counterparty_id(const std::string& counterparty_id);
 
     /**
+     * @brief Lists counterparty contact informations filtered by counterparty_id, with pagination.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching counterparty contact informations for the requested page.
+     */
+    std::vector<domain::counterparty_contact_information>
+    list_counterparty_contact_informations_by_counterparty_id(
+        const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active counterparty contact informations filtered by
+     * counterparty_id.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @return Total number of matching counterparty contact informations.
+     */
+    std::uint32_t count_counterparty_contact_informations_by_counterparty_id(
+        const boost::uuids::uuid& counterparty_id);
+
+    /**
      * @brief Lists counterparty contact informations filtered by counterparty_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
      * See the "Temporal composite entity versioning" architecture doc.
@@ -136,6 +159,25 @@ public:
     get_counterparty_contact_information(const std::string& id);
 
     /**
+     * @brief Retrieves a single counterparty contact information by its uuid primary key.
+     *
+     * @return The counterparty contact information if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_contact_information>
+    find_counterparty_contact_information(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single counterparty contact information by its
+     * counterparty_id and contact_type (this entity's natural key is the
+     * pair, not contact_type alone).
+     *
+     * @return The counterparty contact information if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_contact_information>
+    find_counterparty_contact_information_by_code(const boost::uuids::uuid& counterparty_id,
+                                                  const std::string& contact_type);
+
+    /**
      * @brief Saves a counterparty contact information (creates or updates).
      *
      * @param counterparty_contact_information The counterparty contact information to save.
@@ -162,6 +204,13 @@ public:
     void delete_counterparty_contact_information(const std::string& id);
 
     /**
+     * @brief Removes a counterparty contact information by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_counterparty_contact_information(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes counterparty contact informations by their primary keys.
      */
     void delete_counterparty_contact_informations(const std::vector<std::string>& ids);
@@ -171,6 +220,13 @@ public:
      */
     std::vector<domain::counterparty_contact_information>
     get_counterparty_contact_information_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a counterparty contact information
+     * by its uuid primary key.
+     */
+    std::vector<domain::counterparty_contact_information>
+    get_counterparty_contact_information_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

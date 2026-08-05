@@ -97,6 +97,20 @@ public:
     std::optional<domain::counterparty> get_counterparty(const std::string& id);
 
     /**
+     * @brief Retrieves a single counterparty by its uuid primary key.
+     *
+     * @return The counterparty if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty> find_counterparty(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single counterparty by its short_code.
+     *
+     * @return The counterparty if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty> find_counterparty_by_code(const std::string& short_code);
+
+    /**
      * @brief Saves a counterparty (creates or updates).
      *
      * @param counterparty The counterparty to save.
@@ -120,6 +134,13 @@ public:
     void delete_counterparty(const std::string& id);
 
     /**
+     * @brief Removes a counterparty by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_counterparty(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes counterparties by their primary keys.
      */
     void delete_counterparties(const std::vector<std::string>& ids);
@@ -128,6 +149,12 @@ public:
      * @brief Retrieves all historical versions of a counterparty.
      */
     std::vector<domain::counterparty> get_counterparty_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a counterparty
+     * by its uuid primary key.
+     */
+    std::vector<domain::counterparty> get_counterparty_history(const boost::uuids::uuid& id);
 
     /**
      * @brief Gets the counterparty hierarchy (as a forest of trees) rooted

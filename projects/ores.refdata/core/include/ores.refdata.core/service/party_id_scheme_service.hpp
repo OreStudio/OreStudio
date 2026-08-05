@@ -91,7 +91,7 @@ public:
      *
      * @return The party ID scheme if found, std::nullopt otherwise.
      */
-    std::optional<domain::party_id_scheme> get_scheme(const std::string& code);
+    std::optional<domain::party_id_scheme> find_scheme(const std::string& code);
 
     /**
      * @brief Saves a party ID scheme (creates or updates).

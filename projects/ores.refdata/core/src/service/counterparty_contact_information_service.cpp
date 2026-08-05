@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -61,6 +62,25 @@ std::uint32_t counterparty_contact_information_service::
         ctx_, counterparty_id);
 }
 
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_service::list_counterparty_contact_informations_by_counterparty_id(
+    const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing counterparty contact informations by counterparty_id: "
+                               << counterparty_id;
+    return repo_.read_latest_by_counterparty_id(
+        ctx_, boost::uuids::to_string(counterparty_id), offset, limit);
+}
+
+std::uint32_t counterparty_contact_information_service::
+    count_counterparty_contact_informations_by_counterparty_id(
+        const boost::uuids::uuid& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Getting total counterparty contact informations count by counterparty_id: "
+        << counterparty_id;
+    return repo_.get_total_counterparty_contact_information_count_by_counterparty_id(
+        ctx_, boost::uuids::to_string(counterparty_id));
+}
+
 std::vector<domain::counterparty_contact_information> counterparty_contact_information_service::
     list_counterparty_contact_informations_by_counterparty_id_as_of(
         const std::string& counterparty_id,
@@ -85,6 +105,29 @@ counterparty_contact_information_service::get_counterparty_contact_information(
     const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting counterparty contact information. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::counterparty_contact_information>
+counterparty_contact_information_service::find_counterparty_contact_information(
+    const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty contact information. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::counterparty_contact_information>
+counterparty_contact_information_service::find_counterparty_contact_information_by_code(
+    const boost::uuids::uuid& counterparty_id, const std::string& contact_type) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Finding counterparty contact information by counterparty_id/contact_type: "
+        << counterparty_id << "/" << contact_type;
+    auto results =
+        repo_.read_latest_by_code(ctx_, boost::uuids::to_string(counterparty_id), contact_type);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -122,6 +165,13 @@ void counterparty_contact_information_service::delete_counterparty_contact_infor
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty contact information. " << "id: " << id;
 }
 
+void counterparty_contact_information_service::remove_counterparty_contact_information(
+    const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty contact information. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty contact information. " << "id: " << id;
+}
+
 void counterparty_contact_information_service::delete_counterparty_contact_informations(
     const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
@@ -133,6 +183,14 @@ counterparty_contact_information_service::get_counterparty_contact_information_h
     BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty contact information. "
                                << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_service::get_counterparty_contact_information_history(
+    const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty contact information. "
+                               << "id: " << id;
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 }

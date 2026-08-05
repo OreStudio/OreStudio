@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -99,6 +100,26 @@ public:
     count_counterparty_identifiers_by_counterparty_id(const std::string& counterparty_id);
 
     /**
+     * @brief Lists counterparty identifiers filtered by counterparty_id, with pagination.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching counterparty identifiers for the requested page.
+     */
+    std::vector<domain::counterparty_identifier> list_counterparty_identifiers_by_counterparty_id(
+        const boost::uuids::uuid& counterparty_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active counterparty identifiers filtered by counterparty_id.
+     *
+     * @param counterparty_id The counterparty_id to filter by.
+     * @return Total number of matching counterparty identifiers.
+     */
+    std::uint32_t
+    count_counterparty_identifiers_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
+
+    /**
      * @brief Lists counterparty identifiers filtered by counterparty_id that were live at
      * any point during a parent version's own [valid_from, valid_to) window.
      * See the "Temporal composite entity versioning" architecture doc.
@@ -132,6 +153,25 @@ public:
     get_counterparty_identifier(const std::string& id);
 
     /**
+     * @brief Retrieves a single counterparty identifier by its uuid primary key.
+     *
+     * @return The counterparty identifier if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_identifier>
+    find_counterparty_identifier(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Retrieves a single counterparty identifier by its
+     * counterparty_id and id_scheme (this entity's natural key is the
+     * pair, not id_scheme alone).
+     *
+     * @return The counterparty identifier if found, std::nullopt otherwise.
+     */
+    std::optional<domain::counterparty_identifier>
+    find_counterparty_identifier_by_code(const boost::uuids::uuid& counterparty_id,
+                                         const std::string& id_scheme);
+
+    /**
      * @brief Saves a counterparty identifier (creates or updates).
      *
      * @param counterparty_identifier The counterparty identifier to save.
@@ -157,6 +197,13 @@ public:
     void delete_counterparty_identifier(const std::string& id);
 
     /**
+     * @brief Removes a counterparty identifier by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_counterparty_identifier(const boost::uuids::uuid& id);
+
+    /**
      * @brief Deletes counterparty identifiers by their primary keys.
      */
     void delete_counterparty_identifiers(const std::vector<std::string>& ids);
@@ -166,6 +213,13 @@ public:
      */
     std::vector<domain::counterparty_identifier>
     get_counterparty_identifier_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a counterparty identifier
+     * by its uuid primary key.
+     */
+    std::vector<domain::counterparty_identifier>
+    get_counterparty_identifier_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

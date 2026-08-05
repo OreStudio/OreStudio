@@ -1016,6 +1016,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             if "service_find_by_code_column" in de:
                 col = de.pop("service_find_by_code_column")
                 de["service_find_by_code"] = {"column": col}
+                # A child entity whose natural key is composite (parent
+                # foreign key + code column, e.g. party_contact_information's
+                # (party_id, contact_type)) needs the parent column threaded
+                # through too, or a bare find_X_by_code(code) would be
+                # ambiguous across every parent row sharing that code.
+                if "service_find_by_code_parent_column" in de:
+                    de["service_find_by_code"]["parent_column"] = de.pop(
+                        "service_find_by_code_parent_column")
 
         # Repository naming conventions.
         repo = _section(cpp_section, "Repository")

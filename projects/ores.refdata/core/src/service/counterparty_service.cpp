@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/counterparty_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -58,6 +59,24 @@ std::optional<domain::counterparty> counterparty_service::get_counterparty(const
     return results.front();
 }
 
+std::optional<domain::counterparty>
+counterparty_service::find_counterparty(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::counterparty>
+counterparty_service::find_counterparty_by_code(const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding counterparty by short_code: " << short_code;
+    auto results = repo_.read_latest_by_code(ctx_, short_code);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
 void counterparty_service::save_counterparty(const domain::counterparty& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Counterparty id cannot be empty.");
@@ -86,6 +105,12 @@ void counterparty_service::delete_counterparty(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
 }
 
+void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing counterparty. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed counterparty. " << "id: " << id;
+}
+
 void counterparty_service::delete_counterparties(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
@@ -94,6 +119,12 @@ std::vector<domain::counterparty>
 counterparty_service::get_counterparty_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<domain::counterparty>
+counterparty_service::get_counterparty_history(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for counterparty. " << "id: " << id;
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 std::vector<ores::utility::domain::hierarchy_node>

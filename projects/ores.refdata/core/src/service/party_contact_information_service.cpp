@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/party_contact_information_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -59,6 +60,21 @@ std::uint32_t party_contact_information_service::count_party_contact_information
 }
 
 std::vector<domain::party_contact_information>
+party_contact_information_service::list_party_contact_informations_by_party_id(
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party contact informations by party_id: " << party_id;
+    return repo_.read_latest_by_party_id(ctx_, boost::uuids::to_string(party_id), offset, limit);
+}
+
+std::uint32_t party_contact_information_service::count_party_contact_informations_by_party_id(
+    const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total party contact informations count by party_id: "
+                               << party_id;
+    return repo_.get_total_party_contact_information_count_by_party_id(
+        ctx_, boost::uuids::to_string(party_id));
+}
+
+std::vector<domain::party_contact_information>
 party_contact_information_service::list_party_contact_informations_by_party_id_as_of(
     const std::string& party_id,
     std::chrono::system_clock::time_point valid_from_bound,
@@ -79,6 +95,26 @@ std::optional<domain::party_contact_information>
 party_contact_information_service::get_party_contact_information(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting party contact information. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::party_contact_information>
+party_contact_information_service::find_party_contact_information(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party contact information. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::party_contact_information>
+party_contact_information_service::find_party_contact_information_by_code(
+    const boost::uuids::uuid& party_id, const std::string& contact_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party contact information by party_id/contact_type: "
+                               << party_id << "/" << contact_type;
+    auto results = repo_.read_latest_by_code(ctx_, boost::uuids::to_string(party_id), contact_type);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -114,6 +150,13 @@ void party_contact_information_service::delete_party_contact_information(const s
     BOOST_LOG_SEV(lg(), info) << "Removed party contact information. " << "id: " << id;
 }
 
+void party_contact_information_service::remove_party_contact_information(
+    const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party contact information. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed party contact information. " << "id: " << id;
+}
+
 void party_contact_information_service::delete_party_contact_informations(
     const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
@@ -123,6 +166,13 @@ std::vector<domain::party_contact_information>
 party_contact_information_service::get_party_contact_information_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party contact information. " << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<domain::party_contact_information>
+party_contact_information_service::get_party_contact_information_history(
+    const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party contact information. " << "id: " << id;
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 }

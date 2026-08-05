@@ -90,6 +90,27 @@ counterparty_contact_information_repository::read_latest(context ctx, const std:
         "Reading latest counterparty contact information by id.");
 }
 
+std::vector<domain::counterparty_contact_information>
+counterparty_contact_information_repository::read_latest_by_code(context ctx,
+                                                                 const std::string& counterparty_id,
+                                                                 const std::string& contact_type) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest counterparty contact information by counterparty_id/contact_type: "
+        << counterparty_id << "/" << contact_type;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "contact_type"_c == contact_type && "valid_to"_c == max.value());
+
+    return execute_read_query<counterparty_contact_information_entity,
+                              domain::counterparty_contact_information>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty contact information by contact_type.");
+}
 
 std::vector<domain::counterparty_contact_information>
 counterparty_contact_information_repository::read_all(context ctx, const std::string& id) {

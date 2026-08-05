@@ -3031,6 +3031,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             has_render_uuid_cols or has_uuid_nat_keys
             or domain_entity.get('primary_key', {}).get('is_uuid', False)
         )
+        # cpp_service.hpp's <boost/uuid/uuid.hpp> gate: needed by both the
+        # existing has_parent_id hierarchy methods and the additive
+        # service_find_by_uuid overloads (find_X/remove_X/get_X_history).
+        domain_entity['has_uuid_include'] = (
+            domain_entity.get('has_parent_id', False)
+            or domain_entity.get('service_find_by_uuid', False)
+            or domain_entity.get('service_find_by_code', {}).get('parent_column')
+            or any(
+                fk.get('list_by_uuid')
+                for fk in domain_entity.get('foreign_keys', [])
+            )
+        )
         data['domain_entity'] = domain_entity
 
     # Special processing for junction models

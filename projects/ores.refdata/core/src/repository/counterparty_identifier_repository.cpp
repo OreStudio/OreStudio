@@ -87,6 +87,26 @@ counterparty_identifier_repository::read_latest(context ctx, const std::string& 
         "Reading latest counterparty identifier by id.");
 }
 
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_repository::read_latest_by_code(context ctx,
+                                                        const std::string& counterparty_id,
+                                                        const std::string& id_scheme) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading latest counterparty identifier by counterparty_id/id_scheme: "
+        << counterparty_id << "/" << id_scheme;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
+                       where("tenant_id"_c == tid && "counterparty_id"_c == counterparty_id &&
+                             "id_scheme"_c == id_scheme && "valid_to"_c == max.value());
+
+    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty identifier by id_scheme.");
+}
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_all(context ctx, const std::string& id) {

@@ -81,6 +81,22 @@ std::vector<domain::counterparty> counterparty_repository::read_latest(context c
         "Reading latest counterparty by id.");
 }
 
+std::vector<domain::counterparty>
+counterparty_repository::read_latest_by_code(context ctx, const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty by short_code: " << short_code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<counterparty_entity>> |
+        where("tenant_id"_c == tid && "short_code"_c == short_code && "valid_to"_c == max.value());
+
+    return execute_read_query<counterparty_entity, domain::counterparty>(
+        ctx,
+        query,
+        [](const auto& entities) { return counterparty_mapper::map(entities); },
+        lg(),
+        "Reading latest counterparty by short_code.");
+}
 
 std::vector<domain::counterparty> counterparty_repository::read_all(context ctx,
                                                                     const std::string& id) {

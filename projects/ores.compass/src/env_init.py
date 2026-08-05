@@ -634,11 +634,28 @@ def run(argv, project_root: Path) -> int:
     # PEM as a single line with literal \n separators (awk '{printf "%s\\n",$0}').
     jwt_key_oneline = "".join(l + "\\n" for l in iam_key.read_text().splitlines())
 
+    is_fresh_env = not env_file.is_file()
     if env_file.is_file():
         (env_file.parent / ".env.old").write_text(env_file.read_text())
         print("Backed up existing .env to .env.old")
 
     env_version = current_version(checkout_root)
+    # Unlike ORES_ENV_VERSION (always stamped to latest — configure self-heals
+    # .env schema drift), ORES_ENV_ACTIVITY is preserved across regenerations
+    # like a reused secret: activities are often manual/privileged steps
+    # configure cannot safely re-apply, so only a genuinely fresh .env (no
+    # .env file existed before this run) is stamped to "caught up as of
+    # now". An *existing* checkout whose .env simply predates this variable
+    # must default to 0, not "caught up" — otherwise re-running configure
+    # for an unrelated reason (rotating a password, switching a preset)
+    # would silently mark outstanding activities as acknowledged without
+    # anyone having performed them. See
+    # doc/knowledge/architecture/environment_activity_log.org.
+    import env_activity
+    if is_fresh_env:
+        env_activity_num = str(env_activity.current_activity(checkout_root))
+    else:
+        env_activity_num = existing.get("ORES_ENV_ACTIVITY") or "0"
     print(f"Writing {env_file}...")
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     out = []
@@ -653,6 +670,13 @@ def run(argv, project_root: Path) -> int:
 #   compass env configure --preset <preset> -y
 # ---------------------------------------------------------------------------
 ORES_ENV_VERSION={env_version}
+
+# ---------------------------------------------------------------------------
+# Environment activity — one-off manual setup steps this checkout has
+# acknowledged. See doc/knowledge/architecture/environment_activity_log.org.
+# Preserved across regenerations; bump with: compass env activity ack <N>
+# ---------------------------------------------------------------------------
+ORES_ENV_ACTIVITY={env_activity_num}
 
 # ---------------------------------------------------------------------------
 # Checkout identity

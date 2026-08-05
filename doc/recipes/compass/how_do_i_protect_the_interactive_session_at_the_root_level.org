@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 0E135A6C-F705-4C07-A5FA-CCE65FA138FF
+:END:
+#+title: How do I protect the interactive session at the root level (WS-5 root half)?
+#+description: Install the root-owned user-1000.slice.d drop-in that unclamps emacs.service's unprivileged MemoryMin/MemoryLow protection, per the systemd resource-management plan's WS-5.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:compass:systemd:root:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+Manual, root-required companion to the unprivileged
+=emacs.service.d/50-protect.conf= drop-in =compass systemd deploy=
+already installs. See
+[[file:../../../systemd-resource-management-plan.org][the resource-management plan]] (WS-5) for the full rationale.
+
+* Question
+
+=emacs.service='s =MemoryMin=/=MemoryLow= drop-in is deployed, but
+=systemctl --user show emacs.service -p MemoryMin -p MemoryLow=
+reports =0= — how do I make the protection actually take effect?
+
+* Answer
+
+=MemoryMin=/=MemoryLow= are clamped by every ancestor cgroup up to
+the root: setting them on =emacs.service= has no effect unless
+=user-1000.slice= (the parent of every unit in this login session)
+also passes a budget down. That parent lives under
+=/etc/systemd/system/=, which requires root — this is *not* something
+=compass systemd deploy= can do, and this recipe is deliberately
+manual rather than wrapped in a compass command.
+
+1. Write the drop-in:
+
+   #+begin_src conf :tangle no
+   [Slice]
+   CPUWeight=10000
+   IOWeight=1000
+   MemoryMin=3G
+   #+end_src
+
+2. Install it and reload (needs an interactive =sudo= password — run
+   this yourself, not via an unattended script):
+
+   #+begin_src sh :results verbatim
+   sudo mkdir -p /etc/systemd/system/user-1000.slice.d
+   sudo tee /etc/systemd/system/user-1000.slice.d/50-marco.conf >/dev/null <<'EOF'
+   [Slice]
+   CPUWeight=10000
+   IOWeight=1000
+   MemoryMin=3G
+   EOF
+   sudo systemctl daemon-reload
+   #+end_src
+
+3. Verify it actually unclamped the unprivileged drop-in:
+
+   #+begin_src sh :results verbatim
+   systemctl show user-1000.slice -p CPUWeight -p IOWeight -p MemoryMin
+   systemctl --user show emacs.service -p MemoryMin -p MemoryLow -p CPUWeight
+   #+end_src
+
+   Expect =MemoryMin=3221225472= (3G) on =user-1000.slice=, and
+   =emacs.service='s own =MemoryMin=1073741824=/=MemoryLow=2147483648=
+   no longer clamped to =0=.
+
+This is a live, in-place cgroup property update — =daemon-reload=
+does not restart or kill any running unit, so it is safe to run with
+Emacs, Claude sessions, and services all up. =MemoryMin= is a floor,
+not a cap, so it can only help units under this slice, never squeeze
+them.
+
+Machine-wide, not per-checkout: run this once per host, not once per
+worktree. Environment activity tracking (see
+[[id:DABAA638-1090-4727-AE4D-26A523767683][Environment activity log]]) still asks every checkout to
+=compass env activity ack= this individually, since acknowledgement
+is a statement about *that checkout knowing the host is protected*,
+not a claim that the checkout did the (host-level) work itself.
+
+* Script
+
+No compass wrapper — deliberately manual (root, one-time per host).
+The unprivileged half this complements is
+[[proj:projects/ores.compass/src/systemd/emacs.service.d/50-protect.conf][=projects/ores.compass/src/systemd/emacs.service.d/50-protect.conf=]],
+deployed by =compass systemd deploy=
+([[proj:projects/ores.compass/src/systemd_generate.py][=projects/ores.compass/src/systemd_generate.py=]]).
+
+* Tested by
+
+Manual: installed on =brave_hopper='s host 2026-08-05, verified live
+per the =* Answer= section's step 3 — =user-1000.slice= reports the
+drop-in's values and =emacs.service='s =MemoryMin=/=MemoryLow= are no
+longer clamped to =0=.
+
+* See also
+
+- [[file:../../../systemd-resource-management-plan.org][Plan: systemd resource management and per-environment isolation]] — the design doc this recipe implements (WS-5, root half).
+- [[id:DABAA638-1090-4727-AE4D-26A523767683][Environment activity log]] — where this recipe is registered as an
+  outstanding activity for checkouts that haven't run it yet.

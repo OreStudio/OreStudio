@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
-#+branch: feature/systemd-resource-limits-ws5-unpriv
+#+branch: feature/systemd-resource-limits-ws4
 #+pr: 1849
 #+blocked_on:
 #+blocked_since:
@@ -37,9 +37,9 @@ touches a different file/subsystem and has its own verification.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
-| Now          | WS-5 (unprivileged half) implemented; raising as the third PR. |
+| Now          | WS-4 (per-environment tree/top views) implemented; raising as the fourth PR. WS-3 and WS-2 both discovered already implemented (see Notes). |
 | Waiting on   | Nothing.                               |
-| Next         | WS-4 (per-environment status/tree/top views). |
+| Next         | WS-7 remainder (builds into a memory-capped slice). |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -76,7 +76,10 @@ Sequencing per the design plan's =* Sequencing= section:
    when WS-5's deploy logic was folded into it; no separate PR needed
    (see the WS-5 note below).
 7. *WS-2* -- converge =compass services= onto systemd (the large one,
-   staged behind =--legacy=).
+   staged behind =--legacy=). Discovered already implemented during
+   WS-4 (=compass_services.py= has been fully systemctl-backed, no
+   PID-file path, since Sprint 24's =decommission-controller-service=
+   task, PR #1806 -- predates this story); no separate PR needed.
 8. *WS-5* (root half) -- once run with root, verify propagation.
 9. *WS-6* -- deferred; only if still needed after the above.
 
@@ -168,6 +171,61 @@ requires root, not part of this PR) also lands -- documented in the
 drop-in's own header so this isn't mistaken for a completed
 protection. Re-ran =compass systemd deploy= and confirmed it reports
 =Nothing changed; skipped daemon-reload.= (idempotent).
+
+** WS-4: per-environment tree/top views
+
+Discovered while starting this step that *WS-2 was also already
+done*: =compass_services.py='s module docstring and =cmd_status=/
+=cmd_start=/=cmd_stop= are already fully =systemctl --user=-backed --
+no PID-file path, no =--legacy= flag -- since Sprint 24's
+=decommission-controller-service= task (PR #1806), which predates
+this story entirely. The plan's WS-2 table (PID-file "today" column)
+and WS-4's own =status= row (=systemctl --user list-dependencies
+ores@<env>.target=) describe a migration that had already happened by
+the time this task started; =cmd_status= actually does per-unit
+=is-active= plus readiness-log classification, which is finer-grained
+than a bare =list-dependencies= and was left as-is rather than
+reimplemented to match the plan's literal suggestion.
+
+Added the two views the plan actually asks for that didn't exist yet,
+=compass services tree= and =compass services top=, in
+=compass_services.py=:
+
+- *=tree=* -- =systemd-cgls= across this environment's Claude session
+  slice (=app-claude-<env>.slice=, from WS-1) plus every unit this
+  environment's fleet aggregates (nats + every service, filtered to
+  ones actually loaded via =_unit_active_state() != "missing"= --
+  passing a nonexistent unit name aborts =cgls= entirely, confirmed
+  empirically), one subtree per unit in a single invocation.
+- *=top=* -- =systemd-cgtop= filtered to that same Claude slice.
+  =systemd-cgtop= takes a real cgroupfs path, not a unit name (unlike
+  =cgls='s =--user-unit=), so =_claude_slice_path()= builds the
+  absolute unified-hierarchy path from =os.getuid()= rather than
+  hardcoding the uid.
+
+*Real gap surfaced, not fabricated*: fleet service units have no
+per-environment slice of their own today -- only Claude sessions (WS-1)
+and, once WS-7's remainder lands, builds do. Confirmed live:
+=systemctl --user show ores.iam.service-brave_hopper -p Slice= reports
+=app.slice=, the flat default, not a per-environment child. So
+=top='s "filtered to the environment's slices" (plural, per the plan)
+is honestly only the Claude slice for now; =tree='s fleet section
+compensates by listing each service unit's own individual cgroup
+instead of one shared per-environment parent. Both subcommands forward
+unrecognised trailing flags verbatim (=extra=, =nargs=REMAINDER=) to
+the wrapped =systemd-cgls=/=systemd-cgtop= binary, matching the
+plan's "forward unrecognised arguments" requirement.
+
+Verified: =compass services tree= printed one =systemd-cgls= subtree
+per loaded unit for this environment (nats-server plus all 23 service
+units, including the =ores.compute.wrapper= replicas), confirmed
+against the running fleet; =compass services top -1 -b= ran cleanly
+(exit 0) against the per-environment Claude slice path, currently
+empty because this session's own Claude process predates the WS-1
+per-environment nesting (same caveat noted in WS-1's own verification
+-- not a bug); the underlying =systemd-cgtop <path>= mechanism was
+separately confirmed to produce real rows when pointed at a populated
+parent path (=app.slice=) during manual testing.
 
 * Test Scenarios
 

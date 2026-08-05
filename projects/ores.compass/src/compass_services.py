@@ -541,6 +541,50 @@ def cmd_status(ctx, args):
     return 0
 
 
+def _claude_slice_name(ctx) -> str:
+    import compass_claude
+    return compass_claude._slice_name(ctx.env_name)
+
+
+def _claude_slice_path(ctx) -> str:
+    """Absolute cgroupfs path (unified hierarchy) for this environment's
+    Claude slice -- systemd-cgtop takes real paths, not unit names, unlike
+    systemd-cgls's --user-unit."""
+    uid = os.getuid()
+    return (f"/user.slice/user-{uid}.slice/user@{uid}.service/app.slice/"
+            f"{_claude_slice_name(ctx)}")
+
+
+def cmd_tree(ctx, args):
+    """WS-4: process tree for this environment -- the Claude session slice
+    (per-environment since WS-1) plus every unit this environment's fleet
+    aggregates. Fleet service units have no per-environment slice of their
+    own yet (only Claude sessions and, once WS-7's remainder lands,
+    builds do) -- each unit's own cgroup is shown individually instead."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    units = [_nats_unit(ctx)] + [u for u, _ in _service_units(ctx)]
+    loaded = [u for u in units if _unit_active_state(u) != "missing"]
+    user_units = [f"--user-unit={_claude_slice_name(ctx)}"]
+    user_units += [f"--user-unit={u}.service" for u in loaded]
+    result = subprocess.run(["systemd-cgls"] + user_units + args.extra,
+                            check=False)
+    return result.returncode
+
+
+def cmd_top(ctx, args):
+    """WS-4: systemd-cgtop filtered to this environment's Claude slice --
+    the only per-environment cgroup that exists today (see cmd_tree's
+    docstring on fleet services not having one yet)."""
+    if not ctx.env_name:
+        print("error: ORES_ENV_NAME not set in .env", file=sys.stderr)
+        return 1
+    result = subprocess.run(["systemd-cgtop"] + args.extra + [_claude_slice_path(ctx)],
+                            check=False)
+    return result.returncode
+
+
 def cmd_clear_logs(ctx, args):
     if not ctx.log_dir.is_dir():
         print(f"Nothing to clear: log directory does not exist "
@@ -646,6 +690,22 @@ def run(argv, project_root: Path) -> int:
                                        "plus readiness log lines")
     _common(su)
 
+    tr = sub.add_parser("tree", help="Process tree for this environment: "
+                                     "Claude session slice + fleet units "
+                                     "(systemd-cgls)")
+    _common(tr)
+    tr.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="Extra flags forwarded verbatim to systemd-cgls "
+                         "(e.g. -a, -l)")
+
+    tp = sub.add_parser("top", help="Live resource usage for this "
+                                    "environment's Claude slice "
+                                    "(systemd-cgtop)")
+    _common(tp)
+    tp.add_argument("extra", nargs=argparse.REMAINDER,
+                    help="Extra flags forwarded verbatim to systemd-cgtop "
+                         "(e.g. -1, -b, -m)")
+
     cl = sub.add_parser("clear-logs", help="Delete all *.log / *.err under "
                                            "the preset's log directory")
     _common(cl)
@@ -656,6 +716,7 @@ def run(argv, project_root: Path) -> int:
     ctx = Ctx(project_root, env, args.preset)
 
     return {"start": cmd_start, "stop": cmd_stop, "status": cmd_status,
+            "tree": cmd_tree, "top": cmd_top,
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)
 
 

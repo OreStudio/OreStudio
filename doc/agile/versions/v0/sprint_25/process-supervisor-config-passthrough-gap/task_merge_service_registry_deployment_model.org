@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:modeling:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/merge-service-registry-deployment-model
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ One org file models each service's full identity (DB access + how to launch it) 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,31 @@ One org file models each service's full identity (DB access + how to launch it) 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Rewrote service_registry.org: renamed all 16 existing headings from
+  short names (iam, refdata, ...) to full binary names (ores.iam.service,
+  ...) -- env_key/psql_var scalars unchanged, so DB-grant generation is
+  unaffected by the rename. Added :replicas:/:enabled:/:depends_on:
+  properties and an optional =** Extra args= sub-heading to every entry.
+  Added ores.http.server, ores.wt.service, ores.compute.wrapper as new
+  deployment-only entries (no psql_var/iam_role/etc., since they have no
+  NATS-domain-service DB role). Dropped the stale controller entry.
+  Every non-iam entry depends_on ores.iam.service, matching the old
+  controller_service_dependencies_populate.sql seed data.
+- Extended load_org_service_registry_model in org_loader.py: the
+  discriminator for "is this a real service entry" moved from
+  :psql_var: (now optional -- the DB-access aspect) to :replicas: (now
+  mandatory -- the deployment aspect, since every entry in the fleet
+  needs it). Added replicas (int), enabled (bool), depends_on (list,
+  comma-split), and extra_args (list, one per == Extra args== bullet)
+  to the returned dict, alongside the untouched DB-grant fields.
+- Added projects/ores.codegen/tests/test_org_loader_service_registry.py:
+  9 tests covering both aspects' presence/absence, replica counts,
+  enabled defaults, dependency chains, extra-args round-tripping, the
+  dropped controller entry, the total count (19), and that the
+  pre-existing DB-grant-prefix parsing still round-trips correctly.
+- Deliberately did not touch systemd_generate.py or any other consumer
+  in this task -- it still queries postgres as before. That migration
+  is the next task in the chain (wire_systemd_generate_to_codegen_model).
 
 * Notes
 
@@ -69,3 +91,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+service_registry.org now models each of the fleet's 19 processes as one
+entity with two independent optional aspects: DB access (present for the
+16 with their own NATS-domain-service role) and deployment (present for
+all 19). Headings renamed to full binary names, the stale controller
+entry dropped. load_org_service_registry_model extended to parse and
+return both aspects; verified via a scratch script and 9 new pytest
+cases (all pass), plus the full existing ores.codegen suite (117/117
+green) confirming no regression to DB-grant generation. No consumer
+code touched -- systemd_generate.py still queries postgres, migrating
+it is the next task in the chain.

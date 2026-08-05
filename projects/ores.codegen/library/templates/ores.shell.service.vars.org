@@ -50,13 +50,11 @@ The full template source. Edit here and re-tangle with
 # shellcheck disable=SC2034
 
 # Registry of all NATS domain services.
-{{#service_registry}}
 SERVICE_NAMES=(
-{{#services}}
-    {{name}}
-{{/services}}
+{{#service_registry_db_services}}
+    {{component}}
+{{/service_registry_db_services}}
 )
-{{/service_registry}}
 #+end_src
 
 * See also

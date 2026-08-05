@@ -2,19 +2,21 @@
 :ID: DBB7FE01-0C33-4EF9-BB2A-039674E71AB1
 :END:
 #+title: Service registry
-#+description: Codegen service-registry model — catalogue of ORE Studio backend services with their psql vars, IAM roles, and DDL grant prefixes.
+#+description: Codegen service-registry model — catalogue of ORE Studio backend services and fleet processes, with two independent aspects per entry: DB access (psql var, IAM role, DDL grant prefixes) and deployment (replicas, enabled, startup dependencies, extra CLI args). Not every entry has both: the DB-access aspect only applies to services with their own NATS-domain-service role, while the deployment aspect applies to every process compass systemd generate needs to know about. Platform-agnostic by design: nothing in the deployment aspect is systemd-specific, so a future Windows-service or macOS-launchd generator can consume the same model.
 #+type: ores.codegen.service_registry
 #+filetags: :codegen:service_registry:literate:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-08-05
 
-* iam
+* ores.iam.service
 :PROPERTIES:
 :psql_var:    iam_service
 :env_key:     IAM_SERVICE
 :iam_role:    IamService
 :description: IAM
 :email:       iam_service@system.ores
+:replicas:    1
+:enabled:     true
 :END:
 
 ** DML prefixes
@@ -26,13 +28,16 @@
 - ores_assets_
 - ores_dq_
 
-* refdata
+* ores.refdata.service
 :PROPERTIES:
 :psql_var:    refdata_service
 :env_key:     REFDATA_SERVICE
 :iam_role:    RefdataService
 :description: Reference Data
 :email:       refdata_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -47,13 +52,16 @@
 
 - ores_refdata_publish_
 
-* workspace
+* ores.workspace.service
 :PROPERTIES:
 :psql_var:    workspace_service
 :env_key:     WORKSPACE_SERVICE
 :iam_role:    WorkspaceService
 :description: Workspace
 :email:       workspace_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -61,39 +69,48 @@
 - ores_workspaces_
 - ores_workspace_
 
-* dq
+* ores.dq.service
 :PROPERTIES:
 :psql_var:    dq_service
 :env_key:     DQ_SERVICE
 :iam_role:    DqService
 :description: Data Quality
 :email:       dq_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_dq_
 
-* variability
+* ores.variability.service
 :PROPERTIES:
 :psql_var:    variability_service
 :env_key:     VARIABILITY_SERVICE
 :iam_role:    VariabilityService
 :description: Variability
 :email:       variability_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_variability_
 
-* assets
+* ores.assets.service
 :PROPERTIES:
 :psql_var:    assets_service
 :env_key:     ASSETS_SERVICE
 :iam_role:    AssetsService
 :description: Assets
 :email:       assets_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -104,26 +121,32 @@
 
 - ores_assets_publish_
 
-* scheduler
+* ores.scheduler.service
 :PROPERTIES:
 :psql_var:    scheduler_service
 :env_key:     SCHEDULER_SERVICE
 :iam_role:    SchedulerService
 :description: Scheduler
 :email:       scheduler_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_scheduler_
 
-* reporting
+* ores.reporting.service
 :PROPERTIES:
 :psql_var:    reporting_service
 :env_key:     REPORTING_SERVICE
 :iam_role:    ReportingService
 :description: Reporting
 :email:       reporting_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -134,46 +157,59 @@
 
 - ores_reporting_publish_
 
-* telemetry
+* ores.telemetry.service
 :PROPERTIES:
 :psql_var:    telemetry_service
 :env_key:     TELEMETRY_SERVICE
 :iam_role:    TelemetryService
 :description: Telemetry
 :email:       telemetry_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_telemetry_
 
-* trading
+** Extra args
+
+- --nats-monitor-url http://localhost:8221
+
+* ores.trading.service
 :PROPERTIES:
 :psql_var:    trading_service
 :env_key:     TRADING_SERVICE
 :iam_role:    TradingService
 :description: Trading
 :email:       trading_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_trading_
 
-* compute
+* ores.compute.service
 :PROPERTIES:
 :psql_var:    compute_service
 :env_key:     COMPUTE_SERVICE
 :iam_role:    ComputeService
 :description: Compute Grid
 :email:       compute_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_compute_
 
-* synthetic
+* ores.synthetic.service
 :PROPERTIES:
 :psql_var:    synthetic_service
 :env_key:     SYNTHETIC_SERVICE
@@ -181,6 +217,9 @@
 :description: Synthetic
 :role:        tooling
 :email:       synthetic_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -204,35 +243,49 @@
 
 - ores_synthetic_publish_
 
-* workflow
+* ores.workflow.service
 :PROPERTIES:
 :psql_var:    workflow_service
 :env_key:     WORKFLOW_SERVICE
 :iam_role:    WorkflowService
 :description: Workflow Orchestration
 :email:       workflow_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_workflow_
 
-* ore
+* ores.ore.service
 :PROPERTIES:
 :psql_var:    ore_service
 :env_key:     ORE_SERVICE
 :iam_role:    OreService
 :description: ORE Import
 :email:       ore_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
-* marketdata
+** Extra args
+
+- --work-dir ../var/ore-service/work
+- --http-base-url http://localhost:{http_port}
+
+* ores.marketdata.service
 :PROPERTIES:
 :psql_var:    marketdata_service
 :env_key:     MARKETDATA_SERVICE
 :iam_role:    MarketdataService
 :description: Market Data
 :email:       marketdata_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
@@ -243,28 +296,62 @@
 
 - ores_refdata_
 
-* controller
-:PROPERTIES:
-:psql_var:    controller_service
-:env_key:     CONTROLLER_SERVICE
-:iam_role:    ControllerService
-:description: Service Controller
-:email:       controller_service@system.ores
-:END:
-
-** DML prefixes
-
-- ores_controller_
-
-* analytics
+* ores.analytics.service
 :PROPERTIES:
 :psql_var:    analytics_service
 :env_key:     ANALYTICS_SERVICE
 :iam_role:    AnalyticsService
 :description: Analytics
 :email:       analytics_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
 :END:
 
 ** DML prefixes
 
 - ores_analytics_
+
+* ores.http.server
+:PROPERTIES:
+:description: HTTP API gateway
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
+** Extra args
+
+- --port {http_port}
+- --storage-dir ../storage
+
+* ores.wt.service
+:PROPERTIES:
+:description: Web UI server (Wt framework). Disabled by default: its Wt httpd crashes intermittently on startup with a fatal glibc pthread-priority-protect assertion (tpp.c) inside Wt's own threading internals, unrelated to ORE Studio code. Root cause needs a debugger session to pin down the exact call site.
+:replicas:    1
+:enabled:     false
+:depends_on:  ores.iam.service
+:END:
+
+** Extra args
+
+Bundled into one bullet (not one-flag-per-bullet like other entries):
+the leading =--= is Wt's own arg-separator token and must stay
+attached to the group that follows it as a single shell-quoted unit.
+
+- -- --http-address 0.0.0.0 --docroot . --http-port {wt_port}
+
+* ores.compute.wrapper
+:PROPERTIES:
+:description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).
+:replicas:    5
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
+** Extra args
+
+- --host-id {host_id}
+- --tenant-id {tenant_id}
+- --work-dir {work_dir}
+- --http-base-url http://localhost:{http_port}

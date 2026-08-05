@@ -1,6 +1,7 @@
 """
 Simple code generator that loads data and applies templates.
 """
+import copy
 import json
 import re
 import os
@@ -1727,7 +1728,26 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 item['psql_var'] = psql_var
             for item in svc.get('select_prefixes', []):
                 item['psql_var'] = psql_var
+            # 'name' is now the full binary name (e.g. ores.iam.service);
+            # 'component' is the short key some templates need (e.g. the
+            # env-var-mirror generator), always psql_var with its "_service"
+            # suffix stripped -- psql_var is always "<component>_service".
+            if psql_var.endswith('_service'):
+                svc['component'] = psql_var[: -len('_service')]
+            elif psql_var:
+                svc['component'] = psql_var
         data['service_registry'] = service_registry
+
+        # Some entries have no DB-access aspect (no :psql_var:) -- e.g. a
+        # deployment-only process with no NATS-domain-service role. Templates
+        # that join services with a trailing comma/semicolon via 'last' (see
+        # _mark_last_item above) need a *separate* last-marked list scoped to
+        # only the DB-access-bearing subset, or the 'last' flag could land on
+        # a skipped entry and leave a dangling trailing comma. copy.deepcopy
+        # avoids mutating the shared services list's own 'last' flags.
+        db_services = copy.deepcopy([s for s in services if s.get('psql_var')])
+        _mark_last_item(db_services)
+        data['service_registry_db_services'] = db_services
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:

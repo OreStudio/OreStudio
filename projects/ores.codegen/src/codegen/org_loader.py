@@ -1749,17 +1749,42 @@ def _service_registry_select_tables(node: OrgNode) -> list[dict[str, str]]:
     return out
 
 
+def _service_registry_extra_args(node: OrgNode) -> list[str]:
+    """Read bullets under ``** Extra args`` as a flat list of genuinely
+    per-service CLI flags, one bullet per flag."""
+    sub = _section(node, "Extra args")
+    if not sub:
+        return []
+    out: list[str] = []
+    for group in sub.bullet_lists:
+        out.extend(line.strip() for line in group)
+    return out
+
+
 def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     """Load the org-mode service-registry model into the
-    ``{service_registry: {services: [...]}}`` dict consumed by the
-    ``service-registry`` profile (shell vars, IAM users, grants).
+    ``{service_registry: {services: [...]}}`` dict.
 
-    Each top-level ``* <service name>`` heading becomes one
-    ``services[]`` entry. The property drawer carries the scalars
-    (``:psql_var:``, ``:env_key:``, ``:iam_role:``, ``:description:``,
-    optional ``:role:``, ``:email:``); ``** DML prefixes`` /
-    ``** Select tables`` / ``** Select prefixes`` / ``** Execute prefixes``
-    sub-headings carry the per-service lists as org bullets."""
+    Each top-level ``* <service name>`` heading is one fleet process,
+    keyed by its full binary name (e.g. ``ores.iam.service``), with two
+    independent optional aspects:
+
+    - *DB access* (only for services with their own NATS-domain-service
+      role): the ``:psql_var:``, ``:env_key:``, ``:iam_role:``,
+      optional ``:role:``, ``:email:`` scalars, plus ``** DML prefixes``
+      / ``** Select tables`` / ``** Select prefixes`` /
+      ``** Execute prefixes`` sub-headings.
+    - *Deployment* (every entry): ``:replicas:`` (int), ``:enabled:``
+      (bool), optional ``:depends_on:`` (comma-separated service
+      names), plus an optional ``** Extra args`` sub-heading carrying
+      genuinely per-service CLI flags as one bullet per flag. Consumed
+      by ``compass systemd generate`` to render one concrete unit per
+      (service, environment); deliberately platform-agnostic so a
+      future Windows-service or macOS-launchd generator can consume
+      the same model.
+
+    ``:description:`` is shared by both aspects (a human-readable
+    label/blurb, not aspect-specific)."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
 
@@ -1767,8 +1792,9 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
     for node in doc.root.children:
         # Defensive: skip top-level headings that aren't service entries
         # (e.g. a future "Notes" or "References" section in the doc).
-        # Every real service carries :psql_var:.
-        if "psql_var" not in node.properties:
+        # Every real entry carries :replicas: (the deployment aspect is
+        # mandatory; the DB-access aspect, keyed off :psql_var:, is not).
+        if "replicas" not in node.properties:
             continue
         # Match the JSON's stable key order (name → scalars in
         # _SERVICE_REGISTRY_SCALARS order → lists).
@@ -1780,6 +1806,12 @@ def load_org_service_registry_model(path: Path | str) -> dict[str, Any]:
         ordered["select_tables"] = _service_registry_select_tables(node)
         ordered["select_prefixes"] = _service_registry_prefix_bullets(node, "Select prefixes")
         ordered["execute_prefixes"] = _service_registry_prefix_bullets(node, "Execute prefixes")
+        ordered["replicas"] = int(node.properties["replicas"])
+        ordered["enabled"] = node.properties.get("enabled", "true").strip().lower() == "true"
+        ordered["depends_on"] = [
+            d.strip() for d in node.properties.get("depends_on", "").split(",") if d.strip()
+        ]
+        ordered["extra_args"] = _service_registry_extra_args(node)
         services.append(ordered)
 
     return {"service_registry": {"services": services}}

@@ -13,8 +13,7 @@
  *   :service_role
  */
 
-{{#service_registry}}
-{{#services}}
+{{#service_registry_db_services}}
 -- {{description}} domain service
 select set_config('ores.cur_user', :'{{psql_var}}_user', false);
 do $$ begin
@@ -24,5 +23,4 @@ alter  user :{{psql_var}}_user with password :'{{psql_var}}_password';
 grant :service_role to :{{psql_var}}_user;
 alter  role :{{psql_var}}_user set search_path to public;
 
-{{/services}}
-{{/service_registry}}
+{{/service_registry_db_services}}

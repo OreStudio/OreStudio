@@ -317,7 +317,8 @@ def _service_units(ctx):
     since each checkout's build/output/<preset>/publish/log/ is already
     its own directory."""
     units = []
-    for d in systemd_generate.fetch_service_definitions(ctx.env):
+    services = systemd_generate.load_service_registry(ctx.root)
+    for d in systemd_generate.fetch_service_definitions(services):
         if not d["enabled"]:
             continue
         base = systemd_generate._unit_basename(d["service_name"], ctx.env_name)

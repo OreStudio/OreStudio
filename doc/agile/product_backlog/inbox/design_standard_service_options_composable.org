@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 03EBF563-B711-4B61-8785-A15C41CB004A
+:END:
+#+title: Design standard_service_options as composable opt-in blocks
+#+description: E3647ADD's standard_service_options assumes nats+database always present; redesigning it as composable opt-in blocks would let ores.wt.service/http.server/cli/shell/compute.wrapper adopt it too, not just the 17 domain services.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cpp:service-app:config:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores::service::config::standard_service_options=
+(=projects/ores.service/include/ores.service/config/standard_service_options.hpp=)
+composes =common_configuration= + =logging_configuration= +
+=database_configuration= + =nats_configuration= into one
+=options_description=, assuming every caller wants =nats= and
+=database= both present (=standard_options= has them as
+non-=std::optional= members). Redesign it as composable opt-in
+blocks — e.g. a small builder/flags argument selecting which of
+{logging, nats, database} to include, or separate
+=add_nats_options=/=add_database_options= calls layered onto a base
+=options_description= — so services whose composition doesn't match
+"always both" can use it too.
+
+* Why
+
+A survey while auditing =application.cpp=/=host.cpp= duplication
+(story "Reduce and configure per-service DB connection pool size",
+task "Unify application.cpp and service initialisation across
+services") found =standard_service_options='s target composition
+(logging+database+nats) matches only =ores.wt.service= among the 5
+tools its own PR (#1819's "Consolidate duplicated common/logging/
+database/nats parser boilerplate" task, E3647ADD) explicitly
+excludes "for separate evaluation":
+
+| Tool                    | Composition                        | Fits the current monolithic helper? |
+|-------------------------+-------------------------------------+--------------------------------------|
+| =ores.wt.service=        | logging+database+nats              | Yes                                  |
+| =ores.http/server=       | logging+database+nats+extra        | Yes, if composable (extra options_description layered on top) |
+| =ores.cli=               | logging+database, no nats          | No — needs opt-in sub-blocks        |
+| =ores.shell=             | logging+optional nats, no database | No — needs opt-in sub-blocks        |
+| =ores.compute/wrapper=   | logging+nats+extra, no database    | No — needs opt-in sub-blocks        |
+
+Making the helper composable would let all 5 of these adopt it,
+collapsing their own hand-duplicated wiring boilerplate too, instead
+of leaving them permanently excluded because the current design
+can't express "no database" or "no nats".
+
+* References
+
+- projects/ores.service/include/ores.service/config/standard_service_options.hpp
+
+* See also
+
+- [[id:E3647ADD-B5F6-4D12-82E4-57A93DA4C8F8][Consolidate duplicated common/logging/database/nats parser boilerplate across domain services]]
+- [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — the audit that surfaced this

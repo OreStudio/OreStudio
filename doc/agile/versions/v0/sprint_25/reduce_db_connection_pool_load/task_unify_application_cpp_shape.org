@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:cpp:service-app:refactor:tech-debt:reduce_db_connection_pool_load:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/unify-application-cpp-shape
+#+pr: 1855
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Audit application.cpp, host.cpp, config/options and config/parser across all ser
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1B68F0E3-59FE-4BBE-B0BD-7FA80D9713B3][Reduce and configure per-service DB connection pool size]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing directly, but see overlap note below. |
-| Next         | Scope the boundary with the parser-boilerplate task on PR #1819 before starting. |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -42,26 +42,205 @@ Audit application.cpp, host.cpp, config/options and config/parser across all ser
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Analysis (pre-implementation, no code touched)
+
+Inventory: 20 =application.cpp=/=host.cpp= pairs (17 domain services
++ =ores.cli=/=ores.shell=/=ores.compute/wrapper=/=ores.http/server=;
+=ores.wt.service= uses its own =application_context.cpp=/
+=ore_application.cpp= shape entirely, no =host.cpp=) plus each
+tool's =config/options.hpp=.
+
+*** host.cpp — genuine shared-code candidate, not codegen
+
+17 of 20 files (all domain services) are byte-identical modulo
+naming — confirmed by diffing normalized copies
+(=s/iam\.service/X/= etc — zero diff). Pure behavioural boilerplate
+(parse -> init logging -> log -> construct app -> run -> catch/log/
+rethrow), no per-service data baked in: the textbook case for a real
+shared template function, not a codegen archetype. Two variants
+needed — sync (=int=) and async (=boost::asio::awaitable<int>=),
+since coroutine-ness can't be templated away cleanly in C++20
+without =if constexpr= complexity that isn't worth it here.
+
+*Drift bug found*: =ore.service= and =workflow.service= have
+=if (be == nullptr) throw;= before logging, silently skipping the
+=BOOST_LOG_SEV(lg(), error) << "Error: " << e.what()= line every
+other domain service prints for non-boost exceptions — stale from an
+earlier archetype revision, never regenerated. A shared helper fixes
+this for both as a side effect instead of two manual patches.
+
+The 3 divergent tools have *real* semantic differences, not just
+boilerplate drift:
+- =ores.cli=: sync, constructs =application(std_output, cfg.database)=
+  (not default-constructed), plus a pre-application "DB-free command"
+  interception branch (=cfg.ore_roundtrip=) before the main try block.
+- =ores.shell=: sync, constructs
+  =application(cfg.connection, cfg.login, cfg.script_path)=, calls
+  =app.run()= with no arguments (no =io_ctx=, no =cfg=).
+- =ores.http/server=: otherwise identical to the domain-service async
+  shape, differing only in three string literals (startup banner,
+  shutdown message, failure message) — a trivial variability-switch
+  candidate, not a real shape difference.
+
+*** application.cpp's make_context — already unified
+
+Fixed in PR #1821 (this story). No further work needed; the codegen
+archetype is the correct home and is already consistent across all
+18 files that build a database context.
+
+*** config/options.hpp composition — universal pattern, real variability is in the wiring
+
+Every tool's =options= struct follows the same shape: optional
+=logging=, then zero or more of {=nats?=, =database?=} (already
+properly factored as shared library types
+=nats_options=/=database_options=/=logging_options=), plus
+app-specific fields. The duplication E3647ADD targets is the
+*wiring* around this (variables_map construction, environment_mapper
+setup, help/version handling) for the 17 domain services, not the
+composition itself.
+
+Surveyed the 5 tools E3647ADD's =standard_service_options= design
+explicitly excludes, to see whether they could adopt it too:
+
+| Tool             | Composition                          | Fits a monolithic helper? |
+|------------------+---------------------------------------+----------------------------|
+| =ores.wt.service= | logging+database+nats                | Yes — identical to domain-service shape despite a different (Wt) runtime |
+| =ores.http/server= | logging+database+nats+extra         | Yes, if composable (extra options_description layered on top) |
+| =ores.cli=        | logging+database, no nats            | No — needs opt-in sub-blocks |
+| =ores.shell=      | logging+optional nats, no database   | No — needs opt-in sub-blocks |
+| =ores.compute/wrapper= | logging+nats+extra, no database | No — needs opt-in sub-blocks |
+
+*Recommendation for E3647ADD* (flagged in its own task's Notes, not
+implemented here — that task owns its own design): build
+=standard_service_options= as composable opt-in blocks rather than
+monolithic assume-everything-present, so all 5 of these tools could
+adopt it too, not just the 17 domain services already in scope
+there.
+
+** Implementation scope for this task
+
+Given the analysis, this task implements the one clear, low-risk,
+high-value win — the shared =host.cpp= template — and leaves the
+config-composition opportunity as a flagged recommendation for
+E3647ADD (a different task's territory) rather than a second
+implementation here:
+
+1. Add =ores::service::run_host()= (sync) and
+   =ores::service::run_host_async()= (or an =awaitable= overload) to
+   =ores.service=, extracting the parse/log/construct/run/catch
+   envelope as a template function parameterised on the parser type
+   and an application-construction callable.
+2. Migrate the 15 domain services whose =host.cpp= is already
+   byte-identical to the canonical shape (excludes =ore.service=/
+   =workflow.service=, migrated as part of fixing their drift, and
+   =http.server=, migrated with its 3 string literals passed as
+   parameters) to call the shared helper instead of duplicating the
+   envelope.
+3. Fix =ore.service=/=workflow.service='s drift as part of their
+   migration — they get the correct (logging) behaviour for free by
+   using the shared helper rather than their stale hand-copy.
+4. Update the =component-service= codegen archetype
+   (=ores.cpp.service-app.host_impl.org=) so future-generated
+   =host.cpp= files call the shared helper too, instead of embedding
+   the envelope inline.
+5. Leave =ores.cli=/=ores.shell= as hand-written =host.cpp=. Their
+   differences (sync execution, no =io_context=; custom
+   =application= constructor args instead of default-construction;
+   cli's DB-free =ore_roundtrip= interception branch before the main
+   try block) are structural, not boilerplate drift — migrating them
+   would mean adding parameters/hooks to the shared helper to
+   accommodate a different calling convention, the opposite of
+   deduplication. (=ores.compute/wrapper= turned out to fit the
+   uniform async/default-constructed shape after all and was migrated
+   along with the 17 domain services — see =* Result=.)
+6. File a follow-up capture/task for E3647ADD's design
+   recommendation (composable opt-in option blocks) rather than
+   implementing it here.
+
+* Result
+
+Shipped the =host.cpp= shared-code win from =* Plan=:
+
+- Added =ores::service::service::run_host_async()=
+  (=ores.service/include/ores.service/service/host_runner.hpp= +
+  =host_runner_impl.hpp=), extracting the parse/log/construct/run/
+  catch envelope as a template function over =Parser=/=Application=,
+  with an optional =host_runner_options= (before/success hooks,
+  failure message) for services needing customisation.
+- Migrated all 18 async-shaped =host.cpp= files (17 domain services,
+  including =ores.compute/wrapper=, + =ores.http.server=) to call it.
+  =ore.service=/=workflow.service='s drift (silently skipped log line
+  for non-boost exceptions) is fixed as a side effect of sharing one
+  implementation.
+- Updated the =component-service= codegen archetype
+  (=ores.cpp.service-app.host_impl.org=) so future-generated services
+  use the shared helper from day one.
+- Left only =ores.cli=/=ores.shell= hand-written — confirmed real
+  structural divergence (sync execution with no =io_context=, custom
+  =application= constructor args instead of default-construction,
+  cli's DB-free =ore_roundtrip= interception branch), not boilerplate
+  drift. (=ores.compute/wrapper= was originally scoped as a third
+  hand-written tool alongside these two — that was a mistake caught
+  in PR #1855 review: its =host.cpp= already matched the uniform
+  async/default-constructed shape, so it migrated cleanly with the
+  other 17. Filed [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp
+  divergence is load-bearing or historical]] to determine whether
+  these two's remaining differences are actually necessary or just
+  how they were originally written.)
+- Filed [[id:03EBF563-B711-4B61-8785-A15C41CB004A][Design standard_service_options as composable opt-in blocks]]
+  as the follow-up for E3647ADD's design, per =* Plan= item 6.
+
+*Critical bug caught by live verification, not unit tests*:
+=run_host_async='s =host_runner_options= parameter was originally
+=const host_runner_options&= with a default =={}=. Since
+=boost::asio::awaitable= coroutines start lazily, =host::execute=
+(not itself a coroutine) returns immediately after producing the
+awaitable — destroying the temporary/local options object before the
+coroutine body ever runs. Every migrated service SEGV'd on startup.
+=ctest= never caught this (no test exercises =host::execute=); a live
+=compass services start= cycle did. Fixed by taking
+=host_runner_options= by value, documented the coroutine-lifetime
+hazard on the parameter itself so it isn't reintroduced.
+
+Verified: local build clean; =ctest= 71/71 passed twice (before and
+after the coroutine-lifetime fix); live systemd verification — full
+=compass services stop=/=start= cycle, all 22 units ready with 0
+retries, =ores.http.server='s custom banner/shutdown lines confirmed
+correct in its log, =ores.ore.service=/=ores.workflow.service=
+confirmed healthy (drift fixed). Local DB was recreated mid-task to
+clear an unrelated stale-schema issue (a prior migration not yet
+applied locally) that was masking real verification the first time
+around.
+
+*Second unrelated bug hit and fixed during full-suite verification*:
+=ores.synthetic.service.tests= crashed deterministically (unhandled
+=boost::filesystem::filesystem_error=, EINVAL on
+=create_directories=) on a =feed_controller_tests.cpp= test added by
+PR #1844 (merged into =main= same day, unrelated to this task's own
+diff). Root cause: =ores.testing='s =logging_listener.cpp= uses the
+raw Catch2 test name as a log filename with no length cap; that
+test's name was 289 bytes, over the 255-byte =NAME_MAX= most Linux
+filesystems enforce per path component. Fixed by shortening the test
+name to 212 bytes. Filed
+[[id:A6CF498D-56A9-4DAF-B294-686C3AC3F395][Sanitize Catch2 test names used as log filenames]] for the general
+fix (cap/sanitise in =logging_listener.cpp= itself, so this can't
+recur for any future long test name repo-wide) rather than
+implementing it here — out of this task's scope, and a shared-infra
+change deserves its own review.
 
 * Notes
 
-Overlaps with "Consolidate duplicated common/logging/database/nats
-parser boilerplate across domain services" (bright_faraday, PR #1819
-— https://github.com/OreStudio/OreStudio/pull/1819, story "Collapse
-NATS config passthrough to a single environment-mapper fallback
-tier"), which is scoped to =config/parser.cpp= composition across the
-17 domain services and explicitly *excludes*
-=http.server=/=wt.service=/=shell=/=compute.wrapper=/=cli= "for
-separate evaluation". This task is the complement:
-=application.cpp=/=host.cpp= wiring plus those excluded, divergent
-tools. Coordinate rather than duplicate — that task's
-=standard_service_options= helper may make a good model or even a
-direct dependency for whatever emerges here. (Not linked by =:ID:= —
-that task doesn't exist on =main= yet, only on PR #1819's branch;
-switch to an id-link once it merges.)
+Overlaps with [[id:E3647ADD-B5F6-4D12-82E4-57A93DA4C8F8][Consolidate duplicated common/logging/database/nats parser
+boilerplate across domain services]] (bright_faraday, PR #1819 merged
+— story "Collapse NATS config passthrough to a single
+environment-mapper fallback tier"), which is scoped to
+=config/parser.cpp= composition across the 17 domain services and
+explicitly *excludes* =http.server=/=wt.service=/=shell=/
+=compute.wrapper=/=cli= "for separate evaluation". This task is the
+complement: =application.cpp=/=host.cpp= wiring plus those excluded,
+divergent tools. See =* Plan= for a recommendation on how that
+task's =standard_service_options= design should shape itself so the
+5 excluded tools can adopt it too.
 
 * Test Scenarios
 
@@ -78,12 +257,10 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1855][#1855]] | [ores.service,codegen] Extract shared host.cpp envelope, fix drift bug |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| 1 | Docs claim ores.compute/wrapper left hand-written, but it was actually migrated | task_unify_application_cpp_shape.org, story.org | Fixed | Corrected "left hand-written" list to ores.cli/ores.shell only in both docs; filed a follow-up capture to properly review whether cli/shell's divergence is load-bearing or historical |

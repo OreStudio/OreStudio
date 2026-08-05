@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: A6CF498D-56A9-4DAF-B294-686C3AC3F395
+:END:
+#+title: Sanitize Catch2 test names used as log filenames
+#+description: logging_listener.cpp uses the raw Catch2 test-case name directly as a log filename; a name containing a mid-sentence period (e.g. an abbreviation) gets misparsed as a filename+extension split, producing an invalid/oversized path and crashing the test binary with a boost::filesystem_error.
+#+type: capture
+#+level: cross
+#+filetags: :testing:logging:tech-debt:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=logging_listener::testCaseStarting=
+(=projects/ores.testing/src/logging_listener.cpp=) sets
+=cfg.filename = testInfo.name= — the raw, human-authored Catch2 test
+description, used verbatim as a filesystem path component in
+=ores.logging='s =make_file_sink=
+(=projects/ores.logging/src/lifecycle_manager.cpp=) — with no length
+cap or sanitisation. Add a =sanitize_filename= helper in
+=logging_listener.cpp= that truncates to a safe length (e.g. 100
+bytes, well under the 255-byte =NAME_MAX= most Linux filesystems
+enforce per path component) and strips/replaces any other
+filesystem-unsafe characters, and use it for =cfg.filename= in both
+=testRunStarting=/=testCaseStarting=.
+
+* Why
+
+This project's test names are often long, descriptive sentences
+(convention seen throughout the test suite) — any one that exceeds
+~255 bytes becomes an invalid filename component, and
+=boost::filesystem::create_directories= throws an *unhandled*
+exception, aborting the whole test binary (not just failing the one
+test) with no useful diagnostic beyond "Invalid argument
+[generic:22]".
+
+Hit live: =ores.synthetic.service.tests= aborted deterministically on
+a 289-byte test name — worked around by shortening that one test
+name below the limit (see
+[[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]]'s
+PR), but the underlying landmine remains for any future long test
+name, repo-wide, and is a poor failure mode (crash instead of a
+truncated-but-working log file) regardless.
+
+* References
+
+- projects/ores.testing/src/logging_listener.cpp
+- projects/ores.logging/src/lifecycle_manager.cpp
+
+* See also
+
+- [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — where this was hit and worked around

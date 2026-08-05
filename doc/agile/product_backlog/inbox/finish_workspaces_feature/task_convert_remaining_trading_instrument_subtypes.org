@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | 1/19 converted: equity_variance_swap_instrument. |
+| Now          | 2/19 converted: equity_variance_swap_instrument, fx_forward_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. fx_forward, equity_forward, fx_accumulator). |
+| Next         | Convert the next flat instrument (e.g. equity_forward, fx_accumulator). |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -137,6 +137,12 @@ project build green; =ores.trading.*= tests pass; full repo =ctest=
 =ores.marketdata.core.tests= failure from live DB schema drift
 persists, unrelated to this work -- confirmed zero diff in any
 marketdata file).
+
+** fx_forward_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children, matches the pilot's shape exactly.
+Same zero-diff outcome, verified with a second regeneration pass
+(byte-identical output) and =ores.trading.*= tests green.
 
 * Test Scenarios
 

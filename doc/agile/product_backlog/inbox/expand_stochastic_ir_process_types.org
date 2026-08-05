@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 8656F506-A3A8-4498-9F34-4A47F32F78A6
+:END:
+#+title: Expand synthetic IR stochastic process types beyond Vasicek/CIR/Hull-White
+#+description: Add support for further stochastic interest-rate models (BDT, Black-Karasinski, HJM, LMM, SABR, G2++, affine/QG term-structure) to ores.synthetic's yield curve process types, currently limited to Vasicek, CIR, and Hull-White.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:refdata:ir_rates:quant-finance:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_synthetic_yield_curve_process_types_tbl= currently seeds only
+three short-rate models: Vasicek, Cox-Ingersoll-Ross, and Hull-White
+(=synthetic_yield_curve_process_types_populate.sql=). A LinkedIn post
+by Mehul Mehta (Lead Quant at OCC) surveying the standard stochastic
+interest-rate model landscape highlights several widely-used models
+we don't yet support:
+
+| # | Model | Key feature | Typical use |
+|---+-------+-------------+-------------|
+| 4 | Black-Derman-Toy (BDT) | Recombining binomial tree matching term structure and vol | Callable bonds, MBS, prepayment modelling |
+| 5 | Black-Karasinski (BK) | Log-normal short rate, ensures positivity | Derivative pricing, exotic options |
+| 6 | Heath-Jarrow-Morton (HJM) | Models the entire forward-rate curve, no-arbitrage by construction | Complex derivatives, long-dated products |
+| 7 | LIBOR Market Model / BGM | Models forward LIBOR rates directly under the risk-neutral measure | Caps, floors, swaptions (pre-SOFR standard) |
+| 8 | SABR | Stochastic-volatility model for the implied-vol smile | Swaption smile calibration, vol surface modelling |
+| 9 | G2++ | Two-factor Gaussian, extends Hull-White with a second mean-reverting factor | XVA/FVA/CVA, ALM, complex derivative pricing |
+| 10 | Affine Term Structure (Duffie-Kan) | Yields as a function of latent (macro) factors | Bond pricing, yield-curve forecasting, macro-finance |
+| 11 | Quadratic Gaussian (QG) | Extends affine models with quadratic terms for richer dynamics | Advanced term-structure modelling, risk-premia estimation |
+
+Already covered (models 1-3 in the source infographic): Vasicek, CIR,
+Hull-White (1-factor; the source also calls out a 2-factor Hull-White
+variant we don't distinguish from G2++/the general 2-factor case).
+
+* Why
+
+Real desks pick their short-rate/term-structure model based on the
+product being priced (tree-based for callables/MBS, forward-curve
+models for long-dated/complex derivatives, smile models for
+swaptions), not one-size-fits-all. Being limited to three mean-
+reverting short-rate models constrains how realistically
+=ores.synthetic= can represent IR products that need path-dependent,
+forward-curve, or smile-calibrated dynamics — e.g. callable bonds,
+swaptions, or XVA work would all want a different process type than
+what's currently seeded.
+
+* References
+
+- Source: LinkedIn post by Mehul Mehta (Lead Quant at OCC, Charles
+  Schwab, PwC — Quant Finance, Derivatives Pricing, Stochastic
+  Calculus), summarising and attributing the "All Stochastic Interest
+  Rate Models" infographic. Ideas and framing are the original
+  poster's, captured here for ORE Studio's own backlog tracking.
+- =projects/ores.sql/populate/synthetic/synthetic_yield_curve_process_types_populate.sql=
+  — current seed (3 rows).
+- =ores_synthetic_yield_curve_process_types_tbl= — the table to
+  extend.
+
+* See also
+
+-

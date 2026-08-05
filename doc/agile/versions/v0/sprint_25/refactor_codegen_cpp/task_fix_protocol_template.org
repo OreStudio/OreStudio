@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-protocol-template
-#+pr:
+#+pr: 1865
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-31
@@ -58,7 +58,7 @@ template and every production file checked — no template edit was needed.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1865][#1865]] | [agile] Close fix_protocol_template: gaps already resolved |
 
 * Review
 

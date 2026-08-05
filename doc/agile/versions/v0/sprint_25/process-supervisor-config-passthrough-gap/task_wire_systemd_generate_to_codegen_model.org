@@ -35,7 +35,7 @@ compass systemd generate has zero DB dependency and every service picks up its N
 
 * Acceptance
 
-- systemd_generate.py no longer queries postgres; compass systemd generate works against the org model alone; regenerated units for all 20 services no longer pass --nats-url/--nats-subject-prefix/--nats-wire-format; compass shell no longer passes them either; every service (systemd-launched domain services, compass shell) still starts and connects to NATS correctly; ores.qt client launch is confirmed to already pass none of these (no change needed there).
+- systemd_generate.py no longer queries postgres; compass systemd generate works against the org model alone; regenerated units for all 19 services no longer pass --nats-url/--nats-subject-prefix/--nats-wire-format; compass shell no longer passes them either; every service (systemd-launched domain services, compass shell) still starts and connects to NATS correctly; ores.qt client launch is confirmed to already pass none of these (no change needed there).
 
 * Plan
 

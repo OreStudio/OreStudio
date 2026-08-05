@@ -1,0 +1,266 @@
+:PROPERTIES:
+:ID: 527B0106-3F3D-4385-91F6-BC8229B9B4B4
+:END:
+#+title: ores.trading.fx_accumulator_instrument
+#+description: Codegen entity model for the trading =fx_accumulator_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: fx_accumulator_instrument
+#+entity_plural: fx_accumulator_instruments
+#+entity_title: FX Accumulator Instrument
+#+brief: FX Accumulator instrument.
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+Routes ORE product type: FxAccumulator. =knock_out_barrier= captures
+the primary UpAndOut barrier. Multiple barriers and complex fixing
+schedules are a Phase 2 coverage gap.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this FX accumulator instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product type: FxAccumulator.
+
+#+begin_src cpp :name generator
+std::string("FxAccumulator")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Settlement currency (domestic side).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** fixing_amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Per-fixing notional amount. Must be positive.
+
+#+begin_src cpp :name generator
+100000.0
+#+end_src
+
+** strike
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Fixed strike rate. Must be positive.
+
+#+begin_src cpp :name generator
+1.10
+#+end_src
+
+** underlying_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+FX pair or index identifier (e.g. TR20H-EUR-JPY).
+
+#+begin_src cpp :name generator
+std::string("TR20H-EUR-JPY")
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Position direction: Long or Short.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Accumulation start date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2024-06-15")
+#+end_src
+
+** knock_out_barrier
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Primary UpAndOut knock-out barrier level. Absent when no barrier.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_fx_accumulator_instruments_tbl
+:party_id_from_session: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "fixing_amount" > 0 |
+| "strike" > 0 |
+| "currency" <> '' |
+| "underlying_code" <> '' |
+| "long_short" in ('Long', 'Short') |
+| "trade_type_code" = 'FxAccumulator' |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_accumulator_instrument
+:entity_plural_short:   fx_accumulator_instruments
+:entity_singular_words: FX accumulator instrument
+:entity_plural_words:   FX accumulator instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fxai
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.

@@ -19,6 +19,7 @@
  */
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -30,31 +31,89 @@ using namespace ores::logging;
 fx_accumulator_instrument_service::fx_accumulator_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
+std::vector<domain::fx_accumulator_instrument>
+fx_accumulator_instrument_service::list_fx_accumulator_instruments(std::uint32_t offset,
+                                                                   std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all FX accumulator instruments";
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t fx_accumulator_instrument_service::count_fx_accumulator_instruments() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total FX accumulator instruments count";
+    return repo_.get_total_fx_accumulator_instrument_count(ctx_);
+}
+
+
 std::optional<domain::fx_accumulator_instrument>
-fx_accumulator_instrument_service::get_fx_accumulator_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting fx_accumulator_instrument: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+fx_accumulator_instrument_service::get_fx_accumulator_instrument_at_version(
+    const std::string& instrument_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX accumulator instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    return repo_.read_at_version(ctx_, instrument_id, version);
+}
+
+std::optional<domain::fx_accumulator_instrument>
+fx_accumulator_instrument_service::get_fx_accumulator_instrument(const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting FX accumulator instrument. "
+                               << "instrument_id: " << instrument_id;
+    auto results = repo_.read_latest(ctx_, instrument_id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
+std::vector<domain::fx_accumulator_instrument>
+fx_accumulator_instrument_service::get_fx_accumulator_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    return repo_.read_latest(ctx_, instrument_ids);
+}
+
 void fx_accumulator_instrument_service::save_fx_accumulator_instrument(
     const domain::fx_accumulator_instrument& v) {
     if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument("FX accumulator instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fx_accumulator_instrument: " << v.identity.instrument_id;
+        throw std::invalid_argument("FX Accumulator Instrument instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving FX accumulator instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fx_accumulator_instrument: " << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved FX accumulator instrument. "
+                              << "instrument_id: " << v.identity.instrument_id;
 }
 
+void fx_accumulator_instrument_service::save_fx_accumulator_instruments(
+    const std::vector<domain::fx_accumulator_instrument>& fx_accumulator_instruments) {
+    for (const auto& e : fx_accumulator_instruments)
+        if (e.identity.instrument_id.is_nil())
+            throw std::invalid_argument("FX Accumulator Instrument instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_accumulator_instruments.size()
+                               << " FX accumulator instruments";
+    auto ts = fx_accumulator_instruments;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void fx_accumulator_instrument_service::delete_fx_accumulator_instrument(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing FX accumulator instrument. "
+                               << "instrument_id: " << instrument_id;
+    repo_.remove(ctx_, instrument_id);
+    BOOST_LOG_SEV(lg(), info) << "Removed FX accumulator instrument. "
+                              << "instrument_id: " << instrument_id;
+}
+
+void fx_accumulator_instrument_service::delete_fx_accumulator_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    repo_.remove(ctx_, instrument_ids);
+}
 
 std::vector<domain::fx_accumulator_instrument>
-fx_accumulator_instrument_service::get_fx_accumulator_instruments(
-    const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+fx_accumulator_instrument_service::get_fx_accumulator_instrument_history(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for FX accumulator instrument. "
+                               << "instrument_id: " << instrument_id;
+    return repo_.read_all(ctx_, instrument_id);
 }
 
 }

@@ -18,7 +18,5 @@
  *
  */
 
-drop rule if exists ores_trading_fx_accumulator_instruments_delete_rule on "ores_trading_fx_accumulator_instruments_tbl";
-drop trigger if exists ores_trading_fx_accumulator_instruments_insert_trg on "ores_trading_fx_accumulator_instruments_tbl";
-drop function if exists ores_trading_fx_accumulator_instruments_insert_fn;
-drop table if exists "ores_trading_fx_accumulator_instruments_tbl";
+drop trigger if exists ores_trading_fx_accumulator_instruments_notify_trg on "ores_trading_fx_accumulator_instruments_tbl";
+drop function if exists ores_trading_fx_accumulator_instruments_notify_fn;

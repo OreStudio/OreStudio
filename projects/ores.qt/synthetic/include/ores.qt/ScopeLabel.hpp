@@ -29,9 +29,9 @@ namespace ores::qt {
 /**
  * @brief Human-readable label for a market_data_generation_config's scope.
  */
-inline QString scopeLabel(const ores::synthetic::domain::scope& scope) {
+inline QString scopeLabel(const ores::synthetic::domain::scope& s) {
     using ores::synthetic::domain::scope;
-    switch (scope) {
+    switch (s) {
         case scope::system:
             return QCoreApplication::translate("ScopeLabel", "System");
         case scope::tenant:

@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr:
+#+pr: 1873
 #+blocked_on: D85E2B30-8C64-46DF-819D-B50D2E70B73C
 #+blocked_since:
 #+created: 2026-05-30
@@ -195,7 +195,7 @@ us. Left STARTED rather than closing it.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1873][#1873]] | [ores.codegen,ores.refdata] Apply safe drift to refdata-cpp (pilot) |
 
 * Review
 

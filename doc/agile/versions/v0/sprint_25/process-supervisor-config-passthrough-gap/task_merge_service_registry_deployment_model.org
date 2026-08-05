@@ -8,7 +8,7 @@
 #+filetags: :codegen:modeling:tech-debt:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/merge-service-registry-deployment-model
-#+pr:
+#+pr: 1854
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1854][#1854]] | [ores.codegen] Merge service deployment config into service_registry.org |
 
 * Review
 

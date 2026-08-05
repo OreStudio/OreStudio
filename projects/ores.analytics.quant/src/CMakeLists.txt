@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
 
 set(name "ores.analytics.quant")
 set(lib_binary_name ${name})
@@ -46,6 +47,7 @@ target_link_libraries(${lib_target_name}
         Boost::boost
         Boost::graph
     PRIVATE
-        immer)
+        immer
+        magic_enum::magic_enum)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

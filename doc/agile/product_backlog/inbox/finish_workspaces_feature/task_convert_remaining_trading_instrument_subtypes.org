@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :finish_workspaces_feature:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/convert-remaining-trading-instrument-subtypes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,7 +36,7 @@ pilot did) is a prerequisite for each one individually.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

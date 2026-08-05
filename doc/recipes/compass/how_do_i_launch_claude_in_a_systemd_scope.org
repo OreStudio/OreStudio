@@ -2,12 +2,12 @@
 :ID: 3FED1AAE-009B-4307-866C-E1C092EA17BE
 :END:
 #+title: How do I launch Claude Code inside a systemd scope?
-#+description: Use compass claude to launch Claude Code as a transient systemd --user scope under app-claude.slice, isolating it from systemd-oomd kills of the parent (e.g. Emacs).
+#+description: Use compass claude to launch Claude Code as a transient systemd --user scope under a per-environment app-claude-<env>.slice, isolating it from systemd-oomd kills of the parent (e.g. Emacs) and capping its memory so a runaway session can only kill itself.
 #+type: recipe
 #+level: cross
-#+filetags: :compass:recipe:
+#+filetags: :compass:recipe:systemd:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-08-05
 
 =compass claude= wraps the =claude= binary so an interactive session
 never inherits its parent's cgroup — no manual =systemd-run= flags,
@@ -18,7 +18,8 @@ compass.sh and the slice unit source.
 
 How do I launch Claude Code so systemd-oomd can kill a runaway
 session without taking down the process that spawned it (e.g.
-Emacs)?
+Emacs), and so a memory-hungry session can't take the whole machine
+down with it?
 
 * Answer
 
@@ -33,16 +34,29 @@ replacement for the =claude= binary:
 ./compass.sh claude -p "some prompt"
 #+end_src
 
-On first use it deploys =app-claude.slice= to
-=~/.config/systemd/user/= (re-syncing it if the checked-in source
-changes) and runs a daemon-reload, then launches Claude as a
-transient =systemd-run --user --scope= under that slice. Every
-session gets its own scope (=claude-<pid>=), so it is a sibling of
-=emacs.service= under =app.slice= rather than a child — oomd
-evaluates it as its own kill candidate instead of taking out the
-whole parent unit. No =MemoryHigh=/=MemoryMax= is set: this is
-isolation only, the OOM killer still does its job at the finer
-per-scope granularity.
+On first use it deploys =app-claude.slice= and the
+=app-claude-.slice.d/50-limits.conf= drop-in to
+=~/.config/systemd/user/= (re-syncing either if the checked-in
+source changes) and runs a daemon-reload, then launches Claude as a
+transient =systemd-run --user --scope= under
+=app-claude-<env>.slice= (=<env>= from =ORES_ENV_NAME= in the
+checkout's =.env=). Every session gets its own scope
+(=claude-<env>-<pid>=), so it is a sibling of =emacs.service= under
+=app.slice= rather than a child — oomd evaluates it as its own kill
+candidate instead of taking out the whole parent unit.
+
+The per-environment slice is what actually carries the limits: the
+dash-truncated drop-in (=app-claude-.slice.d/=) applies to every
+=app-claude-<env>.slice= systemd creates on demand, with no
+per-environment unit file needed. It sets =MemoryHigh=6G=
+(soft — reclaim/throttle) and =MemoryMax=9G=/=MemorySwapMax=2G=
+(hard — cgroup-local OOM), plus =CPUWeight=100= (proportional, so an
+idle machine's =-j3= build bursts are unaffected). This is the
+containment half of the design; =app-claude.slice= itself carries no
+caps, only accounting — see
+[[file:../../../systemd-resource-management-plan.org][the resource-management plan]] (WS-1) for the full rationale and
+why isolation (which slice) and containment (a memory ceiling) are
+two separate concerns.
 
 When there is no usable user systemd manager (e.g. over ssh without
 lingering, some cron/container setups), it falls back to an
@@ -55,6 +69,7 @@ Inspect live accounting with:
 
 #+begin_src sh :results verbatim
 systemd-cgtop --user
+systemctl --user show app-claude-<env>.slice -p MemoryMax -p CPUWeight
 #+end_src
 
 * Script
@@ -64,15 +79,20 @@ systemd-cgtop --user
 dispatched from
 [[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]].
 The slice unit source is
-[[proj:projects/ores.compass/src/systemd/app-claude.slice][=projects/ores.compass/src/systemd/app-claude.slice=]].
+[[proj:projects/ores.compass/src/systemd/app-claude.slice][=projects/ores.compass/src/systemd/app-claude.slice=]]; the
+per-environment limits drop-in is
+[[proj:projects/ores.compass/src/systemd/app-claude-.slice.d/50-limits.conf][=projects/ores.compass/src/systemd/app-claude-.slice.d/50-limits.conf=]].
 
 * Tested by
 
 Manual: =compass claude --version= deploys/refreshes the slice unit
-and execs =claude --version= inside a =claude-<pid>.scope= confirmed
-active via =systemctl --user list-units=; re-running is a no-op on
-the slice file (content compared, no redundant daemon-reload).
+and drop-in and execs =claude --version= inside a
+=claude-<env>-<pid>.scope= confirmed active via =systemctl --user
+list-units=, with =systemctl --user show
+app-claude-<env>.slice -p MemoryMax -p CPUWeight= confirming the
+drop-in's limits apply; re-running is a no-op when both files are
+unchanged (content compared per-file, no redundant daemon-reload).
 
 * See also
 
--
+- [[file:../../../systemd-resource-management-plan.org][Plan: systemd resource management and per-environment isolation]] — the design doc this recipe implements (WS-1).

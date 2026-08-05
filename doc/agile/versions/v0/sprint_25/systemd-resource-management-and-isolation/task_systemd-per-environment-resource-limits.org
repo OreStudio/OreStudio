@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,10 +35,10 @@ touches a different file/subsystem and has its own verification.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | DONE                                   |
 | Parent story | [[id:344FF2CC-E27B-4EE7-AAED-F6E2BE77FABE][Systemd resource management and per-environment isolation]] |
 | Now          | Nothing. |
-| Waiting on   | Someone with root, for WS-5's root half.  |
+| Waiting on   | Someone with root, for WS-5's root half -- left as a follow-up, not blocking this task's close. |
 | Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
@@ -307,6 +307,9 @@ via its "Verifies task" field.
 | 4 | cmd_tree adds the Claude slice to --user-unit unconditionally, with no existence check unlike the fleet units -- would abort the whole cgls call (including fleet subtrees) for any environment with no active Claude session | compass_services.py | Fixed | Added _slice_is_loaded() (systemctl is-active without the .service-suffix mangling _unit_active_state applies) and gated the slice's inclusion on it; verified directly against both a real loaded slice and a made-up nonexistent one. |
 | 5 | _has_user_systemd() in compass.py is a byte-for-byte duplicate of compass_claude._has_user_systemd() (flagged by all 3 review passes) | compass.py | Fixed | Removed the duplicate; cmd_build now calls compass_claude._has_user_systemd() directly (compass_claude was already imported on the same code path for _env_name). Re-verified live (dry-run unaffected; real build still wraps correctly in the build slice, exit 0). |
 | 6 | app-build-.slice.d/50-limits.conf omits TasksMax/ManagedOOMMemoryPressure=kill present in the sibling app-claude-.slice.d/ drop-in, with no comment explaining the difference | 50-limits.conf | Fixed | Added a one-line rationale: a build's task count is bounded by -j (nowhere near TasksMax's headroom, unlike an open-ended interactive session), and pressure-based killing mid-build would produce a confusing partial/corrupted build rather than a clean MemoryMax-triggered failure. |
+| 7 | Status table's "State \vert DONE" row trailing pipe not re-padded to the shorter value (cosmetic) | task_systemd-per-environment-resource-limits.org | Fixed | Re-padded to match the other rows' column width. |
+| 8 | #+updated header (2026-07-31) not bumped alongside "Last touched" (2026-08-05) | task_systemd-per-environment-resource-limits.org | Fixed | Bumped #+updated to 2026-08-05. |
+| 9 | "Waiting on" field doesn't say the WS-5 root-half wait is non-blocking, unlike the parent story's equivalent field | task_systemd-per-environment-resource-limits.org | Fixed | Reworded to match story.org's phrasing: "left as a follow-up, not blocking this task's close." |
 
 * Result
 

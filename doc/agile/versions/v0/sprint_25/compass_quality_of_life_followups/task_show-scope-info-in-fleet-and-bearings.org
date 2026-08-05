@@ -26,11 +26,11 @@ Surface each environment's systemd scope in compass fleet and compass bearings o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Implementation complete; pending review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Test and raise PR.                     |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -76,3 +76,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass fleet= now includes a =SCOPE= column showing =claude=, =build=, =build,claude=, or =—= per worktree based on running systemd user scopes (one systemctl call, not per-worktree). =compass bearings= shows the current session's scope and slice under the environment section. Both fall back gracefully when systemd is unavailable or the session runs unscoped.
+
+Two new helpers in compass.py: =_env_systemd_scopes()= queries =systemctl --user list-units --type=scope --output=json= and regex-matches =claude-<env>-<pid>.scope= / =build-<env>-<slot>-<pid>.scope= patterns. =_current_session_scope()= reads =/proc/self/cgroup= to extract =(scope, slice)=.
+
+Acceptance met:
+- fleet lists scope name per worktree where available
+- bearings shows current session's own scope/slice
+- graceful fallback when no named scope exists

@@ -104,7 +104,7 @@ namespace ores #F2F2F2 {
             -pendingAdds_ : vector<boost::uuids::uuid>
             -pendingRemoves_ : vector<boost::uuids::uuid>
         }
-        class AdminPlugin {
+        class IamPlugin {
             -ctx_ : plugin_context
             -accountController_ : unique_ptr<AccountController>
             -roleController_ : unique_ptr<RoleController>

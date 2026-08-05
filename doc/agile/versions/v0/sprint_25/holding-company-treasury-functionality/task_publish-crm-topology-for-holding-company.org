@@ -66,20 +66,29 @@ activated and its group-level staff already published.
 Getting there live surfaced four unrelated, pre-existing regressions
 (all from required columns added to tables without updating every
 insert path) that blocked the plan from ever reaching the crm_topology
-step for *any* party, not just the holding company -- fixed separately,
-see commit 268c94288:
+step for *any* party, not just the holding company -- see commit
+d606ccc90:
 1. market_series.asset_class validated against the wrong reference
    table (FpML taxonomy instead of the matching short-code table).
+   Fixed here.
 2. marketdata_publish_from_dq_create.sql never set derivation_kind
    (added not-null by the shared-derivation-lineage work).
 3-4. synthetic_publish_from_dq_create.sql never set scope or
    binding_mode (added not-null when that pair was introduced).
 
+Items 2-4 were independently fixed by another PR that landed on main
+while this one was in flight -- discovered as a rebase conflict on
+synthetic_publish_from_dq_create.sql (their 'bound', not my original
+'sandboxed' -- their fix also relaxed the exclusivity trigger to allow
+multiple bound configs per party, which was the actual reason
+'sandboxed' had seemed necessary). Took their resolution; this task's
+own commit now only carries the asset_class fix plus comments.
+
 Also hit and fixed, unrelated to this task but blocking manual
 verification: PluginRegistry loading both a stale libores.qt.admin.so
 and the current libores.qt.iam.so, registering every shared menu
 (including the Scenario Runner used to verify this task) twice --
-see commit c78955d6c.
+see commit 08c507183.
 
 * Notes
 
@@ -104,14 +113,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale AdminPlugin class name left in PlantUML diagram | ores.qt.iam.puml | Accepted | Fixed the class name; diagram was already stale beyond this in other ways (member list drift), out of scope to fully resync here. |
+| 2 | Near-duplicate market-data publish block (Step 3 vs office loop) | tenant_handler.hpp | Declined | Matches the existing per-office convention; a shared helper isn't a clean win given the label-prefix and abort-vs-best-effort divergence -- worth revisiting if a third copy appears. |
+| 3 | feed_binding.org doc/code mismatch (validator referenced but not actually wired into generated SQL) | ores.marketdata.feed_binding.org | Declined | Pre-existing, predates this PR (confirmed via git show on the merge-base); this PR only renamed the function reference in the stale row, didn't introduce the mismatch. |
+| 4 | "commit tbd" placeholder never filled in | task doc | Accepted | Filled in; also caught that pr sync's rebase rewrote all three commit hashes, updated every reference to match. |
+| 5 | Scenario Results table shows pre-fix merge-base commit, not this PR's | scenario doc | Accepted | Updated to the task-closing commit. |
+| 6 | Unrelated whitespace-only line removal in marketdata_feed_bindings_create.sql | marketdata_feed_bindings_create.sql | Declined | Harmless codegen regeneration side effect, not touched by hand. |
 
 * Result
 
 Acme Corporation Plc (the holding company) now gets majors/exotics/
 scandies CRM topology during 'provision tenant --source acme', via
 the same market-data plan every operating office already runs
-(ores.iam.core/messaging/tenant_handler.hpp, commit tbd). Verified via
+(ores.iam.core/messaging/tenant_handler.hpp, commit f45a1b983). Verified via
 a fresh end-to-end provisioning run (DB query: 3 topology configs for
 the holding party, matching each office) and a Qt client test scenario
 ([[id:5D5A7D90-34CC-4D16-8969-06D86B8FA257][Verify CRM topology for the holding company party]], 4/4 steps
@@ -123,4 +137,4 @@ just the holding company's) -- asset_class validator mismatch,
 missing derivation_kind/scope/binding_mode on DQ-publish inserts --
 plus a duplicate-menu bug (stale AdminPlugin build artifact) that
 was blocking manual verification specifically. See commits
-268c94288 and c78955d6c.
+d606ccc90 and 08c507183.

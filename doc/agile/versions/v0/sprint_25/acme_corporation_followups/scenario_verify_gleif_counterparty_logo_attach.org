@@ -78,12 +78,24 @@ notes back as a =*** Result= child heading directly under it.
 - Password: =Secure-Password-123=
 - Confirms: login succeeds and the main window loads.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Barclays Plc's counterparty detail
 
 - Navigate: Refdata > Counterparties (list window).
 - Search/filter for short code =BRCLYS= (BARCLAYS PLC).
 - Double-click the row to open =CounterpartyDetailDialog=.
 - Confirms: the dialog opens without error.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm the GLEIF-attached logo renders
 
@@ -94,6 +106,12 @@ notes back as a =*** Result= child heading directly under it.
   counterparty dialog now renders it on open (the earlier logo-
   rendering fix in this same story).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm no other GLEIF counterparty has a logo
 
 - Open a handful of other counterparties from the same list (any
@@ -102,14 +120,31 @@ notes back as a =*** Result= child heading directly under it.
   the known-logo map is scoped to Barclays' LEI only, not applied
   blanket across the whole GLEIF import.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-08-05T07:57:52Z |
+| Branch        | feature/gleif-import-should-attach-counterparty-logos |
+| Commit        | 170e1037d |
+| Worktree      | merry_newton |
 
 * Notes
+
+Finding BARCLAYS PLC (short_code =BRCLYS=) among ~13k GLEIF-imported
+counterparties was harder than expected: the Counterparties list
+window has no search/filter, only offset/limit pagination
+(=get_counterparties_request= has no filter field at all). Worked
+around by computing the row's position under the list's default
+=order by id= sort directly in SQL (row 679 -> page 7 at 100 rows/
+page, page 28 at 25 rows/page) and jumping there. Captured as its own
+backlog item rather than fixed here: [[id:B3FD623C-D87B-491F-9FA2-08B26D67114F][Add server-side search/filter to
+list windows across entities]] (deliberately scoped as a cross-cutting
+capability across all entities, not a one-off Counterparties fix).

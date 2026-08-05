@@ -50,11 +50,11 @@ step racing the import's own completion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -117,7 +117,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E][Verify GLEIF import attaches counterparty logo natively]] | PASSED | Barclays Plc gets its logo from the GLEIF publish itself; other counterparties don't. |
 
 * PRs
 
@@ -132,3 +132,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented in =ores_refdata_publish_lei_counterparties_from_dq_fn=
+(=refdata_publish_from_dq_create.sql=) -- see =* Plan= for the full
+mechanism. Verified end-to-end against a fresh =--source acme=
+provisioning run: BARCLAYS PLC (short_code =BRCLYS=) has =image_id=
+set immediately after the GLEIF publish completes, with no separate
+polling step. Manual scenario [[id:07E8D2EB-3D73-4216-8FE1-9EC04EDC8D4E][Verify GLEIF import attaches counterparty
+logo natively]] (PASSED, 4/4 steps): the logo renders in
+=CounterpartyDetailDialog= (confirming this fix together with the
+earlier logo-rendering fix in this story), and no other counterparty
+picked up a logo -- the known-logo map stays scoped to Barclays' LEI.
+
+Side finding during manual verification, filed separately rather than
+fixed here: the Counterparties list has no search, making it hard to
+locate a specific record among ~13k GLEIF-imported rows -- [[id:B3FD623C-D87B-491F-9FA2-08B26D67114F][Add
+server-side search/filter to list windows across entities]].
+
+Local build clean (linux-clang-debug-make); ctest 71/71 passed.

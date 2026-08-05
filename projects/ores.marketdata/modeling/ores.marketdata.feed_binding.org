@@ -126,9 +126,9 @@ binding. Setting to false suspends ingestion without removing the binding record
 
 ** Validations
 
-| column      | validation_function                  | nullable |
-|-------------+---------------------------------------+----------|
-| asset_class | ores_refdata_validate_asset_class_fn | false    |
+| column      | validation_function                       | nullable |
+|-------------+--------------------------------------------+----------|
+| asset_class | ores_refdata_validate_asset_class_code_fn | false    |
 
 * C++
 

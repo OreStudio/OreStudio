@@ -141,6 +141,11 @@ begin
         if v_series_id is null then
             v_series_id := gen_random_uuid();
 
+            -- derivation_kind 'OBSERVED' with the nil-uuid/0 sentinel
+            -- pair: this function publishes raw DQ-sourced observations,
+            -- never a derived series -- see the check constraint on
+            -- ores_marketdata_market_series_tbl (OBSERVED <-> nil-uuid/0,
+            -- else both required).
             insert into ores_marketdata_market_series_tbl (
                 tenant_id, id, version, party_id,
                 series_type, metric, qualifier, asset_class, series_subclass, is_scalar,

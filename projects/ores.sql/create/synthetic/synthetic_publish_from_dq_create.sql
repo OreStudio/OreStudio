@@ -195,7 +195,11 @@ begin
         -- creates a party-owned, authoritative container -- consolidating
         -- several parties onto one wider-scope (tenant/system) container
         -- is a separate, explicit operation, not something this per-party
-        -- publish path does implicitly.
+        -- publish path does implicitly. The exclusivity trigger only
+        -- blocks scope-widening conflicts (system/tenant vs narrower),
+        -- not multiple bound configs at the same party, so publishing
+        -- more than one theme's configuration for the same party (see
+        -- party_provisioning_bundle_plan()) is safe.
         insert into ores_synthetic_market_data_generation_configs_tbl (
             tenant_id, id, version, party_id, scope, binding_mode, name, description, enabled,
             dataset_id, modified_by, performed_by, change_reason_code, change_commentary

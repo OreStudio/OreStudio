@@ -105,7 +105,7 @@ begin
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate asset_class
-    NEW.asset_class := ores_refdata_validate_asset_class_fn(NEW.tenant_id, NEW.asset_class);
+    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
 
     -- Validate derivation_kind
     NEW.derivation_kind := ores_refdata_validate_derivation_kind_fn(NEW.tenant_id, NEW.derivation_kind);

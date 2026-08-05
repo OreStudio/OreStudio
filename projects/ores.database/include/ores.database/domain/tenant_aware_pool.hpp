@@ -185,28 +185,26 @@ public:
             BOOST_LOG_SEV(lg(), debug) << "Set party context to: " << party_id_str;
         }
 
-        // Set visible party IDs if available
-        if (!visible_party_ids_.empty()) {
-            std::string ids_str = "{";
-            for (std::size_t i = 0; i < visible_party_ids_.size(); ++i) {
-                if (i > 0)
-                    ids_str += ",";
-                ids_str += boost::uuids::to_string(visible_party_ids_[i]);
-            }
-            ids_str += "}";
-
-            const std::string vis_sql =
-                "SELECT set_config('app.visible_party_ids', '" + ids_str + "', false)";
-
-            auto vis_result = (*session_result)->execute(vis_sql);
-            if (!vis_result) {
-                return sqlgen::error("Failed to set visible party IDs: " +
-                                     std::string(vis_result.error().what()));
-            }
-
-            BOOST_LOG_SEV(lg(), debug)
-                << "Set visible party IDs (" << visible_party_ids_.size() << " parties)";
+        // Set visible party IDs (always set, even if empty, to distinguish from NULL/unset)
+        std::string ids_str = "{";
+        for (std::size_t i = 0; i < visible_party_ids_.size(); ++i) {
+            if (i > 0)
+                ids_str += ",";
+            ids_str += boost::uuids::to_string(visible_party_ids_[i]);
         }
+        ids_str += "}";
+
+        const std::string vis_sql =
+            "SELECT set_config('app.visible_party_ids', '" + ids_str + "', false)";
+
+        auto vis_result = (*session_result)->execute(vis_sql);
+        if (!vis_result) {
+            return sqlgen::error("Failed to set visible party IDs: " +
+                                 std::string(vis_result.error().what()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Set visible party IDs (" << visible_party_ids_.size() << " parties)";
 
         // Set current actor (username) if available.
         if (!actor_.empty()) {

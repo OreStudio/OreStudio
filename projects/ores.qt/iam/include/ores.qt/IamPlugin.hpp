@@ -16,8 +16,8 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_ADMIN_PLUGIN_HPP
-#define ORES_QT_ADMIN_PLUGIN_HPP
+#ifndef ORES_QT_IAM_PLUGIN_HPP
+#define ORES_QT_IAM_PLUGIN_HPP
 
 #include "ores.qt/PluginBase.hpp"
 #include <QList>
@@ -43,14 +43,14 @@ class DetachableMdiSubWindow;
  * Manages accounts, roles, tenants, system settings, and apps.
  * Loaded as a shared library by QPluginLoader at application startup.
  */
-class AdminPlugin : public PluginBase {
+class IamPlugin : public PluginBase {
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "ores.qt.IPlugin/1.0")
     Q_INTERFACES(ores::qt::IPlugin)
 
 public:
-    explicit AdminPlugin(QObject* parent = nullptr);
-    ~AdminPlugin() override;
+    explicit IamPlugin(QObject* parent = nullptr);
+    ~IamPlugin() override;
 
     QString name() const override {
         return QStringLiteral("ores.qt.iam");

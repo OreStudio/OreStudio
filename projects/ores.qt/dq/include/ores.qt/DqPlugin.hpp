@@ -39,7 +39,7 @@ class CodeDomainController;
  *
  * Every entity this plugin owns is modeled in ores.dq -- the plugin
  * boundary lines up with the C++ component boundary, per the same
- * convention RefdataPlugin/AdminPlugin follow for their components.
+ * convention RefdataPlugin/IamPlugin follow for their components.
  * Owns the pre-created data_quality_menu handle.
  */
 class DqPlugin : public PluginBase {

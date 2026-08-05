@@ -498,7 +498,7 @@ MainWindow::MainWindow(QWidget* parent,
     // Insertion point: before &Window so plugin menus sit between File and
     // Window, keeping Window/Help always last. File holds all app-chrome:
     // connection lifecycle, personal actions, and Testing/Reset System
-    // (the latter two contributed by AdminPlugin via setup_menus()).
+    // (the latter two contributed by IamPlugin via setup_menus()).
     auto* windowAction = ui_->menuWindow->menuAction();
 
     // Personal actions (My Account, My Sessions) live in their own Current
@@ -604,7 +604,7 @@ MainWindow::MainWindow(QWidget* parent,
 
     // File is now fully built: connection actions (from .ui) + My
     // Account/My Sessions (above) + Testing/Reset System (contributed by
-    // AdminPlugin in the setup_menus() loop above). Close it off with Exit.
+    // IamPlugin in the setup_menus() loop above). Close it off with Exit.
     ui_->menuFile->addSeparator();
     ui_->menuFile->addAction(ui_->ExitAction);
 

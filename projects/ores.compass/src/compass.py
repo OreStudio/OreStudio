@@ -6001,18 +6001,6 @@ def _ensure_build_slice_deployed() -> None:
                     check=False)
 
 
-def _has_user_systemd() -> bool:
-    if shutil.which("systemd-run") is None:
-        return False
-    try:
-        subprocess.run(
-            ["systemctl", "--user", "show-environment"],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        return True
-    except (subprocess.CalledProcessError, OSError):
-        return False
-
-
 def _build_lock_path(slot_name):
     return Path(f"/tmp/ores-build.lock.{slot_name}")
 
@@ -6331,12 +6319,12 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     build_cmd += ["-j", str(jobs)]
-    if not args.dry_run and slot_name is not None and _has_user_systemd():
+    import compass_claude
+    if not args.dry_run and slot_name is not None and compass_claude._has_user_systemd():
         # WS-7 change 2: the actual `cmake --build` step (not the
         # configure step) runs inside its own memory-capped
         # app-build-<env>.slice, so an overrunning build is killed by its
         # own cgroup OOM instead of pushing the whole machine into swap.
-        import compass_claude
         env_name = compass_claude._env_name(PROJECT_ROOT)
         _ensure_build_slice_deployed()
         build_cmd = [

@@ -125,7 +125,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | folder_feed_control_handler's "start everything under this folder" never forwards binding_mode -- every feed it starts silently defaults to bound | folder_feed_control_handler.hpp | Fixed | Mirrors auto_start_enabled_feeds: queries market_data_generation_config_repository, maps by container id, forwards container.binding_mode into ctrl_->start(). |
+| 2 | Already-running branch of start() gates ensure_feed_binding on the *current call's* binding_mode argument, not the feed's actual stored mode -- a binding_mode-unaware caller restarting an already-sandboxed feed would still create a real feed_binding for it | feed_controller.hpp | Fixed | Extracted should_ensure_feed_binding(already_running, requested, stored) as a directly-testable free function; gated on the feed's stored binding_mode when already running, on the requested one only for a brand-new feed. |
+| 3 | Dead #include <set> in application.cpp after enabled_feeds moved to a map | application.cpp | Fixed | Removed. |
+| 4 | No automated test for the already-running/ensure_feed_binding interaction | feed_controller_tests.cpp | Fixed | Added 3 cases for should_ensure_feed_binding covering brand-new, already-running-sandboxed, and already-running-bound. |
+| 5 | Didn't re-verify build/tests in one review pass (no build environment in that job) | (n/a) | No action needed | Informational -- other review passes and this round's own local verification cover it. |
 
 * Result
 
@@ -145,8 +149,21 @@ Verified live against a running fleet: a sandboxed feed auto-starts,
 publishes ticks successfully, and is provably excluded from the bound
 path -- the marketdata ingest loop never subscribes to it, no
 feed_binding is created, and no market_series/market_observation ever
-appears for its ORE key. =feed_controller_tests.cpp= (4 new cases)
-covers the subject-naming primitive directly. =compass build= clean;
-=ores.synthetic.*=, =ores.marketdata.*=, and =ores.qt.tests= C++
-suites pass (one unrelated, pre-existing environment-config test
-failure in =ores.synthetic.service.tests=, same as the prior task).
+appears for its ORE key. =feed_controller_tests.cpp= (7 cases total)
+covers the subject-naming primitive and the should_ensure_feed_binding
+decision matrix directly. =compass build= clean; =ores.synthetic.*=,
+=ores.marketdata.*=, and =ores.qt.tests= C++ suites pass, including a
+second live re-verification of the sandboxed auto-start path after
+review round 1's fixes.
+
+Review round 1: two real gaps found and fixed -- the folder-based
+bulk-start handler never forwarded =binding_mode= (every feed started
+that way silently defaulted to bound), and the already-running branch
+of =start()= re-derived the binding decision from the current call's
+argument instead of the running feed's actual stored mode (a
+binding_mode-unaware caller restarting an already-sandboxed feed would
+have created a real feed_binding for it). Both fixed; the second is
+now covered by a directly-testable free function
+(=should_ensure_feed_binding=) with 3 new unit test cases, since the
+original PR's live verification only exercised the auto-start path in
+isolation, not a second start() call through a different handler.

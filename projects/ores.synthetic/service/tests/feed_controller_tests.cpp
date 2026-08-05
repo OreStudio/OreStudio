@@ -25,6 +25,7 @@ namespace {
 const std::string tags("[feed_controller]");
 
 using ores::synthetic::domain::binding_mode;
+using ores::synthetic::service::should_ensure_feed_binding;
 using ores::synthetic::service::synthetic_producer_subject;
 
 }
@@ -65,4 +66,26 @@ TEST_CASE("synthetic_producer_subject: unsafe characters are still replaced unde
           tags) {
     CHECK(synthetic_producer_subject("weird name!*>", binding_mode::sandboxed) ==
           "synthetic.v1.sandbox.tick.weird_name___");
+}
+
+TEST_CASE("should_ensure_feed_binding: a brand-new feed is gated on the requested binding mode",
+          tags) {
+    CHECK(should_ensure_feed_binding(false, binding_mode::bound, binding_mode::sandboxed));
+    CHECK_FALSE(should_ensure_feed_binding(false, binding_mode::sandboxed, binding_mode::bound));
+}
+
+TEST_CASE("should_ensure_feed_binding: an already-running feed is gated on its stored binding "
+          "mode, not the requested one -- a binding_mode-unaware caller (e.g. the ad-hoc NATS "
+          "control-plane, which always passes bound) restarting an already-sandboxed feed must "
+          "not create a feed_binding for it",
+          tags) {
+    CHECK_FALSE(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::sandboxed));
+    CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));
+}
+
+TEST_CASE("should_ensure_feed_binding: an already-running bound feed still gets its binding "
+          "ensured on every restart, regardless of what this call requested",
+          tags) {
+    CHECK(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::bound));
+    CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));
 }

@@ -31,6 +31,7 @@
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
+#include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -128,9 +129,19 @@ public:
         namespace repo = ores::synthetic::repository;
         repo::fx_spot_generation_config_repository fx_repo;
         repo::gmm_component_repository comp_repo;
+        repo::market_data_generation_config_repository feed_repo;
 
         const auto fxs = fx_repo.read_latest(ctx);
         const auto comps = comp_repo.read_latest(ctx);
+        // Keyed by container id, not just checked for enabled/existence, so
+        // each fx rate's binding_mode (bound/sandboxed) can be forwarded --
+        // mirrors application.cpp's auto_start_enabled_feeds. Without this,
+        // every feed started via this handler would silently default to
+        // bound regardless of its container's actual binding_mode.
+        std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
+            containers;
+        for (const auto& f : feed_repo.read_latest(ctx))
+            containers.emplace(f.id, f);
         std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::gmm_component>> by_fx;
         for (const auto& c : comps)
             by_fx[c.fx_spot_config_id].push_back(c);
@@ -153,6 +164,10 @@ public:
                 stdevs.push_back(c.stdev);
                 weights.push_back(c.weight);
             }
+            const auto container = containers.find(fx.config_id);
+            const auto binding_mode = container != containers.end() ?
+                                          container->second.binding_mode :
+                                          ores::synthetic::domain::binding_mode::bound;
             std::string error_detail;
             const auto r = ctrl_->start(fx.ore_key,
                                         fx.source_name,
@@ -165,7 +180,8 @@ public:
                                         fx.vintage_source,
                                         fx.vintage_date,
                                         &error_detail,
-                                        bearer);
+                                        bearer,
+                                        binding_mode);
             using sr = feed_controller::start_result;
             switch (r) {
                 case sr::started:

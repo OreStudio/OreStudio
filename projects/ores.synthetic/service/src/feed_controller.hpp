@@ -77,6 +77,28 @@ inline std::string synthetic_producer_subject(const std::string& source_name,
 }
 
 /**
+ * @brief Whether start() should auto-create a marketdata feed_binding for
+ * this call.
+ *
+ * Gated on @p stored_binding_mode (the mode the feed *actually* holds --
+ * i.e. what it was started with) when @p already_running is true, not on
+ * @p requested_binding_mode (this call's argument). A feed keeps whatever
+ * mode it was started with; a later start() through a binding_mode-unaware
+ * caller (e.g. the ad-hoc NATS control-plane, which always passes the
+ * bound default) must not be able to flip a running sandboxed feed's
+ * binding decision just by not knowing about it. For a brand-new feed
+ * (@p already_running false), @p stored_binding_mode is meaningless (no
+ * feed exists yet) and @p requested_binding_mode governs, since that is
+ * what the feed is about to be started with.
+ */
+inline bool should_ensure_feed_binding(bool already_running,
+                                       ores::synthetic::domain::binding_mode requested_binding_mode,
+                                       ores::synthetic::domain::binding_mode stored_binding_mode) {
+    const auto effective = already_running ? stored_binding_mode : requested_binding_mode;
+    return effective == ores::synthetic::domain::binding_mode::bound;
+}
+
+/**
  * @brief Runs the synthetic producer feeds; one tick thread per feed.
  *
  * Owned by application::run() as a shared_ptr and passed to the
@@ -189,9 +211,15 @@ public:
 
         const std::string key = source_name.empty() ? ore_key : source_name;
         bool already_running = false;
+        // Only meaningful when already_running -- see should_ensure_feed_binding's
+        // doc comment for why an already-running feed's *stored* mode, not this
+        // call's argument, must govern the ensure_feed_binding gate below.
+        ores::synthetic::domain::binding_mode stored_binding_mode = binding_mode;
         {
             std::lock_guard lock(mu_);
             already_running = feeds_.contains(key);
+            if (already_running)
+                stored_binding_mode = feeds_.at(key).binding_mode;
             if (!already_running) {
                 // Use a persistent random_device so the OS entropy pool is not
                 // re-seeded between rapid successive calls (which can produce
@@ -236,8 +264,8 @@ public:
         // the duration of that round-trip. Skipped entirely for sandboxed
         // feeds: a feed_binding on this source_name would claim ingestion is
         // happening on the bound subject, which is not true (see start()'s
-        // doc comment on binding_mode).
-        if (binding_mode == ores::synthetic::domain::binding_mode::bound)
+        // doc comment on binding_mode and should_ensure_feed_binding).
+        if (should_ensure_feed_binding(already_running, binding_mode, stored_binding_mode))
             ensure_feed_binding(ore_key, key, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
     }

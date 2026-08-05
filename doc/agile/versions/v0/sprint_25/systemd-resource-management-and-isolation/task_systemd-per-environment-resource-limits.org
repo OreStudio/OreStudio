@@ -8,7 +8,7 @@
 #+filetags: :systemd:compass:infrastructure:sprint_25:v0:systemd-resource-management-and-isolation:
 #+owner: marco
 #+branch: feature/systemd-resource-limits-ws1
-#+pr: 1842
+#+pr: 1845
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -146,6 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1845][#1845]] | [compass] WS-1: per-environment Claude slices with limits |
 | [[https://github.com/OreStudio/OreStudio/pull/1842][#1842]] | [compass] WS-7 change 1: reduce build lock to two slots |
 
 * Review

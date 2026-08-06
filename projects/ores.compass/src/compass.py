@@ -2608,6 +2608,94 @@ def _current_session_scope():
     return scope, s_slice
 
 
+def _worktree_services_status(env_name):
+    """Check if ores-<env>.target is active via systemctl --user.
+
+    Returns 'active', 'inactive', or None if the target doesn't exist
+    or systemctl fails.
+    """
+    if not env_name:
+        return None
+    import systemd_generate
+    target = systemd_generate._unit_basename("ores", env_name) + ".target"
+    try:
+        r = subprocess.run(
+            ["systemctl", "--user", "is-active", target],
+            capture_output=True, text=True, timeout=2)
+        return r.stdout.strip()  # "active", "inactive"
+    except Exception:
+        return None
+
+
+def _worktree_client_status(worktree_path, preset):
+    """Check for a running Qt client in the worktree's run directory.
+
+    Returns True if at least one ores.qt*.pid file points to a live process.
+    """
+    if not preset:
+        return False
+    run_dir = Path(worktree_path) / "build" / "output" / preset / "publish" / "run"
+    if not run_dir.is_dir():
+        return False
+    for pid_file in sorted(run_dir.glob("ores.qt*.pid")):
+        try:
+            pid = int(pid_file.read_text().strip())
+        except (OSError, ValueError):
+            continue
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            continue
+    return False
+
+
+def _read_env_map_for(worktree_path):
+    """Read a worktree's .env into a key/value map; empty if missing."""
+    env_file = Path(worktree_path) / ".env"
+    result = {}
+    if not env_file.is_file():
+        return result
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        if not line or line.lstrip().startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in ("'", '"'):
+            val = val[1:-1]
+        result[key.strip()] = val
+    return result
+
+
+def _worktree_db_status(env):
+    """Query ores_database_info_tbl for the last restore timestamp.
+
+    Returns a 'YYYY-MM-DD HH24:MI' string, or None if unreachable.
+    """
+    db = env.get("ORES_TEST_DB_DATABASE", "")
+    if not db:
+        return None
+    host = env.get("PGHOST", "localhost")
+    port = env.get("PGPORT", "5432")
+    pw = env.get("PGPASSWORD", "")
+    if not pw:
+        return None
+    child_env = os.environ.copy()
+    child_env["PGPASSWORD"] = pw
+    try:
+        r = subprocess.run(
+            ["psql", "-At", "-h", host, "-p", port, "-U", "postgres", "-d", db,
+             "-c", ("SELECT to_char(created_at, 'YYYY-MM-DD HH24:MI') "
+                    "FROM ores_database_info_tbl "
+                    "ORDER BY created_at DESC LIMIT 1;")],
+            capture_output=True, text=True, timeout=3,
+            env=child_env)
+    except Exception:
+        return None
+    line = (r.stdout or "").strip()
+    return line if line and r.returncode == 0 else None
+
+
 def cmd_fleet(args):
     worktrees = list_worktrees()
     if not worktrees:
@@ -2639,6 +2727,18 @@ def cmd_fleet(args):
 
         pr = pr_map.get(branch) if branch else None
         env_name = _worktree_env_value(path, "ORES_ENV_NAME")
+        services_status = None
+        client_status = None
+        db_status = None
+        if getattr(args, "status", False) and env_name:
+            services_status = _worktree_services_status(env_name)
+            preset = _worktree_env_value(path, "ORES_PRESET")
+            if preset:
+                client_status = _worktree_client_status(path, preset)
+            # Read full env for DB check
+            env_map = _read_env_map_for(path)
+            if env_map:
+                db_status = _worktree_db_status(env_map)
         rows.append({
             "worktree": Path(path).name,
             "path": path,
@@ -2657,6 +2757,9 @@ def cmd_fleet(args):
             "provision_type": _worktree_env_value(path, "ORES_PROVISION_TYPE"),
             "env_name": env_name,
             "scope": scope_map.get(env_name) if env_name else None,
+            "services": services_status,
+            "client": client_status,
+            "db": db_status,
         })
 
     if args.format == "json":
@@ -2678,7 +2781,7 @@ def cmd_fleet(args):
         ahead  = stale.get("ahead", 0)
         sync   = f"↑{ahead}↓{behind}" if (ahead or behind) else "✓"
         sev    = _staleness_severity(stale)
-        trows.append({
+        trow = {
             "mark":     "→" if r["current"] else " ",
             "worktree": r["worktree"],
             "identity": identity,
@@ -2689,14 +2792,26 @@ def cmd_fleet(args):
             "scope":    r.get("scope") or "—",
             "sync":     sync,
             "sync_sev": sev,
-        })
+        }
+        if getattr(args, "status", False):
+            svc = r.get("services")
+            trow["services"] = "✓" if svc == "active" else ("—" if svc is None else svc)
+            trow["client"] = "✓" if r.get("client") else "—"
+            trow["db"] = r.get("db") or "—"
+        trows.append(trow)
 
-    _COLS = ["worktree", "identity", "type", "branch", "task", "pr", "scope", "sync"]
+    _COLS = ["worktree", "identity", "type", "branch", "task", "pr", "scope"]
     _HDR  = {"worktree": "WORKTREE", "identity": "IDENTITY", "type": "TYPE",
-              "branch": "BRANCH", "task": "TASK", "pr": "PR", "scope": "SCOPE",
-              "sync": "SYNC"}
+              "branch": "BRANCH", "task": "TASK", "pr": "PR", "scope": "SCOPE"}
     _MAX  = {"worktree": 28, "identity": 18, "type": 6,
-              "branch": 38, "task": 38, "pr": 8, "scope": 14, "sync": 8}
+              "branch": 38, "task": 38, "pr": 8, "scope": 14}
+    if getattr(args, "status", False):
+        _COLS += ["services", "client", "db"]
+        _HDR.update({"services": "SERVICES", "client": "CLIENT", "db": "DB"})
+        _MAX.update({"services": 8, "client": 6, "db": 16})
+    _COLS += ["sync"]
+    _HDR["sync"] = "SYNC"
+    _MAX["sync"] = 8
 
     widths = {k: len(_HDR[k]) for k in _COLS}
     for tr in trows:
@@ -6943,6 +7058,9 @@ def main():
                                          help="Show what every git worktree is doing: branch, story, task, PR")
     fleet_parser.add_argument("-f", "--format", choices=["pretty", "json"], default="pretty",
                               help="Output format: pretty (default) or json")
+    fleet_parser.add_argument("--status", action="store_true",
+                              help="Show per-environment operational status: "
+                                   "services, client, DB (opt-in — slow)")
 
     subparsers.add_parser("branches",
                           help="Report/prune git branches merged into origin/main; "

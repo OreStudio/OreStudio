@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:fleet:operate:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-fleet-per-environment-status
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =--status= flag to =compass fleet= (opt-in, slow). Three helpers
+in compass.py:
+- =_worktree_services_status(env_name)= — =systemctl --user is-active ores-<env>.target=
+- =_worktree_client_status(path, preset)= — checks =ores.qt*.pid= files in the worktree's run dir
+- =_worktree_db_status(env)= — =psql= query against =ores_database_info_tbl= with 3s timeout
+- =_read_env_map_for(path)= — reads a worktree's .env (mirrors =_read_env_map()= for a different root)
+
+Status columns (SERVICES/CLIENT/DB) only appear when =--status= is given;
+fleet without it is unchanged. All checks use the target worktree's .env.
 
 * Notes
 
@@ -69,3 +75,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass fleet --status= adds SERVICES, CLIENT, and DB columns per
+worktree. Checks use the target worktree's =.env= (never the current
+one's). SERVICES reads =systemctl --user is-active=; CLIENT checks PID
+files in the worktree's run dir; DB queries =ores_database_info_tbl=
+via =psql= with 3s timeout. Without =--status=, fleet output unchanged.

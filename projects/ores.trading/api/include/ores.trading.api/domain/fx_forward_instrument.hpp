@@ -17,20 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_FORWARD_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_FORWARD_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_FORWARD_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_FORWARD_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Forward instrument.
  *
- * Represents FxForward and FxSwap (near leg only) trades. The FxSwap far
- * leg (FarDate, FarBoughtAmount, FarSoldAmount) is a documented coverage gap.
+ * Represents FxForward and FxSwap (near leg only) trades. The FxSwap
+ * far leg (FarDate, FarBoughtAmount, FarSoldAmount) is a documented
+ * coverage gap.
  */
 struct fx_forward_instrument final {
     instrument_identity identity;
@@ -67,10 +69,23 @@ struct fx_forward_instrument final {
      */
     std::string settlement;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_forward_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_forward_instrument&) {
+    return "ores.trading.fx_forward_instrument";
+}
 
 }
 

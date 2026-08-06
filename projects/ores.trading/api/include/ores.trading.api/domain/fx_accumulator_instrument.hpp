@@ -17,22 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Accumulator instrument.
  *
- * Routes ORE product type: FxAccumulator.
- * knock_out_barrier captures the primary UpAndOut barrier.
- * Multiple barriers and complex fixing schedules are a Phase 2 coverage gap.
+ * Routes ORE product type: FxAccumulator. knock_out_barrier captures
+ * the primary UpAndOut barrier. Multiple barriers and complex fixing
+ * schedules are a Phase 2 coverage gap.
  */
 struct fx_accumulator_instrument final {
     instrument_identity identity;
@@ -72,10 +73,23 @@ struct fx_accumulator_instrument final {
      */
     std::optional<double> knock_out_barrier;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_accumulator_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_accumulator_instrument&) {
+    return "ores.trading.fx_accumulator_instrument";
+}
 
 }
 

@@ -17,19 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_EQUITY_VARIANCE_SWAP_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_EQUITY_VARIANCE_SWAP_INSTRUMENT_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_EQUITY_VARIANCE_SWAP_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_EQUITY_VARIANCE_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::trading::service {
 
+/**
+ * @brief Service for managing equity variance swap instruments.
+ *
+ * Provides a higher-level interface for equity variance swap instrument operations,
+ * wrapping the underlying repository.
+ */
 class ORES_TRADING_CORE_EXPORT equity_variance_swap_instrument_service {
 private:
     inline static std::string_view logger_name =
@@ -44,15 +53,92 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a equity_variance_swap_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit equity_variance_swap_instrument_service(context ctx);
 
-    std::optional<domain::equity_variance_swap_instrument>
-    get_equity_variance_swap_instrument(const std::string& id);
-
-    void save_equity_variance_swap_instrument(const domain::equity_variance_swap_instrument& v);
-
+    /**
+     * @brief Lists equity variance swap instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of equity variance swap instruments for the requested page.
+     */
     std::vector<domain::equity_variance_swap_instrument>
-    get_equity_variance_swap_instruments(const std::vector<std::string>& ids);
+    list_equity_variance_swap_instruments(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active equity variance swap instruments.
+     *
+     * @return Total number of active equity variance swap instruments.
+     */
+    std::uint32_t count_equity_variance_swap_instruments();
+
+
+    /**
+     * @brief Retrieves a single equity variance swap instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The equity variance swap instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instrument_at_version(const std::string& instrument_id,
+                                                   std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single equity variance swap instrument by its primary key.
+     *
+     * @return The equity variance swap instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Retrieves a batch of equity variance swap instruments by primary key.
+     */
+    std::vector<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Saves a equity variance swap instrument (creates or updates).
+     *
+     * @param equity_variance_swap_instrument The equity variance swap instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_equity_variance_swap_instrument(
+        const domain::equity_variance_swap_instrument& equity_variance_swap_instrument);
+
+    /**
+     * @brief Saves a batch of equity variance swap instruments.
+     *
+     * @param equity_variance_swap_instruments The equity variance swap instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_equity_variance_swap_instruments(
+        const std::vector<domain::equity_variance_swap_instrument>&
+            equity_variance_swap_instruments);
+
+    /**
+     * @brief Deletes a equity variance swap instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_equity_variance_swap_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Deletes equity variance swap instruments by their primary keys.
+     */
+    void delete_equity_variance_swap_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a equity variance swap instrument.
+     */
+    std::vector<domain::equity_variance_swap_instrument>
+    get_equity_variance_swap_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;

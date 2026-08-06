@@ -8,7 +8,7 @@
 #+filetags: :investigate-hand-added-service-grants:sprint_25:v0:
 #+owner: marco
 #+branch: feature/investigate-grants-drift
-#+pr:
+#+pr: 1882
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1882][#1882]] | [sql,settings] Close grants generator drift and remove Claude OS sandbox |
 
 * Review
 

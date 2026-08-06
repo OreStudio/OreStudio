@@ -34,6 +34,10 @@ set(files
     "service/pricing_model_config_service.cpp"
     "service/pricing_model_product_parameter_service.cpp"
     "service/pricing_model_product_service.cpp"
+    "presentation/pricing_engine_type_history_field_mapper.cpp"
+    "presentation/pricing_model_config_history_field_mapper.cpp"
+    "presentation/pricing_model_product_history_field_mapper.cpp"
+    "presentation/pricing_model_product_parameter_history_field_mapper.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -61,4 +65,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_config_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_product_parameter_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/service/pricing_model_product_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/presentation/pricing_engine_type_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/presentation/pricing_model_config_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/presentation/pricing_model_product_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/presentation/pricing_model_product_parameter_history_field_mapper.hpp"
 )

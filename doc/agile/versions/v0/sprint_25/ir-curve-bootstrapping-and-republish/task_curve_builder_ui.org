@@ -94,6 +94,31 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+=doc/analysis/gemini_ir_curve_bootstrapping.org= (+ its companion
+=.png= wizard mockup) is a pre-existing design analysis for this exact
+screen -- a 3-step wizard (Base Conventions / Instrument Helpers /
+Interpolation) with a live diagnostic dashboard (calculated zero-curve
+plot, an instantaneous-forward-curve health-check plot, tenor-collision
+and flatline-forward warnings). Useful as a UX reference, but it is
+aspirational and broader than what this codebase actually implements
+today -- reconcile against the real schema before building from it
+literally:
+- It models per-instrument dual-curve (forecast/discount) dropdowns;
+  =ir_curve_bootstrap_config= instead fixes the Funding/Projection
+  split at the *config* level (=curve_family_role= +
+  =discount_curve_config_id=), not per-pillar.
+- It lists a full bootstrap-trait x interpolator matrix
+  (Discount/Zero/Forward traits, Linear/Log-Linear/Cubic/Monotonic-
+  Cubic); =curve_bootstrap_engine= implements exactly
+  =LOG_LINEAR_DISCOUNT=, =FLAT_FORWARD_THEN_LOG_LINEAR=, and
+  =CUBIC_SPLINE= (named, not yet implemented -- throws).
+- Its live/dirty-flag "lazy recalculation on tick" model doesn't apply
+  here: republish is the explicit, on-demand
+  =curve_republish_service::republish(config_id, as_of)= call this
+  story built, not a continuously-live curve object.
+
+* Test Scenarios
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

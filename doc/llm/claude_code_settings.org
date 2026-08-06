@@ -2,7 +2,7 @@
 :ID: 2D83251F-0E24-4B97-B736-08F710316634
 :END:
 #+title: Claude Code Settings
-#+description: Literate source for .claude/settings.json — permission allow-list, generated via org-babel tangle. OS sandbox intentionally disabled (see Sandbox (removed)).
+#+description: Literate source for .claude/settings.json — permission allow-list and sandbox overrides, generated via org-babel tangle.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:claude_code:settings:permissions:hooks:
@@ -37,9 +37,10 @@ cmake --build --preset linux-clang-debug-ninja --target deploy_settings
 #+end_src
 
 Both invoke [[proj:projects/ores.lisp/src/ores-build-settings.el][=projects/ores.lisp/src/ores-build-settings.el=]], which tangles this file to
-[[proj:.claude/settings.json][=.claude/settings.json=]]. Requires Emacs on PATH (the =ores-babel.el=
-project detection needs a full environment; the CMake path also needs
-compiler detection during reconfiguration).
+[[proj:.claude/settings.json][=.claude/settings.json=]]. Requires Emacs on PATH. Must be run outside the
+sandbox (the =ores-babel.el= project detection needs a full environment;
+the CMake path also needs compiler detection during reconfiguration); use
+=dangerouslyDisableSandbox: true= on the Bash tool call.
 
 * Master settings block
 
@@ -71,6 +72,11 @@ last section in each array carries no comma.
     "deny": [
 <<perm-deny>>
     ]
+  },
+  "sandbox": {
+<<sandbox-network>>,
+<<sandbox-filesystem>>,
+<<sandbox-excluded>>
   },
   "hooks": {
 <<hooks-pretooluse>>
@@ -116,7 +122,8 @@ any other path depth. This replaces the previous per-subtree entries
 covers the whole tree.
 
 =Read(*)= is not included here because Claude Code does not require an
-explicit allow entry for reads; they are permitted by default.
+explicit allow entry for reads; they are permitted by default unless
+the sandbox filesystem deny-list blocks them.
 
 #+begin_src json :tangle no :noweb-ref perm-files
       "Edit(**)",
@@ -185,6 +192,12 @@ execution of other files in that tree.
 =compass db recreate= drops and rebuilds the entire schema.
 =validate_schemas.sh= checks that the live schema matches expectations.
 =kill_db_connections.sh= terminates stale connections before a recreate.
+
+All four require =dangerouslyDisableSandbox: true= at the Bash tool
+level because the sandbox blocks outbound connections to
+=localhost:5432=. The =sandbox.network= entry below grants localhost
+access, which may make the per-call override unnecessary once Claude
+Code respects project-level sandbox overrides.
 
 Note: never prepend =PGPASSWORD= on the command line; these scripts
 source =.env= themselves.
@@ -346,9 +359,12 @@ merge its own reviewed PRs autonomously. The irreversibility of merge is
 accepted; user confirmation is reserved for the destructive subcommands
 above (=close=, =revert=, =lock=).
 
-Raw =git= push/fetch operations need =SSH_AUTH_SOCK= exported first
-(see [[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]]); =gh= uses its own token,
-not the SSH agent.
+These commands require =dangerouslyDisableSandbox: true= because =gh=
+authenticates via the OS keyring, which is not accessible inside the
+sandbox. Raw =git= push/fetch operations need
+=SSH_AUTH_SOCK= exported first (see
+[[id:F7E4C41F-AF34-43E5-ADC3-1D837126B3DE][Set SSH_AUTH_SOCK for git operations]]); =gh= uses its own token, not
+the SSH agent.
 
 Common invocations:
 - =gh pr create --title "[risk] Add foo" --body "..."=
@@ -379,8 +395,10 @@ Common invocations:
 
 ** Web access
 
-=WebFetch(domain:*)= allows fetching from any domain. The permission
-entry controls only whether Claude Code prompts.
+=WebFetch(domain:*)= allows fetching from any domain. The sandbox
+network allowlist (see below) is the actual security boundary; the
+permission entry controls only whether Claude Code prompts. Domains
+not in the network allowlist remain unreachable regardless.
 
 =WebSearch= enables web search. No domain restriction is applied here;
 the search provider is fixed by the Claude Code runtime.
@@ -463,21 +481,84 @@ Common invocations:
       "Bash(diff *)"
 #+end_src
 
-* Sandbox (removed)
+* Sandbox overrides
 
-The OS-level sandbox is intentionally disabled for this project. The
-sandbox's filesystem write-virtualisation redirected repo writes to a
-scratch btrfs layer that host processes (systemd units, services)
-could not open — on 2026-08-06 this broke =compass services start=
-for the festive_dijkstra environment (nats-server ENOENT on its
-config) and the layer then decayed in place. Protection now comes
-from the interactive permission prompts above and the git/PR review
-flow; there is no project-level =sandbox= key in =settings.json=.
+The sandbox restricts filesystem writes and outbound network
+connections beyond the defaults. These entries extend the allowlist
+at the project level; they are applied in addition to (not instead
+of) the global sandbox configuration in =~/.claude/settings.json=.
 
-If a sandbox is ever re-enabled, the network/filesystem/excluded
-overrides that used to live here must be restored first: localhost
-(psql), the ccache/sccache dirs, and the =git *=/=compass.sh *= write
-exclusions.
+** Network
+
+Grants outbound connections to =localhost=, required for PostgreSQL
+(port 5432) access from SQL scripts. Without this entry, =psql= calls
+fail with a connection refused error inside the sandbox and the
+scripts must be run with =dangerouslyDisableSandbox: true=.
+
+=mcraveiro.github.io= hosts the Dogen documentation and MASD reference
+material used when writing knowledge documents and literate template
+prose; fetching it during documentation tasks must not prompt.
+
+#+begin_src json :tangle no :noweb-ref sandbox-network
+    "network": {
+      "allowedHosts": ["localhost", "mcraveiro.github.io"]
+    }
+#+end_src
+
+** Filesystem
+
+Extends the write allowlist to include the =sccache=/=ccache= cache
+directories, both under the shared SSD checkout disk
+(=/mnt/development/.cache/=; see [[proj:.env][=.env=]]'s =ORES_COMPILER_CACHE=). The
+sandbox otherwise blocks writes there, causing cache misses and
+forcing builds to recompile from scratch or requiring
+=dangerouslyDisableSandbox: true=.
+
+Two entries are required per tool: the directory path itself, and a
+=/**= glob authorising all files and subdirectories within it (object
+cache shards, the stats file, the server log, etc.). Without the
+=/**= glob, the tool receives =EPERM= when writing any cache object
+because the allowlist matches only the directory path, not its
+contents.
+
+#+begin_src json :tangle no :noweb-ref sandbox-filesystem
+    "filesystem": {
+      "allowWrite": [
+        "/mnt/development/.cache/sccache",
+        "/mnt/development/.cache/sccache/**",
+        "/mnt/development/.cache/ccache",
+        "/mnt/development/.cache/ccache/**"
+      ]
+    }
+#+end_src
+
+** Excluded commands
+
+Commands listed here never attempt to run inside the sandbox; they go
+straight to the regular permission flow (where the allow rules above
+auto-approve them). This kills the failure → retry-unsandboxed →
+prompt loop without widening what is authorised: exclusion changes
+/where/ a command runs, not /whether/ it is allowed.
+
+Git needs this because linked worktrees resolve their gitdir into the
+primary checkout (=OreStudio.remote/.git/worktrees/<name>=), which sits
+outside the sandbox write allowlist — =git fetch=, =add= and =commit=
+fail in-sandbox on the index lock and FETCH_HEAD, then prompt on every
+unsandboxed retry. Compass needs it for the same reason one level up:
+its highest-value verbs (=pr create=, =pr sync=, =capture promote=,
+=task start=, =task done=) spawn git internally, so a sandboxed
+compass run inherits the same gitdir failures. All four compass
+invocation forms from the permission grant are mirrored here.
+
+#+begin_src json :tangle no :noweb-ref sandbox-excluded
+    "excludedCommands": [
+      "./compass.sh *",
+      "compass.sh *",
+      "./projects/ores.compass/compass.sh *",
+      "projects/ores.compass/compass.sh *",
+      "git *"
+    ]
+#+end_src
 
 * Hooks
 

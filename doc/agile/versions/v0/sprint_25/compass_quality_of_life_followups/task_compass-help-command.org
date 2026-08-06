@@ -8,7 +8,7 @@
 #+filetags: :compass:dx:cli:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/compass-help-command
-#+pr:
+#+pr: 1885
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1885][#1885]] | [compass] Add compass help command |
 
 * Review
 

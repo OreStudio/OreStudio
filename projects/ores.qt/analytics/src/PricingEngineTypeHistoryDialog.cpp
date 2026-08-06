@@ -65,7 +65,7 @@ void PricingEngineTypeHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.types);
+        versions_ = std::move(response.history);
         historyLoaded();
     });
 }

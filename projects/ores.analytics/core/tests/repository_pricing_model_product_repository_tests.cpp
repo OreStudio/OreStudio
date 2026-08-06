@@ -57,6 +57,7 @@ TEST_CASE("write_single_pricing_model_product", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(1, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     REQUIRE(!products.empty());
     BOOST_LOG_SEV(lg, debug) << "Pricing model product: " << products[0];
 
@@ -76,6 +77,7 @@ TEST_CASE("write_multiple_pricing_model_products", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(3, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     BOOST_LOG_SEV(lg, debug) << "Pricing model products: " << products;
 
     pricing_model_product_repository repo;
@@ -94,6 +96,7 @@ TEST_CASE("read_latest_pricing_model_products_for_config", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto written = generate_synthetic_pricing_model_products(3, ctx);
+    for (auto& w : written) w.pricing_model_config_id = configs[0].id;
     pricing_model_product_repository repo;
     repo.write(h.context(), written);
 
@@ -116,6 +119,7 @@ TEST_CASE("read_latest_pricing_model_product_by_id", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(1, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     REQUIRE(!products.empty());
     auto p = products[0];
     const auto product_id_str = boost::uuids::to_string(p.id);
@@ -143,6 +147,7 @@ TEST_CASE("read_all_pricing_model_product_history", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(1, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     REQUIRE(!products.empty());
     auto p = products[0];
     const auto product_id_str = boost::uuids::to_string(p.id);
@@ -172,6 +177,7 @@ TEST_CASE("remove_pricing_model_product", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(1, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     REQUIRE(!products.empty());
     auto p = products[0];
     const auto product_id_str = boost::uuids::to_string(p.id);
@@ -197,6 +203,7 @@ TEST_CASE("remove_pricing_model_products_for_config", tags) {
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(3, ctx);
+    for (auto& p : products) p.pricing_model_config_id = configs[0].id;
     pricing_model_product_repository repo;
     repo.write(h.context(), products);
 

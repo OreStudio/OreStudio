@@ -59,7 +59,7 @@ void PricingModelProductHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     analytics::messaging::get_pricing_model_product_history_request request;
-    request.id = id_;
+    request.id = boost::uuids::to_string(id_);
 
     runHistoryRequest(clientManager_, std::move(request), [this](auto response) {
         if (!response.success) {
@@ -67,7 +67,7 @@ void PricingModelProductHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.products);
+        versions_ = std::move(response.history);
         historyLoaded();
     });
 }

@@ -61,6 +61,7 @@ write_prerequisites(scoped_database_helper& h, ores::utility::generation::genera
     cfg_repo.write(h.context(), configs[0]);
 
     auto products = generate_synthetic_pricing_model_products(1, ctx);
+    products[0].pricing_model_config_id = configs[0].id;
     pricing_model_product_repository prod_repo;
     prod_repo.write(h.context(), products[0]);
 

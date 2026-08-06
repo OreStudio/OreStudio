@@ -48,12 +48,25 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Select *ACME CORPORATION PLC* from the tenant picker
 - Confirm the main window opens with the menu bar visible
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open Pricing Engine Types and verify list
 
 - Navigate to /Analytics → Pricing Engine Types/
 - Confirm the list window opens with existing system records (Swap, EuropeanSwaption, BermudanSwaption, CMS, CapFloor)
 - Verify pagination controls are visible and functional
 - Verify the toolbar has Add, Edit, Delete, and History buttons
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Failed to deserialize response: Failed to unpack msgpack data. |
 
 ** Add a new pricing engine type
 
@@ -64,6 +77,12 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Click *Save*
 - Confirm the new row appears in the list with Code =TestType=
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Edit the pricing engine type
 
 - Select the =TestType= row in the list
@@ -72,12 +91,24 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Click *Save*
 - Confirm the list refreshes and shows the updated description
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** View pricing engine type history
 
 - Select the =TestType= row
 - Click *History*
 - Confirm the history dialog opens showing at least 2 versions (create + edit)
 - Close the history dialog
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Delete the pricing engine type
 
@@ -86,6 +117,12 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Confirm the deletion prompt appears
 - Confirm deletion
 - Verify the =TestType= row is removed from the list
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Open Pricing Model Configs and create a config
 
@@ -98,12 +135,24 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Click *Save*
 - Confirm the new config appears in the list
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Find config by name
 
 - In the Pricing Model Configs list, locate the row with Name =TestConfig=
 - Select the row and click *Edit*
 - Confirm the detail dialog shows Name =TestConfig=, Variant =standard=
 - Close the dialog without saving
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Add a pricing model product to the config
 
@@ -116,6 +165,12 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Enter Engine: =DiscountingSwapEngine=
 - Click *Save*
 - Confirm the new product appears in the list
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Add a pricing model product parameter
 
@@ -130,6 +185,12 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Click *Save*
 - Confirm the new parameter appears in the list
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Delete test data and verify cleanup
 
 - In Pricing Model Product Parameters, select the test parameter and click *Delete*
@@ -140,14 +201,20 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 - Confirm deletion
 - In Pricing Engine Types, verify no leftover test data remains
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-08-06T20:24:26Z |
+| Branch        | feature/refactor-codegen-cpp |
+| Commit        | 90df5ee19 |
+| Worktree      | bright_faraday |
 
 * Notes

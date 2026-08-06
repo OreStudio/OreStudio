@@ -65,8 +65,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | Failed to deserialize response: Failed to unpack msgpack data. |
+| Status | PASS |
 
 ** Add a new pricing engine type
 
@@ -81,7 +80,8 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | no test type after save and reload. eventing worked but did not load new entity. |
 
 ** Edit the pricing engine type
 
@@ -212,9 +212,9 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-06T20:24:26Z |
+| Completed at  | 2026-08-06T21:02:34Z |
 | Branch        | feature/refactor-codegen-cpp |
-| Commit        | 90df5ee19 |
+| Commit        | 53739ee42 |
 | Worktree      | bright_faraday |
 
 * Notes

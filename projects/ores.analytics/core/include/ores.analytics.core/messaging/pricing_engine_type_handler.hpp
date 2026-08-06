@@ -29,6 +29,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <optional>
 
 namespace ores::analytics::messaging {
@@ -49,6 +50,9 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for pricing engine type operations.
+ *
+ *  are system-owned global entities; list and history
+ * operations use the system tenant context.
  */
 class pricing_engine_type_handler {
 public:
@@ -67,7 +71,9 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         get_pricing_engine_types_response resp;
         if (auto req = decode<get_pricing_engine_types_request>(msg)) {
             try {
@@ -102,7 +108,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<save_pricing_engine_type_request>(msg)) {
             try {
                 svc.save_type(req->data);
@@ -131,7 +139,9 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<get_pricing_engine_type_history_request>(msg)) {
             try {
                 auto hist = svc.get_type_history(req->code);
@@ -168,7 +178,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<delete_pricing_engine_type_request>(msg)) {
             try {
                 svc.delete_types(req->codes);

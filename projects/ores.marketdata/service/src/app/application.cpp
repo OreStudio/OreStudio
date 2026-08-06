@@ -25,11 +25,13 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/eventing/feed_binding_changed_event.hpp"
 #include "ores.marketdata.api/messaging/crm_protocol.hpp"
+#include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/curve_feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
+#include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/eventing/crm_driver_pair_changed_event.hpp"
@@ -178,6 +180,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::crm_handler h(n, c, v, crm_bridge);
                                       h.rates(std::move(msg));
                                   }));
+            subs.push_back(n.queue_subscribe(std::string(mm::republish_curve_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::curve_republish_handler h(n, c, v);
+                                                 h.republish(std::move(msg));
+                                             }));
             return subs;
         },
         [&nats, ingest, curve_ingest](boost::asio::io_context& ioc) {

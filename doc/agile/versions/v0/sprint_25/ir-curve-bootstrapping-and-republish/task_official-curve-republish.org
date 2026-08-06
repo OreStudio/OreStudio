@@ -47,10 +47,10 @@ to) and the bootstrapping engine task (the values being written).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Core implementation done and unit-tested; PR not yet raised. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Local ctest sweep, write Result, raise PR. |
+| Last touched | 2026-08-06                               |
 
 * Acceptance
 
@@ -161,6 +161,36 @@ convention; a second =republish()= call for the same config naturally
 produces a new generation.
 
 * Notes
+
+Implementation landed across:
+- =ores.marketdata.service::curve_republish_resolver= (private,
+  pure) -- =resolve_bootstrap_pillars()=/=resolve_tenor_date()=,
+  unit-tested (7 cases, no DB) mirroring
+  =ir_curve_template_resolver_tests.cpp='s own split.
+- =ores.marketdata.service::app::curve_republish_service::republish()=
+  -- the DB-touching orchestrator: reads config+pillars+raw
+  grid+discount curve, calls the resolver then
+  =curve_bootstrap_engine::bootstrap=, stamps
+  =market_series.derivation_kind=, writes
+  =market_observations=+=observation_lineage=.
+- =republish_curve_request=/=response= (ores.marketdata.api) +
+  =curve_republish_handler= (ores.marketdata.service), wired into
+  =application.cpp='s existing queue-subscribe block alongside
+  =crm_handler= -- the on-demand NATS entry point, subject
+  =marketdata.v1.curve_bootstrap.republish=.
+
+Full local build clean; =ores.marketdata.api/client/core/service.tests=
+all green (service suite: 17 cases including the 7 new resolver
+tests). =ores.refdata.core.tests= hung locally under heavy concurrent
+build/test load from other environments sharing this host -- untouched
+by this task's changes (no refdata files modified), treated as
+environmental, not re-verified in this session; re-run before merge
+once the host is quieter.
+
+Not yet done: a manual QA test scenario exercising =republish()= end to
+end against a real database (DEPOSIT/FRA/SWAP pillars, a Projection
+config chained off a Funding config, and a re-run producing a second
+generation).
 
 * Test Scenarios
 

@@ -70,7 +70,6 @@ public:
     std::vector<domain::portfolio> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all portfolios, possibly filtered by primary key.
      */

@@ -70,7 +70,6 @@ public:
     std::vector<domain::party_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all party types, possibly filtered by primary key.
      */

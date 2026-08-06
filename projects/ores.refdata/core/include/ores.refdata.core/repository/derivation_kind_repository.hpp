@@ -71,7 +71,6 @@ public:
     std::vector<domain::derivation_kind> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all derivation kinds, possibly filtered by primary key.
      */

@@ -71,7 +71,6 @@ public:
     std::vector<domain::instrument_code> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all instrument codes, possibly filtered by primary key.
      */

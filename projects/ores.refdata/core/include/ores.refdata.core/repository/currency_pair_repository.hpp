@@ -70,7 +70,6 @@ public:
     std::vector<domain::currency_pair> read_latest(context ctx, const std::string& pair_code);
     /**@}*/
 
-
     /**
      * @brief Reads all currency pairs, possibly filtered by primary key.
      */

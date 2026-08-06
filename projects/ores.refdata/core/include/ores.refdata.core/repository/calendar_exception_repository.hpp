@@ -71,7 +71,6 @@ public:
     std::vector<domain::calendar_exception> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all calendar exceptions, possibly filtered by primary key.
      */

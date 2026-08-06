@@ -71,7 +71,6 @@ public:
     std::vector<domain::fra_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all FRA conventions, possibly filtered by primary key.
      */

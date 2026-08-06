@@ -71,7 +71,6 @@ public:
     std::vector<domain::ir_curve_bootstrap_pillar> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all IR curve bootstrap pillars, possibly filtered by primary key.
      */

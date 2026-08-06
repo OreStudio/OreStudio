@@ -71,7 +71,6 @@ public:
     std::vector<domain::swap_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all swap conventions, possibly filtered by primary key.
      */

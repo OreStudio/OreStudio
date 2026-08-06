@@ -71,7 +71,6 @@ public:
     std::vector<domain::cds_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all CDS conventions, possibly filtered by primary key.
      */

@@ -77,7 +77,6 @@ public:
     std::vector<domain::counterparty_identifier> read_latest_by_code(
         context ctx, const std::string& counterparty_id, const std::string& id_scheme);
 
-
     /**
      * @brief Reads all counterparty identifiers, possibly filtered by primary key.
      */

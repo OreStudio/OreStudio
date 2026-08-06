@@ -71,7 +71,6 @@ public:
     std::vector<domain::business_unit_type> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all business unit types, possibly filtered by primary key.
      */

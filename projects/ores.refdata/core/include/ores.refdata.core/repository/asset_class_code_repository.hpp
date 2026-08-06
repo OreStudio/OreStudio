@@ -71,7 +71,6 @@ public:
     std::vector<domain::asset_class_code> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all asset class codes, possibly filtered by primary key.
      */

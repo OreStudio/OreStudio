@@ -70,7 +70,6 @@ public:
     std::vector<domain::calendar_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all calendar types, possibly filtered by primary key.
      */

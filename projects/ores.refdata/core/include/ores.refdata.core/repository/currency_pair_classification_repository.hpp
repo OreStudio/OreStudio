@@ -72,7 +72,6 @@ public:
                                                                   const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all currency pair classifications, possibly filtered by primary key.
      */

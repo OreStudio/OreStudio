@@ -71,7 +71,6 @@ public:
     std::vector<domain::tenor_convention> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all tenor conventions, possibly filtered by primary key.
      */

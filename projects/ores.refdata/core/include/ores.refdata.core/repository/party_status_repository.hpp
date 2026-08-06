@@ -70,7 +70,6 @@ public:
     std::vector<domain::party_status> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all party statuses, possibly filtered by primary key.
      */

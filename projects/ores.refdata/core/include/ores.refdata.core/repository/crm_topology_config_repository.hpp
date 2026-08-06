@@ -71,7 +71,6 @@ public:
     std::vector<domain::crm_topology_config> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all CRM topology configs, possibly filtered by primary key.
      */

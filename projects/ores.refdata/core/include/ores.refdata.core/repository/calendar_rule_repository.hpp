@@ -70,7 +70,6 @@ public:
     std::vector<domain::calendar_rule> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all calendar rules, possibly filtered by primary key.
      */

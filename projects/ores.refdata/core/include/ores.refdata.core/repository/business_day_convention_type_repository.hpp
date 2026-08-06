@@ -72,7 +72,6 @@ public:
                                                                   const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all business day convention types, possibly filtered by primary key.
      */

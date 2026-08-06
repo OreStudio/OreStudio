@@ -202,6 +202,12 @@ us. Left STARTED rather than closing it.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =Now= field should be =Not yet started.= for BACKLOG tasks, not =Nothing.= | task_apply_safe_drift.org | Fixed | PR #940 round 1. |
+| 2 | Duplicate blank line in generated repository headers wherever =service_find_by_code= renders | =ores.cpp.repository.repository_header.org=, 65 generated repository headers | Fixed | PR #1873 round 1. Root cause pre-existed the whole =has_as_of_lookup= gate, not just the 7 new =service_find_by_code= files -- fix collapsed the stray blank line component-wide. |
+| 3 | Stale "Getting..." log wording on the 4 =service_find_prefix= renamed =find_X= methods | =ores.cpp.service.service_impl.org=, =contact_type=/=party_id_scheme=/=party_status=/=party_type= services | Fixed | PR #1873 round 1. |
+| 4 | PR #1873 recorded on the wrong task doc (=analytics=, not this pilot) | =task_apply_safe_drift_analytics.org= | Fixed | PR #1873 round 1. =compass pr create= picked the wrong task because two tasks share the =feature/refactor-codegen-cpp= branch name; reverted and re-recorded on this task before the round even started. |
+| 5 | No new unit tests exercise the ~40 new additive methods | service/repository layer | Declined | Matches existing convention -- pre-existing =get_X=/=list_X_by_Y= methods aren't unit-tested directly either; coverage comes from the =ctest -R "ores\.refdata"= integration suite. |
+| 6 | =has_uuid_include= is another hand-computed OR-flag in =core.py= | =core.py= | Declined | Already tracked as a forward-looking capture (=evaluate_handlebars_for_codegen_templates.org=); nothing to act on in this PR. |
+| 7 | Story.org end date (2026-08-06) is a day after the task's =Last touched= (2026-08-05) | =story.org= | Declined | Not a bug -- the task was closed just after midnight local time; 2026-08-06 is the correct close date. |
 
 * Result
 

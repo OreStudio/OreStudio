@@ -70,7 +70,6 @@ public:
     std::vector<domain::contact_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all contact types, possibly filtered by primary key.
      */

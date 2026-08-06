@@ -70,7 +70,6 @@ public:
     std::vector<domain::leg_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all leg types, possibly filtered by primary key.
      */

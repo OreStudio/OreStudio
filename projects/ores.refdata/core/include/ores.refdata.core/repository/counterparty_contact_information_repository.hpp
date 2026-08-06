@@ -79,7 +79,6 @@ public:
     std::vector<domain::counterparty_contact_information> read_latest_by_code(
         context ctx, const std::string& counterparty_id, const std::string& contact_type);
 
-
     /**
      * @brief Reads all counterparty contact informations, possibly filtered by primary key.
      */

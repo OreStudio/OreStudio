@@ -71,7 +71,6 @@ public:
     std::vector<domain::currency_market_tier> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all currency market tiers, possibly filtered by primary key.
      */

@@ -69,7 +69,6 @@ public:
     std::vector<domain::country> read_latest(context ctx);
     std::vector<domain::country> read_latest(context ctx, const std::string& alpha2_code);
     /**@}*/
-
     /**
      * @brief Reads countries as they stood at a specific
      * timepoint — valid_from <= as_of < valid_to — possibly filtered by

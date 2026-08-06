@@ -71,7 +71,6 @@ public:
     std::vector<domain::ois_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all OIS conventions, possibly filtered by primary key.
      */

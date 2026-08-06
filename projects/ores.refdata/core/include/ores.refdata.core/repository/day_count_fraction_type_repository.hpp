@@ -71,7 +71,6 @@ public:
     std::vector<domain::day_count_fraction_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all day count fraction types, possibly filtered by primary key.
      */

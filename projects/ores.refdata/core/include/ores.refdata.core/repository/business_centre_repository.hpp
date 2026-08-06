@@ -71,7 +71,6 @@ public:
     std::vector<domain::business_centre> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all business centres, possibly filtered by primary key.
      */

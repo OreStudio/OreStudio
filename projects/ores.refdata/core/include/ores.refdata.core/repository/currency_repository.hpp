@@ -69,7 +69,6 @@ public:
     std::vector<domain::currency> read_latest(context ctx);
     std::vector<domain::currency> read_latest(context ctx, const std::string& iso_code);
     /**@}*/
-
     /**
      * @brief Reads currencies as they stood at a specific
      * timepoint — valid_from <= as_of < valid_to — possibly filtered by

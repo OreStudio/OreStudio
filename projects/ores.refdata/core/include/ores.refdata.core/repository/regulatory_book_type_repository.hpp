@@ -70,7 +70,6 @@ public:
     std::vector<domain::regulatory_book_type> read_latest(context ctx);
     std::vector<domain::regulatory_book_type> read_latest(context ctx, const std::string& code);
     /**@}*/
-
     /**
      * @brief Reads regulatory book types as they stood at a specific
      * timepoint — valid_from <= as_of < valid_to — possibly filtered by

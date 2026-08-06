@@ -70,7 +70,6 @@ public:
     std::vector<domain::tenor_unit> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all tenor units, possibly filtered by primary key.
      */

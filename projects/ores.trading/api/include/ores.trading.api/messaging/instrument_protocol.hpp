@@ -338,16 +338,9 @@ struct save_equity_accumulator_instrument_response {
     std::string message;
 };
 
-struct save_equity_position_instrument_request {
-    using response_type = struct save_equity_position_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.equity_position_instruments.save";
-    ores::trading::domain::equity_position_instrument data;
-};
-
-struct save_equity_position_instrument_response {
-    bool success = false;
-    std::string message;
-};
+// equity_position_instrument's save request/response now lives in the
+// codegen-generated ores.trading.api/messaging/equity_position_instrument_protocol.hpp
+// (list/save/history/remove), alongside the generated event registrar.
 
 // ---- Commodity instrument protocol ----
 

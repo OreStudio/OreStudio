@@ -35,7 +35,6 @@
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
 #include <optional>
@@ -167,13 +166,9 @@ public:
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_accumulator_instrument);
     }
 
-    void save_position(ores::nats::message msg) {
-        using Svc = service::equity_position_instrument_service;
-        handle_typed_equity_save<save_equity_position_instrument_request,
-                                 save_equity_position_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_position_instrument);
-    }
+    // save_position removed — equity_position_instrument's save/list/history/
+    // remove now flow through the codegen-generated
+    // equity_position_instrument_registrar (see registrar_equity.cpp).
 
 private:
     ores::nats::service::client& nats_;

@@ -6952,6 +6952,17 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] in ALL_BUCKETS:
         sys.exit(cmd_backlog(sys.argv[1], sys.argv[2:]))
 
+    # Help command: compass help [cmd] — shows top-level help or runs
+    # compass <cmd> --help for a specific sub-command.
+    if len(sys.argv) >= 2 and sys.argv[1] == "help":
+        if len(sys.argv) >= 3 and not sys.argv[2].startswith("-"):
+            sys.argv[1] = sys.argv[2]
+            sys.argv[2] = "--help"
+        else:
+            sys.argv[1] = "--help"
+        # Re-run main() with the modified argv so argparse prints help.
+        return main()
+
     # Unknown command — suggest closest match before handing off to argparse.
     if len(sys.argv) >= 2 and not sys.argv[1].startswith("-"):
         _KNOWN_COMMANDS = [

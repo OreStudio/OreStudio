@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:dx:cli:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-help-command
+#+pr: 1885
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =help= dispatch in =main()= before the unknown-command handler.
+=compass help= rewrites argv to =--help= and recurses into =main()=
+to trigger argparse's built-in help. =compass help <cmd>= rewrites
+argv to =<cmd> --help= and recurses, triggering that sub-command's
+own help output. Works for both early-dispatch commands (db, services,
+etc.) and argparse-managed ones (fleet, bearings, etc.).
 
 * Notes
 
@@ -60,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1885][#1885]] | [compass] Add compass help command |
 
 * Review
 
@@ -69,3 +72,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass help= prints top-level usage. =compass help <cmd>= prints
+that command's full usage (same as =compass <cmd> --help=). Works for
+all commands: early-dispatched (db, services, etc.) and
+argparse-managed (fleet, bearings, etc.). Implemented via argv
+rewriting + recursive =main()= call — no new parser or help text.

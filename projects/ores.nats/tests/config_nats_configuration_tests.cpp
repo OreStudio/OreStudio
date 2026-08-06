@@ -19,10 +19,10 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_configuration.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 
 namespace {
 
@@ -116,8 +116,9 @@ TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_
 
     nats_configuration::register_shared_domain();
 
-    setenv("ORES_NATS_URL", "nats://regression-check:4222", 1);
-    setenv("ORES_NATS_LISTEN_PORT", "4222", 1);
+    using ores::platform::environment::environment;
+    environment::set_value("ORES_NATS_URL", "nats://regression-check:4222");
+    environment::set_value("ORES_NATS_LISTEN_PORT", "4222");
 
     const auto od = nats_configuration::make_options_description();
     const auto mapper(environment_mapper_factory::make_mapper("SOME_UNRELATED_APP"));
@@ -129,8 +130,8 @@ TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_
     const auto result = nats_configuration::read_options(vm);
     CHECK(result.url == "nats://regression-check:4222");
 
-    unsetenv("ORES_NATS_URL");
-    unsetenv("ORES_NATS_LISTEN_PORT");
+    environment::unset_value("ORES_NATS_URL");
+    environment::unset_value("ORES_NATS_LISTEN_PORT");
 }
 
 TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
@@ -147,7 +148,8 @@ TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
     using ores::utility::program_options::environment_mapper_factory;
 
     nats_configuration::register_shared_domain();
-    setenv("ORES_NATS_TLS_CA", "/tmp/ca.crt", 1);
+    using ores::platform::environment::environment;
+    environment::set_value("ORES_NATS_TLS_CA", "/tmp/ca.crt");
 
     const auto od = nats_configuration::make_options_description();
     const auto mapper(environment_mapper_factory::make_mapper("SOME_UNRELATED_APP"));
@@ -159,5 +161,5 @@ TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
     const auto result = nats_configuration::read_options(vm);
     CHECK(result.tls_ca_cert.empty());
 
-    unsetenv("ORES_NATS_TLS_CA");
+    environment::unset_value("ORES_NATS_TLS_CA");
 }

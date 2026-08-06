@@ -20,9 +20,9 @@
 #include "ores.iam.service/config/parser.hpp"
 #include "ores.iam.service/config/parser_exception.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/scoped_env_unset.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -48,9 +48,9 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     // The generic ORES_NATS_* shared-domain fallback tier (PR #1819) makes
     // this checkout's real .env values visible to every service parser --
     // clear them so this "no overrides given" case stays hermetic.
-    unsetenv("ORES_NATS_URL");
-    unsetenv("ORES_NATS_SUBJECT_PREFIX");
-    unsetenv("ORES_NATS_WIRE_FORMAT");
+    ores::platform::environment::environment::unset_value("ORES_NATS_URL");
+    ores::platform::environment::environment::unset_value("ORES_NATS_SUBJECT_PREFIX");
+    ores::platform::environment::environment::unset_value("ORES_NATS_WIRE_FORMAT");
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

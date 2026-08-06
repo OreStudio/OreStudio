@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 02BC190D-6B74-4058-9418-E898CBB07216
+:END:
+#+title: Task: Wire NATS eventing templates into codegen and generate DB-write-to-NATS integration tests
+#+description: Wire the existing but unused nats-changed-event/nats-event-registrar templates into the generator behind a per-entity opt-in, then add a new test facet that generates the write-entity-observe-NATS-notification integration test proven by hand against business_unit.
+#+type: task
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+owner: marco
+#+branch: feature/codegen-nats-eventing-and-integration-tests
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two things, in order:
+
+1. Wire the existing, currently-unused =cpp_nats_changed_event=,
+   =cpp_nats_event_registrar.hpp/cpp= templates into the codegen
+   generator, behind a per-entity opt-in flag, so an entity's
+   changed-event struct and event-registrar wiring can be generated
+   instead of hand-crafted (as they are today even for
+   =business_unit=, despite the templates already existing).
+2. Add a new test facet that generates the "write entity, observe its
+   NATS entity-changed notification" integration test proven by hand
+   in =business_unit_eventing_integration_tests.cpp=, so every
+   eventing-enabled entity gets this regression coverage for free.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-06                               |
+
+* Acceptance
+
+- A new per-entity model flag (e.g. =has_nats_eventing=) controls
+  whether the changed-event/event-registrar files are generated for
+  that entity; default false, so no currently-hand-crafted entity's
+  files are touched by turning this on.
+- Generating with the flag on for a *fresh* entity (no hand-crafted
+  eventing files yet) produces a compiling, working
+  changed_event.hpp + event_registrar.hpp/cpp, wired into the
+  component's central =event_registrar.cpp= the same way
+  =business_unit='s hand-crafted version is today.
+- Proven end-to-end against a real trading entity that currently has
+  zero eventing wiring (e.g. =fx_variance_swap_instrument=) — not
+  against =business_unit=, whose hand-crafted files must not be
+  clobbered/diverged-from silently.
+- The new integration-test facet generates a Catch2 test file
+  matching the shape of
+  =business_unit_eventing_integration_tests.cpp=, parameterised per
+  entity (repository include, generator include, party-scoping
+  helper reuse, entity_singular/plural, primary-key id-list field),
+  wired into the component's tests =component_files.cmake=.
+- =regenerate_cmake_component_files.py= picks up the new generated
+  test file with no manual CMakeLists edits beyond the one-time
+  eventing-lib link additions already done for
+  =ores.refdata.core.tests=.
+- Second regen pass on every touched entity produces zero further
+  diff (standard codegen drift check).
+- Full build + affected ctest suites green before PR.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 80F1638E-D04A-4618-ABD6-7A853F31FCD0
+:END:
+#+title: Story: IR curve follow-ups
+#+description: Three IR curve follow-up items: expand stochastic IR process types beyond Vasicek/CIR/Hull-White, fix IR curve seed data and Qt dialog combo gaps, and investigate tenant_type has_tenant_id model/table drift.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-06                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:003B3504-8F6F-406F-A94B-A3119DE51962][IR curve follow-ups]] | BACKLOG | | | Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompatible with index_family enum (provision party fails), and IrCurveGenerationConfigDetailDialog's hand-patched index family combo doesn't list the 16 new RFR/IBOR families. |
+| [[id:8656F506-A3A8-4498-9F34-4A47F32F78A6][Expand synthetic IR stochastic process types beyond Vasicek/CIR/Hull-White]] | BACKLOG | | | Add support for further stochastic interest-rate models (BDT, Black-Karasinski, HJM, LMM, SABR, G2++, affine/QG term-structure) to ores.synthetic's yield curve process types, currently limited to Vasicek, CIR, and Hull-White. |
+| [[id:2F793500-FBD1-4E4F-8B6E-15D03337FBD2][Investigate tenant_type model/table drift on has_tenant_id]] | BACKLOG | | | tenant_type's codegen model has no :has_tenant_id: flag, meaning current codegen would drop the tenant_id column entirely, yet the live table still has it -- likely stale drift, not a clean pattern to copy. |
+
+* Decisions
+
+* Out of scope
+
+-

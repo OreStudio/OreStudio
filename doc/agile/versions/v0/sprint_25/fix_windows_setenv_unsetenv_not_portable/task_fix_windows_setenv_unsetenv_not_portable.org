@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 514472D1-ED85-447C-9DEB-F8BDE0F2FBB8
+:END:
+#+title: Task: Implement Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests
+#+description: Initial task for: Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests
+#+type: task
+#+level: s1
+#+filetags: :fix_windows_setenv_unsetenv_not_portable:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-windows-setenv-unsetenv-not-portable
+#+pr: 1876
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4584CB9E-50DE-4B8F-833C-BDAE957FD944][Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore Windows build by replacing all raw setenv/unsetenv calls in tests with the portable ores.platform::environment wrapper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4584CB9E-50DE-4B8F-833C-BDAE957FD944][Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-06                               |
+
+* Acceptance
+
+- Windows (MSVC + Clang) CI goes green on all 12 affected translation units
+- Linux (Clang/GCC) build remains green
+- All affected test suites pass on Linux
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1876][#1876]] | [ores.nats] Replace setenv/unsetenv with portable ores.platform::environment |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

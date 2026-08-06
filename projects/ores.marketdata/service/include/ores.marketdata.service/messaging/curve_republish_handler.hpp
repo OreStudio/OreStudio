@@ -45,6 +45,8 @@ inline auto& curve_republish_handler_lg() {
 
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::reply;
 using namespace ores::logging;
 
@@ -63,13 +65,18 @@ public:
         , verifier_(std::move(verifier)) {}
 
     void republish(ores::nats::message msg) {
-        BOOST_LOG_SEV(curve_republish_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(curve_republish_handler_lg(), msg);
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::curve_bootstrap:republish")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
 
         republish_curve_response resp;
         if (auto req = decode<republish_curve_request>(msg)) {

@@ -217,7 +217,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Republish NATS handler has no has_permission check, unlike every sibling handler | curve_republish_handler.hpp | Accepted | Added marketdata::curve_bootstrap:republish check + log_handler_entry, matching crm_handler's pattern. |
+| 2 | market_observations + observation_lineage writes aren't atomic (two separate transactions) | curve_republish_service.cpp | Declined | ores::database::context exposes no cross-repository transaction API anywhere in this codebase; building one is new infrastructure out of scope for this task. Documented as a known gap. |
+| 3 | Full pillar-table scan per republish (no filtered repository method) | curve_republish_service.cpp | Declined | Already documented as a deliberate tradeoff in this task's own Plan, matching ir_curve_feed_config_handler's identical existing convention. |
+| 4 | curve_republish_service::republish() has no DB-integration test coverage | curve_republish_service.cpp | Declined | tenor_convention_resolution_repository is read-only (rows are SQL-provisioned, not application-written) and the populate/ scripts that seed RATES_SPOT_FORWARD resolutions do not run against the isolated ctest database -- the same reason ir_curve_template_resolver's own DB-touching half (build_ir_curve_refdata_context) has no test either. A real integration test would need raw SQL fixture seeding, a heavier pattern not used anywhere else in this codebase. |
+| 5 | Re-running republish() at an identical (config, as_of) has no idempotency guard | curve_republish_service.cpp | Declined | market_observations' insert trigger already closes the prior valid_to=infinity row on the same (series_id, observation_datetime, point_id) key before inserting the new one -- verified in the generated SQL; a same-as_of rerun cannot produce two ambiguous current rows. |
+| 6 | ensure_output_series_stamped doesn't check the claiming config matches the series' existing derivation_config_id | curve_republish_service.cpp | Declined | output_series_id already has a tenant-wide unique index for active bootstrap configs (verified in refdata_ir_curve_bootstrap_configs_create.sql), so two configs racing to claim the same output series is structurally impossible. |
 
 * Result
 

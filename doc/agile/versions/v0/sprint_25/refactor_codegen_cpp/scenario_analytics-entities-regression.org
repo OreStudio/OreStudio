@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: B55BD00B-5A6C-4E93-A756-F8E1289DDD26
+:END:
+#+title: Test Scenario: Verify analytics entities after codegen regeneration
+#+description: Regression test: CRUD + eventing + history for all four analytics entities after codegen regeneration
+#+type: test_scenario
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_25:v0:
+#+target_dialog: PricingEngineTypeMdiWindow
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment: bright_faraday
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CBC727E4B][Apply safe drift to analytics-cpp]] in [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Build must be green on this branch: =compass build=
+- Database must be freshly recreated: =compass db recreate -y -k=
+- Acme Corporation must be provisioned: =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+- Services must be running: =compass services start=
+- Confirm all 22 services reach the =running= state before starting.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1ABAAF88-B7A4-4774-8843-CF9CBC727E4B][Apply safe drift to analytics-cpp]] |
+| Parent story  | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]   |
+| Target dialog | PricingEngineTypeMdiWindow              |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant admin for Acme Corporation
+
+- Launch the Qt client: =compass client start=
+- Log in as =tenant_admin@acme_corporation= / =Secure-Password-123=
+- Select *ACME CORPORATION PLC* from the tenant picker
+- Confirm the main window opens with the menu bar visible
+
+** Open Pricing Engine Types and verify list
+
+- Navigate to /Analytics → Pricing Engine Types/
+- Confirm the list window opens with existing system records (Swap, EuropeanSwaption, BermudanSwaption, CMS, CapFloor)
+- Verify pagination controls are visible and functional
+- Verify the toolbar has Add, Edit, Delete, and History buttons
+
+** Add a new pricing engine type
+
+- Click *Add* in the Pricing Engine Types toolbar
+- Enter Code: =TestType=
+- Enter Description: =Test pricing engine type for regression=
+- Leave Instrument Type Code blank
+- Click *Save*
+- Confirm the new row appears in the list with Code =TestType=
+
+** Edit the pricing engine type
+
+- Select the =TestType= row in the list
+- Click *Edit*
+- Change Description to =Updated test pricing engine type=
+- Click *Save*
+- Confirm the list refreshes and shows the updated description
+
+** View pricing engine type history
+
+- Select the =TestType= row
+- Click *History*
+- Confirm the history dialog opens showing at least 2 versions (create + edit)
+- Close the history dialog
+
+** Delete the pricing engine type
+
+- Select the =TestType= row
+- Click *Delete*
+- Confirm the deletion prompt appears
+- Confirm deletion
+- Verify the =TestType= row is removed from the list
+
+** Open Pricing Model Configs and create a config
+
+- Navigate to /Analytics → Pricing Model Configurations/
+- Confirm the list window opens
+- Click *Add*
+- Enter Name: =TestConfig=
+- Enter Variant: =standard=
+- Enter Description: =Test configuration for regression=
+- Click *Save*
+- Confirm the new config appears in the list
+
+** Find config by name
+
+- In the Pricing Model Configs list, locate the row with Name =TestConfig=
+- Select the row and click *Edit*
+- Confirm the detail dialog shows Name =TestConfig=, Variant =standard=
+- Close the dialog without saving
+
+** Add a pricing model product to the config
+
+- Navigate to /Analytics → Pricing Model Products/
+- Confirm the list window opens
+- Click *Add*
+- Select the config created above in the Pricing Engine Configuration dropdown
+- Select Pricing Engine Type =Swap=
+- Enter Model: =DiscountedCashflows=
+- Enter Engine: =DiscountingSwapEngine=
+- Click *Save*
+- Confirm the new product appears in the list
+
+** Add a pricing model product parameter
+
+- Navigate to /Analytics → Pricing Model Product Parameters/
+- Confirm the list window opens
+- Click *Add*
+- Select the config created above in the Configuration dropdown
+- Leave Product blank (global parameter)
+- Set Scope to =global=
+- Enter Parameter Name: =Calibration=
+- Enter Parameter Value: =Bootstrap=
+- Click *Save*
+- Confirm the new parameter appears in the list
+
+** Delete test data and verify cleanup
+
+- In Pricing Model Product Parameters, select the test parameter and click *Delete*
+- Confirm deletion
+- In Pricing Model Products, select the test product and click *Delete*
+- Confirm deletion
+- In Pricing Model Configs, select =TestConfig= and click *Delete*
+- Confirm deletion
+- In Pricing Engine Types, verify no leftover test data remains
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

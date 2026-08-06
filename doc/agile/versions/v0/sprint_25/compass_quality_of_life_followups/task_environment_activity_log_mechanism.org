@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/environment-activity-log-mechanism
-#+pr: 1869
+#+pr: 1878
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -110,6 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1878][#1878]] | [agile] Deep backlog refinement 1 + promote 9 captures into 3 sprint 25 stories |
 | [[https://github.com/OreStudio/OreStudio/pull/1869][#1869]] | [compass] Add environment activity log: manual post-pull setup steps |
 
 * Review
@@ -120,6 +121,7 @@ via its "Verifies task" field.
 | 2 | Upgrading checkouts (existing =.env= predating =ORES_ENV_ACTIVITY=) silently stamped as "caught up" instead of 0, because =existing.get(...)= returning empty can't distinguish "no .env file" from "no key in an existing .env" | env_init.py | Fixed | Captured =is_fresh_env = not env_file.is_file()= before the backup step; only a genuinely fresh .env is stamped to the current highest activity, an existing one defaults a missing key to 0. Verified live: simulated an upgrade (existing .env, key removed), regenerated, confirmed =ORES_ENV_ACTIVITY=0= and =compass env activity= correctly reports activity 1 outstanding. |
 | 3 | Unescaped =\vert= in an activity title would corrupt the org table's row parsing | env_activity.py | Fixed | =new_activity= now rejects a title containing =\vert= before writing the row. Verified directly (bypassing the shell pipe-detection hook via a Python call). |
 | 4 | =# noqa: PLC0415= on a module-top-level import doesn't correspond to anything that would fire (the suppression is for in-function imports) | env_activity.py | Fixed | Removed the noqa, kept the "private, shared on purpose" rationale as a plain comment. |
+| 5 | 9 promoted captures left behind in next/ with duplicate :ID:s | 9 files in next/ | Fixed in 459db88e8 | git rm'd all 9 stale files, regenerated indexes. next count 388→379. |
 | 5 | =compass bearings= re-reads/re-parses =.env= via =checkout_activity()= when =_env= was already loaded a few lines above | compass.py | Fixed | Reads =ORES_ENV_ACTIVITY= straight from the already-loaded =_env= dict instead. |
 | 6 | Recipe's link to =systemd-resource-management-plan.org= reported as broken (file "doesn't exist") | how_do_i_protect_the_interactive_session_at_the_root_level.org | Declined | False positive — the file is tracked in git at the repo root and the relative path (=../../../=, matching the sibling systemd-scope recipe) resolves correctly; verified with =git ls-files=. |
 

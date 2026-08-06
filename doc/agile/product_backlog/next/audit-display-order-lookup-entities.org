@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: AA7F8C14-9634-40BA-989D-1FA4FB44C860
+:END:
+#+title: Story: Audit and standardize the display_order field across lookup/code-table entities
+#+description: Determine what display_order means, which entity archetypes require it, fix codegen Qt detail-dialog templates to surface it by default, backfill affected existing entities, and update their manual screenshots.
+#+type: story
+#+level: s2
+#+filetags: :codegen:qt:refdata:technical-debt:product_backlog:next:
+#+created: 2026-07-25
+#+updated: 2026-07-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every lookup/code-table entity whose data model carries a =display_order=
+column should expose it consistently in the UI (list grid *and* Details
+dialog) and in the manual. Today the field is inconsistent: it drives
+sort order in SQL (=has_display_order= is already a recognised codegen
+spec flag, wired into [[file:../../../../../../projects/ores.codegen/library/templates/sql_schema_table_create.mustache][sql_schema_table_create.mustache]]'s ordering CTE)
+and appears in some list-window grids (e.g.
+[[file:../../../../../../projects/ores.qt/refdata/src/ClientPurposeTypeModel.cpp][ClientPurposeTypeModel]]), but is missing from the corresponding Details
+dialog — [[file:../../../../../../projects/ores.qt/refdata/ui/PurposeTypeDetailDialog.ui][PurposeTypeDetailDialog.ui]] only has Code/Name/Description, found
+while capturing screenshots for [[id:3E433126-8259-4280-9C89-1801C0C3E8E9][Write purpose_type user manual chapter]].
+=display_order= is populated across dozens of populate scripts (a
+non-exhaustive grep sample: =iam_account_types=, =iam_tenant_types=,
+=dq_badge_definitions=, =dq_badge_severities=, =refdata_party_types=,
+=refdata_party_categories=, =refdata_curve_roles=,
+=refdata_book_statuses=, =refdata_purpose_types=,
+=refdata_book_purpose_types=, =reporting_report_types=), so this is
+plausibly a codegen-template gap affecting many entities, not a
+one-off oversight in purpose_type.
+
+The outcome: a clear definition of what =display_order= means and
+which entity archetypes should treat it as mandatory vs optional, the
+Qt detail-dialog codegen templates ([[file:../../../../../../projects/ores.codegen/library/templates/qt_detail_dialog_ui.mustache][qt_detail_dialog_ui.mustache]],
+[[file:../../../../../../projects/ores.codegen/library/templates/cpp_qt_detail_dialog.hpp.mustache][cpp_qt_detail_dialog.hpp.mustache]],
+[[file:../../../../../../projects/ores.codegen/library/templates/cpp_qt_detail_dialog.cpp.mustache][cpp_qt_detail_dialog.cpp.mustache]], and their =.org= counterparts)
+updated to surface the field by default for =has_display_order=
+entities, existing affected entities regenerated/fixed, and every
+affected entity's manual Details-dialog screenshot recaptured
+(including purpose_type's, which is what surfaced this).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-07-25                               |
+
+* Acceptance
+
+- =display_order='s purpose and semantics are documented (a knowledge
+  doc or a codegen archetype reference note), including which entity
+  archetypes must have it, which may, and which should not.
+- A survey exists (a table or list, in this story or a linked task)
+  of every entity whose SQL/spec has =display_order= but whose
+  generated Details dialog omits it.
+- The Qt detail-dialog codegen templates default to including a
+  Display Order field for =has_display_order= entities.
+- Every entity identified by the survey is regenerated/fixed so its
+  Details dialog shows Display Order alongside the other fields.
+- Every affected entity's manual chapter Details-dialog screenshot is
+  recaptured to reflect the fixed dialog, including purpose_type's
+  =purpose_type_details.png=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Full inventory not yet done; a repo-wide grep for =display_order=
+  under =*.sql= currently returns *92 matching files* (create +
+  populate scripts combined) as a rough upper bound on affected
+  surface area — the survey task should narrow this to entities that
+  actually need a fix, not treat 92 as the target count.
+- List-window grid changes are out of scope unless a surveyed entity's
+  grid is *also* missing the column — most already show it (e.g.
+  purpose_type's list window already has a Display Order column; only
+  its Details dialog is missing it).

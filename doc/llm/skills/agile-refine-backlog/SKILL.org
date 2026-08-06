@@ -205,21 +205,22 @@ report rather than silently leaving it inconsistent.
 
 *** 7a — The story (once, ever)
 
-If =doc/agile/product_backlog/backlog_deep_refinement/story.org=
-doesn't exist yet, scaffold it once:
+Scaffold the deep-refinement story into the /current sprint/. Find the
+current sprint's =sprint.org= (or run =compass where=) and scaffold:
 
 #+begin_src sh :results verbatim
 ./compass.sh add story \
-  --parent-dir doc/agile/product_backlog \
-  --parent-id D4219199-7B17-4A89-B4BC-6019738642DA \
+  --parent-dir doc/agile/versions/v0/<current_sprint> \
+  --parent-id <current_sprint_uuid> \
+  --parent-title "Sprint XX" \
   --slug backlog_deep_refinement \
   --title "Backlog deep refinement" \
   --description "Recurring deep audits of the product backlog: every capture in inbox/next/deferred verified against the codebase, duplicates merged, buckets re-scored against the current sprint's mission."
 #+end_src
 
-This story is not sprint-scoped — it is a standing home for every
-deep-refinement run, the same way the sprint-health-review pattern
-gives each sprint one story with N numbered review tasks.
+Wire the story into the sprint's =* Stories= table. Like every sprint
+story, it closes when its work is done — each run is a numbered task
+under it.
 
 *** 7b — The report task (every run)
 
@@ -228,7 +229,7 @@ and increment. Scaffold:
 
 #+begin_src sh :results verbatim
 ./compass.sh add task \
-  --parent-dir doc/agile/product_backlog/backlog_deep_refinement \
+  --parent-dir doc/agile/versions/v0/<current_sprint>/backlog_deep_refinement \
   --slug deep_refinement_<number> \
   --title "Deep refinement <number> — <date>" \
   --description "Deep backlog refinement run <number>: inbox/next/deferred audit."

@@ -1,0 +1,194 @@
+:PROPERTIES:
+:ID: C5D82002-4EBD-4F04-A2E8-4FF0EBFE0D07
+:END:
+#+title: Task: Deep refinement 1 — 2026-08-05
+#+description: Deep backlog refinement run 1: inbox/next/deferred audit — first deep refinement, clearing inbox drift and cataloguing the backlog.
+#+type: task
+#+level: s1
+#+filetags: :backlog_deep_refinement:product_backlog:agile:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9625B20-E2EB-486F-BE61-61936FCA6417][Backlog deep refinement]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:D9625B20-E2EB-486F-BE61-61936FCA6417][Backlog deep refinement]] |
+| Now          | Complete. Inbox emptied of individual captures, consolidations done, report written. |
+| Waiting on   | Nothing.                               |
+| Next         | Next deep run should focus on next-bucket deduplication and staleness. |
+| Last touched | 2026-08-06                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Run on 2026-08-05 (completed 2026-08-06)
+
+First deep backlog refinement run. Processed all ~130 individual inbox
+captures, triaged them into next/deferred/discarded, consolidated 20
+related captures into 6 grouped captures, and moved 8 BACKLOG story
+folders from inbox to next. A light spot-check of next and deferred
+was made but a full audit of those buckets was not done — deferred to
+a future run.
+
+*** Before / after
+
+| Bucket   | Before | After | Notes |
+|----------+--------+-------+-------|
+| inbox    |   130+ |     6 | 0 individual captures remain; 6 STARTED story folders left in place (actively worked on) |
+| next     |    249 |  ~370 | Net growth from inbox triage + consolidations |
+| deferred |    201 |  ~215 | Net growth from selective deferral of long-horizon captures |
+
+*** Captures discarded (resolved by sprint 25 work)
+
+| Capture | Resolved by |
+|---------+-------------|
+| [[id:21D8DE9C-9498-45FB-8FD7-B1FFC7A5EB0C][Flaky nightly-only test: mint_token TTL]] | [[id:536A6313-18D1-49BD-9CA0-EB0D2E3B2D3C][Hotfix: JWT TTL]] — DONE 2026-08-04 |
+| [[id:2D8570EF-88FA-4F8A-9B8C-44F21FD8FAE5][FX Spot Monitor stuck pending]] | [[id:E3786E5B-1039-4256-A61B-BFBF34465578][FX Spot wire-codec root cause]] — DONE 2026-08-04 |
+| [[id:5991D23F-5589-4A9F-BBA5-D60D6AE63822][ores.iam tests fail on main]] | Stale — captured 2026-07-30, predates IAM work; if still reproducible needs fresh repro steps |
+| [[id:DA6C4A03-8033-4D34-BF0E-D7A0A3EA0929][calendar_rules FK references nonexistent id column]] | Already fixed on main — line 96 now reads =code = NEW.calendar_code= |
+| [[id:7E49D8B2-2280-4032-9BA5-C0AA30A59FDC][ccache stale objects on codegen rename]] | Resolved by migration to btrfs — per user confirmation |
+
+*** Duplicates merged / consolidated
+
+| Kept | Absorbed | Notes |
+|------+----------+-------|
+| [[id:F7C0FA21-DDB1-4D81-90BB-6DFBFABD895E][Commission remaining ores.qt components into codegen]] | 7× commission_qt_*_codegen stories (admin, analytics, compute, marketdata, synthetic, trading, workspace) | All seven were near-identical stories carried from Sprint 24. Consolidated into one capture with component list. |
+| [[id:9CBDBDC0-33A9-4A2C-B02A-7F49F07007E5][Add CLI, HTTP, shell, and Wt layer generation to codegen]] | 9× per-entity-per-layer captures (CLI/HTTP/shell/Wt for contact_type, purpose_type, business_centre; CRM topology combined) | Root cause is codegen has no profiles for these layers. Per-entity captures are placeholder symptoms. This capture notes the gap and says to split into per-layer stories. |
+| qa-validation-runner-followups | 4× QA Runner captures (auto-crop, delayed screenshot, unsaved warning, multi-client ownership) | Related improvements to the same widget. |
+| business-unit-ui-followups | 3× business unit captures (centre combo, badges, live refresh) | Related UI gaps on the same entity. |
+| junction-codegen-template-followups | 4× junction codegen captures (path/namespace, timestamp, messaging service, eventing) | Related codegen template bugs for junction entities. |
+| ir-curve-followups | 2× IR curve captures (seed data incompatible, index family combo) | Related IR curve bugs surfaced during sprint 25 work. |
+
+*** Bucket moves
+
+All ~115 remaining individual inbox captures moved to next. Story folders:
+
+| Capture | From | To | Why |
+|---------+------+----+-----|
+| calendar-list-pagination-followups | inbox | next | BACKLOG story, ready for sprint planning |
+| commission_remaining_dq_entities | inbox | next | BACKLOG story |
+| extend-oresmd-full-quote-type-coverage | inbox | next | BACKLOG story, big feature |
+| offload-services-to-wsl-host-cutover | inbox | next | BACKLOG story, big infrastructure |
+| rate-display-conventions | inbox | next | BACKLOG story |
+| refdata-composite-entity-audit | inbox | next | BACKLOG story |
+| retire_per_entity_history_dialogs | inbox | next | BACKLOG story — Phase C rollout blocker |
+| trade_blotter | inbox | next | BACKLOG story — depends on workspaces |
+
+Deferred (selected — not exhaustive):
+
+| Capture | From | To | Why |
+|---------+------+----+-----|
+| [[id:F8100292-2CFF-4989-B8C2-9DD576928C2F][Calendar-aware term structure date preview]] | inbox | deferred | Depends on business-day calendars which don't exist yet |
+| [[id:0531FF74-A8EF-4084-AF72-C9944CC24CB2][Cross-platform service-install generators]] | inbox | deferred | Windows/macOS deployment is long-horizon |
+| [[id:31A66613-8584-42AE-97EB-D524F19C8574][Formalize codegen knobs as feature model]] | inbox | deferred | Major MASD/MDE design work, long-horizon |
+| [[id:A1A92FFB-FCFF-4B51-B5DF-6F8A240E0B21][GPU-batched stochastic processes]] | inbox | deferred | Research investigation |
+| [[id:8710A2AF-8C7B-46E3-AD20-E209A3D10C39][In-app bug report feature]] | inbox | deferred | Major feature, big scope |
+| [[id:A3D9F559-9665-4E61-9564-2FF29E014541][revisit_atomic_shared_ptr]] | inbox | deferred | Waiting on macOS libc++ to implement C++20 atomic<shared_ptr<T>> |
+
+*** Sprint 25 candidates flagged
+
+Approximately 25 captures were explicitly flagged as sprint-aligned during
+triage. Strongest candidates:
+
+- Codegen drift resolution: compound-key is_uuid, codegen RLS policy facet,
+  codegen history-provider registrar, codegen NATS subject constants,
+  refdata generated code stale vs templates, dynamic combo codegen drift,
+  pagination-knob fragility, junction codegen template follow-ups,
+  tenant_type has_tenant_id drift, history field mapper date mismatch,
+  history mapper provenance fields, compound-key batch test gap,
+  shared entity lookup tie-break, nullable validation not guarded
+- IR curves: expand stochastic IR process types, IR curve follow-ups,
+  validator missing nullable-tenant pattern
+- Drift consolidation: fix component_overview.org drift, enforce
+  component-level includes, fix validate_docs.sh warnings, SQL
+  reachability validation, tag-based heading dispatch, codegen key
+  columns doc update, unify duplicate HTTP clients
+- Controller decommission follow-up: drop controller service tables
+
+*** Paperwork bugs found
+
+None caused by this run. Pre-existing (from sprint audit):
+- 4 sprint stories have table state ≠ file state (BACKLOG vs STARTED)
+- 11 closed documents have non-empty Now fields
+
+*** Skill bug found and fixed
+
+The [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] skill's Step 7a scaffolded the deep-refinement
+story into =doc/agile/product_backlog/= as a "standing home" — but
+stories being worked on belong in a sprint, not the product backlog.
+Fixed the skill to scaffold into the current sprint instead, matching
+the sprint-health-review pattern it modeled itself on. Story moved to
+=doc/agile/versions/v0/sprint_25/backlog_deep_refinement/=.
+
+*** Compass limitation found
+
+=compass capture file <slug> discarded --reason "..."= accepts a reason
+flag but does not store it in the discarded file or in =discarded.org=.
+The reason is printed to stdout and lost. This means discarded captures
+have no inline explanation of why they were discarded — a gap for
+future runs to be aware of. Manually editing each discarded file to
+add a reason line is possible but was not done in this run given the
+volume.
+
+*** Summary
+
+First deep refinement run: 130+ inbox captures triaged (0 individual
+captures remain), 8 BACKLOG story folders moved to next, 5 captures
+discarded as resolved, 20 consolidated into 6 grouped captures, ~10
+captures deferred as genuinely long-horizon. Net inbox → next flow
+was the bulk of the work — most captures are valid, actionable ideas.
+Biggest finding: the backlog has accumulated ~370 next-bucket
+captures (well over the ≤20 heuristic), and a full audit of next and
+deferred was not attempted in this run. Next deep run should focus on
+deduplication and staleness in the next bucket specifically. The 25
+sprint-aligned captures identified here are good input for the next
+sprint planning session.

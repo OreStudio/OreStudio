@@ -63,6 +63,45 @@ if PROJECT_ROOT is None:
 # Normalize to absolute path
 PROJECT_ROOT = PROJECT_ROOT.resolve()
 
+# Active env file for --env / --env-file support.  None means the default .env.
+_ACTIVE_ENV_FILE: Path | None = None
+
+
+def _resolve_env_file(arg: str | None) -> Path:
+    """--env newton → .env.newton, --env-file path → that path, default → .env"""
+    if arg is None:
+        return PROJECT_ROOT / ".env"
+    # Shorthand: bare name without path separators or .env prefix
+    if "/" not in arg and "\\" not in arg and not arg.startswith(".env"):
+        return PROJECT_ROOT / f".env.{arg}"
+    p = Path(arg)
+    return p if p.is_absolute() else PROJECT_ROOT / p
+
+
+def _pop_env_file_arg(argv: list) -> str | None:
+    """Pop --env <name> or --env-file <path> from argv; return the value or None.
+
+    Errors if both flags are present or if a flag is missing its value.
+    """
+    has_env_file = "--env-file" in argv
+    has_env = "--env" in argv
+    if has_env_file and has_env:
+        print("error: cannot use both --env and --env-file together",
+              file=sys.stderr)
+        sys.exit(2)
+
+    for flag in ("--env-file", "--env"):
+        try:
+            idx = argv.index(flag)
+        except ValueError:
+            continue
+        argv.pop(idx)          # remove flag
+        if idx >= len(argv) or argv[idx].startswith("-"):
+            print(f"error: {flag} requires a value", file=sys.stderr)
+            sys.exit(2)
+        return argv.pop(idx)   # remove and return value
+    return None
+
 ORG_ROAM_DB = str(PROJECT_ROOT / "org-roam.db")
 if not os.path.exists(ORG_ROAM_DB):
     ORG_ROAM_DB = str(PROJECT_ROOT / ".org-roam.db")
@@ -6478,7 +6517,7 @@ def cmd_build(argv):
 
 def _read_env_map() -> dict:
     """Read .env into a key/value map; empty if the file is missing."""
-    env_file = PROJECT_ROOT / ".env"
+    env_file = _ACTIVE_ENV_FILE if _ACTIVE_ENV_FILE is not None else (PROJECT_ROOT / ".env")
     result = {}
     if not env_file.is_file():
         return result
@@ -6707,6 +6746,20 @@ def cmd_codegen(argv):
 
 
 def main():
+    # Parse --env / --env-file before command dispatch so sub-commands
+    # that read .env see the alternate file.  Pop so the individual
+    # parsers don't choke on the flag.
+    global _ACTIVE_ENV_FILE
+    _env_file_arg = _pop_env_file_arg(sys.argv)
+    if _env_file_arg is not None:
+        _resolved = _resolve_env_file(_env_file_arg)
+        if not _resolved.is_file():
+            print(f"error: env file not found: {_resolved}", file=sys.stderr)
+            sys.exit(1)
+        _ACTIVE_ENV_FILE = _resolved
+    else:
+        _resolved = PROJECT_ROOT / ".env"
+
     # `list` and `show` pass every remaining argument straight through to the
     # bundled doc tools (full flag compatibility, including their own --help).
     # Short-circuit before argparse so leading options like `--type` are not
@@ -6733,25 +6786,25 @@ def main():
         sys.exit(cmd_nats(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "db":
         import compass_db
-        sys.exit(compass_db.run(sys.argv[2:], PROJECT_ROOT))
+        sys.exit(compass_db.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "sql":
         import compass_db
-        sys.exit(compass_db.run(["sql"] + sys.argv[2:], PROJECT_ROOT))
+        sys.exit(compass_db.run(["sql"] + sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "services":
         import compass_services
-        sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT))
+        sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "systemd":
         import systemd_generate
-        sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT))
+        sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "branches":
         import compass_branches
         sys.exit(compass_branches.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "client":
         import compass_services
-        sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
+        sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "claude":
         import compass_claude
-        sys.exit(compass_claude.run(sys.argv[2:], PROJECT_ROOT))
+        sys.exit(compass_claude.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "site":

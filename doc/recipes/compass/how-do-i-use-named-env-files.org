@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 0168F066-BFA4-4CFE-8A61-A2C727D91D10
+:END:
+#+title: How do I use named env files?
+#+description: Target alternate dotenv files for remote host DB and service operations using the --env or --env-file flags.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+Compass reads =.env= at the repo root for database, NATS, and service
+configuration. Named env files let you target a different host without
+mutating the working =.env=.
+
+* Question
+
+How do I use a named env file to target a remote host database or service fleet?
+
+* Answer
+
+Pass =--env <name>= (shorthand resolving to =.env.<name>=) or
+=--env-file <path>= before or after the sub-command. Compass reads
+that file in place of the default =.env=.
+
+#+begin_src sh :results verbatim
+# Target Newton's Postgres — no need to edit .env in place
+compass db status --env newton   # reads .env.newton
+compass db recreate -y -k --env newton
+
+# Services and client commands also support it
+compass services status --env newton
+compass services start --env newton
+compass client start --env newton
+
+# Full explicit path also works
+compass db status --env-file .env.newton
+
+# Flag position doesn't matter — before or after the sub-command
+compass --env newton db status
+compass --env-file .env.newton fleet
+#+end_src
+
+* How it works
+
+The flag is parsed early in =compass.py main()=, before command
+dispatch, so it works with every sub-command. The resolved path is
+passed to =load_env()= (in =compass_db.py=) and read by
+=_read_env_map()= (in =compass.py=). Commands that don't need
+environment config silently ignore it.
+
+When no flag is given, the default =.env= at the repo root is used
+— fully backwards compatible.
+
+* See also
+
+- [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] component overview

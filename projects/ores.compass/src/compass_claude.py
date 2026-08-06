@@ -57,7 +57,7 @@ def _slice_name(env_name: str) -> str:
     return f"{_SLICE_ROOT}-{env_name}.slice"
 
 
-def run(argv, project_root=None) -> int:
+def run(argv, project_root=None, env_file=None) -> int:
     real = shutil.which("claude")
     if real is None:
         print("compass claude: cannot find the `claude` binary on PATH",
@@ -66,7 +66,7 @@ def run(argv, project_root=None) -> int:
 
     if _has_user_systemd():
         _ensure_slice_deployed()
-        env_name = _env_name(project_root)
+        env_name = _env_name(project_root, env_file)
         cmd = [
             "systemd-run", "--user", "--scope", "-q", "--collect",
             f"--unit=claude-{env_name}-{os.getpid()}",
@@ -81,18 +81,18 @@ def run(argv, project_root=None) -> int:
     os.execvp(real, [real, *argv])
 
 
-def _env_name(project_root) -> str:
+def _env_name(project_root, env_file=None) -> str:
     """Resolve the environment's identity for use in a systemd unit name.
 
-    Reads ORES_ENV_NAME from the checkout's .env, falling back to the
-    checkout directory's own name, then sanitises it to the characters
-    systemd unit names allow.
+    Reads ORES_ENV_NAME from the checkout's .env (or an alternate
+    env_file), falling back to the checkout directory's own name, then
+    sanitises it to the characters systemd unit names allow.
     """
     name = None
     if project_root is not None:
-        env_file = Path(project_root) / ".env"
-        if env_file.is_file():
-            for line in env_file.read_text(encoding="utf-8").splitlines():
+        dotenv = env_file if env_file is not None else (Path(project_root) / ".env")
+        if dotenv.is_file():
+            for line in dotenv.read_text(encoding="utf-8").splitlines():
                 if line.lstrip().startswith("ORES_ENV_NAME="):
                     name = line.partition("=")[2].strip().strip("'\"")
                     break

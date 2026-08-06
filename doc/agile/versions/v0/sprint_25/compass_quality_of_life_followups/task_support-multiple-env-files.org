@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/support-multiple-env-files
+#+pr: 1877
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ session's Newton deploy-and-verify task had to do by hand.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -55,11 +55,27 @@ session's Newton deploy-and-verify task had to do by hand.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Flag parsed early in =compass.py main()= via =_pop_env_file_arg()=,
+before command dispatch, removing =--env=/=--env-file= from sys.argv
+so sub-command parsers never see them. =_resolve_env_file()= converts
+=--env newton= shorthand to =.env.newton=. Resolved path stored as
+module-level =_ACTIVE_ENV_FILE=.
+
+Two functions that read .env modified:
+- =_read_env_map()= (compass.py) — consulted by every internal =cmd_*=
+- =load_env()= (compass_db.py) — consulted by =db=, =services=, =systemd=, =client=, =claude= sub-commands
+
+=env_file= parameter threaded through =compass_db.run()=,
+=compass_services.run()=, =run_client()=, =systemd_generate.run()=,
+=compass_claude.run()= — all defaulting to =None= (use default =.env=).
+Works for any flag position (before or after sub-command).
 
 * Notes
+
+Recipe: doc/recipes/compass/how-do-i-use-named-env-files.org
+nats init: not wired in this iteration. The task Goal mentions it as an
+example but Acceptance only requires db and services. A follow-up task
+can extend coverage to nats and other env-reading commands.
 
 * Test Scenarios
 
@@ -76,12 +92,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1877][#1877]] | [compass] Support multiple named .env files via --env / --env-file |
 
 * Review
 
+** Round 1 (bot review)
+
+Both bots flagged the same two edge cases in _pop_env_file_arg(): silent
+no-op when flag has no value, and dangling flag when both --env and
+--env-file are passed together. Fixed by erroring out on both. Added
+note to task Notes that nats init is out of scope this iteration.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Flag without value silently no-ops | compass.py | Fixed — error "X requires a value" | |
+| 2 | Both --env and --env-file leaves dangling flag | compass.py | Fixed — error "cannot use both" | |
+| 3 | nats init not wired up per Goal narrative | task org | Declined — Acceptance only requires db+services; added Note | |
+| 4 | --env-file with bare name uses shorthand | compass.py | Declined — by design; recipe documents correct usage | |
 
 * Result
+
+=--env <name>= (resolves to =.env.<name>=) and =--env-file <path>= flags
+added to every compass command. Flag works before or after the
+sub-command. Parsed early in =main()= before command dispatch.
+
+Modified two env-reading functions: =_read_env_map()= (compass.py,
+for internal =cmd_*= commands) and =load_env()= (compass_db.py, for
+=db=/=services=/=systemd=/=client=/=claude= sub-commands). Threaded
+=env_file= parameter through five =run()= functions.
+
+Acceptance met:
+- =--env= and =--env-file= on all env-reading commands
+- =db= and =services= supported (primary use case)
+- Recipe at =doc/recipes/compass/how-do-i-use-named-env-files.org=
+- Default =.env= never mutated; fully backwards compatible

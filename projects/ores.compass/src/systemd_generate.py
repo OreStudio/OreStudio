@@ -914,7 +914,7 @@ def cmd_quadlet_deploy(project_root: Path, env: dict, args) -> int:
     return 0
 
 
-def run(argv, project_root: Path) -> int:
+def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     parser = argparse.ArgumentParser(prog="compass systemd")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("generate", help="Render concrete systemd units for "
@@ -932,7 +932,7 @@ def run(argv, project_root: Path) -> int:
         "instead of this machine")
     args = parser.parse_args(argv)
 
-    env = load_env(project_root)
+    env = load_env(project_root, env_file)
 
     if args.cmd == "generate":
         return cmd_generate(project_root, env, args)

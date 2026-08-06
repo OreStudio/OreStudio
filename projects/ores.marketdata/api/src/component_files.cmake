@@ -86,6 +86,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/market_series_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/generators/observation_lineage_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/crm_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/curve_republish_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/curve_snapshot_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/feed_binding_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/import_protocol.hpp"

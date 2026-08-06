@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 794D9D94-8E62-4232-A8FD-769B518DB04C
+:END:
+#+title: Task: Curve builder UI: bootstrap config CRUD + on-demand republish trigger
+#+description: Qt UI for the IR curve bootstrap pipeline, currently entirely NATS/CLI-only with no screen anywhere: standard list/detail/history dialogs for ir_curve_bootstrap_config and its pillar list, plus a Republish action that sends republish_curve_request and opens the existing CurveSnapshotMdiWindow against the config's own output series to show the result.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Right now there is no screen anywhere in the Qt client for any part of
+the IR curve bootstrap pipeline. The
+[[id:5255E8A6-9EE6-44FA-A5CB-41ABD508ED37][bootstrap-config task]]'s own doc is explicit that it built only the
+"domain/repository/service/messaging layer, no Qt UI -- out of scope
+for this task", and the
+[[id:202295CC-B715-431F-BFCF-DD960CA7D1FE][republish task]]'s own trigger is a bare NATS request
+(=republish_curve_request=) with no button anywhere to send it. A desk
+user configuring or running a bootstrap today has no way to do either
+without a raw NATS call.
+
+This task closes that gap in two pieces:
+
+- *Standard CRUD Qt entity* for =ir_curve_bootstrap_config= and its
+  child =ir_curve_bootstrap_pillar= list -- list/detail/history dialogs
+  via =codegen-add-qt-entity=, the same shape
+  =ir_curve_template_entry= already has for the generation side's own
+  recipe entity. This is what lets a user actually create/edit a
+  bootstrap recipe instead of it only being reachable via
+  =ores.refdata.core='s own repositories/tests.
+- *A "Republish" action* on the bootstrap config screen: choose an
+  as-of, send =republish_curve_request=, and report success/failure
+  (surfacing =curve_republish_service::republish()='s own error
+  messages verbatim -- including
+  =discount_curve_required_error='s "fails/defers cleanly" message for
+  a Projection config run too early). On success, open the existing
+  =CurveSnapshotMdiWindow= against the config's own output series so
+  the result is visible without hunting for it.
+
+*Explicitly out of scope*: any review/approval gate before a
+republished generation is treated as live -- that is the separate
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][Curve review/sign-off UI]] task, which this task's own screen is the
+foundation for (sign-off needs a place to trigger/view a run before it
+can add a gate around that action).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-06                               |
+
+* Acceptance
+
+- A bootstrap config list window and detail dialog exist (Menu:
+  Reference Data > ... ), following the standard codegen Qt entity
+  conventions -- create, edit, delete, and a History dialog showing
+  every change with its change reason.
+- The detail dialog manages the config's pillar list (add/reorder/
+  remove pillars: tenor codes, curve role, sequence) as a child grid,
+  matching =ir_curve_template_entry='s own precedent for the
+  generation-side recipe.
+- A "Republish" action is reachable from the bootstrap config screen,
+  takes an as-of, and reports the real success/failure message from
+  =curve_republish_service::republish()= -- not a generic "failed"
+  toast.
+- On a successful republish, the user can reach the resulting curve
+  (=CurveSnapshotMdiWindow= against the config's own output series)
+  without leaving the flow or hand-typing series_type/metric/qualifier.
+- No approval/sign-off gate is added here -- a republish triggered from
+  this screen auto-publishes exactly as =curve_republish_service=
+  already does.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+=doc/analysis/gemini_ir_curve_bootstrapping.org= (+ its companion
+=.png= wizard mockup) is a pre-existing design analysis for this exact
+screen -- a 3-step wizard (Base Conventions / Instrument Helpers /
+Interpolation) with a live diagnostic dashboard (calculated zero-curve
+plot, an instantaneous-forward-curve health-check plot, tenor-collision
+and flatline-forward warnings). Useful as a UX reference, but it is
+aspirational and broader than what this codebase actually implements
+today -- reconcile against the real schema before building from it
+literally:
+- It models per-instrument dual-curve (forecast/discount) dropdowns;
+  =ir_curve_bootstrap_config= instead fixes the Funding/Projection
+  split at the *config* level (=curve_family_role= +
+  =discount_curve_config_id=), not per-pillar.
+- It lists a full bootstrap-trait x interpolator matrix
+  (Discount/Zero/Forward traits, Linear/Log-Linear/Cubic/Monotonic-
+  Cubic); =curve_bootstrap_engine= implements exactly
+  =LOG_LINEAR_DISCOUNT=, =FLAT_FORWARD_THEN_LOG_LINEAR=, and
+  =CUBIC_SPLINE= (named, not yet implemented -- throws).
+- Its live/dirty-flag "lazy recalculation on tick" model doesn't apply
+  here: republish is the explicit, on-demand
+  =curve_republish_service::republish(config_id, as_of)= call this
+  story built, not a continuously-live curve object.
+
+* Test Scenarios
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

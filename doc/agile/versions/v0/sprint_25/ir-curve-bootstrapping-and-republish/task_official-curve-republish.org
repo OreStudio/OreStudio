@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/official-curve-republish
+#+pr: 1879
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -45,12 +45,12 @@ to) and the bootstrapping engine task (the values being written).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-06                               |
 
 * Acceptance
 
@@ -79,7 +79,122 @@ to) and the bootstrapping engine task (the values being written).
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+*Trigger: on-demand service call*, not NATS-per-tick and not
+scheduler-only. A bootstrap is a batch recompute over a presumed-complete
+grid, unlike =curve_feed_ingest_loop='s per-tick remap; re-bootstrapping
+mid-grid-publish before every pillar has landed would be wrong. Exposed
+as =curve_republish_service::republish(bootstrap_config_id, as_of)=, a
+pure orchestration method callable from a NATS request/reply handler
+(so shell/CLI/scheduler can all call it the same way) -- not gated by
+any review/approval step; that is
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][a separate follow-on task]] layered on top of this
+always-auto-publishing mechanism.
+
+*Component placement*: =ores.marketdata.service=, alongside
+=curve_feed_ingest_loop=. Confirmed via its own CMakeLists that it
+already depends on both =ores.refdata.core.lib= (the bootstrap
+config/pillar repositories) and =ores.analytics.quant.lib= (the
+bootstrap engine) -- no new cross-component dependency needed. Neither
+=ores.marketdata.core= nor =ores.refdata.core= alone can see both
+sides.
+
+*Split into a pure resolver + a thin DB-touching orchestrator*,
+mirroring =ores.synthetic='s =ir_curve_template_resolver= exactly (its
+=resolve()= is unit-tested without a database; its
+=build_ir_curve_refdata_context()= is not):
+- =curve_republish_resolver::resolve_bootstrap_pillars(pillars,
+  refdata_context, raw_rates_by_point_id)= -- pure, unit-testable.
+  Resolves each pillar's =start_tenor_code=/=end_tenor_code= to dates via
+  the existing =tenor_resolution= machinery (=resolve_end_date=), same
+  T+0 horizon==spot simplification the generation-side resolver already
+  uses, and produces the engine's own =bootstrap_pillar= list.
+- =curve_republish_service= -- reads the config + its pillars (client-
+  side filtered by =bootstrap_config_id=, no parent-filtered repository
+  method exists yet -- same pattern
+  =ir_curve_feed_config_handler= already uses for
+  =ir_curve_template_entry=), reads the raw grid via
+  =market_observations_repository::read_as_of(source_series_id,
+  as_of)=, calls the resolver then =curve_bootstrap_engine::bootstrap=,
+  writes the output points + one =observation_lineage= row per point.
+
+*SWAP fixed-leg schedule needs no new payment-frequency field.*
+=ir_curve_bootstrap_pillar= (unlike =ir_curve_generation_config=) has
+none, and =curve_bootstrap_engine= only requires each intermediate
+fixed-leg date to resolve at or before the curve's current bootstrapped
+frontier (interpolation is fine; exact pillar match is not required --
+confirmed by reading the engine's own SWAP branch, not just its doc
+comment). So a SWAP pillar's =fixed_leg_dates= is simply every prior
+pillar's own resolved =end_date= (the config's own tenor grid, already
+naturally ascending since pillars are processed in =sequence_index=
+order) plus this pillar's own =end_date= -- the pillar list *is* the
+fixed-leg schedule, no separate concept invented.
+
+*Funding-before-Projection build order*: for a =PROJECTION= config,
+read the =discount_curve_config_id='s own =output_series_id= via
+=read_as_of()= at the same =as_of=, convert to
+=vector<bootstrapped_point>=, pass as the engine's =discount_curve=
+parameter. A =discount_curve_required_error= (empty/stale/missing
+coverage) propagates out of =republish()= uncaught -- "fails/defers
+cleanly", per the engine's own documented contract for this task to
+honour, not swallowed into a generic error.
+
+*=market_series.derivation_kind= stamping*: confirmed the prior task
+(bootstrap config refdata entities) does *not* actually mint a
+=market_series= row with =derivation_kind = 'IR_CURVE_BOOTSTRAP'= at
+config-creation time -- its own doc comment describes the intent, but
+no service code does it (only the test generator sets a random
+=output_series_id= with no backing row). Re-opening that task is out of
+scope here; instead, =republish()= itself ensures the invariant: read
+the existing =market_series= row by =output_series_id= (it must already
+exist -- a missing row is a config-integrity error, not
+auto-fabricated, since this service has none of series_type/metric/
+qualifier to invent one from) and, if its =derivation_kind= is still
+the default =OBSERVED= sentinel, update it to =IR_CURVE_BOOTSTRAP= with
+this config's =id=/=version= on the first successful republish. Treated
+as "this republish run claims the series", not a per-run write.
+
+*Re-run / bitemporal convention*: no special-casing --
+=market_observations_repository::write()= and
+=observation_lineage_service::save_observation_lineages()= already
+apply the existing soft-update trigger per their own bitemporal
+convention; a second =republish()= call for the same config naturally
+produces a new generation.
+
 * Notes
+
+Implementation landed across:
+- =ores.marketdata.service::curve_republish_resolver= (private,
+  pure) -- =resolve_bootstrap_pillars()=/=resolve_tenor_date()=,
+  unit-tested (7 cases, no DB) mirroring
+  =ir_curve_template_resolver_tests.cpp='s own split.
+- =ores.marketdata.service::app::curve_republish_service::republish()=
+  -- the DB-touching orchestrator: reads config+pillars+raw
+  grid+discount curve, calls the resolver then
+  =curve_bootstrap_engine::bootstrap=, stamps
+  =market_series.derivation_kind=, writes
+  =market_observations=+=observation_lineage=.
+- =republish_curve_request=/=response= (ores.marketdata.api) +
+  =curve_republish_handler= (ores.marketdata.service), wired into
+  =application.cpp='s existing queue-subscribe block alongside
+  =crm_handler= -- the on-demand NATS entry point, subject
+  =marketdata.v1.curve_bootstrap.republish=.
+
+Full local build clean. Verified via =compass build test_<component>=
+(not raw =ctest=/binary invocation, which stalls under this host's
+concurrent build-lock contention from other environments' worktrees --
+see [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]):
+=ores.marketdata.api.tests= (14 cases/77 assertions),
+=ores.marketdata.client.tests= (28/50),
+=ores.marketdata.core.tests= (85/189),
+=ores.marketdata.service.tests= (17/59, including the 7 new resolver
+cases), =ores.refdata.core.tests= (178/3247, unmodified by this task
+but re-verified since it shares the build), and
+=ores.analytics.quant.tests= (230/12013). All pass.
+
+Not yet done: a manual QA test scenario exercising =republish()= end to
+end against a real database (DEPOSIT/FRA/SWAP pillars, a Projection
+config chained off a Funding config, and a re-run producing a second
+generation).
 
 * Test Scenarios
 
@@ -96,12 +211,66 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1879][#1879]] | [marketdata] IR curve bootstrap republish: engine invocation + on-demand trigger |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Republish NATS handler has no has_permission check, unlike every sibling handler | curve_republish_handler.hpp | Accepted | Added marketdata::curve_bootstrap:republish check + log_handler_entry, matching crm_handler's pattern. |
+| 2 | market_observations + observation_lineage writes aren't atomic (two separate transactions) | curve_republish_service.cpp | Declined | ores::database::context exposes no cross-repository transaction API anywhere in this codebase; building one is new infrastructure out of scope for this task. Documented as a known gap. |
+| 3 | Full pillar-table scan per republish (no filtered repository method) | curve_republish_service.cpp | Declined | Already documented as a deliberate tradeoff in this task's own Plan, matching ir_curve_feed_config_handler's identical existing convention. |
+| 4 | curve_republish_service::republish() has no DB-integration test coverage | curve_republish_service.cpp | Declined | tenor_convention_resolution_repository is read-only (rows are SQL-provisioned, not application-written) and the populate/ scripts that seed RATES_SPOT_FORWARD resolutions do not run against the isolated ctest database -- the same reason ir_curve_template_resolver's own DB-touching half (build_ir_curve_refdata_context) has no test either. A real integration test would need raw SQL fixture seeding, a heavier pattern not used anywhere else in this codebase. |
+| 5 | Re-running republish() at an identical (config, as_of) has no idempotency guard | curve_republish_service.cpp | Declined | market_observations' insert trigger already closes the prior valid_to=infinity row on the same (series_id, observation_datetime, point_id) key before inserting the new one -- verified in the generated SQL; a same-as_of rerun cannot produce two ambiguous current rows. |
+| 6 | ensure_output_series_stamped doesn't check the claiming config matches the series' existing derivation_config_id | curve_republish_service.cpp | Declined | output_series_id already has a tenant-wide unique index for active bootstrap configs (verified in refdata_ir_curve_bootstrap_configs_create.sql), so two configs racing to claim the same output series is structurally impossible. |
 
 * Result
+
+Implemented =curve_republish_service::republish(bootstrap_config_id,
+as_of)= in =ores.marketdata.service=: reads an
+=ir_curve_bootstrap_config= and its pillars, resolves pillar tenor
+codes to dates via the existing =tenor_resolution= machinery, reads
+the raw grid (and, for a =PROJECTION= config, its discount curve's own
+output) via =market_observations_repository::read_as_of=, invokes
+=curve_bootstrap_engine::bootstrap=, and writes the resulting discount
+factors to =market_observations= with a matching =observation_lineage=
+row per point. Stamps =market_series.derivation_kind =
+'IR_CURVE_BOOTSTRAP'= on first republish (config-creation time never
+actually did this despite its own doc comment -- see =* Plan=).
+
+Split into a pure =curve_republish_resolver= (unit-tested, no DB, 7
+cases) and the DB-touching service, mirroring
+=ir_curve_template_resolver='s own split on the generation side.
+Exposed on demand via a NATS request/reply handler
+(=marketdata.v1.curve_bootstrap.republish=), wired into
+=ores.marketdata.service='s =application.cpp= alongside =crm_handler=.
+
+All acceptance criteria met except manual QA sign-off, which is
+deferred: this feature has no Qt UI surface at all today to drive a
+=test_scenario= through (confirmed the bootstrap-config task's own doc
+explicitly left Qt UI out of scope) -- filed as
+[[id:794D9D94-8E62-4232-A8FD-769B518DB04C][a separate Curve builder UI task]], alongside
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][the review/sign-off UI task]] filed earlier in this story. Once that UI
+exists, this task's own manual verification happens through it rather
+than a bespoke scenario for a screen that won't be reachable any other
+way.
+
+Verified via =compass build test_<component>= (the correct recipe --
+raw =ctest=/binary invocation stalls under this host's concurrent
+build-lock contention from other environments' worktrees):
+=ores.marketdata.api/client/core/service.tests= (14/77, 28/50, 85/189,
+17/59 respectively), =ores.refdata.core.tests= (178/3247, unmodified
+by this task but sharing the build), and =ores.analytics.quant.tests=
+(230/12013). All green.
+
+Also ran =compass build rat= (full-repo suite) once, per the
+=pr-raise= skill's actual instructions. It failed on
+=ores.iam.core.tests= (untouched by this PR) with a hard test-process
+error, not an assertion failure -- the surrounding log showed several
+queries taking 50-160s where they normally run sub-second (heavy DB
+contention from other environments' concurrent builds/tests sharing
+this host). Re-ran =ores.iam.core.tests= alone immediately after: 91
+cases/184 assertions, all green, every case sub-second. Treated as
+environmental host contention, not a regression -- this task's own
+footprint (=ores.marketdata=/=ores.analytics.quant=, plus read-only
+use of =ores.refdata=) is fully verified green.

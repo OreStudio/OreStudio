@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: C0B2C614-5743-4826-967B-A5FCC91504EF
+:END:
+#+title: Task: Curve review/sign-off UI: approve a bootstrapped generation before it goes official
+#+description: A human review gate between a curve bootstrap run and its publish to output_series_id -- QC checks, diff vs prior generation, pillar-quote override, and an explicit approve action -- so pricers only ever read an approved generation, matching how production trading systems gate bootstrapped curves before desks consume them.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The [[id:202295CC-B715-431F-BFCF-DD960CA7D1FE][Official curve republish]] task deliberately auto-publishes a
+bootstrap run's output straight to =output_series_id= -- no human gate,
+matching the existing raw-tick remap pattern (=curve_feed_ingest_loop=).
+That is a scope decision, not an oversight: real trading systems
+separate the *deterministic build* (bootstrap the day's quotes) from a
+*market data control / curve QC sign-off* step before a generation is
+treated as official and pricers are allowed to read it.
+
+This task adds that missing sign-off layer on top of the already-published
+mechanism, rather than gating the write itself:
+
+- A status on a bootstrap run's output generation (e.g.
+  =PENDING_REVIEW=/=APPROVED=/=REJECTED=), distinct from whether the
+  observations already exist in =market_observations=.
+- Automatic QC/sanity checks surfaced to the reviewer: negative forward
+  rates, arbitrage violations, stale or outlier pillar quotes, and
+  day-over-day jump thresholds vs the prior generation.
+- A diff view of the new generation against the prior approved one --
+  eyeballing raw discount factors is useless without this.
+- The ability to override an individual pillar's raw quote and
+  re-bootstrap before approving, logged as an explicit override rather
+  than a silent edit.
+- An explicit approve/reject action; only an approved generation is
+  what a "which generation is live" read actually returns to
+  downstream consumers.
+
+Whether "read-only downstream" continues to mean =read_as_of()= over
+the same =output_series_id= (return only the latest *approved*
+generation once this lands) or something new is an implementation
+decision for this task's own =* Plan=, not decided here -- the
+republish task's acceptance criteria are unaffected either way.
+
+Depends on the republish task (the generation this reviews) and the
+shared derivation-lineage task (the provenance a QC check would read).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- A bootstrap run's output generation carries a review status distinct
+  from its mere existence in =market_observations=; downstream reads
+  only ever surface an approved generation.
+- QC checks run automatically against a pending generation and surface
+  as reviewable exceptions, not just a pass/fail gate.
+- A reviewer can see the new generation diffed against the prior
+  approved one before deciding.
+- A reviewer can override an individual pillar's raw quote and trigger
+  a re-bootstrap without leaving the review screen, with the override
+  itself recorded (who, what, why).
+- Approve/reject is an explicit, audited action (who approved, when),
+  not implicit from the generation simply existing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

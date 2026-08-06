@@ -24,6 +24,7 @@ one doc. Output sections:
 """
 
 import argparse
+import re
 import sys
 
 import ui
@@ -80,6 +81,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="compass show", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("query", help="UUID or unambiguous prefix (>=6 hex chars)")
+    ap.add_argument("--full", action="store_true",
+                    help="Print the full body content after the blurb")
     args = ap.parse_args(argv)
 
     docs = load_all()
@@ -118,6 +121,19 @@ def main(argv=None) -> int:
     print(_h("📝  Blurb"))
     print(doc.blurb if doc.blurb else "  (no blurb)")
     print()
+
+    if args.full:
+        print(_h("📄  Body"))
+        try:
+            full_text = doc.path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            full_text = ""
+        # Start at the first top-level heading — naturally skips
+        # :PROPERTIES:, #+ frontmatter, and the blurb (already shown above).
+        body_start = re.search(r"^\* ", full_text, re.MULTILINE)
+        body = full_text[body_start.start():].strip() if body_start else ""
+        print(body if body else "  (no body)")
+        print()
 
     print(_h(f"🔗  Outgoing links ({len(doc.outbound)})"))
     if not doc.outbound:

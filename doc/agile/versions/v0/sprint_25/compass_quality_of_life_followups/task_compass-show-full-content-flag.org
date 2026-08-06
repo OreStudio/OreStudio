@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:dx:cli:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-show-full-content-flag
+#+pr: 1880
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =--full= flag to =doc_show.py=. When set, reads the raw file
+and prints everything after the =:PROPERTIES:= block (i.e. the
+frontmatter key-value lines and the full body content). Uses
+=re.split(r"^:END:\s*$", text, flags=re.M)= to split frontmatter
+from content. Total change: 7 lines.
 
 * Notes
 
@@ -60,12 +62,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1880][#1880]] | [compass] Add --full flag to compass show |
 
 * Review
 
+** Round 1 (bot review)
+
+Fixed body-extraction to split at first * heading instead of :END:,
+eliminating header/blurb duplication. Removed redundant Path import
+and used errors="replace" for consistency.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Body duplicates header metadata and blurb | doc_show.py | Fixed — split at first * heading instead of :END: | |
+| 2 | Redundant Path(doc.path) wrap | doc_show.py | Fixed — removed Path import, using doc.path directly | |
+| 3 | Inconsistent decode behavior (strict vs replace) | doc_show.py | Fixed — using errors="replace" | |
 
 * Result
+
+Added =--full= flag to =compass show=. When set, prints the full file
+content after the frontmatter properties block as a =📄 Body= section.
+Allows the LLM to read document content directly without falling back
+to the Read tool. Total change: 9 lines in =doc_show.py=.

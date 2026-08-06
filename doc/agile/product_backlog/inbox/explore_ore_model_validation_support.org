@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C611596B-DBA2-48AF-AAE3-F2D463D7329C
+:END:
+#+title: Explore model validation support using ORE output reports
+#+description: ORE exports structured pricing reports (flows.csv, additional_results.csv, curves.csv) that allow independent NPV reconstruction without source-code access — cashflow-level discount factors, forward rates, and model parameters are all exposed. Investigate how ORE Studio can consume these outputs to build model validation workflows: benchmarking, vendor comparison, discrepancy drill-down.
+#+type: capture
+#+level: cross
+#+filetags: :model_validation:pricing:ore:ore_studio:sprint_25:v0:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:dx:cli:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-show-full-content-flag
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =--full= flag to =doc_show.py=. When set, reads the raw file
+and prints everything after the =:PROPERTIES:= block (i.e. the
+frontmatter key-value lines and the full body content). Uses
+=re.split(r"^:END:\s*$", text, flags=re.M)= to split frontmatter
+from content. Total change: 7 lines.
 
 * Notes
 
@@ -69,3 +71,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Added =--full= flag to =compass show=. When set, prints the full file
+content after the frontmatter properties block as a =📄 Body= section.
+Allows the LLM to read document content directly without falling back
+to the Read tool. Total change: 9 lines in =doc_show.py=.

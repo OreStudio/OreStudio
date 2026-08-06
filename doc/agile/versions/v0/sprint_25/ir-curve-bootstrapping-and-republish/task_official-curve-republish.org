@@ -47,9 +47,9 @@ to) and the bootstrapping engine task (the values being written).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Core implementation done and unit-tested; PR not yet raised. |
+| Now          | Implementation done, local test sweep green; PR not yet raised. |
 | Waiting on   | Nothing.                               |
-| Next         | Local ctest sweep, write Result, raise PR. |
+| Next         | Write a manual QA test scenario, write Result, raise PR. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -179,13 +179,17 @@ Implementation landed across:
   =crm_handler= -- the on-demand NATS entry point, subject
   =marketdata.v1.curve_bootstrap.republish=.
 
-Full local build clean; =ores.marketdata.api/client/core/service.tests=
-all green (service suite: 17 cases including the 7 new resolver
-tests). =ores.refdata.core.tests= hung locally under heavy concurrent
-build/test load from other environments sharing this host -- untouched
-by this task's changes (no refdata files modified), treated as
-environmental, not re-verified in this session; re-run before merge
-once the host is quieter.
+Full local build clean. Verified via =compass build test_<component>=
+(not raw =ctest=/binary invocation, which stalls under this host's
+concurrent build-lock contention from other environments' worktrees --
+see [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]):
+=ores.marketdata.api.tests= (14 cases/77 assertions),
+=ores.marketdata.client.tests= (28/50),
+=ores.marketdata.core.tests= (85/189),
+=ores.marketdata.service.tests= (17/59, including the 7 new resolver
+cases), =ores.refdata.core.tests= (178/3247, unmodified by this task
+but re-verified since it shares the build), and
+=ores.analytics.quant.tests= (230/12013). All pass.
 
 Not yet done: a manual QA test scenario exercising =republish()= end to
 end against a real database (DEPOSIT/FRA/SWAP pillars, a Projection

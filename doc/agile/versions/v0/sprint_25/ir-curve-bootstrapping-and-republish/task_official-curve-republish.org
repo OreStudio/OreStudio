@@ -45,11 +45,11 @@ to) and the bootstrapping engine task (the values being written).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Implementation done, local test sweep green; PR not yet raised. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write a manual QA test scenario, write Result, raise PR. |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -220,3 +220,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =curve_republish_service::republish(bootstrap_config_id,
+as_of)= in =ores.marketdata.service=: reads an
+=ir_curve_bootstrap_config= and its pillars, resolves pillar tenor
+codes to dates via the existing =tenor_resolution= machinery, reads
+the raw grid (and, for a =PROJECTION= config, its discount curve's own
+output) via =market_observations_repository::read_as_of=, invokes
+=curve_bootstrap_engine::bootstrap=, and writes the resulting discount
+factors to =market_observations= with a matching =observation_lineage=
+row per point. Stamps =market_series.derivation_kind =
+'IR_CURVE_BOOTSTRAP'= on first republish (config-creation time never
+actually did this despite its own doc comment -- see =* Plan=).
+
+Split into a pure =curve_republish_resolver= (unit-tested, no DB, 7
+cases) and the DB-touching service, mirroring
+=ir_curve_template_resolver='s own split on the generation side.
+Exposed on demand via a NATS request/reply handler
+(=marketdata.v1.curve_bootstrap.republish=), wired into
+=ores.marketdata.service='s =application.cpp= alongside =crm_handler=.
+
+All acceptance criteria met except manual QA sign-off, which is
+deferred: this feature has no Qt UI surface at all today to drive a
+=test_scenario= through (confirmed the bootstrap-config task's own doc
+explicitly left Qt UI out of scope) -- filed as
+[[id:794D9D94-8E62-4232-A8FD-769B518DB04C][a separate Curve builder UI task]], alongside
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][the review/sign-off UI task]] filed earlier in this story. Once that UI
+exists, this task's own manual verification happens through it rather
+than a bespoke scenario for a screen that won't be reachable any other
+way.
+
+Verified via =compass build test_<component>= (the correct recipe --
+raw =ctest=/binary invocation stalls under this host's concurrent
+build-lock contention from other environments' worktrees):
+=ores.marketdata.api/client/core/service.tests= (14/77, 28/50, 85/189,
+17/59 respectively), =ores.refdata.core.tests= (178/3247, unmodified
+by this task but sharing the build), and =ores.analytics.quant.tests=
+(230/12013). All green.

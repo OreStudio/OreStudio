@@ -8,7 +8,7 @@
 #+filetags: :compass:dx:cli:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/compass-show-full-content-flag
-#+pr:
+#+pr: 1880
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1880][#1880]] | [compass] Add --full flag to compass show |
 
 * Review
 

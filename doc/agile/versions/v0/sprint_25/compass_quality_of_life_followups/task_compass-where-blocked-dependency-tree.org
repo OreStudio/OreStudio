@@ -8,7 +8,7 @@
 #+filetags: :compass:orient:ux:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/compass-where-blocked-dependency-tree
-#+pr:
+#+pr: 1883
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1883][#1883]] | [compass] Extend where blocked-tree to include stories |
 
 * Review
 

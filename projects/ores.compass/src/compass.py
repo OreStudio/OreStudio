@@ -80,15 +80,26 @@ def _resolve_env_file(arg: str | None) -> Path:
 
 def _pop_env_file_arg(argv: list) -> str | None:
     """Pop --env <name> or --env-file <path> from argv; return the value or None.
-    Checks --env-file first so the longer flag wins when both are present."""
+
+    Errors if both flags are present or if a flag is missing its value.
+    """
+    has_env_file = "--env-file" in argv
+    has_env = "--env" in argv
+    if has_env_file and has_env:
+        print("error: cannot use both --env and --env-file together",
+              file=sys.stderr)
+        sys.exit(2)
+
     for flag in ("--env-file", "--env"):
         try:
             idx = argv.index(flag)
         except ValueError:
             continue
         argv.pop(idx)          # remove flag
-        if idx < len(argv) and not argv[idx].startswith("-"):
-            return argv.pop(idx)  # remove and return value
+        if idx >= len(argv) or argv[idx].startswith("-"):
+            print(f"error: {flag} requires a value", file=sys.stderr)
+            sys.exit(2)
+        return argv.pop(idx)   # remove and return value
     return None
 
 ORG_ROAM_DB = str(PROJECT_ROOT / "org-roam.db")

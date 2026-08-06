@@ -73,6 +73,9 @@ Works for any flag position (before or after sub-command).
 * Notes
 
 Recipe: doc/recipes/compass/how-do-i-use-named-env-files.org
+nats init: not wired in this iteration. The task Goal mentions it as an
+example but Acceptance only requires db and services. A follow-up task
+can extend coverage to nats and other env-reading commands.
 
 * Test Scenarios
 
@@ -93,9 +96,19 @@ via its "Verifies task" field.
 
 * Review
 
+** Round 1 (bot review)
+
+Both bots flagged the same two edge cases in _pop_env_file_arg(): silent
+no-op when flag has no value, and dangling flag when both --env and
+--env-file are passed together. Fixed by erroring out on both. Added
+note to task Notes that nats init is out of scope this iteration.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Flag without value silently no-ops | compass.py | Fixed — error "X requires a value" | |
+| 2 | Both --env and --env-file leaves dangling flag | compass.py | Fixed — error "cannot use both" | |
+| 3 | nats init not wired up per Goal narrative | task org | Declined — Acceptance only requires db+services; added Note | |
+| 4 | --env-file with bare name uses shorthand | compass.py | Declined — by design; recipe documents correct usage | |
 
 * Result
 

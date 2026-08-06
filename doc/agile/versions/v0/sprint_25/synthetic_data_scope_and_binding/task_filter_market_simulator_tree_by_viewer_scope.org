@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1886
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1886][#1886]] | [synthetic] Filter Market Simulator tree by viewer scope — use current_party_id RLS |
 
 * Review
 

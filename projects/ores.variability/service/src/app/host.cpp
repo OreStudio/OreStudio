@@ -18,9 +18,9 @@
  *
  */
 #include "ores.variability.service/app/host.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include "ores.variability.service/app/application.hpp"
 #include "ores.variability.service/config/parser.hpp"
-#include "ores.service/service/host_runner.hpp"
 
 namespace ores::variability::service::app {
 

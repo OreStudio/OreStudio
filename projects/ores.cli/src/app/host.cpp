@@ -78,8 +78,7 @@ int host::execute(const std::vector<std::string>& args,
         app.run(cfg);
     };
 
-    return run_host_sync<parser>(args, std_output, error_output, lg(), early_exit,
-        run_application);
+    return run_host_sync<parser>(args, std_output, error_output, lg(), early_exit, run_application);
 }
 
 }

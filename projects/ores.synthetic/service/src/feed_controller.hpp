@@ -65,7 +65,7 @@ namespace ores::synthetic::service {
  * exists.
  */
 inline std::string synthetic_producer_subject(const std::string& source_name,
-                                               ores::synthetic::domain::binding_mode binding_mode) {
+                                              ores::synthetic::domain::binding_mode binding_mode) {
     std::string token;
     token.reserve(source_name.size());
     for (unsigned char c : source_name) {
@@ -236,11 +236,12 @@ public:
                     std::move(weights),
                     initial_price,
                     seed);
-                auto feed = std::make_shared<fx_spot_feed>(nats_,
-                                                           ore_key,
-                                                           synthetic_producer_subject(key, binding_mode),
-                                                           std::move(process),
-                                                           ticks_per_hour);
+                auto feed =
+                    std::make_shared<fx_spot_feed>(nats_,
+                                                   ore_key,
+                                                   synthetic_producer_subject(key, binding_mode),
+                                                   std::move(process),
+                                                   ticks_per_hour);
                 running_feed rf;
                 rf.feed = feed;
                 rf.binding_mode = binding_mode;
@@ -248,8 +249,8 @@ public:
                 feeds_.emplace(key, std::move(rf));
                 BOOST_LOG_SEV(lg(), ores::logging::info)
                     << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key
-                    << "' subject='" << synthetic_producer_subject(key, binding_mode) << "' binding_mode='"
-                    << rfl::enum_to_string(binding_mode)
+                    << "' subject='" << synthetic_producer_subject(key, binding_mode)
+                    << "' binding_mode='" << rfl::enum_to_string(binding_mode)
                     << "' ticks_per_hour=" << ticks_per_hour << " — now " << feeds_.size()
                     << " feed(s) running";
                 if (!status_thread_.joinable()) {
@@ -513,7 +514,8 @@ private:
             const auto count = rf.feed ? rf.feed->publish_count() : 0;
             BOOST_LOG_SEV(lg(), ores::logging::info)
                 << "SYNTHETIC STATUS: source='" << key << "' ore_key='" << rf.feed->ore_key()
-                << "' subject='" << synthetic_producer_subject(key, rf.binding_mode) << "' published=" << count;
+                << "' subject='" << synthetic_producer_subject(key, rf.binding_mode)
+                << "' published=" << count;
         }
     }
 

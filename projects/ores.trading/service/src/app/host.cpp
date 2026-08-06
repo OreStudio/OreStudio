@@ -18,9 +18,9 @@
  *
  */
 #include "ores.trading.service/app/host.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include "ores.trading.service/app/application.hpp"
 #include "ores.trading.service/config/parser.hpp"
-#include "ores.service/service/host_runner.hpp"
 
 namespace ores::trading::service::app {
 

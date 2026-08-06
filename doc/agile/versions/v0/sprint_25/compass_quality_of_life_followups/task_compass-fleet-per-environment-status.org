@@ -8,7 +8,7 @@
 #+filetags: :compass:fleet:operate:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/compass-fleet-per-environment-status
-#+pr:
+#+pr: 1884
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -66,7 +66,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1884][#1884]] | [compass] Add --status flag to compass fleet |
 
 * Review
 

@@ -20,18 +20,41 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Two things, in order:
+Originally scoped as "wire the NATS eventing templates into codegen"
+— investigation found that facet (=ores.cpp.nats-eventing= /
+=ores.cpp.nats-event-registrar=) already exists, is already wired
+into the physical-space graph's default "supported set", and is
+already proven live (=purpose_type=, PR #1451/#1459; every other
+refdata entity too). The real gap: the 6 already-converted trading
+instrument entities were never generated through the graph's true
+default set (whatever command was actually used for their
+conversion, it wasn't the documented =--address ores.cpp=/no-address
+form), so they're silently missing eventing, request/response
+messaging, and presentation-history facets the resolver says they're
+entitled to. Revised goal, three parts, in order:
 
-1. Wire the existing, currently-unused =cpp_nats_changed_event=,
-   =cpp_nats_event_registrar.hpp/cpp= templates into the codegen
-   generator, behind a per-entity opt-in flag, so an entity's
-   changed-event struct and event-registrar wiring can be generated
-   instead of hand-crafted (as they are today even for
-   =business_unit=, despite the templates already existing).
-2. Add a new test facet that generates the "write entity, observe its
-   NATS entity-changed notification" integration test proven by hand
-   in =business_unit_eventing_integration_tests.cpp=, so every
+1. Regenerate the 6 already-converted trading instrument entities
+   through the true default "supported set" (no =--address=
+   restriction), closing the gap. Eventing and presentation are
+   clean additive gaps; request/response messaging collides with a
+   pre-existing hand-crafted =save_*= path per entity (same struct,
+   same subject, same service call) — delete the hand-crafted
+   duplicate and adopt the generated registrar instead.
+2. Fix the =ores.cpp.presentation.history_field_mapper= template,
+   the one facet that never learned the =has_identity_group=/
+   =has_audit_group= nested-struct branching every other facet
+   (domain, mapper, repository, service) already has — bring it to
+   parity rather than special-case trading.
+3. Add a new test facet that generates the "write entity, observe
+   its NATS entity-changed notification" integration test proven by
+   hand in =business_unit_eventing_integration_tests.cpp=, so every
    eventing-enabled entity gets this regression coverage for free.
+
+Explicitly out of scope for this task (filed separately once this is
+proven): migrating refdata and any other flat-generated component to
+the nested =identity=/=audit= shape, so the flat branches in every
+facet template can eventually be deleted and the whole codebase
+converges on one entity shape.
 
 * Status
 
@@ -46,38 +69,70 @@ Two things, in order:
 
 * Acceptance
 
-- A new per-entity model flag (e.g. =has_nats_eventing=) controls
-  whether the changed-event/event-registrar files are generated for
-  that entity; default false, so no currently-hand-crafted entity's
-  files are touched by turning this on.
-- Generating with the flag on for a *fresh* entity (no hand-crafted
-  eventing files yet) produces a compiling, working
-  changed_event.hpp + event_registrar.hpp/cpp, wired into the
-  component's central =event_registrar.cpp= the same way
-  =business_unit='s hand-crafted version is today.
-- Proven end-to-end against a real trading entity that currently has
-  zero eventing wiring (e.g. =fx_variance_swap_instrument=) — not
-  against =business_unit=, whose hand-crafted files must not be
-  clobbered/diverged-from silently.
-- The new integration-test facet generates a Catch2 test file
-  matching the shape of
-  =business_unit_eventing_integration_tests.cpp=, parameterised per
-  entity (repository include, generator include, party-scoping
-  helper reuse, entity_singular/plural, primary-key id-list field),
-  wired into the component's tests =component_files.cmake=.
-- =regenerate_cmake_component_files.py= picks up the new generated
-  test file with no manual CMakeLists edits beyond the one-time
-  eventing-lib link additions already done for
-  =ores.refdata.core.tests=.
+- All 6 already-converted trading instrument entities
+  (=equity_position_instrument=, =equity_variance_swap_instrument=,
+  =fx_forward_instrument=, =equity_forward_instrument=,
+  =fx_accumulator_instrument=, =fx_vanilla_option_instrument=)
+  regenerated through the true default supported set; every changed
+  file diffed per standing policy, no orphaned hand-crafted files
+  left behind.
+- Each entity's hand-crafted =save_<entity>_instrument_request/
+  response= struct pair + handler method + queue-subscribe line
+  deleted and replaced by the generated per-entity registrar
+  (list/save/history/remove).
+- =ores.trading.core='s =CMakeLists.txt= gains the =ores.diff.lib=
+  dependency the presentation facet needs (mirroring refdata).
+- =ores.cpp.presentation.history_field_mapper= template fixed to
+  branch on =has_identity_group=/=has_audit_group= exactly like the
+  mapper/repository/service templates already do — no more
+  conditional deletion of generated output to work around it.
+- Each entity's generated eventing registrar wired into
+  =ores.trading.service='s =application.cpp= eventing pipeline; each
+  entity's generated request/response registrar wired into the
+  relevant =registrar_<asset-class>.cpp=.
 - Second regen pass on every touched entity produces zero further
   diff (standard codegen drift check).
-- Full build + affected ctest suites green before PR.
+- Full build + affected ctest suites (trading.*, ore.service,
+  refdata.* untouched) green before PR.
+- New integration-test facet generates a Catch2 test matching the
+  shape of =business_unit_eventing_integration_tests.cpp=,
+  parameterised per entity, wired into the component's tests
+  =component_files.cmake=.
+- A follow-up task filed (not implemented here) to migrate refdata
+  and any other flat-generated component to the nested
+  =identity=/=audit= shape.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Fix =ores.cpp.presentation.history_field_mapper_impl.org= (tangles
+   to =cpp_history_field_mapper.cpp.mustache=): branch primary-key,
+   per-column, and audit-block emission on =has_identity_group=/
+   =has_audit_group= — same mechanism =cpp_domain_type_mapper.cpp.mustache=
+   already uses (=v.identity.xxx=/=v.audit.xxx= vs flat). Retangle via
+   =compass build --direct tangle_codegen_templates=, diff the tangled
+   =.mustache= output.
+2. Prove it on =equity_position_instrument=: restore the presentation
+   facet output (regenerate =--address ores.cpp.presentation=), confirm
+   it now compiles against the nested domain shape.
+3. Finish =equity_position_instrument= end to end: delete its
+   hand-crafted =save_equity_position_instrument_request/response=
+   (in =instrument_protocol.hpp=), delete
+   =typed_equity_instrument_handler::save_position= + its
+   queue-subscribe line in =registrar_equity.cpp=, wire the generated
+   registrar in instead; wire the generated event registrar into
+   =application.cpp=; fix any other hand-crafted consumer of the
+   deleted struct (found: =ores.ore/service/.../ore_import_execute_handler.cpp=,
+   needs the generated protocol header included instead); add
+   =ores.diff.lib= to =ores.trading.core='s =CMakeLists.txt=; regenerate
+   CMake component file lists; build + test; diff every changed file;
+   commit.
+4. Repeat step 3 for the other 5 entities, one at a time (mechanical
+   once the template fix and pattern are proven), each its own commit.
+5. Design and add the eventing-integration-test facet (parameterise
+   the proven =business_unit_eventing_integration_tests.cpp= pattern),
+   generate it for at least one trading entity now that trading has
+   real eventing wired, wire into =component_files.cmake=.
+6. File the refdata-migration follow-up task; do not implement it here.
 
 * Notes
 

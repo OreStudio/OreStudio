@@ -692,7 +692,7 @@ def _common(parser):
                         help="CMake preset (default: ORES_PRESET from .env)")
 
 
-def run(argv, project_root: Path) -> int:
+def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="compass services",
         description="Operate pillar: service lifecycle, generated+deployed "
@@ -733,7 +733,7 @@ def run(argv, project_root: Path) -> int:
     _common(cl)
 
     args = ap.parse_args(argv)
-    env = load_env(project_root)
+    env = load_env(project_root, env_file)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)
 
@@ -742,7 +742,7 @@ def run(argv, project_root: Path) -> int:
             "clear-logs": cmd_clear_logs}[args.subcmd](ctx, args)
 
 
-def run_client(argv, project_root: Path) -> int:
+def run_client(argv, project_root: Path, env_file: Path | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="compass client",
         description="Operate pillar: launch/stop the Qt client, detached.")
@@ -768,7 +768,7 @@ def run_client(argv, project_root: Path) -> int:
                          "with (default: the uncoloured instance)")
 
     args = ap.parse_args(argv)
-    env = load_env(project_root)
+    env = load_env(project_root, env_file)
     validate_env_version(project_root, env)
     ctx = Ctx(project_root, env, args.preset)
     return {"start": cmd_client_start, "stop": cmd_client_stop}[args.subcmd](ctx, args)

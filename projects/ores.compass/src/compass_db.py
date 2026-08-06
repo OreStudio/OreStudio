@@ -32,11 +32,12 @@ PROTECTED_DBS = ("postgres", "template0", "template1")
 
 # --- environment ------------------------------------------------------------
 
-def load_env(project_root: Path) -> dict:
-    """Parse .env into a dict (KEY=VALUE lines; quotes stripped)."""
-    env_file = project_root / ".env"
+def load_env(project_root: Path, env_file: Path | None = None) -> dict:
+    """Parse .env (or an alternate env_file) into a dict (KEY=VALUE lines; quotes stripped)."""
+    if env_file is None:
+        env_file = project_root / ".env"
     if not env_file.exists():
-        print(f"error: .env not found at {env_file}", file=sys.stderr)
+        print(f"error: env file not found at {env_file}", file=sys.stderr)
         print("       run: ./projects/ores.compass/compass.sh env configure "
               "--preset <preset>", file=sys.stderr)
         sys.exit(1)
@@ -710,7 +711,7 @@ def cmd_db_status(project_root, env):
     return 0
 
 
-def run(argv, project_root: Path) -> int:
+def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     ap = argparse.ArgumentParser(
         prog="compass db",
         description="Provision pillar: database lifecycle "
@@ -762,7 +763,7 @@ def run(argv, project_root: Path) -> int:
     if passthrough and passthrough[0] == "--":
         passthrough = passthrough[1:]
 
-    env = load_env(project_root)
+    env = load_env(project_root, env_file)
     validate_env_version(project_root, env)
 
     if args.subcmd == "status":

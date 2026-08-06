@@ -26,11 +26,11 @@ Restore Windows build by replacing all raw setenv/unsetenv calls in tests with t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4584CB9E-50DE-4B8F-833C-BDAE957FD944][Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -78,3 +78,20 @@ via its "Verifies task" field.
 | 1 | Include ordering: new include must sort among quoted includes per .clang-format | all 12 files | Accepted | Ran clang-format -i on all 12 files |
 
 * Result
+
+12 test files patched:
+- =ores.nats/tests/config_nats_configuration_tests.cpp=: 3 =setenv= +
+  3 =unsetenv= → =environment::set_value= / =environment::unset_value=
+- 11× =*/service/tests/config_parser_tests.cpp=: 3 =unsetenv= each
+  → =environment::unset_value=
+
+=Dropped =<cstdlib>= from all 12 files — no other stdlib symbols were
+in use. The =ores.platform::environment= wrapper (=environment.cpp:=61-75)
+already has =#ifdef _WIN32= guards using =_putenv_s=.
+
+Include ordering fixed per review via =clang-format -i=.
+
+Verified: Linux CI all green (8/8 pass). Windows verification is on the
+PR's CI — the fix resolves the =use of undeclared identifier 'setenv'=
+and ='unsetenv'= errors that both MSVC and Windows Clang emit for these
+POSIX-only functions.

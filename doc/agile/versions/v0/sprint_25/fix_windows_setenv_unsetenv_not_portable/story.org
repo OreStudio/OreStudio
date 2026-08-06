@@ -21,11 +21,11 @@ Restore Windows build by replacing all raw setenv/unsetenv calls in tests with t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-08-06                               |
 
 * Acceptance
@@ -38,7 +38,7 @@ Restore Windows build by replacing all raw setenv/unsetenv calls in tests with t
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:514472D1-ED85-447C-9DEB-F8BDE0F2FBB8][Implement Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] | STARTED | 2026-08-06 | | Initial task for: Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests |
+| [[id:514472D1-ED85-447C-9DEB-F8BDE0F2FBB8][Implement Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] | DONE | 2026-08-06 | 2026-08-06 | Initial task for: Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests |
 
 * Decisions
 

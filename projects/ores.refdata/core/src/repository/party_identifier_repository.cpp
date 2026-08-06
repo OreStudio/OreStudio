@@ -81,6 +81,23 @@ party_identifier_repository::read_latest(context ctx, const std::string& id) {
         "Reading latest party identifier by id.");
 }
 
+std::vector<domain::party_identifier> party_identifier_repository::read_latest_by_code(
+    context ctx, const std::string& party_id, const std::string& id_scheme) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier by party_id/id_scheme: "
+                               << party_id << "/" << id_scheme;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                             "id_scheme"_c == id_scheme && "valid_to"_c == max.value());
+
+    return execute_read_query<party_identifier_entity, domain::party_identifier>(
+        ctx,
+        query,
+        [](const auto& entities) { return party_identifier_mapper::map(entities); },
+        lg(),
+        "Reading latest party identifier by id_scheme.");
+}
 
 std::vector<domain::party_identifier> party_identifier_repository::read_all(context ctx,
                                                                             const std::string& id) {

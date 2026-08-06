@@ -234,7 +234,8 @@ entity versioning" architecture doc, "Multi-level composition".
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:         api
+:service_find_by_uuid: true
 :END:
 
 ** Repository

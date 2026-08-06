@@ -71,7 +71,6 @@ public:
     std::vector<domain::payment_frequency> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all payment frequencies, possibly filtered by primary key.
      */

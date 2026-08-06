@@ -71,6 +71,11 @@ public:
     std::vector<domain::party_contact_information> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+    /**
+     * @brief Reads latest party contact informations filtered by party_id and contact_type.
+     */
+    std::vector<domain::party_contact_information>
+    read_latest_by_code(context ctx, const std::string& party_id, const std::string& contact_type);
 
     /**
      * @brief Reads all party contact informations, possibly filtered by primary key.

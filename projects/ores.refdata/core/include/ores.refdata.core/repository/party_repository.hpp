@@ -72,6 +72,10 @@ public:
     std::vector<domain::party> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+    /**
+     * @brief Reads latest parties filtered by short_code.
+     */
+    std::vector<domain::party> read_latest_by_code(context ctx, const std::string& short_code);
 
     /**
      * @brief Reads all parties, possibly filtered by primary key.

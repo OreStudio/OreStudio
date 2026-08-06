@@ -71,7 +71,6 @@ public:
     std::vector<domain::ibor_index_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all IBOR index conventions, possibly filtered by primary key.
      */

@@ -70,6 +70,11 @@ public:
     std::vector<domain::business_unit> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+    /**
+     * @brief Reads latest business units filtered by party_id and unit_name.
+     */
+    std::vector<domain::business_unit>
+    read_latest_by_code(context ctx, const std::string& party_id, const std::string& unit_name);
 
     /**
      * @brief Reads all business units, possibly filtered by primary key.

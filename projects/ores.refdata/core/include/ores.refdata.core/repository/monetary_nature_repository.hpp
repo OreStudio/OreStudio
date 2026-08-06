@@ -71,7 +71,6 @@ public:
     std::vector<domain::monetary_nature> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all monetary natures, possibly filtered by primary key.
      */

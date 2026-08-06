@@ -71,7 +71,6 @@ public:
     std::vector<domain::floating_index_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all floating index types, possibly filtered by primary key.
      */

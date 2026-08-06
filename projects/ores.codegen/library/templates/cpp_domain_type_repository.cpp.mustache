@@ -142,6 +142,51 @@ std::vector<domain::{{entity_singular}}>
         lg(), "Reading latest {{entity_singular_words}} by {{primary_key.column}}.");
 }
 
+{{#service_find_by_code}}
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read_latest_by_code(context ctx,
+{{#parent_column}}
+    const std::string& {{parent_column}},
+{{/parent_column}}
+    const std::string& {{column}}) {
+{{#parent_column}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{parent_column}}/{{column}}: "
+                               << {{parent_column}} << "/" << {{column}};
+{{/parent_column}}
+{{^parent_column}}
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{column}}: " << {{column}};
+{{/parent_column}}
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+{{#read_tenant_filtered}}
+    const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+{{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && {{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{^has_workspace_id}}
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where({{#parent_column}}"{{parent_column}}"_c == {{parent_column}} && {{/parent_column}}"{{column}}"_c == {{column}} && "valid_to"_c == max.value());
+{{/has_workspace_id}}
+{{/read_tenant_filtered}}
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading latest {{entity_singular_words}} by {{column}}.");
+}
+{{/service_find_by_code}}
 {{#has_as_of_lookup}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_at_timepoint(context ctx, const std::string& as_of) {

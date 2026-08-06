@@ -71,7 +71,6 @@ public:
     std::vector<domain::book_purpose_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all book purpose types, possibly filtered by primary key.
      */

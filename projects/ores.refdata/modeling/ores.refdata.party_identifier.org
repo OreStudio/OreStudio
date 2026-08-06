@@ -124,6 +124,7 @@ std::string("Test identifier")
 :nullable:      false
 :error_message: Invalid party_id: %. No active party found with this id.
 :list_by:       true
+:list_by_uuid:  true
 :bump_parent_version: true
 :list_by_as_of: true
 :END:
@@ -140,7 +141,10 @@ std::string("Test identifier")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:                       api
+:service_find_by_uuid:               true
+:service_find_by_code_column:        id_scheme
+:service_find_by_code_parent_column: party_id
 :END:
 
 ** Repository

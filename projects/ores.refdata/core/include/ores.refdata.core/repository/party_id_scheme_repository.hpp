@@ -71,7 +71,6 @@ public:
     std::vector<domain::party_id_scheme> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all party ID schemes, possibly filtered by primary key.
      */

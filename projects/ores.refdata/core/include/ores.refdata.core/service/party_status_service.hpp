@@ -91,7 +91,7 @@ public:
      *
      * @return The party status if found, std::nullopt otherwise.
      */
-    std::optional<domain::party_status> get_status(const std::string& code);
+    std::optional<domain::party_status> find_status(const std::string& code);
 
     /**
      * @brief Saves a party status (creates or updates).

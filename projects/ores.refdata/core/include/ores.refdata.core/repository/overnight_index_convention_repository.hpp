@@ -71,7 +71,6 @@ public:
     std::vector<domain::overnight_index_convention> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all overnight index conventions, possibly filtered by primary key.
      */

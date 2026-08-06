@@ -70,7 +70,6 @@ public:
     std::vector<domain::book> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all books, possibly filtered by primary key.
      */

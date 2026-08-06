@@ -72,7 +72,6 @@ public:
                                                                 const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all tenor resolution algorithms, possibly filtered by primary key.
      */

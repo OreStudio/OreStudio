@@ -79,6 +79,23 @@ std::vector<domain::business_unit> business_unit_repository::read_latest(context
         "Reading latest business unit by id.");
 }
 
+std::vector<domain::business_unit> business_unit_repository::read_latest_by_code(
+    context ctx, const std::string& party_id, const std::string& unit_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by party_id/unit_name: " << party_id
+                               << "/" << unit_name;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<business_unit_entity>> |
+                       where("tenant_id"_c == tid && "party_id"_c == party_id &&
+                             "unit_name"_c == unit_name && "valid_to"_c == max.value());
+
+    return execute_read_query<business_unit_entity, domain::business_unit>(
+        ctx,
+        query,
+        [](const auto& entities) { return business_unit_mapper::map(entities); },
+        lg(),
+        "Reading latest business unit by unit_name.");
+}
 
 std::vector<domain::business_unit> business_unit_repository::read_all(context ctx,
                                                                       const std::string& id) {

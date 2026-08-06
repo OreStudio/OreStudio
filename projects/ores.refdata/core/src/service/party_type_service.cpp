@@ -50,8 +50,8 @@ std::optional<domain::party_type> party_type_service::get_type_at_version(const 
     return repo_.read_at_version(ctx_, code, version);
 }
 
-std::optional<domain::party_type> party_type_service::get_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party type. " << "code: " << code;
+std::optional<domain::party_type> party_type_service::find_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;

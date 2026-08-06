@@ -207,7 +207,9 @@ std::nullopt
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:                api
+:service_find_by_uuid:        true
+:service_find_by_code_column: short_code
 :END:
 
 ** Repository

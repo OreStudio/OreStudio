@@ -71,7 +71,6 @@ public:
     std::vector<domain::ledger_feed_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all ledger feed types, possibly filtered by primary key.
      */

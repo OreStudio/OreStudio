@@ -72,6 +72,11 @@ public:
     std::vector<domain::counterparty> read_latest(context ctx, const std::string& id);
     /**@}*/
 
+    /**
+     * @brief Reads latest counterparties filtered by short_code.
+     */
+    std::vector<domain::counterparty> read_latest_by_code(context ctx,
+                                                          const std::string& short_code);
 
     /**
      * @brief Reads all counterparties, possibly filtered by primary key.

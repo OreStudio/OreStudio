@@ -71,7 +71,6 @@ public:
     std::vector<domain::crm_driver_pair> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all CRM driver pairs, possibly filtered by primary key.
      */

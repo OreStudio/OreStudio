@@ -16,8 +16,10 @@
 #include "ores.{{component_core}}/export.hpp"
 {{#has_parent_id}}
 #include "ores.utility/domain/hierarchy.hpp"
-#include <boost/uuid/uuid.hpp>
 {{/has_parent_id}}
+{{#has_uuid_include}}
+#include <boost/uuid/uuid.hpp>
+{{/has_uuid_include}}
 <<paste:C5F35C7E-6EED-48D8-99F8-793145586882>>
 
 namespace ores::{{component}}::service {
@@ -102,6 +104,28 @@ public:
      * @return Total number of matching {{entity_plural_words}}.
      */
     std::uint32_t count_{{entity_plural_short}}_by_{{column}}(const std::string& {{column}});
+{{#list_by_uuid}}
+
+    /**
+     * @brief Lists {{entity_plural_words}} filtered by {{column}}, with pagination.
+     *
+     * @param {{column}} The {{column}} to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching {{entity_plural_words}} for the requested page.
+     */
+    std::vector<domain::{{entity_singular}}>
+    list_{{entity_plural_short}}_by_{{column}}(const boost::uuids::uuid& {{column}},
+                                              std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active {{entity_plural_words}} filtered by {{column}}.
+     *
+     * @param {{column}} The {{column}} to filter by.
+     * @return Total number of matching {{entity_plural_words}}.
+     */
+    std::uint32_t count_{{entity_plural_short}}_by_{{column}}(const boost::uuids::uuid& {{column}});
+{{/list_by_uuid}}
 {{/list_by}}
 
 {{#list_by_as_of}}
@@ -139,7 +163,42 @@ public:
      * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
      */
     std::optional<domain::{{entity_singular}}>
-    get_{{entity_singular_short}}({{{primary_key.params}}});
+    {{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}({{{primary_key.params}}});
+{{#service_find_by_uuid}}
+
+    /**
+     * @brief Retrieves a single {{entity_singular_words}} by its uuid primary key.
+     *
+     * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
+     */
+    std::optional<domain::{{entity_singular}}>
+    find_{{entity_singular_short}}(const boost::uuids::uuid& {{primary_key.column}});
+{{/service_find_by_uuid}}
+{{#service_find_by_code}}
+{{#parent_column}}
+
+    /**
+     * @brief Retrieves a single {{entity_singular_words}} by its
+     * {{parent_column}} and {{column}} (this entity's natural key is the
+     * pair, not {{column}} alone).
+     *
+     * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
+     */
+    std::optional<domain::{{entity_singular}}>
+    find_{{entity_singular_short}}_by_code(const boost::uuids::uuid& {{parent_column}},
+                                             const std::string& {{column}});
+{{/parent_column}}
+{{^parent_column}}
+
+    /**
+     * @brief Retrieves a single {{entity_singular_words}} by its {{column}}.
+     *
+     * @return The {{entity_singular_words}} if found, std::nullopt otherwise.
+     */
+    std::optional<domain::{{entity_singular}}>
+    find_{{entity_singular_short}}_by_code(const std::string& {{column}});
+{{/parent_column}}
+{{/service_find_by_code}}
 {{#has_batch_read}}
 
     /**
@@ -172,6 +231,15 @@ public:
      * @throws std::exception on failure.
      */
     void delete_{{entity_singular_short}}({{{primary_key.params}}});
+{{#service_find_by_uuid}}
+
+    /**
+     * @brief Removes a {{entity_singular_words}} by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_{{entity_singular_short}}(const boost::uuids::uuid& {{primary_key.column}});
+{{/service_find_by_uuid}}
 
     /**
      * @brief Deletes {{entity_plural_words}} by their primary keys.
@@ -183,6 +251,15 @@ public:
      */
     std::vector<domain::{{entity_singular}}>
     get_{{entity_singular_short}}_history({{{primary_key.params}}});
+{{#service_find_by_uuid}}
+
+    /**
+     * @brief Retrieves all historical versions of a {{entity_singular_words}}
+     * by its uuid primary key.
+     */
+    std::vector<domain::{{entity_singular}}>
+    get_{{entity_singular_short}}_history(const boost::uuids::uuid& {{primary_key.column}});
+{{/service_find_by_uuid}}
 {{#has_parent_id}}
 
     /**

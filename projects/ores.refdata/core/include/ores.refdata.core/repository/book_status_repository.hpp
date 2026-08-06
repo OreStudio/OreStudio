@@ -69,7 +69,6 @@ public:
     std::vector<domain::book_status> read_latest(context ctx);
     std::vector<domain::book_status> read_latest(context ctx, const std::string& code);
     /**@}*/
-
     /**
      * @brief Reads book statuses as they stood at a specific
      * timepoint — valid_from <= as_of < valid_to — possibly filtered by

@@ -71,7 +71,6 @@ public:
     std::vector<domain::currency_group> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all currency groups, possibly filtered by primary key.
      */

@@ -71,7 +71,6 @@ public:
     std::vector<domain::crm_enabled_derived_pair> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all CRM enabled derived pairs, possibly filtered by primary key.
      */

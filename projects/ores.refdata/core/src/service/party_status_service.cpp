@@ -50,8 +50,8 @@ party_status_service::get_status_at_version(const std::string& code, std::uint32
     return repo_.read_at_version(ctx_, code, version);
 }
 
-std::optional<domain::party_status> party_status_service::get_status(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting party status. " << "code: " << code;
+std::optional<domain::party_status> party_status_service::find_status(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party status. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;

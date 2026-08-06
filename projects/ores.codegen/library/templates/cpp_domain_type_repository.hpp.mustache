@@ -63,7 +63,24 @@ public:
     read_latest(context ctx, {{{primary_key.batch_params}}});
 {{/has_batch_read}}
     /**@}*/
+{{#service_find_by_code}}
+{{#parent_column}}
 
+    /**
+     * @brief Reads latest {{entity_plural_words}} filtered by {{parent_column}} and {{column}}.
+     */
+    std::vector<domain::{{entity_singular}}>
+    read_latest_by_code(context ctx, const std::string& {{parent_column}}, const std::string& {{column}});
+{{/parent_column}}
+{{^parent_column}}
+
+    /**
+     * @brief Reads latest {{entity_plural_words}} filtered by {{column}}.
+     */
+    std::vector<domain::{{entity_singular}}>
+    read_latest_by_code(context ctx, const std::string& {{column}});
+{{/parent_column}}
+{{/service_find_by_code}}
 {{#has_as_of_lookup}}
     /**
      * @brief Reads {{entity_plural_words}} as they stood at a specific

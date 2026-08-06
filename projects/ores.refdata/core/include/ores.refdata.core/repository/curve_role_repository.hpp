@@ -70,7 +70,6 @@ public:
     std::vector<domain::curve_role> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all curve roles, possibly filtered by primary key.
      */

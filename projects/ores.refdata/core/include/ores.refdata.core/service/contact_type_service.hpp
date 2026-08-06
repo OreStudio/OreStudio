@@ -91,7 +91,7 @@ public:
      *
      * @return The contact type if found, std::nullopt otherwise.
      */
-    std::optional<domain::contact_type> get_type(const std::string& code);
+    std::optional<domain::contact_type> find_type(const std::string& code);
 
     /**
      * @brief Saves a contact type (creates or updates).

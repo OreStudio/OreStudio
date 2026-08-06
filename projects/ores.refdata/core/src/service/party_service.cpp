@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/party_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -57,6 +58,22 @@ std::optional<domain::party> party_service::get_party(const std::string& id) {
     return results.front();
 }
 
+std::optional<domain::party> party_service::find_party(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
+std::optional<domain::party> party_service::find_party_by_code(const std::string& short_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding party by short_code: " << short_code;
+    auto results = repo_.read_latest_by_code(ctx_, short_code);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
 void party_service::save_party(const domain::party& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Party id cannot be empty.");
@@ -84,6 +101,12 @@ void party_service::delete_party(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
 }
 
+void party_service::remove_party(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed party. " << "id: " << id;
+}
+
 void party_service::delete_parties(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
@@ -91,6 +114,11 @@ void party_service::delete_parties(const std::vector<std::string>& ids) {
 std::vector<domain::party> party_service::get_party_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party. " << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<domain::party> party_service::get_party_history(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party. " << "id: " << id;
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 std::vector<ores::utility::domain::hierarchy_node>

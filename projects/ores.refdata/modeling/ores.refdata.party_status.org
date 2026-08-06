@@ -112,7 +112,8 @@ drop function if exists ores_refdata_validate_party_status_fn;
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:         api
+:service_find_prefix:  true
 :END:
 
 ** Repository

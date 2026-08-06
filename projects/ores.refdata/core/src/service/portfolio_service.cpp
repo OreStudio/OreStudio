@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.core/service/portfolio_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -58,6 +59,14 @@ std::optional<domain::portfolio> portfolio_service::get_portfolio(const std::str
     return results.front();
 }
 
+std::optional<domain::portfolio> portfolio_service::find_portfolio(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding portfolio. " << "id: " << id;
+    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
 void portfolio_service::save_portfolio(const domain::portfolio& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Portfolio id cannot be empty.");
@@ -85,6 +94,12 @@ void portfolio_service::delete_portfolio(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed portfolio. " << "id: " << id;
 }
 
+void portfolio_service::remove_portfolio(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing portfolio. " << "id: " << id;
+    repo_.remove(ctx_, boost::uuids::to_string(id));
+    BOOST_LOG_SEV(lg(), info) << "Removed portfolio. " << "id: " << id;
+}
+
 void portfolio_service::delete_portfolios(const std::vector<std::string>& ids) {
     repo_.remove(ctx_, ids);
 }
@@ -92,6 +107,12 @@ void portfolio_service::delete_portfolios(const std::vector<std::string>& ids) {
 std::vector<domain::portfolio> portfolio_service::get_portfolio_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio. " << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<domain::portfolio>
+portfolio_service::get_portfolio_history(const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for portfolio. " << "id: " << id;
+    return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
 }

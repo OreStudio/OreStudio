@@ -70,7 +70,6 @@ public:
     std::vector<domain::rounding_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all rounding types, possibly filtered by primary key.
      */

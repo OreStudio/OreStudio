@@ -18,9 +18,9 @@
  *
  */
 #include "ores.workflow.service/app/host.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include "ores.workflow.service/app/application.hpp"
 #include "ores.workflow.service/config/parser.hpp"
-#include "ores.service/service/host_runner.hpp"
 
 namespace ores::workflow::service::app {
 

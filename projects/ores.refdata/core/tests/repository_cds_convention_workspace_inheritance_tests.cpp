@@ -26,9 +26,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -61,15 +61,16 @@ TEST_CASE("child_workspace_with_no_local_rows_inherits_parent_rows", tags) {
     // resolution chain [child, Live] means data absent from child should
     // fall through to Live.
     const auto child_workspace_id = boost::uuids::to_string(boost::uuids::random_generator()());
-    const auto live_workspace_id = boost::uuids::to_string(ores::utility::uuid::live_workspace_id());
+    const auto live_workspace_id =
+        boost::uuids::to_string(ores::utility::uuid::live_workspace_id());
 
     auto ctx_with_chain =
         h.context().with_workspace_resolution({child_workspace_id, live_workspace_id});
 
     const auto results = repo.read_latest(ctx_with_chain);
 
-    const auto found = std::ranges::find_if(
-        results, [&](const auto& c) { return c.id == live_id; });
+    const auto found =
+        std::ranges::find_if(results, [&](const auto& c) { return c.id == live_id; });
     REQUIRE(found != results.end());
 }
 
@@ -88,7 +89,7 @@ TEST_CASE("empty_resolution_chain_falls_back_to_exact_match", tags) {
     // unchanged from before this task.
     const auto results = repo.read_latest(h.context());
 
-    const auto found = std::ranges::find_if(
-        results, [&](const auto& c) { return c.id == live_id; });
+    const auto found =
+        std::ranges::find_if(results, [&](const auto& c) { return c.id == live_id; });
     REQUIRE(found != results.end());
 }

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.synthetic.service/app/host.hpp"
+#include "ores.service/service/host_runner.hpp"
 #include "ores.synthetic.service/app/application.hpp"
 #include "ores.synthetic.service/config/parser.hpp"
-#include "ores.service/service/host_runner.hpp"
 
 namespace ores::synthetic::service::app {
 

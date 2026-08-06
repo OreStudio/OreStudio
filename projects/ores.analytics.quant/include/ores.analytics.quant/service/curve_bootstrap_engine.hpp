@@ -61,8 +61,11 @@ parse_bootstrap_curve_role_code(const std::string& code);
  * Enumerator names match their refdata code string exactly so
  * parse_interpolation_method_code() can delegate to magic_enum::enum_cast.
  */
-enum class interpolation_method_code { LOG_LINEAR_DISCOUNT, FLAT_FORWARD_THEN_LOG_LINEAR,
-                                       CUBIC_SPLINE };
+enum class interpolation_method_code {
+    LOG_LINEAR_DISCOUNT,
+    FLAT_FORWARD_THEN_LOG_LINEAR,
+    CUBIC_SPLINE
+};
 
 /**
  * @brief Parses an interpolation_method.code string into its strongly
@@ -178,10 +181,11 @@ public:
      *        that check fails.
      */
     static std::vector<bootstrapped_point>
-    bootstrap(std::chrono::year_month_day value_date, const std::vector<bootstrap_pillar>& pillars,
-             day_count_convention_code day_count_convention,
-             interpolation_method_code interpolation_method,
-             const std::vector<bootstrapped_point>* discount_curve = nullptr);
+    bootstrap(std::chrono::year_month_day value_date,
+              const std::vector<bootstrap_pillar>& pillars,
+              day_count_convention_code day_count_convention,
+              interpolation_method_code interpolation_method,
+              const std::vector<bootstrapped_point>* discount_curve = nullptr);
 
     /**
      * @brief Interpolates the discount factor at @p query_date from a
@@ -191,10 +195,9 @@ public:
      * Exposed independently so the interpolation behaviour itself is
      * directly testable, not only indirectly through a full bootstrap run.
      */
-    static double
-    interpolate_discount_factor(const std::vector<bootstrapped_point>& points,
-                                std::chrono::year_month_day query_date,
-                                interpolation_method_code interpolation_method);
+    static double interpolate_discount_factor(const std::vector<bootstrapped_point>& points,
+                                              std::chrono::year_month_day query_date,
+                                              interpolation_method_code interpolation_method);
 };
 
 }

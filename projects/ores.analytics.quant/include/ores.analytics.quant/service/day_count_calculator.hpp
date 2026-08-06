@@ -70,9 +70,9 @@ public:
      * @param start Interval start date; must not be after @p end.
      * @param end Interval end date.
      */
-    static double
-    year_fraction(std::chrono::year_month_day start, std::chrono::year_month_day end,
-                 day_count_convention_code convention);
+    static double year_fraction(std::chrono::year_month_day start,
+                                std::chrono::year_month_day end,
+                                day_count_convention_code convention);
 };
 
 }

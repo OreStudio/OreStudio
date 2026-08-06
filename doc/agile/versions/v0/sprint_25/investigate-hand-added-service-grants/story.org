@@ -56,6 +56,25 @@ generator output exactly.
 
 * Decisions
 
+- Cross-service grant drift was a model gap, not a template gap:
+  adding the missing prefixes to =service_registry.org= was sufficient
+  — the template already has =dml_prefixes=, =select_prefixes=, and
+  =execute_prefixes= sections that render to the right helper calls.
+  No template change was needed.
+- Rationale comments for cross-service grants live in the model next
+  to the prefix, not in the generated SQL — the generator cannot emit
+  comments, and the model is the single source of truth.
+- The nats config path mismatch (=nats-festive-dijkstra.conf= vs.
+  =nats-festive_dijkstra.conf=) was a convention drift between
+  =systemd_generate.py= (using raw =ORES_ENV_NAME= with hyphens) and
+  =env_init.py= (using =label_lower= with underscores, matching
+  =compass nats init='s =ORES_CHECKOUT_LABEL= convention). Fixed in
+  the systemd generator by mirroring =env_init='s =label_lower=
+  conversion rather than changing the file-naming convention.
+- The OS sandbox was ruled out as a cause: after fixing the path
+  mismatch, all 23 units started successfully with both global and
+  project sandboxes active.
+
 * Out of scope
 
 - Removing or re-justifying the controller-era grants themselves —

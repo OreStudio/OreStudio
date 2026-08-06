@@ -20,9 +20,9 @@
 #include "ores.iam.service/config/parser.hpp"
 #include "ores.iam.service/config/parser_exception.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/scoped_env_unset.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include "ores.platform/environment/environment.hpp"
 #include <sstream>
 #include <stdexcept>
 #include <string>

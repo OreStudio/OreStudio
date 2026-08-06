@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 4584CB9E-50DE-4B8F-833C-BDAE957FD944
+:END:
+#+title: Story: Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests
+#+description: Windows (Clang/MSVC) builds break because setenv/unsetenv are POSIX-only functions. 12 test files across ores.nats and 11 service config_parser suites use raw setenv/unsetenv — they must use ores.platform::environment::set_value/unset_value instead, which already has #ifdef _WIN32 guards using _putenv_s.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:portability:windows:sprint_25:v0:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore Windows build by replacing all raw setenv/unsetenv calls in tests with the portable ores.platform::environment wrapper.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-06                               |
+
+* Acceptance
+
+- Windows (MSVC + Clang) CI goes green on all 12 affected translation units
+- Linux (Clang/GCC) build remains green
+- All affected test suites pass on Linux
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:514472D1-ED85-447C-9DEB-F8BDE0F2FBB8][Implement Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests]] | STARTED | 2026-08-06 | | Initial task for: Hotfix: Replace setenv/unsetenv with ores.platform::environment in tests |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1501,19 +1501,19 @@ def cmd_where(args):
     # Build UUID → doc map for the whole doc index (for chain resolution).
     uuid_map = {d.id.lower(): d for d in docs.values() if d.id}
 
-    # Collect BLOCKED tasks in the current sprint.
-    blocked_tasks = []
+    # Collect BLOCKED stories and tasks in the current sprint.
+    blocked_items = []
     for d in docs.values():
-        if (d.doctype == "task"
+        if (d.doctype in ("story", "task")
                 and d.rel_path.startswith(sprint_dir + "/")
                 and ui.read_state(d.path) == "BLOCKED"):
-            blocked_tasks.append(d)
-    blocked_tasks.sort(key=lambda d: d.rel_path)
+            blocked_items.append(d)
+    blocked_items.sort(key=lambda d: d.rel_path)
 
-    if blocked_tasks:
-        print(f"🔴  Blocked ({len(blocked_tasks)})")
+    if blocked_items:
+        print(f"🔴  Blocked ({len(blocked_items)})")
         print()
-        for d in blocked_tasks:
+        for d in blocked_items:
             blocked_on_uuid, blocked_since = _read_blocked_fields(d.path)
             title = _strip_type_prefix(d.title or "")
             since_note = f"  {ui.CYAN}(since {blocked_since}){ui.RESET}" if blocked_since else ""

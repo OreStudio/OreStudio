@@ -2500,11 +2500,81 @@ def _worktree_env_value(worktree_path, key):
     return None
 
 
+def _env_systemd_scopes():
+    """Map env_name -> running systemd scope labels (claude/build/both).
+
+    Queries systemd --user once and groups scope units by environment name,
+    so fleet can show which worktrees have a live Claude session or build
+    without per-worktree systemctl calls. Returns a dict:
+
+        {"merry_newton": "claude,build", "brave_hopper": "claude", ...}
+
+    Missing keys mean no scope is running for that environment.
+    """
+    try:
+        result = subprocess.run(
+            ["systemctl", "--user", "list-units", "--type=scope",
+             "--no-legend", "--output=json"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            text=True, timeout=5)
+        units = json.loads(result.stdout)
+    except Exception:
+        return {}
+
+    scopes = {}
+    # claude-<env>-<pid>.scope  /  build-<env>-<slot>-<pid>.scope
+    env_re = re.compile(
+        r"^(claude|build)-([a-zA-Z0-9_.-]+?)-(?:[ab]-)?(\d+)\.scope$")
+
+    for u in units:
+        name = u.get("unit", "")
+        if name == "init.scope":
+            continue
+        m = env_re.match(name)
+        if not m:
+            continue
+        kind = m.group(1)          # "claude" or "build"
+        env = m.group(2)           # e.g. "merry_newton"
+        existing = scopes.get(env)
+        if existing is None:
+            scopes[env] = kind
+        elif kind not in existing:
+            scopes[env] = f"{existing},{kind}"
+
+    return scopes
+
+
+def _current_session_scope():
+    """Return (scope, slice) for the current session, or (None, None).
+
+    Reads /proc/self/cgroup and extracts both the innermost scope unit
+    name and its parent slice. Falls back gracefully when
+    /proc/self/cgroup is unreadable or the session isn't running under
+    a named scope.
+    """
+    try:
+        cgroup_text = Path("/proc/self/cgroup").read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return None, None
+    parts = cgroup_text.strip().split("/")
+    scope = None
+    s_slice = None
+    for p in reversed(parts):
+        if p.endswith(".scope") and scope is None:
+            scope = p
+        elif p.endswith(".slice") and s_slice is None:
+            s_slice = p
+        if scope is not None and s_slice is not None:
+            break
+    return scope, s_slice
+
+
 def cmd_fleet(args):
     worktrees = list_worktrees()
     if not worktrees:
         print("❌ Could not enumerate git worktrees.", file=sys.stderr)
         sys.exit(1)
+    scope_map = _env_systemd_scopes()
     here = str(PROJECT_ROOT)
     pr_map = open_prs_by_branch()
 
@@ -2529,6 +2599,7 @@ def cmd_fleet(args):
                 task_title, story_title = task_for_branch(path, branch)
 
         pr = pr_map.get(branch) if branch else None
+        env_name = _worktree_env_value(path, "ORES_ENV_NAME")
         rows.append({
             "worktree": Path(path).name,
             "path": path,
@@ -2545,7 +2616,8 @@ def cmd_fleet(args):
                    if pr else None),
             "staleness": branch_staleness(path),
             "provision_type": _worktree_env_value(path, "ORES_PROVISION_TYPE"),
-            "env_name": _worktree_env_value(path, "ORES_ENV_NAME"),
+            "env_name": env_name,
+            "scope": scope_map.get(env_name) if env_name else None,
         })
 
     if args.format == "json":
@@ -2575,15 +2647,17 @@ def cmd_fleet(args):
             "branch":   r["branch"] or "(detached)",
             "task":     r["task"] or "—",
             "pr":       f"#{r['pr']['number']}" if r.get("pr") else "—",
+            "scope":    r.get("scope") or "—",
             "sync":     sync,
             "sync_sev": sev,
         })
 
-    _COLS = ["worktree", "identity", "type", "branch", "task", "pr", "sync"]
+    _COLS = ["worktree", "identity", "type", "branch", "task", "pr", "scope", "sync"]
     _HDR  = {"worktree": "WORKTREE", "identity": "IDENTITY", "type": "TYPE",
-              "branch": "BRANCH", "task": "TASK", "pr": "PR", "sync": "SYNC"}
+              "branch": "BRANCH", "task": "TASK", "pr": "PR", "scope": "SCOPE",
+              "sync": "SYNC"}
     _MAX  = {"worktree": 28, "identity": 18, "type": 6,
-              "branch": 38, "task": 38, "pr": 8, "sync": 8}
+              "branch": 38, "task": 38, "pr": 8, "scope": 14, "sync": 8}
 
     widths = {k: len(_HDR[k]) for k in _COLS}
     for tr in trows:
@@ -5090,6 +5164,12 @@ def cmd_bearings(argv):
         _label = _env.get("ORES_CHECKOUT_LABEL", "?")
         _envver = _env.get("ORES_ENV_VERSION", "?")
         print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
+        _scope, _slice = _current_session_scope()
+        if _scope:
+            _slice_info = f"  (slice: {_slice})" if _slice else ""
+            print(f"  Scope    : {_scope}{_slice_info}")
+        else:
+            print("  Scope    : (no named systemd scope — running unscoped)")
         try:
             import env_init as _env_init
             _required_envver = _env_init.current_version(PROJECT_ROOT)

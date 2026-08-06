@@ -79,6 +79,20 @@ extension points -- see Notes.
 
 * Notes
 
+** Follow-up: entire equity_* instrument family missing from drop_trading.sql
+
+Flagged during PR #1874 review: =projects/ores.sql/drop/trading/drop_trading.sql=
+has zero =\ir= references to any =trading_equity_*_instruments_drop.sql=
+file -- not =equity_position= (the PR #1857 pilot), nor
+=equity_forward=/=equity_variance_swap= (this task's entities 3-4), nor
+any of the still-hand-crafted equity variants. These =_drop.sql= files
+exist on disk but are unreachable dead code: a full =drop.sql= run
+leaves every equity instrument table, trigger, and function fully
+intact. Pre-existing (predates the pilot), not something to patch
+piecemeal per converted entity -- needs a dedicated small cleanup task
+wiring up the whole equity_* family in =drop_trading.sql= at once,
+mirroring the FX/rates/bond blocks' pattern.
+
 ** Composite/leg-bearing entities need a template feature, not just a model
 
 Attempted =composite_instrument= first (after the pilot) since it's
@@ -185,6 +199,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | drop_trading.sql not updated with \ir lines for the 3 new fx_*_instruments_notify_trigger_drop.sql files this PR extracted (flagged independently by 2 of 3 reviewers) | drop_trading.sql | Fixed | Added the 3 missing \ir lines (fx_accumulator, fx_vanilla_option, fx_forward). Verified for real: ran the actual modular drop.sql against the live dev DB -- it walked through the entire trading section (including the newly-fixed lines) with zero errors before failing much later on an unrelated, pre-existing controller-component dependency issue. Recreated the DB afterward and re-ran ores.trading.* tests, all green. |
+| 2 | Entire equity_* instrument family (equity_position, equity_forward, equity_variance_swap, equity_option, equity_swap, equity_accumulator, ...) is absent from drop_trading.sql -- a pre-existing gap this PR's 2 new equity entities fall into | drop_trading.sql | Declined (this PR) | Confirmed pre-existing (predates PR #1857's pilot too), and larger than this PR's scope per the reviewer's own suggestion to flag rather than block. Filed as a follow-up note below; a dedicated cleanup task should wire up the whole equity_* family at once rather than patching it piecemeal per PR. |
+| 3 | read_at_version() doesn't filter by workspace_id, unlike read_latest/remove | *_repository.cpp (all 5 new entities) | Declined (this PR) | Inherited unchanged from the pilot (PR #1857) -- not a regression introduced here. Whether version history should be workspace-scoped is a design question for the workspace story, not something to silently change per-entity as it gets copied forward. |
+| 4 | Trailing double blank line in regenerated repository .cpp files | *_repository.cpp (all 5 new entities) | Declined | Cosmetic template artifact, not worth a template change for. |
 
 * Result

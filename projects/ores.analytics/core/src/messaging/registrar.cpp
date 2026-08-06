@@ -166,21 +166,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.history(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_pricing_model_product_parameters_for_config_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            pricing_model_product_parameter_handler h(nats, ctx, verifier);
-            h.list_for_config(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_pricing_model_product_parameters_for_product_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            pricing_model_product_parameter_handler h(nats, ctx, verifier);
-            h.list_for_product(std::move(msg));
-        }));
 
     return subs;
 }

@@ -51,8 +51,6 @@ PricingEngineTypeMdiWindow::PricingEngineTypeMdiWindow(ClientManager* clientMana
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -61,6 +59,7 @@ void PricingEngineTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -125,10 +124,13 @@ void PricingEngineTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "PricingEngineTypeListWindow",
-                            {ClientPricingEngineTypeModel::Description},
+                            {
+                                ClientPricingEngineTypeModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -160,6 +162,7 @@ void PricingEngineTypeMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -177,7 +180,7 @@ void PricingEngineTypeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading pricing engine types";
     clearStaleIndicator();
     emit statusChanged(tr("Loading pricing engine types..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void PricingEngineTypeMdiWindow::onDataLoaded() {
@@ -304,7 +307,7 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << codes.size() << " pricing engine types";
+            << "Making delete request for " << codes.size() << " pricing engine types";
 
         analytics::messaging::delete_pricing_engine_type_request request;
         request.codes = codes;
@@ -350,7 +353,8 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg =
@@ -377,5 +381,6 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

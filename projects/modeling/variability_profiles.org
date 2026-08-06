@@ -33,6 +33,7 @@ abstract.
 | [[id:3F1E6B70-EEFA-4D61-97A1-A9A1993CAA35][Read-only time-series]] | =market_observation= | No Qt, TimescaleDB hypertable, write-heavy measurement stream. |
 | [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]] | =cds_convention= | Text natural key, tenant+workspace scope, standard Qt tier. |
 | [[id:9618DCF1-2FE8-4AE2-A841-F671A97E764E][Tenant-scoped junction]] | =currency_calendar= | Plain many-to-many association, tenant-scoped, no Qt surface. The one profile anchored to the =junction= metatype rather than =domain_entity=. |
+| [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]] | =pricing_model_config= | UUID surrogate key, tenant scope, standard Qt tier, no parent or workspace. The UUID-keyed counterpart of =simple-lookup=. |
 
 * See also
 

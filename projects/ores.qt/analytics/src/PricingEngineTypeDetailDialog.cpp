@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PricingEngineTypeDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ui_PricingEngineTypeDetailDialog.h"
@@ -39,6 +40,16 @@ PricingEngineTypeDetailDialog::PricingEngineTypeDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PricingEngineTypeDetailDialog::~PricingEngineTypeDetailDialog() {
@@ -55,6 +66,10 @@ QWidget* PricingEngineTypeDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* PricingEngineTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString PricingEngineTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
 }
 
 void PricingEngineTypeDetailDialog::setupUi() {
@@ -116,6 +131,11 @@ void PricingEngineTypeDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void PricingEngineTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
     updateSaveButtonState();
 }
 
@@ -188,6 +208,15 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
     updateTypeFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing engine type: " << type_.code;
@@ -217,24 +246,27 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved successfully";
-            QString code = QString::fromStdString(self->type_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->typeSaved(code);
-            self->notifySaveSuccess(tr("Pricing Engine Type '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved successfully";
+                    QString code = QString::fromStdString(self->type_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->typeSaved(code);
+                    self->notifySaveSuccess(tr("Pricing Engine Type '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -259,6 +291,11 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing engine type: " << type_.code;
 
@@ -307,5 +344,6 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

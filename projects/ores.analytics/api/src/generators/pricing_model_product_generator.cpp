@@ -19,75 +19,47 @@
  */
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/random_generator.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
+domain::pricing_model_product
+generate_synthetic_pricing_model_product(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
+
+    domain::pricing_model_product r;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.id = ctx.generate_uuid();
+    r.pricing_model_config_id = ctx.generate_uuid();
+    r.pricing_engine_type_code = std::string("Swap");
+    r.model = std::string("DiscountedCashflows");
+    r.engine = std::string("DiscountingSwapEngine");
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
+    return r;
+}
+
 std::vector<domain::pricing_model_product>
-generate_fictional_pricing_model_products(std::size_t n,
-                                          const boost::uuids::uuid& config_id,
+generate_synthetic_pricing_model_products(std::size_t n,
                                           utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto now = ctx.past_timepoint();
-    boost::uuids::random_generator gen;
-
-    std::vector<domain::pricing_model_product> all;
-    all.reserve(10);
-
-    // Use real ORE engine type codes — the pricing_model_products trigger validates
-    // against the seeded ores_analytics_pricing_engine_types_tbl contents.
-    all.push_back({.id = gen(),
-                   .pricing_model_config_id = config_id,
-                   .pricing_engine_type_code = "EuropeanSwaption",
-                   .model = "LGM",
-                   .engine = "Grid",
-                   .modified_by = modified_by,
-                   .change_reason_code = "system.test",
-                   .change_commentary = "Synthetic test data",
-                   .recorded_at = now});
-    all.push_back({.id = gen(),
-                   .pricing_model_config_id = config_id,
-                   .pricing_engine_type_code = "BermudanSwaption",
-                   .model = "LGM",
-                   .engine = "Grid",
-                   .modified_by = modified_by,
-                   .change_reason_code = "system.test",
-                   .change_commentary = "Synthetic test data",
-                   .recorded_at = now});
-    all.push_back({.id = gen(),
-                   .pricing_model_config_id = config_id,
-                   .pricing_engine_type_code = "Swap",
-                   .model = "DiscountedCashflows",
-                   .engine = "DiscountingSwapEngine",
-                   .modified_by = modified_by,
-                   .change_reason_code = "system.test",
-                   .change_commentary = "Synthetic test data",
-                   .recorded_at = now});
-    all.push_back({.id = gen(),
-                   .pricing_model_config_id = config_id,
-                   .pricing_engine_type_code = "CreditDefaultSwap",
-                   .model = "MidPointCds",
-                   .engine = "MidPointCdsEngine",
-                   .modified_by = modified_by,
-                   .change_reason_code = "system.test",
-                   .change_commentary = "Synthetic test data",
-                   .recorded_at = now});
-    all.push_back({.id = gen(),
-                   .pricing_model_config_id = config_id,
-                   .pricing_engine_type_code = "FxOption",
-                   .model = "GarmanKohlhagen",
-                   .engine = "AnalyticEuropeanEngine",
-                   .modified_by = modified_by,
-                   .change_reason_code = "system.test",
-                   .change_commentary = "Synthetic test data",
-                   .recorded_at = now});
-
-    if (n == 0 || n >= all.size())
-        return all;
-
-    return std::vector<domain::pricing_model_product>(all.begin(), all.begin() + n);
+    std::vector<domain::pricing_model_product> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_pricing_model_product(ctx));
+    return r;
 }
 
 }

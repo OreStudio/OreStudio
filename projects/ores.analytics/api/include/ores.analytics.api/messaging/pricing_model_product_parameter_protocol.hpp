@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
+#ifndef ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
+#define ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -31,13 +31,14 @@ struct get_pricing_model_product_parameters_request {
     using response_type = struct get_pricing_model_product_parameters_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.list";
-    std::string config_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_pricing_model_product_parameters_response {
     std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -46,6 +47,11 @@ struct save_pricing_model_product_parameter_request {
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.save";
     ores::analytics::domain::pricing_model_product_parameter data;
+
+    static save_pricing_model_product_parameter_request
+    from(ores::analytics::domain::pricing_model_product_parameter v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_pricing_model_product_parameter_response {
@@ -57,7 +63,7 @@ struct delete_pricing_model_product_parameter_request {
     using response_type = struct delete_pricing_model_product_parameter_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.delete";
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
 };
 
 struct delete_pricing_model_product_parameter_response {
@@ -69,38 +75,12 @@ struct get_pricing_model_product_parameter_history_request {
     using response_type = struct get_pricing_model_product_parameter_history_response;
     static constexpr std::string_view nats_subject =
         "analytics.v1.pricing_model_product_parameters.history";
-    boost::uuids::uuid id;
+    std::string id;
 };
 
 struct get_pricing_model_product_parameter_history_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
+    std::vector<ores::analytics::domain::pricing_model_product_parameter> history;
     bool success = false;
-    std::string message;
-};
-
-struct get_pricing_model_product_parameters_for_config_request {
-    using response_type = struct get_pricing_model_product_parameters_for_config_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_product_parameters.list_for_config";
-    std::string config_id;
-};
-
-struct get_pricing_model_product_parameters_for_config_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
-    bool success = true;
-    std::string message;
-};
-
-struct get_pricing_model_product_parameters_for_product_request {
-    using response_type = struct get_pricing_model_product_parameters_for_product_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_product_parameters.list_for_product";
-    std::string product_id;
-};
-
-struct get_pricing_model_product_parameters_for_product_response {
-    std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
-    bool success = true;
     std::string message;
 };
 

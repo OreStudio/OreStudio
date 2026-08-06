@@ -110,7 +110,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 "ores.analytics.pricing_engine_type_changed",
                 ev::domain::entity_change_event{.entity = "ores.analytics.pricing_engine_type",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.pricing_engine_type_codes,
+                                                .entity_ids = e.codes,
                                                 .tenant_id = e.tenant_id});
         });
 

@@ -17,32 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
-#define ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
+#ifndef ORES_ANALYTICS_API_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
+#define ORES_ANALYTICS_API_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
 namespace ores::analytics::generators {
 
 /**
- * @brief Generates a set of fictional pricing model product parameters.
- *
- * Generates a mix of model-scoped, engine-scoped, and global parameters
- * associated with the given config and product IDs.
- *
- * @param n Number of parameters to generate. If n is 0 or greater than the
- *          available set, returns all available fictional parameters.
- * @param config_id UUID of the pricing model config these parameters belong to.
- * @param product_id UUID of the pricing model product for scoped parameters.
+ * @brief Generates a synthetic pricing_model_product_parameter.
+ */
+ORES_ANALYTICS_API_EXPORT domain::pricing_model_product_parameter
+generate_synthetic_pricing_model_product_parameter(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic pricing_model_product_parameters.
  */
 ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_model_product_parameter>
-generate_fictional_pricing_model_product_parameters(std::size_t n,
-                                                    const boost::uuids::uuid& config_id,
-                                                    const boost::uuids::uuid& product_id,
+generate_synthetic_pricing_model_product_parameters(std::size_t n,
                                                     utility::generation::generation_context& ctx);
 
 }

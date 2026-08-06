@@ -79,7 +79,7 @@ Per-model flag application:
 ** 4. Regenerate refdata-cpp
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp
 #+end_src
 
 ** 5. Restore documented exclusions from HEAD
@@ -112,7 +112,7 @@ ctest --test-dir build/output/linux-clang-debug-make -R "ores\.refdata" --output
 After build + tests are green:
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component refdata --address ores.cpp
 # restore exclusions
 git checkout -- projects/ores.refdata.core/include/ores.refdata.core/repository/party_repository.hpp \
                 projects/ores.refdata.core/src/repository/party_repository.cpp

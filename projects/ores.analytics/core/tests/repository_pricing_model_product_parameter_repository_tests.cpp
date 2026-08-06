@@ -56,11 +56,11 @@ namespace {
  */
 std::pair<boost::uuids::uuid, boost::uuids::uuid>
 write_prerequisites(scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     pricing_model_config_repository cfg_repo;
     cfg_repo.write(h.context(), configs[0]);
 
-    auto products = generate_fictional_pricing_model_products(1, configs[0].id, ctx);
+    auto products = generate_synthetic_pricing_model_products(1, ctx);
     pricing_model_product_repository prod_repo;
     prod_repo.write(h.context(), products[0]);
 
@@ -77,7 +77,7 @@ TEST_CASE("write_single_pricing_model_product_parameter", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(1, ctx);
     REQUIRE(!params.empty());
     BOOST_LOG_SEV(lg, debug) << "Parameter: " << params[0];
 
@@ -93,7 +93,7 @@ TEST_CASE("write_multiple_pricing_model_product_parameters", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(5, ctx);
     BOOST_LOG_SEV(lg, debug) << "Parameters: " << params;
 
     pricing_model_product_parameter_repository repo;
@@ -108,7 +108,7 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_config", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto written =
-        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(5, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
@@ -127,12 +127,12 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto written =
-        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(5, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
     const auto product_id_str = boost::uuids::to_string(product_id);
-    auto read = repo.read_latest_for_product(h.context(), product_id_str);
+    auto read = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read parameters for product: " << read;
 
     // 5 product-scoped parameters (3 model + 2 engine); globals are excluded
@@ -147,7 +147,7 @@ TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(1, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -156,7 +156,7 @@ TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), p);
 
-    auto read = repo.read_latest_by_id(h.context(), param_id_str);
+    auto read = repo.read_latest(h.context(), param_id_str);
     BOOST_LOG_SEV(lg, debug) << "Read parameters: " << read;
 
     REQUIRE(read.size() == 1);
@@ -171,7 +171,7 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(1, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -197,7 +197,7 @@ TEST_CASE("remove_pricing_model_product_parameter", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(1, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -207,7 +207,7 @@ TEST_CASE("remove_pricing_model_product_parameter", tags) {
 
     CHECK_NOTHROW(repo.remove(h.context(), param_id_str));
 
-    auto read = repo.read_latest_by_id(h.context(), param_id_str);
+    auto read = repo.read_latest(h.context(), param_id_str);
     CHECK(read.empty());
 }
 
@@ -219,13 +219,13 @@ TEST_CASE("remove_pricing_model_product_parameters_for_config", tags) {
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
     auto params =
-        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
+        generate_synthetic_pricing_model_product_parameters(5, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), params);
 
-    const auto config_id_str = boost::uuids::to_string(config_id);
-    CHECK_NOTHROW(repo.remove_for_config(h.context(), config_id_str));
+    for (const auto& p : params)
+        CHECK_NOTHROW(repo.remove(h.context(), boost::uuids::to_string(p.id)));
 
-    auto read = repo.read_latest(h.context(), config_id_str);
+    auto read = repo.read_latest(h.context());
     CHECK(read.empty());
 }

@@ -71,6 +71,7 @@ pricing_model_product_parameter_mapper::map(const domain::pricing_model_product_
     r.parameter_name = v.parameter_name;
     r.parameter_value = v.parameter_value;
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 

@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Run =codegen.py generate --model X --profile all-cpp= for every =_domain_entity.json=
+Run =codegen.py generate --model X --address ores.cpp= for every =_domain_entity.json=
 model in =projects/ores.codegen/models/=. Collect the diff between what the generator
 produces and what is currently in the repository. Classify each per-model diff as one of:
 

@@ -47,7 +47,7 @@ be restored from HEAD.
 * Plan
 
 1. =git rebase origin/main=.
-2. =projects/ores.codegen/codegen.sh regenerate --component controller-cpp --profile all-cpp=.
+2. =projects/ores.codegen/codegen.sh regenerate --component controller-cpp --address ores.cpp=.
 3. Restore protocol exclusions from HEAD:
    - =projects/ores.controller.api/include/ores.controller.api/messaging/service_definition_protocol.hpp=
    - =projects/ores.controller.api/include/ores.controller.api/messaging/service_instance_protocol.hpp=

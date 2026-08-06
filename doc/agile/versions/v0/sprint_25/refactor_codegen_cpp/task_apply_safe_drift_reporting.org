@@ -45,7 +45,7 @@ producing only cosmetic / additive diffs.
 * Plan
 
 1. =git rebase origin/main=.
-2. =projects/ores.codegen/codegen.sh regenerate --component reporting-cpp --profile all-cpp=.
+2. =projects/ores.codegen/codegen.sh regenerate --component reporting-cpp --address ores.cpp=.
 3. Review the diff carefully — should be cosmetic / additive only. If any
    breaking diff appears, stop and surface it for discussion.
 4. =cmake --build --preset linux-clang-debug-make=.

@@ -50,6 +50,9 @@
             <property name="placeholderText">
              <string>Enter pricing engine type code (e.g. EuropeanSwaption)</string>
             </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">

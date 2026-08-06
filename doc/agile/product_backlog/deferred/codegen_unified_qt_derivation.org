@@ -87,7 +87,7 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
   and =entity_plural= when they are absent from the model.
 - Models may override derived values by explicitly including the field (the
   explicit value wins over the derived default).
-- Running =--profile qt= on any model that previously had explicit Qt fields
+- Running =--address ores.cpp.qt= on any model that previously had explicit Qt fields
   produces identical output to running with those fields present.
 - Genuinely variable fields (=icon=, =item_var=, =key_field=, =has_uuid_primary_key=,
   =collection_name=, =columns=) are documented as required and remain in the model.
@@ -100,7 +100,7 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 |------+-------+-------+-----+-------------|
 | Task: Audit Qt section fields and define derivation conventions | BACKLOG | | | Review all 75 domain_entity models; tabulate every Qt field; classify as derivable vs. genuinely variable; write the derivation rules as a spec. |
 | Task: Implement Qt field derivation in generator.py | BACKLOG | | | Add derive_qt_fields() function to generator.py; derive values when explicit values are absent from the model. |
-| Task: Remove derivable Qt fields from all 75 models | BACKLOG | | | Strip all derivable fields from every domain_entity.json model; run --profile qt on every model; verify output is byte-for-byte identical to the previous output. |
+| Task: Remove derivable Qt fields from all 75 models | BACKLOG | | | Strip all derivable fields from every domain_entity.json model; run --address ores.cpp.qt on every model; verify output is byte-for-byte identical to the previous output. |
 
 * Decisions
 

@@ -20,23 +20,22 @@ Classification of products at the granularity needed by the pricing engine to se
 :schema:        public
 :product:       ores
 :component:     analytics
+:profile:       simple-lookup
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:         text
+:cpp_type:     std::string
+:primary_key:  true
 :END:
 
 Unique pricing engine type code.
 
 Examples: 'Swap', 'EuropeanSwaption', 'BermudanSwaption', 'CMS', 'CapFloor'.
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -65,11 +64,20 @@ Soft FK to ores_trading_trade_types_tbl. May be NULL for engine types with no di
 :tablename: ores_analytics_pricing_engine_types_tbl
 :END:
 
+* Insert trigger
+** Validations
+
+| column               | validation_function                                       |
+|----------------------+-----------------------------------------------------------|
+| change_reason_code   | ores_dq_validate_change_reason_fn                         |
+| instrument_type_code | ores_analytics_validate_pricing_engine_instrument_type_fn |
+
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:         api
+:service_find_prefix:  true
 :END:
 
 ** Repository

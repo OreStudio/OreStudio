@@ -19,6 +19,7 @@
  */
 #include "ores.qt/PricingModelConfigDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ui_PricingModelConfigDetailDialog.h"
@@ -27,6 +28,7 @@
 #include <QPlainTextEdit>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -40,6 +42,16 @@ PricingModelConfigDetailDialog::PricingModelConfigDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PricingModelConfigDetailDialog::~PricingModelConfigDetailDialog() {
@@ -56,6 +68,10 @@ QWidget* PricingModelConfigDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* PricingModelConfigDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString PricingModelConfigDetailDialog::code() const {
+    return QString::fromStdString(config_.name);
 }
 
 void PricingModelConfigDetailDialog::setupUi() {
@@ -124,6 +140,11 @@ void PricingModelConfigDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void PricingModelConfigDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void PricingModelConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
@@ -135,8 +156,7 @@ void PricingModelConfigDetailDialog::setReadOnly(bool readOnly) {
 
 void PricingModelConfigDetailDialog::updateUiFromConfig() {
     ui_->nameEdit->setText(QString::fromStdString(config_.name));
-    ui_->configVariantEdit->setText(
-        config_.config_variant ? QString::fromStdString(*config_.config_variant) : QString{});
+    ui_->configVariantEdit->setText(QString::fromStdString(config_.config_variant));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(config_.description));
 
     populateProvenance(config_.version,
@@ -154,8 +174,7 @@ void PricingModelConfigDetailDialog::updateConfigFromUi() {
     if (createMode_) {
         config_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
-    auto variant = ui_->configVariantEdit->text().trimmed().toStdString();
-    config_.config_variant = variant.empty() ? std::nullopt : std::optional<std::string>(variant);
+    config_.config_variant = ui_->configVariantEdit->text().trimmed().toStdString();
     config_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     config_.modified_by = username_;
 }
@@ -195,6 +214,15 @@ void PricingModelConfigDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    config_.change_reason_code = crSel->reason_code;
+    config_.change_commentary = crSel->commentary;
+
     updateConfigFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing model configuration: " << config_.name;
@@ -224,24 +252,27 @@ void PricingModelConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Pricing Model Configuration saved successfully";
-            QString code = QString::fromStdString(self->config_.name);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->configSaved(code);
-            self->notifySaveSuccess(tr("Pricing Model Configuration '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Pricing Model Configuration saved successfully";
+                    QString code = QString::fromStdString(self->config_.name);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->configSaved(code);
+                    self->notifySaveSuccess(tr("Pricing Model Configuration '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -267,6 +298,11 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing model configuration: " << config_.name;
 
     QPointer<PricingModelConfigDetailDialog> self = this;
@@ -276,13 +312,13 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = config_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(config_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         analytics::messaging::delete_pricing_model_config_request request;
-        request.ids = {id};
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -314,5 +350,6 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

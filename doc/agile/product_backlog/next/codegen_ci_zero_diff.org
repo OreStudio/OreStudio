@@ -25,8 +25,8 @@ This story adds a CI job (GitHub Actions step or CMake =test= target)
 that machine-enforces the invariant on every relevant pull request:
 
 1. Bootstraps the =ores.codegen= Python venv.
-2. Runs =codegen.sh regenerate --all --profile all-cpp= and
-   =codegen.sh regenerate --all --profile sql=.
+2. Runs =codegen.sh regenerate --all --address ores.cpp= and
+   =codegen.sh regenerate --all --address ores.sql=.
 3. Runs =git diff --exit-code= on the affected output directories.
 4. Fails if any file differs; reports the diff in the job log.
 
@@ -86,6 +86,6 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 * Out of scope
 
 - Checking Qt template output in the same CI step — Qt requires a separate
-  =--profile qt= run; add as a follow-on task once the main check is stable.
+  =--address ores.cpp.qt= run; add as a follow-on task once the main check is stable.
 - Windows venv bootstrap issues — if Windows CI requires special Python
   handling, that is a separate infrastructure task.

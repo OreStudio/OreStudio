@@ -22,23 +22,22 @@ global parameters have it NULL with parameter_scope = 'global'.
 :schema:        public
 :product:       ores
 :component:     analytics
+:profile:       uuid-identified-lookup
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :END:
 
 UUID uniquely identifying this parameter row.
 
 Surrogate key for the parameter.
-
-* Natural keys
-
-* Columns
 
 ** pricing_model_config_id
 :PROPERTIES:
@@ -126,8 +125,8 @@ std::string("0.03")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
-:list_filter_column: config_id
+:subcomponent:          api
+:service_find_by_uuid:  true
 :END:
 
 ** Repository

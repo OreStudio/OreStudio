@@ -20,7 +20,7 @@ specifically for =ores.synthetic=:
 
 1. *Update the stale new-entity codegen docs.* The recipe
    [[id:B6C5D4E3-F2A1-4B0C-8D9E-0F1A2B3C4D5E][How do I create a new entity?]] and the =codegen-add-entity= skill instruct
-   =compass codegen entity generate <entity> --profile sql|all-cpp|qt=, but
+   =compass codegen entity generate <entity> --address ores.sql|ores.cpp|ores.cpp.qt=, but
    =compass codegen= only exposes =generate= (single model file) and
    =regenerate= (per component) — there is no =entity= subcommand. They also
    describe JSON models (=projects/ores.codegen/models/<comp>/<entity>_domain_entity.json=),

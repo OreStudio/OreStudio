@@ -20,8 +20,6 @@
 #include "ores.analytics.core/repository/pricing_engine_type_mapper.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
@@ -58,6 +56,7 @@ pricing_engine_type_entity pricing_engine_type_mapper::map(const domain::pricing
     r.instrument_type_code =
         v.instrument_type_code.empty() ? std::nullopt : std::optional(v.instrument_type_code);
     r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
 

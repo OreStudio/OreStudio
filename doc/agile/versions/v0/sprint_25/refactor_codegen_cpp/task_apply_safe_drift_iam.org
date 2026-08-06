@@ -48,7 +48,7 @@ No production exclusions expected.
 1. =git rebase origin/main=.
 2. Add =service_find_prefix: true= to =tenant_type_domain_entity.json= and
    =tenant_status_domain_entity.json=.
-3. =projects/ores.codegen/codegen.sh regenerate --component iam-cpp --profile all-cpp=.
+3. =projects/ores.codegen/codegen.sh regenerate --component iam-cpp --address ores.cpp=.
 4. =cmake --build --preset linux-clang-debug-make=.
 5. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.iam" --output-on-failure=.
 6. Re-run regeneration; =git diff --exit-code= must be clean (no exclusions

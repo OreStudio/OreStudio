@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_HANDLER_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_HANDLER_HPP
+#ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_CONFIG_HANDLER_HPP
+#define ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_CONFIG_HANDLER_HPP
 
 #include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
-#include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/service/pricing_model_config_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -30,7 +29,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 
 namespace ores::analytics::messaging {
@@ -52,7 +50,7 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for pricing model configuration operations.
  */
-class ORES_ANALYTICS_CORE_EXPORT pricing_model_config_handler {
+class pricing_model_config_handler {
 public:
     pricing_model_config_handler(ores::nats::service::client& nats,
                                  ores::database::context ctx,
@@ -71,14 +69,22 @@ public:
         const auto& req_ctx = *req_ctx_expected;
         service::pricing_model_config_service svc(req_ctx);
         get_pricing_model_configs_response resp;
-        try {
-            resp.configs = svc.list_configs();
-            resp.total_available_count = static_cast<int>(resp.configs.size());
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(pricing_model_config_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+        if (auto req = decode<get_pricing_model_configs_request>(msg)) {
+            try {
+                resp.configs = svc.list_configs(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_configs());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_model_config_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_model_config_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(pricing_model_config_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -128,12 +134,12 @@ public:
         service::pricing_model_config_service svc(req_ctx);
         if (auto req = decode<get_pricing_model_config_history_request>(msg)) {
             try {
-                auto hist = svc.get_config_history(boost::uuids::to_string(req->id));
+                auto hist = svc.get_config_history(req->id);
                 BOOST_LOG_SEV(pricing_model_config_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_pricing_model_config_history_response{.configs = std::move(hist),
+                      get_pricing_model_config_history_response{.history = std::move(hist),
                                                                 .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_model_config_handler_lg(), error)
@@ -158,15 +164,14 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "analytics::pricing_model_configs:write")) {
+        if (!has_permission(req_ctx, "analytics::pricing_model_configs:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::pricing_model_config_service svc(req_ctx);
         if (auto req = decode<delete_pricing_model_config_request>(msg)) {
             try {
-                for (const auto& id : req->ids)
-                    svc.remove_config(boost::uuids::to_string(id));
+                svc.delete_configs(req->ids);
                 BOOST_LOG_SEV(pricing_model_config_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, delete_pricing_model_config_response{.success = true});

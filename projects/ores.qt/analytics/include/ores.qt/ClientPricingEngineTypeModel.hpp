@@ -26,7 +26,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -86,6 +85,7 @@ public:
      * @return The pricing engine type, or nullptr if row is invalid.
      */
     const analytics::domain::pricing_engine_type* getType(int row) const;
+
 
     /**
      * @brief Load a specific page of data.

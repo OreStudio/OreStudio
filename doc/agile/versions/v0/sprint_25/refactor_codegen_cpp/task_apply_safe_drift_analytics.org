@@ -13,6 +13,7 @@
 #+blocked_since:
 #+created: 2026-05-31
 #+updated: 2026-06-12
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
@@ -26,7 +27,7 @@ Four pricing models need flag updates; no production exclusions expected.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | STARTED                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
@@ -56,7 +57,7 @@ Four pricing models need flag updates; no production exclusions expected.
 ** 3. Regenerate
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --address ores.cpp
 #+end_src
 
 ** 4. Build + test

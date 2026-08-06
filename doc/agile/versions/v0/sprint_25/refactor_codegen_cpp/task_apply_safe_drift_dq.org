@@ -52,7 +52,7 @@ generator expression) needs fixing.
    =service_find_by_code= (column: =code=).
 3. Fix =badge_definition_domain_entity.json= generator typo:
    =HexPrefix::NoPrefix= → =HexPrefix::None= (real enum value in faker-cxx).
-4. =projects/ores.codegen/codegen.sh regenerate --component dq-cpp --profile all-cpp=.
+4. =projects/ores.codegen/codegen.sh regenerate --component dq-cpp --address ores.cpp=.
 5. =cmake --build --preset linux-clang-debug-make=.
 6. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.dq" --output-on-failure=.
 7. Re-run regeneration; =git diff --exit-code= clean.

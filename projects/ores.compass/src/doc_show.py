@@ -26,7 +26,6 @@ one doc. Output sections:
 import argparse
 import re
 import sys
-from pathlib import Path
 
 import ui
 from doc_index import (
@@ -126,12 +125,13 @@ def main(argv=None) -> int:
     if args.full:
         print(_h("📄  Body"))
         try:
-            full_text = Path(doc.path).read_text(encoding="utf-8")
-        except (OSError, UnicodeError):
+            full_text = doc.path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
             full_text = ""
-        # Print everything after the :PROPERTIES: block (i.e. skip frontmatter)
-        parts = re.split(r"^:END:\s*$", full_text, maxsplit=1, flags=re.M)
-        body = parts[1].strip() if len(parts) > 1 else ""
+        # Start at the first top-level heading — naturally skips
+        # :PROPERTIES:, #+ frontmatter, and the blurb (already shown above).
+        body_start = re.search(r"^\* ", full_text, re.MULTILINE)
+        body = full_text[body_start.start():].strip() if body_start else ""
         print(body if body else "  (no body)")
         print()
 

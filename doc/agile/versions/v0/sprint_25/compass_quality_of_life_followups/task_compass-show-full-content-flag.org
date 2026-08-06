@@ -66,9 +66,17 @@ via its "Verifies task" field.
 
 * Review
 
+** Round 1 (bot review)
+
+Fixed body-extraction to split at first * heading instead of :END:,
+eliminating header/blurb duplication. Removed redundant Path import
+and used errors="replace" for consistency.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Body duplicates header metadata and blurb | doc_show.py | Fixed — split at first * heading instead of :END: | |
+| 2 | Redundant Path(doc.path) wrap | doc_show.py | Fixed — removed Path import, using doc.path directly | |
+| 3 | Inconsistent decode behavior (strict vs replace) | doc_show.py | Fixed — using errors="replace" | |
 
 * Result
 

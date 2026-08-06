@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 953CA4B7-9914-4E80-BAA7-8FB70028DA28
+:END:
+#+title: Task: Migrate all codegen entities to the nested identity/audit struct shape
+#+description: Standardise every codegen-generated domain entity (refdata and any other flat-generated component) on the C1202 nested identity/audit sub-struct shape already used by trading instruments, so every facet template can drop its flat-vs-nested branching and the whole codebase converges on one entity shape.
+#+type: task
+#+level: s1
+#+filetags: :codegen_infra_followups_dq:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Force every codegen-generated domain entity onto the same shape:
+identity (version/tenant_id/workspace_id/primary key) and audit
+(modified_by/performed_by/change_reason_code/change_commentary/
+recorded_at) columns folded into nested =identity=/=audit= sub-structs
+(the C1202 pattern — see
+=doc/investigations/msvc_c1202_rfl_complexity.org=), not left flat on
+the entity struct.
+
+Today both shapes are correctly supported (flat: most of
+=ores.refdata=; nested: trading instrument entities) — every facet
+template branches on =has_identity_group=/=has_audit_group=. That
+variation is legitimate (nesting exists to dodge a real MSVC compiler
+limit, not style), but it is more variation than necessary: nothing
+stops every entity from using the nested shape, and doing so lets
+every facet template drop its flat branch entirely, converging the
+whole codebase on one entity shape and removing an entire class of
+"this facet's flat branch works but its nested branch was never
+exercised" bugs (exactly what happened with the presentation
+history-field-mapper facet — see
+[[id:02BC190D-6B74-4058-9418-E898CBB07216][the task that surfaced this]]).
+
+Out of scope for the originating task; this is the deliberately
+deferred follow-up to actually do the migration, once the nested
+shape is proven correct across every facet (done) and stable in
+production for the trading instrument entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure follow-ups from DQ commissioning]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- Every =ores.refdata= (and any other flat-generated component)
+  domain entity model gains =domain_identity_group=/
+  =domain_audit_group= flags and regenerates onto the nested shape.
+- Every facet template's =has_identity_group=/=has_audit_group= flat
+  branch is deleted once no generated entity needs it — the mustache
+  files carry a single code path.
+- Wire-format (JSON) consequence audited per entity: nested JSON is
+  a breaking change for any external consumer; confirm none exist
+  (internal RPC only, service+client deployed together, per the
+  =swap_leg= precedent) or version the protocol where they do.
+- Every touched entity's generated output diffed file-by-file,
+  full build + affected ctest suites green, before merging.
+- Given the scale (~58+ refdata entities plus any others), consider
+  whether this should be its own multi-task story rather than a
+  single task — revisit scope when picked up.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

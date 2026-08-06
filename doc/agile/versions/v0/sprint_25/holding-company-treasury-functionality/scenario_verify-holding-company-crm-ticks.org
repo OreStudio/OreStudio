@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 40D164E3-D3AA-40E9-B008-F65DFE348056
+:END:
+#+title: Test Scenario: Verify holding company CRM ticks live
+#+description: Manual Qt client verification that the holding company's CRM shows live-ticking rates, fed by the operating offices' FX feeds via crm_ingest_bridge's tenant-wide update(), not just static topology configuration.
+#+type: test_scenario
+#+level: s1
+#+filetags: :holding-company-treasury-functionality:sprint_25:v0:
+#+target_dialog: CrmCrossRatesMatrixMdiWindow
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:D073F237-8280-4B64-8CD4-86B18F32294B][Resolve feed-binding party-scoping so holding company CRM can consume FX ticks]] in [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned via =--source acme=:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps -- each office's
+  =acme_uk.synthetic_feeds: ... completed= (and the equivalent for
+  us/hk) confirms live feeds actually started, which this scenario
+  depends on.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:D073F237-8280-4B64-8CD4-86B18F32294B][Resolve feed-binding party-scoping so holding company CRM can consume FX ticks]] |
+| Parent story  | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]   |
+| Target dialog | CrmCrossRatesMatrixMdiWindow             |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant_admin@acme_corporation
+
+- Login dialog: username =tenant_admin@acme_corporation=, password
+  =Secure-Password-123=.
+- Confirm the default/quick-login party is "Acme Corporation Plc"
+  (the holding company) -- this scenario specifically tests that
+  party, not one of the offices. Switch party explicitly if not.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open majors CRM and confirm live ticking
+
+- Menu: Market Data > Cross-Rates Matrix.
+- Pick =majors=, click Open.
+- Watch the grid for at least 10 seconds. Confirm at least one cell's
+  rate visibly changes (not just present, but actually updating) --
+  this is the real regression check: before the fix, rates for the
+  holding company stayed static/unavailable forever because ticks
+  from the offices' feeds never reached its engines.
+- Footer should read CONNECTED throughout, not DISCONNECTED.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm exotics and scandies also tick
+
+- Repeat for =exotics= and =scandies=: open each, watch for at least
+  one visibly-changing cell within 10 seconds.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm an office's CRM still ticks too
+
+- Switch party to "ACME Corporation UK plc" (or US/HK).
+- Open =majors= again. Confirm it also ticks live -- the tenant-wide
+  fix must not have broken the offices' own (already-working) CRM
+  ticking as a side effect.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-05T23:22:16Z |
+| Branch        | feature/resolve-crm-feed-binding-party-scoping |
+| Commit        | 8029b1116 |
+| Worktree      | solid_dirac |
+
+* Notes

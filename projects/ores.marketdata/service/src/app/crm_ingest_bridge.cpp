@@ -175,26 +175,32 @@ void crm_ingest_bridge::refresh() {
 }
 
 void crm_ingest_bridge::update(const std::string& tenant_id_str,
-                               const std::string& party_id_str,
                                const std::string& base_currency_code,
                                const std::string& quote_currency_code,
                                double rate,
                                std::chrono::system_clock::time_point observed_at) {
     const auto snap = snapshot();
-    const auto it = snap->find(pair_key{tenant_id_str, party_id_str});
-    if (it == snap->end())
-        return; // no CRM configured for this (tenant, party)
 
-    // A single tick may be a driver edge of several of this party's named
-    // CRMs at once (e.g. EUR/USD in both "majors" and "exotics") -- feed
-    // every one of them.
-    for (const auto& named_engine : it->second) {
-        try {
-            named_engine.engine->update(quant::domain::driver_quote{
-                base_currency_code, quote_currency_code, rate, observed_at});
-        } catch (const std::invalid_argument&) {
-            // Not a driver edge of this CRM's topology (or an unknown
-            // currency) -- not every tick is configured in every CRM.
+    // Tenant-wide: engines_map's key is (tenant_id_str, party_id_str), and
+    // std::map's default ordering on std::pair<std::string, std::string>
+    // sorts by tenant_id_str first, so every one of this tenant's parties
+    // is a contiguous run starting at lower_bound(tenant_id_str, "") --
+    // scanning just that run, not the whole map. See update()'s own doc
+    // for why every party, not just one, gets fed.
+    for (auto it = snap->lower_bound(pair_key{tenant_id_str, std::string{}});
+         it != snap->end() && it->first.first == tenant_id_str;
+         ++it) {
+        // A single tick may be a driver edge of several of this party's
+        // named CRMs at once (e.g. EUR/USD in both "majors" and
+        // "exotics") -- feed every one of them.
+        for (const auto& named_engine : it->second) {
+            try {
+                named_engine.engine->update(quant::domain::driver_quote{
+                    base_currency_code, quote_currency_code, rate, observed_at});
+            } catch (const std::invalid_argument&) {
+                // Not a driver edge of this CRM's topology (or an unknown
+                // currency) -- not every tick is configured in every CRM.
+            }
         }
     }
 }

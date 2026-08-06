@@ -129,8 +129,8 @@ TEST_CASE("refresh builds an engine from persisted config and driver pairs, upda
     CHECK(before->status == ores::analytics::quant::domain::rate_status::unavailable);
 
     const auto now = std::chrono::system_clock::now();
-    bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
-    bridge.update(tenant_id_str, party_id_str, "USD", "JPY", 150.0, now);
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, now);
+    bridge.update(tenant_id_str, "USD", "JPY", 150.0, now);
 
     auto direct = bridge.rate(tenant_id_str, party_id_str, "test", "EUR", "USD");
     REQUIRE(direct.has_value());
@@ -185,7 +185,7 @@ TEST_CASE("update() silently ignores a pair that is not a driver edge", tags) {
 
     // GBP/USD is not a configured driver pair -- must not throw.
     CHECK_NOTHROW(bridge.update(
-        tenant_id_str, party_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
+        tenant_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
 }
 
 TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch", tags) {
@@ -205,8 +205,8 @@ TEST_CASE("rates() returns every configured pair (driver + enabled derived) in o
     const auto tenant_id_str = f.h.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(f.party_id);
     const auto now = std::chrono::system_clock::now();
-    bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
-    bridge.update(tenant_id_str, party_id_str, "USD", "JPY", 150.0, now);
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, now);
+    bridge.update(tenant_id_str, "USD", "JPY", 150.0, now);
 
     const auto results = bridge.rates(tenant_id_str, party_id_str, "test");
 
@@ -244,8 +244,8 @@ TEST_CASE("two enabled configs for the same (tenant, party) build two independen
 
     // A tick on a pair shared by both CRMs feeds both -- but here EUR/USD
     // is only a driver edge of majors, TRY/USD only of exotics.
-    bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
-    bridge.update(tenant_id_str, party_id_str, "TRY", "USD", 0.030, now);
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, now);
+    bridge.update(tenant_id_str, "TRY", "USD", 0.030, now);
 
     auto majors_rate = bridge.rate(tenant_id_str, party_id_str, "majors", "EUR", "USD");
     REQUIRE(majors_rate.has_value());
@@ -288,8 +288,8 @@ TEST_CASE(
     const auto tenant_id_str = f.h.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(f.party_id);
     const auto now = std::chrono::system_clock::now();
-    bridge.update(tenant_id_str, party_id_str, "EUR", "USD", 1.10, now);
-    bridge.update(tenant_id_str, party_id_str, "USD", "JPY", 150.0, now);
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, now);
+    bridge.update(tenant_id_str, "USD", "JPY", 150.0, now);
 
     const auto results = bridge.resolved_rates(tenant_id_str, party_id_str, "test", true);
 
@@ -325,7 +325,7 @@ TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is i
     const auto tenant_id_str = f.h.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(f.party_id);
     bridge.update(
-        tenant_id_str, party_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
 
     const auto results = bridge.resolved_rates(tenant_id_str, party_id_str, "test", true);
 
@@ -355,13 +355,13 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     const auto party_id_str = boost::uuids::to_string(f.party_id);
 
     bridge.update(
-        tenant_id_str, party_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
     const auto first = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(first.size() == 1);
     CHECK_FALSE(first[0].delta_pct.has_value()); // first observation
 
     bridge.update(
-        tenant_id_str, party_id_str, "EUR", "USD", 1.20, std::chrono::system_clock::now());
+        tenant_id_str, "EUR", "USD", 1.20, std::chrono::system_clock::now());
     const auto second = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(second.size() == 1);
     REQUIRE(second[0].delta_pct.has_value()); // baseline established by `first`
@@ -372,10 +372,54 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     // the next observation looks like a first observation again.
     bridge.refresh();
     bridge.update(
-        tenant_id_str, party_id_str, "EUR", "USD", 1.25, std::chrono::system_clock::now());
+        tenant_id_str, "EUR", "USD", 1.25, std::chrono::system_clock::now());
     const auto after_refresh = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(after_refresh.size() == 1);
     CHECK_FALSE(after_refresh[0].delta_pct.has_value());
+}
+
+TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine", tags) {
+    // A tick's own feed_binding.party_id no longer scopes which party's
+    // CRM engines get fed -- update() only takes tenant_id_str now. Two
+    // parties in the same tenant, each with their own "majors" config and
+    // an EUR/USD driver edge: a single update() call for that pair must
+    // feed both, not just whichever party happened to own the originating
+    // feed_binding.
+    fixture f;
+    crm_topology_config_repository config_repo;
+    crm_driver_pair_repository driver_repo;
+
+    config_repo.write(f.h.context(), f.make_config("USD", "majors"));
+    driver_repo.write(f.h.context(), f.make_driver_pair("EUR", "USD"));
+
+    const auto second_party_id = boost::uuids::random_generator{}();
+    const auto second_config_id = boost::uuids::random_generator{}();
+    auto second_config = f.make_config("USD", "majors");
+    second_config.id = second_config_id;
+    second_config.party_id = second_party_id;
+    config_repo.write(f.h.context(), second_config);
+
+    auto second_driver_pair = f.make_driver_pair("EUR", "USD");
+    second_driver_pair.config_id = second_config_id;
+    second_driver_pair.party_id = second_party_id;
+    driver_repo.write(f.h.context(), second_driver_pair);
+
+    crm_ingest_bridge bridge(f.h.context());
+    bridge.refresh();
+
+    const auto tenant_id_str = f.h.tenant_id().to_string();
+    bridge.update(
+        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+
+    const auto first_party_rate =
+        bridge.rate(tenant_id_str, boost::uuids::to_string(f.party_id), "majors", "EUR", "USD");
+    REQUIRE(first_party_rate.has_value());
+    CHECK(first_party_rate->status == ores::analytics::quant::domain::rate_status::fresh);
+
+    const auto second_party_rate = bridge.rate(
+        tenant_id_str, boost::uuids::to_string(second_party_id), "majors", "EUR", "USD");
+    REQUIRE(second_party_rate.has_value());
+    CHECK(second_party_rate->status == ores::analytics::quant::domain::rate_status::fresh);
 }
 
 TEST_CASE("the DB rejects a second active crm_topology_config sharing a party's CRM name", tags) {

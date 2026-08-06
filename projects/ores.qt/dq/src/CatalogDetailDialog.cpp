@@ -69,7 +69,7 @@ ProvenanceWidget* CatalogDetailDialog::provenanceWidget() const {
 }
 
 QString CatalogDetailDialog::code() const {
-    return QString::fromStdString(catalog_.name);
+    return QString::fromStdString(item_.);
 }
 
 void CatalogDetailDialog::setupUi() {
@@ -89,12 +89,12 @@ void CatalogDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &CatalogDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &CatalogDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CatalogDetailDialog::onCodeChanged);
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CatalogDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CatalogDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
             &QPlainTextEdit::textChanged,
             this,
             &CatalogDetailDialog::onFieldChanged);
-    connect(ui_->ownerEdit, &QLineEdit::textChanged, this, &CatalogDetailDialog::onFieldChanged);
 }
 
 void CatalogDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -105,14 +105,14 @@ void CatalogDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CatalogDetailDialog::setCatalog(const dq::domain::catalog& catalog) {
-    catalog_ = catalog;
+void CatalogDetailDialog::setCatalog(const dq::domain::catalog& item) {
+    item_ = item;
     updateUiFromCatalog();
 }
 
 void CatalogDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->nameEdit->setReadOnly(!createMode);
+    ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -126,24 +126,24 @@ void CatalogDetailDialog::markDirty() {
 
 void CatalogDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(true);
+    ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->ownerEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void CatalogDetailDialog::updateUiFromCatalog() {
-    ui_->nameEdit->setText(QString::fromStdString(catalog_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(catalog_.description));
-    ui_->ownerEdit->setText(catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString{});
+    ui_->codeEdit->setText(QString::fromStdString(item_.code));
+    ui_->nameEdit->setText(QString::fromStdString(item_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(item_.description));
 
-    populateProvenance(catalog_.version,
-                       catalog_.modified_by,
-                       catalog_.performed_by,
-                       catalog_.recorded_at,
-                       catalog_.change_reason_code,
-                       catalog_.change_commentary);
+    populateProvenance(item_.version,
+                       item_.modified_by,
+                       item_.performed_by,
+                       item_.recorded_at,
+                       item_.change_reason_code,
+                       item_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -151,14 +151,11 @@ void CatalogDetailDialog::updateUiFromCatalog() {
 
 void CatalogDetailDialog::updateCatalogFromUi() {
     if (createMode_) {
-        catalog_.name = ui_->nameEdit->text().trimmed().toStdString();
+        item_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    catalog_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    {
-        const auto owner_str = ui_->ownerEdit->text().trimmed().toStdString();
-        catalog_.owner = owner_str.empty() ? std::nullopt : std::optional<std::string>(owner_str);
-    }
-    catalog_.modified_by = username_;
+    item_.name = ui_->nameEdit->text().trimmed().toStdString();
+    item_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    item_.modified_by = username_;
 }
 
 void CatalogDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -177,9 +174,10 @@ void CatalogDetailDialog::updateSaveButtonState() {
 }
 
 bool CatalogDetailDialog::validateInput() {
+    const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !name_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void CatalogDetailDialog::onSaveClicked() {
@@ -200,12 +198,12 @@ void CatalogDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    catalog_.change_reason_code = crSel->reason_code;
-    catalog_.change_commentary = crSel->commentary;
+    item_.change_reason_code = crSel->reason_code;
+    item_.change_commentary = crSel->commentary;
 
     updateCatalogFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving catalog: " << catalog_.name;
+    BOOST_LOG_SEV(lg(), info) << "Saving catalog: " << item_.;
 
     QPointer<CatalogDetailDialog> self = this;
 
@@ -214,13 +212,13 @@ void CatalogDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, catalog = catalog_]() -> SaveResult {
+    auto task = [self, item = item_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        dq::messaging::save_catalog_request request;
-        request.data = catalog;
+        request;
+        request.data = item;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -241,10 +239,10 @@ void CatalogDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Catalog saved successfully";
-                    QString code = QString::fromStdString(self->catalog_.name);
+                    QString code = QString::fromStdString(self->item_.);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
-                    emit self->catalogSaved(code);
+                    emit self->itemSaved(code);
                     self->notifySaveSuccess(tr("Catalog '%1' saved").arg(code));
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
@@ -265,7 +263,7 @@ void CatalogDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(catalog_.name);
+    QString code = QString::fromStdString(item_.);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Catalog",
@@ -281,7 +279,7 @@ void CatalogDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting catalog: " << catalog_.name;
+    BOOST_LOG_SEV(lg(), info) << "Deleting catalog: " << item_.;
 
     QPointer<CatalogDetailDialog> self = this;
 
@@ -290,12 +288,12 @@ void CatalogDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = catalog_.name]() -> DeleteResult {
+    auto task = [self, code = item_.]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        dq::messaging::delete_catalog_request request;
+        request;
         request.names = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -315,7 +313,7 @@ void CatalogDetailDialog::onDeleteClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Catalog deleted successfully";
             emit self->statusMessage(QString("Catalog '%1' deleted").arg(code));
-            emit self->catalogDeleted(code);
+            emit self->itemDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;

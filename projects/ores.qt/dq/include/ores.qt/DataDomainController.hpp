@@ -78,17 +78,17 @@ protected:
     void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const dq::domain::data_domain& domain);
+    void onShowDetails(const dq::domain::data_domain& item);
     void onAddNewRequested();
-    void onShowHistory(const dq::domain::data_domain& domain);
-    void onRevertVersion(const dq::domain::data_domain& domain);
-    void onOpenVersion(const dq::domain::data_domain& domain, int versionNumber);
+    void onShowHistory(const dq::domain::data_domain& item);
+    void onRevertVersion(const dq::domain::data_domain& item);
+    void onOpenVersion(const dq::domain::data_domain& item, int versionNumber);
     void onOpenHistoryVersion(const QString& entityId, int versionNumber);
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const dq::domain::data_domain& domain);
+    void showDetailWindow(const dq::domain::data_domain& item);
 
     /**
      * @brief Wires the caches/status/error plumbing every
@@ -101,8 +101,8 @@ private:
 
     /**
      * @brief Fetches the full typed data domain history (the
-     * existing per-entity dq::messaging::get_data_domain_history_request/
-     * dq::messaging::get_data_domain_history_response, unrelated to the generic
+     * existing per-entity /
+     * , unrelated to the generic
      * history.v1.get subject) and hands it to @p callback on the UI
      * thread. Used to resolve HistoryDialog's generic (entity_id,
      * version) signals back to a typed data domain, since the

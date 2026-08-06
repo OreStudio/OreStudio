@@ -41,7 +41,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-constexpr std::string_view bundle_event_name =
+constexpr std::string_view item_event_name =
     eventing::domain::event_traits<dq::eventing::dataset_bundle_changed_event>::name;
 }
 
@@ -51,7 +51,7 @@ DatasetBundleController::DatasetBundleController(QMainWindow* mainWindow,
                                                  ChangeReasonCache* changeReasonCache,
                                                  const QString& username,
                                                  QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, bundle_event_name, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, item_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -96,9 +96,9 @@ void DatasetBundleController::showListWindow() {
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
-    listMdiSubWindow_->setWindowTitle("Dataset Bundles");
+    listMdiSubWindow_->setWindowTitle("");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -148,9 +148,9 @@ void DatasetBundleController::reloadListWindow() {
     }
 }
 
-void DatasetBundleController::onShowDetails(const dq::domain::dataset_bundle& bundle) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << bundle.code;
-    showDetailWindow(bundle);
+void DatasetBundleController::onShowDetails(const dq::domain::dataset_bundle& item) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << item.;
+    showDetailWindow(item);
 }
 
 void DatasetBundleController::onAddNewRequested() {
@@ -159,9 +159,9 @@ void DatasetBundleController::onAddNewRequested() {
 }
 
 
-void DatasetBundleController::onShowHistory(const dq::domain::dataset_bundle& bundle) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << bundle.code;
-    showHistoryWindow(bundle);
+void DatasetBundleController::onShowHistory(const dq::domain::dataset_bundle& item) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << item.;
+    showHistoryWindow(item);
 }
 
 void DatasetBundleController::wireDetailDialogCommon(DatasetBundleDetailDialog* detailDialog) {
@@ -188,7 +188,7 @@ void DatasetBundleController::showAddWindow() {
     detailDialog->setCreateMode(true);
 
     connect(detailDialog,
-            &DatasetBundleDetailDialog::bundleSaved,
+            &DatasetBundleDetailDialog::itemSaved,
             this,
             [self = QPointer<DatasetBundleController>(this)](const QString& code) {
                 if (!self)
@@ -202,7 +202,7 @@ void DatasetBundleController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Dataset Bundle");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -210,9 +210,9 @@ void DatasetBundleController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle& bundle) {
+void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle& item) {
 
-    const QString identifier = QString::fromStdString(bundle.code);
+    const QString identifier = QString::fromStdString(item.);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -220,15 +220,15 @@ void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle&
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << bundle.code;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << item.;
 
     auto* detailDialog = new DatasetBundleDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
-    detailDialog->setBundle(bundle);
+    detailDialog->setBundle(item);
 
     connect(detailDialog,
-            &DatasetBundleDetailDialog::bundleSaved,
+            &DatasetBundleDetailDialog::itemSaved,
             this,
             [self = QPointer<DatasetBundleController>(this)](const QString& code) {
                 if (!self)
@@ -237,7 +237,7 @@ void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle&
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &DatasetBundleDetailDialog::bundleDeleted,
+            &DatasetBundleDetailDialog::itemDeleted,
             this,
             [self = QPointer<DatasetBundleController>(this), key](const QString& code) {
                 if (!self)
@@ -251,7 +251,7 @@ void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle&
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Dataset Bundle: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -269,21 +269,21 @@ void DatasetBundleController::showDetailWindow(const dq::domain::dataset_bundle&
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void DatasetBundleController::showHistoryWindow(const dq::domain::dataset_bundle& bundle) {
-    const QString code = QString::fromStdString(bundle.code);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for dataset bundle: " << bundle.code;
+void DatasetBundleController::showHistoryWindow(const dq::domain::dataset_bundle& item) {
+    const QString code = QString::fromStdString(item.);
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for dataset bundle: " << item.;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << bundle.code;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << item.;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << bundle.code;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << item.;
 
-    const QString entityId = QString::fromStdString(boost::uuids::to_string(bundle.id));
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(item.id));
     auto* historyDialog =
         new HistoryDialog(std::string(entity_type_of(dq::domain::dataset_bundle{})),
                           entityId.toStdString(),
@@ -351,12 +351,12 @@ void DatasetBundleController::showHistoryWindow(const dq::domain::dataset_bundle
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void DatasetBundleController::onOpenVersion(const dq::domain::dataset_bundle& bundle,
+void DatasetBundleController::onOpenVersion(const dq::domain::dataset_bundle& item,
                                             int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for dataset bundle: " << bundle.code;
+                              << " for dataset bundle: " << item.;
 
-    const QString code = QString::fromStdString(bundle.code);
+    const QString code = QString::fromStdString(item.);
     const QString windowKey =
         build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
@@ -368,7 +368,7 @@ void DatasetBundleController::onOpenVersion(const dq::domain::dataset_bundle& bu
 
     auto* detailDialog = new DatasetBundleDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
-    detailDialog->setBundle(bundle);
+    detailDialog->setBundle(item);
     detailDialog->setReadOnly(true);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -396,7 +396,7 @@ void DatasetBundleController::onOpenVersion(const dq::domain::dataset_bundle& bu
 void DatasetBundleController::fetchDatasetBundleHistory(
     const QString& entityId,
     std::function<void(std::expected<std::vector<dq::domain::dataset_bundle>, QString>)> callback) {
-    dq::messaging::get_dataset_bundle_history_request request;
+    request;
     request.id = entityId.toStdString();
 
     using FetchResult = std::expected<std::vector<dq::domain::dataset_bundle>, QString>;
@@ -482,20 +482,20 @@ void DatasetBundleController::onRevertHistoryVersion(const QString& entityId, in
         });
 }
 
-void DatasetBundleController::onRevertVersion(const dq::domain::dataset_bundle& bundle) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting dataset bundle to version: " << bundle.version;
+void DatasetBundleController::onRevertVersion(const dq::domain::dataset_bundle& item) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting dataset bundle to version: " << item.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new DatasetBundleDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
-    auto reverted_bundle = bundle;
-    reverted_bundle.version = 0;
-    detailDialog->setBundle(reverted_bundle);
+    auto reverted_item = item;
+    reverted_item.version = 0;
+    detailDialog->setBundle(reverted_item);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
     connect(detailDialog,
-            &DatasetBundleDetailDialog::bundleSaved,
+            &DatasetBundleDetailDialog::itemSaved,
             this,
             [self = QPointer<DatasetBundleController>(this)](const QString& code) {
                 if (!self)
@@ -510,7 +510,7 @@ void DatasetBundleController::onRevertVersion(const dq::domain::dataset_bundle& 
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(
-        QString("Revert Dataset Bundle: %1").arg(QString::fromStdString(bundle.code)));
+        QString("Revert Dataset Bundle: %1").arg(QString::fromStdString(item.)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
                                                                IconUtils::DefaultIconColor));
 

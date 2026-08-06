@@ -69,7 +69,7 @@ ProvenanceWidget* ChangeReasonDetailDialog::provenanceWidget() const {
 }
 
 QString ChangeReasonDetailDialog::code() const {
-    return QString::fromStdString(reason_.code);
+    return QString::fromStdString(item_.);
 }
 
 void ChangeReasonDetailDialog::setupUi() {
@@ -92,12 +92,10 @@ void ChangeReasonDetailDialog::setupConnections() {
         ui_->closeButton, &QPushButton::clicked, this, &ChangeReasonDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &ChangeReasonDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &ChangeReasonDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
             &QPlainTextEdit::textChanged,
-            this,
-            &ChangeReasonDetailDialog::onFieldChanged);
-    connect(ui_->categoryCodeEdit,
-            &QLineEdit::textChanged,
             this,
             &ChangeReasonDetailDialog::onFieldChanged);
 }
@@ -110,8 +108,8 @@ void ChangeReasonDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void ChangeReasonDetailDialog::setReason(const dq::domain::change_reason& reason) {
-    reason_ = reason;
+void ChangeReasonDetailDialog::setReason(const dq::domain::change_reason& item) {
+    item_ = item;
     updateUiFromReason();
 }
 
@@ -132,23 +130,23 @@ void ChangeReasonDetailDialog::markDirty() {
 void ChangeReasonDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->categoryCodeEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void ChangeReasonDetailDialog::updateUiFromReason() {
-    ui_->codeEdit->setText(QString::fromStdString(reason_.code));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(reason_.description));
-    ui_->categoryCodeEdit->setText(QString::fromStdString(reason_.category_code));
+    ui_->codeEdit->setText(QString::fromStdString(item_.code));
+    ui_->nameEdit->setText(QString::fromStdString(item_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(item_.description));
 
-    populateProvenance(reason_.version,
-                       reason_.modified_by,
-                       reason_.performed_by,
-                       reason_.recorded_at,
-                       reason_.change_reason_code,
-                       reason_.change_commentary);
+    populateProvenance(item_.version,
+                       item_.modified_by,
+                       item_.performed_by,
+                       item_.recorded_at,
+                       item_.change_reason_code,
+                       item_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -156,11 +154,11 @@ void ChangeReasonDetailDialog::updateUiFromReason() {
 
 void ChangeReasonDetailDialog::updateReasonFromUi() {
     if (createMode_) {
-        reason_.code = ui_->codeEdit->text().trimmed().toStdString();
+        item_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    reason_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    reason_.category_code = ui_->categoryCodeEdit->text().trimmed().toStdString();
-    reason_.modified_by = username_;
+    item_.name = ui_->nameEdit->text().trimmed().toStdString();
+    item_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    item_.modified_by = username_;
 }
 
 void ChangeReasonDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -180,8 +178,9 @@ void ChangeReasonDetailDialog::updateSaveButtonState() {
 
 bool ChangeReasonDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !code_val.isEmpty();
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
 }
 
 void ChangeReasonDetailDialog::onSaveClicked() {
@@ -202,12 +201,12 @@ void ChangeReasonDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    reason_.change_reason_code = crSel->reason_code;
-    reason_.change_commentary = crSel->commentary;
+    item_.change_reason_code = crSel->reason_code;
+    item_.change_commentary = crSel->commentary;
 
     updateReasonFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving change reason: " << reason_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving change reason: " << item_.;
 
     QPointer<ChangeReasonDetailDialog> self = this;
 
@@ -216,13 +215,13 @@ void ChangeReasonDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, reason = reason_]() -> SaveResult {
+    auto task = [self, item = item_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        dq::messaging::save_change_reason_request request;
-        request.data = reason;
+        request;
+        request.data = item;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -243,10 +242,10 @@ void ChangeReasonDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Change Reason saved successfully";
-                    QString code = QString::fromStdString(self->reason_.code);
+                    QString code = QString::fromStdString(self->item_.);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
-                    emit self->reasonSaved(code);
+                    emit self->itemSaved(code);
                     self->notifySaveSuccess(tr("Change Reason '%1' saved").arg(code));
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
@@ -267,7 +266,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(reason_.code);
+    QString code = QString::fromStdString(item_.);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Change Reason",
@@ -283,7 +282,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting change reason: " << reason_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting change reason: " << item_.;
 
     QPointer<ChangeReasonDetailDialog> self = this;
 
@@ -292,12 +291,12 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = reason_.code]() -> DeleteResult {
+    auto task = [self, code = item_.]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        dq::messaging::delete_change_reason_request request;
+        request;
         request.codes = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -317,7 +316,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Change Reason deleted successfully";
             emit self->statusMessage(QString("Change Reason '%1' deleted").arg(code));
-            emit self->reasonDeleted(code);
+            emit self->itemDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;

@@ -78,17 +78,17 @@ protected:
     void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const dq::domain::change_reason_category& category);
+    void onShowDetails(const dq::domain::change_reason_category& item);
     void onAddNewRequested();
-    void onShowHistory(const dq::domain::change_reason_category& category);
-    void onRevertVersion(const dq::domain::change_reason_category& category);
-    void onOpenVersion(const dq::domain::change_reason_category& category, int versionNumber);
+    void onShowHistory(const dq::domain::change_reason_category& item);
+    void onRevertVersion(const dq::domain::change_reason_category& item);
+    void onOpenVersion(const dq::domain::change_reason_category& item, int versionNumber);
     void onOpenHistoryVersion(const QString& entityId, int versionNumber);
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const dq::domain::change_reason_category& category);
+    void showDetailWindow(const dq::domain::change_reason_category& item);
 
     /**
      * @brief Wires the caches/status/error plumbing every
@@ -101,8 +101,8 @@ private:
 
     /**
      * @brief Fetches the full typed change reason category history (the
-     * existing per-entity dq::messaging::get_change_reason_category_history_request/
-     * dq::messaging::get_change_reason_category_history_response, unrelated to the generic
+     * existing per-entity /
+     * , unrelated to the generic
      * history.v1.get subject) and hands it to @p callback on the UI
      * thread. Used to resolve HistoryDialog's generic (entity_id,
      * version) signals back to a typed change reason category, since the

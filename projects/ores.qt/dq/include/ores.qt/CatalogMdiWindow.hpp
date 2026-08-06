@@ -60,10 +60,10 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showCatalogDetails(const dq::domain::catalog& catalog);
+    void showCatalogDetails(const dq::domain::catalog& item);
     void addNewRequested();
-    void catalogDeleted(const QString& code);
-    void showCatalogHistory(const dq::domain::catalog& catalog);
+    void itemDeleted(const QString& code);
+    void showCatalogHistory(const dq::domain::catalog& item);
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation

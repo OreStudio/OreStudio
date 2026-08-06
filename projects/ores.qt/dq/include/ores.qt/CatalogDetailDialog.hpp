@@ -58,7 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setCatalog(const dq::domain::catalog& catalog);
+    void setCatalog(const dq::domain::catalog& item);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -73,8 +73,8 @@ public:
 
 
 signals:
-    void catalogSaved(const QString& code);
-    void catalogDeleted(const QString& code);
+    void itemSaved(const QString& code);
+    void itemDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -103,7 +103,7 @@ private:
     Ui::CatalogDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    dq::domain::catalog catalog_;
+    dq::domain::catalog item_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

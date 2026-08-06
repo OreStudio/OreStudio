@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 namespace {
 std::string data_domain_key_extractor(const dq::domain::data_domain& e) {
-    return e.name;
+    return e.;
 }
 }
 
@@ -59,7 +59,7 @@ ClientDataDomainModel::ClientDataDomainModel(ClientManager* clientManager, QObje
 int ClientDataDomainModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(domains_.size());
+    return static_cast<int>(_.size());
 }
 
 int ClientDataDomainModel::columnCount(const QModelIndex& parent) const {
@@ -73,28 +73,20 @@ QVariant ClientDataDomainModel::data(const QModelIndex& index, int role) const {
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= domains_.size())
+    if (row >= _.size())
         return {};
 
-    const auto& domain = domains_[row];
+    const auto& item = _[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case Name:
-                return QString::fromStdString(domain.name);
-            case Description:
-                return QString::fromStdString(domain.description);
-            case ModifiedBy:
-                return QString::fromStdString(domain.modified_by);
-            case RecordedAt:
-                return relative_time_helper::format(domain.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(domain.name);
+        return recency_foreground_color(item.);
     }
 
     return {};
@@ -113,14 +105,6 @@ ClientDataDomainModel::headerData(int section, Qt::Orientation orientation, int 
     }
 
     switch (section) {
-        case Name:
-            return tr("Name");
-        case Description:
-            return tr("Description");
-        case ModifiedBy:
-            return tr("Modified By");
-        case RecordedAt:
-            return tr("Recorded At");
         default:
             return {};
     }
@@ -140,16 +124,16 @@ void ClientDataDomainModel::refresh() {
         return;
     }
 
-    if (!domains_.empty()) {
+    if (!_.empty()) {
         beginResetModel();
-        domains_.clear();
+        _.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_domains(0, page_size_);
+    fetch_(0, page_size_);
 }
 
 void ClientDataDomainModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -165,18 +149,18 @@ void ClientDataDomainModel::load_page(std::uint32_t offset, std::uint32_t limit)
         return;
     }
 
-    if (!domains_.empty()) {
+    if (!_.empty()) {
         beginResetModel();
-        domains_.clear();
+        _.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_domains(offset, limit);
+    fetch_(offset, limit);
 }
 
-void ClientDataDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t limit) {
+void ClientDataDomainModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientDataDomainModel> self = this;
 
@@ -187,13 +171,13 @@ void ClientDataDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                     << "Making data domains request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .domains = {},
+                            .= {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                dq::messaging::get_data_domains_request request;
+                request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -203,7 +187,7 @@ void ClientDataDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .domains = {},
+                            .= {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -219,7 +203,7 @@ void ClientDataDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
-                            .domains = {},
+                            .= {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
@@ -229,7 +213,7 @@ void ClientDataDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                     << "Fetched " << result->domains.size()
                     << " data domains, total available: " << result->total_available_count;
                 return {.success = true,
-                        .domains = std::move(result->domains),
+                        .= std::move(result->domains),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
@@ -255,14 +239,14 @@ void ClientDataDomainModel::onDomainsLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result.domains.size());
+    const int new_count = static_cast<int>(result..size());
 
     if (new_count > 0) {
         beginResetModel();
-        domains_ = std::move(result.domains);
+        _ = std::move(result.);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(domains_);
+        const bool has_recent = recencyTracker_.update(_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
@@ -289,9 +273,9 @@ void ClientDataDomainModel::set_page_size(std::uint32_t size) {
 
 const dq::domain::data_domain* ClientDataDomainModel::getDomain(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= domains_.size())
+    if (idx >= _.size())
         return nullptr;
-    return &domains_[idx];
+    return &_[idx];
 }
 
 
@@ -303,7 +287,7 @@ QVariant ClientDataDomainModel::recency_foreground_color(const std::string& code
 }
 
 void ClientDataDomainModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!domains_.empty()) {
+    if (!_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }

@@ -60,10 +60,10 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showBundleDetails(const dq::domain::dataset_bundle& bundle);
+    void showBundleDetails(const dq::domain::dataset_bundle& item);
     void addNewRequested();
-    void bundleDeleted(const QString& code);
-    void showBundleHistory(const dq::domain::dataset_bundle& bundle);
+    void itemDeleted(const QString& code);
+    void showBundleHistory(const dq::domain::dataset_bundle& item);
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation

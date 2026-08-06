@@ -122,14 +122,7 @@ void CatalogMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "CatalogListWindow",
-                            {
-                                ClientCatalogModel::Description,
-                            },
-                            {900, 400},
-                            1);
+    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
 }
 
 void CatalogMdiWindow::setupConnections() {
@@ -198,8 +191,8 @@ void CatalogMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* catalog = model_->getCatalog(sourceIndex.row())) {
-        emit showCatalogDetails(*catalog);
+    if (auto* item = model_->getCatalog(sourceIndex.row())) {
+        emit showCatalogDetails(*item);
     }
 }
 
@@ -223,8 +216,8 @@ void CatalogMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* catalog = model_->getCatalog(sourceIndex.row())) {
-        emit showCatalogDetails(*catalog);
+    if (auto* item = model_->getCatalog(sourceIndex.row())) {
+        emit showCatalogDetails(*item);
     }
 }
 
@@ -236,9 +229,9 @@ void CatalogMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* catalog = model_->getCatalog(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showCatalogHistory for code: " << catalog->name;
-        emit showCatalogHistory(*catalog);
+    if (auto* item = model_->getCatalog(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showCatalogHistory for code: " << item->;
+        emit showCatalogHistory(*item);
     }
 }
 
@@ -258,8 +251,8 @@ void CatalogMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* catalog = model_->getCatalog(sourceIndex.row())) {
-            codes.push_back(catalog->name);
+        if (auto* item = model_->getCatalog(sourceIndex.row())) {
+            codes.push_back(item->);
         }
     }
 
@@ -296,7 +289,7 @@ void CatalogMdiWindow::deleteSelected() {
 
         BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << codes.size() << " catalogs";
 
-        dq::messaging::delete_catalog_request request;
+        request;
         request.names = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -329,7 +322,7 @@ void CatalogMdiWindow::deleteSelected() {
             if (result.first) {
                 BOOST_LOG_SEV(lg(), debug) << "Catalog deleted: " << code;
                 success_count++;
-                emit self->catalogDeleted(QString::fromStdString(code));
+                emit self->itemDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Catalog deletion failed: " << code << " - " << result.second;

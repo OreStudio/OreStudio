@@ -217,56 +217,10 @@ faker::number::integer(1, 100)
 
 ** Custom repository methods
 
-** Qt
-:PROPERTIES:
-:domain_include:         ores.dq.api/domain/change_reason.hpp
-:domain_class:           dq::domain::change_reason
-:protocol_include:       ores.dq.api/messaging/change_reason_protocol.hpp
-:collection_name:        reasons
-:item_var:               reason
-:key_field:               code
-:has_uuid_primary_key:   false
-:get_request_class:      dq::messaging::get_change_reasons_request
-:get_response_class:     dq::messaging::get_change_reasons_response
-:get_message_type:       get_change_reasons_request
-:save_request_class:     dq::messaging::save_change_reason_request
-:save_response_class:    dq::messaging::save_change_reason_response
-:save_message_type:      save_change_reason_request
-:delete_request_class:   dq::messaging::delete_change_reason_request
-:delete_response_class:  dq::messaging::delete_change_reason_response
-:delete_message_type:    delete_change_reason_request
-:history_request_class:  dq::messaging::get_change_reason_history_request
-:history_response_class: dq::messaging::get_change_reason_history_response
-:history_message_type:   get_change_reason_history_request
-:settings_group:         ChangeReasonListWindow
-:window_title:           Change Reasons
-:icon:                   Table
-:has_change_reason_cache: true
-:has_pagination:         true
-:END:
-
-*** Detail fields
-
-| field                | label               | widget                 | type      | is_key | is_required | placeholder                      |
-|----------------------+---------------------+------------------------+-----------+--------+-------------+------------------------------------|
-| code                 | Code                | codeEdit               | line_edit | true   | true        | Enter change reason code         |
-| description          | Description         | descriptionEdit        | text_edit |        |             | Enter a description              |
-| category_code        | Category            | categoryCodeEdit       | line_edit |        |             | Enter the owning category code   |
-
-*** Columns (Qt model)
-
-| enum_name           | field                | header              | type      | width |
-|---------------------+----------------------+---------------------+-----------+-------|
-| Code                | code                 | Code                | string    | 150   |
-| Description         | description          | Description         | string    | 250   |
-| CategoryCode        | category_code        | Category            | string    | 150   |
-| AppliesToNew        | applies_to_new       | Applies To New      | bool      | 100   |
-| AppliesToAmend      | applies_to_amend     | Applies To Amend    | bool      | 100   |
-| AppliesToDelete     | applies_to_delete    | Applies To Delete   | bool      | 100   |
-| RequiresCommentary  | requires_commentary  | Requires Commentary | bool      | 100   |
-| DisplayOrder        | display_order        | Display Order       | int       |  80   |
-| ModifiedBy          | modified_by          | Modified By         | string    | 120   |
-| RecordedAt          | recorded_at          | Recorded At         | timestamp | 150   |
+# No "** Qt" drawer here on purpose: change_reason's Qt UI
+# (ChangeReasonController et al.) is hand-maintained directly in
+# ores.qt.dq. See ores.dq.catalog.org's matching comment for the full
+# story of why a drawer was added and reverted here.
 
 * See also
 

@@ -122,14 +122,7 @@ void ChangeReasonMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "ChangeReasonListWindow",
-                            {
-                                ClientChangeReasonModel::Description,
-                            },
-                            {900, 400},
-                            1);
+    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
 }
 
 void ChangeReasonMdiWindow::setupConnections() {
@@ -199,8 +192,8 @@ void ChangeReasonMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* reason = model_->getReason(sourceIndex.row())) {
-        emit showReasonDetails(*reason);
+    if (auto* item = model_->getReason(sourceIndex.row())) {
+        emit showReasonDetails(*item);
     }
 }
 
@@ -224,8 +217,8 @@ void ChangeReasonMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* reason = model_->getReason(sourceIndex.row())) {
-        emit showReasonDetails(*reason);
+    if (auto* item = model_->getReason(sourceIndex.row())) {
+        emit showReasonDetails(*item);
     }
 }
 
@@ -237,9 +230,9 @@ void ChangeReasonMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* reason = model_->getReason(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showReasonHistory for code: " << reason->code;
-        emit showReasonHistory(*reason);
+    if (auto* item = model_->getReason(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showReasonHistory for code: " << item->;
+        emit showReasonHistory(*item);
     }
 }
 
@@ -259,8 +252,8 @@ void ChangeReasonMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* reason = model_->getReason(sourceIndex.row())) {
-            codes.push_back(reason->code);
+        if (auto* item = model_->getReason(sourceIndex.row())) {
+            codes.push_back(item->);
         }
     }
 
@@ -299,7 +292,7 @@ void ChangeReasonMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << codes.size() << " change reasons";
 
-        dq::messaging::delete_change_reason_request request;
+        request;
         request.codes = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -332,7 +325,7 @@ void ChangeReasonMdiWindow::deleteSelected() {
             if (result.first) {
                 BOOST_LOG_SEV(lg(), debug) << "Change Reason deleted: " << code;
                 success_count++;
-                emit self->reasonDeleted(QString::fromStdString(code));
+                emit self->itemDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Change Reason deletion failed: " << code << " - " << result.second;

@@ -213,7 +213,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:E3AC8CAB-2908-4407-8DC6-16C0000A092E][Verify ores.dq commissioned entities]] | PENDING | CRUD+history on catalog/data_domain/change_reason/change_reason_category/artefact_type/dataset_bundle; read-only browse on lei_entity/lei_relationship; confirms report_definition/synthetic_fx_spot_config have no Qt UI; two-client eventing check |
 
 * PRs
 

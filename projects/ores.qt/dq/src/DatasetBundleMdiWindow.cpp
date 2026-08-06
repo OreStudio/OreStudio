@@ -124,14 +124,7 @@ void DatasetBundleMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_,
-                            model_,
-                            "DatasetBundleListWindow",
-                            {
-                                ClientDatasetBundleModel::Description,
-                            },
-                            {900, 400},
-                            1);
+    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
 }
 
 void DatasetBundleMdiWindow::setupConnections() {
@@ -202,8 +195,8 @@ void DatasetBundleMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* bundle = model_->getBundle(sourceIndex.row())) {
-        emit showBundleDetails(*bundle);
+    if (auto* item = model_->getBundle(sourceIndex.row())) {
+        emit showBundleDetails(*item);
     }
 }
 
@@ -227,8 +220,8 @@ void DatasetBundleMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* bundle = model_->getBundle(sourceIndex.row())) {
-        emit showBundleDetails(*bundle);
+    if (auto* item = model_->getBundle(sourceIndex.row())) {
+        emit showBundleDetails(*item);
     }
 }
 
@@ -240,9 +233,9 @@ void DatasetBundleMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* bundle = model_->getBundle(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showBundleHistory for code: " << bundle->code;
-        emit showBundleHistory(*bundle);
+    if (auto* item = model_->getBundle(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showBundleHistory for code: " << item->;
+        emit showBundleHistory(*item);
     }
 }
 
@@ -263,9 +256,9 @@ void DatasetBundleMdiWindow::deleteSelected() {
     std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* bundle = model_->getBundle(sourceIndex.row())) {
-            ids.push_back(boost::uuids::to_string(bundle->id));
-            codes.push_back(bundle->code);
+        if (auto* item = model_->getBundle(sourceIndex.row())) {
+            ids.push_back(boost::uuids::to_string(item->id));
+            codes.push_back(item->);
         }
     }
 
@@ -304,7 +297,7 @@ void DatasetBundleMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << ids.size() << " dataset bundles";
 
-        dq::messaging::delete_dataset_bundle_request request;
+        request;
         request.ids = ids;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -338,7 +331,7 @@ void DatasetBundleMdiWindow::deleteSelected() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Dataset Bundle deleted: " << code;
                 success_count++;
-                emit self->bundleDeleted(QString::fromStdString(code));
+                emit self->itemDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Dataset Bundle deletion failed: " << code << " - " << message;

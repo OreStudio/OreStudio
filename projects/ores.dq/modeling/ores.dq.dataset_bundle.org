@@ -138,44 +138,10 @@ std::string(faker::lorem::sentence())
 | modified_by | Modified By |
 | version     | Version     |
 
-** Qt
-:PROPERTIES:
-:domain_include:         ores.dq.api/domain/dataset_bundle.hpp
-:domain_class:           dq::domain::dataset_bundle
-:protocol_include:       ores.dq.api/messaging/dataset_bundle_protocol.hpp
-:collection_name:        bundles
-:item_var:               bundle
-:key_field:              code
-:has_uuid_primary_key:   true
-:get_request_class:      dq::messaging::get_dataset_bundles_request
-:get_response_class:     dq::messaging::get_dataset_bundles_response
-:get_message_type:       get_dataset_bundles_request
-:save_request_class:     dq::messaging::save_dataset_bundle_request
-:save_response_class:    dq::messaging::save_dataset_bundle_response
-:save_message_type:      save_dataset_bundle_request
-:delete_request_class:   dq::messaging::delete_dataset_bundle_request
-:delete_response_class:  dq::messaging::delete_dataset_bundle_response
-:delete_message_type:    delete_dataset_bundle_request
-:history_request_class:  dq::messaging::get_dataset_bundle_history_request
-:history_response_class: dq::messaging::get_dataset_bundle_history_response
-:history_message_type:   get_dataset_bundle_history_request
-:settings_group:         DatasetBundleListWindow
-:window_title:           Dataset Bundles
-:icon:                   Folder
-:has_change_reason_cache: true
-:has_pagination:         true
-:END:
-
-*** Columns (Qt model)
-
-| enum_name   | field       | header      | type      | width |
-|-------------+-------------+-------------+-----------+-------|
-| Code        | code        | Code        | string    | 150   |
-| Name        | name        | Name        | string    | 200   |
-| Description | description | Description | string    | 300   |
-| Version     | version     | Version     | int       | 80    |
-| ModifiedBy  | modified_by | Modified By | string    | 120   |
-| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+# No "** Qt" drawer here on purpose: dataset_bundle's Qt UI
+# (DatasetBundleController et al.) is hand-maintained directly in
+# ores.qt.dq. See ores.dq.catalog.org's matching comment for the full
+# story of why a drawer was added and reverted here.
 
 ** Custom repository methods
 

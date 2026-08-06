@@ -53,7 +53,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { Name, Description, ModifiedBy, RecordedAt, ColumnCount };
+    enum Column { ColumnCount };
 
     explicit ClientDataDomainModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientDataDomainModel() override = default;
@@ -113,16 +113,16 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<dq::domain::data_domain> domains;
+        std::vector<dq::domain::data_domain>;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_domains(std::uint32_t offset, std::uint32_t limit);
+    void fetch_(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<dq::domain::data_domain> domains_;
+    std::vector<dq::domain::data_domain> _;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

@@ -58,7 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setDomain(const dq::domain::data_domain& domain);
+    void setDomain(const dq::domain::data_domain& item);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -73,8 +73,8 @@ public:
 
 
 signals:
-    void domainSaved(const QString& code);
-    void domainDeleted(const QString& code);
+    void itemSaved(const QString& code);
+    void itemDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -103,7 +103,7 @@ private:
     Ui::DataDomainDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    dq::domain::data_domain domain_;
+    dq::domain::data_domain item_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

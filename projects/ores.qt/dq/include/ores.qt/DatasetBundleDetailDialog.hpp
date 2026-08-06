@@ -58,7 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setBundle(const dq::domain::dataset_bundle& bundle);
+    void setBundle(const dq::domain::dataset_bundle& item);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -73,8 +73,8 @@ public:
 
 
 signals:
-    void bundleSaved(const QString& code);
-    void bundleDeleted(const QString& code);
+    void itemSaved(const QString& code);
+    void itemDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -103,7 +103,7 @@ private:
     Ui::DatasetBundleDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    dq::domain::dataset_bundle bundle_;
+    dq::domain::dataset_bundle item_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

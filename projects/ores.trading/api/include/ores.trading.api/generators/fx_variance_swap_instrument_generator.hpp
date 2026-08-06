@@ -17,20 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_FX_VARIANCE_SWAP_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_FX_VARIANCE_SWAP_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_API_GENERATORS_FX_VARIANCE_SWAP_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_FX_VARIANCE_SWAP_INSTRUMENT_GENERATOR_HPP
 
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::generators {
 
 /**
- * @brief Dumps the fx_variance_swap_instrument to a stream in JSON format.
+ * @brief Generates a synthetic fx_variance_swap_instrument.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const fx_variance_swap_instrument& v);
+ORES_TRADING_API_EXPORT domain::fx_variance_swap_instrument
+generate_synthetic_fx_variance_swap_instrument(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic fx_variance_swap_instruments.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::fx_variance_swap_instrument>
+generate_synthetic_fx_variance_swap_instruments(std::size_t n,
+                                                utility::generation::generation_context& ctx);
 
 }
 

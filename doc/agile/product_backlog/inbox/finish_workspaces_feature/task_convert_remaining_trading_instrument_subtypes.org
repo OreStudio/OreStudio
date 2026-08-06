@@ -38,7 +38,7 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | 5/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument. |
+| Now          | 6/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument. |
 | Waiting on   | Nothing.                               |
 | Next         | Convert the next flat instrument (e.g. equity_swap, fx_barrier_option). |
 | Last touched | 2026-08-05                               |
@@ -176,6 +176,24 @@ verified with a second regeneration pass (byte-identical output) and
 
 Flat instrument, no leg children. Same zero-diff outcome, verified
 with a second regeneration pass (byte-identical output) and
+=ores.trading.*= tests green.
+
+** fx_variance_swap_instrument (converted 2026-08-06)
+
+Flat instrument, no leg children. Has a cross-column check
+(=end_date > start_date=) -- modelled directly in =* SQL / ** Checks=
+and preserved verbatim by regeneration. Every generated file diffed
+by hand before building (per explicit review requirement): all
+changes additive/cosmetic or the same systemic template improvements
+already proven across the prior 5 entities: SQL header/hardening,
+domain doc-comments + =entity_type_of()=, entity field reorder +
+=db_timestamp= alias, mapper field reorder, repository
+workspace-scoping (including the batch-remove =workspace_id= fix)
+plus =read_at_version=/pagination/count, service list/count/batch-
+save/delete/delete-batch/history, generator field values matching
+the model exactly. No renamed/orphaned files -- every file with a
+hand-crafted predecessor was modified in place at its original path.
+Zero further drift confirmed via a second regeneration pass;
 =ores.trading.*= tests green.
 
 * Test Scenarios

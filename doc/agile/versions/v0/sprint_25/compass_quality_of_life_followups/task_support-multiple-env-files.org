@@ -8,7 +8,7 @@
 #+filetags: :compass-quality-of-life-improvements-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/support-multiple-env-files
-#+pr:
+#+pr: 1877
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1877][#1877]] | [compass] Support multiple named .env files via --env / --env-file |
 
 * Review
 

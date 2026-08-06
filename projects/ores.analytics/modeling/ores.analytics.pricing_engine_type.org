@@ -17,11 +17,12 @@ Classification of products at the granularity needed by the pricing engine to se
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     analytics
-:profile:       simple-lookup
-:has_tenant_id: true
+:schema:                    public
+:product:                   ores
+:component:                 analytics
+:profile:                   simple-lookup
+:has_tenant_id:             true
+:system_tenant_validation:  true
 :END:
 
 * Columns

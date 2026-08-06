@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: E88DCFAB-A51E-4F18-975B-646F18C38395
+:END:
+#+title: Inventory system-scoped entities and rationalise tenant scoping strategy
+#+description: Currently system-scoped reference data is handled inconsistently: some entities copy data per tenant during provisioning, others rely on a system-tenant context switch. We need an architectural audit.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Audit every codegen entity to determine its correct tenant-scoping strategy and apply it consistently. Currently two incompatible patterns coexist:
+
+1. *Per-tenant copies* (party_type approach) — seed data replicated to every tenant during provisioning. The repository filters by =tenant_id= naturally and each tenant sees its own copy. Works for entities that might need per-tenant variation.
+2. *System-tenant context switch* (old pricing_engine_type handler approach) — data lives only under the system tenant. The handler switches to =sys_ctx= via =with_tenant(system())=. All tenants read from one source. The template supports this via =:system_tenant_validation:=.
+
+The new =simple-lookup= profile sets =system_scope: false= by default, implying per-tenant copies. But many entities (pricing engine types, instrument codes, etc.) are reference taxonomies that should never diverge per tenant — copying them is waste and a drift hazard.
+
+* Why
+
+Discovered while applying safe drift to analytics-cpp: pricing_engine_type returned zero rows for Acme because its 44 system-tenant rows had no per-tenant copies, and the regenerated handler no longer had the system-tenant context switch that the old hand-authored handler hardcoded. Adding =:system_tenant_validation:= fixed it mechanically, but the real question is strategic: which entities genuinely need this treatment?
+
+* Key questions
+
+- Which entities need per-tenant copies vs system-tenant read-only?
+- For system-tenant entities that evolve with upstream (e.g. new ORE version adds engine types), how are writes gated?
+- Is =:system_tenant_validation:= the right mechanism, or do we need a finer-grained =:read_only: true= that allows writes under the system tenant only?
+- Should this be a profile axis rather than a per-entity flag?
+
+* References
+
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the story that surfaced this
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]] profile — sets =system_scope: false=
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — profiles and features
+
+* See also
+
+- [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]] — the new counterpart profile

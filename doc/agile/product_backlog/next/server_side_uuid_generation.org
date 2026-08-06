@@ -5,7 +5,7 @@
 #+description: Clients must never generate primary-key UUIDs for entities they create. Every UUID-primary-keyed entity's Add flow currently generates the id client-side (boost::uuids::random_generator() in setCreateMode, part of the shared Qt detail-dialog codegen template); the server should assign the id on save instead, with the client showing a nil-UUID placeholder until the response comes back.
 #+type: story
 #+level: s2
-#+filetags: :server_side_uuid_generation:product_backlog:inbox:
+#+filetags: :server_side_uuid_generation:product_backlog:next:
 #+created: 2026-07-14
 #+updated: 2026-07-21
 #+environment:

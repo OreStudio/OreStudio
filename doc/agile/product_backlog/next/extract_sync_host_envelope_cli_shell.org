@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 80C2A6CC-1CAF-4250-A807-85390C798266
+:END:
+#+title: Extract a sync sibling of run_host_async for ores.cli/ores.shell
+#+description: ores.cli and ores.shell's host.cpp bodies share ~70% structure with each other (parse/init-logging/log/try-construct-run/catch-diagnostic) despite being correctly excluded from the async run_host_async helper; a construction-callable-parameterised sync sibling could close that remaining gap.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:cpp:service-app:cli:shell:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a sync counterpart to
+=ores::service::service::run_host_async()=
+(=projects/ores.service/include/ores.service/service/host_runner.hpp=)
+for =ores.cli=/=ores.shell=, whose =host.cpp= bodies are correctly
+*not* on the async helper (neither has an =io_context= — see the
+investigation this was filed from) but still duplicate ~70% of their
+own structure with each other: parse args -> check for empty
+=optional<config>= -> init =lifecycle_manager= -> log args/config ->
+=try { construct application; run; } catch (const std::exception&)
+{ diagnostic_information-or-e.what() dance; rethrow; }=. Since
+neither tool's =application= is uniformly constructible (=ores.cli=
+needs =(output_stream, db_opts)=, =ores.shell= is already
+all-default-optional), the helper needs to take an
+application-construction *callable* (=cfg -> Application=) rather
+than assuming default-constructibility like the async helper does,
+plus an optional early-exit hook for =ores.cli='s DB-free
+=ore_roundtrip= branch.
+
+* Why
+
+Closes the remaining boilerplate-duplication gap the async
+extraction (PR #1855) deliberately left out — these two tools were
+correctly excluded from =run_host_async= (sync-vs-async is genuinely
+load-bearing, not historical — see the investigation this followed
+from), but that doesn't mean there's *no* shared-code opportunity
+left; it's just a different, sync-shaped envelope than the one
+already extracted.
+
+* References
+
+- projects/ores.cli/src/app/host.cpp
+- projects/ores.shell/src/app/host.cpp
+- projects/ores.service/include/ores.service/service/host_runner.hpp
+
+* See also
+
+- [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] — the investigation that surfaced this
+- [[id:4544572F-7C42-4A37-8440-C11B58511C94][Unify application.cpp and service initialisation across services]] — the original async extraction

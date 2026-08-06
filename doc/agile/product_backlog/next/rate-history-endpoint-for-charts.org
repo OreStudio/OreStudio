@@ -5,7 +5,7 @@
 #+description: Multiple UIs (CRM cross-rates matrix, likely others) need a short rate-history sparkline/chart per pair or series; there is no server-side history endpoint today, only live/latest reads.
 #+type: story
 #+level: s2
-#+filetags: :marketdata:ui:api:charts:product_backlog:inbox:
+#+filetags: :marketdata:ui:api:charts:product_backlog:next:
 #+created: 2026-07-21
 #+updated: 2026-07-21
 #+environment:

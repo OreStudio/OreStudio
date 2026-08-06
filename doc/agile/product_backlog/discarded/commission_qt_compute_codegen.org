@@ -5,7 +5,7 @@
 #+description: Inventory the entities in ores.qt.compute, check the state of their models and codegen, and generate full stack for all entities in this component, including migrating their history dialogs to the generic HistoryDialog.
 #+type: story
 #+level: s2
-#+filetags: :qt:compute:codegen:commissioning:product_backlog:inbox:
+#+filetags: :qt:compute:codegen:commissioning:product_backlog:discarded:
 #+created: 2026-07-21
 #+updated: 2026-07-21
 #+environment:

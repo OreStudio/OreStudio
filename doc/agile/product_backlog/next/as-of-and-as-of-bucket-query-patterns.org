@@ -5,7 +5,7 @@
 #+description: As market_observations_repository::read_as_of()/read_as_of_buckets() now show for IR curve snapshots: latest-value-at-time-T (as-of) and N-snapshots-over-time (as-of buckets) are general patterns any bitemporal/timeseries repository needs, not just curve data. Capture the pattern and scope generalizing it.
 #+type: story
 #+level: s2
-#+filetags: :architecture:database:timeseries:product_backlog:inbox:
+#+filetags: :architecture:database:timeseries:product_backlog:next:
 #+created: 2026-07-21
 #+updated: 2026-07-21
 #+environment:

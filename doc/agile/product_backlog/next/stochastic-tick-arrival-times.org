@@ -5,7 +5,7 @@
 #+description: Replace the fixed-interval tick clock with random inter-arrival times drawn from a realistic distribution (Poisson/Hawkes), so synthetic feed ticks arrive irregularly like real market data.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:inbox:
+#+filetags: :product_backlog:next:
 #+created: 2026-07-11
 #+updated: 2026-07-21
 #+environment:

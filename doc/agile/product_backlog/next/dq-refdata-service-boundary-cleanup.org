@@ -5,7 +5,7 @@
 #+description: Route DQ bundle publication through refdata.v1.* NATS endpoints instead of writing directly to ores_refdata_* tables.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:inbox:
+#+filetags: :product_backlog:next:
 #+created: 2026-07-11
 #+updated: 2026-07-21
 #+environment:

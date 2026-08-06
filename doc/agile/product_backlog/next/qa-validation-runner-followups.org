@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 35B883EF-E45A-42F6-A36C-52A41CD5FF37
+:END:
+#+title: QA Validation Runner follow-ups
+#+description: Four follow-up improvements for the QA Validation Runner: auto-crop screenshots to active window, keyboard-shortcut-armed delayed screenshot for combo/popup capture, warn on unsaved changes when closing the client, and surface multi-client step colour ownership.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

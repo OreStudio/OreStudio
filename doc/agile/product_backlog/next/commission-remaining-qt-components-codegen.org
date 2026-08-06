@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: F7C0FA21-DDB1-4D81-90BB-6DFBFABD895E
+:END:
+#+title: Commission remaining ores.qt components into codegen
+#+description: Seven ores.qt components (admin, analytics, compute, marketdata, synthetic, trading, workspace) have not been commissioned into codegen. Each needs: entity inventory, codegen model authoring where missing, full-stack codegen run and reconciliation, and migration of per-entity history dialogs to the generic HistoryDialog. This unblocks retiring per-entity history dialogs (Phase C). Distinct from per-component drift resolution: these components may lack models entirely rather than having stale ones.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Commission the seven remaining ores.qt components into codegen. Unlike
+the per-component drift work (which regenerates entities that already
+have codegen models), these components may lack models entirely. Each
+component needs:
+
+1. Entity inventory — which entities exist, which have codegen models,
+   which are still hand-rolled, and which have hand-rolled
+   HistoryDialogs.
+2. Model authoring — create =.org= codegen entity models for any
+   entity missing one.
+3. Full-stack codegen — run and reconcile generation for every entity.
+4. History dialog migration — move every entity's history view onto the
+   generic =HistoryDialog= widget.
+
+This directly unblocks [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C
+rollout]], which cannot proceed until every ores.qt component is
+migrated.
+
+Components to commission:
+
+- =ores.qt.admin=
+- =ores.qt.analytics=
+- =ores.qt.compute=
+- =ores.qt.marketdata=
+- =ores.qt.synthetic=
+- =ores.qt.trading=
+- =ores.qt.workspace=
+
+* Why
+
+These seven components were carried unfinished from Sprint 24. They
+were originally tasks under the "Migrate onto the generic
+HistoryDialog" story but were split out when that story was narrowed to
+ores.qt.refdata only. Each follows the identical pattern — inventory,
+model, generate, migrate — and they are the last remaining blockers
+for Phase C, which retires all per-entity hand-rolled history dialogs
+across the codebase.
+
+* References
+
+- [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity history dialogs: Phase C rollout]]
+- [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto the generic HistoryDialog]]
+
+* See also
+
+-

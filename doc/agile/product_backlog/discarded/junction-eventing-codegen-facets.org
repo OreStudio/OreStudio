@@ -5,7 +5,7 @@
 #+description: Junction tables (badge_mapping, party_currency, party_country, party_counterparty, currency_currency_group, account_party, dataset_bundle_member, app_version_platform) have zero live NATS eventing support -- the notify-trigger/changed-event/event-registrar codegen facets are all scoped to the entity model type only. Extend them to cover junctions, with badge_mapping as the first consumer.
 #+type: story
 #+level: s2
-#+filetags: :codegen:eventing:junction:architecture:product_backlog:inbox:
+#+filetags: :codegen:eventing:junction:architecture:product_backlog:discarded:
 #+created: 2026-07-26
 #+updated: 2026-07-26
 #+environment:

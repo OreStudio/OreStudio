@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: D9625B20-E2EB-486F-BE61-61936FCA6417
+:END:
+#+title: Story: Backlog deep refinement
+#+description: Recurring deep audits of the product backlog: every capture in inbox/next/deferred verified against the codebase, duplicates merged, buckets re-scored against the current sprint's mission.
+#+type: story
+#+level: s2
+#+filetags: :agile:backlog:sprint_25:v0:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | First deep refinement run in progress. |
+| Waiting on    | Nothing.                               |
+| Next          | Complete the audit and write the report. |
+| Last touched  | 2026-08-05                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C5D82002-4EBD-4F04-A2E8-4FF0EBFE0D07][Deep refinement 1 — 2026-08-05]] | BACKLOG | | | Deep backlog refinement run 1: inbox/next/deferred audit — first deep refinement, clearing inbox drift and cataloguing the backlog. |
+
+* Decisions
+
+* Out of scope
+
+-

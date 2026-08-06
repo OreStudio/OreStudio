@@ -5,7 +5,7 @@
 #+description: Determine what display_order means, which entity archetypes require it, fix codegen Qt detail-dialog templates to surface it by default, backfill affected existing entities, and update their manual screenshots.
 #+type: story
 #+level: s2
-#+filetags: :codegen:qt:refdata:technical-debt:product_backlog:inbox:
+#+filetags: :codegen:qt:refdata:technical-debt:product_backlog:next:
 #+created: 2026-07-25
 #+updated: 2026-07-25
 #+environment:

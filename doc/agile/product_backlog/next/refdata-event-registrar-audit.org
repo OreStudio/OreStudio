@@ -5,7 +5,7 @@
 #+description: Audit all refdata entities with a changed_event type and wire NATS event registrars for the ones still missing (26 of 34), closing the eventing gap systematically.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:inbox:
+#+filetags: :product_backlog:next:
 #+created: 2026-07-11
 #+updated: 2026-07-21
 #+environment:

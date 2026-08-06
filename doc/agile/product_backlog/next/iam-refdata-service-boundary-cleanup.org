@@ -5,7 +5,7 @@
 #+description: Replace ores.iam.core's direct ores_refdata_parties_tbl writes/reads with refdata.v1.* NATS calls to restore clean service ownership and RLS enforcement.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:inbox:
+#+filetags: :product_backlog:next:
 #+created: 2026-07-11
 #+updated: 2026-07-21
 #+environment:

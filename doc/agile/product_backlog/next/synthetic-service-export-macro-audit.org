@@ -5,7 +5,7 @@
 #+description: make_ir_curve_feed() in ir_curve_feed.hpp (and possibly other src/ free functions/classes) lack ORES_SYNTHETIC_SERVICE_EXPORT, the same latent Windows-link bug fixed for ir_curve_template_resolver.hpp in PR #1656.
 #+type: story
 #+level: s2
-#+filetags: :synthetic:windows:build:tech-debt:product_backlog:inbox:
+#+filetags: :synthetic:windows:build:tech-debt:product_backlog:next:
 #+created: 2026-07-21
 #+updated: 2026-07-21
 #+environment:

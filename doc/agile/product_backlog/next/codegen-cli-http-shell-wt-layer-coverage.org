@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 9CBDBDC0-33A9-4A2C-B02A-7F49F07007E5
+:END:
+#+title: Add CLI, HTTP, shell, and Wt layer generation to codegen
+#+description: Codegen currently has no profiles for generating CLI commands, HTTP REST endpoints, shell REPL commands, or Wt web UI. Each entity commissioned since the codegen migration ships without these layers, and per-entity placeholder captures accumulate. Build codegen profiles for each layer so entities get CLI/HTTP/shell/Wt support automatically on regeneration. This will need splitting into per-layer stories (one for CLI, one for HTTP, one for shell, one for Wt) with per-component tasks.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add codegen profiles for the four presentation/access layers that
+currently have no codegen support at all:
+
+- CLI commands (=ores.cli=)
+- HTTP REST endpoints (=ores.http.server=)
+- Shell REPL commands (=ores.shell=)
+- Wt web UI (=ores.wt=)
+
+Today, every entity commissioned end-to-end (SQL, domain, repository,
+service, protocol, NATS, Qt) ships without these layers. Per-entity
+placeholder captures have been filed for each missing layer — but the
+gap is not per-entity; it is that codegen has no profile for any of
+these layers at all. Once the profiles exist, every entity gets them
+automatically on regeneration.
+
+This capture will be split into separate stories (one per layer) with
+per-component tasks when work begins. Entities known to need coverage
+include at least: =contact_type=, =purpose_type=, =business_centre=,
+and the three CRM topology entities (=crm_topology_config=,
+=crm_driver_pair=, =crm_enabled_derived_pair=).
+
+* Why
+
+Every entity commissioned since the codegen migration ships with a gap
+in its presentation layers. Filing per-entity captures keeps individual
+entities from being forgotten, but the real fix is building the codegen
+profiles. Until they exist, every newly-commissioned entity
+accumulates the same gap, and the per-entity capture list grows
+unboundedly.
+
+* References
+
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — the gap protocol that
+  documents which layers each entity is missing.
+
+* See also
+
+-

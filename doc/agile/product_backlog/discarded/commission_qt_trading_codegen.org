@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: F6F4916C-554B-47C0-8134-20D90DDD425E
+:ID: 6DE63EF5-6A48-4339-950F-AB23DD677657
 :END:
-#+title: Story: Commission ores.qt.synthetic into codegen
-#+description: Inventory the entities in ores.qt.synthetic, check the state of their models and codegen, and generate full stack for all entities in this component, including migrating their history dialogs to the generic HistoryDialog.
+#+title: Story: Commission ores.qt.trading into codegen
+#+description: Inventory the entities in ores.qt.trading, check the state of their models and codegen, and generate full stack for all entities in this component, including migrating their history dialogs to the generic HistoryDialog.
 #+type: story
 #+level: s2
-#+filetags: :qt:synthetic:codegen:commissioning:product_backlog:inbox:
+#+filetags: :qt:trading:codegen:commissioning:product_backlog:discarded:
 #+created: 2026-07-21
 #+updated: 2026-07-21
 #+environment:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Take an inventory of every entity exposed by ores.qt.synthetic: which have
+Take an inventory of every entity exposed by ores.qt.trading: which have
 a codegen model, which are still hand-rolled, and which have a
 hand-rolled *HistoryDialog. For entities with no model yet, author
 one. Then run full-stack codegen for every entity in the component
@@ -23,10 +23,10 @@ and reconcile any drift, so each entity's history view lands on the
 generic HistoryDialog widget rather than a per-entity hand-rolled
 dialog.
 
-The "Migrate ores.qt.synthetic's history dialogs to the generic
+The "Migrate ores.qt.trading's history dialogs to the generic
 HistoryDialog" task originally lived under [[id:DBDFF0B1-E358-4300-B361-644A89FBD169][Migrate ores.qt.refdata onto
 the generic HistoryDialog]], but that story was narrowed to
-ores.qt.refdata only. This story tracks ores.qt.synthetic's commissioning
+ores.qt.refdata only. This story tracks ores.qt.trading's commissioning
 as its own piece of work, and directly unblocks [[id:A2D386CD-BA30-4212-A6E1-83EAFF4E8565][Retire per-entity
 history dialogs: Phase C rollout]], which needs every ores.qt
 component migrated before it can proceed.
@@ -44,7 +44,7 @@ component migrated before it can proceed.
 
 * Acceptance
 
-- Every entity in ores.qt.synthetic has a codegen .org model.
+- Every entity in ores.qt.trading has a codegen .org model.
 - Full-stack codegen has been run and reconciled for every entity in
   the component.
 - Every entity's history view uses the generic HistoryDialog widget,

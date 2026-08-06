@@ -59,6 +59,10 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:DAA69C0E-E1E6-4441-954A-037ACB494F04][Review whether ores.cli/ores.shell's host.cpp divergence is load-bearing or historical]] | DONE | 2026-08-05 | 2026-08-05 | ores.cli and ores.shell are the only two tools left out of the shared run_host_async helper -- review in detail whether their differences are genuinely necessary or just how the tools happened to be written. |
 | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] | BACKLOG | | | Pulled from product backlog: mop up seven self-contained compass DX improvements -- branch pruning, systemd scope info, named .env files, compass show full-content flag, blocked dependency tree in compass where, per-environment fleet status, compass help command. |
 | [[id:6481A516-8BBB-4BFC-82A0-1F4A69438FD6][Extract a sync sibling of run_host_async for ores.cli/ores.shell]] | DONE | 2026-08-05 | 2026-08-05 | Follow-on from the host.cpp divergence review: ores.cli and ores.shell's host.cpp bodies share ~70% structure with each other despite being correctly excluded from the async run_host_async helper; extract a sync sibling parameterised by a construction callable. |
+| [[id:D9625B20-E2EB-486F-BE61-61936FCA6417][Backlog deep refinement]] | STARTED | 2026-08-05 | | Deep audit of all product-backlog captures: inbox/next/deferred verified against the codebase, duplicates merged, buckets re-scored against sprint 25 mission. First run. |
+| [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] | BACKLOG | | | Fix four codegen template bugs: history mapper provenance fields, compound-key is_uuid gating, pagination footgun, junction template follow-ups. |
+| [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] | BACKLOG | | | Close two systemic codegen gaps: RLS policy facet and history provider registrar codegen. |
+| [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] | BACKLOG | | | Three IR curve follow-ups: expand stochastic process types, fix seed data/combo gaps, investigate tenant_type drift. |
 
 ** Hotfixes
 

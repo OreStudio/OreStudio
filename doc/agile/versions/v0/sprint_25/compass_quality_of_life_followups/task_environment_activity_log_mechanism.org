@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/environment-activity-log-mechanism
-#+pr: 1869
+#+pr: 1878
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -110,6 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1878][#1878]] | [agile] Deep backlog refinement 1 + promote 9 captures into 3 sprint 25 stories |
 | [[https://github.com/OreStudio/OreStudio/pull/1869][#1869]] | [compass] Add environment activity log: manual post-pull setup steps |
 
 * Review

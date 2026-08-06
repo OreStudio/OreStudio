@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :compass:orient:ux:compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-where-blocked-dependency-tree
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,9 +39,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Blocked dependency tree was already partially implemented in =compass where=
+(commit =852dad588=) but only covered BLOCKED tasks. Extended the
+collection loop to also include BLOCKED stories (=doctype in ("story", "task")=)
+and renamed the variable from =blocked_tasks= to =blocked_items= to
+reflect its broader scope. Single-line change in =cmd_where=.
 
 * Notes
 
@@ -69,3 +71,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=compass where= blocked dependency tree now includes both BLOCKED stories
+and tasks (was tasks-only). The section walks =#+blocked_on:= chains up
+to 8 hops with cycle detection and renders indented trees with state
+indicators. Single-line change: =d.doctype == "task"= → =d.doctype in ("story", "task")=.

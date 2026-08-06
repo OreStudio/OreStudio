@@ -257,3 +257,15 @@ build-lock contention from other environments' worktrees):
 17/59 respectively), =ores.refdata.core.tests= (178/3247, unmodified
 by this task but sharing the build), and =ores.analytics.quant.tests=
 (230/12013). All green.
+
+Also ran =compass build rat= (full-repo suite) once, per the
+=pr-raise= skill's actual instructions. It failed on
+=ores.iam.core.tests= (untouched by this PR) with a hard test-process
+error, not an assertion failure -- the surrounding log showed several
+queries taking 50-160s where they normally run sub-second (heavy DB
+contention from other environments' concurrent builds/tests sharing
+this host). Re-ran =ores.iam.core.tests= alone immediately after: 91
+cases/184 assertions, all green, every case sub-second. Treated as
+environmental host contention, not a regression -- this task's own
+footprint (=ores.marketdata=/=ores.analytics.quant=, plus read-only
+use of =ores.refdata=) is fully verified green.

@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
 #+branch: feature/official-curve-republish
-#+pr:
+#+pr: 1879
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -211,7 +211,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1879][#1879]] | [marketdata] IR curve bootstrap republish: engine invocation + on-demand trigger |
 
 * Review
 

@@ -61,18 +61,6 @@ namespace ores::trading::messaging {
 
 // ---- Typed FX instrument protocol ----
 
-struct save_fx_vanilla_option_instrument_request {
-    using response_type = struct save_fx_vanilla_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_vanilla_option_instruments.save";
-    ores::trading::domain::fx_vanilla_option_instrument data;
-};
-
-struct save_fx_vanilla_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
 struct save_fx_barrier_option_instrument_request {
     using response_type = struct save_fx_barrier_option_instrument_response;
     static constexpr std::string_view nats_subject =

@@ -27,6 +27,7 @@ set(files
     "messaging/equity_variance_swap_instrument_event_registrar.cpp"
     "messaging/fx_accumulator_instrument_event_registrar.cpp"
     "messaging/fx_forward_instrument_event_registrar.cpp"
+    "messaging/fx_vanilla_option_instrument_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -43,5 +44,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"
 )

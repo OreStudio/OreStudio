@@ -156,13 +156,14 @@ void ensure_output_series_stamped(ores::database::context ctx,
 
 } // namespace
 
-void curve_republish_service::republish(context ctx,
-                                        const boost::uuids::uuid& bootstrap_config_id,
-                                        std::chrono::system_clock::time_point as_of) {
+std::vector<ores::analytics::quant::service::bootstrapped_point>
+curve_republish_service::compute(context ctx,
+                                 const boost::uuids::uuid& bootstrap_config_id,
+                                 std::chrono::system_clock::time_point as_of) {
     namespace quant = ores::analytics::quant::service;
 
-    BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
-                              << " as of " << as_of;
+    BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
+                              << as_of;
 
     const auto config = read_config(ctx, bootstrap_config_id);
     const auto pillars = read_pillars(ctx, bootstrap_config_id);
@@ -183,12 +184,22 @@ void curve_republish_service::republish(context ctx,
         discount_curve = read_discount_curve(ctx, discount_config.output_series_id, as_of, refctx);
     }
 
-    const auto bootstrapped =
-        quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
-                                                 bootstrap_pillars,
-                                                 day_count_convention,
-                                                 interpolation_method,
-                                                 is_projection ? &discount_curve : nullptr);
+    return quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
+                                                    bootstrap_pillars,
+                                                    day_count_convention,
+                                                    interpolation_method,
+                                                    is_projection ? &discount_curve : nullptr);
+}
+
+void curve_republish_service::republish(context ctx,
+                                        const boost::uuids::uuid& bootstrap_config_id,
+                                        std::chrono::system_clock::time_point as_of) {
+    BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
+                              << " as of " << as_of;
+
+    const auto bootstrapped = compute(ctx, bootstrap_config_id, as_of);
+    const auto config = read_config(ctx, bootstrap_config_id);
+    const bool is_projection = config.curve_family_role == "PROJECTION";
 
     ensure_output_series_stamped(ctx, config);
 

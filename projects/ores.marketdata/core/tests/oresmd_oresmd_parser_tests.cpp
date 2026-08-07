@@ -183,6 +183,52 @@ TEST_CASE("round_trip_commodity", tags) {
 }
 
 /*
+ * Round-trip tests for new IR quote types (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+TEST_CASE("round_trip_ir_mm_rate", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_cc_basis_swap_no_index", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_mm_future_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_oi_future_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+/*
  * Invalid cases: a field that belongs to a different asset class must be rejected,
  * not silently ignored -- see id:C3E053CA-0D4B-480B-9119-E11530160EC1's
  * per-asset-class conditionality.

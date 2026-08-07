@@ -49,6 +49,7 @@ struct query_params final {
     std::optional<std::string> role;
     std::optional<std::string> type;
     std::optional<std::string> metric;
+    std::optional<std::string> quote;
     std::optional<std::string> point;
 
     static query_params from(const boost::urls::url_view& u) {
@@ -66,6 +67,8 @@ struct query_params final {
                 qp.type = p.value;
             else if (p.key == "metric")
                 qp.metric = p.value;
+            else if (p.key == "quote")
+                qp.quote = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
             else
@@ -112,6 +115,7 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "tenor", qp.tenor);
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
+    reject_if_present("fx", "quote", qp.quote);
     reject_if_present("fx", "point", qp.point);
 }
 
@@ -120,6 +124,9 @@ void validate_ir(const query_params& qp) {
     if (qp.metric && parse_type(qp) != instrument_type::quote)
         BOOST_THROW_EXCEPTION(
             oresmd_exception("oresmd://ir/... 'metric' is only meaningful when type=quote."));
+    if (qp.quote && parse_type(qp) != instrument_type::quote)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://ir/... 'quote' is only meaningful when type=quote."));
 }
 
 void validate_no_ir_only_keys(std::string_view asset_class, const query_params& qp) {
@@ -127,6 +134,7 @@ void validate_no_ir_only_keys(std::string_view asset_class, const query_params& 
     reject_if_present(asset_class, "tenor", qp.tenor);
     reject_if_present(asset_class, "role", qp.role);
     reject_if_present(asset_class, "metric", qp.metric);
+    reject_if_present(asset_class, "quote", qp.quote);
 }
 
 void validate_equity(const query_params& qp) {
@@ -167,6 +175,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.role = parse_enum<curve_role>("role", *qp.role);
     if (qp.metric)
         id.metric = parse_enum<metric>("metric", *qp.metric);
+    if (qp.quote)
+        id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
     if (qp.point)
         id.point = to_lower(*qp.point);
     if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
@@ -276,6 +286,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 append_enum_if(u, "role", id.role);
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "metric", id.metric);
+                append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
             } else if constexpr (std::is_same_v<T, equity_market_data_identifier>) {
                 u.set_host("equity");

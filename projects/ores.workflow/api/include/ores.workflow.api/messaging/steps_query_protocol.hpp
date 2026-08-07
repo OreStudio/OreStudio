@@ -87,6 +87,9 @@ struct get_step_result_response {
      * Non-empty when the step produced user-visible diagnostics.
      */
     std::vector<step_log_entry> log;
+
+    bool success = false;
+    std::string message;
 };
 
 } // namespace ores::workflow::messaging

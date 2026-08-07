@@ -37,6 +37,8 @@ struct list_sessions_request {
 struct list_sessions_response {
     std::vector<ores::iam::domain::session> sessions;
     int total_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct get_active_sessions_request {
@@ -46,6 +48,8 @@ struct get_active_sessions_request {
 
 struct get_active_sessions_response {
     std::vector<ores::iam::domain::session> sessions;
+    bool success = false;
+    std::string message;
 };
 
 struct get_session_statistics_request {
@@ -56,6 +60,8 @@ struct get_session_statistics_request {
 
 struct get_session_statistics_response {
     std::vector<ores::iam::domain::session_statistics> statistics;
+    bool success = false;
+    std::string message;
 };
 
 }

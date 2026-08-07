@@ -523,6 +523,10 @@ void accounts_commands::process_list_sessions(std::ostream& out,
         out, session, "iam.v1.sessions.list", req);
     if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
@@ -572,6 +576,10 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
         out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
     if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
@@ -618,6 +626,10 @@ void accounts_commands::process_session_stats(std::ostream& out, nats_client& se
         out, session, "iam.v1.sessions.statistics", req);
     if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& stats = result->statistics;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << stats.size() << " daily statistics.";

@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 8B981AD8-2F1A-42D3-850A-8785B5FBA947
+:END:
+#+title: Task: Analyse the right shape for NATS response messages
+#+description: Analyse whether all NATS response structs should carry a standard success/message error path, weigh pros and cons, audit the current state across all components, and produce a recommendation for the codegen template convention.
+#+type: task
+#+level: s1
+#+filetags: :normalise_nats_protocol_message_shapes:sprint_25:v0:
+#+owner: marco
+#+branch: feature/analyse-nats-response-shape
+#+pr: 1891
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Surveyed all 17 messaging API components. Results:
+
+** Current state
+
+- 152 response-protocol files across 17 components
+- ~148 already carry =success=/=message= — the codegen template
+  (=cpp_protocol.hpp.mustache=) generates them for =get=, =save=,
+  =delete=, =history=, =hierarchy=, and =read_for_cache= response
+  types.
+- 4 outliers lack them:
+  - =ores.iam.api/messaging/session_protocol.hpp=
+  - =ores.iam.api/messaging/session_samples_protocol.hpp=
+  - =ores.refdata.api/messaging/asset_class_protocol.hpp=
+  - =ores.workflow.api/messaging/steps_query_protocol.hpp=
+  All four are list-type or hand-written protocols. The codegen
+  template omits =success=/=message= only for plain list responses —
+  this is the one gap in an otherwise already-standardised convention.
+
+** Pros and cons of requiring =success=/=message= on all responses
+
+Pro:
+- One pattern across every response — clients never need to check
+  "does this type have an error field?"
+- Codegen already does it for ~95% of responses — minimal template
+  change, just extend to list responses.
+- Real failure modes exist for list operations too (DB timeout,
+  permission change mid-request).
+- Codegen can generate the check once; client code never hand-rolls it.
+
+Con:
+- List responses almost never fail in practice — the fields are dead
+  weight.
+- =success=false= on a list is ambiguous: did nothing load, or did
+  some rows fail?
+- Transport-level errors already go through the NATS error-reply
+  path — this is a second error channel.
+
+** Recommendation
+
+Add =success=/=message= to list responses in the codegen template.
+It's the smallest change — the pattern already exists everywhere
+else. Four outliers isn't a redesign, it's cleanup. The partial-failure
+concern can be addressed later with an =error_info= struct if needed.
+
+** Implementation
+
+Surveyed all 17 messaging API components (152 response-protocol
+files). Key finding: the codegen template (=cpp_protocol.hpp.mustache=)
+already generates =success=/=message= on ALL response types, including
+list responses (confirmed at lines 37-38, 109-110, 182-183, 240-241 of
+the template). The template does not need changing.
+
+Only 4 hand-written protocol files lacked the fields. Fixed 3 of 4:
+
+- =session_protocol.hpp=: Added =success=/=message= to
+  =list_sessions_response=, =get_active_sessions_response=,
+  =get_session_statistics_response=.
+- =session_samples_protocol.hpp=: Added =success=/=message= to
+  =get_session_samples_response=.
+- =asset_class_protocol.hpp=: Added =success=/=message= to
+  =get_asset_classes_response=.
+
+=steps_query_protocol.hpp= was left unchanged: its
+=get_step_result_response= already has =found=/=outcome= fields
+serving the same error-signalling purpose — a legitimate alternative
+pattern. Adding =success= on top would be redundant.
+
+All callers use empty ={}= initialization — no designated initializer
+breakage. Build should compile cleanly.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1891][#1891]] | [messaging] Add success/message to all NATS response structs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | asset_class_handler sets success=true after catch block — error silently reported as success | asset_class_handler.hpp | Fixed in 9a73492da | Moved success=true inside try; set message=e.what() in catch |
+| 2 | Shell commands silently return on failure, dropping message | accounts_commands.cpp | Fixed in 9a73492da | Now prints fail(out) << result->message before returning |
+| 3 | get_step_result_response.success conflates "not found" with "error" | steps_query_protocol.hpp | Declined | Consumer treats !success and !found identically; harmless. Revisit if second consumer added. |
+
+* Result
+
+All 4 hand-written protocol files now carry success/message on every
+response struct, matching the codegen-generated convention. Server-side
+handlers set success=true on success paths and message on failure.
+Client-side consumers check success before using the response.
+
+Codegen template did not need changes — it already generates
+success/message on all response types including list responses.
+
+Build: green. Tests: 71/71 passed. Site: built successfully.

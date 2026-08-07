@@ -69,6 +69,7 @@ public:
         auto req = decode<get_asset_classes_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(asset_class_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            resp.message = "Failed to decode request";
             reply(nats_, msg, resp);
             return;
         }
@@ -78,10 +79,12 @@ public:
                                                         static_cast<std::uint32_t>(req->limit));
             resp.total_available_count =
                 static_cast<int>(svc.count_asset_classes(req->coding_scheme_code));
+            resp.success = true;
             BOOST_LOG_SEV(asset_class_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
         }
         reply(nats_, msg, resp);
     }

@@ -42,6 +42,8 @@ struct get_session_samples_request {
 
 struct get_session_samples_response {
     std::vector<session_sample_dto> samples;
+    bool success = false;
+    std::string message;
 };
 
 }

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 5E934799-3E38-4C36-8BE6-7CDCC64DD958
+:END:
+#+title: Story: Normalise NATS protocol message shapes and inventory hand-written drift
+#+description: Audit request/response structs for consistent shape (success/message fields per codegen convention) and inventory protocol messages hand-written instead of generated via ores.codegen's cpp_protocol template.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Run a systematic pass over every =ores.*.api= messaging protocol header
+and flag request/response structs that were hand-written rather than
+generated via =ores.codegen='s =cpp_protocol= template (=projects/ores.codegen/library/templates/cpp_protocol.hpp.mustache= /
+=ores.cpp.protocol.protocol_header.org=). The codegen norm for a plain
+=list_*_response= is no =success=/=message= fields at all (e.g.
+=ores.iam.api='s =list_roles_response=, =list_permissions_response=,
+and =ores.compute.api='s =list_apps_response=, =list_app_versions_response=).
+Any struct that departs from this -- adds =success=/=message=, renames
+fields, or otherwise doesn't match what codegen would produce -- is
+drift and needs a decision: regenerate it properly, or document why
+the exception is deliberate (e.g. a request that can genuinely fail
+server-side beyond decode/auth errors, distinct from the common
+error-reply path).
+
+Concretely spotted so far: =ores.compute.api='s
+=list_platforms_response= (=projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp=)
+carries hand-added =success=/=message= fields, unlike its sibling list
+responses in the same component and unlike the equivalent structs in
+=ores.iam.api=. That's the one confirmed outlier; the inventory should
+find the rest across all components (compute, iam, refdata, marketdata,
+dq, scheduler, reporting, workspace, assets, trading, ...).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-07                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8B981AD8-2F1A-42D3-850A-8785B5FBA947][Analyse the right shape for NATS response messages]] | DONE | 2026-08-07 | 2026-08-07 | Analyse whether all NATS response structs should carry a standard success/message error path, weigh pros and cons, audit the current state across all components, and produce a recommendation for the codegen template convention. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-31 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Run a systematic pass over every =ores.*.api= messaging protocol header
+and flag request/response structs that were hand-written rather than
+generated via =ores.codegen='s =cpp_protocol= template (=projects/ores.codegen/library/templates/cpp_protocol.hpp.mustache= /
+=ores.cpp.protocol.protocol_header.org=). The codegen norm for a plain
+=list_*_response= is no =success=/=message= fields at all (e.g.
+=ores.iam.api='s =list_roles_response=, =list_permissions_response=,
+and =ores.compute.api='s =list_apps_response=, =list_app_versions_response=).
+Any struct that departs from this -- adds =success=/=message=, renames
+fields, or otherwise doesn't match what codegen would produce -- is
+drift and needs a decision: regenerate it properly, or document why
+the exception is deliberate (e.g. a request that can genuinely fail
+server-side beyond decode/auth errors, distinct from the common
+error-reply path).
+
+Concretely spotted so far: =ores.compute.api='s
+=list_platforms_response= (=projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp=)
+carries hand-added =success=/=message= fields, unlike its sibling list
+responses in the same component and unlike the equivalent structs in
+=ores.iam.api=. That's the one confirmed outlier; the inventory should
+find the rest across all components (compute, iam, refdata, marketdata,
+dq, scheduler, reporting, workspace, assets, trading, ...).
+
+** Why
+
+Discovered while implementing the ACME compute package publishing flow
+(task 0F768B80-184A-44C7-B725-A594A873AB4A): the shell command and the
+new standalone Qt "Upload Engines" dialog both had to special-case
+whether a given =list_*_response= carries a =success= field or not,
+which is exactly the kind of per-message inconsistency codegen exists
+to prevent. Left unaddressed, every new caller has to rediscover the
+same divergence by reading each protocol header instead of trusting a
+single convention.
+
+** References
+
+- =projects/ores.codegen/library/templates/cpp_protocol.hpp.mustache=
+- =projects/ores.compute/api/include/ores.compute.api/messaging/platform_protocol.hpp=
+- =projects/ores.compute/api/include/ores.compute.api/messaging/app_protocol.hpp=
+- =projects/ores.compute/api/include/ores.compute.api/messaging/app_version_protocol.hpp=
+- =projects/ores.iam/api/include/ores.iam.api/messaging/authorization_protocol.hpp=
+
+** See also
+
+- [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Task: Design and build ACME compute package publishing (client lib, shell, Qt)]]

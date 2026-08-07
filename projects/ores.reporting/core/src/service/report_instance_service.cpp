@@ -18,7 +18,11 @@
  *
  */
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::reporting::service {
 
@@ -27,14 +31,28 @@ using namespace ores::logging;
 report_instance_service::report_instance_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::report_instance> report_instance_service::list_instances() {
+std::vector<domain::report_instance> report_instance_service::list_instances(std::uint32_t offset,
+                                                                             std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all report instances";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t report_instance_service::count_instances() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total report instances count";
+    return repo_.get_total_instance_count(ctx_);
+}
+
+
+std::optional<domain::report_instance>
+report_instance_service::get_instance_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting report instance at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::report_instance>
-report_instance_service::find_instance(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding report instance: " << id;
+report_instance_service::get_instance(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting report instance. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -44,20 +62,38 @@ report_instance_service::find_instance(const std::string& id) {
 void report_instance_service::save_instance(const domain::report_instance& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Instance id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report instance: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved report instance: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving report instance. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved report instance. " << "id: " << v.id;
 }
 
-void report_instance_service::remove_instance(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report instance: " << id;
+void report_instance_service::save_instances(
+    const std::vector<domain::report_instance>& instances) {
+    for (const auto& e : instances)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Report Instance id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " report instances";
+    auto ts = instances;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void report_instance_service::delete_instance(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed report instance: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed report instance. " << "id: " << id;
+}
+
+void report_instance_service::delete_instances(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::report_instance>
 report_instance_service::get_instance_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report instance: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for report instance. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

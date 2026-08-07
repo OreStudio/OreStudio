@@ -17,11 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_HPP
-#define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_HPP
+#ifndef ORES_REPORTING_API_DOMAIN_CONCURRENCY_POLICY_HPP
+#define ORES_REPORTING_API_DOMAIN_CONCURRENCY_POLICY_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::reporting::domain {
 
@@ -39,6 +41,11 @@ struct concurrency_policy final {
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique concurrency policy code.
@@ -60,7 +67,7 @@ struct concurrency_policy final {
     /**
      * @brief Order for UI display purposes.
      */
-    int display_order;
+    int display_order = 0;
 
     /**
      * @brief Username of the person who last modified this concurrency policy.
@@ -89,6 +96,16 @@ struct concurrency_policy final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for concurrency_policy, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const concurrency_policy&) {
+    return "ores.reporting.concurrency_policy";
+}
 
 }
 

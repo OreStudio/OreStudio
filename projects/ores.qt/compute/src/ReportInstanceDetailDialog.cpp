@@ -212,7 +212,7 @@ void ReportInstanceDetailDialog::onSaveClicked() {
         }
 
         reporting::messaging::save_report_instance_request request;
-        request.instance = instance;
+        request.data = instance;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

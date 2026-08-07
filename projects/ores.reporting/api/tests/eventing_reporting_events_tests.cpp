@@ -101,12 +101,12 @@ TEST_CASE("create_report_definition_changed_event", tags) {
 
     report_definition_changed_event sut;
     sut.timestamp = std::chrono::system_clock::now();
-    sut.ids = {"uuid-def-1", "uuid-def-2"};
+    sut.definition_ids = {"uuid-def-1", "uuid-def-2"};
     sut.tenant_id = "tenant1";
 
-    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: " << sut.ids.size();
+    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: " << sut.definition_ids.size();
 
-    CHECK(sut.ids.size() == 2);
+    CHECK(sut.definition_ids.size() == 2);
     CHECK(sut.tenant_id == "tenant1");
 }
 
@@ -115,12 +115,12 @@ TEST_CASE("create_report_instance_changed_event", tags) {
 
     report_instance_changed_event sut;
     sut.timestamp = std::chrono::system_clock::now();
-    sut.ids = {"uuid-inst-1"};
+    sut.instance_ids = {"uuid-inst-1"};
     sut.tenant_id = "tenant1";
 
-    BOOST_LOG_SEV(lg, info) << "Report instance changed event - ids: " << sut.ids.size();
+    BOOST_LOG_SEV(lg, info) << "Report instance changed event - ids: " << sut.instance_ids.size();
 
-    CHECK(sut.ids.size() == 1);
+    CHECK(sut.instance_ids.size() == 1);
     CHECK(!sut.tenant_id.empty());
 }
 
@@ -148,12 +148,12 @@ TEST_CASE("event_bus_report_definition_changed_subscription", tags) {
     auto sub = bus.subscribe<report_definition_changed_event>(
         [&](const report_definition_changed_event& e) {
             event_received = true;
-            received_ids = e.ids;
+            received_ids = e.definition_ids;
         });
 
     report_definition_changed_event event;
     event.timestamp = std::chrono::system_clock::now();
-    event.ids = {"uuid-abc", "uuid-def"};
+    event.definition_ids = {"uuid-abc", "uuid-def"};
     event.tenant_id = "tenant1";
 
     BOOST_LOG_SEV(lg, info) << "Publishing report_definition_changed_event";
@@ -183,7 +183,7 @@ TEST_CASE("event_bus_reporting_events_isolation", tags) {
 
     report_definition_changed_event event;
     event.timestamp = std::chrono::system_clock::now();
-    event.ids = {"uuid-only-def"};
+    event.definition_ids = {"uuid-only-def"};
     event.tenant_id = "system";
 
     BOOST_LOG_SEV(lg, info) << "Publishing only report_definition_changed_event";

@@ -18,32 +18,36 @@
  *
  */
 #include "ores.reporting.api/domain/report_instance_table.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::reporting::domain {
 
 namespace {
-
-std::string format_timepoint(const std::optional<std::chrono::system_clock::time_point>& tp) {
-    if (!tp)
-        return "N/A";
-    return ores::platform::time::datetime::to_iso8601_utc(*tp);
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
 }
-
 }
 
 std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Name" << "Started At" << "Completed At" << "Version"
-          << "Modified By" << fort::endr;
+    table << fort::header << "Name" << "Definition" << "Trigger Run" << "Output" << "Started At"
+          << "Completed" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ri : v) {
-        table << boost::uuids::to_string(ri.id) << ri.name << format_timepoint(ri.started_at)
-              << format_timepoint(ri.completed_at) << ri.version << ri.modified_by << fort::endr;
+        table << ri.name << boost::uuids::to_string(ri.definition_id) << ri.trigger_run_id
+              << ri.output_message << opt_str(ri.started_at) << opt_str(ri.completed_at)
+              << ri.modified_by << ri.version << fort::endr;
     }
     return table.to_string();
 }

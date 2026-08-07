@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_ENTITY_HPP
-#define ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_ENTITY_HPP
+#ifndef ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_ENTITY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -38,10 +38,11 @@ struct concurrency_policy_entity {
     constexpr static const char* tablename = "ores_reporting_concurrency_policies_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
+    std::string tenant_id;
     int version = 0;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order = 0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

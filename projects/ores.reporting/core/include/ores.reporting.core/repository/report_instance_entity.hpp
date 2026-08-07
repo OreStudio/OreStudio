@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
-#define ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
+#ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -39,8 +39,11 @@ struct report_instance_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
+    std::string workspace_id;
     int version = 0;
+
     std::string name;
+
     std::string description;
     std::string party_id;
     std::string definition_id;

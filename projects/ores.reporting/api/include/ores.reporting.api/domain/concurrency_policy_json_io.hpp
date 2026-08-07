@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
-#define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
+#ifndef ORES_REPORTING_API_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
+#define ORES_REPORTING_API_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
 
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.api/export.hpp"

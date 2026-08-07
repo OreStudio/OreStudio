@@ -25,22 +25,21 @@ for a report definition that already has a running instance.
 :product:       ores
 :component:     reporting
 :has_tenant_id: true
+:profile:      simple-lookup
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique concurrency policy code.
 
 Examples: 'skip', 'queue', 'fail'.
-
-* Natural keys
-
-* Columns
 
 ** name
 :PROPERTIES:

@@ -17,16 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_MESSAGING_REPORT_TYPE_HANDLER_HPP
-#define ORES_REPORTING_MESSAGING_REPORT_TYPE_HANDLER_HPP
+#ifndef ORES_REPORTING_CORE_MESSAGING_REPORT_TYPE_HANDLER_HPP
+#define ORES_REPORTING_CORE_MESSAGING_REPORT_TYPE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
-#include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -45,11 +43,14 @@ inline auto& report_type_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_REPORTING_CORE_EXPORT report_type_handler {
+/**
+ * @brief NATS message handler for report type operations.
+ */
+class report_type_handler {
 public:
     report_type_handler(ores::nats::service::client& nats,
                         ores::database::context ctx,
@@ -60,98 +61,121 @@ public:
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        // Report types are system-level reference data seeded in the system
-        // tenant; query there rather than the caller's tenant.
-        const auto sys_ctx =
-            ores::database::service::tenant_context::with_system_tenant(*ctx_expected);
-        service::report_type_service svc(sys_ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::report_type_service svc(req_ctx);
         get_report_types_response resp;
-        try {
-            resp.types = svc.list_types();
-            resp.total_available_count = static_cast<int>(resp.types.size());
-        } catch (...) {
+        if (auto req = decode<get_report_types_request>(msg)) {
+            try {
+                resp.types = svc.list_types(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_types());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(report_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
-        reply(nats_, msg, resp);
         BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_types:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::report_type_service svc(req_ctx);
         if (auto req = decode<save_report_type_request>(msg)) {
-            service::report_type_service svc(ctx);
             try {
-                stamp(req->type, ctx);
-                svc.save_type(req->type);
+                svc.save_type(req->data);
+                BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, save_report_type_response{.success = true});
             } catch (const std::exception& e) {
+                BOOST_LOG_SEV(report_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
                 reply(nats_, msg, save_report_type_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (auto req = decode<delete_report_type_request>(msg)) {
-            service::report_type_service svc(ctx);
-            try {
-                for (const auto& code : req->codes)
-                    svc.remove_type(code);
-                reply(nats_, msg, delete_report_type_response{.success = true});
-            } catch (const std::exception& e) {
-                reply(
-                    nats_, msg, delete_report_type_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-        BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
+        const auto& req_ctx = *req_ctx_expected;
+        service::report_type_service svc(req_ctx);
         if (auto req = decode<get_report_type_history_request>(msg)) {
-            service::report_type_service svc(ctx);
             try {
                 auto hist = svc.get_type_history(req->code);
+                BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(
                     nats_,
                     msg,
-                    get_report_type_history_response{.success = true, .history = std::move(hist)});
+                    get_report_type_history_response{.history = std::move(hist), .success = true});
             } catch (const std::exception& e) {
+                BOOST_LOG_SEV(report_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
                 reply(nats_,
                       msg,
                       get_report_type_history_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_types:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::report_type_service svc(req_ctx);
+        if (auto req = decode<delete_report_type_request>(msg)) {
+            try {
+                svc.delete_types(req->codes);
+                BOOST_LOG_SEV(report_type_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_report_type_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(report_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, delete_report_type_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

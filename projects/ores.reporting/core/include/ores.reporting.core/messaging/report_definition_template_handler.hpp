@@ -26,7 +26,6 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -34,6 +33,19 @@
 #include <optional>
 
 namespace ores::reporting::messaging {
+
+struct get_report_definition_templates_request {
+    using response_type = struct get_report_definition_templates_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-definition-templates.list";
+    std::string bundle_code = "risk_management";
+};
+
+struct get_report_definition_templates_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::messaging::dq_report_definition_template> templates;
+};
 
 namespace {
 inline auto& report_definition_template_handler_lg() {
@@ -65,10 +77,10 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        get_report_definition_templates_response resp;
+        ores::dq::messaging::list_dq_report_definition_templates_response resp;
         try {
             std::string bundle_code = "risk_management";
-            if (auto req = decode<get_report_definition_templates_request>(msg))
+            if (auto req = decode<ores::dq::messaging::list_dq_report_definition_templates_request>(msg))
                 bundle_code = req->bundle_code;
 
             ores::dq::messaging::list_dq_report_definition_templates_request dq_req;
@@ -86,16 +98,7 @@ public:
                 reply(nats_, msg, resp);
                 return;
             }
-            for (const auto& t : dq_resp->templates) {
-                ores::reporting::domain::report_definition_template tmpl;
-                tmpl.name = t.name;
-                tmpl.description = t.description;
-                tmpl.report_type = t.report_type;
-                tmpl.schedule_expression = t.schedule_expression;
-                tmpl.concurrency_policy = t.concurrency_policy;
-                tmpl.display_order = t.display_order;
-                resp.templates.push_back(std::move(tmpl));
-            }
+            resp.templates = dq_resp->templates;
             resp.success = true;
         } catch (const std::exception& e) {
             resp.success = false;

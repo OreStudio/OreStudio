@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
-#define ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
+#ifndef ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,16 +50,69 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes concurrency policies to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::concurrency_policy& v);
     void write(context ctx, const std::vector<domain::concurrency_policy>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest concurrency policies, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::concurrency_policy> read_latest(context ctx);
     std::vector<domain::concurrency_policy> read_latest(context ctx, const std::string& code);
+    /**@}*/
+
+    /**
+     * @brief Reads all concurrency policies, possibly filtered by primary key.
+     */
     std::vector<domain::concurrency_policy> read_all(context ctx, const std::string& code);
 
+    /**
+     * @brief Reads a single concurrency policy as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::concurrency_policy>
+    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+
+    /**
+     * @brief Reads latest concurrency policies with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::concurrency_policy>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active concurrency policies.
+     * @param ctx Repository context with database connection
+     * @return Total number of active concurrency policies
+     */
+    std::uint32_t get_total_policy_count(context ctx);
+
+    /**
+     * @brief Deletes a concurrency policy by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& code);
+
+    /**
+     * @brief Deletes concurrency policies by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

@@ -31,24 +31,26 @@ It is cleared when the definition is suspended or archived.
 :component:        reporting
 :has_tenant_id:    true
 :has_workspace_id: true
+:profile:           uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:        id
-:type:          uuid
-:cpp_type:      boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :uuid_check_fn: ores_utility_nil_uuid_fn()
 :END:
 
 UUID uniquely identifying this report definition.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Unique name for the report definition within a party.
@@ -56,8 +58,6 @@ Unique name for the report definition within a party.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_report"
 #+end_src
-
-* Columns
 
 ** party_id
 :PROPERTIES:

@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
-#define ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
+#ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
-#include "sqlgen/Timestamp.hpp"
 #include <optional>
 #include <ostream>
 #include <string>
 
 namespace ores::reporting::repository {
+
+using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
  * @brief Represents a report definition in the database.
@@ -39,7 +41,9 @@ struct report_definition_entity {
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+
     std::string name;
+
     std::string party_id;
     std::string description;
     std::string report_type;
@@ -51,8 +55,8 @@ struct report_definition_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const report_definition_entity& v);

@@ -24,6 +24,7 @@
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"

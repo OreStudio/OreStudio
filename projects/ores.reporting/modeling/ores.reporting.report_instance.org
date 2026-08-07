@@ -28,24 +28,26 @@ begins. completed_at is NULL while running or in a terminal-before-start state.
 :product:       ores
 :component:     reporting
 :has_tenant_id: true
+:profile:           fk-scoped-child
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:        id
-:type:          uuid
-:cpp_type:      boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :uuid_check_fn: ores_utility_nil_uuid_fn()
 :END:
 
 UUID uniquely identifying this report instance.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name copied from the report definition at creation time.
@@ -53,8 +55,6 @@ Human-readable name copied from the report definition at creation time.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_instance"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -79,7 +79,7 @@ std::string(faker::lorem::sentence())
 Party that owns this report instance (inherited from the definition).
 
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+ctx.generate_uuid()
 #+end_src
 
 ** definition_id
@@ -92,7 +92,7 @@ boost::uuids::random_generator()()
 The report definition that produced this instance.
 
 #+begin_src cpp :name generator
-boost::uuids::random_generator()()
+ctx.generate_uuid()
 #+end_src
 
 ** fsm_state_id
@@ -206,6 +206,19 @@ std::nullopt
 :PROPERTIES:
 :iterator_var: ri
 :END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| name            | Name        |
+| definition_id   | Definition  |
+| trigger_run_id  | Trigger Run |
+| output_message  | Output      |
+| started_at      | Started At  |
+| completed_at    | Completed   |
+| modified_by     | Modified By |
+| version         | Version     |
 
 ** Qt
 :PROPERTIES:

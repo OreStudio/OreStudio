@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
-#define ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
+#ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,30 +50,69 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes report definitions to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::report_definition& v);
     void write(context ctx, const std::vector<domain::report_definition>& v);
-
-    std::vector<domain::report_definition> read_latest(context ctx);
+    /**@}*/
 
     /**
-     * @brief List definitions visible from a workspace resolution chain.
-     *
-     * Iterates each workspace in the chain (most-specific first) and merges
-     * results with deduplication by name: the version from the earliest
-     * workspace in the chain wins (i.e. the most-specific override).
-     *
-     * @param ctx  Repository context (workspace_id set to the selected workspace).
-     * @param chain  Full resolution chain [selected, parent, ..., live].
+     * @brief Reads latest report definitions, possibly filtered by primary key.
      */
-    std::vector<domain::report_definition>
-    read_latest_with_resolution(context ctx, const std::vector<std::string>& chain);
-
+    /**@{*/
+    std::vector<domain::report_definition> read_latest(context ctx);
     std::vector<domain::report_definition> read_latest(context ctx, const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all report definitions, possibly filtered by primary key.
+     */
     std::vector<domain::report_definition> read_all(context ctx, const std::string& id);
 
+    /**
+     * @brief Reads a single report definition as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::report_definition>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest report definitions with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::report_definition>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active report definitions.
+     * @param ctx Repository context with database connection
+     * @return Total number of active report definitions
+     */
+    std::uint32_t get_total_definition_count(context ctx);
+
+    /**
+     * @brief Deletes a report definition by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes report definitions by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

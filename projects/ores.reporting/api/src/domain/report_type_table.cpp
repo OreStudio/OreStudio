@@ -23,6 +23,7 @@
 
 namespace ores::reporting::domain {
 
+
 std::string convert_to_table(const std::vector<report_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);

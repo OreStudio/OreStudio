@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::reporting::generators {
 
@@ -36,12 +37,13 @@ generate_synthetic_report_definition(utility::generation::generation_context& ct
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::report_definition r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "_report_" + std::to_string(++counter);
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.name = std::string(faker::word::noun()) + "_report" + "-" + std::to_string(idx);
     r.party_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
     r.report_type = std::string("risk");

@@ -25,22 +25,21 @@ configuration block is used when creating a report definition.
 :product:       ores
 :component:     reporting
 :has_tenant_id: true
+:profile:      simple-lookup
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique report type code.
 
 Examples: 'risk', 'grid'.
-
-* Natural keys
-
-* Columns
 
 ** name
 :PROPERTIES:

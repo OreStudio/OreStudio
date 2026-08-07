@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_MESSAGING_CONCURRENCY_POLICY_HANDLER_HPP
-#define ORES_REPORTING_MESSAGING_CONCURRENCY_POLICY_HANDLER_HPP
+#ifndef ORES_REPORTING_CORE_MESSAGING_CONCURRENCY_POLICY_HANDLER_HPP
+#define ORES_REPORTING_CORE_MESSAGING_CONCURRENCY_POLICY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
-#include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -44,11 +43,14 @@ inline auto& concurrency_policy_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_REPORTING_CORE_EXPORT concurrency_policy_handler {
+/**
+ * @brief NATS message handler for concurrency policy operations.
+ */
+class concurrency_policy_handler {
 public:
     concurrency_policy_handler(ores::nats::service::client& nats,
                                ores::database::context ctx,
@@ -59,38 +61,57 @@ public:
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::concurrency_policy_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::concurrency_policy_service svc(req_ctx);
         get_concurrency_policies_response resp;
-        try {
-            resp.policies = svc.list_policies();
-            resp.total_available_count = static_cast<int>(resp.policies.size());
-        } catch (...) {
+        if (auto req = decode<get_concurrency_policies_request>(msg)) {
+            try {
+                resp.policies = svc.list_policies(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_policies());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(concurrency_policy_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
-        reply(nats_, msg, resp);
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::concurrency_policies:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::concurrency_policy_service svc(req_ctx);
         if (auto req = decode<save_concurrency_policy_request>(msg)) {
-            service::concurrency_policy_service svc(ctx);
             try {
-                stamp(req->policy, ctx);
-                svc.save_policy(req->policy);
+                svc.save_policy(req->data);
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
+                    << "Completed " << msg.subject;
                 reply(nats_, msg, save_concurrency_policy_response{.success = true});
             } catch (const std::exception& e) {
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
                 reply(nats_,
                       msg,
                       save_concurrency_policy_response{.success = false, .message = e.what()});
@@ -98,53 +119,31 @@ public:
         } else {
             BOOST_LOG_SEV(concurrency_policy_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (auto req = decode<delete_concurrency_policy_request>(msg)) {
-            service::concurrency_policy_service svc(ctx);
-            try {
-                for (const auto& code : req->codes)
-                    svc.remove_policy(code);
-                reply(nats_, msg, delete_concurrency_policy_response{.success = true});
-            } catch (const std::exception& e) {
-                reply(nats_,
-                      msg,
-                      delete_concurrency_policy_response{.success = false, .message = e.what()});
-            }
-        } else {
-            BOOST_LOG_SEV(concurrency_policy_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-        BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
+        const auto& req_ctx = *req_ctx_expected;
+        service::concurrency_policy_service svc(req_ctx);
         if (auto req = decode<get_concurrency_policy_history_request>(msg)) {
-            service::concurrency_policy_service svc(ctx);
             try {
                 auto hist = svc.get_policy_history(req->code);
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
+                    << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_concurrency_policy_history_response{.success = true,
-                                                              .history = std::move(hist)});
+                      get_concurrency_policy_history_response{.history = std::move(hist),
+                                                              .success = true});
             } catch (const std::exception& e) {
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
                 reply(
                     nats_,
                     msg,
@@ -153,8 +152,41 @@ public:
         } else {
             BOOST_LOG_SEV(concurrency_policy_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
-        BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::concurrency_policies:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::concurrency_policy_service svc(req_ctx);
+        if (auto req = decode<delete_concurrency_policy_request>(msg)) {
+            try {
+                svc.delete_policies(req->codes);
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, delete_concurrency_policy_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(concurrency_policy_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_concurrency_policy_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(concurrency_policy_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

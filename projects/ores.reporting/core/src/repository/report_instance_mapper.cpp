@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/repository/report_instance_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -27,7 +28,6 @@ namespace ores::reporting::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
 domain::report_instance report_instance_mapper::map(const report_instance_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -35,8 +35,11 @@ domain::report_instance report_instance_mapper::map(const report_instance_entity
     domain::report_instance r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.name = v.name;
+
     r.description = v.description;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.definition_id = boost::lexical_cast<boost::uuids::uuid>(v.definition_id);
@@ -66,8 +69,11 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     report_instance_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.definition_id = boost::uuids::to_string(v.definition_id);
@@ -76,10 +82,11 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
                          std::nullopt;
     r.trigger_run_id = v.trigger_run_id;
     r.output_message = v.output_message;
-    r.started_at = v.started_at.has_value() ? std::optional(datetime::to_db_string(*v.started_at)) :
-                                              std::nullopt;
+    r.started_at = v.started_at.has_value() ?
+                       std::optional(ores::platform::time::datetime::to_db_string(*v.started_at)) :
+                       std::nullopt;
     r.completed_at = v.completed_at.has_value() ?
-                         std::optional(datetime::to_db_string(*v.completed_at)) :
+                         std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
                          std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

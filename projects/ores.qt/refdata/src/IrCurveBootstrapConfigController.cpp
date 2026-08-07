@@ -19,10 +19,10 @@
  */
 #include "ores.qt/IrCurveBootstrapConfigController.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/CurveBuilderWorkbench.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/IrCurveBootstrapConfigDetailDialog.hpp"
 #include "ores.qt/IrCurveBootstrapConfigMdiWindow.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.refdata.api/eventing/ir_curve_bootstrap_config_changed_event.hpp"
@@ -164,30 +164,39 @@ void IrCurveBootstrapConfigController::onShowHistory(
     showHistoryWindow(config);
 }
 
-void IrCurveBootstrapConfigController::wireDetailDialogCommon(
-    IrCurveBootstrapConfigDetailDialog* detailDialog) {
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+void IrCurveBootstrapConfigController::wireWorkbenchCommon(CurveBuilderWorkbench* workbench,
+                                                            DetachableMdiSubWindow* window) {
+    workbench->setClientManager(clientManager_);
+    workbench->setUsername(username_.toStdString());
 
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::statusMessage,
+    connect(workbench,
+            &CurveBuilderWorkbench::statusMessage,
             this,
             &IrCurveBootstrapConfigController::statusMessage);
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::errorMessage,
+    connect(workbench,
+            &CurveBuilderWorkbench::errorMessage,
             this,
             &IrCurveBootstrapConfigController::errorMessage);
+    connect(workbench, &CurveBuilderWorkbench::closeRequested, window, &QWidget::close);
 }
 
 void IrCurveBootstrapConfigController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IR curve bootstrap config";
 
-    auto* detailDialog = new IrCurveBootstrapConfigDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
-    detailDialog->setCreateMode(true);
+    auto* workbench = new CurveBuilderWorkbench(mainWindow_);
 
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::configSaved,
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(workbench);
+    detailWindow->setWindowTitle("New IR Curve Bootstrap Config");
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+
+    wireWorkbenchCommon(workbench, detailWindow);
+    workbench->setCreateMode(true);
+
+    connect(workbench,
+            &CurveBuilderWorkbench::configSaved,
             this,
             [self = QPointer<IrCurveBootstrapConfigController>(this)](const QString& code) {
                 if (!self)
@@ -197,16 +206,7 @@ void IrCurveBootstrapConfigController::showAddWindow() {
                 self->handleEntitySaved();
             });
 
-    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
-    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
-    detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle("New IR Curve Bootstrap Config");
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
-
     register_detachable_window(detailWindow);
-
-    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -224,13 +224,20 @@ void IrCurveBootstrapConfigController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: "
                                << boost::uuids::to_string(config.id);
 
-    auto* detailDialog = new IrCurveBootstrapConfigDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
-    detailDialog->setCreateMode(false);
-    detailDialog->setConfig(config);
+    auto* workbench = new CurveBuilderWorkbench(mainWindow_);
 
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::configSaved,
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(workbench);
+    detailWindow->setWindowTitle(QString("IR Curve Bootstrap Config: %1").arg(identifier));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+
+    wireWorkbenchCommon(workbench, detailWindow);
+    workbench->setConfig(config);
+
+    connect(workbench,
+            &CurveBuilderWorkbench::configSaved,
             this,
             [self = QPointer<IrCurveBootstrapConfigController>(this)](const QString& code) {
                 if (!self)
@@ -239,23 +246,6 @@ void IrCurveBootstrapConfigController::showDetailWindow(
                     << "IR Curve Bootstrap Config saved: " << code.toStdString();
                 self->handleEntitySaved();
             });
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::configDeleted,
-            this,
-            [self = QPointer<IrCurveBootstrapConfigController>(this), key](const QString& code) {
-                if (!self)
-                    return;
-                BOOST_LOG_SEV(lg(), info)
-                    << "IR Curve Bootstrap Config deleted: " << code.toStdString();
-                self->handleEntityDeleted();
-            });
-
-    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
-    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
-    detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("IR Curve Bootstrap Config: %1").arg(identifier));
-    detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -269,7 +259,6 @@ void IrCurveBootstrapConfigController::showDetailWindow(
         }
     });
 
-    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -375,18 +364,21 @@ void IrCurveBootstrapConfigController::onOpenVersion(
         return;
     }
 
-    auto* detailDialog = new IrCurveBootstrapConfigDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
-    detailDialog->setConfig(config);
-    detailDialog->setReadOnly(true);
+    // Historical versions are opened in the same workbench, not read-only -- Workbench has no
+    // read-only mode (unlike the discarded DetailDialog); Save is still gated on the workbench's
+    // own edited config, so viewing a historical version is safe, just not enforced-immutable.
+    auto* workbench = new CurveBuilderWorkbench(mainWindow_);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
-    detailWindow->setWidget(detailDialog);
+    detailWindow->setWidget(workbench);
     detailWindow->setWindowTitle(
         QString("IR Curve Bootstrap Config: %1 (Version %2)").arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+
+    wireWorkbenchCommon(workbench, detailWindow);
+    workbench->setConfig(config);
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -398,7 +390,6 @@ void IrCurveBootstrapConfigController::onOpenVersion(
         }
     });
 
-    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
@@ -502,17 +493,26 @@ void IrCurveBootstrapConfigController::onRevertVersion(
     BOOST_LOG_SEV(lg(), info) << "Reverting IR curve bootstrap config to version: "
                               << config.version;
 
-    // Open detail dialog with the old version data for editing
-    auto* detailDialog = new IrCurveBootstrapConfigDetailDialog(mainWindow_);
-    wireDetailDialogCommon(detailDialog);
+    // Open workbench with the old version data loaded for editing; the workbench doesn't need a
+    // markDirty() equivalent since the user must explicitly click Save regardless.
+    auto* workbench = new CurveBuilderWorkbench(mainWindow_);
     auto reverted_config = config;
     reverted_config.version = 0;
-    detailDialog->setConfig(reverted_config);
-    detailDialog->setCreateMode(false);
-    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &IrCurveBootstrapConfigDetailDialog::configSaved,
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(workbench);
+    detailWindow->setWindowTitle(
+        QString("Revert IR Curve Bootstrap Config: %1")
+            .arg(QString::fromStdString(boost::uuids::to_string(config.id))));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
+
+    wireWorkbenchCommon(workbench, detailWindow);
+    workbench->setConfig(reverted_config);
+
+    connect(workbench,
+            &CurveBuilderWorkbench::configSaved,
             this,
             [self = QPointer<IrCurveBootstrapConfigController>(this)](const QString& code) {
                 if (!self)
@@ -524,18 +524,7 @@ void IrCurveBootstrapConfigController::onRevertVersion(
                 self->handleEntitySaved();
             });
 
-    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
-    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
-    detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(
-        QString("Revert IR Curve Bootstrap Config: %1")
-            .arg(QString::fromStdString(boost::uuids::to_string(config.id))));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
-                                                               IconUtils::DefaultIconColor));
-
     register_detachable_window(detailWindow);
-
-    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

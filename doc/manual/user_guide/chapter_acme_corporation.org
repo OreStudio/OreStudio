@@ -194,7 +194,7 @@ own: the Cross-Rates Matrix, opened at Acme Corporation Plc, shows
 live cross rates across GBP, USD, and HKD — the three operating
 companies' own currencies — fed entirely by the offices' FX feeds. A
 EUR/USD print is the same real-world rate regardless of which
-office's feed_binding happens to be subscribed to it, so FX driver
+office's =feed_binding= happens to be subscribed to it, so FX driver
 ticks are tenant-wide for CRM-matching purposes rather than scoped to
 whichever party's feed produced them; each party's own topology
 configuration still governs what it is authorised to see, so this

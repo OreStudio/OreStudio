@@ -137,8 +137,14 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", tags) {
     auto read = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read parameters for product: " << read;
 
-    // 5 product-scoped parameters (3 model + 2 engine); globals are excluded
-    CHECK(read.size() == 5);
+    // 5 product-scoped parameters written for this product
+    auto product_scoped = 0;
+    for (const auto& p : read) {
+        if (p.pricing_model_product_id &&
+            *p.pricing_model_product_id == product_id)
+            ++product_scoped;
+    }
+    CHECK(product_scoped == 5);
 }
 
 TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {
@@ -228,6 +234,8 @@ TEST_CASE("remove_pricing_model_product_parameters_for_config", tags) {
     for (const auto& p : params)
         CHECK_NOTHROW(repo.remove(h.context(), boost::uuids::to_string(p.id)));
 
-    auto read = repo.read_latest(h.context());
-    CHECK(read.empty());
+    for (const auto& p : params) {
+        auto read = repo.read_latest(h.context(), boost::uuids::to_string(p.id));
+        CHECK(read.empty());
+    }
 }

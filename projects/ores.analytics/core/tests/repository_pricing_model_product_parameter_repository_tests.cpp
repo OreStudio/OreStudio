@@ -77,8 +77,8 @@ TEST_CASE("write_single_pricing_model_product_parameter", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(1, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(1, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     REQUIRE(!params.empty());
     BOOST_LOG_SEV(lg, debug) << "Parameter: " << params[0];
 
@@ -93,8 +93,8 @@ TEST_CASE("write_multiple_pricing_model_product_parameters", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(5, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(5, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     BOOST_LOG_SEV(lg, debug) << "Parameters: " << params;
 
     pricing_model_product_parameter_repository repo;
@@ -110,11 +110,11 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_config", tags) {
 
     auto written =
         generate_synthetic_pricing_model_product_parameters(5, ctx);
+    for (auto& p : written) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
-    const auto config_id_str = boost::uuids::to_string(config_id);
-    auto read = repo.read_latest(h.context(), config_id_str);
+    auto read = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read parameters: " << read;
 
     CHECK(read.size() >= written.size());
@@ -129,6 +129,7 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", tags) {
 
     auto written =
         generate_synthetic_pricing_model_product_parameters(5, ctx);
+    for (auto& p : written) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
@@ -147,8 +148,8 @@ TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(1, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(1, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -171,8 +172,8 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(1, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(1, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -197,8 +198,8 @@ TEST_CASE("remove_pricing_model_product_parameter", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(1, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(1, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -219,8 +220,8 @@ TEST_CASE("remove_pricing_model_product_parameters_for_config", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params =
-        generate_synthetic_pricing_model_product_parameters(5, ctx);
+    auto params = generate_synthetic_pricing_model_product_parameters(5, ctx);
+    for (auto& p : params) { p.pricing_model_config_id = config_id; p.pricing_model_product_id = product_id; }
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), params);
 

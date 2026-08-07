@@ -8,7 +8,7 @@
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
 #+branch: feature/credit-hazard-recovery-correlation-rating
-#+pr:
+#+pr: 1903
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1903][#1903]] | [marketdata] Extend oresmd credit coverage: hazard rate, recovery rate, base correlation, rating transition |
 
 * Review
 

@@ -82,6 +82,28 @@ TEST_CASE("parse_nats_subject_prefix", tags) {
     CHECK(result->nats.subject_prefix == "ores.prod.main1");
 }
 
+TEST_CASE("shared_nats_env_var_reaches_service_without_argv", tags) {
+    // Regression test for the single-source-of-truth NATS config flow: a
+    // pure-passthrough shared knob set in .env (simulated here via the
+    // fake provider) must reach the service through
+    // environment_mapper_factory's shared-domain fallback with zero argv
+    // threading -- no process_supervisor args_template, no SQL
+    // args_template rows, no systemd_generate.py substitution. Before
+    // the fallback tier this value only arrived via an app-prefixed
+    // mirror (ORES_IAM_SERVICE_NATS_URL) or explicit CLI threading.
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const ores::testing::scoped_environment_override env_guard(
+        {{"ORES_NATS_URL", "nats://passthrough-check:4222"}});
+
+    const std::vector<std::string> args;
+    std::ostringstream info, err;
+    const auto result = parser{}.parse(args, info, err);
+
+    REQUIRE(result.has_value());
+    CHECK(result->nats.url == "nats://passthrough-check:4222");
+}
+
 TEST_CASE("parse_custom_database_host_and_port", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 

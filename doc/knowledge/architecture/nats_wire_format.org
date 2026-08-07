@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:nats:serialisation:wire_format:
 #+created: 2026-07-30
-#+updated: 2026-07-30
+#+updated: 2026-08-07
 
 * Summary
 
@@ -69,6 +69,90 @@ negotiation, no content-type header, no runtime auto-detection. This
 is a deliberate, narrow exception to per-instance dependency
 injection: safe because the format is a single, process-wide,
 decided-at-startup value, not a per-instance or per-message choice.
+How =ORES_NATS_WIRE_FORMAT= (and the other shared NATS knobs) reach
+every service's parser from =.env= alone, with no argv threading, is
+the *Config flow* section below.
+
+** Config flow: shared NATS knobs reach every service from =.env= alone
+
+=ORES_NATS_URL=, =ORES_NATS_SUBJECT_PREFIX= and =ORES_NATS_WIRE_FORMAT=
+are *shared* NATS knobs: one value set once in =.env=, read directly by
+every service's own config parser -- no CLI-argument threading between
+launcher layers. This single-source-of-truth design replaced the old
+five-layer passthrough, in which a new knob had to be manually fixed in
+five independent places before every service actually received it:
+
+1. =compass_services.py='s controller-launch argv (Python),
+2. =process_supervisor='s =default_args_template= (C++),
+3. five custom =args_template= rows in
+   =controller_service_definitions_populate.sql=,
+4. the Qt client's launch,
+5. compass shell's =flag_for= mapping plus a missing per-app .env
+   mirror variable.
+
+Layers 2 and 3 are gone entirely (the controller was decommissioned
+and systemd_generate.py now reads the codegen service-registry model,
+not SQL); layer 1's controller launcher is gone; layer 5's threading
+of =--nats-url/--nats-subject-prefix/--nats-wire-format= was stripped.
+A shared NATS knob added today needs exactly *two* edits:
+
+1. Emit it in =env_init.py='s shared .env block
+   (=projects/ores.compass/src/env_init.py=).
+2. Add its suffix to =nats_configuration::register_shared_domain()='s
+   allowed set (=projects/ores.nats/src/config/nats_configuration.cpp=).
+
+The mechanism is a generic shared-domain fallback tier in
+=ores.utility='s =environment_mapper_factory= (see
+=ores.utility/src/program_options/environment_mapper_factory.cpp= and
+=ores.utility/include/ores.utility/program_options/shared_domain_registry.hpp=).
+Each application's parser maps =ORES_<APP_NAME>_*= variables to its own
+options as before; but when a variable is not app-prefixed yet starts
+with a *registered* shared domain's prefix (=ORES_NATS_*=) and its
+suffix is in that domain's allowed set, only the fixed =ORES_= prefix
+is stripped -- the domain name becomes part of the option name
+(=nats-url=, not =url=), matching =make_options_description()='s own
+naming. The allowed-suffix set is deliberate, not a blanket prefix:
+the domain's raw environment namespace can contain server-side
+settings (e.g. a hypothetical =ORES_NATS_LISTEN_PORT=) that are not
+command-line options, and matching those too would make
+=parse_environment= reject them as unrecognised options.
+
+Registration is explicit and idempotent:
+=nats_configuration::register_shared_domain()= is called from
+=ores::service::config::standard_service_options::make_options_description()=
+-- the single call site every domain-service parser goes through since
+the parser consolidation (=standard_service_options::parse()= feeds
+=parse_environment= via =environment_mapper_factory::make_mapper(app_name)=).
+The registry itself is domain-agnostic: any config module can register
+itself (prefix + allowed suffixes) and its options then reach every
+service the same way, with no changes to =environment_mapper_factory=.
+
+Deliberate exclusions, unchanged by this design:
+
+- *The =nats-tls-* trio* (=--nats-tls-ca/cert/key=) stays CLI-supplied:
+  the cert/key file paths are genuinely per-service, and a shared
+  fallback for CA alone would let =tls_ca_cert= resolve while
+  cert/key stay empty for services with no per-app mirror -- tripping
+  =client.cpp='s mTLS gate at connect time. The trio is *not* in the
+  registered suffix set.
+- *=ores.shell= keeps its own =ORES_SHELL_NATS_*= mirror block* in
+  .env: shell's parser reads those directly via its app-prefix mapper,
+  and compass shell no longer threads the three shared flags to the
+  binary (only the TLS trio remains CLI-supplied there).
+- *Per-app overrides still win*: if one service ever needs a different
+  URL, =ORES_<APP_NAME>_NATS_URL= outranks the shared =ORES_NATS_URL=,
+  because the app-prefix mapping is consulted before the shared-domain
+  fallback.
+
+Regression tests pinning this contract live in
+=projects/ores.nats/tests/config_nats_configuration_tests.cpp=
+(=register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_app=,
+=register_shared_domain_does_not_resolve_tls_ca=) and, at the real
+service-parser level, in each domain service's =config_parser_tests.cpp=
+(e.g. =shared_nats_env_var_reaches_service_without_argv= in
+=ores.iam/service/tests/config_parser_tests.cpp=). See the
+[[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]]
+story for the full decision trail.
 
 The canonical shape for a NATS request/reply call site is:
 

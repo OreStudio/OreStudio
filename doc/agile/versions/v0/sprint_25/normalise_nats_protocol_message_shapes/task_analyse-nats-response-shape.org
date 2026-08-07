@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis complete — see Plan below. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Decide: adopt recommendation or revise. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -39,9 +39,57 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Surveyed all 17 messaging API components. Results:
+
+** Current state
+
+- 152 response-protocol files across 17 components
+- ~148 already carry =success=/=message= — the codegen template
+  (=cpp_protocol.hpp.mustache=) generates them for =get=, =save=,
+  =delete=, =history=, =hierarchy=, and =read_for_cache= response
+  types.
+- 4 outliers lack them:
+  - =ores.iam.api/messaging/session_protocol.hpp=
+  - =ores.iam.api/messaging/session_samples_protocol.hpp=
+  - =ores.refdata.api/messaging/asset_class_protocol.hpp=
+  - =ores.workflow.api/messaging/steps_query_protocol.hpp=
+  All four are list-type or hand-written protocols. The codegen
+  template omits =success=/=message= only for plain list responses —
+  this is the one gap in an otherwise already-standardised convention.
+
+** Pros and cons of requiring =success=/=message= on all responses
+
+Pro:
+- One pattern across every response — clients never need to check
+  "does this type have an error field?"
+- Codegen already does it for ~95% of responses — minimal template
+  change, just extend to list responses.
+- Real failure modes exist for list operations too (DB timeout,
+  permission change mid-request).
+- Codegen can generate the check once; client code never hand-rolls it.
+
+Con:
+- List responses almost never fail in practice — the fields are dead
+  weight.
+- =success=false= on a list is ambiguous: did nothing load, or did
+  some rows fail?
+- Transport-level errors already go through the NATS error-reply
+  path — this is a second error channel.
+
+** Recommendation
+
+Add =success=/=message= to list responses in the codegen template.
+It's the smallest change — the pattern already exists everywhere
+else. Four outliers isn't a redesign, it's cleanup. The partial-failure
+concern can be addressed later with an =error_info= struct if needed.
+
+** Next steps
+
+1. Decide: adopt this recommendation or revise.
+2. If adopted, update =cpp_protocol.hpp.mustache= to emit
+   =success=/=message= on list responses.
+3. Regenerate all protocol headers and reconcile the 4 outliers.
+4. Update the 4 hand-written protocols to match.
 
 * Notes
 

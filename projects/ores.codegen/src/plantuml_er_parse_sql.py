@@ -52,7 +52,6 @@ COMPONENT_PREFIXES = {
     'ores_compute_': {'name': 'compute', 'description': 'Distributed Compute Grid (BOINC)', 'schema': 'public', 'color': '#EDE7F6', 'order': 13},
     'ores_workflow_': {'name': 'workflow', 'description': 'Workflow Orchestration (Saga)', 'schema': 'public', 'color': '#FFF8E1', 'order': 14},
     'ores_marketdata_': {'name': 'marketdata', 'description': 'Market Data (Quotes, Fixings, Series)', 'schema': 'public', 'color': '#E3F2FD', 'order': 18},
-    'ores_controller_': {'name': 'controller', 'description': 'Service Lifecycle Controller', 'schema': 'public', 'color': '#E8EAF6', 'order': 19},
     'ores_analytics_': {'name': 'analytics', 'description': 'Analytics & Pricing Configuration', 'schema': 'public', 'color': '#E8F5E9', 'order': 20},
     'ores_synthetic_': {'name': 'synthetic', 'description': 'Synthetic Data Generation', 'schema': 'public', 'color': '#F9FBE7', 'order': 22},
     'ores_workspaces_': {'name': 'workspace', 'description': 'Workspace — Isolated Data Contexts', 'schema': 'public', 'color': '#E8F5E9', 'order': 21},

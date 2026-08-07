@@ -434,17 +434,6 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
     -- =============================================================================
-    -- Controller Component Permissions
-    -- =============================================================================
-
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::instances:read',   'View service instance status');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::instances:manage', 'Start, stop, and restart service instances');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::definitions:read',  'View service definitions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::definitions:write', 'Create and modify service definitions');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::events:read',       'View service lifecycle events');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'controller::*', 'Full access to all controller operations');
-
-    -- =============================================================================
     -- Analytics Permissions
     -- =============================================================================
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'analytics::pricing_engine_types:read',   'View pricing engine types');

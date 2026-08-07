@@ -55,7 +55,6 @@
 \ir ./compute/compute_create.sql
 \ir ./workflow/workflow_create.sql
 \ir ./marketdata/marketdata_create.sql
-\ir ./controller/controller_create.sql
 \ir ./analytics/analytics_create.sql
 \ir ./synthetic/synthetic_create.sql
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :controller:process-supervisor:config:tech-debt:environment:podman:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/document-and-verify-nats-passthrough
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A future engineer adding a new shared NATS knob only has to touch .env and the m
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 6602A810-F876-4669-9FB6-EA3E4E1AEC5A
+:ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.trading.fx_forward_instrument
 #+description: Codegen entity model for the trading =fx_forward_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

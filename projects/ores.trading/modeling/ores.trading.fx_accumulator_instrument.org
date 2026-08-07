@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 527B0106-3F3D-4385-91F6-BC8229B9B4B4
+:ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.trading.fx_accumulator_instrument
 #+description: Codegen entity model for the trading =fx_accumulator_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

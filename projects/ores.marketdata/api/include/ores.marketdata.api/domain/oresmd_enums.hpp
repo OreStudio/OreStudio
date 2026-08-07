@@ -86,6 +86,19 @@ enum class ir_quote_type {
  */
 enum class index_family { libor, euribor, sofr, estr, sonia, tona };
 
+/**
+ * @brief The `quote` query key for credit instruments — the ORE TYPE, independent of the
+ * METRIC column. Credit-only; only meaningful when `type=quote`.
+ */
+enum class credit_quote_type {
+    cds,                ///< CDS/CREDIT_SPREAD (single-name CDS spread).
+    hazard_rate,        ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
+    recovery_rate,      ///< RECOVERY_RATE/RATE (recovery rate assumption).
+    cds_index,          ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
+    index_cds_tranche,  ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    rating              ///< RATING/TRANSITION_PROBABILITY (rating transition matrix).
+};
+
 }
 
 #endif

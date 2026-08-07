@@ -69,6 +69,7 @@ struct credit_market_data_requirement final {
     std::optional<std::string> reference_entity;
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
+    std::optional<credit_quote_type> quote_type;
     std::optional<std::string> point;
 
     bool operator==(const credit_market_data_requirement&) const = default;

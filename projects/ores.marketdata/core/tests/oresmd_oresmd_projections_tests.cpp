@@ -209,9 +209,39 @@ TEST_CASE("equity_quote_key_matches_worked_example", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY/PRICE/AAPL/USD");
 }
 
-TEST_CASE("credit_quote_key_matches_worked_example", tags) {
+TEST_CASE("cds_quote_key_matches_worked_example", tags) {
+    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
+}
+
+TEST_CASE("cds_quote_key_defaults_when_quote_absent", tags) {
     const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
+}
+
+TEST_CASE("hazard_rate_quote_key", tags) {
+    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "HAZARD_RATE/RATE/VOD/EUR/5Y");
+}
+
+TEST_CASE("recovery_rate_quote_key", tags) {
+    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/VOD/SR/EUR");
+}
+
+TEST_CASE("cds_index_base_correlation_quote_key", tags) {
+    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds_index&point=5y,7y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CDS_INDEX/BASE_CORRELATION/ITRAXX-EUROPE/5Y/EUR/7Y");
+}
+
+TEST_CASE("index_cds_tranche_base_correlation_quote_key", tags) {
+    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=index_cds_tranche&point=5y,7y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "INDEX_CDS_TRANCHE/BASE_CORRELATION/ITRAXX-EUROPE/5Y/EUR/7Y");
+}
+
+TEST_CASE("rating_transition_probability_quote_key", tags) {
+    const auto id = parse("oresmd://credit/eur?ccy=eur&type=quote&quote=rating");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RATING/TRANSITION_PROBABILITY/EUR");
 }
 
 TEST_CASE("commodity_quote_key_matches_worked_example", tags) {

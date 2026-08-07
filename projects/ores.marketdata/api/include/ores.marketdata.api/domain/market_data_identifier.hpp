@@ -88,6 +88,7 @@ struct credit_market_data_identifier final {
     std::string reference_entity;
     std::string ccy;
     instrument_type type = instrument_type::quote;
+    std::optional<domain::credit_quote_type> quote_type;
     std::optional<std::string> point;
 
     bool operator==(const credit_market_data_identifier&) const = default;

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :sql:tech-debt:decommission:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decommission-legacy-controller-schema
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ No trace of the decommissioned controller process/architecture remains in the DB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:ED259270-CEAF-4456-A6C9-8974E9E5B8B2][Wire systemd generate to the codegen model and strip redundant NATS CLI threading]] -- the SQL schema can't be dropped while systemd_generate.py still queries it. |

@@ -98,6 +98,22 @@ void ArtefactTypeDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->artefactTableEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->targetTableEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->targetSubjectEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
 }
 
 void ArtefactTypeDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -132,6 +148,9 @@ void ArtefactTypeDetailDialog::setReadOnly(bool readOnly) {
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->artefactTableEdit->setReadOnly(readOnly);
+    ui_->targetTableEdit->setReadOnly(readOnly);
+    ui_->targetSubjectEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -141,6 +160,13 @@ void ArtefactTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
     ui_->descriptionEdit->setPlainText(
         type_.description ? QString::fromStdString(*type_.description) : QString{});
+    ui_->artefactTableEdit->setText(
+        type_.artefact_table ? QString::fromStdString(*type_.artefact_table) : QString{});
+    ui_->targetTableEdit->setText(type_.target_table ? QString::fromStdString(*type_.target_table) :
+                                                       QString{});
+    ui_->targetSubjectEdit->setText(
+        type_.target_subject ? QString::fromStdString(*type_.target_subject) : QString{});
+    ui_->displayOrderEdit->setValue(type_.display_order);
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -163,6 +189,24 @@ void ArtefactTypeDetailDialog::updateTypeFromUi() {
         type_.description =
             description_str.empty() ? std::nullopt : std::optional<std::string>(description_str);
     }
+    {
+        const auto artefact_table_str = ui_->artefactTableEdit->text().trimmed().toStdString();
+        type_.artefact_table = artefact_table_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(artefact_table_str);
+    }
+    {
+        const auto target_table_str = ui_->targetTableEdit->text().trimmed().toStdString();
+        type_.target_table =
+            target_table_str.empty() ? std::nullopt : std::optional<std::string>(target_table_str);
+    }
+    {
+        const auto target_subject_str = ui_->targetSubjectEdit->text().trimmed().toStdString();
+        type_.target_subject = target_subject_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(target_subject_str);
+    }
+    type_.display_order = ui_->displayOrderEdit->value();
     type_.modified_by = username_;
 }
 

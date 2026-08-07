@@ -115,8 +115,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | using legacy history dialog, should have been deleted and replaced with new history dialog.; ; [[file:scenario_verify_dq_entity_commissioning_step6_20260806_234007.png]] |
+| Status | PASS |
 
 *** Create and save a data domain
 
@@ -130,7 +129,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 *** Create and save a change reason category
 
@@ -143,7 +142,8 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | seem to have two copies, saved by different services: DDL user (population scripts?) and IAM service. all else works correctly.; ; [[file:scenario_verify_dq_entity_commissioning_step8_20260807_022649.png]] |
 
 *** Create and save a change reason
 
@@ -157,7 +157,8 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | same as change reason categories, weird duplication. also change reason categories needs to be a combo box. everything else works correctly.; ; [[file:scenario_verify_dq_entity_commissioning_step9_20260807_022906.png]] |
 
 *** Create and save an artefact type
 
@@ -170,7 +171,8 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | - seem to be missing most fields in details dialog (artefac table, target table, target subject etc).; - eventing not working, but manual reload shows new entry. |
 
 *** Create and save a dataset bundle
 
@@ -296,9 +298,9 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-06T22:40:26Z |
+| Completed at  | 2026-08-07T01:32:35Z |
 | Branch        | feature/bind-dq-sql-entities-to-profiles |
-| Commit        | 0caa387e4 |
+| Commit        | e97152a0d |
 | Worktree      | jolly_knuth |
 
 | Status        |       |

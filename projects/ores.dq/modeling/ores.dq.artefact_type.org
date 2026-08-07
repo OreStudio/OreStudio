@@ -228,6 +228,18 @@ faker::number::integer(1, 100)
 :has_pagination:         true
 :END:
 
+*** Detail fields
+
+| field           | label           | widget               | type      | is_key | is_required | placeholder                        |
+|-----------------+-----------------+----------------------+-----------+--------+-------------+--------------------------------------|
+| code            | Code            | codeEdit             | line_edit | true   | true        | Enter artefact type code           |
+| name            | Name            | nameEdit             | line_edit |        | true        | Enter a display name               |
+| description     | Description     | descriptionEdit      | text_edit |        |             | Enter a description                |
+| artefact_table  | Artefact Table  | artefactTableEdit    | line_edit |        |             | Enter the staging table name       |
+| target_table    | Target Table    | targetTableEdit      | line_edit |        |             | Enter the target production table  |
+| target_subject  | Target Subject  | targetSubjectEdit    | line_edit |        |             | Enter the publish-from-dq subject  |
+| display_order   | Display Order   | displayOrderEdit     | spin_box  |        |             |                                     |
+
 *** Columns (Qt model)
 
 | enum_name     | field          | header         | type      | width |

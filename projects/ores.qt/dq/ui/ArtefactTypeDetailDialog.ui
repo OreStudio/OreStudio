@@ -65,7 +65,7 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
-             <string>Enter display name</string>
+             <string>Enter a display name</string>
             </property>
            </widget>
           </item>
@@ -92,6 +92,65 @@
             </property>
             <property name="placeholderText">
              <string>Enter a description</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelArtefactTable">
+            <property name="text">
+             <string>Artefact Table:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="artefactTableEdit">
+            <property name="placeholderText">
+             <string>Enter the staging table name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelTargetTable">
+            <property name="text">
+             <string>Target Table:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="targetTableEdit">
+            <property name="placeholderText">
+             <string>Enter the target production table</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelTargetSubject">
+            <property name="text">
+             <string>Target Subject:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="targetSubjectEdit">
+            <property name="placeholderText">
+             <string>Enter the publish-from-dq subject</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="labelDisplayOrder">
+            <property name="text">
+             <string>Display Order:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QSpinBox" name="displayOrderEdit">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>9999</number>
             </property>
            </widget>
           </item>

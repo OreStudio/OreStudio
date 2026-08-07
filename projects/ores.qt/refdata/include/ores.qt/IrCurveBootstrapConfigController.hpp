@@ -35,7 +35,7 @@
 namespace ores::qt {
 
 class IrCurveBootstrapConfigMdiWindow;
-class IrCurveBootstrapConfigDetailDialog;
+class CurveBuilderWorkbench;
 class DetachableMdiSubWindow;
 
 /**
@@ -90,12 +90,14 @@ private:
     void showDetailWindow(const refdata::domain::ir_curve_bootstrap_config& config);
 
     /**
-     * @brief Wires the caches/status/error plumbing every
-     * IrCurveBootstrapConfigDetailDialog needs regardless of which
-     * window opened it (add/edit/history-version/revert) -- kept in one
-     * place so those four call sites can't drift from each other.
+     * @brief Wires the client manager/username/status/error/close plumbing every
+     * CurveBuilderWorkbench needs regardless of which window opened it
+     * (add/edit/history-version/revert) -- kept in one place so those four call sites can't
+     * drift from each other. Hand-rolled rather than EntityController::connect_dialog_close()
+     * (which needs a DetailDialogBase*) since this workbench deliberately doesn't inherit that
+     * save-and-close-oriented base -- see CurveBuilderWorkbench's own class docs.
      */
-    void wireDetailDialogCommon(IrCurveBootstrapConfigDetailDialog* detailDialog);
+    void wireWorkbenchCommon(CurveBuilderWorkbench* workbench, DetachableMdiSubWindow* window);
     void showHistoryWindow(const refdata::domain::ir_curve_bootstrap_config& config);
 
     /**

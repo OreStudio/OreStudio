@@ -30,6 +30,7 @@
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
@@ -121,6 +122,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto fx_forward_instrument_sub =
         ores::trading::service::messaging::register_fx_forward_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_forward_instrument_sub =
+        ores::trading::service::messaging::register_equity_forward_instrument_event_mapping(
             event_source, event_bus, nats);
 
     event_source.start();

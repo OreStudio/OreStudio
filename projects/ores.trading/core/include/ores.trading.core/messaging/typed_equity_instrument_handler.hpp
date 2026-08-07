@@ -33,7 +33,6 @@
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include <optional>
@@ -133,18 +132,6 @@ public:
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_asian_option_instrument);
     }
 
-    void save_forward(ores::nats::message msg) {
-        using Svc = service::equity_forward_instrument_service;
-        handle_typed_equity_save<save_equity_forward_instrument_request,
-                                 save_equity_forward_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_forward_instrument);
-    }
-
-    // save_variance_swap removed — equity_variance_swap_instrument's save/
-    // list/history/remove now flow through the codegen-generated
-    // equity_variance_swap_instrument_registrar (see registrar_equity.cpp).
-
     void save_swap(ores::nats::message msg) {
         using Svc = service::equity_swap_instrument_service;
         handle_typed_equity_save<save_equity_swap_instrument_request,
@@ -160,10 +147,6 @@ public:
                                  Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_accumulator_instrument);
     }
-
-    // save_position removed — equity_position_instrument's save/list/history/
-    // remove now flow through the codegen-generated
-    // equity_position_instrument_registrar (see registrar_equity.cpp).
 
 private:
     ores::nats::service::client& nats_;

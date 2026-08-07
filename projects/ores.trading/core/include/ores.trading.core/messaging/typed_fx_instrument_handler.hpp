@@ -98,10 +98,6 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    // save_forward removed — fx_forward_instrument's save/list/history/
-    // remove now flow through the codegen-generated
-    // fx_forward_instrument_registrar (see registrar_fx.cpp).
-
     void save_vanilla_option(ores::nats::message msg) {
         using Svc = service::fx_vanilla_option_instrument_service;
         handle_typed_fx_save<save_fx_vanilla_option_instrument_request,

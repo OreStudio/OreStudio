@@ -1,5 +1,31 @@
 [
   {
+    "company_code": "acme_group",
+    "id": "dc895200-ea7f-557d-b23b-bbde41a848bd",
+    "name": "Group Intercompany Loans",
+    "portfolio_code": "acme_group.treasury",
+    "functional_currency": "GBP",
+    "gl_account_ref": "GL-TREAS-001",
+    "cost_center": "CC-GROUP-TREASURY",
+    "book_status": "Active",
+    "regulatory_book_type": "Banking",
+    "is_sweepable": false,
+    "rates_centre_code": "GBLO"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "22461eee-0110-53cb-bac0-d3dec0225487",
+    "name": "Group FX Hedges",
+    "portfolio_code": "acme_group.treasury",
+    "functional_currency": "GBP",
+    "gl_account_ref": "GL-TREAS-002",
+    "cost_center": "CC-GROUP-TREASURY",
+    "book_status": "Active",
+    "regulatory_book_type": "Banking",
+    "is_sweepable": false,
+    "rates_centre_code": "GBLO"
+  },
+  {
     "company_code": "acme_uk",
     "id": "3be9e09c-a418-591a-8936-8a331733c511",
     "name": "GBP Nostro Sweep",

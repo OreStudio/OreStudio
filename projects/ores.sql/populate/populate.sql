@@ -92,6 +92,9 @@
 \ir acme/acme_staff_photos_populate.sql
 \ir acme/acme_lei_entities_artefact_populate.sql
 \ir acme/acme_lei_relationships_artefact_populate.sql
+\ir acme/acme_group_business_units_artefact_populate.sql
+\ir acme/acme_group_portfolios_artefact_populate.sql
+\ir acme/acme_group_books_artefact_populate.sql
 \ir acme/acme_group_accounts_artefact_populate.sql
 \ir acme/acme_uk_business_units_artefact_populate.sql
 \ir acme/acme_uk_portfolios_artefact_populate.sql

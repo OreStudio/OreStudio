@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: C6D51544-D07B-4AF6-9AA6-406EC89A3C43
+:END:
+#+title: Test Scenario: Group Treasury book/portfolio visible for the holding company party
+#+description: Verify the holding company party has its own Group Treasury business unit, portfolio, and two books visible in the Qt client
+#+type: test_scenario
+#+level: s1
+#+filetags: :holding-company-treasury-functionality:sprint_25:v0:
+#+target_dialog:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] in [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned with the Acme Corporation
+  holding group: =compass db recreate -y= then
+  =compass shell -l projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting --
+  in particular that Step 3 ("Publishing group-level staff") lists
+  =acme_group.portfolios=, =acme_group.business_units=, and
+  =acme_group.books= as completed.
+- The service fleet must be running: =compass services start=.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] |
+| Parent story  | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as the holding company tenant admin
+
+- Start the Qt client (=compass client start=).
+- Log in with username =tenant_admin@acme_corporation= and password
+  =Secure-Password-123=.
+- Confirm the client opens with the default party set to Acme
+  Corporation Plc (the holding company) -- check the party selector
+  in the toolbar/status bar.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the business unit tree for the holding party
+
+- Open the Reference Data / Organisation panel that lists business
+  units for the current party (same panel used to browse each
+  office's desks).
+- Confirm a business unit named "Group Treasury" (code
+  =acme_group.treasury=) is listed -- this did not exist before this
+  task.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the portfolio/book tree under Group Treasury
+
+- Drill into the "Group Treasury" business unit's portfolio tree.
+- Confirm a single portfolio named "Group Treasury Portfolio" is
+  present, currency GBP, marked virtual.
+- Confirm two books are listed under it: "Group Intercompany Loans"
+  (GL-TREAS-001) and "Group FX Hedges" (GL-TREAS-002).
+- Open each book's detail view and confirm: functional currency GBP,
+  cost centre =CC-GROUP-TREASURY=, rates centre code =GBLO=,
+  regulatory book type "Banking".
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-08-07T00:57:48Z |
+| Branch        | feature/scaffold-group-treasury-book |
+| Commit        | b39d5c519 |
+| Worktree      | solid_dirac |
+
+* Notes

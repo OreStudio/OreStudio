@@ -8,7 +8,7 @@
 #+filetags: :normalise_nats_protocol_message_shapes:sprint_25:v0:
 #+owner: marco
 #+branch: feature/analyse-nats-response-shape
-#+pr:
+#+pr: 1891
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1891][#1891]] | [messaging] Add success/message to all NATS response structs |
 
 * Review
 

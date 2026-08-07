@@ -2,7 +2,7 @@
 :ID: 8B09FCC2-0D30-4AF2-A205-01FC0A41ED3D
 :END:
 #+title: Task: Wire G2 (Two-Factor Gaussian) into the system: factory, seed data, config storage, Qt UI
-#+description: PR 2 for the G2 model: expose the raw g2pp_process engine to the system. Strongly-typed parameter structs, factory method, child DB table for G2-specific params, and dynamic Qt UI that switches the parameter form based on process_type.
+#+description: PR 2 for the G2 model: expose the raw two_factor_gaussian_process engine to the system. Strongly-typed parameter structs, factory method, child DB table for G2-specific params, and dynamic Qt UI that switches the parameter form based on process_type.
 #+type: task
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:

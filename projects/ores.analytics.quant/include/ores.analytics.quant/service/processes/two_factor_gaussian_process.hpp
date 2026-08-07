@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_G2PP_PROCESS_HPP
-#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_G2PP_PROCESS_HPP
+#ifndef ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_TWO_FACTOR_GAUSSIAN_PROCESS_HPP
+#define ORES_ANALYTICS_QUANT_SERVICE_PROCESSES_TWO_FACTOR_GAUSSIAN_PROCESS_HPP
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
@@ -63,10 +63,10 @@ namespace ores::analytics::quant::service {
  * hull_white_process. Callers never pre-scale parameters for finer
  * granularity — they pass the real dt instead.
  */
-class ORES_ANALYTICS_QUANT_EXPORT g2pp_process final
+class ORES_ANALYTICS_QUANT_EXPORT two_factor_gaussian_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
-    g2pp_process(double kappa_x,
+    two_factor_gaussian_process(double kappa_x,
                  double kappa_y,
                  double sigma_x,
                  double sigma_y,

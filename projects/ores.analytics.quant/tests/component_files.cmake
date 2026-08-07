@@ -26,7 +26,6 @@ set(files
     "curve_instrument_pricer_tests.cpp"
     "day_count_calculator_tests.cpp"
     "forward_rate_calculator_tests.cpp"
-    "g2pp_process_tests.cpp"
     "gaussian_mixture_model_process_tests.cpp"
     "hull_white_process_tests.cpp"
     "main.cpp"
@@ -39,5 +38,6 @@ set(files
     "rate_reciprocator_tests.cpp"
     "risk_recentering_tests.cpp"
     "topology_builder_tests.cpp"
+    "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"
 )

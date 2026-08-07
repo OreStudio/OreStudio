@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/processes/g2pp_process.hpp"
+#include "ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
 #include "ores.analytics.quant/service/processes/vasicek_process.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
@@ -28,7 +28,7 @@
 
 namespace {
 
-const std::string tags("[g2pp-process]");
+const std::string tags("[two_factor_gaussian_process]");
 
 // Parameter set A: moderate mean-reversion, moderate vol, zero correlation.
 // This is the simplest two-factor setup — two independent OU processes.
@@ -58,76 +58,67 @@ struct correlated_params {
 
 } // anonymous namespace
 
-TEST_CASE("g2pp process constructs with valid parameters", tags) {
-    CHECK_NOTHROW(ores::analytics::quant::service::g2pp_process(independent_params::kappa_x,
-                                                                independent_params::kappa_y,
-                                                                independent_params::sigma_x,
-                                                                independent_params::sigma_y,
-                                                                independent_params::rho,
-                                                                independent_params::initial_rate,
-                                                                independent_params::seed,
-                                                                independent_params::dt));
+TEST_CASE("two_factor_gaussian_process constructs with valid parameters", tags) {
+    CHECK_NOTHROW(ores::analytics::quant::service::two_factor_gaussian_process(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        independent_params::seed, independent_params::dt));
 }
 
-TEST_CASE("g2pp process rejects negative kappa", tags) {
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(-0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+TEST_CASE("two_factor_gaussian_process rejects negative kappa", tags) {
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
         std::invalid_argument);
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, -0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, -0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
         std::invalid_argument);
 }
 
-TEST_CASE("g2pp process rejects negative sigma", tags) {
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
+TEST_CASE("two_factor_gaussian_process rejects negative sigma", tags) {
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
         std::invalid_argument);
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, 0.01, -0.005, 0.0, 0.03, 42, 1.0),
-        std::invalid_argument);
-}
-
-TEST_CASE("g2pp process rejects rho outside [-1, 1]", tags) {
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
-        std::invalid_argument);
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, 0.01, 0.005, -1.5, 0.03, 42, 1.0),
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, 0.01, -0.005, 0.0, 0.03, 42, 1.0),
         std::invalid_argument);
 }
 
-TEST_CASE("g2pp process rejects non-positive dt", tags) {
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
+TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]", tags) {
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
         std::invalid_argument);
-    CHECK_THROWS_AS(
-        ores::analytics::quant::service::g2pp_process(0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, -0.5),
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, 0.01, 0.005, -1.5, 0.03, 42, 1.0),
         std::invalid_argument);
 }
 
-TEST_CASE("g2pp current returns initial_rate at construction", tags) {
-    ores::analytics::quant::service::g2pp_process p(independent_params::kappa_x,
-                                                    independent_params::kappa_y,
-                                                    independent_params::sigma_x,
-                                                    independent_params::sigma_y,
-                                                    independent_params::rho,
-                                                    independent_params::initial_rate,
-                                                    independent_params::seed,
-                                                    independent_params::dt);
+TEST_CASE("two_factor_gaussian_process rejects non-positive dt", tags) {
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
+        std::invalid_argument);
+    CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
+        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, -0.5),
+        std::invalid_argument);
+}
+
+TEST_CASE("two_factor_gaussian_process current returns initial_rate at construction", tags) {
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        independent_params::seed, independent_params::dt);
 
     // At construction, factor_x = initial_rate, factor_y = 0, so r = initial_rate.
     CHECK(p.current() == independent_params::initial_rate);
 }
 
-TEST_CASE("g2pp next advances and current changes", tags) {
-    ores::analytics::quant::service::g2pp_process p(independent_params::kappa_x,
-                                                    independent_params::kappa_y,
-                                                    independent_params::sigma_x,
-                                                    independent_params::sigma_y,
-                                                    independent_params::rho,
-                                                    independent_params::initial_rate,
-                                                    independent_params::seed,
-                                                    independent_params::dt);
+TEST_CASE("two_factor_gaussian_process next advances and current changes", tags) {
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        independent_params::seed, independent_params::dt);
 
     const double r0 = p.current();
     const double r1 = p.next();
@@ -137,37 +128,36 @@ TEST_CASE("g2pp next advances and current changes", tags) {
     CHECK(r1 == p.current());
 }
 
-TEST_CASE("g2pp discount_factor zero ticks ahead returns 1", tags) {
-    ores::analytics::quant::service::g2pp_process p(independent_params::kappa_x,
-                                                    independent_params::kappa_y,
-                                                    independent_params::sigma_x,
-                                                    independent_params::sigma_y,
-                                                    independent_params::rho,
-                                                    independent_params::initial_rate,
-                                                    independent_params::seed,
-                                                    independent_params::dt);
+TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 1", tags) {
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        independent_params::seed, independent_params::dt);
 
     // A bond maturing now is worth exactly 1.0.
     CHECK(p.discount_factor(0) == 1.0);
 }
 
-TEST_CASE("g2pp discount_factor decreases with maturity for positive rates", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity for positive rates", tags) {
     // Use zero vol to keep the short rate deterministically positive
     // (it decays from initial_rate toward zero, never going negative).
-    ores::analytics::quant::service::g2pp_process p(0.5, 0.3, 0.0, 0.0, 0.0, 0.05, 42, 1.0);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        0.5, 0.3, 0.0, 0.0, 0.0, 0.05, 42, 1.0);
 
     // With positive short rates, longer-maturity bonds should be cheaper.
-    const double df_short = p.discount_factor(2); // 2 ticks ahead
-    const double df_long = p.discount_factor(20); // 20 ticks ahead
+    const double df_short = p.discount_factor(2);   // 2 ticks ahead
+    const double df_long = p.discount_factor(20);    // 20 ticks ahead
     CHECK(df_long < df_short);
 }
 
-TEST_CASE("g2pp zero sigma means deterministic evolution", tags) {
+TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution", tags) {
     // With zero volatility, the process is deterministic:
     // factor_x decays toward zero at rate kappa_x from initial_rate
     // factor_y stays at zero (starts at 0, zero vol)
     // No randomness at all.
-    ores::analytics::quant::service::g2pp_process p(0.5, 0.3, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        0.5, 0.3, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
 
     const double r0 = p.current();
     CHECK(r0 == 0.04);
@@ -182,7 +172,7 @@ TEST_CASE("g2pp zero sigma means deterministic evolution", tags) {
     CHECK(std::abs(r_final) < 0.01);
 }
 
-TEST_CASE("g2pp deterministic discount_factor matches discrete recursion", tags) {
+TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches discrete recursion", tags) {
     // Zero vol, zero correlation: the backward recursion is exact for the
     // discrete-time model. We compute the expected B_y factor analytically
     // from the geometric sum produced by the recursion and verify.
@@ -199,7 +189,8 @@ TEST_CASE("g2pp deterministic discount_factor matches discrete recursion", tags)
     const double dt = 0.25;
     const std::size_t ticks = 4; // 1 year quarterly
 
-    ores::analytics::quant::service::g2pp_process p(kx, ky, 0.0, 0.0, 0.0, initial_rate, 42, dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        kx, ky, 0.0, 0.0, 0.0, initial_rate, 42, dt);
 
     // Construction puts initial_rate into factor_x_, factor_y_ at 0.
     const double x0 = initial_rate;
@@ -218,7 +209,7 @@ TEST_CASE("g2pp deterministic discount_factor matches discrete recursion", tags)
     CHECK_THAT(actual, Catch::Matchers::WithinRel(expected, 1e-12));
 }
 
-TEST_CASE("g2pp discount_factor approaches continuous limit as dt shrinks", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous limit as dt shrinks", tags) {
     // As dt -> 0, the discrete recursion should converge to the
     // continuous-time closed form. initial_rate goes into factor_x.
     const double kx = 0.5, ky = 0.3, rate = 0.04, T = 1.0;
@@ -230,13 +221,14 @@ TEST_CASE("g2pp discount_factor approaches continuous limit as dt shrinks", tags
     // Fine dt — daily ticks
     const double dt_fine = 1.0 / 365.0;
     const std::size_t ticks = 365;
-    ores::analytics::quant::service::g2pp_process p(kx, ky, 0.0, 0.0, 0.0, rate, 42, dt_fine);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        kx, ky, 0.0, 0.0, 0.0, rate, 42, dt_fine);
 
     const double df_discrete = p.discount_factor(ticks);
     CHECK_THAT(df_discrete, Catch::Matchers::WithinRel(df_continuous, 1e-4));
 }
 
-TEST_CASE("g2pp discount_factor consistency with next for zero vol", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for zero vol", tags) {
     // For zero vol, discount_factor at T should equal
     // the ratio of the bond price computed from the evolved state.
     // This is a consistency check: simulate forward, then verify
@@ -244,7 +236,8 @@ TEST_CASE("g2pp discount_factor consistency with next for zero vol", tags) {
     // discount factors.
 
     const double kx = 0.5, ky = 0.3;
-    ores::analytics::quant::service::g2pp_process p(kx, ky, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        kx, ky, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
 
     // Discount factor from now to T=4 ticks
     const double df_0_to_4 = p.discount_factor(4);
@@ -270,7 +263,7 @@ TEST_CASE("g2pp discount_factor consistency with next for zero vol", tags) {
     CHECK(df_2_to_4 < 1.0);
 }
 
-TEST_CASE("g2pp produces plausible short rate paths", tags) {
+TEST_CASE("two_factor_gaussian_process produces plausible short rate paths", tags) {
     // Statistical sanity check: simulate many paths and verify
     // the mean short rate stays within reasonable bounds given
     // the mean-reverting dynamics (factors revert toward zero).
@@ -280,14 +273,11 @@ TEST_CASE("g2pp produces plausible short rate paths", tags) {
 
     double sum_rates = 0.0;
     for (int path = 0; path < num_paths; ++path) {
-        ores::analytics::quant::service::g2pp_process p(correlated_params::kappa_x,
-                                                        correlated_params::kappa_y,
-                                                        correlated_params::sigma_x,
-                                                        correlated_params::sigma_y,
-                                                        correlated_params::rho,
-                                                        correlated_params::initial_rate,
-                                                        correlated_params::seed + path,
-                                                        correlated_params::dt);
+        ores::analytics::quant::service::two_factor_gaussian_process p(
+            correlated_params::kappa_x, correlated_params::kappa_y,
+            correlated_params::sigma_x, correlated_params::sigma_y,
+            correlated_params::rho, correlated_params::initial_rate,
+            correlated_params::seed + path, correlated_params::dt);
 
         for (int i = 0; i < steps_per_path; ++i)
             p.next();
@@ -305,13 +295,14 @@ TEST_CASE("g2pp produces plausible short rate paths", tags) {
     CHECK(std::abs(avg_rate) < 0.02);
 }
 
-TEST_CASE("g2pp rho = 1 gives perfectly correlated factors", tags) {
+TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factors", tags) {
     // With rho = 1.0, both factors use the same random shock (Z_x = Z_y = U1).
     // The processes are independent in their mean-reversion but share
     // the same innovation — they should move in the same direction.
     // We verify this deterministically: same seed, same innovations.
 
-    ores::analytics::quant::service::g2pp_process p1(0.5, 0.3, 0.01, 0.01, 1.0, 0.03, 42, 1.0);
+    ores::analytics::quant::service::two_factor_gaussian_process p1(
+        0.5, 0.3, 0.01, 0.01, 1.0, 0.03, 42, 1.0);
 
     // With rho=1, the two factors share the same normal draw each step.
     // The short rate is x + y. Both should move together.
@@ -320,55 +311,42 @@ TEST_CASE("g2pp rho = 1 gives perfectly correlated factors", tags) {
     bool moved = false;
     for (int i = 0; i < 20; ++i) {
         const double r = p1.next();
-        if (r != prev_r)
-            moved = true;
+        if (r != prev_r) moved = true;
         prev_r = r;
     }
     CHECK(moved); // The process should have moved from its initial state.
 }
 
-TEST_CASE("g2pp reproducibility: same seed same path", tags) {
-    ores::analytics::quant::service::g2pp_process p1(independent_params::kappa_x,
-                                                     independent_params::kappa_y,
-                                                     independent_params::sigma_x,
-                                                     independent_params::sigma_y,
-                                                     independent_params::rho,
-                                                     independent_params::initial_rate,
-                                                     42,
-                                                     independent_params::dt);
+TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", tags) {
+    ores::analytics::quant::service::two_factor_gaussian_process p1(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        42, independent_params::dt);
 
-    ores::analytics::quant::service::g2pp_process p2(independent_params::kappa_x,
-                                                     independent_params::kappa_y,
-                                                     independent_params::sigma_x,
-                                                     independent_params::sigma_y,
-                                                     independent_params::rho,
-                                                     independent_params::initial_rate,
-                                                     42,
-                                                     independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p2(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        42, independent_params::dt);
 
     for (int i = 0; i < 50; ++i) {
         CHECK(p1.next() == p2.next());
     }
 }
 
-TEST_CASE("g2pp different seeds give different paths", tags) {
-    ores::analytics::quant::service::g2pp_process p1(independent_params::kappa_x,
-                                                     independent_params::kappa_y,
-                                                     independent_params::sigma_x,
-                                                     independent_params::sigma_y,
-                                                     independent_params::rho,
-                                                     independent_params::initial_rate,
-                                                     42,
-                                                     independent_params::dt);
+TEST_CASE("two_factor_gaussian_process different seeds give different paths", tags) {
+    ores::analytics::quant::service::two_factor_gaussian_process p1(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        42, independent_params::dt);
 
-    ores::analytics::quant::service::g2pp_process p2(independent_params::kappa_x,
-                                                     independent_params::kappa_y,
-                                                     independent_params::sigma_x,
-                                                     independent_params::sigma_y,
-                                                     independent_params::rho,
-                                                     independent_params::initial_rate,
-                                                     99,
-                                                     independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p2(
+        independent_params::kappa_x, independent_params::kappa_y,
+        independent_params::sigma_x, independent_params::sigma_y,
+        independent_params::rho, independent_params::initial_rate,
+        99, independent_params::dt);
 
     bool diverged = false;
     for (int i = 0; i < 100; ++i) {
@@ -391,7 +369,10 @@ double B(double kappa, double tau) {
     return (1.0 - std::exp(-kappa * tau)) / kappa;
 }
 
-double V(double t, double a, double sigma, double b, double eta, double rho) {
+double V(double t,
+         double a, double sigma,
+         double b, double eta,
+         double rho) {
     // Integrated variance of the two-factor model over [0, t].
     // From QuantLib G2::V(t), adapted to our parameter names.
     const double exp_a = std::exp(-a * t);
@@ -400,13 +381,16 @@ double V(double t, double a, double sigma, double b, double eta, double rho) {
     const double cy = eta / b;
     const double vx = cx * cx * (t + (2.0 * exp_a - 0.5 * exp_a * exp_a - 1.5) / a);
     const double vy = cy * cy * (t + (2.0 * exp_b - 0.5 * exp_b * exp_b - 1.5) / b);
-    const double vxy =
-        2.0 * rho * cx * cy *
-        (t + (exp_a - 1.0) / a + (exp_b - 1.0) / b - (exp_a * exp_b - 1.0) / (a + b));
+    const double vxy = 2.0 * rho * cx * cy *
+        (t + (exp_a - 1.0) / a + (exp_b - 1.0) / b
+         - (exp_a * exp_b - 1.0) / (a + b));
     return vx + vy + vxy;
 }
 
-double A(double t, double T, double a, double sigma, double b, double eta, double rho) {
+double A(double t, double T,
+         double a, double sigma,
+         double b, double eta,
+         double rho) {
     // Affine bond-price coefficient from QuantLib G2::A.
     // Requires a yield term structure. For zero vol / flat forward,
     // the discount-ratio factor is exp(-f * (T - t)).
@@ -414,28 +398,26 @@ double A(double t, double T, double a, double sigma, double b, double eta, doubl
     // we use a flat forward rate f = 0 (no drift).
     // A(t,T) = P^M(T)/P^M(t) * exp(0.5 * (V(T-t) - V(T) + V(t)))
     // With flat zero forward: P^M(T)/P^M(t) = 1.0
-    return std::exp(0.5 * (V(T - t, a, sigma, b, eta, rho) - V(T, a, sigma, b, eta, rho) +
-                           V(t, a, sigma, b, eta, rho)));
+    return std::exp(0.5 * (V(T - t, a, sigma, b, eta, rho)
+                           - V(T, a, sigma, b, eta, rho)
+                           + V(t, a, sigma, b, eta, rho)));
 }
 
-double discount_bond(double t,
-                     double T,
-                     double x,
-                     double y,
-                     double a,
-                     double sigma,
-                     double b,
-                     double eta,
+double discount_bond(double t, double T,
+                     double x, double y,
+                     double a, double sigma,
+                     double b, double eta,
                      double rho) {
     // QuantLib G2::discountBond(t, T, x, y):
     //   P(t,T) = A(t,T) * exp(-B(a,T-t)*x - B(b,T-t)*y)
     const double tau = T - t;
-    return A(t, T, a, sigma, b, eta, rho) * std::exp(-B(a, tau) * x - B(b, tau) * y);
+    return A(t, T, a, sigma, b, eta, rho) *
+        std::exp(-B(a, tau) * x - B(b, tau) * y);
 }
 
 } // namespace g2_closed_form
 
-TEST_CASE("g2pp zero-vol discount_factor matches QuantLib closed-form bond price", tags) {
+TEST_CASE("two_factor_gaussian_process zero-vol discount_factor matches QuantLib closed-form bond price", tags) {
     // With zero vol (sigma=eta=0), V(t) = 0 for all t, so A(t,T) = 1.
     // discountBond = exp(-B(a,τ)*x - B(b,τ)*y)
     // initial_rate goes into factor_x, factor_y starts at 0.
@@ -446,17 +428,19 @@ TEST_CASE("g2pp zero-vol discount_factor matches QuantLib closed-form bond price
     const double dt = 1.0 / 52.0; // weekly
     const std::size_t ticks = 52;
 
-    ores::analytics::quant::service::g2pp_process p(a, b, 0.0, 0.0, 0.0, rate, 42, dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        a, b, 0.0, 0.0, 0.0, rate, 42, dt);
 
     const double df_discrete = p.discount_factor(ticks);
 
     // factor_x = rate, factor_y = 0
-    const double df_closed = g2_closed_form::discount_bond(0.0, T, rate, 0.0, a, 0.0, b, 0.0, 0.0);
+    const double df_closed = g2_closed_form::discount_bond(
+        0.0, T, rate, 0.0, a, 0.0, b, 0.0, 0.0);
 
     CHECK_THAT(df_discrete, Catch::Matchers::WithinRel(df_closed, 2e-4));
 }
 
-TEST_CASE("g2pp closed-form V(t) with non-zero vol is positive and monotonic", tags) {
+TEST_CASE("two_factor_gaussian_process closed-form V(t) with non-zero vol is positive and monotonic", tags) {
     // The integrated variance V(t) should be positive for t > 0 and
     // increase with t. This catches transcription errors in the
     // correlation cross-term (the most error-prone part of V).
@@ -465,13 +449,13 @@ TEST_CASE("g2pp closed-form V(t) with non-zero vol is positive and monotonic", t
     const double rho = 0.5;
 
     const double v_short = g2_closed_form::V(0.5, a, sigma, b, eta, rho);
-    const double v_long = g2_closed_form::V(2.0, a, sigma, b, eta, rho);
+    const double v_long  = g2_closed_form::V(2.0, a, sigma, b, eta, rho);
 
     CHECK(v_short > 0.0);
     CHECK(v_long > v_short);
 }
 
-TEST_CASE("g2pp zero-correlation bond price factorizes", tags) {
+TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes", tags) {
     // With rho = 0 and sigma = eta, the two factors are independent
     // and the bond price should be P = P_x * P_y where each P_i
     // is a one-factor Vasicek bond price.
@@ -483,7 +467,8 @@ TEST_CASE("g2pp zero-correlation bond price factorizes", tags) {
     const double dt = 1.0 / 12.0; // monthly
     const std::size_t ticks = 24;
 
-    ores::analytics::quant::service::g2pp_process p(a, b, 0.01, 0.01, 0.0, rate, 123, dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(
+        a, b, 0.01, 0.01, 0.0, rate, 123, dt);
 
     // Simulate forward to get non-zero x and y
     for (int i = 0; i < 10; ++i)
@@ -500,7 +485,7 @@ TEST_CASE("g2pp zero-correlation bond price factorizes", tags) {
     CHECK(df_actual < 1.0);
 }
 
-TEST_CASE("g2pp one-factor reduction: large kappa_y, zero sigma_y matches hull_white", tags) {
+TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero sigma_y matches hull_white", tags) {
     // When sigma_y = 0 and kappa_y -> infinity, factor_y is pinned to zero
     // and G2 reduces to a one-factor Gaussian process for factor_x:
     //   r(t) = x(t), dx = -kappa_x * x * dt + sigma_x * dW
@@ -522,7 +507,7 @@ TEST_CASE("g2pp one-factor reduction: large kappa_y, zero sigma_y matches hull_w
     // processes should mean-revert toward their long-run mean (zero
     // for G2's factor_x, theta for HW's theta=0) and produce
     // stationary short-rate distributions.
-    ores::analytics::quant::service::g2pp_process g2(
+    ores::analytics::quant::service::two_factor_gaussian_process g2(
         kappa, 1e9, sigma, 0.0, 0.0, initial_rate, 42, 1.0);
 
     ores::analytics::quant::service::vasicek_process hw(

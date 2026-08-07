@@ -66,23 +66,8 @@ std::optional<std::string> curve_key_ir(const ir_market_data_identifier& id) {
     return std::format("Yield/{}/{}", id.ccy, curve_id(id.ccy, *id.tenor));
 }
 
-// Backward compat: resolve the effective ir_quote_type, defaulting from metric when quote_type
-// is absent (the pre-extend-oresmd shape).
-ir_quote_type effective_quote_type(const ir_market_data_identifier& id) {
-    if (id.quote_type)
-        return *id.quote_type;
-    // Old-style metric-only URIs: par_rate -> ir_swap, discount_factor -> discount.
-    if (id.metric == metric::par_rate)
-        return ir_quote_type::ir_swap;
-    return ir_quote_type::discount;
-}
-
-// Resolve the effective metric, defaulting from the ir_quote_type when metric is absent
-// (the new, compositional shape: quote=fra implies metric=rate unless overridden).
-metric effective_metric(const ir_market_data_identifier& id) {
-    if (id.metric)
-        return *id.metric;
-    const auto qt = effective_quote_type(id);
+// Default metric from ir_quote_type when metric is absent (e.g. quote=mm implies metric=rate).
+metric default_metric(ir_quote_type qt) {
     switch (qt) {
     case ir_quote_type::ir_swap:
     case ir_quote_type::discount:
@@ -97,7 +82,7 @@ metric effective_metric(const ir_market_data_identifier& id) {
     case ir_quote_type::bma_swap:
         return metric::ratio;
     case ir_quote_type::zero:
-        return metric::rate; // ZERO/RATE is the default; ZERO/YIELD_SPREAD must be explicit.
+        return metric::rate;
     case ir_quote_type::mm_future:
     case ir_quote_type::oi_future:
         return metric::price;
@@ -127,8 +112,6 @@ std::string_view ore_type(ir_quote_type qt) {
 // ORE METRIC string for each metric.
 std::string_view ore_metric(metric m) {
     switch (m) {
-    case metric::par_rate:       return "RATE";
-    case metric::discount_factor:return "RATE";
     case metric::rate:           return "RATE";
     case metric::price:          return "PRICE";
     case metric::basis_spread:   return "BASIS_SPREAD";
@@ -160,16 +143,15 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             return std::nullopt;
         return std::format("SWAPTION/RATE_LNVOL/{}/{}/{}/{}", id.ccy, parts[0], parts[1], parts[2]);
     }
-    if (id.type != instrument_type::quote || !id.point || !id.tenor)
+    if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;
 
-    const auto qt = effective_quote_type(id);
-    const auto m = effective_metric(id);
+    const auto qt = *id.quote_type;
+    const auto m = id.metric ? *id.metric : default_metric(qt);
     const auto point = to_upper(*id.point);
     const auto t = to_upper(*id.tenor);
 
     if (qualifier_includes_index(qt)) {
-        // TYPE/METRIC/CCY[/2D][/INDEX]/TENOR/POINT
         if (qt == ir_quote_type::ir_swap)
             return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
         if (qt == ir_quote_type::discount)
@@ -181,7 +163,6 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, idx, t, point);
     }
     // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP
-    // qualifier = CCY/TENOR, point = POINT
     return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
 }
 

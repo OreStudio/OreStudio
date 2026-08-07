@@ -48,13 +48,11 @@ enum class curve_role {
 
 /**
  * @brief The `metric` query key of an oresmd URI, only meaningful when `type=quote`:
- * disambiguates a par-rate quote from a curve-sampled discount factor at the same
- * tenor/point coordinate. Extended for the full ORE METRIC column coverage.
+ * the ORE METRIC column. Defaults from the `quote` type when absent (e.g. quote=mm
+ * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    par_rate,       ///< A par-rate quote (e.g. ORE's IR_SWAP/RATE quote type).
-    discount_factor, ///< A directly-quoted discount factor (e.g. ORE's DISCOUNT/RATE quote type).
-    rate,           ///< A generic rate quote (e.g. MM/RATE, FRA/RATE, ZERO/RATE).
+    rate,           ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
     price,          ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
     basis_spread,   ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
     ratio,          ///< A ratio quote (e.g. BMA_SWAP/RATIO).
@@ -65,10 +63,7 @@ enum class metric {
  * @brief The `quote` query key of an oresmd URI, IR-only and only meaningful when
  * `type=quote`: the ORE quote TYPE (e.g. MM, FRA, IR_SWAP) — the first segment of ORE's
  * TYPE/METRIC/... quote key, independent of the METRIC column carried by the `metric`
- * query key. Introduced as part of extending oresmd to full IR quote-type coverage
- * (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24) — the existing `metric=par_rate` and
- * `metric=discount_factor` values remain valid as a backward-compatible shorthand that
- * implies `quote=ir_swap` and `quote=discount` respectively.
+ * query key.
  */
 enum class ir_quote_type {
     ir_swap,          ///< IR_SWAP (par swap rate).

@@ -93,21 +93,23 @@ TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
     REQUIRE(ir.role == curve_role::discount);
 }
 
-TEST_CASE("parse_ir_par_rate_quote_disambiguated_by_metric", tags) {
+TEST_CASE("parse_ir_swap_quote", tags) {
     const auto id = oresmd_parser::parse(
         uri("oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y"));
+            "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.type == instrument_type::quote);
-    REQUIRE(ir.metric == metric::par_rate);
+    REQUIRE(ir.quote_type == ir_quote_type::ir_swap);
+    REQUIRE(ir.metric == metric::rate);
     REQUIRE(ir.point == "5y");
 }
 
-TEST_CASE("parse_ir_discount_factor_quote_disambiguated_by_metric", tags) {
+TEST_CASE("parse_discount_quote", tags) {
     const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&role=projection&"
-                                             "type=quote&metric=discount_factor&point=6m"));
+                                             "type=quote&quote=discount&metric=rate&point=6m"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
-    REQUIRE(ir.metric == metric::discount_factor);
+    REQUIRE(ir.quote_type == ir_quote_type::discount);
+    REQUIRE(ir.metric == metric::rate);
     REQUIRE(ir.point == "6m");
 }
 
@@ -158,7 +160,7 @@ TEST_CASE("round_trip_fx", tags) {
 TEST_CASE("round_trip_ir_quote", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y"));
+            "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -261,16 +263,16 @@ TEST_CASE("reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency
 
 TEST_CASE("reject_ir_metric_present_when_type_is_not_quote", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(
-                          uri("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=par_rate")),
+                          uri("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate")),
                       oresmd_exception);
 }
 
 TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags) {
     const auto id =
-        oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=par_rate"));
+        oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=rate"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.type == instrument_type::quote);
-    REQUIRE(ir.metric == metric::par_rate);
+    REQUIRE(ir.metric == metric::rate);
 }
 
 TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {

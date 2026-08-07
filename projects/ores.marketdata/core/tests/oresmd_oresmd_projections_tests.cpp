@@ -79,15 +79,15 @@ TEST_CASE("ir_eur_estr_index_name_drops_tenor_suffix_for_overnight_index", tags)
     REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/EUR/EUR1D");
 }
 
-TEST_CASE("ir_par_rate_quote_key_matches_worked_example", tags) {
+TEST_CASE("ir_swap_quote_key_matches_worked_example", tags) {
     const auto id = parse(
-        "oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y");
+        "oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IR_SWAP/RATE/USD/2D/3M/5Y");
 }
 
-TEST_CASE("ir_discount_factor_quote_key_matches_worked_example", tags) {
+TEST_CASE("discount_quote_key_matches_worked_example", tags) {
     const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&"
-                          "metric=discount_factor&point=6m");
+                          "quote=discount&metric=rate&point=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "DISCOUNT/RATE/USD/USD3M/6M");
 }
 
@@ -176,33 +176,12 @@ TEST_CASE("ir_mm_future_metric_defaulted_to_price", tags) {
 }
 
 /*
- * Backward-compatible old-style metric-only URIs still produce correct quote keys.
+ * quote_type is required for type=quote to produce a quote key.
  */
 
-TEST_CASE("ir_old_style_par_rate_still_produces_ir_swap_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "IR_SWAP/RATE/USD/2D/3M/5Y");
-}
-
-TEST_CASE("ir_old_style_discount_factor_still_produces_discount_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=discount_factor&point=6m");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "DISCOUNT/RATE/USD/USD3M/6M");
-}
-
-/*
- * New-style explicit quote= parameter with the same semantics as the old metric-only URIs.
- */
-
-TEST_CASE("ir_new_style_ir_swap_rate_equivalent_to_old_par_rate", tags) {
-    const auto old_id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y");
-    const auto new_id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y");
-    REQUIRE(oresmd_projections::to_quote_key(new_id) == oresmd_projections::to_quote_key(old_id));
-}
-
-TEST_CASE("ir_new_style_discount_rate_equivalent_to_old_discount_factor", tags) {
-    const auto old_id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&metric=discount_factor&point=6m");
-    const auto new_id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m");
-    REQUIRE(oresmd_projections::to_quote_key(new_id) == oresmd_projections::to_quote_key(old_id));
+TEST_CASE("ir_quote_key_requires_quote_type", tags) {
+    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&point=5y");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 /*

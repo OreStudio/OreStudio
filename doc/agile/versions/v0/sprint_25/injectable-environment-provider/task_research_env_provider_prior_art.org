@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ores.platform:ores.testing:research:injectable-environment-provider:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/research-env-provider-prior-art
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A written comparison of concrete prior-art approaches exists to ground the desig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -37,6 +37,11 @@
 DO $$
 BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.portfolios', 'acme.acme_group.business_units', 'owner_unit_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'acme.acme_group.books', 'acme.acme_group.portfolios', 'parent_portfolio_source');
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.portfolios', 'acme.acme_uk.business_units', 'owner_unit_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'acme.acme_uk.books', 'acme.acme_uk.portfolios', 'parent_portfolio_source');

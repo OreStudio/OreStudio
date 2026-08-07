@@ -70,6 +70,7 @@ COMPANY_CCY = {
     "acme_uk": "GBP",
     "acme_us": "USD",
     "acme_hk": "HKD",
+    "acme_group": "GBP",
 }
 
 
@@ -197,10 +198,27 @@ def generate_dataset_populate(companies):
         "acme.acme_group.accounts", "Organisation",
         "ACME Corporation Group Accounts",
         "Generated staff login accounts for the ACME Corporation Plc holding "
-        "company itself (group-level roles with no office/business-unit of "
-        "their own) -- published party-scoped to the holding company's own "
-        "party, same convention as the per-office accounts datasets.",
+        "company itself (group-level roles) -- published party-scoped to the "
+        "holding company's own party, same convention as the per-office "
+        "accounts datasets.",
         "accounts"))
+    body.append(dataset_upsert(
+        "acme.acme_group.business_units", "Organisation",
+        "ACME Corporation Group Business Units",
+        "The holding company's own Group Treasury business unit -- "
+        "intercompany loans and FX hedges the parent itself carries, "
+        "distinct from the per-office trading desks.",
+        "business_units"))
+    body.append(dataset_upsert(
+        "acme.acme_group.portfolios", "Trading",
+        "ACME Corporation Group Portfolios",
+        "Portfolio hierarchy for the holding company's Group Treasury unit.",
+        "portfolios"))
+    body.append(dataset_upsert(
+        "acme.acme_group.books", "Trading",
+        "ACME Corporation Group Books",
+        "Group Treasury's books: intercompany loans and FX hedges.",
+        "books"))
 
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
@@ -708,10 +726,15 @@ def main():
         generate_accounts_populate(company, accounts[company])
         generate_account_contact_informations_populate(company, accounts[company])
 
-    # Group-level staff: no business units/portfolios/books/contact
-    # informations of their own, just accounts scoped to the holding
+    # Group-level: accounts (staff, no contact informations dataset --
+    # just the fixed CEO account) plus the holding company's own Group
+    # Treasury business unit/portfolio/books, scoped to the holding
     # company's own party.
     generate_accounts_populate("acme_group", accounts["acme_group"])
+    generate_business_units_populate("acme_group", business_units["acme_group"])
+    generate_portfolios_populate(
+        "acme_group", portfolios["acme_group"], business_units["acme_group"])
+    generate_books_populate("acme_group", books["acme_group"], portfolios["acme_group"])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,14 @@
 [
   {
+    "company_code": "acme_group",
+    "id": "ef912421-d1fc-5fde-95d0-48c0567bfbe8",
+    "unit_name": "Group Treasury",
+    "unit_code": "acme_group.treasury",
+    "parent_business_unit_code": null,
+    "business_centre_code": "GBLO",
+    "unit_type_code": "DIVISION"
+  },
+  {
     "company_code": "acme_uk",
     "id": "57e8e604-dcb6-515a-a6bd-38f0be805480",
     "unit_name": "Global Markets",

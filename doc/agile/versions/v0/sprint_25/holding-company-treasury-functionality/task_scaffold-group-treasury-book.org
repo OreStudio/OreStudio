@@ -7,41 +7,146 @@
 #+level: s1
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/scaffold-group-treasury-book
+#+pr: 1888
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Acme Corporation Plc (the holding company party) has its own Group
+Treasury business unit, portfolio, and books -- scoped to genuine
+parent-level treasury activity (intercompany loans, FX hedges), not
+a trading desk -- provisioned the same way each operating office
+already gets its book/portfolio tree, via the =acme_group= DQ bundle.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Not yet started.                       |
+| Now          | Group Treasury business unit/portfolio/books scaffolded and verified live via provisioning. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | None -- task closed.                   |
+| Last touched | 2026-08-06                             |
 
 * Acceptance
 
--
+- Acme Corporation Plc (the holding party) has a =acme_group.treasury=
+  DIVISION-type business unit. [DONE]
+- The holding party has a single Group Treasury portfolio (GBP,
+  virtual). [DONE]
+- The holding party has two Banking-classified books under that
+  portfolio: "Group Intercompany Loans" (GL-TREAS-001) and "Group FX
+  Hedges" (GL-TREAS-002), both cost_center CC-GROUP-TREASURY,
+  rates_centre_code GBLO. [DONE]
+- Data is generated via the Acme seeder pipeline (=generate_data.py=
+  / =generate_sql.py=), not hand-edited JSON/SQL, and wired into
+  both the schema-bootstrap populate order and the live =acme_group=
+  DQ bundle so a fresh =db recreate= and a live
+  =provision tenant --source acme= both produce it. [DONE]
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Followed the data model already decided in the "Define holding
+company treasury data model additions" task: one DIVISION business
+unit (=acme_group.treasury=, "Group Treasury"), one portfolio ("Group
+Treasury Portfolio", GBP, virtual), two Banking-classified books
+("Group Intercompany Loans" GL-TREAS-001, "Group FX Hedges"
+GL-TREAS-002), both cost_center =CC-GROUP-TREASURY=, rates_centre_code
+=GBLO=.
+
+1. Added a =build_group_treasury()= function to
+   =generate_data.py= (mirroring the existing per-office
+   =build_office()= shape) and wired its output into =main()=,
+   extending =all_business_units=/=all_portfolios=/=all_books=
+   rather than hand-editing the generated JSON. Regenerated
+   =business_units.json=/=portfolios.json=/=books.json= (+1/+1/+2
+   entries respectively).
+2. Extended =generate_sql.py=: added an =acme_group= entry to
+   =COMPANY_CCY= (GBP), and extended the acme_group-specific block in
+   =main()=/=generate_dataset_populate()= to also register and
+   generate SQL for =acme.acme_group.business_units=,
+   =.portfolios=, =.books= (previously only =.accounts= was handled
+   for the holding company). Regenerated the three new artefact
+   populate SQL files under
+   =projects/ores.sql/populate/acme/=.
+3. Wired the new artefact files into the two hand-maintained
+   orchestrators that don't get touched by seeder regeneration:
+   - =projects/ores.sql/populate/populate.sql= (schema-bootstrap
+     =\ir= order, used by =db recreate=): added the three new
+     =\ir= lines ahead of the existing
+     =acme_group_accounts_artefact_populate.sql= line, in the same
+     business_units -> portfolios -> books dependency order used for
+     each operating office.
+   - =projects/ores.sql/populate/acme/acme_bundle_populate.sql=
+     (DQ bundle membership, used by the live
+     =provision tenant --source acme= flow via
+     =tenant_handler.hpp='s Step 3): added the three new dataset
+     members to the =acme_group= bundle at priorities 10/20/30
+     (business_units/portfolios/books), renumbered the existing
+     =accounts= member to 40 to sit after them (matching the
+     per-office bundle ordering), and fixed the now-inaccurate "no
+     business units/portfolios/books of its own" comment.
+4. Verified end-to-end: =db recreate= applied the schema/populate
+   scripts cleanly with no errors; queried the DB directly and
+   confirmed all four =acme.acme_group.*= datasets are registered
+   and are members of the =acme_group= bundle in the right order.
+   Then started the service fleet and ran a real
+   =provision tenant --source acme= via
+   =how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+   end to end -- Step 3 published =acme_group.portfolios=,
+   =acme_group.business_units=, =acme_group.books= alongside the
+   pre-existing =acme_group.accounts=, with no errors across the
+   full provisioning run (base refdata, LEI import, all three
+   operating offices, cross-entity access).
+5. Live QA in the Qt client's Org Explorer surfaced a real bug the DB
+   query alone had missed: both books showed up under an
+   "(Unassigned)" bucket instead of nested under the Group Treasury
+   portfolio/business unit. Root cause: =ores_refdata_publish_
+   portfolios_from_dq_fn= resolves =owner_unit_id= by joining the
+   *already-published* business_units row for the same party, and
+   the workflow engine dispatches bundle members in an order driven
+   by =ores_dq_dataset_dependency= edges, not raw =display_order= --
+   =acme_uk=/=acme_us=/=acme_hk= already had explicit
+   =portfolios -> business_units= and =books -> portfolios=
+   dependency rows in
+   =acme_dataset_dependency_populate.sql= (with a comment
+   predicting exactly this failure mode), but =acme_group= had none
+   since it previously only ever published =accounts=. Without them,
+   the publish workflow could (and did, once) run portfolios before
+   business_units, silently leaving =owner_unit_id= null. Added the
+   same two dependency rows for =acme_group=. Re-ran =db recreate=
+   and a live =provision tenant --source acme=: Step 3 now
+   consistently completes =business_units= before =portfolios=
+   before =books=, and a direct DB query confirmed
+   =owner_unit_id= is correctly set on both the portfolio and both
+   books, pointing at the Group Treasury business unit.
+6. Re-ran the QA Validation Runner scenario end to end in the Qt
+   client after the fix: all three steps pass, including the
+   previously-failing "Open the portfolio/book tree under Group
+   Treasury" step -- both books now correctly nest under Group
+   Treasury in the Org Explorer instead of "(Unassigned)".
+7. Considered whether a third book is needed for profit remittances
+   specifically (raised during review) -- decided no: this system's
+   books represent risk/trading positions (NPV, market risk), and a
+   dividend/profit remittance is a cash-settlement/equity accounting
+   event, not a priced position. The FX exposure *of* a remittance
+   is already covered by "Group FX Hedges"; any intercompany funding
+   leg is covered by "Group Intercompany Loans". Two books matches
+   how a real group treasury centre's risk book structure normally
+   looks -- not adding a third.
 
 * Notes
 
@@ -54,13 +159,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:C6D51544-D07B-4AF6-9AA6-406EC89A3C43][Group Treasury book/portfolio visible for the holding company party]] | PASSED | First run caught the owner_unit_id/dependency bug (step 3 FAIL); re-run after the fix passed all 3 steps. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1888][#1888]] | [seeder,sql,agile] Scaffold Group Treasury book/portfolio for the holding company |
 
 * Review
 
@@ -69,3 +174,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Acme Corporation Plc (the holding company party) now has a Group
+Treasury business unit (=acme_group.treasury=), a single virtual GBP
+portfolio ("Group Treasury Portfolio"), and two Banking-classified
+books ("Group Intercompany Loans" GL-TREAS-001, "Group FX Hedges"
+GL-TREAS-002), correctly nested under that business unit -- both via
+=db recreate= and via a live =provision tenant --source acme= run,
+verified both at the DB level and live in the Qt client's Org
+Explorer through a QA Validation Runner scenario. Along the way,
+found and fixed a real bug (missing DQ dataset-dependency
+registrations for =acme_group=, letting the publish workflow race
+and leave every new row's =owner_unit_id= null) that the office
+bundles had already worked around but =acme_group= never needed to
+until this task added cross-referencing datasets to it.

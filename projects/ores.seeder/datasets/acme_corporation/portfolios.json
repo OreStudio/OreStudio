@@ -1,5 +1,15 @@
 [
   {
+    "company_code": "acme_group",
+    "id": "05e93bbe-2a59-5432-8a4d-43b26d3d33cf",
+    "name": "Group Treasury Portfolio",
+    "parent_portfolio_code": null,
+    "portfolio_code": "acme_group.treasury",
+    "owner_unit_code": "acme_group.treasury",
+    "aggregation_ccy": "GBP",
+    "is_virtual": true
+  },
+  {
     "company_code": "acme_uk",
     "id": "93925bc5-1800-5c69-a18b-f683dae17f2e",
     "name": "Global Portfolio",

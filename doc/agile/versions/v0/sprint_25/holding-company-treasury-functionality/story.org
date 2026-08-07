@@ -30,10 +30,10 @@ built in this story -- see the investigation task and Out of scope.
 |---------------+----------------------------------------|
 | State         | STARTED                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Holding company CRM now ticks live, fed by the offices' feeds. Next: Group Treasury book scaffolding. |
+| Now           | Group Treasury book/portfolio scaffolded and verified live. Next: investigate consolidated group risk reporting, and update the user manual. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up "Scaffold a Group Treasury book/portfolio for the holding company". |
-| Last touched  | 2026-08-06                             |
+| Next          | Pick up "Investigate consolidated group risk reporting" or "Update user manual with the holding company description". |
+| Last touched  | 2026-08-07                             |
 
 * Acceptance
 
@@ -44,6 +44,9 @@ built in this story -- see the investigation task and Out of scope.
   verified live via a 4/4-passed test scenario.]
 - Acme Corporation Plc has its own Group Treasury book/portfolio,
   scoped to parent-level treasury activity (not a trading desk).
+  [DONE -- one business unit, one portfolio, two Banking books
+  (intercompany loans, FX hedges), verified live via a 3/3-passed
+  test scenario.]
 - The user manual documents the holding company's role and how it
   differs from the three operating offices.
 - Consolidated group-level risk reporting is scoped (findings
@@ -57,7 +60,7 @@ built in this story -- see the investigation task and Out of scope.
 | [[id:41733D1E-E9B7-457E-8CAE-4F05FB654AF1][Define holding company treasury data model additions]] | DONE | 2026-08-04 | 2026-08-04 | Design task: confirmed the Group Treasury book/portfolio shape (one DIVISION-type unit, one portfolio, two Banking-classified books, all GBP) and decided tenant-wide FX tick consumption for CRM matching over per-party feed bindings. |
 | [[id:1F682C23-F76E-4701-A8CD-520AE073D45A][Publish CRM topology for the holding company party]] | DONE | 2026-08-05 | 2026-08-05 | Holding company now gets majors/exotics/scandies CRM topology during provisioning, same as each office. Getting a clean end-to-end run also required fixing four unrelated pre-existing regressions (asset_class/derivation_kind/scope/binding_mode) and a duplicate-menu bug (stale AdminPlugin build artifact). Verified via DB query and a 4/4-passed Qt client test scenario. |
 | [[id:D073F237-8280-4B64-8CD4-86B18F32294B][Resolve feed-binding party-scoping so holding company CRM can consume FX ticks]] | DONE | 2026-08-05 | 2026-08-06 | crm_ingest_bridge::update() is now tenant-wide (dropped the party_id_str parameter, feeds every party in the tick's tenant with a matching driver edge). Verified with a new unit test and live: holding company CRM ticks within seconds of opening. Also fixed a second, freshly-introduced regression -- a competing PR had "fixed" the same asset_class-validator bug from the opposite end, reverted to match the correct (already-merged) validator fix. |
-| [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] | BACKLOG | | | Create a business unit/portfolio/book under Acme Corporation Plc's party for intercompany loans and FX hedges the parent itself carries -- mirrors how each operating office already gets its own book/portfolio tree via the risk_management bundle, but scoped to genuine parent-level treasury activity (remittance hedges, intercompany lending), not a trading desk. |
+| [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] | DONE | 2026-08-06 | 2026-08-07 | Acme Corporation Plc now has its own Group Treasury business unit, portfolio, and two Banking books (intercompany loans, FX hedges), generated via the seeder pipeline and wired into both db recreate and the live acme_group DQ bundle. Live QA caught a real bug -- acme_group was missing the same DQ dataset-dependency registrations the office bundles already had, letting the publish workflow race and leave owner_unit_id null; fixed by adding the missing dependency rows. |
 | [[id:0120CEEF-22D3-4663-ADF3-47D408972DA6][Investigate consolidated group risk reporting]] | BACKLOG | | | Stretch/investigation task, not a build commitment: scope what it would take to roll up the three operating offices' books into a group-level risk view (NPV/VaR/CVA/XVA) at the holding company, and FX translation of subsidiary financials into the group reporting currency (IAS 21-style). Likely too large for this story -- produce findings and spin off a dedicated follow-on story rather than implementing here. |
 | [[id:0A540739-3629-413F-BB78-F6F4E029EFA4][Update user manual with the holding company description]] | BACKLOG | | | Add/update the user manual's Acme Corporation chapter (or a new section) describing the holding company's role and treasury functionality: FX/CRM visibility, the Group Treasury book, and how it differs from the three operating offices -- so a reader understands why the holding party looks and behaves differently from Acme UK/US/HK. |
 
@@ -116,6 +119,28 @@ built in this story -- see the investigation task and Out of scope.
   Both landed on main, leaving a validator expecting short codes and
   a writer emitting FpML names. Reverted the writer back to short
   codes, matching the validator fix that had already been reviewed.
+- Scaffolded the Group Treasury business unit/portfolio/books via
+  the seeder pipeline (generate_data.py/generate_sql.py), not
+  hand-edited JSON/SQL, and wired the new artefact files into both
+  populate.sql (schema-bootstrap order, for db recreate) and
+  acme_bundle_populate.sql (DQ bundle membership, for live
+  provisioning). Live QA in the Qt client caught a bug a DB-only
+  check had missed: both books showed under "(Unassigned)" instead
+  of nested under Group Treasury. Root cause -- acme_uk/us/hk each
+  have explicit portfolios->business_units and books->portfolios
+  rows in acme_dataset_dependency_populate.sql (with a comment
+  predicting exactly this failure mode), needed because the DQ
+  bundle-publish workflow orders steps by dependency-graph
+  resolution, not raw display_order; acme_group never needed these
+  before since it only ever published accounts. Added the same two
+  dependency rows for acme_group -- fixed, re-verified live.
+- Considered adding a third book for profit remittances specifically;
+  decided against it. This system's books represent risk/trading
+  positions, and a remittance is a cash-settlement/equity accounting
+  event, not a priced position -- its FX exposure is already covered
+  by "Group FX Hedges" and any intercompany funding leg by "Group
+  Intercompany Loans". Two books matches how a real group treasury
+  centre's risk book structure normally looks.
 
 * Out of scope
 

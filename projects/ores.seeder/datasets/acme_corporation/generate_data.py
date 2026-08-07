@@ -434,9 +434,10 @@ def gen_person(office, faker, index, used_slugs):
 
 def build_group_accounts():
     """The holding company's own staff -- just a Group CEO today, no
-    desks/business units of its own (those live per-office). Every office's
-    Country Head reports to this account, so the org chart is one real tree
-    rather than three disconnected per-office roots. Fixed (not
+    desks/business units of its own beyond Group Treasury (see
+    build_group_treasury() -- trading desks still live per-office). Every
+    office's Country Head reports to this account, so the org chart is one
+    real tree rather than three disconnected per-office roots. Fixed (not
     Faker-generated): a single person doesn't need per-office locale/name
     variety, and staying deterministic keeps it stable across regenerations."""
     username = "adrian.vance"
@@ -460,6 +461,66 @@ def build_group_accounts():
         "postal_code": None,
         "phone": None,
     }]
+
+
+def build_group_treasury():
+    """The holding company's own treasury book/portfolio/business unit --
+    intercompany loans and FX hedges the parent itself carries, distinct
+    from the per-office trading desks. One DIVISION-type unit (not a
+    deeper DESK/BUSINESS_AREA hierarchy -- the holding company doesn't
+    need more than one treasury desk yet), one virtual top-level
+    portfolio, two Banking-book books (financing and hedges of
+    non-trading exposure, not held-for-trading positions). All GBP,
+    matching the group's own London HQ/GBLO business centre. See
+    doc/agile/versions/v0/sprint_25/holding-company-treasury-functionality/
+    task_define-holding-company-treasury-data-model.org for the full
+    design rationale."""
+    unit_code = f"{HOLDING['code']}.treasury"
+    unit_id = new_uuid(f"business_unit:{unit_code}")
+    business_units = [{
+        "company_code": HOLDING["code"],
+        "id": unit_id,
+        "unit_name": "Group Treasury",
+        "unit_code": unit_code,
+        "parent_business_unit_code": None,
+        "business_centre_code": "GBLO",
+        "unit_type_code": "DIVISION",
+    }]
+
+    portfolio_code = f"{HOLDING['code']}.treasury"
+    portfolio_id = new_uuid(f"portfolio:{portfolio_code}")
+    portfolios = [{
+        "company_code": HOLDING["code"],
+        "id": portfolio_id,
+        "name": "Group Treasury Portfolio",
+        "parent_portfolio_code": None,
+        "portfolio_code": portfolio_code,
+        "owner_unit_code": unit_code,
+        "aggregation_ccy": "GBP",
+        "is_virtual": True,
+    }]
+
+    def book(name, gl_suffix):
+        return {
+            "company_code": HOLDING["code"],
+            "id": new_uuid(f"book:{HOLDING['code']}.{gl_suffix}"),
+            "name": name,
+            "portfolio_code": portfolio_code,
+            "functional_currency": "GBP",
+            "gl_account_ref": f"GL-TREAS-{gl_suffix}",
+            "cost_center": "CC-GROUP-TREASURY",
+            "book_status": "Active",
+            "regulatory_book_type": "Banking",
+            "is_sweepable": False,
+            "rates_centre_code": "GBLO",
+        }
+
+    books = [
+        book("Group Intercompany Loans", "001"),
+        book("Group FX Hedges", "002"),
+    ]
+
+    return business_units, portfolios, books
 
 
 def build_office(office, faker, group_ceo_username=None):
@@ -814,6 +875,11 @@ def main():
                       photo_assignments, used_photo_keys)
     all_accounts.extend(group_accounts)
     group_ceo_username = group_accounts[0]["username"]
+
+    treasury_units, treasury_portfolios, treasury_books = build_group_treasury()
+    all_business_units.extend(treasury_units)
+    all_portfolios.extend(treasury_portfolios)
+    all_books.extend(treasury_books)
 
     for office in OFFICES:
         if office["locale"]:

@@ -298,6 +298,11 @@ def render_nats_unit(checkout_root, env_name, target_name, nats_port):
         f'sleep 0.1; done; '
         f'echo "nats-server did not open port {nats_port} within 60s" >&2; exit 1'
     )
+    # env_name uses hyphens (ORES_ENV_NAME=festive-dijkstra), but the
+    # nats config file on disk uses underscores (env_init's label_lower
+    # = festive_dijkstra). Match the on-disk convention so nats-server
+    # can actually open its config.
+    nats_label = env_name.replace("-", "_")
     unit = UNIT_HEADER
     unit += f"""
 [Unit]
@@ -309,7 +314,7 @@ StartLimitBurst=5
 [Service]
 Type=simple
 EnvironmentFile={checkout_root}/.env
-ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{env_name}.conf
+ExecStart=/usr/sbin/nats-server --config {checkout_root}/build/config/nats-{nats_label}.conf
 ExecStartPost=/bin/sh -c '{port_probe}'
 Restart=always
 RestartSec=2
@@ -674,6 +679,7 @@ WantedBy={target_name}
 
 
 def render_quadlet_nats_unit(checkout_root, env_name, target_name):
+    nats_label = env_name.replace("-", "_")
     unit = UNIT_HEADER
     unit += f"""
 [Unit]
@@ -687,9 +693,9 @@ Image=localhost/ores-nats:local
 ContainerName={_unit_basename("nats-server", env_name)}
 Network=host
 EnvironmentFile={checkout_root}/docker/.env
-Volume={checkout_root}/build/config/nats-{env_name}.conf:{checkout_root}/build/config/nats-{env_name}.conf:ro
+Volume={checkout_root}/build/config/nats-{nats_label}.conf:{checkout_root}/build/config/nats-{nats_label}.conf:ro
 Volume={checkout_root}/build/keys/nats:{checkout_root}/build/keys/nats:ro
-Exec=--config {checkout_root}/build/config/nats-{env_name}.conf
+Exec=--config {checkout_root}/build/config/nats-{nats_label}.conf
 
 [Service]
 Restart=always

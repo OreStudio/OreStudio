@@ -140,29 +140,17 @@ alter default privileges in schema public
 -- iam_service: IAM domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
--- The Acme provisioner (internal-impersonation orchestrator) checks the
--- new tenant's own images for an already-copied logo (RLS-visible, just
--- needs the table grant), then reads the system-tenant template via a
--- security-definer function that crosses the tenant-isolation RLS policy
--- (see ores_assets_get_template_image_fn).
 select _ores_grant_select_fn('ores_assets_', :'iam_service_user');
-grant execute on function ores_assets_get_template_image_fn(text) to :iam_service_user;
--- grant_cross_entity_access (tenant_handler.hpp) reads role/
--- business_unit_code straight from the DQ accounts artefact tables
--- already published by the office loop, to identify which staff get
--- cross-entity party membership -- ores_iam_accounts_tbl itself carries
--- no business-unit reference to query this from post-publish.
 select _ores_grant_select_fn('ores_dq_', :'iam_service_user');
+select _ores_grant_execute_fn('ores_assets_get_template_image_', :'iam_service_user');
 
 -- ---------------------------------------------------------------------------
 -- refdata_service: Reference Data domain service
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_refdata_', :'refdata_service_user');
 select _ores_grant_select_fn('ores_variability_', :'refdata_service_user');
-select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
--- Parties/counterparties validate image_id as a soft FK against
--- ores_assets_images_tbl (see refdata_parties_create.sql).
 select _ores_grant_select_fn('ores_assets_', :'refdata_service_user');
+select _ores_grant_execute_fn('ores_refdata_publish_', :'refdata_service_user');
 
 -- ---------------------------------------------------------------------------
 -- workspace_service: Workspace domain service

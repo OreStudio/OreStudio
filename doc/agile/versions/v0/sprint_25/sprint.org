@@ -63,6 +63,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] | BACKLOG | | | Fix four codegen template bugs: history mapper provenance fields, compound-key is_uuid gating, pagination footgun, junction template follow-ups. |
 | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] | BACKLOG | | | Close two systemic codegen gaps: RLS policy facet (no template emits RLS policies) and history provider registrar codegen (918-line hand-maintained file). |
 | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] | BACKLOG | | | Three IR curve follow-ups: expand stochastic process types, fix seed data/combo gaps, investigate tenant_type drift. |
+| [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] | BACKLOG | | | Found while removing controller from the db recreate pipeline (PR #1867): regenerating iam_service_db_grants_create.sql drops hand-added cross-service grants the generator does not emit. Investigate whether the registry model/template should express per-service cross-domain grants so generation is lossless, and close the drift so regeneration never silently drops grants. |
 
 ** Hotfixes
 

@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: F3B1D6CE-BC84-4E64-A7B1-AF37A20D0FF7
+:END:
+#+title: Task: Investigate and close the iam_service_db_grants_create.sql generator drift
+#+description: iam_service_db_grants_create.sql (generated via ores.codegen ores.sql.service address from the service registry model) carries four hand-added cross-service grants the generator does not emit: iam_service select on ores_assets_ + execute on ores_assets_get_template_image_fn (Acme provisioner logo copy) + select on ores_dq_ (cross-entity party membership); refdata_service select on ores_assets_ (party image soft-FK). A regeneration silently drops them. Investigate the root cause (model/template cannot express cross-domain grants), decide the fix (per-service cross-domain grant lists in the model, or a generator guard), implement it, and prove regeneration is now lossless (regenerate = no-op diff).
+#+type: task
+#+level: s1
+#+filetags: :investigate-hand-added-service-grants:sprint_25:v0:
+#+owner: marco
+#+branch: feature/investigate-grants-drift
+#+pr: 1882
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close the drift in =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
+so that regenerating it from the service registry model is lossless —
+the hand-added cross-service grants are either expressible in the
+model/template, or a generator guard makes silent grant loss
+impossible.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- Root cause documented: why the four grants are hand-added (the
+  generator cannot express cross-service =dml_prefixes= or
+  =select_prefixes=), where each is load-bearing (Acme provisioner
+  logo copy, party image soft-FK, cross-entity party membership), and
+  whether they are correctly placed.
+- The chosen fix is implemented: either per-service cross-domain
+  grant lists in =projects/modeling/service_registry.org= +
+  template, or a generator guard that fails regeneration when it
+  would drop content the model cannot express.
+- Regeneration is proven lossless: running the generator produces a
+  no-op diff against the committed file (or a test asserts the
+  guard fires on the current hand-added content).
+- The four grants still exist after the change — nothing load-bearing
+  is removed.
+
+* Plan
+
+1. Regenerate the four =ores.sql.service= files from the generator and
+   diff against the committed versions — the grants file was the only
+   one with meaningful drift (the other three matched after the
+   controller decommission fix in PR #1867). Three of the four
+   hand-added grants were simply missing prefixes in
+   =projects/modeling/service_registry.org=; the fourth (iam
+   =execute= on =ores_assets_get_template_image_fn=) already had a
+   matching =_ores_grant_execute_fn= helper in the template.
+2. Add =ores_assets_get_template_image_= to iam's Execute prefixes
+   and =ores_assets_= to refdata's Select prefixes, with rationale
+   comments from the hand-added file.
+3. Regenerate, verify idempotency (second run = no-op diff), verify
+   all four grants live after =compass db recreate=.
+4. While bringing the environment up to verify, =compass services
+   start= repeatedly failed: nats-server returned ENOENT on its
+   config. Root cause was a second, unrelated drift: =systemd_generate.py=
+   wrote =nats-festive-dijkstra.conf= (hyphens from =ORES_ENV_NAME=)
+   while =env_init.py= writes =nats-festive_dijkstra.conf=
+   (underscores, from =label_lower=). Fixed =render_nats_unit= and
+   =render_quadlet_nats_unit= to use a =nats_label= variable that
+   mirrors =env_init='s underscore convention. The OS sandbox was
+   initially suspected and removed from the settings org source, then
+   restored when proven innocent — all sandbox assertions were tested
+   and confirmed false; the path mismatch was the sole root cause.
+
+* Notes
+
+- The OS sandbox was investigated as a possible cause of the ENOENT on
+  nats config; it was responsible for *some* file-visibility anomalies
+  (session-written files were on a scratch btrfs subvolume and decayed
+  over time), but the persistent and reproducible ENOENT — the one
+  that kept =compass services start= broken across sessions — was the
+  underscore/hyphen path mismatch. After fixing the path, services
+  started successfully with both the global and project sandboxes
+  active (23/23 units, exit 0). The sandbox was restored to the org
+  source exactly as it was on =origin/main=.
+- The scratch-layer file decay is a real phenomenon (observed across
+  multiple sessions) and warrants a separate capture: sandboxed writes
+  to paths outside =allowWrite= are silently redirected to a temporary
+  backing store that can be cleaned up independently, causing
+  non-deterministic ENOENTs. That is not addressed here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1882][#1882]] | [sql,compass] Close grants generator drift and fix nats config path in systemd units |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped in PR #1882 (branch =feature/investigate-grants-drift=).
+
+=Grants generator drift=
+The four hand-added cross-service grants in
+=iam_service_db_grants_create.sql= were expressible in the registry
+model — two prefixes were missing (iam =ores_assets_get_template_image_=
+Execute, refdata =ores_assets_= Select) and the other two were already
+in the model (=ores_assets_= / =ores_dq_= Select for iam). Added the
+missing prefixes with their rationale comments (Acme provisioner logo
+copy, party image soft-FK); regenerated the file. Regeneration is now
+idempotent; all four grants verified live after =compass db recreate=.
+Build clean (linux-clang-debug-make), ctest 71/71.
+
+=NATS config path mismatch (discovered during verification)=
+=systemd_generate.py= wrote =nats-festive-dijkstra.conf= (hyphens
+from =ORES_ENV_NAME=) while =env_init.py= writes
+=nats-festive_dijkstra.conf= (underscores from =label_lower=).
+Fixed =render_nats_unit= and =render_quadlet_nats_unit= to mirror
+=env_init='s underscore convention. =compass services start= verified
+with all 23 units running (sandboxes active, no ENOENT).
+
+The OS sandbox was investigated and ruled out — config was restored
+to match =origin/main=.

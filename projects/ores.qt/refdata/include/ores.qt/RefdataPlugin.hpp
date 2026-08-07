@@ -82,6 +82,7 @@ class BusinessUnitTypeController;
 class PartyIdSchemeController;
 class PartyStatusController;
 class IBusinessUnitBrowser;
+class IrCurveBootstrapConfigController;
 
 /**
  * @brief Reference data plugin: currencies, countries, dimensions, coding
@@ -148,6 +149,11 @@ private:
     plugin_context ctx_;
 
     QMenu* reference_data_menu_{nullptr};
+
+    // Curve Bootstrapping submenu lives on the shared Market Data menu, not Reference Data --
+    // curve configs are ref data, but curve generation is a market-data activity.
+    QAction* act_curve_bootstrap_configs_{nullptr};
+    QAction* act_build_curve_{nullptr};
 
     QAction* act_currencies_{nullptr};
     QAction* act_countries_{nullptr};
@@ -216,6 +222,7 @@ private:
     std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
     std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
     std::unique_ptr<PartyStatusController> partyStatusController_;
+    std::unique_ptr<IrCurveBootstrapConfigController> irCurveBootstrapConfigController_;
 };
 
 }

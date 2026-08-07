@@ -84,99 +84,114 @@ bond price from current state. Every instrument derived from one
 process (deposit, FRA, swap) evaluates the same formula at the same
 =r_t=, guaranteeing internal curve consistency.
 
-** Inventory of the 8 proposed models
+** Inventory of the 8 proposed models against QuantLib reference
 
-Each model is assessed against the current engine interface and the
-multicurve architecture's stated scope.
+Every model has a QuantLib implementation we can study. The question
+isn't /can we implement it/ — it's what interface it fits, what effort
+it needs, and in what order.
 
-| Model | Numerical method | Parameters map to current interface? | Effort to implement engine | Notes |
-|-------+-----------------+--------------------------------------+---------------------------+-------|
-| BDT (Black-Derman-Toy) | Recombining binomial tree (matching term structure + vol) | No — tree calibration, not SDE | Major — tree engine needed | Discrete-time tree, not continuous SDE. Core use (callable bonds/MBS) needs the tree path-dependence. |
-| Black-Karasinski | Log-normal short rate via tree | No — same tree challenge as BDT | Major — tree engine needed | Log-normal ensures r_t > 0, otherwise similar tree approach. |
-| HJM | Forward-rate curve discretization, multi-factor | No — forward curve, not short rate | Major — fundamentally different state space | Models the entire f(t,T) surface. No-arbitrage by construction eliminates drift calibration but shifts complexity to volatility structure. |
-| LMM/BGM | Forward LIBOR rates under risk-neutral measure | No — forward measure, drift adjustments | Major — full term-structure engine | Pre-SOFR legacy. Drift depends on correlation structure across all forward rates. |
-| SABR | Stochastic volatility + CEV local vol | No — vol model, not rate model | Major — different domain | Models implied-vol smile, not rates directly. Rate engines could *use* SABR vols, but SABR itself isn't an IYieldCurveProcess. |
-| G2++ | Two-factor Gaussian, SDE simulation | Partially — needs second kappa/sigma + correlation | Moderate — closest to existing architecture | Natural extension of Hull-White. Would need =make_yield_curve_process= overload or extended params. The most implementable of the 8. |
-| Affine Term Structure (Duffie-Kan) | Multi-factor with yields as affine function of latent factors | In a restricted sense — Vasicek and CIR are 1-factor special cases | Major if general; trivial if just noting the taxonomy | Meta-framework. The existing 3 models ARE affine models. A general Duffie-Kan engine would be a multi-factor affine framework with user-specified factor loadings — large effort. |
-| Quadratic Gaussian (QG) | Extends affine with quadratic yield terms | No — quadratic, not affine | Major — no existing infrastructure | Generalisation of affine class. Richer dynamics at the cost of closed-form tractability. |
+| # | Model | QuantLib class | Fits IYieldCurveProcess? | Interface notes |
+|---+-------+----------------+--------------------------+-----------------|
+| 4 | BDT | =BlackDermanToy= | Yes — short-rate model via recombining binomial tree | =next()= walks the tree; =discount_factor()= is the tree-implied bond price. Tree calibration (matching initial term structure + vol σ(t)) is the interesting part. |
+| 5 | Black-Karasinski | =BlackKarasinski= | Yes — log-normal short rate, implements as SDE or trinomial tree | =next()= discretizes =d ln r = κ(θ - ln r)dt + σ dW=. Positivity guaranteed. In QuantLib this is a tree model but the SDE form is a straightforward Euler step on ln r. |
+| 6 | HJM | =HJM=, =HJMFactory= | Needs interface extension — state is a discretized forward curve, not a scalar | =next()= advances every forward rate; =discount_factor()= integrates the forward curve from the current discretization. Multi-dimensional state. |
+| 7 | LMM/BGM | =LiborMarketModel=, many variants | Needs interface extension — state is a vector of forward LIBOR rates | Drift under forward measure depends on correlation structure. QuantLib has a mature implementation. Pre-SOFR but historically important. |
+| 8 | SABR | =SABRInterpolation= | Fits =IStochasticProcess= but not =IYieldCurveProcess= | Two-dimensional: =dF = σF^β dW₁=, =dσ = νσ dW₂=. Produces a vol surface, not a yield curve. Different consumer — worth implementing but as a separate entity type. |
+| 9 | G2++ | =G2= | Yes — two-factor extension of Hull-White | Second factor adds =kappa₂=, =sigma₂=, =rho=. =discount_factor()= has a closed-form two-factor affine bond price. Closest to existing code. |
+| 10 | Affine Term Structure | No single QuantLib class (Vasicek/CIR are special cases) | In general, needs multi-factor interface | Meta-framework. Vasicek, CIR, Hull-White ARE affine models. A general affine engine lets users specify factor count, risk premia, factor loadings. |
+| 11 | Quadratic Gaussian | Not in standard QuantLib | Needs multi-factor + quadratic interface | Extends affine with quadratic yield terms. Richest dynamics, least QuantLib support — would be the most original implementation. |
 
-** What's realistic now vs. what's aspirational catalogue
+** Build order
 
-The task's immediate scope is *seeding the reference table* — adding
-catalogue entries so the models exist as selectable codes, even
-without engines behind them. The table is the UI-visible part; an
-engine is only needed when a config actually selects that process type
-for curve generation.
+Split into individual tasks, one per model. Order by decreasing
+familiarity with the existing architecture:
 
-*Seed as catalogue entries (cheap, unblocked):* All 8 models. Each is
-a well-known named model in the literature — catalogue inclusion is a
-domain-accuracy improvement regardless of engine availability. A
-=pending= or =not_implemented= column (or just descriptive text noting
-"engine not yet available") would make the catalogue honest.
+1. *G2++* — Two-factor Gaussian. Extend =hull_white_process= with a
+   second factor. Exact same recursion pattern (Brigo-Mercurio), just
+   with 2×2 matrices instead of scalars. QuantLib =G2= class as
+   reference. The natural first step: teaches the codebase how to
+   handle multi-factor processes.
 
-*Realistic engine candidates (moderate effort):* G2++ is the clear
-next step — it extends the existing Gaussian infrastructure by adding
-a second factor, and its discount_factor() has a closed-form
-two-factor affine bond price. A two-factor Hull-White variant (often
-treated distinctly from G2++ in practice) could share most of the same
-code.
+2. *Black-Karasinski* — Log-normal short rate. Euler discretization of
+   =ln r=, then exponentiate. Simpler than G2++ numerically, different
+   domain (positivity-constrained). Teaches the codebase how to handle
+   non-Gaussian process types.
 
-*Tree-based models (BDT, BK):* Would require a new numerical backbone
-(binomial/trinomial tree engine). Out of scope for this task but worth
-cataloguing now as aspirational entries.
+3. *BDT* — Binomial tree. New numerical method (recombining tree),
+   same short-rate domain. The tree calibration to match initial term
+   structure + volatility is the instructive part — this is the first
+   tree-based process, opening the door to more tree models. QuantLib
+   =BlackDermanToy= as reference.
 
-*Forward-curve models (HJM, LMM):* Different architecture entirely.
-These belong in a multicurve/bootstrap discussion, not a process-type
-enum. LMM is pre-SOFR legacy — cataloguing it as "historical/legacy
-(pre-SOFR)" is the right level.
+4. *Affine Term Structure* — General multi-factor framework. Actually
+   subsumes Vasicek/CIR/Hull-White as special cases. Building this
+   after G2++ (which teaches multi-factor) and after Vasicek/CIR/HW
+   (which are 1-factor special cases) is the natural progression. Let
+   users specify factor count, risk premia, market price of risk.
 
-*Vol models (SABR):* SABR is not an =IYieldCurveProcess= — it's a vol
-surface model. An =ir_curve_generation_config= might want to reference
-a SABR vol surface *alongside* a process type, but SABR isn't a
-replacement for the short-rate engine itself. Worth cataloguing as a
-separate entity type (=volatility_model=) rather than as a
-=yield_curve_process_type=.
+5. *HJM* — Forward-curve model. First process where the state is
+   curve-valued rather than scalar-valued. Different architecture, but
+   by this point the codebase has handled multi-factor (G2++,
+   Affine) and different numerics (BDT tree). QuantLib =HJM= as
+   reference.
 
-*Affine/QG frameworks:* Vasicek and CIR are already 1-factor affine
-models. Cataloguing the general affine class and QG extension as
-taxonomic entries (not implementations) is useful for completeness but
-doesn't change what's runnable.
+6. *LMM/BGM* — Forward-rate model. Builds on HJM's curve-valued state
+   but under the forward measure with drift adjustments. Most complex
+   drift calculation (depends on correlation structure across all
+   forward rates). QuantLib =LiborMarketModel= as reference.
 
-** Recommendation
+7. *SABR* — Volatility model. Two-dimensional stochastic process
+   (forward + vol). Deserves its own interface — not
+   =IYieldCurveProcess=, but =IStochasticProcess= is still applicable
+   (a 2D process returns both =F= and =σ= from =current()=, and an
+   implied vol from the SABR formula). Separate entity type
+   (=volatility_model_type=) rather than a =yield_curve_process_type=.
 
-1. *Seed all 8 as catalogue entries* with a display-order gap from the
-   3 implemented models (e.g. 10-80 range). The table already supports
-   this — no engine required for a catalogue row.
-2. *Flag unimplemented engines* — either via a new =engine_available=
-   boolean column (guards UI against selecting an engine that won't
-   work) or via description text ("Engine not yet implemented").
-3. *G2++ as the first engine build* — closest to existing code,
-   highest practical value (XVA/CVA/ALM).
-4. *SABR as a separate entity* — =volatility_model_type= reference
-   table, not a =yield_curve_process_type=. Different domain,
-   different consumers.
-5. *BDT, BK, HJM, LMM, Affine, QG as aspirational catalogue entries*
-   — domain-accurate, useful for UI browsing, honest about
-   implementation status.
+8. *Quadratic Gaussian* — The most original work. No direct QuantLib
+   reference. By this point the codebase has a general affine
+   framework, multi-factor support, multiple numerical methods. The
+   quadratic extension builds on the affine engine.
 
-** Fit with multicurve architecture
+** What the interface needs to evolve
+
+The current =make_yield_curve_process(kappa, theta_path, sigma, initial_rate)=
+is specifically one-factor Gaussian. To support the full set:
+
+- *Multi-factor parameters:* A vector of =kappa=, =sigma=, plus a
+  correlation matrix. G2++ needs 2 factors; HJM/LMM need N factors.
+
+- *State dimension:* =current()= currently returns =double= (scalar
+  short rate). Multi-factor processes need a vector-valued state.
+  Either overload =current()= with a vector variant, or add a new
+  interface =IMultiFactorProcess= that extends =IYieldCurveProcess=.
+
+- *discount_factor() generality:* The current recursion
+  (hull_white_process::discount_factor) is specific to the
+  one-factor Gaussian affine bond price. Each model class supplies its
+  own =discount_factor()= override — this already works, no interface
+  change needed here.
+
+- *Numerical method abstraction:* BDT needs a tree engine. Rather than
+  one-off tree code in the process class, extract a reusable binomial
+  tree utility (=binomial_tree=) that BDT, BK, and future tree models
+  share.
+
+** Relationship with multicurve architecture
 
 The multicurve design (=ir_curve_bootstrap_config= in ores.refdata)
-concerns bootstrapping *real* curves from market instrument grids
-(Funding → Projection build order). It does not reference stochastic
-process types at all — it works on observed market data, not simulated
-paths. The process types belong to =ores.synthetic= (synthetic curve
-generation), which is a parallel concern: synthetic curves ARE consumed
-by the bootstrap pipeline (a synthetic instrument grid can be fed as
-input), but the process-type selection is upstream of bootstrapping.
+bootstraps real curves from market instrument grids. The process types
+in =ores.synthetic= generate /synthetic/ curves from stochastic
+processes. They're parallel concerns: a synthetic instrument grid
+feeds the bootstrap pipeline as one possible input, but the
+process-type selection is upstream of bootstrapping.
 
-Of the 8 models, G2++ and the two-factor Hull-White variant are the
-ones most aligned with the multicurve architecture's actual scope:
-XVA/CVA/ALM desks, which the knowledge docs already name-check, are
-exactly where two-factor Gaussian models are used in practice. The
-current single-factor Hull-White already covers basic IR curve
-generation; adding a second factor is the natural extension that the
-multicurve docs anticipate without naming explicitly.
+G2++ and the two-factor Hull-White variant align directly with the
+multicurve docs' named use cases: XVA/CVA/ALM desks use two-factor
+Gaussian models precisely because a single factor can't capture the
+decorrelation between short and long rates that XVA requires over a
+multi-decade horizon. Adding G2++ gives ORE Studio's synthetic feeds
+the same modelling capability that the multicurve docs anticipate for
+bootstrapped official curves.
 
 * Notes
 

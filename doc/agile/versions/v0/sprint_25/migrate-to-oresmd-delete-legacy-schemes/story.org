@@ -2,16 +2,16 @@
 :ID: CA11A754-C153-42A7-AF8B-FA8447CE50B1
 :END:
 #+title: Story: Migrate to oresmd, delete market_series qualifier and ore_key
-#+description: Follow-on implementation to the oresmd design: migrate ir_curve_generation_config, market_series, and fx_spot_generation_config onto oresmd, then delete the legacy free-text qualifier/ore_key fields -- single scheme, no permanent coexistence.
+#+description: Pulled into sprint 25 from the product backlog: migrate ir_curve_generation_config, market_series, and fx_spot_generation_config onto oresmd, then delete the legacy free-text qualifier/ore_key fields -- single scheme, no permanent coexistence.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:inbox:
+#+filetags: :marketdata:sprint_25:v0:
 #+created: 2026-07-28
-#+updated: 2026-07-28
+#+updated: 2026-08-07
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -57,7 +57,7 @@ Per-field migration:
 | Now           | In-depth analysis complete; 5 implementation tasks queued. |
 | Waiting on    | Nothing.                               |
 | Next          | Start [[id:657F1AF9-0B49-40DA-9F2D-68006B53F814][Add oresmd parsing/projection library]]. |
-| Last touched  | 2026-07-28                               |
+| Last touched  | 2026-08-07                               |
 
 * Acceptance
 
@@ -89,7 +89,7 @@ Per-field migration:
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D9BCA1E0-BB8C-4B3E-8A0B-4FC7098E0ED9][In-depth analysis: migrate legacy identifiers onto oresmd]] | DONE | 2026-07-28 | 2026-07-28 | Ground the per-field migration plan in the current codebase: enumerate every read/write consumer of ore_key, market_series qualifier/point_id, and ir_curve_generation_config's (currency_code, index_name), and confirm the oresmd projection rules cover every one before any schema/code change starts. |
-| [[id:657F1AF9-0B49-40DA-9F2D-68006B53F814][Add oresmd support to ores.marketdata]] | BACKLOG | | | Implement parse_oresmd, to_uri, and resolve inside ores.marketdata (api/core) -- not a separate library/component -- per the oresmd design's variant-based data model, with projection rules into ORE's index/curve/quote keys. No consumer migration yet. |
+| [[id:657F1AF9-0B49-40DA-9F2D-68006B53F814][Add oresmd support to ores.marketdata]] | DONE | 2026-07-28 | 2026-07-28 | Implement parse_oresmd, to_uri, and resolve inside ores.marketdata (api/core) -- not a separate library/component -- per the oresmd design's variant-based data model, with projection rules into ORE's index/curve/quote keys. No consumer migration yet. |
 | [[id:05D5C710-7C9E-4CE1-859D-95B19E605F9B][Migrate fx_spot_generation_config.ore_key onto oresmd]] | DONE | 2026-07-29 | 2026-07-29 | Switch ore_key's generation source from the currency-pair derivation to oresmd's FX projection rule, verify against existing rows, then delete the old derivation code. |
 | [[id:9DB7786E-C9BE-467F-A2B9-5A9AFCFD6B45][Migrate ir_curve_generation_config onto oresmd, add curve role]] | DONE | 2026-07-29 | 2026-07-30 | Replace index_name with oresmd's index_family (backed by overnight_index_convention/ibor_index_convention) plus tenor, add the missing role field, and rebuild curve_feed_controller's collision check on the full oresmd field set so discount/projection coexistence works. Close Normalize floating-rate index reference data as superseded once this lands. |
 | [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Migrate market_series qualifier/point_id generation onto oresmd]] | DONE | 2026-07-30 | 2026-07-30 | Generate market_series.qualifier and market_observation.point_id from oresmd fields at every write path instead of free text; column shapes stay as-is. Once every consumer reads/writes through oresmd, delete the legacy free-text generation paths across all three migrations. |

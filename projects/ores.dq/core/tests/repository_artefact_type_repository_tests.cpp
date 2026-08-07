@@ -192,4 +192,8 @@ TEST_CASE("write_and_read_artefact_type_roundtrip", tags) {
     REQUIRE(read_artefact_types.size() == 1);
     CHECK(read_artefact_types[0].code == artefact_type.code);
     CHECK(read_artefact_types[0].description == artefact_type.description);
+    CHECK(read_artefact_types[0].artefact_table == artefact_type.artefact_table);
+    CHECK(read_artefact_types[0].target_table == artefact_type.target_table);
+    CHECK(read_artefact_types[0].target_subject == artefact_type.target_subject);
+    CHECK(read_artefact_types[0].display_order == artefact_type.display_order);
 }

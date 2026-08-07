@@ -27,8 +27,8 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include <chrono>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ores::marketdata::service {
@@ -39,9 +39,10 @@ namespace ores::marketdata::service {
  * generation side.
  */
 struct curve_republish_refdata_context final {
-    std::map<std::string, ores::refdata::domain::tenor> tenors_by_code;
+    std::unordered_map<std::string, ores::refdata::domain::tenor> tenors_by_code;
     ores::refdata::domain::tenor_convention convention;
-    std::map<std::string, ores::refdata::domain::tenor_convention_resolution> resolutions_by_tenor;
+    std::unordered_map<std::string, ores::refdata::domain::tenor_convention_resolution>
+        resolutions_by_tenor;
     std::chrono::year_month_day horizon; // == value_date == spot: T+0, see resolve's doc.
 };
 
@@ -78,7 +79,7 @@ ORES_MARKETDATA_SERVICE_EXPORT std::vector<ores::analytics::quant::service::boot
 resolve_bootstrap_pillars(
     const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
     const curve_republish_refdata_context& ctx,
-    const std::map<std::string, double>& raw_rates_by_point_id);
+    const std::unordered_map<std::string, double>& raw_rates_by_point_id);
 
 }
 

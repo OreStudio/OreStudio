@@ -49,7 +49,7 @@ const tenor_convention_resolution& find_resolution(const curve_republish_refdata
     return it->second;
 }
 
-double find_observed_rate(const std::map<std::string, double>& raw_rates_by_point_id,
+double find_observed_rate(const std::unordered_map<std::string, double>& raw_rates_by_point_id,
                           const std::string& point_id) {
     auto it = raw_rates_by_point_id.find(point_id);
     if (it == raw_rates_by_point_id.end())
@@ -74,7 +74,7 @@ std::chrono::year_month_day resolve_tenor_date(const curve_republish_refdata_con
 std::vector<bootstrap_pillar> resolve_bootstrap_pillars(
     const std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>& pillars,
     const curve_republish_refdata_context& ctx,
-    const std::map<std::string, double>& raw_rates_by_point_id) {
+    const std::unordered_map<std::string, double>& raw_rates_by_point_id) {
     auto sorted_pillars = pillars;
     std::sort(sorted_pillars.begin(), sorted_pillars.end(), [](const auto& a, const auto& b) {
         return a.sequence_index < b.sequence_index;

@@ -37,8 +37,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
-#include <map>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace ores::marketdata::service::app {
 
@@ -72,11 +72,12 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     return refctx;
 }
 
-std::map<std::string, double> read_raw_rates(ores::database::context ctx,
-                                             const boost::uuids::uuid& source_series_id,
-                                             std::chrono::system_clock::time_point as_of) {
+std::unordered_map<std::string, double>
+read_raw_rates(ores::database::context ctx,
+               const boost::uuids::uuid& source_series_id,
+               std::chrono::system_clock::time_point as_of) {
     repository::market_observations_repository obs_repo;
-    std::map<std::string, double> out;
+    std::unordered_map<std::string, double> out;
     for (const auto& obs : obs_repo.read_as_of(ctx, source_series_id, as_of))
         out.emplace(obs.point_id, std::stod(obs.value));
     return out;

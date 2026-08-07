@@ -87,7 +87,7 @@ curve_republish_refdata_context make_context() {
 TEST_CASE("resolve_bootstrap_pillars resolves a single DEPOSIT pillar's dates and rate", tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
-    std::map<std::string, double> raw_rates{{"3M", 0.03}};
+    std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
 
@@ -104,7 +104,7 @@ TEST_CASE("resolve_bootstrap_pillars resolves an FRA pillar's start/end from its
           tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "3M", "6M", "FRA")};
-    std::map<std::string, double> raw_rates{{"6M", 0.032}};
+    std::unordered_map<std::string, double> raw_rates{{"6M", 0.032}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
 
@@ -120,7 +120,7 @@ TEST_CASE("resolve_bootstrap_pillars sorts by sequence_index regardless of input
         make_pillar(1, "3M", "6M", "FRA"),
         make_pillar(0, "SPOT", "3M", "DEPOSIT"),
     };
-    std::map<std::string, double> raw_rates{{"3M", 0.03}, {"6M", 0.032}};
+    std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}, {"6M", 0.032}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
 
@@ -137,7 +137,7 @@ TEST_CASE("resolve_bootstrap_pillars builds a SWAP pillar's fixed_leg_dates from
         make_pillar(0, "SPOT", "1Y", "DEPOSIT"),
         make_pillar(1, "SPOT", "2Y", "SWAP"),
     };
-    std::map<std::string, double> raw_rates{{"1Y", 0.03}, {"2Y", 0.035}};
+    std::unordered_map<std::string, double> raw_rates{{"1Y", 0.03}, {"2Y", 0.035}};
 
     const auto resolved = resolve_bootstrap_pillars(pillars, ctx, raw_rates);
 
@@ -153,7 +153,7 @@ TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in t
           tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "DEPOSIT")};
-    std::map<std::string, double> raw_rates; // empty -- 3M missing
+    std::unordered_map<std::string, double> raw_rates; // empty -- 3M missing
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }
@@ -161,7 +161,7 @@ TEST_CASE("resolve_bootstrap_pillars rejects a pillar with no observed rate in t
 TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "9M", "DEPOSIT")};
-    std::map<std::string, double> raw_rates{{"9M", 0.03}};
+    std::unordered_map<std::string, double> raw_rates{{"9M", 0.03}};
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }
@@ -169,7 +169,7 @@ TEST_CASE("resolve_bootstrap_pillars rejects an unknown tenor code", tags) {
 TEST_CASE("resolve_bootstrap_pillars rejects an unrecognised curve_role_code", tags) {
     const auto ctx = make_context();
     std::vector<ir_curve_bootstrap_pillar> pillars{make_pillar(0, "SPOT", "3M", "BOND")};
-    std::map<std::string, double> raw_rates{{"3M", 0.03}};
+    std::unordered_map<std::string, double> raw_rates{{"3M", 0.03}};
 
     CHECK_THROWS_AS(resolve_bootstrap_pillars(pillars, ctx, raw_rates), std::invalid_argument);
 }

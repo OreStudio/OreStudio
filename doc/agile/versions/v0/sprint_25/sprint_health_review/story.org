@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 187B03E4-D468-445A-B970-A048ED3FC430
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 25, covering goal alignment, load, PR velocity, story/task balance, focus signal, and bookkeeping hygiene.
+#+type: story
+#+level: s2
+#+filetags: :sprint_health_review:sprint_25:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-07                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

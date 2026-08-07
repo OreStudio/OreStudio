@@ -45,7 +45,7 @@ dq, scheduler, reporting, workspace, assets, trading, ...).
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                                |
 | Last touched  | 2026-08-07                               |
 
 * Acceptance

@@ -100,6 +100,8 @@ health review (promote to a story, move to =next=, or discard).
 |---+------+-----+---------+------|
 | 1 | 2026-08-07 | day 5 | AMBER | [[id:5D5BC371-CCD5-4AB6-AD4C-91493EFDA6E4][Health review 1 — sprint 25 mid-sprint analysis]] |
 
+(Run =sprint-reviewer= to add more rows.)
+
 * Charts
 
 Charts generated via [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][compass sprint charts]]. See [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]

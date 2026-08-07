@@ -29,7 +29,6 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
 #include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
@@ -128,14 +127,6 @@ public:
                              save_fx_asian_forward_instrument_response,
                              Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_asian_forward_instrument);
-    }
-
-    void save_accumulator(ores::nats::message msg) {
-        using Svc = service::fx_accumulator_instrument_service;
-        handle_typed_fx_save<save_fx_accumulator_instrument_request,
-                             save_fx_accumulator_instrument_response,
-                             Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_accumulator_instrument);
     }
 
     void save_variance_swap(ores::nats::message msg) {

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/fx_accumulator_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/typed_fx_instrument_handler.hpp"
@@ -64,14 +65,6 @@ register_fx_handlers(ores::nats::service::client& nats,
                              }));
 
     subs.push_back(
-        nats.queue_subscribe(std::string(save_fx_accumulator_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 typed_fx_instrument_handler h(nats, ctx, verifier);
-                                 h.save_accumulator(std::move(msg));
-                             }));
-
-    subs.push_back(
         nats.queue_subscribe(std::string(save_fx_variance_swap_instrument_request::nats_subject),
                              queue,
                              [&nats, ctx, verifier](ores::nats::message msg) mutable {
@@ -84,6 +77,12 @@ register_fx_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                std::make_move_iterator(fx_forward_instrument_subs.begin()),
                std::make_move_iterator(fx_forward_instrument_subs.end()));
+
+    auto fx_accumulator_instrument_subs =
+        register_fx_accumulator_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+               std::make_move_iterator(fx_accumulator_instrument_subs.begin()),
+               std::make_move_iterator(fx_accumulator_instrument_subs.end()));
 
     return subs;
 }

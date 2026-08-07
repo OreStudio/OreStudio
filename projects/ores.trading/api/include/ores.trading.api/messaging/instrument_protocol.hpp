@@ -108,17 +108,6 @@ struct save_fx_asian_forward_instrument_response {
     std::string message;
 };
 
-struct save_fx_accumulator_instrument_request {
-    using response_type = struct save_fx_accumulator_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_accumulator_instruments.save";
-    ores::trading::domain::fx_accumulator_instrument data;
-};
-
-struct save_fx_accumulator_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
 struct save_fx_variance_swap_instrument_request {
     using response_type = struct save_fx_variance_swap_instrument_response;
     static constexpr std::string_view nats_subject = "trading.v1.fx_variance_swap_instruments.save";

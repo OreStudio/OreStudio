@@ -24,6 +24,7 @@ set(files
     "curve_bootstrap_engine_tests.cpp"
     "curve_instrument_pricer_tests.cpp"
     "day_count_calculator_tests.cpp"
+    "forward_rate_calculator_tests.cpp"
     "g2pp_process_tests.cpp"
     "gaussian_mixture_model_process_tests.cpp"
     "hull_white_process_tests.cpp"

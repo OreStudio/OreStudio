@@ -8,7 +8,7 @@
 #+filetags: :sql:tech-debt:decommission:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/decommission-legacy-controller-schema
-#+pr:
+#+pr: 1901
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1901][#1901]] | [ores.sql] Decommission the legacy controller SQL schema |
 
 * Review
 

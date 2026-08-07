@@ -30,11 +30,11 @@ impossible.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance

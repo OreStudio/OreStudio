@@ -93,21 +93,23 @@ TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
     REQUIRE(ir.role == curve_role::discount);
 }
 
-TEST_CASE("parse_ir_par_rate_quote_disambiguated_by_metric", tags) {
+TEST_CASE("parse_ir_swap_quote", tags) {
     const auto id = oresmd_parser::parse(
         uri("oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y"));
+            "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.type == instrument_type::quote);
-    REQUIRE(ir.metric == metric::par_rate);
+    REQUIRE(ir.quote_type == ir_quote_type::ir_swap);
+    REQUIRE(ir.metric == metric::rate);
     REQUIRE(ir.point == "5y");
 }
 
-TEST_CASE("parse_ir_discount_factor_quote_disambiguated_by_metric", tags) {
+TEST_CASE("parse_discount_quote", tags) {
     const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&role=projection&"
-                                             "type=quote&metric=discount_factor&point=6m"));
+                                             "type=quote&quote=discount&metric=rate&point=6m"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
-    REQUIRE(ir.metric == metric::discount_factor);
+    REQUIRE(ir.quote_type == ir_quote_type::discount);
+    REQUIRE(ir.metric == metric::rate);
     REQUIRE(ir.point == "6m");
 }
 
@@ -158,7 +160,7 @@ TEST_CASE("round_trip_fx", tags) {
 TEST_CASE("round_trip_ir_quote", tags) {
     const auto original = oresmd_parser::parse(
         uri("oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=par_rate&point=5y"));
+            "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -178,6 +180,52 @@ TEST_CASE("round_trip_credit", tags) {
 
 TEST_CASE("round_trip_commodity", tags) {
     const auto original = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+/*
+ * Round-trip tests for new IR quote types (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+TEST_CASE("round_trip_ir_mm_rate", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_basis_swap_spread", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_cc_basis_swap_no_index", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_mm_future_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_zero_yield_spread", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_ir_oi_future_price", tags) {
+    const auto original = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -215,16 +263,16 @@ TEST_CASE("reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency
 
 TEST_CASE("reject_ir_metric_present_when_type_is_not_quote", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(
-                          uri("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=par_rate")),
+                          uri("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate")),
                       oresmd_exception);
 }
 
 TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags) {
     const auto id =
-        oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=par_rate"));
+        oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=rate"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.type == instrument_type::quote);
-    REQUIRE(ir.metric == metric::par_rate);
+    REQUIRE(ir.metric == metric::rate);
 }
 
 TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {

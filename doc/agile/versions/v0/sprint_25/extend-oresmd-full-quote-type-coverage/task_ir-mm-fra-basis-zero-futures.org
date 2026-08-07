@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: C9C888AB-473D-4C91-BC30-9470E4080C5A
+:END:
+#+title: Task: Extend oresmd IR coverage: MM, FRA, basis swaps, zero curves, futures
+#+description: Represent the 10 of 12 catalogued IR quote types not yet covered: MM/RATE, FRA/RATE, IMM_FRA/RATE, BASIS_SWAP/BASIS_SPREAD, CC_BASIS_SWAP/BASIS_SPREAD, CC_FIX_FLOAT_SWAP/RATE, BMA_SWAP/RATIO, ZERO/RATE, ZERO/YIELD_SPREAD, MM_FUTURE/PRICE, OI_FUTURE/PRICE.
+#+type: task
+#+level: s1
+#+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
+#+owner: marco
+#+branch: feature/ir-mm-fra-basis-zero-futures
+#+pr: 1899
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-30
+#+updated: 2026-08-07
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Extend the existing =ir_market_data_identifier= to represent the 11 ORE
+IR quote types not yet covered by oresmd — every TYPE/METRIC pair the
+catalogue documents for interest rates beyond the original two
+(=IR_SWAP/RATE= and =DISCOUNT/RATE=). The consumer-facing change is a
+new =quote= query parameter (the ORE TYPE) plus an extended =metric=
+enum (the ORE METRIC), both IR-only and only meaningful when
+=type=quote=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- [X] =ir_quote_type= enum added with 12 values (=ir_swap=, =discount=,
+  =mm=, =fra=, =imm_fra=, =basis_swap=, =bma_swap=, =cc_basis_swap=,
+  =cc_fix_float_swap=, =zero=, =mm_future=, =oi_future=).
+- [X] =metric= enum reduced to the five true ORE METRIC values (=rate=,
+  =price=, =basis_spread=, =ratio=, =yield_spread=) — the old
+  =par_rate=/=discount_factor= conflation of TYPE and METRIC is gone.
+- [X] New =quote= query parameter parsed, serialised, and validated
+  (IR-only, only meaningful with =type=quote=).
+- [X] =quote_key_ir= produces the correct ORE quote key for every
+  TYPE/METRIC pair — 11 new shapes, all tested against the ORE key
+  format documented in the market data catalogue.
+- [X] =metric= defaults from the =quote= type when absent (=quote=mm=
+  → =rate=, =quote=mm_future= → =price=, =quote=basis_swap= →
+  =basis_spread=, =quote=bma_swap= → =ratio=).
+- [X] No existing asset class's current fields/behaviour regress — every
+  extension is additive; all 85 pre-existing tests pass unchanged (after
+  the mechanical =par_rate=/=discount_factor= → =quote=...&metric=rate=
+  migration in the test suite itself).
+- [X] No new component/library created — the types live in
+  =ores.marketdata.api/domain=, the logic in =ores.marketdata.core/oresmd/=.
+
+* Plan
+
+Added the =ir_quote_type= enum (=oresmd_enums.hpp=), extended =metric=,
+and added =quote_type= as an =std::optional= field on both
+=ir_market_data_identifier= and =ir_market_data_requirement=. The new
+=quote= query parameter is parsed in =oresmd_parser= (gated: IR-only,
+rejected when =type≠quote=), serialised in =to_uri=, and wired through
+=oresmd_resolver=. The quote-key projection (=oresmd_projections=)
+dispatches on =ir_quote_type= + =metric= to construct the correct ORE
+key — =ir_swap= uses the =2D= settlement-lag convention, =discount= uses
+the =curve_id= format (=USD3M=), =cc_basis_swap=/=cc_fix_float_swap=/
+=bma_swap= omit =index= from the qualifier, and every other type
+includes =INDEX/TENOR= in the qualifier. =default_metric()= supplies the
+metric when the caller omits it (=quote=mm= → =rate=, etc.).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1899][#1899]] | [marketdata] Extend oresmd IR coverage: MM, FRA, basis swaps, zero curves, futures |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered full IR quote-type representation in =oresmd=, meeting every
+Acceptance bullet:
+
+- =ir_quote_type= (12 values) + extended =metric= (5 values) replace the
+  old =par_rate=/=discount_factor= conflation with a clean two-dimensional
+  design: =quote= carries the ORE TYPE, =metric= carries the ORE METRIC,
+  and =metric= defaults from =quote= when absent.
+- =quote_key_ir= dispatches correctly for all 12 TYPEs, including the
+  format variants: =ir_swap='s =2D= settlement-lag convention,
+  =discount='s =curve_id= qualifier, and the no-index qualifier for
+  =cc_basis_swap=/=cc_fix_float_swap=/=bma_swap=.
+- 108 test cases, 214 assertions, all passing — 26 new tests covering
+  every TYPE/METRIC pair's projection, round-trip, default-metric, and
+  validation; the remaining 82 tests (85 original minus 4 backward-compat
+  removed plus 1 new validation) all pass with the test suite's own
+  mechanical migration to the new =quote= parameter.
+- No new component, no dependency changes — everything lives inside
+  =ores.marketdata= exactly as the original =oresmd= library task
+  established.

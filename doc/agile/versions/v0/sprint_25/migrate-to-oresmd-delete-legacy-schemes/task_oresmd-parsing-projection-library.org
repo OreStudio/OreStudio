@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-07-28
 #+updated: 2026-07-28
-#+environment: prime_origin
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] story. It captures the goal, current status, acceptance, and any notes or results.

@@ -58,6 +58,7 @@ struct ir_market_data_identifier final {
     std::optional<std::string> tenor;
     std::optional<curve_role> role;
     std::optional<domain::metric> metric;
+    std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> point;
 
     bool operator==(const ir_market_data_identifier&) const = default;

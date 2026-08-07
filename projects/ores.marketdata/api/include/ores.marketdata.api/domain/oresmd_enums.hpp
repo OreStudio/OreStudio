@@ -48,12 +48,36 @@ enum class curve_role {
 
 /**
  * @brief The `metric` query key of an oresmd URI, only meaningful when `type=quote`:
- * disambiguates a par-rate quote from a curve-sampled discount factor at the same
- * tenor/point coordinate.
+ * the ORE METRIC column. Defaults from the `quote` type when absent (e.g. quote=mm
+ * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    par_rate,       ///< A par-rate quote (e.g. ORE's IR_SWAP/RATE quote type).
-    discount_factor ///< A directly-quoted discount factor (e.g. ORE's DISCOUNT/RATE quote type).
+    rate,           ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,          ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread,   ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,          ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread    ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+};
+
+/**
+ * @brief The `quote` query key of an oresmd URI, IR-only and only meaningful when
+ * `type=quote`: the ORE quote TYPE (e.g. MM, FRA, IR_SWAP) — the first segment of ORE's
+ * TYPE/METRIC/... quote key, independent of the METRIC column carried by the `metric`
+ * query key.
+ */
+enum class ir_quote_type {
+    ir_swap,          ///< IR_SWAP (par swap rate).
+    discount,         ///< DISCOUNT (curve-sampled discount factor).
+    mm,               ///< MM (money market rate).
+    fra,              ///< FRA (forward rate agreement rate).
+    imm_fra,          ///< IMM_FRA (IMM-settled FRA rate).
+    basis_swap,       ///< BASIS_SWAP (single-currency basis swap spread).
+    bma_swap,         ///< BMA_SWAP (Bond Market Association swap ratio).
+    cc_basis_swap,    ///< CC_BASIS_SWAP (cross-currency basis swap spread).
+    cc_fix_float_swap,///< CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate).
+    zero,             ///< ZERO (zero-coupon rate).
+    mm_future,        ///< MM_FUTURE (money market future price).
+    oi_future         ///< OI_FUTURE (overnight index future price).
 };
 
 /**

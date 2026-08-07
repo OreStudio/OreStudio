@@ -66,6 +66,74 @@ std::optional<std::string> curve_key_ir(const ir_market_data_identifier& id) {
     return std::format("Yield/{}/{}", id.ccy, curve_id(id.ccy, *id.tenor));
 }
 
+// Default metric from ir_quote_type when metric is absent (e.g. quote=mm implies metric=rate).
+metric default_metric(ir_quote_type qt) {
+    switch (qt) {
+    case ir_quote_type::ir_swap:
+    case ir_quote_type::discount:
+    case ir_quote_type::mm:
+    case ir_quote_type::fra:
+    case ir_quote_type::imm_fra:
+    case ir_quote_type::cc_fix_float_swap:
+        return metric::rate;
+    case ir_quote_type::basis_swap:
+    case ir_quote_type::cc_basis_swap:
+        return metric::basis_spread;
+    case ir_quote_type::bma_swap:
+        return metric::ratio;
+    case ir_quote_type::zero:
+        return metric::rate;
+    case ir_quote_type::mm_future:
+    case ir_quote_type::oi_future:
+        return metric::price;
+    }
+    return metric::rate;
+}
+
+// ORE TYPE string for each ir_quote_type.
+std::string_view ore_type(ir_quote_type qt) {
+    switch (qt) {
+    case ir_quote_type::ir_swap:          return "IR_SWAP";
+    case ir_quote_type::discount:         return "DISCOUNT";
+    case ir_quote_type::mm:               return "MM";
+    case ir_quote_type::fra:              return "FRA";
+    case ir_quote_type::imm_fra:          return "IMM_FRA";
+    case ir_quote_type::basis_swap:       return "BASIS_SWAP";
+    case ir_quote_type::bma_swap:         return "BMA_SWAP";
+    case ir_quote_type::cc_basis_swap:    return "CC_BASIS_SWAP";
+    case ir_quote_type::cc_fix_float_swap:return "CC_FIX_FLOAT_SWAP";
+    case ir_quote_type::zero:             return "ZERO";
+    case ir_quote_type::mm_future:        return "MM_FUTURE";
+    case ir_quote_type::oi_future:        return "OI_FUTURE";
+    }
+    return "IR_SWAP";
+}
+
+// ORE METRIC string for each metric.
+std::string_view ore_metric(metric m) {
+    switch (m) {
+    case metric::rate:           return "RATE";
+    case metric::price:          return "PRICE";
+    case metric::basis_spread:   return "BASIS_SPREAD";
+    case metric::ratio:          return "RATIO";
+    case metric::yield_spread:   return "YIELD_SPREAD";
+    }
+    return "RATE";
+}
+
+// Whether this ir_quote_type includes the index in the qualifier (as opposed to just
+// ccy/tenor for xccy/BMA types).
+bool qualifier_includes_index(ir_quote_type qt) {
+    switch (qt) {
+    case ir_quote_type::cc_basis_swap:
+    case ir_quote_type::cc_fix_float_swap:
+    case ir_quote_type::bma_swap:
+        return false;
+    default:
+        return true;
+    }
+}
+
 std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     if (id.type == instrument_type::vol) {
         if (!id.point)
@@ -75,12 +143,27 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
             return std::nullopt;
         return std::format("SWAPTION/RATE_LNVOL/{}/{}/{}/{}", id.ccy, parts[0], parts[1], parts[2]);
     }
-    if (id.type != instrument_type::quote || !id.metric || !id.point || !id.tenor)
+    if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;
+
+    const auto qt = *id.quote_type;
+    const auto m = id.metric ? *id.metric : default_metric(qt);
     const auto point = to_upper(*id.point);
-    if (*id.metric == metric::par_rate)
-        return std::format("IR_SWAP/RATE/{}/2D/{}/{}", id.ccy, to_upper(*id.tenor), point);
-    return std::format("DISCOUNT/RATE/{}/{}/{}", id.ccy, curve_id(id.ccy, *id.tenor), point);
+    const auto t = to_upper(*id.tenor);
+
+    if (qualifier_includes_index(qt)) {
+        if (qt == ir_quote_type::ir_swap)
+            return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
+        if (qt == ir_quote_type::discount)
+            return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy,
+                               curve_id(id.ccy, *id.tenor), point);
+        if (!id.index)
+            return std::nullopt;
+        const auto idx = to_upper(std::string(magic_enum::enum_name(*id.index)));
+        return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, idx, t, point);
+    }
+    // No-index types: CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP
+    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
 }
 
 std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {

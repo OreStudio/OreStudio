@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch: feature/implement-g2-plus-plus-process
+#+branch: feature/expand-stochastic-ir-process-types
 #+pr:
 #+blocked_on:
 #+blocked_since:

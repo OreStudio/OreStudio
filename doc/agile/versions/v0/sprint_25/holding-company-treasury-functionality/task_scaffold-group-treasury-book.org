@@ -8,7 +8,7 @@
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
 #+branch: feature/scaffold-group-treasury-book
-#+pr:
+#+pr: 1888
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -165,7 +165,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1888][#1888]] | [seeder,sql,agile] Scaffold Group Treasury book/portfolio for the holding company |
 
 * Review
 

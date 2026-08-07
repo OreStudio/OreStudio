@@ -26,11 +26,11 @@ A written comparison of concrete prior-art approaches exists to ground the desig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -39,11 +39,133 @@ A written comparison of concrete prior-art approaches exists to ground the desig
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Audited the current =ores.platform::environment::environment= class:
+   all-static API wrapping raw =std::getenv=/=setenv=/=unsetenv=; 15+
+   production call-sites (database config, QT client, password hasher,
+   service config parsers, systemd notify); 11 test files use
+   =scoped_env_unset= which saves/restores real process-global state
+   (not thread-safe).
+
+2. Surveyed C++ prior art and equivalent patterns in other languages;
+   mapped each to this codebase's constraints (header-heavy, RAII
+   fixture convention, no exceptions-as-flow-control, Catch2
+   single-binary test model).
+
+3. Characterised the 11 test call-sites: all follow the same pattern —
+   unset a few ORES_NATS_* / ORES_<APP>_* vars at test start so the
+   parser-under-test reads its compiled-in defaults, restore on
+   teardown. This is a narrow, well-understood use case, not a general
+   mocking requirement.
+
+4. Wrote up three concrete approaches with tradeoffs and a
+   recommendation (see Notes).
 
 * Notes
+
+*** Current state in this codebase
+
+=ores::platform::environment::environment= (ores.platform) is a
+namespace-scoped class with all-static methods wrapping
+=std::getenv/setenv/unsetenv= (Unix) and =_putenv_s= (Windows). It
+is the single choke-point for environment access — every env var read
+in the codebase goes through it.
+
+=ores::testing::scoped_env_unset= (ores.testing) is an RAII helper:
+on construction, it unsetenvs a list of named vars (saving prior
+values); on destruction, it restores them. 11 domain-service
+=config_parser_tests.cpp= files use it to strip the developer's
+=.env= from the test environment so =parse_defaults_returns_expected=
+can assert compiled-in defaults. This is not thread-safe: it mutates
+the single process-global environment, so two tests in the same
+binary running concurrently would race.
+
+=scoped_database_helper= is a different pattern one level up — it
+wraps a concrete =database_helper= (not a swappable interface) and
+provides convenience accessors; it does not address the
+global-state-isolation problem.
+
+*** Approach 1: Provider interface with scoped injection (recommended)
+
+Introduce an =environment_provider= abstract base class in
+ores.platform with pure-virtual =get/set/unset=. Ship two
+implementations: =real_environment_provider= (wraps raw getenv/setenv,
+the production default) and =fake_environment_provider= (in-memory
+=std::unordered_map=, for tests). =environment= keeps its static API
+but delegates every call to a =thread_local= provider pointer; a new
+=scoped_environment_override= RAII class swaps the pointer and
+restores on destruction.
+
+- Prior art: Abseil flag injection via =absl::SetFlag= +
+  =SetFlagForTest=; dependency-injection patterns in LLVM's
+  =clang::FileManager= (swappable =FileSystem= abstraction).
+- Tradeoffs: (+) injectable per-test without changing any consumer
+  call-site; thread-local provides implicit isolation under Catch2
+  (one test = one thread). (+) =fake_environment_provider= can be
+  pre-populated with values (no need to =set= then =get= — tests
+  pass a map). (-) thread_local adds a branch to every =get_value=
+  call (checking whether provider is overridden). But this is config
+  parsing — cold paths, startup-only — so the branch is acceptable.
+  (-) =thread_local= destructor ordering with static objects needs
+  care; the default provider must outlive any test fixture that
+  swapped it.
+
+*** Approach 2: Inversion-of-control singleton (alternative)
+
+Make =environment= a non-static class with a virtual interface. Every
+consumer that currently calls =environment::get_value(...)= receives
+an =environment_provider&= reference instead — injected at
+construction or passed as a function argument.
+
+- Prior art: classic DI patterns; Python =monkeypatch= (setattr on a
+  module), Rust =temp_env= crate (RAII guard on real env, not
+  injected).
+- Tradeoffs: (+) zero runtime branch — the right provider is wired
+  at construction time. (+) no thread_local subtlety. (-) Touches
+  every consumer: 15+ files need their constructors/signatures
+  changed to accept a provider reference or pointer. (-) Existing
+  callers that construct objects on the stack now need an extra
+  member. (-) The migration is mechanical but large — about 40
+  call-sites across 15 files.
+
+*** Approach 3: File-descriptor-style override table (rejected)
+
+Maintain a global (not thread-local) =std::unordered_map= of fake
+values; =environment::get_value= checks the table before falling
+through to the real environment. A =scoped_env_fake= RAII class
+inserts/removes entries.
+
+- Prior art: Folly =TemporaryEnvironmentVariable= concept extended;
+  GoogleTest doesn't have a built-in env-var mock — its
+  =::testing::Environment= is for global setup/teardown, not
+  per-test mocking.
+- Tradeoffs: (+) no thread_local, no consumer API change — the
+  simplest possible diff. (-) Not thread-safe — the table is process
+  global, so parallel test execution still races. This is the problem
+  the story exists to solve, so this approach fails the acceptance
+  criteria for parallel safety.
+
+*** Recommendation
+
+Approach 1 (provider interface with scoped injection) is the best
+fit for ores.platform:
+
+1. The static API surface (=environment::get_value(...)=) is
+   preserved — none of the 15+ production call-sites change.
+2. Tests use a single new RAII type (=scoped_environment_override=)
+   that pre-populates a =fake_environment_provider= with the values
+   the parser should see; when the scope ends, the real provider is
+   restored. This replaces =scoped_env_unset='s save/restore on the
+   real environment with a clean swap.
+3. =thread_local= provides the per-test isolation Catch2 needs
+   without any cross-test coordination. The branch cost (checking
+   whether a test provider is installed) is on a startup-only path.
+4. The 11 config-parser tests can be migrated one-by-one — the old
+   =scoped_env_unset= API still works alongside the new one until the
+   last test is converted.
+
+The approach also opens the door to production-side injection later
+(e.g. a =config_parser= accepting a provider at construction time for
+deterministic setup in shell/CLI tools) but doesn't require it now.
 
 * Test Scenarios
 
@@ -69,3 +191,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Three concrete approaches were surveyed against this codebase's
+constraints (RAII fixtures, Catch2 single-binary test model, header-
+heavy production consumers, startup-only config paths). The
+recommendation is Approach 1: a swappable =environment_provider=
+abstract interface with =real_environment_provider= and
+=fake_environment_provider= implementations, injected via a
+=thread_local= pointer managed by a =scoped_environment_override=
+RAII guard. This preserves the existing =environment::get_value(...)=
+API for all production consumers, provides per-test isolation for
+parallel Catch2 execution, and allows the 11 config-parser tests to
+migrate incrementally. Passes to the sibling design task for the
+interface design and the first migration.

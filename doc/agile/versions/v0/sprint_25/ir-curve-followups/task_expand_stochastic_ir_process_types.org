@@ -59,6 +59,24 @@ variant we don't distinguish from G2++/the general 2-factor case).
 
 * Plan
 
+** Design philosophy: data-oriented, STL-style
+
+QuantLib's OOP hierarchy (=Instrument=, =Engine=, =TermStructure=) is
+the opposite of what we want. ORE Studio's approach: plain structs for
+parameters and state, free functions for evolution and pricing, no
+virtual dispatch beyond the existing =IYieldCurveProcess= interface
+(which stays for factory compatibility). QuantLib serves as a test
+oracle — we port its test vectors and validate our implementations
+against its reference values — but we don't port its class hierarchy.
+
+Concrete rules:
+- Parameters are an =aggregate struct= (POD, brace-initialisable).
+- State is an =aggregate struct= (the process's current r_t, factors, ticks).
+- Evolution is a =free function= taking (state, params, rng) and returning new state.
+- discount_factor is a =free function= taking (state, params, ticks_ahead).
+- The =IYieldCurveProcess= implementation is a thin shell delegating to these free functions.
+- RNG is a =std::mt19937= passed by reference — no owned RNG state in params structs.
+
 ** Current architecture
 
 =yield_curve_process_type= catalogues short-rate process engines as a

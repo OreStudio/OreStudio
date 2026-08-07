@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: DF2BC7E3-8530-4A9C-9071-E48C2BDF44A5
+:END:
+#+title: Task: Implement Black-Derman-Toy binomial tree short-rate process
+#+description: Implement a BDT recombining binomial tree engine. The tree simultaneously matches the initial term structure and a time-varying volatility sigma(t). Data-oriented design: a const tree built once at construction, next() walks the tree, discount_factor() sums over the tree-implied bond prices. Extract a reusable binomial_tree utility for future tree models. Reference: QuantLib BlackDermanToy class.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a working BDT engine to process_factory with Catch2 tests covering: tree calibration matches input term structure and vol, next() walks the tree producing plausible paths, discount_factor() matches tree-implied bond prices, and comparison against QuantLib BDT reference values.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- BDT process compiles and passes all tests on Linux
+- Extracted binomial_tree is reusable for BK and future tree models
+- Tree calibration reproduces input discount factors and volatilities
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

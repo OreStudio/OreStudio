@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 0A9B3E56-231D-467C-9146-14386A9DA9FF
+:END:
+#+title: Task: Implement G2++ two-factor Gaussian short-rate process
+#+description: Implement a two-factor Gaussian short-rate engine following the data-oriented pattern of the existing hull_white_process. The second factor adds kappa2, sigma2, and correlation rho. discount_factor() has a closed-form two-factor affine bond price. Reference: QuantLib G2 class.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a working G2++ engine to process_factory with Catch2 tests covering: exact two-factor Gaussian transition, discount_factor() consistency with next(), zero-correlation reduces to two independent Hull-White factors, and bond-price matches QuantLib reference values.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- G2++ process compiles and passes all tests on Linux
+- process_factory::make_yield_curve_process dispatches g2pp correctly
+- discount_factor() matches QuantLib G2 reference values for a standard parameter set
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

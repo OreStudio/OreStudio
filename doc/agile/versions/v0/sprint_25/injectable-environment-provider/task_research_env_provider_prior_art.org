@@ -8,7 +8,7 @@
 #+filetags: :ores.platform:ores.testing:research:injectable-environment-provider:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1902
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -140,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1902][#1902]] | [agile] Close env-provider story; backfill prior-art survey |
 
 * Review
 

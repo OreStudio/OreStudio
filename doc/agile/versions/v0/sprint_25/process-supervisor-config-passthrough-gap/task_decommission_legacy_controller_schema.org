@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 * Result
 
-Shipped in [[id:6d2ecd070][6d2ecd070]]: the legacy controller SQL schema
+Shipped in commit =6d2ecd070=: the legacy controller SQL schema
 is gone from the codebase. Deleted 14 files across the three
 =controller/= dirs (the five tables service_definitions,
 service_dependencies, service_instances, service_events and

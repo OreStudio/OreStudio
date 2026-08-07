@@ -8,7 +8,7 @@
 #+filetags: :ores.platform:ores.testing:tech-debt:injectable-environment-provider:sprint_25:v0:
 #+owner: marco
 #+branch: feature/design-and-implement-env-provider
-#+pr:
+#+pr: 1897
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1897][#1897]] | [ores.platform,ores.testing] Swappable environment provider for test-safe env var access |
 
 * Review
 

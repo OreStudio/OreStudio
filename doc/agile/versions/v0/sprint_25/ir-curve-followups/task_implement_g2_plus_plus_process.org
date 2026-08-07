@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-07
 #+updated: 2026-08-07
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working G2++ engine to process_factory with Catch2 tests covering: exact t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -75,3 +75,13 @@ via its "Verifies task" field.
 | 5 | Loop-invariant recomputation in discount_factor() | g2pp_process.cpp | Accepted | Hoisted decay_x/y, var_x/y, cov_xy outside the loop |
 
 * Result
+
+Implemented =g2pp_process=: a two-factor Gaussian short-rate engine
+with correlated Ornstein-Uhlenbeck factors. 21 Catch2 tests covering
+parameter validation, deterministic and statistical behaviour, discrete
+recursion exact match, continuous-limit convergence, QuantLib G2
+closed-form cross-check (A, B, V functions), one-factor reduction, and
+loop-invariant hoisting. Registered in =component_files.cmake=.
+
+All 251 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

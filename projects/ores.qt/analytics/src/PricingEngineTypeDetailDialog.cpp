@@ -20,9 +20,13 @@
 #include "ores.qt/PricingEngineTypeDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ui_PricingEngineTypeDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -38,7 +42,9 @@ PricingEngineTypeDetailDialog::PricingEngineTypeDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
     // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
     // block is expected to construct a HierarchyModelBuilder-derived model
@@ -84,6 +90,8 @@ void PricingEngineTypeDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
+void PricingEngineTypeDetailDialog::setupCombos() {}
+
 void PricingEngineTypeDetailDialog::setupConnections() {
     connect(ui_->saveButton,
             &QPushButton::clicked,
@@ -106,14 +114,15 @@ void PricingEngineTypeDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
-    connect(ui_->instrumentTypeCodeEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->instrumentTypeCodeCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
 }
 
 void PricingEngineTypeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateInstrumentTypeCodeCombo();
 }
 
 void PricingEngineTypeDetailDialog::setUsername(const std::string& username) {
@@ -143,15 +152,42 @@ void PricingEngineTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->instrumentTypeCodeEdit->setReadOnly(readOnly);
+    ui_->instrumentTypeCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void PricingEngineTypeDetailDialog::populateInstrumentTypeCodeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating instrument_type_code combo";
+    populateDynamicCombo<refdata::domain::instrument_code>(
+        ui_->instrumentTypeCodeCombo,
+        this,
+        clientManager_,
+        &fetch_instrument_codes,
+        "instrumentTypeCodeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto& t) { return t.code; },
+        [this]() { return QString::fromStdString(type_.instrument_type_code); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load instrument types: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; },
+        QString{});
+}
 void PricingEngineTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
-    ui_->instrumentTypeCodeEdit->setText(QString::fromStdString(type_.instrument_type_code));
+    {
+        const auto val = QString::fromStdString(type_.instrument_type_code);
+        const int idx = ui_->instrumentTypeCodeCombo->findData(val);
+        if (idx >= 0)
+            ui_->instrumentTypeCodeCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -169,7 +205,7 @@ void PricingEngineTypeDetailDialog::updateTypeFromUi() {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    type_.instrument_type_code = ui_->instrumentTypeCodeEdit->text().trimmed().toStdString();
+    type_.instrument_type_code = ui_->instrumentTypeCodeCombo->currentText().toStdString();
     type_.modified_by = username_;
 }
 

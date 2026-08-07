@@ -81,7 +81,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | no test type after save and reload. eventing worked but did not load new entity. |
+| Notes  | instrument type should be a dynamic combo box. also we need a instrument type of none to be the sentinel rather than leaving it as null. |
 
 ** Edit the pricing engine type
 
@@ -95,7 +95,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** View pricing engine type history
 
@@ -108,7 +108,8 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | history does not come up. |
 
 ** Delete the pricing engine type
 
@@ -212,9 +213,9 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-06T21:02:34Z |
+| Completed at  | 2026-08-07T00:13:18Z |
 | Branch        | feature/refactor-codegen-cpp |
-| Commit        | 53739ee42 |
+| Commit        | 053144143 |
 | Worktree      | bright_faraday |
 
 * Notes

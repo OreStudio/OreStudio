@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include <vector>
 
 
@@ -94,10 +95,13 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void setupCombos();
     void updateUiFromType();
     void updateTypeFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    void populateInstrumentTypeCodeCombo();
 
 
     Ui::PricingEngineTypeDetailDialog* ui_;

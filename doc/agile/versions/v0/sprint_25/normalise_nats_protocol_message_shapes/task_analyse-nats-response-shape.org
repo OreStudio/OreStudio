@@ -132,6 +132,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | asset_class_handler sets success=true after catch block — error silently reported as success | asset_class_handler.hpp | Fixed in 9a73492da | Moved success=true inside try; set message=e.what() in catch |
+| 2 | Shell commands silently return on failure, dropping message | accounts_commands.cpp | Fixed in 9a73492da | Now prints fail(out) << result->message before returning |
+| 3 | get_step_result_response.success conflates "not found" with "error" | steps_query_protocol.hpp | Declined | Consumer treats !success and !found identically; harmless. Revisit if second consumer added. |
 
 * Result

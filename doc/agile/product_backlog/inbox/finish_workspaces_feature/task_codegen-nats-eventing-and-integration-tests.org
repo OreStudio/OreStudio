@@ -155,9 +155,11 @@ via its "Verifies task" field.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| # | Comment summary                                                  | File                                       | Decision | Notes                                                       |
+|---+-------------------------------------------------------------------+---------------------------------------------+----------+--------------------------------------------------------------|
+| 1 | CI NATS readiness poll doesn't fail fast if nats-server never starts | .github/workflows/continuous-*.yml, nightly-linux.yml | Accepted | Added explicit exit 1 with a clear error after the poll loop, all 4 files |
+| 2 | postgres_event_source::start() appends to registered_entities_ without clearing first | projects/ores.eventing/core/src/service/postgres_event_source.cpp | Accepted | Added registered_entities_.clear() at the top of start() |
+| 3 | Include ordering not alphabetical in several touched files (paper cut, would be auto-fixed by nightly-format) | 6 files across ores.trading/ores.qt/ores.ore | Accepted | Ran clang-format on all 6 rather than waiting for nightly-format |
 
 * Result
 

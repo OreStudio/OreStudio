@@ -53,6 +53,7 @@ postgres_event_source::~postgres_event_source() {
 }
 
 void postgres_event_source::start() {
+    registered_entities_.clear();
     for (const auto& kv : entity_mappings_) {
         if (!registered_entities_.empty())
             registered_entities_ += ", ";

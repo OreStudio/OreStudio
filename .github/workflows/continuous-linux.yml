@@ -226,10 +226,18 @@ jobs:
           nats_conf="$(ls build/config/nats-*.conf | head -n1)"
           nats-server --config "$nats_conf" &
           monitor_port="$(grep '^ORES_NATS_MONITOR_PORT=' .env | cut -d= -f2- | tr -d '"')"
+          ready=false
           for i in $(seq 1 30); do
-            curl -sf "http://localhost:${monitor_port}/varz" > /dev/null && break
+            if curl -sf "http://localhost:${monitor_port}/varz" > /dev/null; then
+              ready=true
+              break
+            fi
             sleep 1
           done
+          if [ "$ready" != "true" ]; then
+            echo "::error::nats-server did not become ready within 30s"
+            exit 1
+          fi
 
       - name: Setup Database
         run: |

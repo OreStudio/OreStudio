@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/equity_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_variance_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/typed_equity_instrument_handler.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -83,20 +83,20 @@ register_equity_handlers(ores::nats::service::client& nats,
     auto equity_position_instrument_subs =
         register_equity_position_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
-               std::make_move_iterator(equity_position_instrument_subs.begin()),
-               std::make_move_iterator(equity_position_instrument_subs.end()));
+                std::make_move_iterator(equity_position_instrument_subs.begin()),
+                std::make_move_iterator(equity_position_instrument_subs.end()));
 
     auto equity_variance_swap_instrument_subs =
         register_equity_variance_swap_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
-               std::make_move_iterator(equity_variance_swap_instrument_subs.begin()),
-               std::make_move_iterator(equity_variance_swap_instrument_subs.end()));
+                std::make_move_iterator(equity_variance_swap_instrument_subs.begin()),
+                std::make_move_iterator(equity_variance_swap_instrument_subs.end()));
 
     auto equity_forward_instrument_subs =
         register_equity_forward_instrument_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
-               std::make_move_iterator(equity_forward_instrument_subs.begin()),
-               std::make_move_iterator(equity_forward_instrument_subs.end()));
+                std::make_move_iterator(equity_forward_instrument_subs.begin()),
+                std::make_move_iterator(equity_forward_instrument_subs.end()));
 
     return subs;
 }

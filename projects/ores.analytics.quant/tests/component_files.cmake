@@ -22,6 +22,7 @@ set(files
     "calendar_rule_engine_tests.cpp"
     "cox_ingersoll_ross_process_tests.cpp"
     "curve_bootstrap_engine_tests.cpp"
+    "curve_health_checker_tests.cpp"
     "curve_instrument_pricer_tests.cpp"
     "day_count_calculator_tests.cpp"
     "forward_rate_calculator_tests.cpp"

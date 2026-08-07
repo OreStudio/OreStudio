@@ -26,11 +26,11 @@ Tests can control what environment variables a parser under test sees without to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -69,3 +69,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped on branch =feature/design-and-implement-env-provider= (4 new
+files, 15 modified, 417+ / 97- lines).
+
+=ores.platform= (new abstractions):
+- =environment_provider=: abstract base with =get/set/unset= pure virtuals.
+- =real_environment_provider=: production default wrapping =std::getenv=/=setenv=/=unsetenv=.
+- =fake_environment_provider=: in-memory =unordered_map= for test injection.
+- =environment=: static API preserved; now delegates to a =thread_local=
+  provider pointer. Defaults to =real_environment_provider= when no
+  override is installed. New =swap_provider()= method for test guards.
+
+=ores.testing= (test guard):
+- =scoped_environment_override=: RAII guard that swaps in a fake provider
+  AND syncs the real process environment (for =boost::program_options=
+  which reads via =std::getenv=). Constructor takes a values map
+  (overridden vars) and a =stripped_keys= list (vars to unset).
+  Saves/restores real environment on construction/destruction.
+
+=Migration=: 11 domain-service =config_parser_tests= converted from
+=scoped_env_unset= to =scoped_environment_override=.
+
+=Verification=: full build clean (linux-clang-debug-make), ctest 71/71
+passed.

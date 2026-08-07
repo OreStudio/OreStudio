@@ -7,35 +7,52 @@
 #+level: s1
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/update-manual-holding-company-description
+#+pr: 1895
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a section to the user manual's Acme Corporation chapter
+describing the holding company's own treasury footprint -- FX/CRM
+visibility, the Group Treasury book -- and how it differs from the
+three operating offices' trading floors, so a reader understands why
+the holding party looks and behaves differently from Acme UK/US/HK.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                    |
 | Parent story | [[id:C8FA1CE7-F4D7-4D9B-B6A5-1B3A623D7071][Holding company treasury functionality: FX/CRM visibility, Group Treasury book, consolidated reporting]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Now          | New chapter section written and wired in; site + PDF build verified. Screenshots pending -- follow-up when back at a machine with X access. |
+| Waiting on   | Nothing.                                |
+| Next         | None -- task closed. Screenshots are a separate, small follow-up, not a blocker. |
+| Last touched | 2026-08-07                              |
 
 * Acceptance
 
--
+- A new section in =chapter_acme_corporation.org= describes the
+  holding company's FX/CRM visibility (tenant-wide FX tick
+  consumption, no feed_binding of its own) and the Group Treasury
+  book/portfolio (one DIVISION unit, one virtual GBP portfolio, two
+  Banking-classified books), contrasted explicitly with an operating
+  company's trading floor. [DONE]
+- The chapter's Overview and Conclusion sections reference the new
+  section so the chapter's narrative arc stays consistent. [DONE]
+- The user_guide site (HTML) and the PDF manual both build cleanly
+  with the new content included. [DONE -- verified both.]
+- Screenshots illustrating the new section (Cross-Rates Matrix,
+  Group Treasury Org Explorer tree) -- deferred: no X11 access in
+  this session. A =#+begin_note= callout flags this explicitly in
+  the chapter itself rather than silently shipping without them.
 
 * Plan
 
@@ -43,7 +60,79 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+1. Read the existing =chapter_acme_corporation.org= end to end to
+   match its structure, tone, and heading conventions before adding
+   anything -- it already has an established narrative arc (Overview
+   -> What is Acme Corporation -> organisational model -> the
+   holding-group structure -> departments -> staff -> provisioning ->
+   conclusion), and the new section needed to fit into that arc
+   rather than being bolted on.
+2. Added a new =** The holding company's own treasury footprint=
+   section immediately after =** The holding-group structure= and
+   before =** Departments and segregation of duties= -- structurally
+   the right place, since it belongs with "what the group centre
+   itself is" rather than with the departmental/staffing detail that
+   follows. Covers, in order: why Acme Corporation Plc is not a pure
+   legal shell; how FX visibility works without the holding company
+   needing its own feed_binding (tenant-wide FX tick consumption, per
+   the earlier tasks in this story); the Group Treasury business
+   unit/portfolio/books, explicitly contrasted with an operating
+   company's Trading-classified desk books (Banking classification,
+   the correct prudential treatment for financing/hedging rather than
+   held-for-trading positions); and a forward pointer to the
+   consolidated-group-risk-reporting investigation findings, without
+   claiming that reporting is built.
+3. Updated the chapter's =** Overview= (added the new section to the
+   guided tour) and =** Conclusion= (added a sentence on the holding
+   company's own treasury activity) so the chapter's own internal
+   cross-references stay consistent with the new structure.
+4. Screenshots: planned two (Cross-Rates Matrix at the holding party;
+   Org Explorer's Group Treasury tree), matching the chapter's
+   existing captioned-screenshot convention. Attempted to capture
+   these live via X11 forwarding, but the user does not currently
+   have X access on this box -- deferred rather than skipped
+   silently: added a =#+begin_note= callout (the chapter's existing
+   admonition convention, matching e.g. chapter_tenants.org) directly
+   in the new section flagging that the screenshots are pending a
+   follow-up pass.
+5. Verified the change builds cleanly in both manual output formats,
+   since a docs-only change can still break the site/PDF pipeline
+   (broken links, malformed org syntax, LaTeX export failures):
+   - =compass build site= (the full =deploy_site= CMake target,
+     which re-indexes all ~4700 =.org= files' IDs and renders HTML):
+     completed with "Build succeeded", and the rendered
+     =chapter_acme_corporation.html= contains the new section's text.
+   - Noticed =deploy_site='s bundled PDF publish step just copies the
+     pre-existing =user_manual.pdf= as a static attachment rather
+     than regenerating it from source -- its mtime was stale
+     (pre-dated this edit). Found and ran the actual PDF-generation
+     target, =deploy_manual= (driven by
+     =projects/ores.lisp/src/ores-build-manual.el=, per the
+     =doc-update-manual= skill), directly. It completed with "Manual
+     PDF build succeeded" -- 189 pages, correct file size, no fatal
+     LaTeX errors (no =!=-prefixed error lines in
+     =user_manual.log=); the one warning ("There were
+     multiply-defined labels") is a standard benign artefact of a
+     3-pass pdflatex build, not a content defect. Extracted the PDF's
+     text (=pdftotext=) and confirmed the new section's content is
+     present.
+
 * Notes
+
+- Screenshots are the one deliberately incomplete part of this task:
+  =#+begin_note= in the chapter flags it, and the Acceptance criteria
+  above record it explicitly rather than silently shipping a chapter
+  section with promised images missing. Follow-up (not a new task in
+  this story, since the story itself is now fully closed): capture
+  =acme_corporation_holding_company_cross_rates_matrix.png= (Cross-
+  Rates Matrix opened at =tenant_admin@acme_corporation=, showing
+  live GBP/USD/HKD rates) and
+  =acme_corporation_group_treasury_tree.png= (Org Explorer expanded
+  to Acme Corporation Plc -> Group Treasury -> Group Treasury
+  Portfolio -> both books) under =assets/images/=, then wire them in
+  with =#+caption[...]=/=[[proj:assets/images/...]]= blocks matching
+  the chapter's existing screenshot convention, and remove the
+  =#+begin_note= callout.
 
 * Test Scenarios
 
@@ -60,7 +149,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1895][#1895]] | [docs,agile] Document the holding company in the Acme Corporation manual |
 
 * Review
 
@@ -69,3 +158,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Acme Corporation user manual chapter now has a dedicated section
+explaining the holding company's own treasury footprint -- FX
+visibility across its subsidiaries' currencies without a feed_binding
+of its own, and the Group Treasury business unit/portfolio/two
+Banking books -- explicitly contrasted with an operating company's
+trading floor, so a reader understands why Acme Corporation Plc looks
+and behaves differently from Acme UK/US/HK. Both manual output
+formats (site HTML and PDF) build cleanly with the new content.
+Screenshots are the one deliberately incomplete part: no X11 access
+in this session prevented capturing them, so a =#+begin_note= callout
+in the chapter flags this openly rather than shipping silently
+incomplete, and the follow-up capture/wiring steps are recorded in
+this task's Notes for whenever X access is available again. This was
+the last remaining task in the holding-company-treasury-functionality
+story -- the story itself is now fully closed alongside this task.

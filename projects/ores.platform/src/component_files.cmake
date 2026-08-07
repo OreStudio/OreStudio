@@ -18,6 +18,7 @@
 #
 set(files
     "environment/environment.cpp"
+    "environment/real_environment_provider.cpp"
     "filesystem/file.cpp"
     "net/network_info.cpp"
     "process/executable.cpp"
@@ -30,7 +31,10 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/attributes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment_provider.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/fake_environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/ores.platform.environment.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/real_environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/filesystem/file.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/filesystem/file_not_found.hpp"

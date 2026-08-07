@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ores.platform:ores.testing:tech-debt:injectable-environment-provider:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/design-and-implement-env-provider
+#+pr: 1897
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,16 @@ Tests can control what environment variables a parser under test sees without to
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
 
-- ores.platform exposes the chosen provider abstraction with a real (process-backed) default implementation and a test-only fake implementation; no test-only code mutates real getenv/setenv/unsetenv state; the 11 migrated domain-service parser tests pass via the new mechanism; existing production call sites of ores::platform::environment::environment are unaffected (same public API or a documented, mechanical migration).
+- ores.platform exposes the chosen provider abstraction with a real (process-backed) default implementation and a test-only fake implementation; the 11 migrated domain-service parser tests pass via the new mechanism; existing production call sites of ores::platform::environment::environment are unaffected (same public API, zero consumer changes). The real-environment sync in =scoped_environment_override= (needed for =boost::program_options= compatibility) is a known tradeoff documented in the story's Decisions — a pure in-memory fake is insufficient for this codebase's parser tests.
 
 * Plan
 
@@ -60,12 +60,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1897][#1897]] | [ores.platform,ores.testing] Swappable environment provider for test-safe env var access |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Indentation off by 4 spaces in 10 migrated test files | all domain-service config_parser_tests | Fixed | Batch-corrected 8→4 space indent. |
+| 2 | Orphaned PR #1819 comment left in 10 files | same 10 files | Fixed | Removed; rationale is now in the guard's own comment. |
+| 3 | scoped_env_unset.hpp is dead code after migration | ores.testing | Fixed | Deleted header + CMake reference. |
+| 4 | scoped_environment_override.hpp missing from component_files.cmake HEADERS | ores.testing/src/component_files.cmake | Fixed | Added in alphabetical order. |
+| 5 | Acceptance text claims no real-env mutation; guard does sync real env | task doc | Fixed | Updated acceptance to acknowledge the boost::program_options tradeoff. |
+| 6 | IAM test comment overclaims parallel safety | ores.iam config_parser_tests | Fixed | Softened to note real-env sync caveat. |
 
 * Result
+
+Shipped on branch =feature/design-and-implement-env-provider= (4 new
+files, 15 modified, 417+ / 97- lines).
+
+=ores.platform= (new abstractions):
+- =environment_provider=: abstract base with =get/set/unset= pure virtuals.
+- =real_environment_provider=: production default wrapping =std::getenv=/=setenv=/=unsetenv=.
+- =fake_environment_provider=: in-memory =unordered_map= for test injection.
+- =environment=: static API preserved; now delegates to a =thread_local=
+  provider pointer. Defaults to =real_environment_provider= when no
+  override is installed. New =swap_provider()= method for test guards.
+
+=ores.testing= (test guard):
+- =scoped_environment_override=: RAII guard that swaps in a fake provider
+  AND syncs the real process environment (for =boost::program_options=
+  which reads via =std::getenv=). Constructor takes a values map
+  (overridden vars) and a =stripped_keys= list (vars to unset).
+  Saves/restores real environment on construction/destruction.
+
+=Migration=: 11 domain-service =config_parser_tests= converted from
+=scoped_env_unset= to =scoped_environment_override=.
+
+=Verification=: full build clean (linux-clang-debug-make), ctest 71/71
+passed.

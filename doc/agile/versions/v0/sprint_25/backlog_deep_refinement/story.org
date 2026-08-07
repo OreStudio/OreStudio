@@ -21,12 +21,12 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | First deep refinement run in progress. |
+| Now           | Complete. Inbox emptied, 20 captures consolidated, report written, 9 captures promoted into 3 sprint stories. |
 | Waiting on    | Nothing.                               |
-| Next          | Complete the audit and write the report. |
-| Last touched  | 2026-08-05                               |
+| Next          | Next deep run should focus on next-bucket deduplication. |
+| Last touched  | 2026-08-07                               |
 
 * Acceptance
 

@@ -186,6 +186,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  mm::curve_republish_handler h(n, c, v);
                                                  h.republish(std::move(msg));
                                              }));
+            subs.push_back(n.queue_subscribe(std::string(mm::compute_curve_request::nats_subject),
+                                             queue,
+                                             [&n, c, v](ores::nats::message msg) mutable {
+                                                 mm::curve_republish_handler h(n, c, v);
+                                                 h.compute(std::move(msg));
+                                             }));
             return subs;
         },
         [&nats, ingest, curve_ingest](boost::asio::io_context& ioc) {

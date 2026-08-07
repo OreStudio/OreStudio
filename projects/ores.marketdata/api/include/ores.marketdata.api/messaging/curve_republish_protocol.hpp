@@ -23,6 +23,7 @@
 #include <chrono>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::messaging {
 
@@ -43,6 +44,38 @@ struct republish_curve_request {
 struct republish_curve_response {
     bool success = false;
     std::string message;
+};
+
+/**
+ * @brief Request to bootstrap (but not publish) an ir_curve_bootstrap_config's output as of a
+ * given snapshot -- the on-demand trigger for curve_republish_service::compute(), the preview
+ * half of the compute/publish split. Same shape as republish_curve_request; kept as its own
+ * request/subject rather than an "options" flag on that one, since the two are genuinely
+ * different actions with different permission codes (a compute-only preview vs. a write that
+ * publishes new market_observations).
+ */
+struct compute_curve_request {
+    using response_type = struct compute_curve_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.curve_bootstrap.compute";
+
+    std::string bootstrap_config_id;
+    std::chrono::system_clock::time_point as_of;
+};
+
+/**
+ * @brief One computed point, echoed back from curve_republish_service::compute() -- unlike a
+ * published market_observation, this never touches the database.
+ */
+struct computed_curve_point {
+    std::string point_id;
+    std::chrono::year_month_day date{};
+    double discount_factor = 0.0;
+};
+
+struct compute_curve_response {
+    bool success = false;
+    std::string message;
+    std::vector<computed_curve_point> points;
 };
 
 }

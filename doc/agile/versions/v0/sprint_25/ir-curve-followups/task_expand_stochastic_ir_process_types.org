@@ -244,7 +244,7 @@ HJM, LMM, and multi-factor forms are deferred to a future multi-curve story.
 
 ** Exposure plan: two-PR split
 
-PR 1 (this task): quant engine only — =g2pp_process= class + tests.
+PR 1 (this task): quant engine only — =two_factor_gaussian_process= class + tests.
 PR 2 (separate infra task): wire it into the system end-to-end.
 
 *** PR 2 design: strongly-typed parameter structs per model

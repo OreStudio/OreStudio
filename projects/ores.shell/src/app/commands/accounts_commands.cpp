@@ -521,8 +521,12 @@ void accounts_commands::process_list_sessions(std::ostream& out,
 
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
         out, session, "iam.v1.sessions.list", req);
-    if (!result || !result->success)
+    if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
@@ -570,8 +574,12 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
         out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
-    if (!result || !result->success)
+    if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << sessions.size()
@@ -616,8 +624,12 @@ void accounts_commands::process_session_stats(std::ostream& out, nats_client& se
 
     auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
         out, session, "iam.v1.sessions.statistics", req);
-    if (!result || !result->success)
+    if (!result)
         return;
+    if (!result->success) {
+        fail(out) << result->message << std::endl;
+        return;
+    }
 
     const auto& stats = result->statistics;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << stats.size() << " daily statistics.";

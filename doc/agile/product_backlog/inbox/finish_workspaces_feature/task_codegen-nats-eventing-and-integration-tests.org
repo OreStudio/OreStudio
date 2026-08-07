@@ -60,11 +60,11 @@ converges on one entity shape.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -160,3 +160,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered all three revised-goal parts, plus two discoveries fixed
+along the way:
+
+- Regenerated all 6 already-converted trading instrument entities
+  (=equity_position_instrument=, =equity_variance_swap_instrument=,
+  =fx_forward_instrument=, =equity_forward_instrument=,
+  =fx_accumulator_instrument=, =fx_vanilla_option_instrument=)
+  through the true default codegen supported set, closing the
+  eventing/messaging/presentation gap; each entity's hand-crafted
+  duplicate =save_*= struct/handler/subscription deleted in favour
+  of the generated registrar. Every file diffed, zero drift on
+  second regen, one commit per entity.
+- Fixed =ores.cpp.presentation.history_field_mapper= to branch on
+  =has_identity_group=/=has_audit_group= like every other C1202-aware
+  facet — it was the one holdout still assuming a flat entity shape.
+- Added the new =ores.cpp.eventing-integration-test= facet
+  (opt-in): generates a per-entity Catch2 test proving the DB-write
+  -> pg_notify -> postgres_event_source -> event_bus -> NATS-publish
+  chain end to end, no mocks. Enabled and proven (standalone run
+  against live Postgres + NATS, 3/3 assertions each) on all 6
+  trading instrument entities.
+- Discovered and fixed: none of the three CI platforms
+  (continuous-linux/macos/windows, plus nightly-linux) actually
+  started a NATS server — only installed/downloaded the binary. Was
+  latent until this task's tests needed a live NATS; fixed by
+  starting =nats-server= with the config =compass env configure=
+  already generates, on all four affected workflows.
+- Filed a follow-up task
+  ([[id:953CA4B7-9914-4E80-BAA7-8FB70028DA28][Migrate all codegen entities to the nested identity/audit struct
+  shape]]) to eventually converge every entity (refdata included) on
+  the C1202 shape and drop the flat branches everywhere.
+
+Full build + full ctest suite (71/71) green before raising the PR.

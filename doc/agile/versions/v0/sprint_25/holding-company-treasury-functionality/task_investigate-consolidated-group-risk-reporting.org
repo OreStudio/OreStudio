@@ -8,7 +8,7 @@
 #+filetags: :holding-company-treasury-functionality:sprint_25:v0:
 #+owner: marco
 #+branch: feature/investigate-consolidated-group-risk-reporting
-#+pr:
+#+pr: 1889
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -164,7 +164,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1889][#1889]] | [agile] Investigate consolidated group risk reporting |
 
 * Review
 

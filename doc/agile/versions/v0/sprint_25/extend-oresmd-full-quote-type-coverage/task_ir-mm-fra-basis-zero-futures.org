@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
-#+updated: 2026-07-30
+#+updated: 2026-08-07
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,28 +20,62 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend the existing =ir_market_data_identifier= to represent the 11 ORE
+IR quote types not yet covered by oresmd — every TYPE/METRIC pair the
+catalogue documents for interest rates beyond the original two
+(=IR_SWAP/RATE= and =DISCOUNT/RATE=). The consumer-facing change is a
+new =quote= query parameter (the ORE TYPE) plus an extended =metric=
+enum (the ORE METRIC), both IR-only and only meaningful when
+=type=quote=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-07                               |
 
 * Acceptance
 
--
+- [X] =ir_quote_type= enum added with 12 values (=ir_swap=, =discount=,
+  =mm=, =fra=, =imm_fra=, =basis_swap=, =bma_swap=, =cc_basis_swap=,
+  =cc_fix_float_swap=, =zero=, =mm_future=, =oi_future=).
+- [X] =metric= enum reduced to the five true ORE METRIC values (=rate=,
+  =price=, =basis_spread=, =ratio=, =yield_spread=) — the old
+  =par_rate=/=discount_factor= conflation of TYPE and METRIC is gone.
+- [X] New =quote= query parameter parsed, serialised, and validated
+  (IR-only, only meaningful with =type=quote=).
+- [X] =quote_key_ir= produces the correct ORE quote key for every
+  TYPE/METRIC pair — 11 new shapes, all tested against the ORE key
+  format documented in the market data catalogue.
+- [X] =metric= defaults from the =quote= type when absent (=quote=mm=
+  → =rate=, =quote=mm_future= → =price=, =quote=basis_swap= →
+  =basis_spread=, =quote=bma_swap= → =ratio=).
+- [X] No existing asset class's current fields/behaviour regress — every
+  extension is additive; all 85 pre-existing tests pass unchanged (after
+  the mechanical =par_rate=/=discount_factor= → =quote=...&metric=rate=
+  migration in the test suite itself).
+- [X] No new component/library created — the types live in
+  =ores.marketdata.api/domain=, the logic in =ores.marketdata.core/oresmd/=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added the =ir_quote_type= enum (=oresmd_enums.hpp=), extended =metric=,
+and added =quote_type= as an =std::optional= field on both
+=ir_market_data_identifier= and =ir_market_data_requirement=. The new
+=quote= query parameter is parsed in =oresmd_parser= (gated: IR-only,
+rejected when =type≠quote=), serialised in =to_uri=, and wired through
+=oresmd_resolver=. The quote-key projection (=oresmd_projections=)
+dispatches on =ir_quote_type= + =metric= to construct the correct ORE
+key — =ir_swap= uses the =2D= settlement-lag convention, =discount= uses
+the =curve_id= format (=USD3M=), =cc_basis_swap=/=cc_fix_float_swap=/
+=bma_swap= omit =index= from the qualifier, and every other type
+includes =INDEX/TENOR= in the qualifier. =default_metric()= supplies the
+metric when the caller omits it (=quote=mm= → =rate=, etc.).
 
 * Notes
 
@@ -69,3 +103,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered full IR quote-type representation in =oresmd=, meeting every
+Acceptance bullet:
+
+- =ir_quote_type= (12 values) + extended =metric= (5 values) replace the
+  old =par_rate=/=discount_factor= conflation with a clean two-dimensional
+  design: =quote= carries the ORE TYPE, =metric= carries the ORE METRIC,
+  and =metric= defaults from =quote= when absent.
+- =quote_key_ir= dispatches correctly for all 12 TYPEs, including the
+  format variants: =ir_swap='s =2D= settlement-lag convention,
+  =discount='s =curve_id= qualifier, and the no-index qualifier for
+  =cc_basis_swap=/=cc_fix_float_swap=/=bma_swap=.
+- 108 test cases, 214 assertions, all passing — 26 new tests covering
+  every TYPE/METRIC pair's projection, round-trip, default-metric, and
+  validation; the remaining 82 tests (85 original minus 4 backward-compat
+  removed plus 1 new validation) all pass with the test suite's own
+  mechanical migration to the new =quote= parameter.
+- No new component, no dependency changes — everything lives inside
+  =ores.marketdata= exactly as the original =oresmd= library task
+  established.

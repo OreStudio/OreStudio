@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2A0BB93F-7B33-4E7B-AB83-5109B1F546A6
+:ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.trading.equity_forward_instrument
 #+description: Codegen entity model for the trading =equity_forward_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.

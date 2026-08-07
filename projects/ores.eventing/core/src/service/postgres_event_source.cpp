@@ -53,6 +53,7 @@ postgres_event_source::~postgres_event_source() {
 }
 
 void postgres_event_source::start() {
+    registered_entities_.clear();
     for (const auto& kv : entity_mappings_) {
         if (!registered_entities_.empty())
             registered_entities_ += ", ";
@@ -66,6 +67,10 @@ void postgres_event_source::start() {
 void postgres_event_source::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping postgres event source.";
     listener_.stop();
+}
+
+bool postgres_event_source::wait_until_ready(std::chrono::milliseconds timeout) {
+    return listener_.wait_until_ready(timeout);
 }
 
 void postgres_event_source::on_entity_change(const domain::entity_change_event& e) {

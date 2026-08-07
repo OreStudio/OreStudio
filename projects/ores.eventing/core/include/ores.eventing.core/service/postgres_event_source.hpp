@@ -27,6 +27,7 @@
 #include "ores.eventing.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -140,6 +141,22 @@ public:
      * Stops listening for notifications.
      */
     void stop();
+
+    /**
+     * @brief Blocks until the underlying listener has issued LISTEN for
+     * every channel registered so far, or @p timeout elapses.
+     *
+     * The listener thread issues LISTEN asynchronously after start(); a
+     * write performed before LISTEN is actually registered on the
+     * connection produces no notification (Postgres does not queue
+     * NOTIFYs sent before a matching LISTEN). Callers -- in particular
+     * tests -- that write immediately after start() should wait on this
+     * first, rather than sleep for a guessed duration.
+     *
+     * @return true if the listener became ready before the timeout.
+     */
+    [[nodiscard]] bool
+    wait_until_ready(std::chrono::milliseconds timeout = std::chrono::seconds(2));
 
 private:
     /**

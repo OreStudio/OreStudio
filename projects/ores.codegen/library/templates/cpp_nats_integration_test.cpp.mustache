@@ -1,0 +1,213 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.eventing-integration-test.nats_integration_test.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.database/domain/context.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component_include}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
+#include "ores.{{component_include}}/generators/{{entity_singular}}_generator.hpp"
+#include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
+{{#sql.party_id_from_session}}
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+{{/sql.party_id_from_session}}
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
+#include <thread>
+
+// Proves the "write an entity, observe its NATS entity-changed
+// notification" pattern end to end for {{entity_singular}} -- the
+// production DB-write -> pg_notify -> postgres_event_source ->
+// event_bus -> NATS publish chain, assembled directly here the same
+// way the production event-registrar wires it.
+
+namespace {
+
+const std::string_view test_suite("{{component}}.tests");
+const std::string tags("[eventing][integration]");
+
+{{#sql.party_id_from_session}}
+// {{entity_title}} writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
+{{/sql.party_id_from_session}}
+
+// Reads NATS connection settings the same way every service resolves
+// them at startup -- CMake bakes every .env variable into the ctest
+// process environment, so these are populated identically for both
+// `compass build` local runs and CI.
+ores::nats::config::nats_options test_nats_options() {
+    auto env = [](const char* name) -> std::string {
+        const char* v = std::getenv(name);
+        return v ? std::string(v) : std::string();
+    };
+
+    ores::nats::config::nats_options opts;
+    opts.url = env("ORES_NATS_URL");
+    if (opts.url.empty())
+        opts.url = "nats://localhost:4222";
+    opts.subject_prefix = env("ORES_NATS_SUBJECT_PREFIX");
+    opts.tls_ca_cert = env("ORES_NATS_TLS_CA");
+    opts.tls_client_cert = env("ORES_NATS_TLS_CERT");
+    opts.tls_client_key = env("ORES_NATS_TLS_KEY");
+    return opts;
+}
+
+}
+
+using namespace ores::{{component}}::generators;
+using ores::{{component}}::domain::{{entity_singular}};
+using ores::{{component}}::repository::{{entity_singular}}_repository;
+using ores::testing::scoped_database_helper;
+using namespace ores::logging;
+
+TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+{{#sql.party_id_from_session}}
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+{{/sql.party_id_from_session}}
+{{^sql.party_id_from_session}}
+    auto& party_ctx = h.context();
+{{/sql.party_id_from_session}}
+
+    // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
+    // production event-registrar wires in the live service, assembled
+    // directly in the test instead of via a running process.
+    namespace ev = ores::eventing;
+    ev::service::event_bus bus;
+    ev::service::postgres_event_source event_source(party_ctx, bus);
+
+    ores::nats::service::client nats(test_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    auto sub = bus.subscribe<ores::{{component}}::eventing::{{entity_singular}}_changed_event>(
+        [&nats](const ores::{{component}}::eventing::{{entity_singular}}_changed_event& e) {
+            ev::service::publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<
+                            ores::{{component}}::eventing::{{entity_singular}}_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.{{component}}.{{entity_singular}}",
+                                                .timestamp = e.timestamp,
+{{#primary_key.is_text}}
+                                                .entity_ids = e.{{primary_key.column}}s,
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+                                                .entity_ids = e.{{entity_singular_short}}_ids,
+{{/primary_key.is_uuid}}
+                                                .tenant_id = e.tenant_id});
+        });
+
+    event_source.register_mapping<ores::{{component}}::eventing::{{entity_singular}}_changed_event>(
+        "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+
+    // 2. Subscribe as an external observer would, on the relative subject --
+    // client::subscribe() prepends the subject_prefix itself.
+    auto observer = nats.subscribe_buffered(
+        std::string(ev::domain::event_traits<
+                    ores::{{component}}::eventing::{{entity_singular}}_changed_event>::name),
+        10);
+
+    // The listener thread issues LISTEN asynchronously on its own
+    // dedicated connection. Block until it has actually done so before
+    // writing -- Postgres does not queue NOTIFYs sent before a matching
+    // LISTEN is registered.
+    event_source.start();
+    REQUIRE(event_source.wait_until_ready());
+
+    // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
+    // the chain wired above -> NATS.
+    auto v = generate_synthetic_{{entity_singular}}(ctx);
+{{#has_audit_group}}
+    v.audit.change_reason_code = "system.test";
+{{/has_audit_group}}
+{{^has_audit_group}}
+    v.change_reason_code = "system.test";
+{{/has_audit_group}}
+{{#sql.party_id_from_session}}
+{{#has_identity_group}}
+    v.identity.party_id = *party_ctx.party_id();
+{{/has_identity_group}}
+{{^has_identity_group}}
+    v.party_id = *party_ctx.party_id();
+{{/has_identity_group}}
+{{/sql.party_id_from_session}}
+{{#has_identity_group}}
+{{#primary_key.is_uuid}}
+    const auto id_str = boost::uuids::to_string(v.identity.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    const auto id_str = v.identity.{{primary_key.column}};
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{^has_identity_group}}
+{{#primary_key.is_uuid}}
+    const auto id_str = boost::uuids::to_string(v.{{primary_key.column}});
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    const auto id_str = v.{{primary_key.column}};
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+    BOOST_LOG_SEV(lg, debug) << "{{entity_title}}: " << v;
+
+    {{entity_singular}}_repository repo;
+    repo.write(party_ctx, v);
+
+    // 4. Poll the observer's buffer for the notification. Generous
+    // timeout: trigger -> pg_notify -> 100ms listener poll -> event_bus
+    // -> NATS round trip, all real, no mocks.
+    std::vector<ores::nats::message> received;
+    for (int i = 0; i < 50 && received.empty(); ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        auto snap = observer.snapshot();
+        for (const auto& msg : snap) {
+            auto decoded =
+                ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
+                    msg.data);
+            if (decoded && decoded->entity == "ores.{{component}}.{{entity_singular}}") {
+                for (const auto& changed_id : decoded->entity_ids) {
+                    if (changed_id == id_str)
+                        received.push_back(msg);
+                }
+            }
+        }
+    }
+
+    event_source.stop();
+
+    REQUIRE_FALSE(received.empty());
+    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
+                            << " matching NATS notification(s) for {{entity_singular}} " << id_str;
+}
+{{/domain_entity}}

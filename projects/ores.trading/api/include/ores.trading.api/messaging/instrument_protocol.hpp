@@ -61,29 +61,6 @@ namespace ores::trading::messaging {
 
 // ---- Typed FX instrument protocol ----
 
-struct save_fx_forward_instrument_request {
-    using response_type = struct save_fx_forward_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_forward_instruments.save";
-    ores::trading::domain::fx_forward_instrument data;
-};
-
-struct save_fx_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_vanilla_option_instrument_request {
-    using response_type = struct save_fx_vanilla_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_vanilla_option_instruments.save";
-    ores::trading::domain::fx_vanilla_option_instrument data;
-};
-
-struct save_fx_vanilla_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
 struct save_fx_barrier_option_instrument_request {
     using response_type = struct save_fx_barrier_option_instrument_response;
     static constexpr std::string_view nats_subject =
@@ -115,17 +92,6 @@ struct save_fx_asian_forward_instrument_request {
 };
 
 struct save_fx_asian_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_accumulator_instrument_request {
-    using response_type = struct save_fx_accumulator_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_accumulator_instruments.save";
-    ores::trading::domain::fx_accumulator_instrument data;
-};
-
-struct save_fx_accumulator_instrument_response {
     bool success = false;
     std::string message;
 };
@@ -292,29 +258,6 @@ struct save_equity_asian_option_instrument_response {
     std::string message;
 };
 
-struct save_equity_forward_instrument_request {
-    using response_type = struct save_equity_forward_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.equity_forward_instruments.save";
-    ores::trading::domain::equity_forward_instrument data;
-};
-
-struct save_equity_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_variance_swap_instrument_request {
-    using response_type = struct save_equity_variance_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_variance_swap_instruments.save";
-    ores::trading::domain::equity_variance_swap_instrument data;
-};
-
-struct save_equity_variance_swap_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
 struct save_equity_swap_instrument_request {
     using response_type = struct save_equity_swap_instrument_response;
     static constexpr std::string_view nats_subject = "trading.v1.equity_swap_instruments.save";
@@ -334,17 +277,6 @@ struct save_equity_accumulator_instrument_request {
 };
 
 struct save_equity_accumulator_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_position_instrument_request {
-    using response_type = struct save_equity_position_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.equity_position_instruments.save";
-    ores::trading::domain::equity_position_instrument data;
-};
-
-struct save_equity_position_instrument_response {
     bool success = false;
     std::string message;
 };

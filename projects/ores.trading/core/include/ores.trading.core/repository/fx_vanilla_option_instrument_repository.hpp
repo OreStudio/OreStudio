@@ -74,7 +74,6 @@ public:
     read_latest(context ctx, const std::vector<std::string>& instrument_ids);
     /**@}*/
 
-
     /**
      * @brief Reads all FX vanilla option instruments, possibly filtered by primary key.
      */

@@ -51,6 +51,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.trading.api.lib
         ores.nats.lib
+        ores.diff.lib
     PRIVATE
         ores.service.lib
         ores.storage.lib

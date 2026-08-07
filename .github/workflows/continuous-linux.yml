@@ -216,6 +216,29 @@ jobs:
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 
+      - name: Start NATS server
+        # env configure already generated the per-checkout TLS certs and
+        # nats-<label>.conf (compass nats certs / compass nats init) --
+        # start it with that config, matching local dev exactly, so tests
+        # that need a live NATS (eventing integration tests) don't hang or
+        # fail with a connection error.
+        run: |
+          nats_conf="$(ls build/config/nats-*.conf | head -n1)"
+          nats-server --config "$nats_conf" &
+          monitor_port="$(grep '^ORES_NATS_MONITOR_PORT=' .env | cut -d= -f2- | tr -d '"')"
+          ready=false
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${monitor_port}/varz" > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != "true" ]; then
+            echo "::error::nats-server did not become ready within 30s"
+            exit 1
+          fi
+
       - name: Setup Database
         run: |
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci

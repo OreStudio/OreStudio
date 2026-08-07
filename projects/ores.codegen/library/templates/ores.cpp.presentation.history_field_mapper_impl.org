@@ -24,12 +24,14 @@ gets a plain =std::string= field, not =std::optional<std::string>=.
 The mapper must match that same ground truth, or it doesn't compile
 against the actual generated struct. =presentation= profile.
 
-/Scope of this first cut/ (see the story's history-field-mapper task
-Notes for the full list): flat entities only (no
-=has_identity_group=/=has_audit_group= — none of the currently-covered
-=ores.refdata= entities use them); primary key supports =string= and
-=uuid= only; natural keys support =string=, =uuid=, =date=,
-=timestamp=, and =int=. Enum columns render via =rfl::enum_to_string=
+/Scope/: both flat and C1202-nested (=has_identity_group=/
+=has_audit_group=) entities, matching the mapper/repository/service
+facets' existing branching convention (=v.identity.x=/=v.audit.x= vs
+flat =v.x=). Primary key supports =string= and =uuid= only; natural
+keys support =string=, =uuid=, =date=, =timestamp=, and =int=. Natural
+keys are not identity-group-aware (mirroring the mapper facet's same
+carve-out — an entity with natural keys inside the identity group
+would need this extended). Enum columns render via =rfl::enum_to_string=
 (=render_is_enum=, derived from the raw =is_enum= flag rather than the
 nullable-narrowed =is_enum= column flag, matching every other
 =render_is_*= flag's ground-truth-over-derived-flag rule above) --
@@ -72,6 +74,16 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
+{{#has_identity_group}}
+{{#primary_key.is_uuid}}
+    fields.push_back(
+        {.name = "{{primary_key.render_label}}", .value = boost::uuids::to_string(v.identity.{{primary_key.column}})});
+{{/primary_key.is_uuid}}
+{{^primary_key.is_uuid}}
+    fields.push_back({.name = "{{primary_key.render_label}}", .value = v.identity.{{primary_key.column}}});
+{{/primary_key.is_uuid}}
+{{/has_identity_group}}
+{{^has_identity_group}}
 {{#primary_key.is_uuid}}
     fields.push_back(
         {.name = "{{primary_key.render_label}}", .value = boost::uuids::to_string(v.{{primary_key.column}})});
@@ -79,6 +91,7 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{^primary_key.is_uuid}}
     fields.push_back({.name = "{{primary_key.render_label}}", .value = v.{{primary_key.column}}});
 {{/primary_key.is_uuid}}
+{{/has_identity_group}}
 {{#natural_keys}}
 {{#is_uuid}}
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{column}})});
@@ -104,6 +117,52 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
+{{#is_identity_group_column}}
+{{#render_is_uuid}}
+    fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.identity.{{name}})});
+{{/render_is_uuid}}
+{{#render_is_optional_uuid}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.identity.{{name}} ? boost::uuids::to_string(*v.identity.{{name}}) : std::string{}});
+{{/render_is_optional_uuid}}
+{{#render_is_timestamp}}
+    fields.push_back(
+        {.name = "{{render_label}}", .value = ores::platform::time::datetime::to_iso8601_utc(v.identity.{{name}})});
+{{/render_is_timestamp}}
+{{#render_is_optional_timestamp}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.identity.{{name}} ? ores::platform::time::datetime::to_iso8601_utc(*v.identity.{{name}}) : std::string{}});
+{{/render_is_optional_timestamp}}
+{{#render_is_optional_string}}
+    fields.push_back({.name = "{{render_label}}", .value = v.identity.{{name}}.value_or(std::string{})});
+{{/render_is_optional_string}}
+{{#render_is_optional_bool}}
+    fields.push_back({.name = "{{render_label}}", .value = v.identity.{{name}} ? (*v.identity.{{name}} ? "true" : "false") : std::string{}});
+{{/render_is_optional_bool}}
+{{#render_is_optional_int}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.identity.{{name}} ? std::to_string(*v.identity.{{name}}) : std::string{}});
+{{/render_is_optional_int}}
+{{#render_is_optional_double}}
+    fields.push_back({.name = "{{render_label}}",
+                      .value = v.identity.{{name}} ? std::to_string(*v.identity.{{name}}) : std::string{}});
+{{/render_is_optional_double}}
+{{#render_is_string}}
+    fields.push_back({.name = "{{render_label}}", .value = v.identity.{{name}}});
+{{/render_is_string}}
+{{#render_is_bool}}
+    fields.push_back({.name = "{{render_label}}", .value = v.identity.{{name}} ? "true" : "false"});
+{{/render_is_bool}}
+{{#render_is_int}}
+    fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.identity.{{name}})});
+{{/render_is_int}}
+{{#render_is_double}}
+    fields.push_back({.name = "{{render_label}}", .value = std::to_string(v.identity.{{name}})});
+{{/render_is_double}}
+{{#render_is_enum}}
+    fields.push_back({.name = "{{render_label}}", .value = rfl::enum_to_string(v.identity.{{name}})});
+{{/render_is_enum}}
+{{/is_identity_group_column}}
 {{^is_identity_group_column}}
 {{#render_is_uuid}}
     fields.push_back({.name = "{{render_label}}", .value = boost::uuids::to_string(v.{{name}})});
@@ -151,6 +210,17 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/render_is_enum}}
 {{/is_identity_group_column}}
 {{/columns}}
+{{#has_audit_group}}
+{{#has_audit_columns}}
+    fields.push_back({.name = "Modified By", .value = v.audit.modified_by});
+    fields.push_back({.name = "Performed By", .value = v.audit.performed_by});
+    fields.push_back({.name = "Change Reason Code", .value = v.audit.change_reason_code});
+    fields.push_back({.name = "Change Commentary", .value = v.audit.change_commentary});
+{{/has_audit_columns}}
+    fields.push_back(
+        {.name = "Recorded At", .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
+{{/has_audit_group}}
+{{^has_audit_group}}
 {{#has_audit_columns}}
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});
@@ -159,6 +229,7 @@ render_{{entity_singular}}_fields(const domain::{{entity_singular}}& v) {
 {{/has_audit_columns}}
     fields.push_back(
         {.name = "Recorded At", .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+{{/has_audit_group}}
 
     return fields;
 }

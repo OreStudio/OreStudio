@@ -33,11 +33,8 @@
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_position_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
-#include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
@@ -135,22 +132,6 @@ public:
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_asian_option_instrument);
     }
 
-    void save_forward(ores::nats::message msg) {
-        using Svc = service::equity_forward_instrument_service;
-        handle_typed_equity_save<save_equity_forward_instrument_request,
-                                 save_equity_forward_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_forward_instrument);
-    }
-
-    void save_variance_swap(ores::nats::message msg) {
-        using Svc = service::equity_variance_swap_instrument_service;
-        handle_typed_equity_save<save_equity_variance_swap_instrument_request,
-                                 save_equity_variance_swap_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_variance_swap_instrument);
-    }
-
     void save_swap(ores::nats::message msg) {
         using Svc = service::equity_swap_instrument_service;
         handle_typed_equity_save<save_equity_swap_instrument_request,
@@ -165,14 +146,6 @@ public:
                                  save_equity_accumulator_instrument_response,
                                  Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_accumulator_instrument);
-    }
-
-    void save_position(ores::nats::message msg) {
-        using Svc = service::equity_position_instrument_service;
-        handle_typed_equity_save<save_equity_position_instrument_request,
-                                 save_equity_position_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_position_instrument);
     }
 
 private:

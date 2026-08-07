@@ -58,7 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setCategory(const dq::domain::change_reason_category& item);
+    void setCategory(const dq::domain::change_reason_category& category);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
@@ -73,8 +73,8 @@ public:
 
 
 signals:
-    void itemSaved(const QString& code);
-    void itemDeleted(const QString& code);
+    void categorySaved(const QString& code);
+    void categoryDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
@@ -103,7 +103,7 @@ private:
     Ui::ChangeReasonCategoryDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    dq::domain::change_reason_category item_;
+    dq::domain::change_reason_category category_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

@@ -60,10 +60,10 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showReasonDetails(const dq::domain::change_reason& item);
+    void showReasonDetails(const dq::domain::change_reason& reason);
     void addNewRequested();
-    void itemDeleted(const QString& code);
-    void showReasonHistory(const dq::domain::change_reason& item);
+    void reasonDeleted(const QString& code);
+    void showReasonHistory(const dq::domain::change_reason& reason);
     // Extra signal declarations seam: a future
     // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
     // to declare any entity-specific signals (e.g. a cross-navigation

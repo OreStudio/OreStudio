@@ -87,6 +87,14 @@ void SubjectAreaMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
+    refreshAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
+        tr("Refresh"));
+    refreshAction_->setToolTip(tr("Refresh subject areas"));
+    initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
+
+    toolbar_->addSeparator();
+
     addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new subject area"));
@@ -107,14 +115,6 @@ void SubjectAreaMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
-
-    toolbar_->addSeparator();
-
-    refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
-        tr("Refresh"));
-    refreshAction_->setToolTip(tr("Refresh subject areas"));
-    initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);

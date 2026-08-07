@@ -157,14 +157,11 @@ void DqPlugin::on_login(const plugin_context& ctx) {
                                                          this);
     connectControllerSignals(changeReasonCategoryController_.get());
 
-    // Note the argument order here (username before change_reason_cache)
-    // deliberately differs from every other controller above/below --
-    // preserved verbatim from the moved-in implementation, not a typo.
     changeReasonController_ = std::make_unique<ChangeReasonController>(ctx_.main_window,
                                                                        ctx_.mdi_area,
                                                                        ctx_.client_manager,
-                                                                       ctx_.username,
                                                                        ctx_.change_reason_cache,
+                                                                       ctx_.username,
                                                                        this);
     connectControllerSignals(changeReasonController_.get());
 

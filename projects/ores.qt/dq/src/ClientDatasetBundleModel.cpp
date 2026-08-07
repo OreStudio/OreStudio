@@ -31,7 +31,7 @@ using namespace ores::logging;
 
 namespace {
 std::string dataset_bundle_key_extractor(const dq::domain::dataset_bundle& e) {
-    return e.;
+    return e.code;
 }
 }
 
@@ -60,7 +60,7 @@ ClientDatasetBundleModel::ClientDatasetBundleModel(ClientManager* clientManager,
 int ClientDatasetBundleModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(_.size());
+    return static_cast<int>(bundles_.size());
 }
 
 int ClientDatasetBundleModel::columnCount(const QModelIndex& parent) const {
@@ -74,20 +74,32 @@ QVariant ClientDatasetBundleModel::data(const QModelIndex& index, int role) cons
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= _.size())
+    if (row >= bundles_.size())
         return {};
 
-    const auto& item = _[row];
+    const auto& bundle = bundles_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+            case Code:
+                return QString::fromStdString(bundle.code);
+            case Name:
+                return QString::fromStdString(bundle.name);
+            case Description:
+                return QString::fromStdString(bundle.description);
+            case Version:
+                return static_cast<qlonglong>(bundle.version);
+            case ModifiedBy:
+                return QString::fromStdString(bundle.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(bundle.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(item.);
+        return recency_foreground_color(bundle.code);
     }
 
     return {};
@@ -106,6 +118,18 @@ ClientDatasetBundleModel::headerData(int section, Qt::Orientation orientation, i
     }
 
     switch (section) {
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
         default:
             return {};
     }
@@ -125,16 +149,16 @@ void ClientDatasetBundleModel::refresh() {
         return;
     }
 
-    if (!_.empty()) {
+    if (!bundles_.empty()) {
         beginResetModel();
-        _.clear();
+        bundles_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_(0, page_size_);
+    fetch_bundles(0, page_size_);
 }
 
 void ClientDatasetBundleModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -150,18 +174,18 @@ void ClientDatasetBundleModel::load_page(std::uint32_t offset, std::uint32_t lim
         return;
     }
 
-    if (!_.empty()) {
+    if (!bundles_.empty()) {
         beginResetModel();
-        _.clear();
+        bundles_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_(offset, limit);
+    fetch_bundles(offset, limit);
 }
 
-void ClientDatasetBundleModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
+void ClientDatasetBundleModel::fetch_bundles(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientDatasetBundleModel> self = this;
 
@@ -173,13 +197,13 @@ void ClientDatasetBundleModel::fetch_(std::uint32_t offset, std::uint32_t limit)
                     << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .= {},
+                            .bundles = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                request;
+                dq::messaging::get_dataset_bundles_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -189,7 +213,7 @@ void ClientDatasetBundleModel::fetch_(std::uint32_t offset, std::uint32_t limit)
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .= {},
+                            .bundles = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -205,7 +229,7 @@ void ClientDatasetBundleModel::fetch_(std::uint32_t offset, std::uint32_t limit)
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
-                            .= {},
+                            .bundles = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
@@ -215,7 +239,7 @@ void ClientDatasetBundleModel::fetch_(std::uint32_t offset, std::uint32_t limit)
                     << "Fetched " << result->bundles.size()
                     << " dataset bundles, total available: " << result->total_available_count;
                 return {.success = true,
-                        .= std::move(result->bundles),
+                        .bundles = std::move(result->bundles),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
@@ -241,14 +265,14 @@ void ClientDatasetBundleModel::onBundlesLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result..size());
+    const int new_count = static_cast<int>(result.bundles.size());
 
     if (new_count > 0) {
         beginResetModel();
-        _ = std::move(result.);
+        bundles_ = std::move(result.bundles);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(_);
+        const bool has_recent = recencyTracker_.update(bundles_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
@@ -275,9 +299,9 @@ void ClientDatasetBundleModel::set_page_size(std::uint32_t size) {
 
 const dq::domain::dataset_bundle* ClientDatasetBundleModel::getBundle(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= _.size())
+    if (idx >= bundles_.size())
         return nullptr;
-    return &_[idx];
+    return &bundles_[idx];
 }
 
 
@@ -289,7 +313,7 @@ QVariant ClientDatasetBundleModel::recency_foreground_color(const std::string& c
 }
 
 void ClientDatasetBundleModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!_.empty()) {
+    if (!bundles_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }

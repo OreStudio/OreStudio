@@ -134,7 +134,7 @@ DataLibrarianWindow::DataLibrarianWindow(ClientManager* clientManager,
 
     statusLabel_->setText(tr("Loading catalogs..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting catalogs...";
-    catalogModel_->loadData();
+    catalogModel_->refresh();
 
     statusLabel_->setText(tr("Loading dataset dependencies..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting dataset dependencies...";
@@ -403,7 +403,7 @@ void DataLibrarianWindow::setupConnections() {
             this,
             &DataLibrarianWindow::onSubjectAreasLoaded);
     connect(catalogModel_,
-            &ClientCatalogModel::loadFinished,
+            &ClientCatalogModel::dataLoaded,
             this,
             &DataLibrarianWindow::onCatalogsLoaded);
     connect(datasetDependencyModel_,
@@ -654,7 +654,7 @@ void DataLibrarianWindow::onRefreshClicked() {
     emit statusChanged(tr("Refreshing data..."));
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
-    catalogModel_->loadData();
+    catalogModel_->refresh();
     datasetDependencyModel_->loadData();
     methodologyModel_->refresh();
     datasetModel_->refresh();
@@ -959,11 +959,13 @@ void DataLibrarianWindow::buildNavigationTree() {
         catalogsParent->removeRows(0, catalogsParent->rowCount());
 
         for (int c = 0; c < catalogModel_->rowCount(); ++c) {
-            const auto& catalog = catalogModel_->catalogAt(c);
+            const auto* catalog = catalogModel_->getCatalog(c);
+            if (!catalog)
+                continue;
 
-            auto* catalogItem = new QStandardItem(QString::fromStdString(catalog.name));
+            auto* catalogItem = new QStandardItem(QString::fromStdString(catalog->name));
             catalogItem->setData(static_cast<int>(NavigationItemType::Catalog), ItemTypeRole);
-            catalogItem->setData(QString::fromStdString(catalog.name), ItemIdRole);
+            catalogItem->setData(QString::fromStdString(catalog->name), ItemIdRole);
             catalogItem->setIcon(
                 IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
 

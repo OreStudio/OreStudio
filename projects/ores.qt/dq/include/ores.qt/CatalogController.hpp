@@ -78,17 +78,17 @@ protected:
     void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const dq::domain::catalog& item);
+    void onShowDetails(const dq::domain::catalog& catalog);
     void onAddNewRequested();
-    void onShowHistory(const dq::domain::catalog& item);
-    void onRevertVersion(const dq::domain::catalog& item);
-    void onOpenVersion(const dq::domain::catalog& item, int versionNumber);
+    void onShowHistory(const dq::domain::catalog& catalog);
+    void onRevertVersion(const dq::domain::catalog& catalog);
+    void onOpenVersion(const dq::domain::catalog& catalog, int versionNumber);
     void onOpenHistoryVersion(const QString& entityId, int versionNumber);
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const dq::domain::catalog& item);
+    void showDetailWindow(const dq::domain::catalog& catalog);
 
     /**
      * @brief Wires the caches/status/error plumbing every
@@ -101,8 +101,8 @@ private:
 
     /**
      * @brief Fetches the full typed catalog history (the
-     * existing per-entity /
-     * , unrelated to the generic
+     * existing per-entity dq::messaging::get_catalog_history_request/
+     * dq::messaging::get_catalog_history_response, unrelated to the generic
      * history.v1.get subject) and hands it to @p callback on the UI
      * thread. Used to resolve HistoryDialog's generic (entity_id,
      * version) signals back to a typed catalog, since the

@@ -57,10 +57,24 @@
 #include "ores.dq.core/messaging/report_definition_registrar.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
 #include "ores.dq.core/messaging/synthetic_fx_spot_config_registrar.hpp"
+#include "ores.dq.core/presentation/artefact_type_history_field_mapper.hpp"
 #include "ores.dq.core/presentation/badge_definition_history_field_mapper.hpp"
 #include "ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/catalog_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/change_reason_category_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/change_reason_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/data_domain_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/dataset_bundle_history_field_mapper.hpp"
+#include "ores.dq.core/presentation/subject_area_history_field_mapper.hpp"
+#include "ores.dq.core/service/artefact_type_service.hpp"
 #include "ores.dq.core/service/badge_definition_service.hpp"
 #include "ores.dq.core/service/badge_severity_service.hpp"
+#include "ores.dq.core/service/catalog_service.hpp"
+#include "ores.dq.core/service/change_reason_category_service.hpp"
+#include "ores.dq.core/service/change_reason_service.hpp"
+#include "ores.dq.core/service/data_domain_service.hpp"
+#include "ores.dq.core/service/dataset_bundle_service.hpp"
+#include "ores.dq.core/service/subject_area_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
@@ -515,6 +529,78 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_severity_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_badge_severity_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.artefact_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::artefact_type_service svc(scoped_ctx);
+                auto versions = svc.get_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_artefact_type_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.catalog",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::catalog_service svc(scoped_ctx);
+                auto versions = svc.get_catalog_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_catalog_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.change_reason",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::change_reason_service svc(scoped_ctx);
+                auto versions = svc.get_reason_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_change_reason_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.change_reason_category",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::change_reason_category_service svc(scoped_ctx);
+                auto versions = svc.get_category_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_change_reason_category_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.data_domain",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::data_domain_service svc(scoped_ctx);
+                auto versions = svc.get_domain_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_data_domain_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.dq.dataset_bundle",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::dataset_bundle_service svc(scoped_ctx);
+                auto versions = svc.get_bundle_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_dataset_bundle_fields);
+            });
+
+        // subject_area has a compound (name, domain_name) natural key and no
+        // surrogate -- entity_id arrives as "name|domain_name" from the Qt
+        // client (SubjectAreaController::showHistoryWindow), split back
+        // apart here rather than adding surrogate-key support this has
+        // never needed otherwise.
+        hist_registry.register_history_provider(
+            "ores.dq.subject_area",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::subject_area_service svc(scoped_ctx);
+                const auto sep = entity_id.find('|');
+                const auto name = entity_id.substr(0, sep);
+                const auto domain_name =
+                    sep == std::string::npos ? std::string{} : entity_id.substr(sep + 1);
+                auto versions = svc.get_area_history(name, domain_name);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_subject_area_fields);
             });
 
         subs.push_back(ores::history::messaging::register_history_handlers(

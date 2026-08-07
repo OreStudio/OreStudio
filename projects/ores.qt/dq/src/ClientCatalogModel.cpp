@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 namespace {
 std::string catalog_key_extractor(const dq::domain::catalog& e) {
-    return e.;
+    return e.name;
 }
 }
 
@@ -59,7 +59,7 @@ ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager, QObject* pa
 int ClientCatalogModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(_.size());
+    return static_cast<int>(catalogs_.size());
 }
 
 int ClientCatalogModel::columnCount(const QModelIndex& parent) const {
@@ -73,20 +73,32 @@ QVariant ClientCatalogModel::data(const QModelIndex& index, int role) const {
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= _.size())
+    if (row >= catalogs_.size())
         return {};
 
-    const auto& item = _[row];
+    const auto& catalog = catalogs_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+            case Name:
+                return QString::fromStdString(catalog.name);
+            case Description:
+                return QString::fromStdString(catalog.description);
+            case Owner:
+                return catalog.owner ? QString::fromStdString(*catalog.owner) : QString{};
+            case Version:
+                return static_cast<qlonglong>(catalog.version);
+            case ModifiedBy:
+                return QString::fromStdString(catalog.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(catalog.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(item.);
+        return recency_foreground_color(catalog.name);
     }
 
     return {};
@@ -104,6 +116,18 @@ QVariant ClientCatalogModel::headerData(int section, Qt::Orientation orientation
     }
 
     switch (section) {
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case Owner:
+            return tr("Owner");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
         default:
             return {};
     }
@@ -123,16 +147,16 @@ void ClientCatalogModel::refresh() {
         return;
     }
 
-    if (!_.empty()) {
+    if (!catalogs_.empty()) {
         beginResetModel();
-        _.clear();
+        catalogs_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_(0, page_size_);
+    fetch_catalogs(0, page_size_);
 }
 
 void ClientCatalogModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -148,18 +172,18 @@ void ClientCatalogModel::load_page(std::uint32_t offset, std::uint32_t limit) {
         return;
     }
 
-    if (!_.empty()) {
+    if (!catalogs_.empty()) {
         beginResetModel();
-        _.clear();
+        catalogs_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_(offset, limit);
+    fetch_catalogs(offset, limit);
 }
 
-void ClientCatalogModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
+void ClientCatalogModel::fetch_catalogs(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCatalogModel> self = this;
 
@@ -170,13 +194,13 @@ void ClientCatalogModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                     << "Making catalogs request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .= {},
+                            .catalogs = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                request;
+                dq::messaging::get_catalogs_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -186,7 +210,7 @@ void ClientCatalogModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .= {},
+                            .catalogs = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -202,7 +226,7 @@ void ClientCatalogModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
-                            .= {},
+                            .catalogs = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
@@ -212,7 +236,7 @@ void ClientCatalogModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
                     << "Fetched " << result->catalogs.size()
                     << " catalogs, total available: " << result->total_available_count;
                 return {.success = true,
-                        .= std::move(result->catalogs),
+                        .catalogs = std::move(result->catalogs),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
@@ -238,14 +262,14 @@ void ClientCatalogModel::onCatalogsLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result..size());
+    const int new_count = static_cast<int>(result.catalogs.size());
 
     if (new_count > 0) {
         beginResetModel();
-        _ = std::move(result.);
+        catalogs_ = std::move(result.catalogs);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(_);
+        const bool has_recent = recencyTracker_.update(catalogs_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug)
@@ -272,9 +296,9 @@ void ClientCatalogModel::set_page_size(std::uint32_t size) {
 
 const dq::domain::catalog* ClientCatalogModel::getCatalog(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= _.size())
+    if (idx >= catalogs_.size())
         return nullptr;
-    return &_[idx];
+    return &catalogs_[idx];
 }
 
 
@@ -286,7 +310,7 @@ QVariant ClientCatalogModel::recency_foreground_color(const std::string& code) c
 }
 
 void ClientCatalogModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!_.empty()) {
+    if (!catalogs_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }

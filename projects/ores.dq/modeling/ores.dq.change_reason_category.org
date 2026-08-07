@@ -122,10 +122,49 @@ std::string(faker::lorem::sentence())
 
 ** Custom repository methods
 
-# No "** Qt" drawer here on purpose: change_reason_category's Qt UI
-# (ChangeReasonCategoryController et al.) is hand-maintained directly
-# in ores.qt.dq. See ores.dq.catalog.org's matching comment for the
-# full story of why a drawer was added and reverted here.
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/change_reason_category.hpp
+:domain_class:           dq::domain::change_reason_category
+:protocol_include:       ores.dq.api/messaging/change_reason_category_protocol.hpp
+:collection_name:        categories
+:item_var:               category
+:key_field:               code
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_change_reason_categories_request
+:get_response_class:     dq::messaging::get_change_reason_categories_response
+:get_message_type:       get_change_reason_categories_request
+:save_request_class:     dq::messaging::save_change_reason_category_request
+:save_response_class:    dq::messaging::save_change_reason_category_response
+:save_message_type:      save_change_reason_category_request
+:delete_request_class:   dq::messaging::delete_change_reason_category_request
+:delete_response_class:  dq::messaging::delete_change_reason_category_response
+:delete_message_type:    delete_change_reason_category_request
+:history_request_class:  dq::messaging::get_change_reason_category_history_request
+:history_response_class: dq::messaging::get_change_reason_category_history_response
+:history_message_type:   get_change_reason_category_history_request
+:settings_group:         ChangeReasonCategoryListWindow
+:window_title:           Change Reason Categories
+:icon:                   Table
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder                    |
+|-------------+-------------+-----------------+-----------+--------+-------------+----------------------------------|
+| code        | Code        | codeEdit        | line_edit | true   | true        | Enter change reason category code |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description            |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Code        | code        | Code        | string    | 150   |
+| Description | description | Description | string    | 300   |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
 
 * See also
 

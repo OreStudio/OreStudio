@@ -21,11 +21,14 @@
 #define ORES_QT_SUBJECT_AREA_CONTROLLER_HPP
 
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/messaging/subject_area_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityController.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
 
 namespace ores::qt {
 
@@ -75,6 +78,12 @@ private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::subject_area& subject_area);
     void showHistoryWindow(const QString& name, const QString& domain_name);
+    void fetchSubjectAreaHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<dq::domain::subject_area>, QString>)>
+            callback);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
     ChangeReasonCache* changeReasonCache_{nullptr};
     SubjectAreaMdiWindow* listWindow_;

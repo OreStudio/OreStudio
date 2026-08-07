@@ -126,7 +126,14 @@ void ChangeReasonCategoryMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "ChangeReasonCategoryListWindow",
+                            {
+                                ClientChangeReasonCategoryModel::Description,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void ChangeReasonCategoryMdiWindow::setupConnections() {
@@ -205,8 +212,8 @@ void ChangeReasonCategoryMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* item = model_->getCategory(sourceIndex.row())) {
-        emit showCategoryDetails(*item);
+    if (auto* category = model_->getCategory(sourceIndex.row())) {
+        emit showCategoryDetails(*category);
     }
 }
 
@@ -230,8 +237,8 @@ void ChangeReasonCategoryMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* item = model_->getCategory(sourceIndex.row())) {
-        emit showCategoryDetails(*item);
+    if (auto* category = model_->getCategory(sourceIndex.row())) {
+        emit showCategoryDetails(*category);
     }
 }
 
@@ -243,9 +250,9 @@ void ChangeReasonCategoryMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* item = model_->getCategory(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showCategoryHistory for code: " << item->;
-        emit showCategoryHistory(*item);
+    if (auto* category = model_->getCategory(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showCategoryHistory for code: " << category->code;
+        emit showCategoryHistory(*category);
     }
 }
 
@@ -265,8 +272,8 @@ void ChangeReasonCategoryMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* item = model_->getCategory(sourceIndex.row())) {
-            codes.push_back(item->);
+        if (auto* category = model_->getCategory(sourceIndex.row())) {
+            codes.push_back(category->code);
         }
     }
 
@@ -306,7 +313,7 @@ void ChangeReasonCategoryMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << codes.size() << " change reason categories";
 
-        request;
+        dq::messaging::delete_change_reason_category_request request;
         request.codes = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -339,7 +346,7 @@ void ChangeReasonCategoryMdiWindow::deleteSelected() {
             if (result.first) {
                 BOOST_LOG_SEV(lg(), debug) << "Change Reason Category deleted: " << code;
                 success_count++;
-                emit self->itemDeleted(QString::fromStdString(code));
+                emit self->categoryDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Change Reason Category deletion failed: " << code << " - " << result.second;

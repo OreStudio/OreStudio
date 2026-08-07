@@ -22,12 +22,13 @@
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/SubjectAreaDetailDialog.hpp"
-#include "ores.qt/SubjectAreaHistoryDialog.hpp"
 #include "ores.qt/SubjectAreaMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
+#include <QtConcurrent/QtConcurrent>
 
 namespace ores::qt {
 
@@ -289,11 +290,18 @@ void SubjectAreaController::showHistoryWindow(const QString& name, const QString
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << name.toStdString();
 
-    auto* historyDialog =
-        new SubjectAreaHistoryDialog(name, domain_name, clientManager_, mainWindow_);
+    // entity_type_of(subject_area{}) keys the generic server-side history
+    // registry; the compound (name, domain_name) natural key is passed as a
+    // single "name|domain_name" entity_id, split back apart server-side --
+    // subject_area has no surrogate key to use instead (see its "* Notes"
+    // for why it stays off the standard single-key_field Qt drawer).
+    auto* historyDialog = new HistoryDialog(std::string(entity_type_of(dq::domain::subject_area{})),
+                                            identifier.toStdString(),
+                                            clientManager_,
+                                            mainWindow_);
 
     connect(historyDialog,
-            &SubjectAreaHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<SubjectAreaController>(this)](const QString& message) {
                 if (!self)
@@ -301,7 +309,7 @@ void SubjectAreaController::showHistoryWindow(const QString& name, const QString
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &SubjectAreaHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<SubjectAreaController>(this)](const QString& message) {
                 if (!self)
@@ -309,13 +317,23 @@ void SubjectAreaController::showHistoryWindow(const QString& name, const QString
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &SubjectAreaHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &SubjectAreaController::onRevertVersion);
+            [self = QPointer<SubjectAreaController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &SubjectAreaHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &SubjectAreaController::onOpenVersion);
+            [self = QPointer<SubjectAreaController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     historyDialog->loadHistory();
 
@@ -448,6 +466,95 @@ void SubjectAreaController::onRevertVersion(const dq::domain::subject_area& subj
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void SubjectAreaController::fetchSubjectAreaHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<dq::domain::subject_area>, QString>)> callback) {
+    const auto parts = entityId.split('|');
+    dq::messaging::get_subject_area_history_request request;
+    request.name = parts.value(0).toStdString();
+    request.domain_name = parts.value(1).toStdString();
+
+    using FetchResult = std::expected<std::vector<dq::domain::subject_area>, QString>;
+
+    QPointer<SubjectAreaController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString("Failed to load history"));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                if (self)
+                    callback(watcher->result());
+                watcher->deleteLater();
+            });
+    watcher->setFuture(future);
+}
+
+void SubjectAreaController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<SubjectAreaController> self = this;
+    fetchSubjectAreaHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::subject_area>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void SubjectAreaController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<SubjectAreaController> self = this;
+    fetchSubjectAreaHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::subject_area>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
 }
 
 }

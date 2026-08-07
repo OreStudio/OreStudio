@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 namespace {
 std::string change_reason_key_extractor(const dq::domain::change_reason& e) {
-    return e.;
+    return e.code;
 }
 }
 
@@ -59,7 +59,7 @@ ClientChangeReasonModel::ClientChangeReasonModel(ClientManager* clientManager, Q
 int ClientChangeReasonModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(_.size());
+    return static_cast<int>(reasons_.size());
 }
 
 int ClientChangeReasonModel::columnCount(const QModelIndex& parent) const {
@@ -73,20 +73,38 @@ QVariant ClientChangeReasonModel::data(const QModelIndex& index, int role) const
         return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= _.size())
+    if (row >= reasons_.size())
         return {};
 
-    const auto& item = _[row];
+    const auto& reason = reasons_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+            case Code:
+                return QString::fromStdString(reason.code);
+            case CategoryCode:
+                return QString::fromStdString(reason.category_code);
+            case AppliesToAmend:
+                return reason.applies_to_amend ? tr("true") : tr("false");
+            case AppliesToDelete:
+                return reason.applies_to_delete ? tr("true") : tr("false");
+            case RequiresCommentary:
+                return reason.requires_commentary ? tr("true") : tr("false");
+            case DisplayOrder:
+                return static_cast<qlonglong>(reason.display_order);
+            case Version:
+                return static_cast<qlonglong>(reason.version);
+            case ModifiedBy:
+                return QString::fromStdString(reason.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(reason.recorded_at);
             default:
                 return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(item.);
+        return recency_foreground_color(reason.code);
     }
 
     return {};
@@ -105,6 +123,24 @@ ClientChangeReasonModel::headerData(int section, Qt::Orientation orientation, in
     }
 
     switch (section) {
+        case Code:
+            return tr("Code");
+        case CategoryCode:
+            return tr("Category");
+        case AppliesToAmend:
+            return tr("Applies To Amend");
+        case AppliesToDelete:
+            return tr("Applies To Delete");
+        case RequiresCommentary:
+            return tr("Requires Commentary");
+        case DisplayOrder:
+            return tr("Display Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
         default:
             return {};
     }
@@ -124,16 +160,16 @@ void ClientChangeReasonModel::refresh() {
         return;
     }
 
-    if (!_.empty()) {
+    if (!reasons_.empty()) {
         beginResetModel();
-        _.clear();
+        reasons_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         total_available_count_ = 0;
         endResetModel();
     }
 
-    fetch_(0, page_size_);
+    fetch_reasons(0, page_size_);
 }
 
 void ClientChangeReasonModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -149,18 +185,18 @@ void ClientChangeReasonModel::load_page(std::uint32_t offset, std::uint32_t limi
         return;
     }
 
-    if (!_.empty()) {
+    if (!reasons_.empty()) {
         beginResetModel();
-        _.clear();
+        reasons_.clear();
         recencyTracker_.clear();
         pulseManager_->stop_pulsing();
         endResetModel();
     }
 
-    fetch_(offset, limit);
+    fetch_reasons(offset, limit);
 }
 
-void ClientChangeReasonModel::fetch_(std::uint32_t offset, std::uint32_t limit) {
+void ClientChangeReasonModel::fetch_reasons(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientChangeReasonModel> self = this;
 
@@ -171,13 +207,13 @@ void ClientChangeReasonModel::fetch_(std::uint32_t offset, std::uint32_t limit) 
                                            << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
-                            .= {},
+                            .reasons = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                request;
+                dq::messaging::get_change_reasons_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -187,7 +223,7 @@ void ClientChangeReasonModel::fetch_(std::uint32_t offset, std::uint32_t limit) 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
-                            .= {},
+                            .reasons = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -203,7 +239,7 @@ void ClientChangeReasonModel::fetch_(std::uint32_t offset, std::uint32_t limit) 
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
-                            .= {},
+                            .reasons = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
@@ -213,7 +249,7 @@ void ClientChangeReasonModel::fetch_(std::uint32_t offset, std::uint32_t limit) 
                     << "Fetched " << result->reasons.size()
                     << " change reasons, total available: " << result->total_available_count;
                 return {.success = true,
-                        .= std::move(result->reasons),
+                        .reasons = std::move(result->reasons),
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
@@ -239,14 +275,14 @@ void ClientChangeReasonModel::onReasonsLoaded() {
 
     total_available_count_ = result.total_available_count;
 
-    const int new_count = static_cast<int>(result..size());
+    const int new_count = static_cast<int>(result.reasons.size());
 
     if (new_count > 0) {
         beginResetModel();
-        _ = std::move(result.);
+        reasons_ = std::move(result.reasons);
         endResetModel();
 
-        const bool has_recent = recencyTracker_.update(_);
+        const bool has_recent = recencyTracker_.update(reasons_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
             BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
@@ -273,9 +309,9 @@ void ClientChangeReasonModel::set_page_size(std::uint32_t size) {
 
 const dq::domain::change_reason* ClientChangeReasonModel::getReason(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= _.size())
+    if (idx >= reasons_.size())
         return nullptr;
-    return &_[idx];
+    return &reasons_[idx];
 }
 
 
@@ -287,7 +323,7 @@ QVariant ClientChangeReasonModel::recency_foreground_color(const std::string& co
 }
 
 void ClientChangeReasonModel::onPulseStateChanged(bool /*isOn*/) {
-    if (!_.empty()) {
+    if (!reasons_.empty()) {
         emit dataChanged(
             index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }

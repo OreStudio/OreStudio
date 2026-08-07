@@ -40,7 +40,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-constexpr std::string_view item_event_name =
+constexpr std::string_view category_event_name =
     eventing::domain::event_traits<dq::eventing::change_reason_category_changed_event>::name;
 }
 
@@ -50,7 +50,7 @@ ChangeReasonCategoryController::ChangeReasonCategoryController(QMainWindow* main
                                                                ChangeReasonCache* changeReasonCache,
                                                                const QString& username,
                                                                QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, item_event_name, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, category_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -95,9 +95,9 @@ void ChangeReasonCategoryController::showListWindow() {
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
-    listMdiSubWindow_->setWindowTitle("");
+    listMdiSubWindow_->setWindowTitle("Change Reason Categories");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -147,9 +147,10 @@ void ChangeReasonCategoryController::reloadListWindow() {
     }
 }
 
-void ChangeReasonCategoryController::onShowDetails(const dq::domain::change_reason_category& item) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << item.;
-    showDetailWindow(item);
+void ChangeReasonCategoryController::onShowDetails(
+    const dq::domain::change_reason_category& category) {
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << category.code;
+    showDetailWindow(category);
 }
 
 void ChangeReasonCategoryController::onAddNewRequested() {
@@ -158,9 +159,10 @@ void ChangeReasonCategoryController::onAddNewRequested() {
 }
 
 
-void ChangeReasonCategoryController::onShowHistory(const dq::domain::change_reason_category& item) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << item.;
-    showHistoryWindow(QString::fromStdString(item.));
+void ChangeReasonCategoryController::onShowHistory(
+    const dq::domain::change_reason_category& category) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << category.code;
+    showHistoryWindow(QString::fromStdString(category.code));
 }
 
 void ChangeReasonCategoryController::wireDetailDialogCommon(
@@ -188,7 +190,7 @@ void ChangeReasonCategoryController::showAddWindow() {
     detailDialog->setCreateMode(true);
 
     connect(detailDialog,
-            &ChangeReasonCategoryDetailDialog::itemSaved,
+            &ChangeReasonCategoryDetailDialog::categorySaved,
             this,
             [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
                 if (!self)
@@ -202,7 +204,7 @@ void ChangeReasonCategoryController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Change Reason Category");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -211,9 +213,9 @@ void ChangeReasonCategoryController::showAddWindow() {
 }
 
 void ChangeReasonCategoryController::showDetailWindow(
-    const dq::domain::change_reason_category& item) {
+    const dq::domain::change_reason_category& category) {
 
-    const QString identifier = QString::fromStdString(item.);
+    const QString identifier = QString::fromStdString(category.code);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -221,15 +223,15 @@ void ChangeReasonCategoryController::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << item.;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << category.code;
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
-    detailDialog->setCategory(item);
+    detailDialog->setCategory(category);
 
     connect(detailDialog,
-            &ChangeReasonCategoryDetailDialog::itemSaved,
+            &ChangeReasonCategoryDetailDialog::categorySaved,
             this,
             [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
                 if (!self)
@@ -238,7 +240,7 @@ void ChangeReasonCategoryController::showDetailWindow(
                 self->handleEntitySaved();
             });
     connect(detailDialog,
-            &ChangeReasonCategoryDetailDialog::itemDeleted,
+            &ChangeReasonCategoryDetailDialog::categoryDeleted,
             this,
             [self = QPointer<ChangeReasonCategoryController>(this), key](const QString& code) {
                 if (!self)
@@ -253,7 +255,7 @@ void ChangeReasonCategoryController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Change Reason Category: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -352,12 +354,12 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void ChangeReasonCategoryController::onOpenVersion(const dq::domain::change_reason_category& item,
-                                                   int versionNumber) {
+void ChangeReasonCategoryController::onOpenVersion(
+    const dq::domain::change_reason_category& category, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for change reason category: " << item.;
+                              << " for change reason category: " << category.code;
 
-    const QString code = QString::fromStdString(item.);
+    const QString code = QString::fromStdString(category.code);
     const QString windowKey =
         build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
@@ -369,7 +371,7 @@ void ChangeReasonCategoryController::onOpenVersion(const dq::domain::change_reas
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
-    detailDialog->setCategory(item);
+    detailDialog->setCategory(category);
     detailDialog->setReadOnly(true);
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -398,7 +400,7 @@ void ChangeReasonCategoryController::fetchChangeReasonCategoryHistory(
     const QString& entityId,
     std::function<void(std::expected<std::vector<dq::domain::change_reason_category>, QString>)>
         callback) {
-    request;
+    dq::messaging::get_change_reason_category_history_request request;
     request.code = entityId.toStdString();
 
     using FetchResult = std::expected<std::vector<dq::domain::change_reason_category>, QString>;
@@ -487,20 +489,21 @@ void ChangeReasonCategoryController::onRevertHistoryVersion(const QString& entit
 }
 
 void ChangeReasonCategoryController::onRevertVersion(
-    const dq::domain::change_reason_category& item) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting change reason category to version: " << item.version;
+    const dq::domain::change_reason_category& category) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting change reason category to version: "
+                              << category.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
-    auto reverted_item = item;
-    reverted_item.version = 0;
-    detailDialog->setCategory(reverted_item);
+    auto reverted_category = category;
+    reverted_category.version = 0;
+    detailDialog->setCategory(reverted_category);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
     connect(detailDialog,
-            &ChangeReasonCategoryDetailDialog::itemSaved,
+            &ChangeReasonCategoryDetailDialog::categorySaved,
             this,
             [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
                 if (!self)
@@ -516,7 +519,7 @@ void ChangeReasonCategoryController::onRevertVersion(
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(
-        QString("Revert Change Reason Category: %1").arg(QString::fromStdString(item.)));
+        QString("Revert Change Reason Category: %1").arg(QString::fromStdString(category.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
                                                                IconUtils::DefaultIconColor));
 

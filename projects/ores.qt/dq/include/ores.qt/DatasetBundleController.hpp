@@ -78,17 +78,17 @@ protected:
     void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
-    void onShowDetails(const dq::domain::dataset_bundle& item);
+    void onShowDetails(const dq::domain::dataset_bundle& bundle);
     void onAddNewRequested();
-    void onShowHistory(const dq::domain::dataset_bundle& item);
-    void onRevertVersion(const dq::domain::dataset_bundle& item);
-    void onOpenVersion(const dq::domain::dataset_bundle& item, int versionNumber);
+    void onShowHistory(const dq::domain::dataset_bundle& bundle);
+    void onRevertVersion(const dq::domain::dataset_bundle& bundle);
+    void onOpenVersion(const dq::domain::dataset_bundle& bundle, int versionNumber);
     void onOpenHistoryVersion(const QString& entityId, int versionNumber);
     void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
-    void showDetailWindow(const dq::domain::dataset_bundle& item);
+    void showDetailWindow(const dq::domain::dataset_bundle& bundle);
 
     /**
      * @brief Wires the caches/status/error plumbing every
@@ -97,12 +97,12 @@ private:
      * place so those four call sites can't drift from each other.
      */
     void wireDetailDialogCommon(DatasetBundleDetailDialog* detailDialog);
-    void showHistoryWindow(const dq::domain::dataset_bundle& item);
+    void showHistoryWindow(const dq::domain::dataset_bundle& bundle);
 
     /**
      * @brief Fetches the full typed dataset bundle history (the
-     * existing per-entity /
-     * , unrelated to the generic
+     * existing per-entity dq::messaging::get_dataset_bundle_history_request/
+     * dq::messaging::get_dataset_bundle_history_response, unrelated to the generic
      * history.v1.get subject) and hands it to @p callback on the UI
      * thread. Used to resolve HistoryDialog's generic (entity_id,
      * version) signals back to a typed dataset bundle, since the

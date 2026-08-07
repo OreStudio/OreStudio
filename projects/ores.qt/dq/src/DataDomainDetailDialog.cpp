@@ -69,7 +69,7 @@ ProvenanceWidget* DataDomainDetailDialog::provenanceWidget() const {
 }
 
 QString DataDomainDetailDialog::code() const {
-    return QString::fromStdString(item_.);
+    return QString::fromStdString(domain_.name);
 }
 
 void DataDomainDetailDialog::setupUi() {
@@ -90,8 +90,7 @@ void DataDomainDetailDialog::setupConnections() {
         ui_->deleteButton, &QPushButton::clicked, this, &DataDomainDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &DataDomainDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &DataDomainDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &DataDomainDetailDialog::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &DataDomainDetailDialog::onCodeChanged);
     connect(ui_->descriptionEdit,
             &QPlainTextEdit::textChanged,
             this,
@@ -106,14 +105,14 @@ void DataDomainDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void DataDomainDetailDialog::setDomain(const dq::domain::data_domain& item) {
-    item_ = item;
+void DataDomainDetailDialog::setDomain(const dq::domain::data_domain& domain) {
+    domain_ = domain;
     updateUiFromDomain();
 }
 
 void DataDomainDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     hasChanges_ = false;
@@ -127,24 +126,22 @@ void DataDomainDetailDialog::markDirty() {
 
 void DataDomainDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void DataDomainDetailDialog::updateUiFromDomain() {
-    ui_->codeEdit->setText(QString::fromStdString(item_.code));
-    ui_->nameEdit->setText(QString::fromStdString(item_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(item_.description));
+    ui_->nameEdit->setText(QString::fromStdString(domain_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(domain_.description));
 
-    populateProvenance(item_.version,
-                       item_.modified_by,
-                       item_.performed_by,
-                       item_.recorded_at,
-                       item_.change_reason_code,
-                       item_.change_commentary);
+    populateProvenance(domain_.version,
+                       domain_.modified_by,
+                       domain_.performed_by,
+                       domain_.recorded_at,
+                       domain_.change_reason_code,
+                       domain_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -152,11 +149,10 @@ void DataDomainDetailDialog::updateUiFromDomain() {
 
 void DataDomainDetailDialog::updateDomainFromUi() {
     if (createMode_) {
-        item_.code = ui_->codeEdit->text().trimmed().toStdString();
+        domain_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
-    item_.name = ui_->nameEdit->text().trimmed().toStdString();
-    item_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    item_.modified_by = username_;
+    domain_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    domain_.modified_by = username_;
 }
 
 void DataDomainDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -175,10 +171,9 @@ void DataDomainDetailDialog::updateSaveButtonState() {
 }
 
 bool DataDomainDetailDialog::validateInput() {
-    const QString code_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !code_val.isEmpty() && !name_val.isEmpty();
+    return true && !name_val.isEmpty();
 }
 
 void DataDomainDetailDialog::onSaveClicked() {
@@ -199,12 +194,12 @@ void DataDomainDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    item_.change_reason_code = crSel->reason_code;
-    item_.change_commentary = crSel->commentary;
+    domain_.change_reason_code = crSel->reason_code;
+    domain_.change_commentary = crSel->commentary;
 
     updateDomainFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving data domain: " << item_.;
+    BOOST_LOG_SEV(lg(), info) << "Saving data domain: " << domain_.name;
 
     QPointer<DataDomainDetailDialog> self = this;
 
@@ -213,13 +208,13 @@ void DataDomainDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, item = item_]() -> SaveResult {
+    auto task = [self, domain = domain_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
-        request.data = item;
+        dq::messaging::save_data_domain_request request;
+        request.data = domain;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -240,10 +235,10 @@ void DataDomainDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Data Domain saved successfully";
-                    QString code = QString::fromStdString(self->item_.);
+                    QString code = QString::fromStdString(self->domain_.name);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
-                    emit self->itemSaved(code);
+                    emit self->domainSaved(code);
                     self->notifySaveSuccess(tr("Data Domain '%1' saved").arg(code));
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
@@ -264,7 +259,7 @@ void DataDomainDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(item_.);
+    QString code = QString::fromStdString(domain_.name);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Data Domain",
@@ -280,7 +275,7 @@ void DataDomainDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting data domain: " << item_.;
+    BOOST_LOG_SEV(lg(), info) << "Deleting data domain: " << domain_.name;
 
     QPointer<DataDomainDetailDialog> self = this;
 
@@ -289,12 +284,12 @@ void DataDomainDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = item_.]() -> DeleteResult {
+    auto task = [self, code = domain_.name]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
+        dq::messaging::delete_data_domain_request request;
         request.names = {code};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -314,7 +309,7 @@ void DataDomainDetailDialog::onDeleteClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Data Domain deleted successfully";
             emit self->statusMessage(QString("Data Domain '%1' deleted").arg(code));
-            emit self->itemDeleted(code);
+            emit self->domainDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;

@@ -53,7 +53,18 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { ColumnCount };
+    enum Column {
+        Code,
+        CategoryCode,
+        AppliesToAmend,
+        AppliesToDelete,
+        RequiresCommentary,
+        DisplayOrder,
+        Version,
+        ModifiedBy,
+        RecordedAt,
+        ColumnCount
+    };
 
     explicit ClientChangeReasonModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientChangeReasonModel() override = default;
@@ -113,16 +124,16 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<dq::domain::change_reason>;
+        std::vector<dq::domain::change_reason> reasons;
         std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_(std::uint32_t offset, std::uint32_t limit);
+    void fetch_reasons(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
-    std::vector<dq::domain::change_reason> _;
+    std::vector<dq::domain::change_reason> reasons_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

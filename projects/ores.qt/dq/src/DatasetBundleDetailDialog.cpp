@@ -71,7 +71,7 @@ ProvenanceWidget* DatasetBundleDetailDialog::provenanceWidget() const {
 }
 
 QString DatasetBundleDetailDialog::code() const {
-    return QString::fromStdString(item_.);
+    return QString::fromStdString(bundle_.code);
 }
 
 void DatasetBundleDetailDialog::setupUi() {
@@ -114,8 +114,8 @@ void DatasetBundleDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void DatasetBundleDetailDialog::setBundle(const dq::domain::dataset_bundle& item) {
-    item_ = item;
+void DatasetBundleDetailDialog::setBundle(const dq::domain::dataset_bundle& bundle) {
+    bundle_ = bundle;
     updateUiFromBundle();
 }
 
@@ -125,7 +125,7 @@ void DatasetBundleDetailDialog::setCreateMode(bool createMode) {
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
-        item_.id = boost::uuids::random_generator()();
+        bundle_.id = boost::uuids::random_generator()();
     }
     hasChanges_ = false;
     updateSaveButtonState();
@@ -146,16 +146,16 @@ void DatasetBundleDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void DatasetBundleDetailDialog::updateUiFromBundle() {
-    ui_->codeEdit->setText(QString::fromStdString(item_.code));
-    ui_->nameEdit->setText(QString::fromStdString(item_.name));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(item_.description));
+    ui_->codeEdit->setText(QString::fromStdString(bundle_.code));
+    ui_->nameEdit->setText(QString::fromStdString(bundle_.name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(bundle_.description));
 
-    populateProvenance(item_.version,
-                       item_.modified_by,
-                       item_.performed_by,
-                       item_.recorded_at,
-                       item_.change_reason_code,
-                       item_.change_commentary);
+    populateProvenance(bundle_.version,
+                       bundle_.modified_by,
+                       bundle_.performed_by,
+                       bundle_.recorded_at,
+                       bundle_.change_reason_code,
+                       bundle_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();
@@ -163,11 +163,11 @@ void DatasetBundleDetailDialog::updateUiFromBundle() {
 
 void DatasetBundleDetailDialog::updateBundleFromUi() {
     if (createMode_) {
-        item_.code = ui_->codeEdit->text().trimmed().toStdString();
+        bundle_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
-    item_.name = ui_->nameEdit->text().trimmed().toStdString();
-    item_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    item_.modified_by = username_;
+    bundle_.name = ui_->nameEdit->text().trimmed().toStdString();
+    bundle_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    bundle_.modified_by = username_;
 }
 
 void DatasetBundleDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -210,12 +210,12 @@ void DatasetBundleDetailDialog::onSaveClicked() {
     const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
     if (!crSel)
         return;
-    item_.change_reason_code = crSel->reason_code;
-    item_.change_commentary = crSel->commentary;
+    bundle_.change_reason_code = crSel->reason_code;
+    bundle_.change_commentary = crSel->commentary;
 
     updateBundleFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving dataset bundle: " << item_.;
+    BOOST_LOG_SEV(lg(), info) << "Saving dataset bundle: " << bundle_.code;
 
     QPointer<DatasetBundleDetailDialog> self = this;
 
@@ -224,13 +224,13 @@ void DatasetBundleDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, item = item_]() -> SaveResult {
+    auto task = [self, bundle = bundle_]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
-        request.data = item;
+        dq::messaging::save_dataset_bundle_request request;
+        request.data = bundle;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -251,10 +251,10 @@ void DatasetBundleDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Dataset Bundle saved successfully";
-                    QString code = QString::fromStdString(self->item_.);
+                    QString code = QString::fromStdString(self->bundle_.code);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
-                    emit self->itemSaved(code);
+                    emit self->bundleSaved(code);
                     self->notifySaveSuccess(tr("Dataset Bundle '%1' saved").arg(code));
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
@@ -275,7 +275,7 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(item_.);
+    QString code = QString::fromStdString(bundle_.code);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Dataset Bundle",
@@ -291,7 +291,7 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting dataset bundle: " << item_.;
+    BOOST_LOG_SEV(lg(), info) << "Deleting dataset bundle: " << bundle_.code;
 
     QPointer<DatasetBundleDetailDialog> self = this;
 
@@ -300,12 +300,12 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id_str = boost::uuids::to_string(item_.id)]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(bundle_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
-        request;
+        dq::messaging::delete_dataset_bundle_request request;
         request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -325,7 +325,7 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Dataset Bundle deleted successfully";
             emit self->statusMessage(QString("Dataset Bundle '%1' deleted").arg(code));
-            emit self->itemDeleted(code);
+            emit self->bundleDeleted(code);
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;

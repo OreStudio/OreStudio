@@ -122,7 +122,14 @@ void DataDomainMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
 
-    initializeTableSettings(tableView_, model_, "", {}, {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "DataDomainListWindow",
+                            {
+                                ClientDataDomainModel::Description,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void DataDomainMdiWindow::setupConnections() {
@@ -191,8 +198,8 @@ void DataDomainMdiWindow::onDoubleClicked(const QModelIndex& index) {
         return;
 
     auto sourceIndex = proxyModel_->mapToSource(index);
-    if (auto* item = model_->getDomain(sourceIndex.row())) {
-        emit showDomainDetails(*item);
+    if (auto* domain = model_->getDomain(sourceIndex.row())) {
+        emit showDomainDetails(*domain);
     }
 }
 
@@ -216,8 +223,8 @@ void DataDomainMdiWindow::editSelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* item = model_->getDomain(sourceIndex.row())) {
-        emit showDomainDetails(*item);
+    if (auto* domain = model_->getDomain(sourceIndex.row())) {
+        emit showDomainDetails(*domain);
     }
 }
 
@@ -229,9 +236,9 @@ void DataDomainMdiWindow::viewHistorySelected() {
     }
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* item = model_->getDomain(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showDomainHistory for code: " << item->;
-        emit showDomainHistory(*item);
+    if (auto* domain = model_->getDomain(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showDomainHistory for code: " << domain->name;
+        emit showDomainHistory(*domain);
     }
 }
 
@@ -251,8 +258,8 @@ void DataDomainMdiWindow::deleteSelected() {
     std::vector<std::string> codes;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
-        if (auto* item = model_->getDomain(sourceIndex.row())) {
-            codes.push_back(item->);
+        if (auto* domain = model_->getDomain(sourceIndex.row())) {
+            codes.push_back(domain->name);
         }
     }
 
@@ -291,7 +298,7 @@ void DataDomainMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug)
             << "Making delete request for " << codes.size() << " data domains";
 
-        request;
+        dq::messaging::delete_data_domain_request request;
         request.names = codes;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
@@ -324,7 +331,7 @@ void DataDomainMdiWindow::deleteSelected() {
             if (result.first) {
                 BOOST_LOG_SEV(lg(), debug) << "Data Domain deleted: " << code;
                 success_count++;
-                emit self->itemDeleted(QString::fromStdString(code));
+                emit self->domainDeleted(QString::fromStdString(code));
             } else {
                 BOOST_LOG_SEV(lg(), error)
                     << "Data Domain deletion failed: " << code << " - " << result.second;

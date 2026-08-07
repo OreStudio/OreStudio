@@ -35,7 +35,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 |---------------+-------------------------------------------------------------|
 | Verifies task | [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] |
 | Parent story  | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]] |
-| Target dialog | =CatalogDetailDialog= / =DataDomainDetailDialog= / =ChangeReasonDetailDialog= / =ChangeReasonCategoryDetailDialog= / =ArtefactTypeDetailDialog= / =DatasetBundleDetailDialog= / =LeiEntityMdiWindow= / =LeiRelationshipMdiWindow= — all reached via the Data Quality menu |
+| Target dialog | =CatalogDetailDialog= (Data Quality > Data Catalogue > Catalogues) / =DataDomainDetailDialog= (Data Quality > Data Catalogue > Data Domains) / =ChangeReasonDetailDialog= (Data Quality > Audit Trail > Change Reasons) / =ChangeReasonCategoryDetailDialog= (Data Quality > Audit Trail > Change Reason Categories) / =ArtefactTypeDetailDialog= (Data Quality > Data Catalogue > Artefact Types) / =DatasetBundleDetailDialog= (Data Quality > Data Catalogue > Dataset Bundles) / =LeiEntityMdiWindow= / =LeiRelationshipMdiWindow= (Data Quality > LEI Registry) |
 | Clients       | blue, red                                                  |
 | State         | PENDING                                                    |
 
@@ -58,7 +58,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Create a new catalog record
 
-- Navigate: Data Quality > Governance > Catalogs.
+- Navigate: Data Quality > Data Catalogue > Catalogues.
 - Click Add, fill in Name/Description/Owner with any values, Save.
 - Confirms: the new row appears in the list without a manual refresh.
 
@@ -66,8 +66,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | create works but we don't seem to have any eventing. |
+| Status | PASS |
 
 *** Reopen and verify catalog fields
 
@@ -91,8 +90,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | seems to create a new entry instead of adding a new version. see Visual Assets.; ; ; ; ; [[file:scenario_verify_dq_entity_commissioning_step4_20260806_115155.png]] |
+| Status | PASS |
 
 *** Delete the catalog record
 
@@ -118,11 +116,11 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | "Failed to load history:; No history provider registered for entity_type: ores.dq.catalog" |
+| Notes  | using legacy history dialog, should have been deleted and replaced with new history dialog.; ; [[file:scenario_verify_dq_entity_commissioning_step6_20260806_234007.png]] |
 
 *** Create and save a data domain
 
-- Navigate: Data Quality > Governance > Data Domains.
+- Navigate: Data Quality > Data Catalogue > Data Domains.
 - Add a new record (Name/Description), Save; reopen it to confirm
   the fields round-trip; edit the Description and Save again.
 - Confirms: list refreshes after each save; reopened values match
@@ -136,7 +134,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Create and save a change reason category
 
-- Navigate: Data Quality > Governance > Change Reason Categories.
+- Navigate: Data Quality > Audit Trail > Change Reason Categories.
 - Add a new record (Code/Description), Save; reopen to confirm
   round-trip; edit and Save again.
 - Confirms: same as above for this entity.
@@ -149,7 +147,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Create and save a change reason
 
-- Navigate: Data Quality > Governance > Change Reasons.
+- Navigate: Data Quality > Audit Trail > Change Reasons.
 - Add a new record (Code/Description/Category — use the category
   created above), Save; reopen to confirm round-trip; edit and Save
   again.
@@ -163,7 +161,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Create and save an artefact type
 
-- Navigate: Data Quality > Governance > Artefact Types.
+- Navigate: Data Quality > Data Catalogue > Artefact Types.
 - Add a new record (Code/Name/Artefact Table/Target Table/Target
   Subject), Save; reopen to confirm round-trip.
 - Confirms: list shows the new row with all columns populated.
@@ -176,7 +174,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Create and save a dataset bundle
 
-- Navigate: Data Quality > Dataset Bundles.
+- Navigate: Data Quality > Data Catalogue > Dataset Bundles.
 - Add a new record (Code/Name/Description), Save; reopen to confirm
   round-trip; edit and Save again.
 - Confirms: same as above for this entity.
@@ -215,9 +213,9 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Confirm report definitions has no menu entry
 
-- Open every submenu under Data Quality (Badges, Classifications
-  entry under Reference Data, Governance, LEI Registry, and any
-  top-level items) and search for "Report Definition".
+- Open every submenu under Data Quality (Badges, Classifications,
+  LEI Registry, Audit Trail, Data Catalogue) and search for
+  "Report Definition".
 - Confirms: no menu item anywhere opens a report_definition window —
   this entity is DQ-side staging data only, its Qt UI is deliberately
   disabled.
@@ -243,8 +241,8 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 *** Trigger a data domain update for eventing
 
 - Reopen any data domain record saved earlier in this scenario (Data
-  Quality > Governance > Data Domains) and change its Description to
-  a new, distinctive value, then Save.
+  Quality > Data Catalogue > Data Domains) and change its Description
+  to a new, distinctive value, then Save.
 - Confirms: the save succeeds in this (blue) client as normal — the
   *red* client's corresponding step checks the notification side.
 
@@ -271,7 +269,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 *** Open the data domains list and wait
 
-- Navigate: Data Quality > Governance > Data Domains.
+- Navigate: Data Quality > Data Catalogue > Data Domains.
 - Leave this list window open and visible while blue performs its
   "Trigger a data domain update for eventing" step.
 - Confirms: nothing yet — this just gets the window into the state
@@ -298,9 +296,9 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-06T10:52:27Z |
+| Completed at  | 2026-08-06T22:40:26Z |
 | Branch        | feature/bind-dq-sql-entities-to-profiles |
-| Commit        | 612967e35 |
+| Commit        | 0caa387e4 |
 | Worktree      | jolly_knuth |
 
 | Status        |       |

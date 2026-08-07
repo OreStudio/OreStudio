@@ -30,9 +30,9 @@ built in this story -- see the investigation task and Out of scope.
 |---------------+----------------------------------------|
 | State         | STARTED                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Group Treasury book/portfolio scaffolded and verified live. Next: investigate consolidated group risk reporting, and update the user manual. |
+| Now           | Consolidated group risk reporting scoped (findings only). Next: update the user manual -- last remaining task. |
 | Waiting on    | Nothing.                               |
-| Next          | Pick up "Investigate consolidated group risk reporting" or "Update user manual with the holding company description". |
+| Next          | Pick up "Update user manual with the holding company description". |
 | Last touched  | 2026-08-07                             |
 
 * Acceptance
@@ -51,7 +51,8 @@ built in this story -- see the investigation task and Out of scope.
   differs from the three operating offices.
 - Consolidated group-level risk reporting is scoped (findings
   written up), not necessarily implemented -- see the investigation
-  task.
+  task. [DONE -- findings written up, follow-on story recommended,
+  no build committed here.]
 
 * Tasks
 
@@ -61,7 +62,7 @@ built in this story -- see the investigation task and Out of scope.
 | [[id:1F682C23-F76E-4701-A8CD-520AE073D45A][Publish CRM topology for the holding company party]] | DONE | 2026-08-05 | 2026-08-05 | Holding company now gets majors/exotics/scandies CRM topology during provisioning, same as each office. Getting a clean end-to-end run also required fixing four unrelated pre-existing regressions (asset_class/derivation_kind/scope/binding_mode) and a duplicate-menu bug (stale AdminPlugin build artifact). Verified via DB query and a 4/4-passed Qt client test scenario. |
 | [[id:D073F237-8280-4B64-8CD4-86B18F32294B][Resolve feed-binding party-scoping so holding company CRM can consume FX ticks]] | DONE | 2026-08-05 | 2026-08-06 | crm_ingest_bridge::update() is now tenant-wide (dropped the party_id_str parameter, feeds every party in the tick's tenant with a matching driver edge). Verified with a new unit test and live: holding company CRM ticks within seconds of opening. Also fixed a second, freshly-introduced regression -- a competing PR had "fixed" the same asset_class-validator bug from the opposite end, reverted to match the correct (already-merged) validator fix. |
 | [[id:77D7E549-0793-45F2-B0EC-48E79AB79151][Scaffold a Group Treasury book/portfolio for the holding company]] | DONE | 2026-08-06 | 2026-08-07 | Acme Corporation Plc now has its own Group Treasury business unit, portfolio, and two Banking books (intercompany loans, FX hedges), generated via the seeder pipeline and wired into both db recreate and the live acme_group DQ bundle. Live QA caught a real bug -- acme_group was missing the same DQ dataset-dependency registrations the office bundles already had, letting the publish workflow race and leave owner_unit_id null; fixed by adding the missing dependency rows. |
-| [[id:0120CEEF-22D3-4663-ADF3-47D408972DA6][Investigate consolidated group risk reporting]] | STARTED | 2026-08-07 | | Stretch/investigation task, not a build commitment: scope what it would take to roll up the three operating offices' books into a group-level risk view (NPV/VaR/CVA/XVA) at the holding company, and FX translation of subsidiary financials into the group reporting currency (IAS 21-style). Likely too large for this story -- produce findings and spin off a dedicated follow-on story rather than implementing here. |
+| [[id:0120CEEF-22D3-4663-ADF3-47D408972DA6][Investigate consolidated group risk reporting]] | DONE | 2026-08-07 | 2026-08-07 | Findings only, no build. The party-hierarchy RLS visibility mechanism already lets a holding-party session see every subsidiary's books/trades; risk_report_config has a full ORE parameter surface but zero tests and no Qt UI. Recommend a narrow follow-on story for risk rollup verification+UI; IAS 21 FX translation of subsidiary financials is a separate, much larger consolidated-accounting feature not covered here. |
 | [[id:0A540739-3629-413F-BB78-F6F4E029EFA4][Update user manual with the holding company description]] | BACKLOG | | | Add/update the user manual's Acme Corporation chapter (or a new section) describing the holding company's role and treasury functionality: FX/CRM visibility, the Group Treasury book, and how it differs from the three operating offices -- so a reader understands why the holding party looks and behaves differently from Acme UK/US/HK. |
 
 * Decisions
@@ -141,6 +142,23 @@ built in this story -- see the investigation task and Out of scope.
   by "Group FX Hedges" and any intercompany funding leg by "Group
   Intercompany Loans". Two books matches how a real group treasury
   centre's risk book structure normally looks.
+- Investigated consolidated group risk reporting (findings only, no
+  build): the data-visibility plumbing a consolidated report would
+  need already exists -- ores_iam_set_party_context_fn computes a
+  party plus all its descendants into app.visible_party_ids, and
+  every party_isolation_policy RLS policy (books, portfolios, trades)
+  honours it, so a session scoped to the holding party already sees
+  every subsidiary's data. risk_report_config's domain/SQL has a full
+  ORE parameter surface (base currency, NPV/VaR/XVA/SIMM, book/
+  portfolio scope junction tables with no party constraint), but zero
+  test coverage and no Qt configuration UI -- nobody has run one end
+  to end yet, single-party or not. Recommend a narrowly-scoped
+  follow-on story to prove out the risk rollup (verification + the
+  missing UI, not new backend). Separately: IAS 21-style FX
+  translation of subsidiary financials (the story's other stated
+  goal) is a consolidated-accounting concept unrelated to risk-book
+  NPV -- a materially different, much larger feature that needs its
+  own scoping if ever pursued, not bundled with risk rollup.
 
 * Out of scope
 

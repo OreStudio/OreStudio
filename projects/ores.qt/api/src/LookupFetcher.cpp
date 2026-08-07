@@ -575,6 +575,7 @@ fetch_instrument_codes(ClientManager* cm) {
         return std::unexpected(QStringLiteral("Not connected to server."));
 
     refdata::messaging::get_instrument_codes_request request;
+    request.limit = 1000;
     auto response = cm->process_authenticated_request(std::move(request));
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));

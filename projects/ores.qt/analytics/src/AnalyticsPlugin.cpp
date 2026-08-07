@@ -57,20 +57,24 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
     ctx_ = ctx;
 
     pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(pricingEngineTypeController_.get());
 
     pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(pricingModelConfigController_.get());
 
     pricingModelProductController_ = std::make_unique<PricingModelProductController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(pricingModelProductController_.get());
 
     pricingModelProductParameterController_ =
         std::make_unique<PricingModelProductParameterController>(
-            ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
+            ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+            ctx_.change_reason_cache, ctx_.username, this);
     connectControllerSignals(pricingModelProductParameterController_.get());
 }
 

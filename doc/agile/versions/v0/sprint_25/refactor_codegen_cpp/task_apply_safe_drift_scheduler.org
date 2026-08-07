@@ -53,7 +53,7 @@ template output at =src/generator/= (singular) — must be deleted.
 2. Add =service_find_prefix: true= to =job_definition_domain_entity.json=.
 3. Delete leftover plural-=generators/= directories on both src and include
    sides of =ores.scheduler.api=.
-4. =projects/ores.codegen/codegen.sh regenerate --component scheduler-cpp --profile all-cpp=.
+4. =projects/ores.codegen/codegen.sh regenerate --component scheduler-cpp --address ores.cpp=.
 5. =cmake --build --preset linux-clang-debug-make=.
 6. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.scheduler" --output-on-failure=.
 7. Re-run regeneration; =git diff --exit-code= clean.

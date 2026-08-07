@@ -22,7 +22,7 @@ the audit to produce misleading results:
    files to land in a non-existent =projects/ores.<component>/= directory.
    Git diff reports "clean" because the output is untracked — a false pass.
 
-2. Running =--profile sql= on a =_domain_entity.json= model silently uses
+2. Running =--address ores.sql= on a =_domain_entity.json= model silently uses
    =sql_schema_domain_entity_create.mustache= (the old template) rather than
    the new unified template, even when a =_table.json= exists for the same entity.
 
@@ -56,13 +56,13 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
   missing =component_include= or =component_core=; =codegen.py= catches it,
   logs a clean human-readable error message naming the missing field and the
   model file, and exits non-zero. No raw Python traceback is shown to the user.
-- Running =--profile sql= on a =_domain_entity.json= model that has a
+- Running =--address ores.sql= on a =_domain_entity.json= model that has a
   corresponding =_table.json= in the same directory raises an error or warning
   directing the user to use the =_table.json= model instead.
-- Running =--profile all= on a =_domain_entity.json= model raises an error
+- Running =--address ores.cpp= on a =_domain_entity.json= model raises an error
   (extending the existing guard that already blocks =table= and =schema= models).
 - A comment or =--help= note documents which facets =all-cpp= covers and that
-  Qt requires a separate =--profile qt= invocation.
+  Qt requires a separate =--address ores.cpp.qt= invocation.
 - CI passes. No production C++ files are changed by this story.
 
 * Tasks
@@ -70,7 +70,7 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | Task: Guard missing component_include/component_core in generator.py | BACKLOG | | | Raise an error at generation time when component_include or component_core is absent from a domain_entity model. |
-| Task: Block dual-template SQL generation for domain_entity models | BACKLOG | | | Extend the --profile all guard and add a warning when --profile sql is run against a domain_entity with a co-located _table.json. |
+| Task: Block dual-template SQL generation for domain_entity models | BACKLOG | | | Extend the --address ores.cpp guard and add a warning when --address ores.sql is run against a domain_entity with a co-located _table.json. |
 | Task: Document all-cpp profile limitations | BACKLOG | | | Add --help annotation and CLI output note explaining Qt is excluded from all-cpp; add guard that warns when a model lacks is_temporal and a temporal profile is used. |
 
 * Decisions

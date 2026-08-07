@@ -21,6 +21,8 @@
 #define ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 
 #include "ores.platform/export.hpp"
+#include "ores.platform/environment/environment_provider.hpp"
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -28,11 +30,17 @@ namespace ores::platform::environment {
 
 /**
  * @brief Utilities for reading environment variables.
+ *
+ * Delegates every call to the currently installed environment_provider.
+ * The default provider wraps the real process environment
+ * (real_environment_provider). Tests can swap in a
+ * fake_environment_provider via scoped_environment_override for
+ * isolated, parallel-safe env var control.
  */
 class ORES_PLATFORM_EXPORT environment final {
 public:
     /**
-     * @brief Gets an environment variable value.
+     * @brief Gets an environment variable value from the installed provider.
      *
      * @param name Name of the environment variable.
      * @return The value if found, empty optional otherwise.
@@ -68,19 +76,35 @@ public:
     static std::string get_value_or_throw(const std::string& name);
 
     /**
-     * @brief Sets an environment variable value.
-     *
-     * @param name Name of the environment variable.
-     * @param value Value to set.
+     * @brief Sets an environment variable value via the installed provider.
      */
     static void set_value(const std::string& name, const std::string& value);
 
     /**
-     * @brief Removes an environment variable.
-     *
-     * @param name Name of the environment variable to remove.
+     * @brief Removes an environment variable via the installed provider.
      */
     static void unset_value(const std::string& name);
+
+    /**
+     * @brief Returns the provider currently installed on this thread.
+     *
+     * Never returns nullptr — the default is a real_environment_provider
+     * that wraps the process environment.
+     */
+    static environment_provider& provider();
+
+    /**
+     * @brief Swaps the per-thread provider pointer.
+     *
+     * Intended for test infrastructure (scoped_environment_override).
+     * Returns the previous provider so callers can restore it.
+     */
+    static environment_provider* swap_provider(environment_provider* new_provider);
+
+private:
+    static environment_provider& default_provider_instance();
+
+    environment() = delete;
 };
 
 }

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 187B03E4-D468-445A-B970-A048ED3FC430
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 25, covering goal alignment, load, PR velocity, story/task balance, focus signal, and bookkeeping hygiene.
+#+type: story
+#+level: s2
+#+filetags: :sprint_health_review:sprint_25:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Produce recurring System 2 health reviews of sprint 25, each covering
+goal alignment, sprint load, PR velocity, story/task balance, focus
+signal, and bookkeeping hygiene. Each review is a numbered task under
+this story; the full analysis lives in the task's =* Result= and a
+summary row is added to sprint.org's =* Health Review= table.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Health review 1 complete (mid-sprint, day 5). |
+| Waiting on    | Nothing.                               |
+| Next          | Health review 2 at sprint close.       |
+| Last touched  | 2026-08-07                               |
+
+* Acceptance
+
+- At least one health review per sprint (mid-sprint and/or close).
+- Each review covers all six dimensions with tables and narrative.
+- Summary row added to sprint.org's =* Health Review= table.
+- Bookkeeping issues found are fixed or explicitly deferred.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5D5BC371-CCD5-4AB6-AD4C-91493EFDA6E4][Health review 1 — sprint 25 mid-sprint analysis]] | DONE | 2026-08-07 | 2026-08-07 | System 2 health review 1 of sprint 25: mid-sprint check on goal alignment, load, PR velocity, story/task balance, and focus. |
+
+* Decisions
+
+* Out of scope
+
+-

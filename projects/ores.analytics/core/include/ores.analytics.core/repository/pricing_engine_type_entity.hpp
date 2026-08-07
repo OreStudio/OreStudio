@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_REPOSITORY_PRICING_ENGINE_TYPE_ENTITY_HPP
-#define ORES_ANALYTICS_REPOSITORY_PRICING_ENGINE_TYPE_ENTITY_HPP
+#ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_ENGINE_TYPE_ENTITY_HPP
+#define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_ENGINE_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -41,7 +41,7 @@ struct pricing_engine_type_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    std::optional<std::string> instrument_type_code;
+    std::string instrument_type_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

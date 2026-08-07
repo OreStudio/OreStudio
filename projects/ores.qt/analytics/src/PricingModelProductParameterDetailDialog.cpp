@@ -19,14 +19,17 @@
  */
 #include "ores.qt/PricingModelProductParameterDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ui_PricingModelProductParameterDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -38,9 +41,20 @@ PricingModelProductParameterDetailDialog::PricingModelProductParameterDetailDial
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PricingModelProductParameterDetailDialog::~PricingModelProductParameterDetailDialog() {
@@ -59,6 +73,10 @@ ProvenanceWidget* PricingModelProductParameterDetailDialog::provenanceWidget() c
     return ui_->provenanceWidget;
 }
 
+QString PricingModelProductParameterDetailDialog::code() const {
+    return QString::fromStdString(parameter_.parameter_name);
+}
+
 void PricingModelProductParameterDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -73,9 +91,6 @@ void PricingModelProductParameterDetailDialog::setupUi() {
 
 void PricingModelProductParameterDetailDialog::setupCombos() {
     ui_->parameterScopeCombo->clear();
-    ui_->parameterScopeCombo->addItem(tr("Model"), QString("model"));
-    ui_->parameterScopeCombo->addItem(tr("Engine"), QString("engine"));
-    ui_->parameterScopeCombo->addItem(tr("Global"), QString("global"));
 }
 
 void PricingModelProductParameterDetailDialog::setupConnections() {
@@ -132,6 +147,11 @@ void PricingModelProductParameterDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void PricingModelProductParameterDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void PricingModelProductParameterDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->parameterScopeCombo->setEnabled(!readOnly);
@@ -143,8 +163,8 @@ void PricingModelProductParameterDetailDialog::setReadOnly(bool readOnly) {
 
 void PricingModelProductParameterDetailDialog::updateUiFromParameter() {
     {
-        const int idx =
-            ui_->parameterScopeCombo->findData(QString::fromStdString(parameter_.parameter_scope));
+        const auto val = QString::fromStdString(parameter_.parameter_scope);
+        const int idx = ui_->parameterScopeCombo->findData(val);
         if (idx >= 0)
             ui_->parameterScopeCombo->setCurrentIndex(idx);
     }
@@ -189,8 +209,10 @@ void PricingModelProductParameterDetailDialog::updateSaveButtonState() {
 bool PricingModelProductParameterDetailDialog::validateInput() {
     const QString parameter_name_val = ui_->parameterNameEdit->text().trimmed();
     const QString parameter_value_val = ui_->parameterValueEdit->text().trimmed();
+    const bool parameter_scope_selected = ui_->parameterScopeCombo->currentIndex() >= 0;
 
-    return true && !parameter_name_val.isEmpty() && !parameter_value_val.isEmpty();
+    return true && !parameter_name_val.isEmpty() && !parameter_value_val.isEmpty() &&
+           parameter_scope_selected;
 }
 
 void PricingModelProductParameterDetailDialog::onSaveClicked() {
@@ -206,6 +228,15 @@ void PricingModelProductParameterDetailDialog::onSaveClicked() {
         MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    parameter_.change_reason_code = crSel->reason_code;
+    parameter_.change_commentary = crSel->commentary;
 
     updateParameterFromUi();
 
@@ -237,24 +268,28 @@ void PricingModelProductParameterDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Pricing Model Product Parameter saved successfully";
-            QString code = QString::fromStdString(self->parameter_.parameter_name);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->parameterSaved(code);
-            self->notifySaveSuccess(tr("Pricing Model Product Parameter '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), info) << "Pricing Model Product Parameter saved successfully";
+                QString code = QString::fromStdString(self->parameter_.parameter_name);
+                self->hasChanges_ = false;
+                self->updateSaveButtonState();
+                emit self->parameterSaved(code);
+                self->notifySaveSuccess(tr("Pricing Model Product Parameter '%1' saved").arg(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                QString errorMsg = QString::fromStdString(result.message);
+                emit self->errorMessage(errorMsg);
+                MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+            }
+        });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -280,6 +315,11 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing model product parameter: "
                               << parameter_.parameter_name;
 
@@ -290,13 +330,13 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = parameter_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(parameter_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         analytics::messaging::delete_pricing_model_product_parameter_request request;
-        request.ids = {id};
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -329,5 +369,6 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

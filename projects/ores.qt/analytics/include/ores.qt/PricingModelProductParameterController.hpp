@@ -27,11 +27,16 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class PricingModelProductParameterMdiWindow;
+class PricingModelProductParameterDetailDialog;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing pricing model product parameter windows and operations.
@@ -56,6 +61,7 @@ public:
     PricingModelProductParameterController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
                                            ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
                                            const QString& username,
                                            QObject* parent = nullptr);
 
@@ -63,12 +69,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const analytics::domain::pricing_model_product_parameter& parameter);
@@ -77,12 +85,38 @@ private slots:
     void onRevertVersion(const analytics::domain::pricing_model_product_parameter& parameter);
     void onOpenVersion(const analytics::domain::pricing_model_product_parameter& parameter,
                        int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const analytics::domain::pricing_model_product_parameter& parameter);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * PricingModelProductParameterDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(PricingModelProductParameterDetailDialog* detailDialog);
     void showHistoryWindow(const analytics::domain::pricing_model_product_parameter& parameter);
 
+    /**
+     * @brief Fetches the full typed pricing model product parameter history (the
+     * existing per-entity
+     * analytics::messaging::get_pricing_model_product_parameter_history_request/
+     * analytics::messaging::get_pricing_model_product_parameter_history_response, unrelated to the
+     * generic history.v1.get subject) and hands it to @p callback on the UI thread. Used to resolve
+     * HistoryDialog's generic (entity_id, version) signals back to a typed pricing model product
+     * parameter, since the generic dialog holds no typed domain data.
+     */
+    void fetchPricingModelProductParameterHistory(
+        const QString& entityId,
+        std::function<
+            void(std::expected<std::vector<analytics::domain::pricing_model_product_parameter>,
+                               QString>)> callback);
+
+    ChangeReasonCache* changeReasonCache_;
     PricingModelProductParameterMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

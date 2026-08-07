@@ -17,20 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#define _CRT_SECURE_NO_WARNINGS // Avoid getenv warnings
-
 #include "ores.platform/environment/environment.hpp"
-#include <cstdlib>
+#include "ores.platform/environment/real_environment_provider.hpp"
 #include <stdexcept>
 #include <string>
 
 namespace ores::platform::environment {
 
+namespace {
+    thread_local environment_provider* current_provider = nullptr;
+}
+
+environment_provider& environment::default_provider_instance() {
+    static real_environment_provider instance;
+    return instance;
+}
+
+environment_provider& environment::provider() {
+    if (current_provider == nullptr)
+        return default_provider_instance();
+    return *current_provider;
+}
+
+environment_provider* environment::swap_provider(environment_provider* new_provider) {
+    auto* old = current_provider;
+    current_provider = new_provider;
+    return old;
+}
+
 std::optional<std::string> environment::get_value(const std::string& name) {
-    const char* value = std::getenv(name.c_str());
-    if (value == nullptr)
-        return {};
-    return std::string(value);
+    return provider().get(name);
 }
 
 std::string environment::get_value_or_default(const std::string& name,
@@ -59,19 +75,11 @@ std::string environment::get_value_or_throw(const std::string& name) {
 }
 
 void environment::set_value(const std::string& name, const std::string& value) {
-#ifdef _WIN32
-    _putenv_s(name.c_str(), value.c_str());
-#else
-    setenv(name.c_str(), value.c_str(), 1);
-#endif
+    provider().set(name, value);
 }
 
 void environment::unset_value(const std::string& name) {
-#ifdef _WIN32
-    _putenv_s(name.c_str(), "");
-#else
-    unsetenv(name.c_str());
-#endif
+    provider().unset(name);
 }
 
 }

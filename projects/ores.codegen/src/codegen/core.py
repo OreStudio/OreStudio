@@ -2132,6 +2132,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 plural_words[-1].capitalize() if plural_words else domain_entity['entity_plural'].capitalize()
             )
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
+            # Human-readable spaced versions for doc comments and UI
+            # (e.g. "pricing_engine_types" -> "pricing engine types" / "Pricing Engine Types")
+            de_plural_spaced = domain_entity['entity_plural'].replace('_', ' ')
+            domain_entity['entity_plural_words'] = de_plural_spaced
+            domain_entity['entity_plural_words_cap'] = de_plural_spaced.title()
         if 'entity_title' in domain_entity:
             domain_entity['entity_title_lower'] = domain_entity['entity_title'].lower()
         # Prepare table display items for C++ templates

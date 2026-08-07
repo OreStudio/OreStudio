@@ -22,26 +22,28 @@ Corresponds to ORE's pricingengine.xml.
 :schema:        public
 :product:       ores
 :component:     analytics
+:profile:       uuid-identified-lookup
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :END:
 
 UUID uniquely identifying this pricing model configuration.
 
 Surrogate key for the pricing model configuration.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
 :END:
 
 Human-readable name for this configuration.
@@ -51,8 +53,6 @@ Unique per tenant. Examples: 'Standard', 'AMC', 'DeltaGamma', 'SABR'.
 #+begin_src cpp :name generator
 std::string("config")
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -93,7 +93,9 @@ std::string("standard")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:               api
+:service_find_by_uuid:        true
+:service_find_by_code_column: name
 :END:
 
 ** Repository

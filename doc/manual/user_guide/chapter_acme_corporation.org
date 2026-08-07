@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:manual:acme_corporation:refdata:user_guide:
 #+created: 2026-07-31
-#+updated: 2026-08-01
+#+updated: 2026-08-07
 
 #+startup: inlineimages
 @@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{screenshot} @@@@html:Every screenshot @@in this manual, and every worked
@@ -36,8 +36,11 @@ hierarchies — organisational and portfolio — that every party's
 structure is built from, the premise the rest of the chapter assumes.
 Building on that model, [[*The holding-group structure][The holding-group structure]] walks Acme's
 four legal entities and the trading floor each one carries,
-[[*Departments and segregation of duties][Departments and segregation of duties]] explains why a trading floor is
-never a single undifferentiated team, and [[*Staff and accounts][Staff and accounts]]
+[[*The holding company's own treasury footprint][The holding company's own treasury footprint]] sets out what the group
+centre itself carries and how that differs from an operating
+company's trading floor, [[*Departments and segregation of duties][Departments and segregation of duties]]
+explains why a trading floor is never a single undifferentiated team,
+and [[*Staff and accounts][Staff and accounts]]
 introduces the people who staff those desks and the org-chart view
 that renders their reporting lines. Finally [[*Provisioning Acme Corporation][Provisioning Acme
 Corporation]] shows how to stand the whole entity up yourself, from the
@@ -163,7 +166,70 @@ what you see, four levels deep and fully populated.
 [[proj:assets/images/acme_corporation_parties_window.png]]
 
 With the corporate shell and its trading floors in place, the chapter
-turns from structure to why a trading floor is divided the way it is.
+turns first to the holding company's own footprint at the group
+centre, before turning to why a trading floor is divided the way it
+is.
+
+** The holding company's own treasury footprint
+
+Acme Corporation Plc is not a pure legal shell sitting above the
+three operating companies with nothing of its own underneath it —
+unlike a holding company with zero market-data footprint, it carries
+genuine parent-level treasury activity: FX visibility into the rates
+its subsidiaries trade in, for remittance and hedging decisions, and
+a Group Treasury book/portfolio for the intercompany loans and FX
+hedges the parent itself carries. This is what distinguishes a real
+holding company from a passive legal wrapper, and it is deliberately
+modelled differently from an operating company's trading floor rather
+than as a fourth, smaller copy of one.
+
+#+begin_note
+This section is currently text-only: the Cross-Rates Matrix and Org
+Explorer screenshots that illustrate it elsewhere in this manual are
+pending and will be added in a follow-up pass.
+#+end_note
+
+FX visibility works without the holding company needing a feed of its
+own: the Cross-Rates Matrix, opened at Acme Corporation Plc, shows
+live cross rates across GBP, USD, and HKD — the three operating
+companies' own currencies — fed entirely by the offices' FX feeds. A
+EUR/USD print is the same real-world rate regardless of which
+office's =feed_binding= happens to be subscribed to it, so FX driver
+ticks are tenant-wide for CRM-matching purposes rather than scoped to
+whichever party's feed produced them; each party's own topology
+configuration still governs what it is authorised to see, so this
+shares nothing beyond what a real FX rate already is.
+
+Where each operating company's own business unit is a full trading
+floor — Global Markets, Risk Management, desks and cost centres, as
+the previous section walked — Acme Corporation Plc's own business
+unit is a single DIVISION-type unit, "Group Treasury"
+(=acme_group.treasury=), holding one virtual GBP portfolio ("Group
+Treasury Portfolio") and two books, both classified =Banking= rather
+than =Trading=: "Group Intercompany Loans" (=GL-TREAS-001=) and
+"Group FX Hedges" (=GL-TREAS-002=), both carrying cost centre
+=CC-GROUP-TREASURY= and rates centre =GBLO=. Neither book is a
+held-for-trading desk. "Group Intercompany Loans" carries the
+loans and deposits between the holding company and its subsidiaries;
+"Group FX Hedges" carries the forwards and swaps that hedge the
+group's remittance and translation exposure back to GBP, the group's
+own reporting currency — the =Banking= classification is the correct
+prudential treatment for financing and for hedges of non-trading
+exposure, not the =Trading= classification an operating company's
+desks carry.
+
+Consolidated group-level risk reporting — rolling the three operating
+companies' books up into a single group-level NPV/VaR/XVA view at the
+holding company — is the natural next question a real group treasury
+function would ask, and the underlying data-visibility a report like
+that would need already exists (a session scoped to the holding party
+already sees every subsidiary's books and trades, the same mechanism
+that grants staff cross-entity access during provisioning); building
+and exposing that view is not yet in place.
+
+With the holding company's own footprint established alongside its
+three operating companies, the chapter turns from structure to why a
+trading floor is divided the way it is.
 
 ** Departments and segregation of duties
 
@@ -387,7 +453,13 @@ uses — business units typed and anchored to a business centre, books
 aggregating beneath physical and virtual portfolios — and those
 hierarchies exist to enforce a real control principle: trading,
 processing, and risk measurement kept organisationally separate, even
-though that separation is not yet an access-control boundary.
+though that separation is not yet an access-control boundary. The
+holding company at the group's centre is not a passive shell either:
+its own Group Treasury business unit, FX visibility across every
+subsidiary's currency, and Banking-classified books for intercompany
+funding and remittance hedging show a real parent company's own
+treasury activity, modelled distinctly from an operating company's
+trading floor rather than as a smaller copy of one.
 Populated concretely with fifty-eight staff across Rates, Credit, and
 FX desks, Middle Office, and Market Risk, whose reporting lines the
 org-chart view renders at a glance, provisioning — from either the Qt

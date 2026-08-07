@@ -61,12 +61,11 @@ on ores_synthetic_market_data_generation_configs_tbl
 as restrictive
 for all using (
     party_id is null
-    or ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    or party_id = ores_iam_current_party_id_fn()
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id is null
+    or party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -93,8 +92,7 @@ create policy fx_spot_generation_configs_party_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
     or exists (
         select 1 from ores_synthetic_market_data_generation_configs_tbl c
         where c.id = config_id
@@ -103,8 +101,7 @@ for all using (
     )
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -127,8 +124,7 @@ create policy gmm_components_party_isolation_policy
 on ores_synthetic_gmm_components_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
     or exists (
         select 1 from ores_synthetic_fx_spot_generation_configs_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
@@ -139,8 +135,7 @@ for all using (
     )
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -161,12 +156,10 @@ create policy ir_curve_generation_configs_party_isolation_policy
 on ores_synthetic_ir_curve_generation_configs_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -187,12 +180,10 @@ create policy ir_curve_template_entries_party_isolation_policy
 on ores_synthetic_ir_curve_template_entries_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -213,12 +204,12 @@ create policy folders_party_isolation_policy
 on ores_synthetic_folders_tbl
 as restrictive
 for all using (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id is null
+    or party_id = ores_iam_current_party_id_fn()
 )
 with check (
-    ores_iam_visible_party_ids_fn() is null
-    or party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id is null
+    or party_id = ores_iam_current_party_id_fn()
 );
 
 alter table ores_synthetic_yield_curve_process_types_tbl enable row level security;

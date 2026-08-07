@@ -17,23 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_HPP
-#define ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_HPP
+#ifndef ORES_ANALYTICS_API_DOMAIN_PRICING_ENGINE_TYPE_HPP
+#define ORES_ANALYTICS_API_DOMAIN_PRICING_ENGINE_TYPE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::analytics::domain {
 
 /**
- * @brief Analytics-specific product taxonomy for ORE pricing engines.
+ * @brief Pricing engine type code identifying the product granularity used by the pricing engine.
  *
- * Maps ORE pricingengine.xml Product/@type values to a normalised registry.
- * Finer-grained than instrument types: a single instrument type (e.g. Swaption)
- * may have multiple engine types (EuropeanSwaption, BermudanSwaption,
- * AmericanSwaption). Coupon/leg-level pricers have no corresponding instrument
- * type (instrument_type_code is empty).
+ * Classification of products at the granularity needed by the pricing engine to select the correct
+ * model and numerical method (e.g. EuropeanSwaption, BermudanSwaption, CMS).
  */
 struct pricing_engine_type final {
     /**
@@ -47,9 +46,9 @@ struct pricing_engine_type final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief ORE pricing engine type code (e.g. 'EuropeanSwaption', 'CMS').
+     * @brief Unique pricing engine type code.
      *
-     * Matches the Product/@type attribute in pricingengine.xml.
+     * Examples: 'Swap', 'EuropeanSwaption', 'BermudanSwaption', 'CMS', 'CapFloor'.
      */
     std::string code;
 
@@ -59,25 +58,27 @@ struct pricing_engine_type final {
     std::string description;
 
     /**
-     * @brief Optional link to the corresponding instrument type.
+     * @brief Reference to the corresponding instrument type code. Use the NONE sentinel for engine
+     * types (e.g. leg-/coupon-level pricers) with no direct instrument type mapping.
      *
-     * Soft FK to ores_trading_trade_types_tbl. Empty for coupon/leg-level
-     * pricers that have no corresponding booking-level instrument type.
+     * Soft FK to ores_refdata_instrument_codes_tbl.
      */
     std::string instrument_type_code;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this pricing engine type.
      */
     std::string modified_by;
 
     /**
-     * @brief Username of the account that performed this action (set by DB trigger).
+     * @brief Username of the account that performed this action.
      */
     std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -91,6 +92,16 @@ struct pricing_engine_type final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for pricing_engine_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const pricing_engine_type&) {
+    return "ores.analytics.pricing_engine_type";
+}
 
 }
 

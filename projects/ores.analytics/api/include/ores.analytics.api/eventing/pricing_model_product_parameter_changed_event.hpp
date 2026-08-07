@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_EVENTING_PRICING_MODEL_PRODUCT_PARAMETER_CHANGED_EVENT_HPP
-#define ORES_ANALYTICS_EVENTING_PRICING_MODEL_PRODUCT_PARAMETER_CHANGED_EVENT_HPP
+#ifndef ORES_ANALYTICS_API_EVENTING_PRICING_MODEL_PRODUCT_PARAMETER_CHANGED_EVENT_HPP
+#define ORES_ANALYTICS_API_EVENTING_PRICING_MODEL_PRODUCT_PARAMETER_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -40,7 +40,7 @@ struct pricing_model_product_parameter_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief UUIDs of pricing model product parameters that changed (as strings).
+     * @brief Changed pricing model product parameter UUIDs (as strings).
      */
     std::vector<std::string> parameter_ids;
 

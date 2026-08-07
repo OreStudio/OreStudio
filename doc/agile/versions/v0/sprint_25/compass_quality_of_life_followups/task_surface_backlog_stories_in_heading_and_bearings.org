@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: B514B095-5D45-4D1D-9CFC-22200BD41E8D
+:END:
+#+title: Task: Surface unclaimed BACKLOG stories in compass heading and bearings
+#+description: compass heading currently skips BACKLOG stories that are in the current sprint but unclaimed (e.g. IR curve follow-ups was invisible despite being sprint-bound, unblocked, and with 3 ready tasks). Fix heading and bearings to include these so they don't get lost.
+#+type: task
+#+level: s1
+#+filetags: :compass-qol:sprint_25:v0:compass_qol:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make compass heading and bearings surface unclaimed BACKLOG stories in the current sprint so they are visible as candidate next-work items.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- compass heading shows unclaimed BACKLOG stories from the current sprint
+- compass bearings shows unclaimed BACKLOG stories under sprint suggestions
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

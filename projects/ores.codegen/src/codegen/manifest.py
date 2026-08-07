@@ -176,17 +176,13 @@ def entity_name_from_path(path: Path) -> str:
 
     ores.refdata.country.org        -> country
     ores.refdata.book_status.org    -> book_status
-    country_domain_entity.json      -> country
-    audit_record_field_group.org    -> audit_record
+    ores.iam.account_party_junction.org -> account_party_junction
+
+    Type suffixes (``_lookup_entity``, ``_junction``, etc.) are NOT
+    stripped — they distinguish model types sharing the same base name
+    (e.g. ``pricing_engine_type`` and ``pricing_engine_type_lookup_entity``).
     """
     stem = path.stem
-    for suffix in (
-        "_domain_entity", "_field_group", "_junction",
-        "_table", "_lookup_entity", "_enum", "_component", "_service_registry",
-    ):
-        if stem.endswith(suffix):
-            stem = stem[: -len(suffix)]
-            break
     if "." in stem:
         stem = stem.split(".")[-1]
     return stem

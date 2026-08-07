@@ -8,11 +8,12 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr:
+#+pr: 1893
 #+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
 #+blocked_since:
 #+created: 2026-05-31
 #+updated: 2026-06-12
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
@@ -26,11 +27,11 @@ Four pricing models need flag updates; no production exclusions expected.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
-| Next         | Start once refdata pattern is merged.  |
+| Next         | Nothing. |
 | Last touched | 2026-05-31                             |
 
 * Acceptance
@@ -56,7 +57,7 @@ Four pricing models need flag updates; no production exclusions expected.
 ** 3. Regenerate
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --address ores.cpp
 #+end_src
 
 ** 4. Build + test
@@ -69,7 +70,7 @@ projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --profile 
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1893][#1893]] | [analytics,codegen] Apply safe drift to analytics-cpp |
 
 * Review
 
@@ -78,3 +79,15 @@ projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --profile 
 |   |                 |      |          |       |
 
 * Result
+
+Applied safe drift to analytics-cpp following the refdata-cpp pilot pattern:
+- Assigned profiles (simple-lookup, uuid-identified-lookup) to all four models
+- Migrated PK format to current org convention
+- Added service flags (find_prefix, find_by_uuid, find_by_code_column)
+- Made instrument_type_code non-nullable with NONE sentinel generator
+- Added NONE sentinel to instrument_codes seed data, fixed short code references
+- Wired generic history framework via per-entity registrars
+- Removed legacy lookup_entity model and history dialogs
+- Fixed codegen: entity_name_from_path exact matching, system_tenant_validation for save/remove
+- All tests green (123 codegen + 4 analytics suites), zero-diff confirmed
+- PR #1893 merged (25 commits)

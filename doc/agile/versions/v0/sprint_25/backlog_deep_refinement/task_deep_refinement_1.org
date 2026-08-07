@@ -28,7 +28,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:D9625B20-E2EB-486F-BE61-61936FCA6417][Backlog deep refinement]] |
-| Now          | Complete. Inbox emptied of individual captures, consolidations done, report written. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Next deep run should focus on next-bucket deduplication and staleness. |
 | Last touched | 2026-08-06                               |

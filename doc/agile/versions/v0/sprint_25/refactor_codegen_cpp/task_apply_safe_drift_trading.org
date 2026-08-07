@@ -74,7 +74,7 @@ git rebase origin/main
 ** 4. Regenerate trading-cpp
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component trading-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address ores.cpp
 #+end_src
 
 ** 5. Restore exclusions from HEAD
@@ -101,7 +101,7 @@ ctest --test-dir build/output/linux-clang-debug-make -R "ores\.trading" --output
 ** 8. Final zero-diff check
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component trading-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component trading-cpp --address ores.cpp
 # restore the 4 excluded files
 git diff --exit-code   # must be zero
 #+end_src

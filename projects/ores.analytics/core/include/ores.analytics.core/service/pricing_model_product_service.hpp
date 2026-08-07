@@ -17,14 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
-#define ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
+#ifndef ORES_ANALYTICS_CORE_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
+#define ORES_ANALYTICS_CORE_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +36,9 @@ namespace ores::analytics::service {
 
 /**
  * @brief Service for managing pricing model products.
+ *
+ * Provides a higher-level interface for pricing model product operations,
+ * wrapping the underlying repository.
  */
 class ORES_ANALYTICS_CORE_EXPORT pricing_model_product_service {
 private:
@@ -48,21 +54,100 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a pricing_model_product_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit pricing_model_product_service(context ctx);
 
-    std::vector<domain::pricing_model_product> list_products(const std::string& config_id);
+    /**
+     * @brief Lists pricing model products with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of pricing model products for the requested page.
+     */
+    std::vector<domain::pricing_model_product> list_products(std::uint32_t offset,
+                                                             std::uint32_t limit);
 
-    std::optional<domain::pricing_model_product> find_product(const std::string& id);
+    /**
+     * @brief Gets the total count of active pricing model products.
+     *
+     * @return Total number of active pricing model products.
+     */
+    std::uint32_t count_products();
 
-    void save_product(const domain::pricing_model_product& v);
 
-    void save_products(const std::vector<domain::pricing_model_product>& v);
+    /**
+     * @brief Retrieves a single pricing model product as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The pricing model product at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::pricing_model_product> get_product_at_version(const std::string& id,
+                                                                        std::uint32_t version);
 
-    void remove_product(const std::string& id);
+    /**
+     * @brief Retrieves a single pricing model product by its primary key.
+     *
+     * @return The pricing model product if found, std::nullopt otherwise.
+     */
+    std::optional<domain::pricing_model_product> get_product(const std::string& id);
 
-    void remove_products_for_config(const std::string& config_id);
+    /**
+     * @brief Retrieves a single pricing model product by its uuid primary key.
+     *
+     * @return The pricing model product if found, std::nullopt otherwise.
+     */
+    std::optional<domain::pricing_model_product> find_product(const boost::uuids::uuid& id);
 
+    /**
+     * @brief Saves a pricing model product (creates or updates).
+     *
+     * @param product The pricing model product to save.
+     * @throws std::exception on failure.
+     */
+    void save_product(const domain::pricing_model_product& product);
+
+    /**
+     * @brief Saves a batch of pricing model products.
+     *
+     * @param products The pricing model products to save.
+     * @throws std::exception on failure.
+     */
+    void save_products(const std::vector<domain::pricing_model_product>& products);
+
+    /**
+     * @brief Deletes a pricing model product by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_product(const std::string& id);
+
+    /**
+     * @brief Removes a pricing model product by its uuid primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void remove_product(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Deletes pricing model products by their primary keys.
+     */
+    void delete_products(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a pricing model product.
+     */
     std::vector<domain::pricing_model_product> get_product_history(const std::string& id);
+
+    /**
+     * @brief Retrieves all historical versions of a pricing model product
+     * by its uuid primary key.
+     */
+    std::vector<domain::pricing_model_product> get_product_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

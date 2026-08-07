@@ -81,7 +81,7 @@ extension idea retreats to a simpler sidecar-fragment design.
 - Codegen detects the =.org= form, parses it into the same internal data
   structures as the JSON forms (same keys, same types) for *both* C++ and
   SQL paths.
-- =codegen.sh regenerate --component refdata-cpp --profile all-cpp=
+- =codegen.sh regenerate --component refdata --address ores.cpp=
   produces all party-related C++ files (=party.hpp=, =party_mapper.cpp=,
   =party_repository.*=, =party_service.*=, etc.) byte-identical to what
   the JSON path produces.

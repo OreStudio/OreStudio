@@ -17,26 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_HPP
-#define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_HPP
+#ifndef ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_CONFIG_HPP
+#define ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_CONFIG_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::analytics::domain {
 
 /**
- * @brief Named, versioned pricing model configuration header.
+ * @brief Named pricing model configuration mapping pricing engine types to models and engines.
  *
- * A pricing model config is the top-level container for ORE's pricingengine.xml
- * content. It groups a set of per-product model/engine assignments and their
- * associated parameters under a single reusable, diffable name.
- *
- * config_variant distinguishes specialised ORE modes: "standard" for the
- * default engine, "amc" for American Monte Carlo, "dg" for dynamic grid, etc.
+ * Header entity for a pricing model configuration. Each config contains product mappings
+ * (in pricing_model_products) and parameters (in pricing_model_product_parameters).
+ * Corresponds to ORE's pricingengine.xml.
  */
 struct pricing_model_config final {
     /**
@@ -50,41 +48,45 @@ struct pricing_model_config final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID uniquely identifying this pricing model config.
+     * @brief UUID uniquely identifying this pricing model configuration.
+     *
+     * Surrogate key for the pricing model configuration.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique human-readable name for this configuration.
+     * @brief Human-readable name for this configuration.
      *
-     * Natural key within a tenant (e.g. "Base SIMM", "AMC Monte Carlo").
+     * Unique per tenant. Examples: 'Standard', 'AMC', 'DeltaGamma', 'SABR'.
      */
     std::string name;
 
     /**
-     * @brief Human-readable description of the configuration's purpose.
+     * @brief Detailed description of this pricing model configuration.
      */
     std::string description;
 
     /**
-     * @brief ORE engine variant this config targets.
+     * @brief Configuration variant tag.
      *
-     * Values: "standard", "amc", "dg", or empty for default.
+     * Examples: 'standard', 'amc', 'amccg', 'dg', 'sabr', 'ad'.
      */
-    std::optional<std::string> config_variant;
+    std::string config_variant;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this pricing model configuration.
      */
     std::string modified_by;
 
     /**
-     * @brief Username of the account that performed this action (set by DB trigger).
+     * @brief Username of the account that performed this action.
      */
     std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -98,6 +100,16 @@ struct pricing_model_config final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for pricing_model_config, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const pricing_model_config&) {
+    return "ores.analytics.pricing_model_config";
+}
 
 }
 

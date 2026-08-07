@@ -28,7 +28,7 @@ each dragging its own PR-review/CI cycle individually.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | All seven tasks shipped.               |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-08-06                               |
@@ -49,6 +49,9 @@ each dragging its own PR-review/CI cycle individually.
 | [[id:8F9DFAD7-4486-485A-9BEE-56FF013230A9][Show per-environment operational status in compass fleet]] | DONE | 2026-08-06 | 2026-08-06 | Extend compass fleet with each worktree's operational state: services running (parse that worktree's .env for preset/label, check its publish/run PID files and readiness logs), client running (ores.qt*.pid), and DB last restored (query that env's database via its own credentials, e.g. a timestamp on ores_database_info_tbl). Every check must use the target worktree's .env, never the current one's. |
 | [[id:67726FE9-098E-466E-9339-BC9BBFEA20A9][Add a compass help command]] | DONE | 2026-08-06 | 2026-08-06 | compass help currently returns an error. Add a top-level help subcommand that lists all available commands with a one-line description, and compass help for a specific command should show its full usage. |
 | [[id:4A5CD068-168D-4695-8A11-6DC266FA6FC9][Environment activity log: track manual post-pull setup steps per checkout]] | DONE | 2026-08-05 | 2026-08-05 | New compass env activity mechanism (sibling of the .env-format version log): a numbered, org-roam-linked log of one-off environment setup activities (often privileged/manual, e.g. root systemd drop-ins) that compass bearings surfaces as outstanding until a checkout runs 'compass env activity ack'. Includes the .env-format version bump for the new ORES_ENV_ACTIVITY var and the WS-5 root-half recipe as the log's first real entry. |
+| [[id:B514B095-5D45-4D1D-9CFC-22200BD41E8D][Surface unclaimed BACKLOG stories in compass heading and bearings]] | BACKLOG | | | compass heading currently skips BACKLOG stories that are in the current sprint but unclaimed. Fix heading and bearings to include these so they don't get lost. |
+| [[id:86198834-24B4-4933-91B1-03D8F086C71E][Auto-derive --parent-dir from --parent-id in compass add]] | BACKLOG | | | When --parent-id is passed, compass knows the parent story path. Auto-derive --parent-dir instead of requiring the caller to guess the slug, or at minimum validate the match and reject mismatches. |
+| [[id:F3966132-2268-4689-B21C-DD0F5087E2AC][Fix false positive redirect detection in deny_piped_compass_hook.py]] | BACKLOG | | | The REDIRECT_RE regex matches any greater-than character anywhere, including inside quoted strings where it cannot be a shell redirect. Add basic quoting awareness so it only flags operators outside quotes. |
 
 * Decisions
 

@@ -19,14 +19,17 @@
  */
 #include "ores.qt/PricingModelProductDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ui_PricingModelProductDetailDialog.h"
 #include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -38,9 +41,20 @@ PricingModelProductDetailDialog::PricingModelProductDetailDialog(QWidget* parent
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
     setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PricingModelProductDetailDialog::~PricingModelProductDetailDialog() {
@@ -57,6 +71,10 @@ QWidget* PricingModelProductDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* PricingModelProductDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString PricingModelProductDetailDialog::code() const {
+    return QString::fromStdString(product_.pricing_engine_type_code);
 }
 
 void PricingModelProductDetailDialog::setupUi() {
@@ -87,6 +105,10 @@ void PricingModelProductDetailDialog::setupConnections() {
             this,
             &PricingModelProductDetailDialog::onCloseClicked);
 
+    connect(ui_->pricingEngineTypeCodeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
+            &PricingModelProductDetailDialog::onFieldChanged);
     connect(ui_->modelEdit,
             &QLineEdit::textChanged,
             this,
@@ -123,6 +145,11 @@ void PricingModelProductDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void PricingModelProductDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void PricingModelProductDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->pricingEngineTypeCodeCombo->setEnabled(false);
@@ -151,7 +178,6 @@ void PricingModelProductDetailDialog::populatePricingEngineTypes() {
             ui_->pricingEngineTypeCodeCombo->setCurrentIndex(idx);
     }
 }
-
 void PricingModelProductDetailDialog::updateUiFromProduct() {
     {
         const auto val = QString::fromStdString(product_.pricing_engine_type_code);
@@ -183,10 +209,6 @@ void PricingModelProductDetailDialog::updateProductFromUi() {
     product_.modified_by = username_;
 }
 
-void PricingModelProductDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
-}
 
 void PricingModelProductDetailDialog::onFieldChanged() {
     hasChanges_ = true;
@@ -222,6 +244,15 @@ void PricingModelProductDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    product_.change_reason_code = crSel->reason_code;
+    product_.change_commentary = crSel->commentary;
+
     updateProductFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing model product: "
@@ -252,24 +283,27 @@ void PricingModelProductDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Pricing Model Product saved successfully";
-            QString code = QString::fromStdString(self->product_.pricing_engine_type_code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->productSaved(code);
-            self->notifySaveSuccess(tr("Pricing Model Product '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Pricing Model Product saved successfully";
+                    QString code = QString::fromStdString(self->product_.pricing_engine_type_code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->productSaved(code);
+                    self->notifySaveSuccess(tr("Pricing Model Product '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -295,6 +329,11 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
         return;
     }
 
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing model product: "
                               << product_.pricing_engine_type_code;
 
@@ -305,13 +344,13 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = product_.id]() -> DeleteResult {
+    auto task = [self, id_str = boost::uuids::to_string(product_.id)]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         analytics::messaging::delete_pricing_model_product_request request;
-        request.ids = {id};
+        request.ids = {id_str};
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -343,5 +382,6 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

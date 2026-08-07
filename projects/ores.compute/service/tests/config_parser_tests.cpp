@@ -20,8 +20,7 @@
 #include "ores.compute.service/config/parser.hpp"
 #include "ores.compute.service/config/parser_exception.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.platform/environment/environment.hpp"
-#include "ores.testing/scoped_env_unset.hpp"
+#include "ores.testing/scoped_environment_override.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
@@ -41,15 +40,9 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     // Local (non-CI) ctest loads the whole .env into the test process,
     // including shared ORES_NATS_* vars the parser now genuinely reads --
     // clear them so this test asserts real compiled-in defaults.
-    const ores::testing::scoped_env_unset env_guard(
+    const ores::testing::scoped_environment_override env_guard({},
         {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
 
-    // The generic ORES_NATS_* shared-domain fallback tier (PR #1819) makes
-    // this checkout's real .env values visible to every service parser --
-    // clear them so this "no overrides given" case stays hermetic.
-    ores::platform::environment::environment::unset_value("ORES_NATS_URL");
-    ores::platform::environment::environment::unset_value("ORES_NATS_SUBJECT_PREFIX");
-    ores::platform::environment::environment::unset_value("ORES_NATS_WIRE_FORMAT");
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

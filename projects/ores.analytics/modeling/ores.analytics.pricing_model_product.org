@@ -23,23 +23,22 @@ pricing_model_product_parameters.
 :schema:        public
 :product:       ores
 :component:     analytics
+:profile:       uuid-identified-lookup
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
 :END:
 
 UUID uniquely identifying this product mapping.
 
 Surrogate key for the pricing model product.
-
-* Natural keys
-
-* Columns
 
 ** pricing_model_config_id
 :PROPERTIES:
@@ -112,8 +111,8 @@ std::string("DiscountingSwapEngine")
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
-:list_filter_column: config_id
+:subcomponent:          api
+:service_find_by_uuid:  true
 :END:
 
 ** Repository

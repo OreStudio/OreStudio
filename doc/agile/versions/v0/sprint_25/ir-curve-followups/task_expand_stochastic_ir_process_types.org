@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/expand-stochastic-ir-process-types
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -46,7 +46,7 @@ variant we don't distinguish from G2++/the general 2-factor case).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -59,9 +59,323 @@ variant we don't distinguish from G2++/the general 2-factor case).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Design philosophy: data-oriented, STL-style
+
+QuantLib's OOP hierarchy (=Instrument=, =Engine=, =TermStructure=) is
+the opposite of what we want. ORE Studio's approach: plain structs for
+parameters and state, free functions for evolution and pricing, no
+virtual dispatch beyond the existing =IYieldCurveProcess= interface
+(which stays for factory compatibility). QuantLib serves as a test
+oracle — we port its test vectors and validate our implementations
+against its reference values — but we don't port its class hierarchy.
+
+Concrete rules:
+- Parameters are an =aggregate struct= (POD, brace-initialisable).
+- State is an =aggregate struct= (the process's current r_t, factors, ticks).
+- Evolution is a =free function= taking (state, params, rng) and returning new state.
+- discount_factor is a =free function= taking (state, params, ticks_ahead).
+- The =IYieldCurveProcess= implementation is a thin shell delegating to these free functions.
+- RNG is a =std::mt19937= passed by reference — no owned RNG state in params structs.
+
+** QuantLib reference
+
+QuantLib source available at =/home/marco/Development/ORE/Engine/QuantLib/=.
+Key paths for IR process models:
+- =ql/models/shortrate/= — Vasicek, CIR, Hull-White, Black-Karasinski, BDT
+- =ql/models/marketmodels/= — LMM/BGM
+- =ql/termstructures/yield/= — HJM, forward curves
+- =ql/methods/lattices/= — binomial/trinomial tree engines
+- =ql/experimental/shortrate/= — G2, two-factor models
+- =test-suite/= — QuantLib's own tests (reference vectors for our Catch2 tests)
+
+** Current architecture
+
+=yield_curve_process_type= catalogues short-rate process engines as a
+reference-data table (=ores.synthetic.api/domain=). Each row carries
+=code=, =name=, =description=, =display_order= — selected by
+=ir_curve_generation_config.process_type=, dispatched at runtime by
+=process_factory::make_yield_curve_process()=.
+
+The factory's interface is =make_yield_curve_process(process_type,
+kappa, theta_path, sigma, initial_rate, seed, dt)= — a *one-factor
+Gaussian/affine short-rate* parameterisation. The three existing
+engines all fit this shape:
+- =vasicek_process= — wraps =hull_white_process= with constant theta.
+- =cox_ingersoll_ross_process= — sqrt-volatility, affine bond price.
+- =hull_white_process= — piecewise-constant theta path, exact Gaussian
+  transition + Brigo-Mercurio bond-price recursion per tick. =vasicek=
+  and =hull_white= share code (=vasicek= is Hull-White with
+  one-element =theta_path=).
+
+=IYieldCurveProcess= extends =IStochasticProcess= (=next()=, =current()=)
+with =discount_factor(ticks_ahead)= — the model-implied zero-coupon
+bond price from current state. Every instrument derived from one
+process (deposit, FRA, swap) evaluates the same formula at the same
+=r_t=, guaranteeing internal curve consistency.
+
+** Inventory of the 8 proposed models against QuantLib reference
+
+Every model has a QuantLib implementation we can study. The question
+isn't /can we implement it/ — it's what interface it fits, what effort
+it needs, and in what order.
+
+| # | Model | QuantLib class | Fits IYieldCurveProcess? | Interface notes |
+|---+-------+----------------+--------------------------+-----------------|
+| 4 | BDT | =BlackDermanToy= | Yes — short-rate model via recombining binomial tree | =next()= walks the tree; =discount_factor()= is the tree-implied bond price. Tree calibration (matching initial term structure + vol σ(t)) is the interesting part. |
+| 5 | Black-Karasinski | =BlackKarasinski= | Yes — log-normal short rate, implements as SDE or trinomial tree | =next()= discretizes =d ln r = κ(θ - ln r)dt + σ dW=. Positivity guaranteed. In QuantLib this is a tree model but the SDE form is a straightforward Euler step on ln r. |
+| 6 | HJM | =HJM=, =HJMFactory= | Needs interface extension — state is a discretized forward curve, not a scalar | =next()= advances every forward rate; =discount_factor()= integrates the forward curve from the current discretization. Multi-dimensional state. |
+| 7 | LMM/BGM | =LiborMarketModel=, many variants | Needs interface extension — state is a vector of forward LIBOR rates | Drift under forward measure depends on correlation structure. QuantLib has a mature implementation. Pre-SOFR but historically important. |
+| 8 | SABR | =SABRInterpolation= | Fits =IStochasticProcess= but not =IYieldCurveProcess= | Two-dimensional: =dF = σF^β dW₁=, =dσ = νσ dW₂=. Produces a vol surface, not a yield curve. Different consumer — worth implementing but as a separate entity type. |
+| 9 | G2++ | =G2= | Yes — two-factor extension of Hull-White | Second factor adds =kappa₂=, =sigma₂=, =rho=. =discount_factor()= has a closed-form two-factor affine bond price. Closest to existing code. |
+| 10 | Affine Term Structure | No single QuantLib class (Vasicek/CIR are special cases) | In general, needs multi-factor interface | Meta-framework. Vasicek, CIR, Hull-White ARE affine models. A general affine engine lets users specify factor count, risk premia, factor loadings. |
+| 11 | Quadratic Gaussian | Not in standard QuantLib | Needs multi-factor + quadratic interface | Extends affine with quadratic yield terms. Richest dynamics, least QuantLib support — would be the most original implementation. |
+
+** Build order
+
+Split into individual tasks, one per model. Order by decreasing
+familiarity with the existing architecture:
+
+1. *G2++* — Two-factor Gaussian. Extend =hull_white_process= with a
+   second factor. Exact same recursion pattern (Brigo-Mercurio), just
+   with 2×2 matrices instead of scalars. QuantLib =G2= class as
+   reference. The natural first step: teaches the codebase how to
+   handle multi-factor processes.
+
+2. *Black-Karasinski* — Log-normal short rate. Euler discretization of
+   =ln r=, then exponentiate. Simpler than G2++ numerically, different
+   domain (positivity-constrained). Teaches the codebase how to handle
+   non-Gaussian process types.
+
+3. *BDT* — Binomial tree. New numerical method (recombining tree),
+   same short-rate domain. The tree calibration to match initial term
+   structure + volatility is the instructive part — this is the first
+   tree-based process, opening the door to more tree models. QuantLib
+   =BlackDermanToy= as reference.
+
+4. *Affine Term Structure* — General multi-factor framework. Actually
+   subsumes Vasicek/CIR/Hull-White as special cases. Building this
+   after G2++ (which teaches multi-factor) and after Vasicek/CIR/HW
+   (which are 1-factor special cases) is the natural progression. Let
+   users specify factor count, risk premia, market price of risk.
+
+5. *HJM* — Forward-curve model. First process where the state is
+   curve-valued rather than scalar-valued. Different architecture, but
+   by this point the codebase has handled multi-factor (G2++,
+   Affine) and different numerics (BDT tree). QuantLib =HJM= as
+   reference.
+
+6. *LMM/BGM* — Forward-rate model. Builds on HJM's curve-valued state
+   but under the forward measure with drift adjustments. Most complex
+   drift calculation (depends on correlation structure across all
+   forward rates). QuantLib =LiborMarketModel= as reference.
+
+7. *SABR* — Volatility model. Two-dimensional stochastic process
+   (forward + vol). Deserves its own interface — not
+   =IYieldCurveProcess=, but =IStochasticProcess= is still applicable
+   (a 2D process returns both =F= and =σ= from =current()=, and an
+   implied vol from the SABR formula). Separate entity type
+   (=volatility_model_type=) rather than a =yield_curve_process_type=.
+
+8. *Quadratic Gaussian* — The most original work. No direct QuantLib
+   reference. By this point the codebase has a general affine
+   framework, multi-factor support, multiple numerical methods. The
+   quadratic extension builds on the affine engine.
+
+** What the interface needs to evolve
+
+The current =make_yield_curve_process(kappa, theta_path, sigma, initial_rate)=
+is specifically one-factor Gaussian. To support the full set:
+
+- *Multi-factor parameters:* A vector of =kappa=, =sigma=, plus a
+  correlation matrix. G2++ needs 2 factors; HJM/LMM need N factors.
+
+- *State dimension:* =current()= currently returns =double= (scalar
+  short rate). Multi-factor processes need a vector-valued state.
+  Either overload =current()= with a vector variant, or add a new
+  interface =IMultiFactorProcess= that extends =IYieldCurveProcess=.
+
+- *discount_factor() generality:* The current recursion
+  (hull_white_process::discount_factor) is specific to the
+  one-factor Gaussian affine bond price. Each model class supplies its
+  own =discount_factor()= override — this already works, no interface
+  change needed here.
+
+- *Numerical method abstraction:* BDT needs a tree engine. Rather than
+  one-off tree code in the process class, extract a reusable binomial
+  tree utility (=binomial_tree=) that BDT, BK, and future tree models
+  share.
+
+** Relationship with multicurve architecture
+
+The multicurve design (=ir_curve_bootstrap_config= in ores.refdata)
+bootstraps real curves from market instrument grids. The process types
+in =ores.synthetic= generate /synthetic/ curves from stochastic
+processes. They're parallel concerns: a synthetic instrument grid
+feeds the bootstrap pipeline as one possible input, but the
+process-type selection is upstream of bootstrapping.
+
+G2++ and the two-factor Hull-White variant align directly with the
+multicurve docs' named use cases: XVA/CVA/ALM desks use two-factor
+Gaussian models precisely because a single factor can't capture the
+decorrelation between short and long rates that XVA requires over a
+multi-decade horizon. Adding G2++ gives ORE Studio's synthetic feeds
+the same modelling capability that the multicurve docs anticipate for
+bootstrapped official curves.
+
+** Single-curve constraint: which models actually fit
+
+ORE Studio currently supports only single-curve generation: one
+short-rate process driving one =ir_curve_generation_config=, producing
+one curve. This constrains which of the 7 models are practically useful:
+
+| Model | Single-curve fit? | Rationale |
+|-------+-------------------+-----------|
+| G2++ | ✅ Implemented | Two-factor short-rate model, same single-curve use case as Hull-White — just richer dynamics. |
+| Black-Karasinski | ✅ Next | Log-normal short rate, same single-curve use case. SDE approach fits directly. |
+| BDT | ✅ Fits | Short-rate via binomial tree, still a single curve. |
+| Affine Term Structure (1-factor) | ✅ Fits | 1-factor affine subsumes Vasicek/CIR/HW. Multi-factor generalisation is future work. |
+| Affine Term Structure (N-factor) | ⚠️ Future | Multi-factor affine needs multi-curve context (each factor projects a different curve segment). |
+| HJM | ❌ Out of scope for single-curve | Models the entire forward curve f(t,T) — multi-curve by construction. Revisit when we have curve families. |
+| LMM/BGM | ❌ Out of scope for single-curve | Models forward LIBOR rates at multiple tenors simultaneously. Revisit when we have curve families. |
+| Quadratic Gaussian (1-factor) | ✅ Fits (low priority) | 1-factor QG is a richer short-rate model. Practical value is mainly in multi-factor form. |
+
+Revised build order for single-curve: G2++ → Black-Karasinski → BDT → 1-factor Affine.
+HJM, LMM, and multi-factor forms are deferred to a future multi-curve story.
+
+** Exposure plan: two-PR split
+
+PR 1 (this task): quant engine only — =g2pp_process= class + tests.
+PR 2 (separate infra task): wire it into the system end-to-end.
+
+*** PR 2 design: strongly-typed parameter structs per model
+
+No JSONB. No overloaded factory with 9 scalar parameters. Each model
+gets its own aggregate parameter struct, and the factory gets one
+strongly-typed static method per model:
+
+#+begin_src c++
+// ores.analytics.quant/domain/process_parameters.hpp
+
+namespace ores::analytics::quant::domain {
+
+struct vasicek_parameters {
+    double kappa;
+    double theta;
+    double sigma;
+    double initial_rate;
+};
+
+struct hull_white_parameters {
+    double kappa;
+    std::vector<double> theta_path;
+    double sigma;
+    double initial_rate;
+};
+
+struct cox_ingersoll_ross_parameters {
+    double kappa;
+    double theta;
+    double sigma;
+    double initial_rate;
+};
+
+struct g2_parameters {
+    double kappa_x;     // factor x mean-reversion (a in QuantLib)
+    double kappa_y;     // factor y mean-reversion (b in QuantLib)
+    double sigma_x;     // factor x volatility (sigma in QuantLib)
+    double sigma_y;     // factor y volatility (eta in QuantLib)
+    double rho;         // correlation ∈ [-1, 1]
+    double initial_rate;
+};
+#+end_src
+
+The factory gains one strongly-typed method per model:
+
+#+begin_src c++
+// process_factory — additions
+
+static std::unique_ptr<IYieldCurveProcess>
+make_g2(const g2_parameters& p, std::uint32_t seed = 42, double dt = 1.0);
+#+end_src
+
+The existing =make_yield_curve_process(string, kappa, theta_path, sigma, ...)=
+stays for backward compatibility but is internally a thin dispatcher
+that constructs the appropriate parameter struct and delegates.
+New callers use the strongly-typed methods directly.
+
+*** Parameter storage in the database
+
+One child table per process type that needs non-standard columns:
+
+#+begin_src sql
+-- G2 parameters: one row per ir_curve_generation_config that selects G2
+create table ores_synthetic_ir_curve_generation_config_g2_params_tbl (
+    config_id      uuid not null references ir_curve_generation_config(id),
+    kappa_x        double precision not null default 0.0,
+    kappa_y        double precision not null default 0.0,
+    sigma_x        double precision not null default 0.0,
+    sigma_y        double precision not null default 0.0,
+    rho            double precision not null default 0.0
+);
+#+end_src
+
+The existing =kappa=, =theta=, =sigma= columns on =ir_curve_generation_config=
+stay — they're the default parameter set for the existing 3 models
+(Vasicek, CIR, Hull-White). New models that don't fit those three
+scalars get their own parameter table. A CHECK constraint ensures
+the child row exists iff process_type matches.
+
+This is the relational equivalent of =std::variant= — each table
+holds exactly the columns its model needs, FK-constrained to the
+parent config. No nullable-column soup, no JSONB.
+
+*** Qt UI: dynamic parameter forms
+
+=YieldCurveProcessTypeDetailDialog= already shows the catalogue entry
+(name, description). The parameter editing happens in
+=IrCurveGenerationConfigDetailDialog=.
+
+Current state: a fixed form with =kappa=, =theta=, =sigma=,
+=initial_rate= fields. After G2:
+
+1. The dialog reads =process_type= from the config.
+2. A =QStackedWidget= or simply show/hide groups switches the
+   parameter form based on the selected process type:
+   - Vasicek/CIR/Hull-White → existing form (kappa, theta, sigma)
+   - G2 → new form (kappa_x, kappa_y, sigma_x, sigma_y, rho)
+3. Each form reads/writes its own strongly-typed struct.
+4. The controller maps between the struct and the DB layer (the
+   parent config row + the child parameter table row if needed).
+
+The combo box population (=ClientYieldCurveProcessTypeModel=) is
+unaffected — it already reads from the catalogue table. Adding a
+row to the seed data makes G2 appear automatically.
+
+*** What the existing 3 models look like after this
+
+Vasicek, CIR, Hull-White don't need child parameter tables — their
+=kappa=, =theta=, =sigma=, =initial_rate= live on the parent config
+row. They get vasicek_parameters / cir_parameters /
+hull_white_parameters structs too, for consistency, but the
+existing columns serve as their storage.
+
+G2 is the first model that genuinely needs *different* parameters.
+Black-Karasinski will need its own child table too (same shape as
+Vasicek's params but semantically different — log-normal, so
+initial_rate > 0 constraint). BDT will need a tree-specific table
+(term structure + vol curve). Each new model adds one child table
+and one parameter struct — no cross-model coupling.
+
+*** Build order for PR 2
+
+1. Add =g2_parameters= struct in =ores.analytics.quant/domain/=
+2. Add =process_factory::make_g2()=
+3. Add seed data row (=synthetic_yield_curve_process_types_populate.sql=)
+4. Add child table + migration
+5. Extend =ir_curve_generation_config= domain/repository to
+   read/write G2 params alongside the parent row
+6. Extend =IrCurveGenerationConfigDetailDialog= with G2 parameter form
+7. Extend the config controller to map between UI and DB layers
 
 * Notes
 

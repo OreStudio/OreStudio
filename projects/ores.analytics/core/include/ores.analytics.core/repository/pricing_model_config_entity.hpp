@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_CONFIG_ENTITY_HPP
-#define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_CONFIG_ENTITY_HPP
+#ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_CONFIG_ENTITY_HPP
+#define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_CONFIG_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -31,7 +31,7 @@ namespace ores::analytics::repository {
 using db_timestamp = ores::database::repository::db_timestamp;
 
 /**
- * @brief Represents a pricing model config in the database.
+ * @brief Represents a pricing model configuration in the database.
  */
 struct pricing_model_config_entity {
     constexpr static const char* schema = "public";
@@ -40,7 +40,9 @@ struct pricing_model_config_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::optional<std::string> description;
     std::optional<std::string> config_variant;
     std::string modified_by;

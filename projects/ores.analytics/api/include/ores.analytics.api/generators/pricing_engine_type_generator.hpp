@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_GENERATORS_PRICING_ENGINE_TYPE_GENERATOR_HPP
-#define ORES_ANALYTICS_GENERATORS_PRICING_ENGINE_TYPE_GENERATOR_HPP
+#ifndef ORES_ANALYTICS_API_GENERATORS_PRICING_ENGINE_TYPE_GENERATOR_HPP
+#define ORES_ANALYTICS_API_GENERATORS_PRICING_ENGINE_TYPE_GENERATOR_HPP
 
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.api/export.hpp"
@@ -28,17 +28,16 @@
 namespace ores::analytics::generators {
 
 /**
- * @brief Generates a set of fictional pricing engine types.
- *
- * These are intentionally fake engine type codes that do not correspond to
- * real ORE pricingengine.xml Product/@type values. Useful for testing and
- * demo purposes where real data should not be used.
- *
- * @param n Number of types to generate. If n is 0 or greater than the
- *          available set, returns all available fictional types.
+ * @brief Generates a synthetic pricing_engine_type.
+ */
+ORES_ANALYTICS_API_EXPORT domain::pricing_engine_type
+generate_synthetic_pricing_engine_type(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic pricing_engine_types.
  */
 ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_engine_type>
-generate_fictional_pricing_engine_types(std::size_t n,
+generate_synthetic_pricing_engine_types(std::size_t n,
                                         utility::generation::generation_context& ctx);
 
 }

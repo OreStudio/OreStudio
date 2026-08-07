@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
-#define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
+#ifndef ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
+#define ORES_ANALYTICS_CORE_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,23 +50,71 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes pricing model product parameters to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::pricing_model_product_parameter& v);
     void write(context ctx, const std::vector<domain::pricing_model_product_parameter>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest pricing model product parameters, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::pricing_model_product_parameter> read_latest(context ctx);
     std::vector<domain::pricing_model_product_parameter> read_latest(context ctx,
-                                                                     const std::string& config_id);
-    std::vector<domain::pricing_model_product_parameter>
-    read_latest_for_product(context ctx, const std::string& product_id);
-    std::vector<domain::pricing_model_product_parameter> read_latest_by_id(context ctx,
-                                                                           const std::string& id);
+                                                                     const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all pricing model product parameters, possibly filtered by primary key.
+     */
     std::vector<domain::pricing_model_product_parameter> read_all(context ctx,
                                                                   const std::string& id);
 
+    /**
+     * @brief Reads a single pricing model product parameter as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::pricing_model_product_parameter>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest pricing model product parameters with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::pricing_model_product_parameter>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active pricing model product parameters.
+     * @param ctx Repository context with database connection
+     * @return Total number of active pricing model product parameters
+     */
+    std::uint32_t get_total_parameter_count(context ctx);
+
+    /**
+     * @brief Deletes a pricing model product parameter by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& id);
-    void remove_for_config(context ctx, const std::string& config_id);
-    void remove_for_product(context ctx, const std::string& product_id);
+
+    /**
+     * @brief Deletes pricing model product parameters by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

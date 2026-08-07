@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_EVENTING_PRICING_ENGINE_TYPE_CHANGED_EVENT_HPP
-#define ORES_ANALYTICS_EVENTING_PRICING_ENGINE_TYPE_CHANGED_EVENT_HPP
+#ifndef ORES_ANALYTICS_API_EVENTING_PRICING_ENGINE_TYPE_CHANGED_EVENT_HPP
+#define ORES_ANALYTICS_API_EVENTING_PRICING_ENGINE_TYPE_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -40,9 +40,9 @@ struct pricing_engine_type_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Codes of pricing engine types that changed.
+     * @brief Changed pricing engine type codes.
      */
-    std::vector<std::string> pricing_engine_type_codes;
+    std::vector<std::string> codes;
 
     /**
      * @brief The tenant that owns the changed entity.

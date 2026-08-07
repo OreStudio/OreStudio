@@ -64,6 +64,9 @@
             <property name="placeholderText">
              <string>Parameter name (e.g. Calibration, Reversion, sy)</string>
             </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="2" column="0">

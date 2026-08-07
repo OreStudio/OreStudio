@@ -36,7 +36,6 @@
 #include "ores.trading.core/service/equity_forward_instrument_service.hpp"
 #include "ores.trading.core/service/equity_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_swap_instrument_service.hpp"
-#include "ores.trading.core/service/equity_variance_swap_instrument_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
@@ -142,13 +141,9 @@ public:
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_forward_instrument);
     }
 
-    void save_variance_swap(ores::nats::message msg) {
-        using Svc = service::equity_variance_swap_instrument_service;
-        handle_typed_equity_save<save_equity_variance_swap_instrument_request,
-                                 save_equity_variance_swap_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_variance_swap_instrument);
-    }
+    // save_variance_swap removed — equity_variance_swap_instrument's save/
+    // list/history/remove now flow through the codegen-generated
+    // equity_variance_swap_instrument_registrar (see registrar_equity.cpp).
 
     void save_swap(ores::nats::message msg) {
         using Svc = service::equity_swap_instrument_service;

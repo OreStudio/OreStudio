@@ -30,6 +30,7 @@
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
@@ -113,6 +114,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto equity_position_instrument_sub =
         ores::trading::service::messaging::register_equity_position_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_variance_swap_instrument_sub =
+        ores::trading::service::messaging::register_equity_variance_swap_instrument_event_mapping(
             event_source, event_bus, nats);
 
     event_source.start();

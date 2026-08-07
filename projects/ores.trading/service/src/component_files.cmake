@@ -23,6 +23,7 @@ set(files
     "config/parser.cpp"
     "main.cpp"
     "messaging/equity_position_instrument_event_registrar.cpp"
+    "messaging/equity_variance_swap_instrument_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -35,5 +36,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"
 )

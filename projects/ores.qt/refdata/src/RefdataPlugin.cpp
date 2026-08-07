@@ -50,6 +50,7 @@
 #include "ores.qt/IborIndexConventionController.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/InstrumentCodeController.hpp"
+#include "ores.qt/IrCurveBootstrapConfigController.hpp"
 #include "ores.qt/LedgerFeedTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
@@ -723,6 +724,14 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
                                                                            ctx_.badge_cache,
                                                                            this);
     connectControllerSignals(instrumentCodeController_.get());
+
+    irCurveBootstrapConfigController_ =
+        std::make_unique<IrCurveBootstrapConfigController>(ctx_.main_window,
+                                                            ctx_.mdi_area,
+                                                            ctx_.client_manager,
+                                                            ctx_.username,
+                                                            this);
+    connectControllerSignals(irCurveBootstrapConfigController_.get());
 }
 
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
@@ -1116,6 +1125,26 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
                 crmTopologyConfigController_->showListWindow();
         });
     }
+
+    // ---- Market Data menu -------------------------------------------
+    // Curve configs are ref data, but generating a curve is a market-data activity, so this
+    // submenu is contributed onto the shared Market Data menu (owned by MktdataPlugin) rather
+    // than Reference Data -- mirrors how SyntheticPlugin already shares the same menu.
+    if (auto* mkt = smc.market_data_menu) {
+        auto* menuCurveBootstrapping = mkt->addMenu(tr("Curve &Bootstrapping"));
+        act_curve_bootstrap_configs_ =
+            menuCurveBootstrapping->addAction(ico(Icon::Chart), tr("Bootstrap &Configs..."));
+        connect(act_curve_bootstrap_configs_, &QAction::triggered, this, [this]() {
+            if (irCurveBootstrapConfigController_)
+                irCurveBootstrapConfigController_->showListWindow();
+        });
+        act_build_curve_ =
+            menuCurveBootstrapping->addAction(ico(Icon::Chart), tr("&Build Curve..."));
+        connect(act_build_curve_, &QAction::triggered, this, [this]() {
+            if (irCurveBootstrapConfigController_)
+                irCurveBootstrapConfigController_->openNewCurveWindow();
+        });
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1148,6 +1177,7 @@ QList<QAction*> RefdataPlugin::toolbar_actions() {
 void RefdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
 
+    irCurveBootstrapConfigController_.reset();
     instrumentCodeController_.reset();
     curveRoleController_.reset();
     assetClassCodeController_.reset();

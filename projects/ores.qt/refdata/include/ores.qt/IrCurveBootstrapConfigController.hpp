@@ -67,6 +67,12 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+    /// Opens a blank CurveBuilderWorkbench directly, bypassing the list window -- used by the
+    /// Market Data menu's "Build Curve..." action, which is a shortcut into the same flow as the
+    /// list window's own Add button (showAddWindow() stays private since it's normally reached
+    /// only via onAddNewRequested()).
+    void openNewCurveWindow();
+
 
 signals:
     void statusMessage(const QString& message);

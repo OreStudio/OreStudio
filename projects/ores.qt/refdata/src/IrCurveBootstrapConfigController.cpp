@@ -156,6 +156,11 @@ void IrCurveBootstrapConfigController::onAddNewRequested() {
     showAddWindow();
 }
 
+void IrCurveBootstrapConfigController::openNewCurveWindow() {
+    BOOST_LOG_SEV(lg(), info) << "Build Curve requested directly from Market Data menu";
+    showAddWindow();
+}
+
 
 void IrCurveBootstrapConfigController::onShowHistory(
     const refdata::domain::ir_curve_bootstrap_config& config) {

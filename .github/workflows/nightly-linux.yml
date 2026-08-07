@@ -24,6 +24,7 @@ env:
 on:  # yamllint disable-line rule:truthy
   schedule:
     - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   check_changes:

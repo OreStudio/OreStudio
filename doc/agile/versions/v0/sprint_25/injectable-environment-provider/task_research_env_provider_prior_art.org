@@ -8,12 +8,12 @@
 #+filetags: :ores.platform:ores.testing:research:injectable-environment-provider:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1902
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-08-07
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A written comparison of concrete prior-art approaches exists to ground the desig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A3203D42-2981-459B-977E-ED2066B84463][Injectable environment provider in ores.platform for test-safe, parallel-safe env var access]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-07                               |
 
 * Acceptance
 
@@ -44,6 +44,86 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Survey written 2026-08-07, feeding the design task's approach
+selection. Three concrete approaches from prior art, their tradeoffs,
+and the codebase precedent that shaped the choice.
+
+** External prior art
+
+- GoogleTest's =ScopedEnvironmentVariable=: RAII guard that calls
+  =setenv=/=unsetenv= on the real process environment and restores the
+  prior value on destruction. Simple and idiomatic, but it mutates
+  process-global state — the exact hazard this story removes. Not safe
+  when test cases run in parallel within one process (a mutation in one
+  test can race a read in another), and it cannot shield the code under
+  test from other threads reading the variable mid-test.
+- Abseil's config/flag abstractions (the "config-provider" school):
+  code reads configuration through a typed abstraction (=absl::Flag= and
+  friends); environment variables are merely one binding consumed at
+  startup. Tests override the flag, not the process environment, so
+  isolation is parallel-safe by construction. Cost: every consumer must
+  be written against the config layer — a large refactor surface, and
+  one that does not help at all where the process environment is read
+  directly (see the =boost::program_options= caveat below).
+- Python's pytest =monkeypatch.setenv=: save/restore semantics around a
+  process-global environment table. Sequential-safe; parallel runs are
+  handled by process-per-worker (=pytest-xdist=), not by in-process
+  isolation. The closest ancestor of our save/restore guard.
+- Rust's =temp-env= crate: thread-scoped overrides built from a
+  mutex-guarded global override map plus thread-local snapshots, so each
+  thread sees its own overrides. Demonstrates that the thread_local
+  route is viable and battle-tested in practice.
+
+** In-codebase precedent
+
+=ores.testing='s =database_helper= / =scoped_database_helper= already
+solve an analogous global-state problem (a shared test database) with
+the RAII scoped-fixture convention: acquire a private resource,
+scope it to the test, restore on destruction. The environment provider
+extends the same convention to process-environment state — a new
+abstraction behind the existing RAII guard, rather than a new testing
+paradigm.
+
+** Candidate approaches and tradeoffs
+
+- Approach 1 — provider interface with thread_local scoped injection:
+  an abstract =environment_provider= (=get/set/unset= pure virtuals)
+  with a production =real_environment_provider= wrapping
+  =std::getenv=/=setenv=/=unsetenv= and a =fake_environment_provider=
+  backed by an in-memory map; =environment='s static API delegates to a
+  =thread_local= provider pointer defaulting to the real provider, with
+  a =swap_provider()= entry point for test guards. Minimal call-site
+  churn — every consumer already funnels through
+  =ores::platform::environment::environment= — and thread_local gives
+  per-test isolation without DI plumbing.
+- Approach 2 — DI'd interface wired at construction: the provider is
+  passed into each consumer at construction. Explicit and
+  parallel-safe, but touches every call site and constructor in a
+  header-heavy codebase, and cannot apply where the process environment
+  is read outside our code (see below).
+- Approach 3 — global override table: a process-global map consulted
+  before the real environment. Simple, but reintroduces exactly the
+  cross-test interference the story removes unless mutex-guarded — and
+  a mutex serializes access without fixing leakage across tests in one
+  process.
+
+** Deciding constraint and selection
+
+=boost::program_options= reads environment variables directly from the
+real process environment (=std::getenv=), bypassing any abstraction —
+so a pure in-memory fake is insufficient for this codebase's parser
+tests. The =scoped_environment_override= guard must therefore sync the
+real environment in addition to swapping the provider; the provider
+swap is thread_local (per-test isolation), the real-env sync remains
+process-global. Under Catch2's sequential execution model this is
+safe; if tests ever run in parallel within one process, the real-env
+sync would need a process-wide mutex or a move away from
+=boost::program_options=' direct =getenv= usage.
+
+Recommendation: Approach 1 — it fits the codebase's constraints
+(header-heavy, existing RAII scoped-fixture convention, single
+chokepoint =environment= API) and was selected for the design task.
 
 * Test Scenarios
 
@@ -60,7 +140,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1902][#1902]] | [agile] Close env-provider story; backfill prior-art survey |
 
 * Review
 
@@ -69,3 +149,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Survey completed 2026-08-07 — write-up in =* Notes= above: three
+concrete candidate approaches with tradeoffs (provider interface with
+thread_local scoped injection, DI'd interface wired at construction,
+global override table), external prior art (GoogleTest
+=ScopedEnvironmentVariable=, Abseil config/flag abstractions, pytest
+=monkeypatch=, Rust =temp-env=), and the in-codebase
+=scoped_database_helper= precedent. Fed the design task's selection of
+Approach 1 — provider interface with thread_local scoped injection,
+with the =boost::program_options= real-environment sync caveat.

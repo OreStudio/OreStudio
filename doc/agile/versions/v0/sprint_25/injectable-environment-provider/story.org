@@ -56,10 +56,9 @@ Any code needing environment variables (starting with environment_mapper_factory
   sequential execution model this is safe; if tests are ever run in
   parallel, the real-env sync would need a process-wide mutex or a move
   away from =boost::program_options='s direct =getenv= usage.
-- =scoped_env_unset= is superseded by =scoped_environment_override= but
-  not deleted — it still serves one test in scheduling that uses a
-  different pattern. A follow-up capture should audit and either migrate
-  or justify the remaining usage.
+- =scoped_env_unset= is superseded and deleted — all 11 consumers were
+  migrated to =scoped_environment_override=; no remaining call-sites
+  exist.
 
 * Out of scope
 

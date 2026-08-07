@@ -40,12 +40,9 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     // Local (non-CI) ctest loads the whole .env into the test process,
     // including shared ORES_NATS_* vars the parser now genuinely reads --
     // clear them so this test asserts real compiled-in defaults.
-        const ores::testing::scoped_environment_override env_guard({},
+    const ores::testing::scoped_environment_override env_guard({},
         {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
 
-    // The generic ORES_NATS_* shared-domain fallback tier (PR #1819) makes
-    // this checkout's real .env values visible to every service parser --
-    // clear them so this "no overrides given" case stays hermetic.
 
     const std::vector<std::string> args;
     std::ostringstream info, err;

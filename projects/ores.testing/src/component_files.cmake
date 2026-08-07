@@ -37,7 +37,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/project_root.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/run_coroutine_test.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_database_helper.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_env_unset.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_environment_override.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_database_manager.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/test_timeout_listener.hpp"
 )

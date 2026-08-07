@@ -81,6 +81,10 @@ struct get_step_result_response {
      */
     std::string error_message;
 
+    bool success = false;
+    std::string message;
+};
+
     /**
      * @brief Log entries emitted during the original execution.
      *

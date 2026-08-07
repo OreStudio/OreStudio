@@ -43,6 +43,8 @@ struct get_asset_classes_request {
 struct get_asset_classes_response {
     std::vector<ores::refdata::domain::asset_class_info> asset_classes;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 }

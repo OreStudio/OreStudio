@@ -28,9 +28,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] |
-| Now          | Analysis complete — see Plan below. |
+| Now          | Implementation complete — 3 of 4 hand-written protocols fixed. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide: adopt recommendation or revise. |
+| Next         | Build and test; raise PR. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -83,13 +83,31 @@ It's the smallest change — the pattern already exists everywhere
 else. Four outliers isn't a redesign, it's cleanup. The partial-failure
 concern can be addressed later with an =error_info= struct if needed.
 
-** Next steps
+** Implementation
 
-1. Decide: adopt this recommendation or revise.
-2. If adopted, update =cpp_protocol.hpp.mustache= to emit
-   =success=/=message= on list responses.
-3. Regenerate all protocol headers and reconcile the 4 outliers.
-4. Update the 4 hand-written protocols to match.
+Surveyed all 17 messaging API components (152 response-protocol
+files). Key finding: the codegen template (=cpp_protocol.hpp.mustache=)
+already generates =success=/=message= on ALL response types, including
+list responses (confirmed at lines 37-38, 109-110, 182-183, 240-241 of
+the template). The template does not need changing.
+
+Only 4 hand-written protocol files lacked the fields. Fixed 3 of 4:
+
+- =session_protocol.hpp=: Added =success=/=message= to
+  =list_sessions_response=, =get_active_sessions_response=,
+  =get_session_statistics_response=.
+- =session_samples_protocol.hpp=: Added =success=/=message= to
+  =get_session_samples_response=.
+- =asset_class_protocol.hpp=: Added =success=/=message= to
+  =get_asset_classes_response=.
+
+=steps_query_protocol.hpp= was left unchanged: its
+=get_step_result_response= already has =found=/=outcome= fields
+serving the same error-signalling purpose — a legitimate alternative
+pattern. Adding =success= on top would be redundant.
+
+All callers use empty ={}= initialization — no designated initializer
+breakage. Build should compile cleanly.
 
 * Notes
 

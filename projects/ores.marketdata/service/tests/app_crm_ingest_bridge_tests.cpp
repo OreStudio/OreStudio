@@ -184,8 +184,8 @@ TEST_CASE("update() silently ignores a pair that is not a driver edge", tags) {
     const auto party_id_str = boost::uuids::to_string(f.party_id);
 
     // GBP/USD is not a configured driver pair -- must not throw.
-    CHECK_NOTHROW(bridge.update(
-        tenant_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
+    CHECK_NOTHROW(
+        bridge.update(tenant_id_str, "GBP", "USD", 1.25, std::chrono::system_clock::now()));
 }
 
 TEST_CASE("rates() returns every configured pair (driver + enabled derived) in one batch", tags) {
@@ -324,8 +324,7 @@ TEST_CASE("resolved_rates() synthesises no reciprocal when the reverse pair is i
 
     const auto tenant_id_str = f.h.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(f.party_id);
-    bridge.update(
-        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
 
     const auto results = bridge.resolved_rates(tenant_id_str, party_id_str, "test", true);
 
@@ -354,14 +353,12 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     const auto tenant_id_str = f.h.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(f.party_id);
 
-    bridge.update(
-        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
     const auto first = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(first.size() == 1);
     CHECK_FALSE(first[0].delta_pct.has_value()); // first observation
 
-    bridge.update(
-        tenant_id_str, "EUR", "USD", 1.20, std::chrono::system_clock::now());
+    bridge.update(tenant_id_str, "EUR", "USD", 1.20, std::chrono::system_clock::now());
     const auto second = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(second.size() == 1);
     REQUIRE(second[0].delta_pct.has_value()); // baseline established by `first`
@@ -371,8 +368,7 @@ TEST_CASE("refresh() resets the per-named-engine delta baseline", tags) {
     // persisted, the previously-established baseline must be gone, so
     // the next observation looks like a first observation again.
     bridge.refresh();
-    bridge.update(
-        tenant_id_str, "EUR", "USD", 1.25, std::chrono::system_clock::now());
+    bridge.update(tenant_id_str, "EUR", "USD", 1.25, std::chrono::system_clock::now());
     const auto after_refresh = bridge.resolved_rates(tenant_id_str, party_id_str, "test", false);
     REQUIRE(after_refresh.size() == 1);
     CHECK_FALSE(after_refresh[0].delta_pct.has_value());
@@ -408,8 +404,7 @@ TEST_CASE("update() is tenant-wide: one tick feeds every party's matching engine
     bridge.refresh();
 
     const auto tenant_id_str = f.h.tenant_id().to_string();
-    bridge.update(
-        tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
+    bridge.update(tenant_id_str, "EUR", "USD", 1.10, std::chrono::system_clock::now());
 
     const auto first_party_rate =
         bridge.rate(tenant_id_str, boost::uuids::to_string(f.party_id), "majors", "EUR", "USD");

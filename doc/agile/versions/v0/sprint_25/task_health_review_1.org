@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 5D5BC371-CCD5-4AB6-AD4C-91493EFDA6E4
+:END:
+#+title: Task: Health review 1 — sprint 25 mid-sprint analysis
+#+description: System 2 health review 1 of sprint 25: mid-sprint check on goal alignment, load, PR velocity, story/task balance, and focus.
+#+type: task
+#+level: s1
+#+filetags: :sprint_25:v0:versions:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-08-07 (day 5 of 7)
+
+*** Goal alignment
+
+Sprint mission: "Resolve sprint drift on as many components as possible
+and progress IR curves work."
+
+| Goal | Coverage | Stories | Verdict |
+|------+----------+---------+---------|
+| Resolve sprint drift | Covered — 7 DONE, 4 STARTED | Refactor codegen C++ (STARTED, 21 tasks), Entity classification (BACKLOG, 1), Compass QoL (DONE, 8), Backlog deep refinement (DONE, 1), Systemd resource mgmt (DONE), Reduce DB pool (DONE, 4), Review CLI/shell (DONE, 1), sync_host_envelope (DONE, 1), Fix codegen template drift (BACKLOG, 4), Close systemic codegen gaps (BACKLOG, 2), Investigate grants (STARTED, 1/1 DONE) | GREEN — drift is the dominant theme |
+| Progress IR curves | Covered | IR curve bootstrapping (STARTED, 7 tasks), IR rates (STARTED, 19), IR curve follow-ups (BACKLOG, 3) | GREEN — active IR curve work |
+| Unmapped stories | Several stories have no clear link to either goal | Holding company treasury, Docs improvements, Normalise NATS protocol, NATS passthrough, Synthetic data scope, Injectable env provider, Fix MSVC, Fix Windows setenv | AMBER — 8 stories don't clearly serve either goal |
+
+Challenge: "Progress IR curves" is covered but the IR curve bootstrapping
+story has been STARTED since sprint 24 (carried forward) — the sprint
+table says BACKLOG while the story file says STARTED. Are we actually
+making forward progress on IR curves, or has momentum stalled? The IR
+rates story has 19 tasks (some DONE from prior sprints) but is STARTED
+with no end date — progress is opaque.
+
+The unmapped stories are not noise — they're substantive: holding company
+treasury (6 tasks, 4 DONE), NATS config passthrough (9 tasks), synthetic
+data scope (4 tasks). They advance the product but don't serve the sprint
+mission. This is characteristic of a sprint that pulled in backlog items
+opportunistically rather than staying focused. Not harmful at day 5 given
+the drift goal is well-served, but worth watching at close.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits | 383 | ≤ 1000 | GREEN |
+| Days elapsed | 5 | 7 | — |
+| Commits/day | 76.6 | — | — |
+| Projected total | 536 | ≤ 1000 | GREEN |
+
+The commit rate is sustainable — no signs of bursts followed by stalls.
+Day-over-day rate has been consistent. The load target is easily met.
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| PRs merged | ~50 (from sprint table count) | Includes bot PRs (nightly format ×3) |
+| PRs/day | 10 | Healthy pace |
+| Projected total | ~70 | Under the 100–120 target |
+| Open PRs (fleet) | 1 (#1886, prime_origin) | Filter Market Simulator — 1 day old, not stalled |
+| Long-open WIP | None detected | — |
+
+Verdict: GREEN. Merge rate is healthy and there's no WIP accumulation.
+The projected total of 70 is under the 100–120 soft target, which may
+reflect the sprint being front-loaded with smaller, focussed PRs rather
+than a genuine velocity problem.
+
+*** Story and task balance
+
+| Story | State | Tasks | DONE | Age (days) | Notes |
+|-------+-------+-------+------+------------+-------|
+| Open sprint 25 | DONE | 1 | 1 | 1 | — |
+| Acme Corporation follow-ups | DONE | 5 | 5 | 2 | — |
+| FX Spot wire-codec root cause | DONE | 2 | 2 | 1 | — |
+| Holding company treasury | STARTED | 6 | 4 | 2 | 2 BACKLOG tasks remain |
+| Refactor ores.codegen C++ | STARTED | 21 | ~10 | 69 | Carried from sprint 24; sprawling |
+| Entity classification | BACKLOG | 1 | 0 | — | Undecomposed |
+| Systemd resource mgmt | DONE | 3 | 3 | 5 | — |
+| IR curve bootstrapping | STARTED | 7 | ~3 | 69 | Carried from sprint 24 |
+| IR Rates synthetic data | STARTED | 19 | ~14 | 69 | Carried from sprint 24; sprawling |
+| Documentation improvements | STARTED | 6 | 1 | 3 | Only scaffold task done |
+| Collapse NATS config | STARTED | 9 | ~5 | 3 | — |
+| Synthetic data scope | STARTED | 4 | 2 | 69 | Carried from sprint 24 |
+| Injectable env provider | BACKLOG | 2 | 0 | — | — |
+| Reduce DB connection pool | DONE | 4 | 4 | 1 | — |
+| Review CLI/shell divergence | DONE | 1 | 1 | 1 | — |
+| Compass QoL follow-ups | DONE | 8 | 8 | 3 | — |
+| JWT test hotfix | DONE | 2 | 2 | 1 | — |
+| NATS fallback hotfix | DONE | 2 | 2 | 1 | — |
+| Fix MSVC scope label | BACKLOG | 1 | 0 | — | Hotfix story |
+| Fix Windows setenv | BACKLOG | 1 | 0 | — | Hotfix story |
+| sync_host_envelope | DONE | 1 | 1 | 1 | — |
+| Backlog deep refinement | DONE | 1 | 1 | 2 | — |
+| Investigate grants | STARTED | 1 | 1 | 2 | Ready to close |
+| Normalise NATS protocol | STARTED | 1 | 1 | 1 | Ready to close |
+| Fix codegen template drift | BACKLOG | 4 | 0 | 1 | New, undecomposed |
+| Close systemic codegen gaps | BACKLOG | 2 | 0 | 1 | New, undecomposed |
+| IR curve follow-ups | BACKLOG | 3 | 0 | 1 | New, undecomposed |
+
+DONE/BACKLOG+STARTED ratio: 13 DONE / (9 STARTED + 7 BACKLOG) = 0.81 →
+GREEN on ratio.
+
+However, three concerns:
+
+1. *Sprawling stories*: Refactor codegen C++ (21 tasks, STARTED for 69
+   days) and IR Rates (19 tasks, STARTED for 69 days) are classic
+   sprawling stories — many tasks DONE but the story itself not closed.
+   Both were carried from sprint 24. The DONE work is real and
+   delivered, but keeping them STARTED makes the sprint look like it has
+   more open work than it actually does. Both should be evaluated against
+   their Acceptance criteria — if the DONE tasks satisfy the criteria,
+   close them and split remaining tasks into new stories.
+
+2. *Ready to close but not closed*: Investigate grants (1/1 DONE) and
+   Normalise NATS protocol (1/1 DONE) are STARTED with all tasks DONE —
+   pure bookkeeping debt. Their sprint table rows also say BACKLOG,
+   compounding the discrepancy.
+
+3. *New undecomposed stories*: Fix codegen template drift, Close systemic
+   codegen gaps, IR curve follow-ups, Entity classification, and two
+   hotfix stories were added to the sprint table but not decomposed into
+   tasks — they show BACKLOG with no tasks at all. This is acceptable
+   for stories promoted late in the sprint but they count as undecomposed
+   work.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| Simultaneously STARTED stories | 9 | RED |
+| Cross-cutting themes | Holding company treasury (finance), IR curves (quant), codegen (infra), docs, NATS config, NATS protocol — 6 distinct themes | RED |
+| Bravely hopper's STARTED stories | 3 (Docs improvements, Backlog deep refinement, Normalise NATS) | — |
+
+9 simultaneously STARTED stories across 6 distinct themes far exceeds the
+GREEN threshold of 1–3. Several are owned by other environments (bright
+faraday has 3, solid dirac has 1, swift curie has 1, festive dijkstra
+has 2, prime origin has 1). The fleet is spread thin — brave hopper
+alone has 3 STARTED stories.
+
+This is the sprint's most significant risk. Focus is sacrificed
+incrementally — each "just one more" story compounds context-switching
+cost. The diversity of themes (finance, quant, infra, docs, NATS) means
+no one person can hold the full sprint in their head.
+
+*** Bookkeeping hygiene
+
+| Finding | Count |
+|---------+-------|
+| Stories ready to close (all tasks DONE) | 2 |
+| Sprint table ≠ story file state | 5 |
+| Closed docs with non-empty Now | 12 |
+
+The 5 table disagreements are a pattern: stories that were promoted or
+started mid-sprint had their story files updated but the sprint table
+wasn't synced. Three of the 5 are carried-forward stories (IR curve, IR
+rates, synthetic data scope) whose sprint table entries were never
+updated when the stories were carried. The 12 stale Now fields on closed
+docs are a known pattern — DONE stories often have a summary in Now that
+isn't cleared to "Nothing."
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | AMBER — drift well-served, IR curves present but momentum unclear; 8 unmapped stories |
+| Sprint load | GREEN — 383 commits, projected 536 |
+| PR velocity | GREEN — 10 PRs/day, no WIP accumulation |
+| Story and task balance | AMBER — 2 sprawling stories carried from sprint 24, 2 ready-to-close stories not closed |
+| Focus signal | RED — 9 STARTED stories across 6 themes |
+| Bookkeeping | AMBER — 5 table disagreements, 12 stale Now fields |
+| **Overall** | **AMBER** |
+
+The sprint is productive — drift resolution is happening at pace (50
+PRs, 383 commits). The two RED indicators (focus signal) are partially
+mitigated by the fleet model (different environments own different
+stories), but 9 simultaneous STARTED stories is still too many. The most
+important fix: close the two ready-to-close stories (Investigate grants,
+Normalise NATS protocol), resolve the 5 sprint table disagreements, and
+evaluate the two sprawling stories (Refactor codegen C++, IR Rates) for
+split-and-close. This would reduce STARTED count from 9 to 5 and clean
+up most of the bookkeeping debt in one pass.

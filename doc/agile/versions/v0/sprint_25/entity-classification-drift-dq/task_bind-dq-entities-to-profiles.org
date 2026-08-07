@@ -225,7 +225,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Dangling org-link to deleted ores.qt.data_management (site build failing) | 5 modeling docs | Accepted | Repointed all `[[id:92492264-...]]` links to ores.qt.dq; verified `compass build --direct site` succeeds |
+| 1 | Dangling org-link to deleted ores.qt.data_management (site build failing) | 5 modeling docs | Accepted | Repointed all id-links to the deleted component onto ores.qt.dq; verified =compass build --direct site= succeeds |
 | 2 | ores.qt.dq/modeling/component_overview.org still describes only badges, template placeholders unfilled | projects/ores.qt/dq/modeling/component_overview.org | Accepted | Rewrote Summary/Inputs/Outputs/Entry points/Dependencies/See also to reflect the full consolidated scope |
 | 3 | artefact_type roundtrip test only checks code/description, not the fields this PR fixed | projects/ores.dq/core/tests/repository_artefact_type_repository_tests.cpp | Accepted | Added CHECKs for artefact_table/target_table/target_subject/display_order |
 

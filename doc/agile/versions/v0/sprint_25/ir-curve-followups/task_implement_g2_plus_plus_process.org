@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 0A9B3E56-231D-467C-9146-14386A9DA9FF
+:END:
+#+title: Task: Implement G2++ two-factor Gaussian short-rate process
+#+description: Implement a two-factor Gaussian short-rate engine following the data-oriented pattern of the existing hull_white_process. The second factor adds kappa2, sigma2, and correlation rho. discount_factor() has a closed-form two-factor affine bond price. Reference: QuantLib G2 class.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/expand-stochastic-ir-process-types
+#+pr: 1892
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a working G2++ engine to process_factory with Catch2 tests covering: exact two-factor Gaussian transition, discount_factor() consistency with next(), zero-correlation reduces to two independent Hull-White factors, and bond-price matches QuantLib reference values.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- G2++ process compiles and passes all tests on Linux
+- process_factory::make_yield_curve_process dispatches g2pp correctly
+- discount_factor() matches QuantLib G2 reference values for a standard parameter set
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1892][#1892]] | [ores.analytics.quant] Implement G2 (Two-Factor Gaussian) short-rate process |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Degenerate kappa: ou_decay unguarded vs ou_variance guarded — inconsistent for negative kappa | g2pp_process.cpp | Accepted | Added kappa >= 0 constructor validation, eliminating the inconsistency |
+| 2 | Initial state split: initial_rate in factor_y contradicts docstring's one-factor reduction claim | g2pp_process.hpp/cpp, tests | Accepted | Moved initial_rate to factor_x_; updated docstring and all affected tests |
+| 3 | "One-factor reduction" test doesn't verify the reduction — uses finite kappa_y, generic bounds | g2pp_process_tests.cpp | Accepted | Rewrote: large kappa_y with sigma_y=0, statistical equivalence to HW |
+| 4 | QuantLib V() never tested with non-zero vol — transcription bug wouldn't be caught | g2pp_process_tests.cpp | Accepted | Added V(t) positivity and monotonicity test with non-zero vol |
+| 5 | Loop-invariant recomputation in discount_factor() | g2pp_process.cpp | Accepted | Hoisted decay_x/y, var_x/y, cov_xy outside the loop |
+
+* Result
+
+Implemented =g2pp_process=: a two-factor Gaussian short-rate engine
+with correlated Ornstein-Uhlenbeck factors. 21 Catch2 tests covering
+parameter validation, deterministic and statistical behaviour, discrete
+recursion exact match, continuous-limit convergence, QuantLib G2
+closed-form cross-check (A, B, V functions), one-factor reduction, and
+loop-invariant hoisting. Registered in =component_files.cmake=.
+
+All 251 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

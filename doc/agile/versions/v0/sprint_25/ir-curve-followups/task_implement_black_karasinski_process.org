@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: CDB12DB0-B0FF-4507-B94F-17540F6792B3
+:END:
+#+title: Task: Implement Black-Karasinski log-normal short-rate process
+#+description: Implement a log-normal short-rate engine via Euler discretization of d(ln r) = kappa(theta - ln r)dt + sigma dW, then r = exp(ln r). This ensures positivity without a tree — a simple SDE approach, data-oriented with plain struct parameters and free functions. Reference: QuantLib BlackKarasinski class.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a working Black-Karasinski engine to process_factory with Catch2 tests covering: exact log-normal transition step, generated rates stay positive for standard parameter sets, discount_factor() approximated via tree or derived analytically, and comparison against QuantLib reference values.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-07                               |
+
+* Acceptance
+
+- BK process compiles and passes all tests on Linux
+- process_factory dispatches black_karasinski correctly
+- Generated rates are always positive for reasonable parameters
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

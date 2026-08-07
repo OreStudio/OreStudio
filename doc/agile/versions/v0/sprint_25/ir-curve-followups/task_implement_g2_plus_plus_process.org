@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/expand-stochastic-ir-process-types
-#+pr:
+#+pr: 1892
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1892][#1892]] | [ores.analytics.quant] Implement G2 (Two-Factor Gaussian) short-rate process |
 
 * Review
 

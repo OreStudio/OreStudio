@@ -232,10 +232,6 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'marketdata::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'iam::tenants:read');
 
-    -- Controller service: full own-component access (system-level, no tenant isolation)
-    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ControllerService', 'Service lifecycle controller');
-    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ControllerService', 'controller::*');
-
     -- Analytics service: full own-component access
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'Analytics pricing engine domain service');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AnalyticsService', 'analytics::*');

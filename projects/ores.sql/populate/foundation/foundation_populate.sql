@@ -150,19 +150,6 @@
 \ir ../workspace/workspace_live_populate.sql
 
 -- =============================================================================
--- Controller Service Definitions
--- =============================================================================
--- Must run after IAM (uses ores_iam_validate_account_username_fn) and after
--- change control (uses ores_dq_validate_change_reason_fn).
-
-\echo ''
-\echo '--- Controller Service Definitions ---'
-\ir ../controller/controller_service_definitions_populate.sql
-
-\echo '--- Controller Service Dependencies ---'
-\ir ../controller/controller_service_dependencies_populate.sql
-
--- =============================================================================
 -- System Configuration (Feature Flags)
 -- =============================================================================
 
@@ -244,7 +231,4 @@ from ores_iam_roles_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'System Settings', count(*)
 from ores_variability_system_settings_tbl where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
-union all
-select 'Controller Service Definitions', count(*)
-from ores_controller_service_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

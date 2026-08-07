@@ -18,25 +18,41 @@
  *
  */
 #include "ores.qt/PricingModelProductController.hpp"
+#include "ores.analytics.api/eventing/pricing_model_product_changed_event.hpp"
+#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PricingModelProductDetailDialog.hpp"
-#include "ores.qt/PricingModelProductHistoryDialog.hpp"
 #include "ores.qt/PricingModelProductMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view product_event_name =
+    eventing::domain::event_traits<analytics::eventing::pricing_model_product_changed_event>::name;
+}
+
 PricingModelProductController::PricingModelProductController(QMainWindow* mainWindow,
                                                              QMdiArea* mdiArea,
                                                              ClientManager* clientManager,
+                                                             ChangeReasonCache* changeReasonCache,
                                                              const QString& username,
                                                              QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, product_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +108,8 @@ void PricingModelProductController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -141,6 +159,7 @@ void PricingModelProductController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void PricingModelProductController::onShowHistory(
     const analytics::domain::pricing_model_product& product) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: "
@@ -148,13 +167,12 @@ void PricingModelProductController::onShowHistory(
     showHistoryWindow(product);
 }
 
-void PricingModelProductController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new pricing model product";
-
-    auto* detailDialog = new PricingModelProductDetailDialog(mainWindow_);
+void PricingModelProductController::wireDetailDialogCommon(
+    PricingModelProductDetailDialog* detailDialog) {
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PricingModelProductDetailDialog::statusMessage,
@@ -164,6 +182,15 @@ void PricingModelProductController::showAddWindow() {
             &PricingModelProductDetailDialog::errorMessage,
             this,
             &PricingModelProductController::errorMessage);
+}
+
+void PricingModelProductController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new pricing model product";
+
+    auto* detailDialog = new PricingModelProductDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PricingModelProductDetailDialog::productSaved,
             this,
@@ -202,19 +229,10 @@ void PricingModelProductController::showDetailWindow(
                                << product.pricing_engine_type_code;
 
     auto* detailDialog = new PricingModelProductDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setProduct(product);
 
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::statusMessage,
-            this,
-            &PricingModelProductController::statusMessage);
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::errorMessage,
-            this,
-            &PricingModelProductController::errorMessage);
     connect(detailDialog,
             &PricingModelProductDetailDialog::productSaved,
             this,
@@ -245,6 +263,7 @@ void PricingModelProductController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<PricingModelProductController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -275,11 +294,15 @@ void PricingModelProductController::showHistoryWindow(
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << product.pricing_engine_type_code;
 
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(product.id));
     auto* historyDialog =
-        new PricingModelProductHistoryDialog(product.id, code, clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(analytics::domain::pricing_model_product{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &PricingModelProductHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<PricingModelProductController>(this)](const QString& message) {
                 if (!self)
@@ -287,7 +310,7 @@ void PricingModelProductController::showHistoryWindow(
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &PricingModelProductHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<PricingModelProductController>(this)](const QString& message) {
                 if (!self)
@@ -295,13 +318,23 @@ void PricingModelProductController::showHistoryWindow(
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &PricingModelProductHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &PricingModelProductController::onRevertVersion);
+            [self = QPointer<PricingModelProductController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &PricingModelProductHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &PricingModelProductController::onOpenVersion);
+            [self = QPointer<PricingModelProductController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -312,10 +345,12 @@ void PricingModelProductController::showHistoryWindow(
     historyWindow->setWindowTitle(QString("Pricing Model Product History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<PricingModelProductController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -343,27 +378,9 @@ void PricingModelProductController::onOpenVersion(
     }
 
     auto* detailDialog = new PricingModelProductDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setProduct(product);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PricingModelProductController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PricingModelProductController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -387,25 +404,112 @@ void PricingModelProductController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void PricingModelProductController::fetchPricingModelProductHistory(
+    const QString& entityId,
+    std::function<void(
+        std::expected<std::vector<analytics::domain::pricing_model_product>, QString>)> callback) {
+    analytics::messaging::get_pricing_model_product_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult =
+        std::expected<std::vector<analytics::domain::pricing_model_product>, QString>;
+
+    QPointer<PricingModelProductController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void PricingModelProductController::onOpenHistoryVersion(const QString& entityId,
+                                                         int versionNumber) {
+    QPointer<PricingModelProductController> self = this;
+    fetchPricingModelProductHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<analytics::domain::pricing_model_product>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void PricingModelProductController::onRevertHistoryVersion(const QString& entityId,
+                                                           int versionNumber) {
+    QPointer<PricingModelProductController> self = this;
+    fetchPricingModelProductHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<analytics::domain::pricing_model_product>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void PricingModelProductController::onRevertVersion(
     const analytics::domain::pricing_model_product& product) {
     BOOST_LOG_SEV(lg(), info) << "Reverting pricing model product to version: " << product.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PricingModelProductDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setProduct(product);
+    wireDetailDialogCommon(detailDialog);
+    auto reverted_product = product;
+    reverted_product.version = 0;
+    detailDialog->setProduct(reverted_product);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::statusMessage,
-            this,
-            &PricingModelProductController::statusMessage);
-    connect(detailDialog,
-            &PricingModelProductDetailDialog::errorMessage,
-            this,
-            &PricingModelProductController::errorMessage);
     connect(detailDialog,
             &PricingModelProductDetailDialog::productSaved,
             this,
@@ -436,6 +540,28 @@ void PricingModelProductController::onRevertVersion(
 
 EntityListMdiWindow* PricingModelProductController::listWindow() const {
     return listWindow_;
+}
+
+void PricingModelProductController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

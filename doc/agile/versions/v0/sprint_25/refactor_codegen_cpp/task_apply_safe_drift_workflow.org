@@ -47,7 +47,7 @@ migration through regeneration.
 * Plan
 
 1. =git rebase origin/main=.
-2. =projects/ores.codegen/codegen.sh regenerate --component workflow-cpp --profile all-cpp=.
+2. =projects/ores.codegen/codegen.sh regenerate --component workflow-cpp --address ores.cpp=.
 3. Inspect repository diffs — should be stateful → stateless migration only.
 4. =cmake --build --preset linux-clang-debug-make=. If callers of
    stateful API break, restore individually and document.

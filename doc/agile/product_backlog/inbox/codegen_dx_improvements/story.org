@@ -96,7 +96,7 @@ deliverable.
   regenerates all and only the entities tagged =currency=, with no manual
   enumeration required.  The currency group initially covers: =currency=,
   =rounding_type=, =monetary_nature=, =currency_market_tier=.
-- All existing codegen runs (=--component=, =--address=, =--profile=, without
+- All existing codegen runs (=--component=, =--address=, without
   new flags) are unaffected and produce identical output to today.
 - =codegen.sh --help= and the profile documentation list the new flags and the
   group annotation syntax.
@@ -137,7 +137,7 @@ deliverable.
   accordingly when picking up this story's first task.
 
 - *Error vs. skip boundary.* Incompatible-type encounters are an error only when
-  the caller explicitly names an entity (=--entity rounding_type --profile qt=
+  the caller explicitly names an entity (=--entity rounding_type --address ores.cpp.qt=
   on a =table= model).  In =--component= mode the codegen discovers entities
   automatically and must handle heterogeneous types gracefully.
 

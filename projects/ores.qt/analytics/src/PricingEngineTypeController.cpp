@@ -18,25 +18,40 @@
  *
  */
 #include "ores.qt/PricingEngineTypeController.hpp"
+#include "ores.analytics.api/eventing/pricing_engine_type_changed_event.hpp"
+#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PricingEngineTypeDetailDialog.hpp"
-#include "ores.qt/PricingEngineTypeHistoryDialog.hpp"
 #include "ores.qt/PricingEngineTypeMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view type_event_name =
+    eventing::domain::event_traits<analytics::eventing::pricing_engine_type_changed_event>::name;
+}
+
 PricingEngineTypeController::PricingEngineTypeController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
                                                          ClientManager* clientManager,
+                                                         ChangeReasonCache* changeReasonCache,
                                                          const QString& username,
                                                          QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 
@@ -92,6 +107,8 @@ void PricingEngineTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -141,19 +158,19 @@ void PricingEngineTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void PricingEngineTypeController::onShowHistory(
     const analytics::domain::pricing_engine_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
 
-void PricingEngineTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new pricing engine type";
-
-    auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
+void PricingEngineTypeController::wireDetailDialogCommon(
+    PricingEngineTypeDetailDialog* detailDialog) {
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &PricingEngineTypeDetailDialog::statusMessage,
@@ -163,6 +180,15 @@ void PricingEngineTypeController::showAddWindow() {
             &PricingEngineTypeDetailDialog::errorMessage,
             this,
             &PricingEngineTypeController::errorMessage);
+}
+
+void PricingEngineTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new pricing engine type";
+
+    auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &PricingEngineTypeDetailDialog::typeSaved,
             this,
@@ -200,19 +226,10 @@ void PricingEngineTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::statusMessage,
-            this,
-            &PricingEngineTypeController::statusMessage);
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::errorMessage,
-            this,
-            &PricingEngineTypeController::errorMessage);
     connect(detailDialog,
             &PricingEngineTypeDetailDialog::typeSaved,
             this,
@@ -242,6 +259,7 @@ void PricingEngineTypeController::showDetailWindow(
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<PricingEngineTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -268,10 +286,14 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new PricingEngineTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new HistoryDialog(std::string(entity_type_of(analytics::domain::pricing_engine_type{})),
+                          code.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &PricingEngineTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
                 if (!self)
@@ -279,7 +301,7 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &PricingEngineTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
                 if (!self)
@@ -287,13 +309,23 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &PricingEngineTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &PricingEngineTypeController::onRevertVersion);
+            [self = QPointer<PricingEngineTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &PricingEngineTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &PricingEngineTypeController::onOpenVersion);
+            [self = QPointer<PricingEngineTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -304,10 +336,12 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Pricing Engine Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<PricingEngineTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -335,27 +369,9 @@ void PricingEngineTypeController::onOpenVersion(const analytics::domain::pricing
     }
 
     auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -379,25 +395,110 @@ void PricingEngineTypeController::onOpenVersion(const analytics::domain::pricing
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void PricingEngineTypeController::fetchPricingEngineTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<analytics::domain::pricing_engine_type>, QString>)>
+        callback) {
+    analytics::messaging::get_pricing_engine_type_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<analytics::domain::pricing_engine_type>, QString>;
+
+    QPointer<PricingEngineTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void PricingEngineTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<PricingEngineTypeController> self = this;
+    fetchPricingEngineTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<analytics::domain::pricing_engine_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void PricingEngineTypeController::onRevertHistoryVersion(const QString& entityId,
+                                                         int versionNumber) {
+    QPointer<PricingEngineTypeController> self = this;
+    fetchPricingEngineTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<analytics::domain::pricing_engine_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void PricingEngineTypeController::onRevertVersion(
     const analytics::domain::pricing_engine_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting pricing engine type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(type);
+    wireDetailDialogCommon(detailDialog);
+    auto reverted_type = type;
+    reverted_type.version = 0;
+    detailDialog->setType(reverted_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::statusMessage,
-            this,
-            &PricingEngineTypeController::statusMessage);
-    connect(detailDialog,
-            &PricingEngineTypeDetailDialog::errorMessage,
-            this,
-            &PricingEngineTypeController::errorMessage);
     connect(detailDialog,
             &PricingEngineTypeDetailDialog::typeSaved,
             this,
@@ -426,6 +527,28 @@ void PricingEngineTypeController::onRevertVersion(
 
 EntityListMdiWindow* PricingEngineTypeController::listWindow() const {
     return listWindow_;
+}
+
+void PricingEngineTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

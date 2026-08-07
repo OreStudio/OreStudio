@@ -19,9 +19,14 @@
  */
 #include "ores.qt/PricingEngineTypeDetailDialog.hpp"
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/DynamicComboSetup.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ui_PricingEngineTypeDetailDialog.h"
+#include <QComboBox>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QPlainTextEdit>
@@ -37,8 +42,20 @@ PricingEngineTypeDetailDialog::PricingEngineTypeDetailDialog(QWidget* parent)
     , clientManager_(nullptr) {
 
     ui_->setupUi(this);
+    WidgetUtils::setupComboBoxes(this);
     setupUi();
+    setupCombos();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 PricingEngineTypeDetailDialog::~PricingEngineTypeDetailDialog() {
@@ -57,6 +74,10 @@ ProvenanceWidget* PricingEngineTypeDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
 }
 
+QString PricingEngineTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
+}
+
 void PricingEngineTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
@@ -68,6 +89,8 @@ void PricingEngineTypeDetailDialog::setupUi() {
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
+
+void PricingEngineTypeDetailDialog::setupCombos() {}
 
 void PricingEngineTypeDetailDialog::setupConnections() {
     connect(ui_->saveButton,
@@ -91,14 +114,15 @@ void PricingEngineTypeDetailDialog::setupConnections() {
             &QPlainTextEdit::textChanged,
             this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
-    connect(ui_->instrumentTypeCodeEdit,
-            &QLineEdit::textChanged,
+    connect(ui_->instrumentTypeCodeCombo,
+            &QComboBox::currentIndexChanged,
             this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
 }
 
 void PricingEngineTypeDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    populateInstrumentTypeCodeCombo();
 }
 
 void PricingEngineTypeDetailDialog::setUsername(const std::string& username) {
@@ -119,19 +143,51 @@ void PricingEngineTypeDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void PricingEngineTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void PricingEngineTypeDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->instrumentTypeCodeEdit->setReadOnly(readOnly);
+    ui_->instrumentTypeCodeCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
+void PricingEngineTypeDetailDialog::populateInstrumentTypeCodeCombo() {
+    BOOST_LOG_SEV(lg(), debug) << "Populating instrument_type_code combo";
+    populateDynamicCombo<refdata::domain::instrument_code>(
+        ui_->instrumentTypeCodeCombo,
+        this,
+        clientManager_,
+        &fetch_instrument_codes,
+        "instrumentTypeCodeWatcher",
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto& t) { return QString::fromStdString(t.description); },
+        [](const auto&) { return 0; },
+        [this]() { return QString::fromStdString(type_.instrument_type_code); },
+        [this](const QString& error) {
+            emit errorMessage(tr("Failed to load instrument types: %1").arg(error));
+        },
+        []() {},
+        QObject::tr("Loading…"),
+        QObject::tr("Failed to load"),
+        [](const auto& t) { return QString::fromStdString(t.code); },
+        [](const auto&) { return false; },
+        QString{});
+}
 void PricingEngineTypeDetailDialog::updateUiFromType() {
     ui_->codeEdit->setText(QString::fromStdString(type_.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
-    ui_->instrumentTypeCodeEdit->setText(QString::fromStdString(type_.instrument_type_code));
+    {
+        const auto val = QString::fromStdString(type_.instrument_type_code);
+        const int idx = ui_->instrumentTypeCodeCombo->findData(val);
+        if (idx >= 0)
+            ui_->instrumentTypeCodeCombo->setCurrentIndex(idx);
+    }
 
     populateProvenance(type_.version,
                        type_.modified_by,
@@ -149,7 +205,7 @@ void PricingEngineTypeDetailDialog::updateTypeFromUi() {
         type_.code = ui_->codeEdit->text().trimmed().toStdString();
     }
     type_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    type_.instrument_type_code = ui_->instrumentTypeCodeEdit->text().trimmed().toStdString();
+    type_.instrument_type_code = ui_->instrumentTypeCodeCombo->currentText().toStdString();
     type_.modified_by = username_;
 }
 
@@ -188,6 +244,15 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
         return;
     }
 
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
     updateTypeFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing engine type: " << type_.code;
@@ -217,24 +282,27 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved successfully";
-            QString code = QString::fromStdString(self->type_.code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->typeSaved(code);
-            self->notifySaveSuccess(tr("Pricing Engine Type '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved successfully";
+                    QString code = QString::fromStdString(self->type_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->typeSaved(code);
+                    self->notifySaveSuccess(tr("Pricing Engine Type '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -259,6 +327,11 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing engine type: " << type_.code;
 
@@ -307,5 +380,6 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

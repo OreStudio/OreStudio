@@ -14,7 +14,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 * What
 
 Regenerating =projects/ores.synthetic/modeling/ores.synthetic.fx_spot_generation_config.org=
-via =compass codegen generate --model ... --profile sql= (done to add
+via =compass codegen generate --model ... --address ores.sql= (done to add
 =ou= to the =process_type= check constraint for the GMM-improvements
 story) produced a diff that, besides the intended check-constraint
 change, also silently dropped custom validation logic from the

@@ -2,7 +2,7 @@
 :ID: D2E8F4A1-9B3C-4D7F-6A5B-8E1C7D3F9A2B
 :END:
 #+title: Task: Fix model consistency and register C++ components in manifest.py
-#+description: Verify and fix component_include/component_core in all 75 domain entity models; add C++ component entries to manifest.py so codegen regenerate --component X --profile all-cpp works for every component.
+#+description: Verify and fix component_include/component_core in all 75 domain entity models; add C++ component entries to manifest.py so codegen regenerate --component X --address ores.cpp works for every component.
 #+type: task
 #+level: s1
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
@@ -47,7 +47,7 @@ and are already correct. All others are unverified.
 - =refdata= → =*_table.json=
 - =trade=, =dq=, =iam= → =*_entity.json=
 
-None of these support =--profile all-cpp=. Add a C++ component entry for every component
+None of these support =--address ores.cpp=. Add a C++ component entry for every component
 that has =_domain_entity.json= models. Each entry needs:
 - =name= — component short name (e.g., =refdata-cpp=, or an overloaded =refdata= that
   selects models by suffix)
@@ -56,7 +56,7 @@ that has =_domain_entity.json= models. Each entry needs:
 
 The exact naming convention (separate =refdata-cpp= component or shared =refdata= with
 glob switching) is an open design decision to be resolved at implementation time. The CLI
-must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
+must be unambiguous: =--address ores.sql= and =--address ores.cpp= must not interfere.
 
 * Status
 
@@ -76,7 +76,7 @@ must be unambiguous: =--profile sql= and =--profile all-cpp= must not interfere.
 - Dry-run for each model shows output paths under =projects/ores.<component_include>/= and
   =projects/ores.<component_core>/=. No model writes to an untracked directory.
 - =manifest.py= has C++ component entries for every component that has domain entity models.
-- =codegen.sh regenerate --component X --profile all-cpp= is a valid command for each
+- =codegen.sh regenerate --component X --address ores.cpp= is a valid command for each
   registered component and lists the correct model files.
 - Findings recorded in =* Result= section.
 - Site builds cleanly.
@@ -147,5 +147,5 @@ wrong — =str.endswith("")= is always =True=, excluding every file.
 | =workspace-cpp= | =models/workspace= | 1 |
 | *Total* | | *75* |
 
-All 12 components verified: =codegen.py regenerate --component X --profile all-cpp --dry-run=
+All 12 components verified: =codegen.py regenerate --component X --address ores.cpp --dry-run=
 produces zero errors and zero warnings for every component.

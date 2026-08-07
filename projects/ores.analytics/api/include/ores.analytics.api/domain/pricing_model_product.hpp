@@ -17,23 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_HPP
-#define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_HPP
+#ifndef ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_PRODUCT_HPP
+#define ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_PRODUCT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::analytics::domain {
 
 /**
- * @brief Per-product model and engine assignment within a pricing model config.
+ * @brief Maps a pricing engine type to a model and engine within a pricing model configuration.
  *
- * Each row assigns a specific ORE model (e.g. "LGM", "DiscountedCashflows")
- * and engine (e.g. "Grid", "DiscountingSwapEngine") to a pricing engine type
- * within a named pricing model configuration. Corresponds to one <Product>
- * element inside a pricingengine.xml <PricingEngine> block.
+ * Detail row within a pricing model configuration. Each row maps a pricing engine type
+ * (e.g. EuropeanSwaption, CMS) to a specific model (e.g. LGM, BlackBachelier) and
+ * numerical engine (e.g. Grid, AMC). Product-specific parameters are stored in
+ * pricing_model_product_parameters.
  */
 struct pricing_model_product final {
     /**
@@ -47,51 +48,56 @@ struct pricing_model_product final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID uniquely identifying this product assignment.
+     * @brief UUID uniquely identifying this product mapping.
+     *
+     * Surrogate key for the pricing model product.
      */
     boost::uuids::uuid id;
 
     /**
-     * @brief The pricing model config this product belongs to.
+     * @brief Parent pricing model configuration.
      *
      * Soft FK to ores_analytics_pricing_model_configs_tbl.
      */
     boost::uuids::uuid pricing_model_config_id;
 
     /**
-     * @brief The ORE pricing engine type this assignment targets.
+     * @brief Pricing engine type this mapping applies to.
      *
-     * Soft FK to ores_analytics_pricing_engine_types_tbl.
-     * e.g. "EuropeanSwaption", "Swap", "CMS".
+     * Soft FK to ores_analytics_pricing_engine_types_tbl. Examples: 'Swap', 'EuropeanSwaption',
+     * 'CMS'.
      */
     std::string pricing_engine_type_code;
 
     /**
-     * @brief The ORE model to use for this product type.
+     * @brief Pricing model name.
      *
-     * e.g. "LGM", "DiscountedCashflows", "BlackScholes".
+     * Examples: 'DiscountedCashflows', 'LGM', 'BlackBachelier', 'GarmanKohlhagen',
+     * 'CrossAssetModel'.
      */
     std::string model;
 
     /**
-     * @brief The ORE engine implementation to use.
+     * @brief Numerical engine name.
      *
-     * e.g. "Grid", "DiscountingSwapEngine", "AnalyticEuropeanEngine".
+     * Examples: 'DiscountingSwapEngine', 'Grid', 'AMC', 'AnalyticEuropeanEngine'.
      */
     std::string engine;
 
     /**
-     * @brief Username of the person who last modified this record.
+     * @brief Username of the person who last modified this pricing model product.
      */
     std::string modified_by;
 
     /**
-     * @brief Username of the account that performed this action (set by DB trigger).
+     * @brief Username of the account that performed this action.
      */
     std::string performed_by;
 
     /**
      * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
      */
     std::string change_reason_code;
 
@@ -105,6 +111,16 @@ struct pricing_model_product final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for pricing_model_product, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const pricing_model_product&) {
+    return "ores.analytics.pricing_model_product";
+}
 
 }
 

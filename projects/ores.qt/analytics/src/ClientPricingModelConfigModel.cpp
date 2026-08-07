@@ -85,8 +85,7 @@ QVariant ClientPricingModelConfigModel::data(const QModelIndex& index, int role)
             case Name:
                 return QString::fromStdString(config.name);
             case ConfigVariant:
-                return config.config_variant ? QString::fromStdString(*config.config_variant) :
-                                               QString{};
+                return QString::fromStdString(config.config_variant);
             case Description:
                 return QString::fromStdString(config.description);
             case Version:
@@ -110,8 +109,15 @@ QVariant ClientPricingModelConfigModel::data(const QModelIndex& index, int role)
 QVariant ClientPricingModelConfigModel::headerData(int section,
                                                    Qt::Orientation orientation,
                                                    int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case Name:
@@ -201,6 +207,8 @@ void ClientPricingModelConfigModel::fetch_configs(std::uint32_t offset, std::uin
                 }
 
                 analytics::messaging::get_pricing_model_configs_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -214,12 +222,29 @@ void ClientPricingModelConfigModel::fetch_configs(std::uint32_t offset, std::uin
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->configs.size() << " pricing model configurations";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->configs.size());
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .configs = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
+                            .error_details = {}};
+                }
+
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->configs.size()
+                                           << " pricing model configurations, total available: "
+                                           << result->total_available_count;
                 return {.success = true,
                         .configs = std::move(result->configs),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },
@@ -282,6 +307,7 @@ ClientPricingModelConfigModel::getConfig(int row) const {
         return nullptr;
     return &configs_[idx];
 }
+
 
 QVariant ClientPricingModelConfigModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

@@ -15,8 +15,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 Add an =--entity= (or =--entities=) filter flag to =codegen.sh regenerate=
 so a targeted run only generates files for the named entity/entities, not
-all entities in the component. Running =--component refdata-cpp --profile
-protocol= currently regenerates all 25 domain-entity protocol headers and
+all entities in the component. Running =--component refdata --address ores.cpp.protocol= currently regenerates all 25 domain-entity protocol headers and
 writes them to disk, leaving ~22 out-of-scope untracked files that the
 caller must manually delete after each run.
 

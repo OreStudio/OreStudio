@@ -23,8 +23,6 @@
 #include "ores.analytics.core/repository/pricing_model_product_parameter_mapper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::analytics::repository {
@@ -40,7 +38,7 @@ std::string pricing_model_product_parameter_repository::sql() {
 
 void pricing_model_product_parameter_repository::write(
     context ctx, const domain::pricing_model_product_parameter& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model product parameter: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing pricing model product parameter. " << "id: " << v.id;
     execute_write_query(ctx,
                         pricing_model_product_parameter_mapper::map(v),
                         lg(),
@@ -57,14 +55,11 @@ void pricing_model_product_parameter_repository::write(
 }
 
 std::vector<domain::pricing_model_product_parameter>
-pricing_model_product_parameter_repository::read_latest(context ctx, const std::string& config_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameters. config_id: "
-                               << config_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+pricing_model_product_parameter_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
-                       where("tenant_id"_c == tid && "pricing_model_config_id"_c == config_id &&
-                             "valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
                        order_by("id"_c);
 
     return execute_read_query<pricing_model_product_parameter_entity,
@@ -73,34 +68,14 @@ pricing_model_product_parameter_repository::read_latest(context ctx, const std::
         query,
         [](const auto& entities) { return pricing_model_product_parameter_mapper::map(entities); },
         lg(),
-        "Reading latest pricing model product parameters by config id.");
+        "Reading latest pricing model product parameters");
 }
 
 std::vector<domain::pricing_model_product_parameter>
-pricing_model_product_parameter_repository::read_latest_for_product(context ctx,
-                                                                    const std::string& product_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameters. product_id: "
-                               << product_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
-                       where("tenant_id"_c == tid && "pricing_model_product_id"_c == product_id &&
-                             "valid_to"_c == max.value()) |
-                       order_by("id"_c);
-
-    return execute_read_query<pricing_model_product_parameter_entity,
-                              domain::pricing_model_product_parameter>(
-        ctx,
-        query,
-        [](const auto& entities) { return pricing_model_product_parameter_mapper::map(entities); },
-        lg(),
-        "Reading latest pricing model product parameters by product id.");
-}
-
-std::vector<domain::pricing_model_product_parameter>
-pricing_model_product_parameter_repository::read_latest_by_id(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameter. id: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+pricing_model_product_parameter_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameter. "
+                               << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
@@ -114,13 +89,15 @@ pricing_model_product_parameter_repository::read_latest_by_id(context ctx, const
         "Reading latest pricing model product parameter by id.");
 }
 
+
 std::vector<domain::pricing_model_product_parameter>
 pricing_model_product_parameter_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model product parameter versions. id: "
-                               << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model product parameter versions. "
+                               << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<pricing_model_product_parameter_entity,
                               domain::pricing_model_product_parameter>(
@@ -131,9 +108,33 @@ pricing_model_product_parameter_repository::read_all(context ctx, const std::str
         "Reading all pricing model product parameter versions by id.");
 }
 
+std::optional<domain::pricing_model_product_parameter>
+pricing_model_product_parameter_repository::read_at_version(context ctx,
+                                                            const std::string& id,
+                                                            std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading pricing model product parameter at version. "
+                               << "id: " << id << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<pricing_model_product_parameter_entity,
+                                             domain::pricing_model_product_parameter>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_product_parameter_mapper::map(entities); },
+        lg(),
+        "Reading pricing model product parameter at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void pricing_model_product_parameter_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameter: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameter. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<pricing_model_product_parameter_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
@@ -142,32 +143,56 @@ void pricing_model_product_parameter_repository::remove(context ctx, const std::
         ctx, query, lg(), "Removing pricing model product parameter from database.");
 }
 
-void pricing_model_product_parameter_repository::remove_for_config(context ctx,
-                                                                   const std::string& config_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameters for config: "
-                               << config_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::pricing_model_product_parameter>
+pricing_model_product_parameter_repository::read_latest(context ctx,
+                                                        std::uint32_t offset,
+                                                        std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model product parameters with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<pricing_model_product_parameter_entity> |
-                       where("tenant_id"_c == tid && "pricing_model_config_id"_c == config_id &&
-                             "valid_to"_c == max.value());
+    const auto query = sqlgen::read<std::vector<pricing_model_product_parameter_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    execute_delete_query(
-        ctx, query, lg(), "Removing pricing model product parameters for config from database.");
+    return execute_read_query<pricing_model_product_parameter_entity,
+                              domain::pricing_model_product_parameter>(
+        ctx,
+        query,
+        [](const auto& entities) { return pricing_model_product_parameter_mapper::map(entities); },
+        lg(),
+        "Reading latest pricing model product parameters with pagination.");
 }
 
-void pricing_model_product_parameter_repository::remove_for_product(context ctx,
-                                                                    const std::string& product_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model product parameters for product: "
-                               << product_id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::uint32_t pricing_model_product_parameter_repository::get_total_parameter_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing model product parameter count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<pricing_model_product_parameter_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active pricing model product parameter count: " << count;
+    return count;
+}
+
+void pricing_model_product_parameter_repository::remove(context ctx,
+                                                        const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<pricing_model_product_parameter_entity> |
-                       where("tenant_id"_c == tid && "pricing_model_product_id"_c == product_id &&
-                             "valid_to"_c == max.value());
-
-    execute_delete_query(
-        ctx, query, lg(), "Removing pricing model product parameters for product from database.");
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing pricing model product parameters.");
 }
+
 
 }

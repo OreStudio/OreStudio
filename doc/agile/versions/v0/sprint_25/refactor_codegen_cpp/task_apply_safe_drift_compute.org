@@ -50,7 +50,7 @@ production that the template cannot capture.
 ** 2. Regenerate
 
 #+begin_src sh
-projects/ores.codegen/codegen.sh regenerate --component compute-cpp --profile all-cpp
+projects/ores.codegen/codegen.sh regenerate --component compute-cpp --address ores.cpp
 #+end_src
 
 ** 3. Restore exclusions from HEAD (12 files)

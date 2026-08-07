@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
+#ifndef ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
+#define ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -30,12 +30,14 @@ namespace ores::analytics::messaging {
 struct get_pricing_model_configs_request {
     using response_type = struct get_pricing_model_configs_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_pricing_model_configs_response {
     std::vector<ores::analytics::domain::pricing_model_config> configs;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -43,6 +45,10 @@ struct save_pricing_model_config_request {
     using response_type = struct save_pricing_model_config_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.save";
     ores::analytics::domain::pricing_model_config data;
+
+    static save_pricing_model_config_request from(ores::analytics::domain::pricing_model_config v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_pricing_model_config_response {
@@ -53,7 +59,7 @@ struct save_pricing_model_config_response {
 struct delete_pricing_model_config_request {
     using response_type = struct delete_pricing_model_config_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.delete";
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
 };
 
 struct delete_pricing_model_config_response {
@@ -64,11 +70,11 @@ struct delete_pricing_model_config_response {
 struct get_pricing_model_config_history_request {
     using response_type = struct get_pricing_model_config_history_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.history";
-    boost::uuids::uuid id;
+    std::string id;
 };
 
 struct get_pricing_model_config_history_response {
-    std::vector<ores::analytics::domain::pricing_model_config> configs;
+    std::vector<ores::analytics::domain::pricing_model_config> history;
     bool success = false;
     std::string message;
 };

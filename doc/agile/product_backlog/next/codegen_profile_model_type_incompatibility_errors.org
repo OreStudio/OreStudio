@@ -13,7 +13,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 * What
 
-When =codegen.sh regenerate --component <C> --profile <P>= is invoked, the codegen
+When =codegen.sh regenerate --component <C> --address <A>= is invoked, the codegen
 discovers all entity models in the component and iterates over them.  Each profile
 declares the model types it supports (e.g. =qt= only supports =domain_entity=).
 Any model whose type is not in the supported set currently emits an =ERROR= line
@@ -26,7 +26,7 @@ ERROR Profile 'qt' is not compatible with model type 'junction'. Supported types
 ERROR 13 error(s) during regeneration.
 #+end_example
 
-Running =--component refdata-cpp --profile qt= produces 13 such messages because
+Running =--component refdata --address ores.cpp.qt= produces 13 such messages because
 =ores.refdata= contains five =table= models and eight =junction= models alongside
 the =domain_entity= models the Qt profile targets.
 
@@ -62,7 +62,7 @@ The current ERROR-level messages cause three concrete problems:
    or must suppress the exit code and thereby hide real failures.
 
 This was observed during =commission_currency= sprint work: every run of
-=codegen.sh regenerate --component refdata-cpp --profile qt= produced 13 ERROR
+=codegen.sh regenerate --component refdata --address ores.cpp.qt= produced 13 ERROR
 lines.  The operator had to mentally filter them on every iteration to check
 whether the real generation step succeeded.
 

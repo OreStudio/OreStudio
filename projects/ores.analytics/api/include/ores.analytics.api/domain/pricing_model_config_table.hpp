@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_TABLE_HPP
-#define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_TABLE_HPP
+#ifndef ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_CONFIG_TABLE_HPP
+#define ORES_ANALYTICS_API_DOMAIN_PRICING_MODEL_CONFIG_TABLE_HPP
 
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.api/export.hpp"

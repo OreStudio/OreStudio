@@ -17,30 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_GENERATOR_HPP
-#define ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_GENERATOR_HPP
+#ifndef ORES_ANALYTICS_API_GENERATORS_PRICING_MODEL_PRODUCT_GENERATOR_HPP
+#define ORES_ANALYTICS_API_GENERATORS_PRICING_MODEL_PRODUCT_GENERATOR_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
 namespace ores::analytics::generators {
 
 /**
- * @brief Generates a set of fictional pricing model products.
- *
- * Each generated product is associated with the given config_id and uses
- * engine type codes from the fictional pricing engine type generator.
- *
- * @param n Number of products to generate. If n is 0 or greater than the
- *          available set, returns all available fictional products.
- * @param config_id UUID of the pricing model config these products belong to.
+ * @brief Generates a synthetic pricing_model_product.
+ */
+ORES_ANALYTICS_API_EXPORT domain::pricing_model_product
+generate_synthetic_pricing_model_product(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic pricing_model_products.
  */
 ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_model_product>
-generate_fictional_pricing_model_products(std::size_t n,
-                                          const boost::uuids::uuid& config_id,
+generate_synthetic_pricing_model_products(std::size_t n,
                                           utility::generation::generation_context& ctx);
 
 }

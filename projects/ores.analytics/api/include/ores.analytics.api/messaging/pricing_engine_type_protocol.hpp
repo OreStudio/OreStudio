@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
+#ifndef ORES_ANALYTICS_API_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
+#define ORES_ANALYTICS_API_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
 
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -29,12 +30,14 @@ namespace ores::analytics::messaging {
 struct get_pricing_engine_types_request {
     using response_type = struct get_pricing_engine_types_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_pricing_engine_types_response {
     std::vector<ores::analytics::domain::pricing_engine_type> types;
     int total_available_count = 0;
-    bool success = true;
+    bool success = false;
     std::string message;
 };
 
@@ -42,6 +45,10 @@ struct save_pricing_engine_type_request {
     using response_type = struct save_pricing_engine_type_response;
     static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.save";
     ores::analytics::domain::pricing_engine_type data;
+
+    static save_pricing_engine_type_request from(ores::analytics::domain::pricing_engine_type v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_pricing_engine_type_response {
@@ -67,7 +74,7 @@ struct get_pricing_engine_type_history_request {
 };
 
 struct get_pricing_engine_type_history_response {
-    std::vector<ores::analytics::domain::pricing_engine_type> types;
+    std::vector<ores::analytics::domain::pricing_engine_type> history;
     bool success = false;
     std::string message;
 };

@@ -22,6 +22,10 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/pricing_engine_type_event_registrar.cpp"
+    "messaging/pricing_model_config_event_registrar.cpp"
+    "messaging/pricing_model_product_event_registrar.cpp"
+    "messaging/pricing_model_product_parameter_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -33,5 +37,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_engine_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_product_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/messaging/pricing_model_product_parameter_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.service/ores.analytics.service.hpp"
 )

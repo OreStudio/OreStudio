@@ -47,6 +47,9 @@ insert into ores_refdata_instrument_codes_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
+    (ores_utility_system_tenant_id_fn(), 'NONE', 0, 'None',
+     'None: sentinel value indicating no specific instrument type is associated — used for engine types (e.g. leg-/coupon-level pricers like CMS, CapFlooredIborLeg, CpiCapFloor) that price at a finer granularity than a whole instrument and therefore have no direct one-to-one instrument type mapping.',
+     'cross_asset', null, 'NONE', 0, current_user, current_user, 'system.initial_load', 'Initial population of instrument codes'),
     (ores_utility_system_tenant_id_fn(), 'COMPOSITE', 0, 'Composite Trade',
      'CompositeTrade: a wrapper trade type that bundles two or more other ORE trades (of any type or asset class) into a single logical position for pricing, netting, and reporting purposes -- for example a swap and its associated cap hedge -- without requiring a bespoke combined pricing engine for every possible pairing.',
      'cross_asset', 'CompositeTrade', 'NONE', 1, current_user, current_user, 'system.initial_load', 'Initial population of instrument codes'),

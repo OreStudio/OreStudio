@@ -23,6 +23,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
+#include <QCompleter>
 #include <QFutureWatcher>
 #include <QObject>
 #include <QPointer>
@@ -230,8 +231,8 @@ void populateDynamicCombo(
 
             auto items = std::move(*result);
             items.erase(std::remove_if(items.begin(), items.end(), exclude_if), items.end());
-            std::sort(items.begin(), items.end(), [&sort_key_of](const auto& a, const auto& b) {
-                return sort_key_of(a) < sort_key_of(b);
+            std::sort(items.begin(), items.end(), [&code_of](const auto& a, const auto& b) {
+                return code_of(a) < code_of(b);
             });
 
             combo->blockSignals(true);
@@ -246,6 +247,12 @@ void populateDynamicCombo(
                 combo->setItemData(combo->count() - 1, value_of(item), Qt::UserRole);
                 combo->setItemData(combo->count() - 1, tooltip_of(item), Qt::ToolTipRole);
             }
+
+            // Enable type-ahead search on the combo after items are loaded.
+            combo->setEditable(true);
+            combo->setInsertPolicy(QComboBox::NoInsert);
+            if (auto* c = combo->completer())
+                c->setFilterMode(Qt::MatchContains);
 
             const QString to_select =
                 !previous_selection.isEmpty() ? previous_selection : fallback_selection();

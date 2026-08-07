@@ -36,7 +36,7 @@ itself and check for other docs making the same stale claim.
 
 Followed the stale recipe's advice while adding book's
 =rates_centre_code= field: ran =codegen regenerate --component
-refdata-cpp --profile all-cpp= (and =--profile qt=), which touched 300+
+refdata-cpp --address ores.cpp= (and =--address ores.cpp.qt=), which touched 300+
 files across every entity in the component, requiring extensive manual
 discarding — including once accidentally reverting genuine hand-written
 changes that happened to live outside a "Book"-named file. All of that

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: CDA97973-3262-433C-808B-E59015264607
+:END:
+#+title: Fix compass pr create/merge task misattribution on shared branches
+#+description: compass pr create/pr merge pick the wrong task doc when multiple tasks share the same #+branch value, silently editing an unrelated task or blocking merge on its state.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:bug:agile:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Multiple tasks in the same story can legitimately share a =#+branch:=
+value (e.g. every =apply_safe_drift_*= follow-on task in the "Refactor
+ores.codegen C++ generation" story is pre-authored with
+=#+branch: feature/refactor-codegen-cpp=, since they're expected to be
+picked up sequentially on one long-lived branch). =compass pr create=
+and =compass pr merge= both resolve "the task for this branch" by
+matching on =#+branch:= alone, with no tie-break when several tasks
+match. On PR #1873 this picked a different, unrelated, still-BACKLOG
+task twice: =pr create= recorded the PR against
+=task_apply_safe_drift_analytics.org= instead of the actual
+=task_apply_safe_drift.org= (silently editing the wrong file's =#+pr:=
+and PR table), and =pr merge='s guard then refused to merge, citing
+=task_apply_safe_drift_compute.org= (a third, also-unrelated task) being
+BACKLOG with an empty =* Result=. Both had to be manually diagnosed and
+corrected mid-PR.
+
+Fix direction: disambiguate by picking the task whose state is STARTED
+(or most recently touched) among branch matches, rather than an
+arbitrary/first match; or warn and require an explicit =--task=
+argument when more than one task matches the current branch.
+
+* Why
+
+Silent misattribution is worse than a hard failure — it edits the wrong
+agile doc without any error, and the merge guard's false-positive can
+block (or, worse, get force-merged past) real state on an unrelated
+task. Found and worked around twice in one PR (#1873, "Apply safe drift
+to refdata-cpp (pilot)"); will very likely recur on every other
+=apply_safe_drift_*= task in this story unless fixed, since they all
+share the same branch by design.
+
+* References
+
+- PR [[https://github.com/OreStudio/OreStudio/pull/1873][#1873]] — both incidents happened here.
+- =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift.org= — the correct task.
+- =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift_analytics.org= — wrongly recorded by =pr create=.
+- =doc/agile/versions/v0/sprint_25/refactor_codegen_cpp/task_apply_safe_drift_compute.org= — wrongly flagged by =pr merge='s guard.
+
+* See also
+
+-

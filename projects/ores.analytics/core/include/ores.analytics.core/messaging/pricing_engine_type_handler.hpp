@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
+#ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
+#define ORES_ANALYTICS_CORE_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
 
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
-#include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/service/pricing_engine_type_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -52,10 +51,10 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for pricing engine type operations.
  *
- * Pricing engine types are system-owned global entities; list and history
+ * Pricing Engine Types are system-owned global entities; list and history
  * operations use the system tenant context.
  */
-class ORES_ANALYTICS_CORE_EXPORT pricing_engine_type_handler {
+class pricing_engine_type_handler {
 public:
     pricing_engine_type_handler(ores::nats::service::client& nats,
                                 ores::database::context ctx,
@@ -76,14 +75,22 @@ public:
             req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         service::pricing_engine_type_service svc(sys_ctx);
         get_pricing_engine_types_response resp;
-        try {
-            resp.types = svc.list_types();
-            resp.total_available_count = static_cast<int>(resp.types.size());
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+        if (auto req = decode<get_pricing_engine_types_request>(msg)) {
+            try {
+                resp.types = svc.list_types(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_types());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(pricing_engine_type_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -101,7 +108,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<save_pricing_engine_type_request>(msg)) {
             try {
                 svc.save_type(req->data);
@@ -140,7 +149,7 @@ public:
                     << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_pricing_engine_type_history_response{.types = std::move(hist),
+                      get_pricing_engine_type_history_response{.history = std::move(hist),
                                                                .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
@@ -165,15 +174,16 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "analytics::pricing_engine_types:write")) {
+        if (!has_permission(req_ctx, "analytics::pricing_engine_types:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::pricing_engine_type_service svc(req_ctx);
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<delete_pricing_engine_type_request>(msg)) {
             try {
-                for (const auto& code : req->codes)
-                    svc.remove_type(code);
+                svc.delete_types(req->codes);
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, delete_pricing_engine_type_response{.success = true});

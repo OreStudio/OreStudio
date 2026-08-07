@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_HANDLER_HPP
-#define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_HANDLER_HPP
+#ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_HANDLER_HPP
+#define ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_HANDLER_HPP
 
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
-#include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/service/pricing_model_product_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -30,7 +29,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
 
 namespace ores::analytics::messaging {
@@ -52,7 +50,7 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for pricing model product operations.
  */
-class ORES_ANALYTICS_CORE_EXPORT pricing_model_product_handler {
+class pricing_model_product_handler {
 public:
     pricing_model_product_handler(ores::nats::service::client& nats,
                                   ores::database::context ctx,
@@ -73,14 +71,20 @@ public:
         get_pricing_model_products_response resp;
         if (auto req = decode<get_pricing_model_products_request>(msg)) {
             try {
-                resp.products = svc.list_products(req->config_id);
-                resp.total_available_count = static_cast<int>(resp.products.size());
+                resp.products = svc.list_products(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_products());
+                resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_model_product_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }
+        } else {
+            BOOST_LOG_SEV(pricing_model_product_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -130,12 +134,12 @@ public:
         service::pricing_model_product_service svc(req_ctx);
         if (auto req = decode<get_pricing_model_product_history_request>(msg)) {
             try {
-                auto hist = svc.get_product_history(boost::uuids::to_string(req->id));
+                auto hist = svc.get_product_history(req->id);
                 BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_pricing_model_product_history_response{.products = std::move(hist),
+                      get_pricing_model_product_history_response{.history = std::move(hist),
                                                                  .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_model_product_handler_lg(), error)
@@ -160,15 +164,14 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "analytics::pricing_model_products:write")) {
+        if (!has_permission(req_ctx, "analytics::pricing_model_products:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
         service::pricing_model_product_service svc(req_ctx);
         if (auto req = decode<delete_pricing_model_product_request>(msg)) {
             try {
-                for (const auto& id : req->ids)
-                    svc.remove_product(boost::uuids::to_string(id));
+                svc.delete_products(req->ids);
                 BOOST_LOG_SEV(pricing_model_product_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, delete_pricing_model_product_response{.success = true});

@@ -18,20 +18,20 @@
  *
  */
 #include "ores.analytics.api/domain/pricing_engine_type_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::analytics::domain {
+
 
 std::string convert_to_table(const std::vector<pricing_engine_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "version" << "code" << "description" << "instrument_type_code"
-          << "modified_by" << fort::endr;
+    table << fort::header << fort::endr;
 
-    for (const auto& e : v) {
-        table << e.version << e.code << e.description << e.instrument_type_code << e.modified_by
-              << fort::endr;
+    for (const auto& pet : v) {
+        table << fort::endr;
     }
     return table.to_string();
 }

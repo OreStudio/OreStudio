@@ -18,36 +18,31 @@
  *
  */
 
--- Validate instrument_type_code is a known trade type (optional soft FK).
--- Validates against system tenant's trade types (shared reference data).
--- Returns the value unchanged, or null/empty as-is.
+-- Validate instrument_type_code references a known instrument code (soft FK).
+-- Validates against system tenant's instrument codes (shared reference data).
+-- The NONE sentinel is a valid value for engine types with no direct mapping.
 --
 -- SECURITY DEFINER: called from INSERT triggers in analytics service, which
--- does not hold SELECT on ores_trading_trade_types_tbl.
+-- does not hold SELECT on ores_refdata_instrument_codes_tbl.
 -- Running as the DDL owner satisfies the read.
 create or replace function ores_analytics_validate_pricing_engine_instrument_type_fn(
     p_tenant_id uuid,
     p_value text
 ) returns text as $$
 begin
-    -- Null/empty is allowed (instrument_type_code is optional)
-    if p_value is null or p_value = '' then
+    -- Pass-through during bootstrap (refdata table not yet populated)
+    if not exists (select 1 from ores_refdata_instrument_codes_tbl limit 1) then
         return p_value;
     end if;
 
-    -- Pass-through during bootstrap (trading table not yet populated)
-    if not exists (select 1 from ores_trading_trade_types_tbl limit 1) then
-        return p_value;
-    end if;
-
-    -- Validate against system tenant's trade types (shared reference data)
+    -- Validate against system tenant's instrument codes (shared reference data)
     if not exists (
-        select 1 from ores_trading_trade_types_tbl
+        select 1 from ores_refdata_instrument_codes_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid instrument_type_code: %. Must reference a valid trade type.',
+        raise exception 'Invalid instrument_type_code: %. Must reference a valid instrument code.',
             p_value using errcode = '23503';
     end if;
 

@@ -197,7 +197,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+{{#system_tenant_validation}}
+        const auto sys_ctx = req_ctx.with_tenant(
+            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::{{entity_singular}}_service svc(sys_ctx);
+{{/system_tenant_validation}}
+{{^system_tenant_validation}}
         service::{{entity_singular}}_service svc(req_ctx);
+{{/system_tenant_validation}}
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
                 svc.save_{{entity_singular_short}}(req->data);
@@ -270,7 +277,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+{{#system_tenant_validation}}
+        const auto sys_ctx = req_ctx.with_tenant(
+            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::{{entity_singular}}_service svc(sys_ctx);
+{{/system_tenant_validation}}
+{{^system_tenant_validation}}
         service::{{entity_singular}}_service svc(req_ctx);
+{{/system_tenant_validation}}
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
 {{#single_delete}}
@@ -652,7 +666,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+{{#system_tenant_validation}}
+        const auto sys_ctx = req_ctx.with_tenant(
+            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::{{entity_singular}}_service svc(sys_ctx);
+{{/system_tenant_validation}}
+{{^system_tenant_validation}}
         service::{{entity_singular}}_service svc(req_ctx);
+{{/system_tenant_validation}}
         if (auto req = decode<save_{{entity_singular}}_request>(msg)) {
             try {
                 svc.save_{{entity_singular_short}}(req->data);
@@ -725,7 +746,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+{{#system_tenant_validation}}
+        const auto sys_ctx = req_ctx.with_tenant(
+            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::{{entity_singular}}_service svc(sys_ctx);
+{{/system_tenant_validation}}
+{{^system_tenant_validation}}
         service::{{entity_singular}}_service svc(req_ctx);
+{{/system_tenant_validation}}
         if (auto req = decode<delete_{{entity_singular}}_request>(msg)) {
             try {
 {{#single_delete}}

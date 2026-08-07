@@ -19,58 +19,48 @@
  */
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
+domain::pricing_model_config
+generate_synthetic_pricing_model_config(utility::generation::generation_context& ctx) {
+    static std::atomic<int> counter{0};
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
+
+    domain::pricing_model_config r;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.id = ctx.generate_uuid();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.name = std::string("config") + "-" + std::to_string(idx);
+    r.description = std::string(faker::lorem::sentence());
+    r.config_variant = std::string("standard");
+    r.modified_by = modified_by;
+    r.performed_by = modified_by;
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
+    r.recorded_at = ctx.past_timepoint();
+    return r;
+}
+
 std::vector<domain::pricing_model_config>
-generate_fictional_pricing_model_configs(std::size_t n,
+generate_synthetic_pricing_model_configs(std::size_t n,
                                          utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto now = ctx.past_timepoint();
-    boost::uuids::random_generator gen;
-
-    std::vector<domain::pricing_model_config> all;
-    all.reserve(10);
-
-    // Names embed part of the UUID to ensure uniqueness across parallel test runs,
-    // since scoped_database_helper does not roll back data between test cases.
-    auto make_config = [&](const std::string& base_name,
-                           const std::string& description,
-                           std::optional<std::string> variant) {
-        const auto id = gen();
-        const auto suffix = boost::uuids::to_string(id).substr(0, 8);
-        return domain::pricing_model_config{.id = id,
-                                            .name = base_name + "." + suffix,
-                                            .description = description,
-                                            .config_variant = variant,
-                                            .modified_by = modified_by,
-                                            .change_reason_code = "system.test",
-                                            .change_commentary = "Synthetic test data",
-                                            .recorded_at = now};
-    };
-
-    all.push_back(make_config(
-        "test.base.vanilla", "Fictional base vanilla pricing configuration", std::nullopt));
-    all.push_back(make_config("test.amc.monte.carlo",
-                              "Fictional AMC Monte Carlo pricing configuration",
-                              std::optional<std::string>("amc")));
-    all.push_back(make_config("test.dynamic.grid",
-                              "Fictional dynamic grid pricing configuration",
-                              std::optional<std::string>("dg")));
-    all.push_back(make_config("test.standard.rates",
-                              "Fictional standard rates pricing configuration",
-                              std::optional<std::string>("standard")));
-    all.push_back(make_config(
-        "test.equity.vol", "Fictional equity volatility pricing configuration", std::nullopt));
-
-    if (n == 0 || n >= all.size())
-        return all;
-
-    return std::vector<domain::pricing_model_config>(all.begin(), all.begin() + n);
+    std::vector<domain::pricing_model_config> r;
+    r.reserve(n);
+    while (r.size() < n)
+        r.push_back(generate_synthetic_pricing_model_config(ctx));
+    return r;
 }
 
 }

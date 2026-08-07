@@ -47,7 +47,7 @@ TEST_CASE("write_single_pricing_model_config", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     auto cfg = configs[0];
     BOOST_LOG_SEV(lg, debug) << "Pricing model config: " << cfg;
@@ -61,7 +61,7 @@ TEST_CASE("write_multiple_pricing_model_configs", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(3, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Pricing model configs: " << configs;
 
     pricing_model_config_repository repo;
@@ -73,7 +73,7 @@ TEST_CASE("read_latest_pricing_model_configs", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto written = generate_fictional_pricing_model_configs(3, ctx);
+    auto written = generate_synthetic_pricing_model_configs(3, ctx);
     BOOST_LOG_SEV(lg, debug) << "Written configs: " << written;
 
     pricing_model_config_repository repo;
@@ -90,7 +90,7 @@ TEST_CASE("read_latest_pricing_model_config_by_name", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     auto cfg = configs[0];
     const auto original_description = cfg.description;
@@ -102,7 +102,7 @@ TEST_CASE("read_latest_pricing_model_config_by_name", tags) {
     cfg.description = original_description + " v2";
     repo.write(h.context(), cfg);
 
-    auto read = repo.read_latest_by_name(h.context(), cfg.name);
+    auto read = repo.read_latest_by_code(h.context(), cfg.name);
     BOOST_LOG_SEV(lg, debug) << "Read configs: " << read;
 
     REQUIRE(read.size() == 1);
@@ -115,7 +115,7 @@ TEST_CASE("read_latest_pricing_model_config_by_id", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     auto cfg = configs[0];
     const auto id_str = boost::uuids::to_string(cfg.id);
@@ -140,7 +140,7 @@ TEST_CASE("read_nonexistent_pricing_model_config", tags) {
     const std::string nonexistent_name = "NONEXISTENT_CONFIG_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent name: " << nonexistent_name;
 
-    auto read = repo.read_latest_by_name(h.context(), nonexistent_name);
+    auto read = repo.read_latest_by_code(h.context(), nonexistent_name);
     BOOST_LOG_SEV(lg, debug) << "Read configs: " << read;
 
     CHECK(read.size() == 0);
@@ -151,7 +151,7 @@ TEST_CASE("read_all_pricing_model_config_history", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     auto cfg = configs[0];
     const auto id_str = boost::uuids::to_string(cfg.id);
@@ -174,7 +174,7 @@ TEST_CASE("remove_pricing_model_config", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto configs = generate_fictional_pricing_model_configs(1, ctx);
+    auto configs = generate_synthetic_pricing_model_configs(1, ctx);
     REQUIRE(!configs.empty());
     auto cfg = configs[0];
     const auto id_str = boost::uuids::to_string(cfg.id);

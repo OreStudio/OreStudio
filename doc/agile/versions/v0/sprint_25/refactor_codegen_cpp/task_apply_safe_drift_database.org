@@ -44,7 +44,7 @@ changes, no exclusions.
 * Plan
 
 1. =git rebase origin/main=.
-2. =projects/ores.codegen/codegen.sh regenerate --component database-cpp --profile all-cpp=.
+2. =projects/ores.codegen/codegen.sh regenerate --component database-cpp --address ores.cpp=.
 3. =cmake --build --preset linux-clang-debug-make=.
 4. =ctest --test-dir build/output/linux-clang-debug-make -R "ores\.database" --output-on-failure=.
 5. Re-run regeneration; =git diff --exit-code= clean.

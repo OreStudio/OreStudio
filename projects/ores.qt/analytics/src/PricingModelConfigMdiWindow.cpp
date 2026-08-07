@@ -52,8 +52,6 @@ PricingModelConfigMdiWindow::PricingModelConfigMdiWindow(ClientManager* clientMa
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -62,6 +60,7 @@ void PricingModelConfigMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -126,10 +125,13 @@ void PricingModelConfigMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
+
     initializeTableSettings(tableView_,
                             model_,
                             "PricingModelConfigListWindow",
-                            {ClientPricingModelConfigModel::Description},
+                            {
+                                ClientPricingModelConfigModel::Description,
+                            },
                             {900, 400},
                             1);
 }
@@ -163,6 +165,7 @@ void PricingModelConfigMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -180,7 +183,7 @@ void PricingModelConfigMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading pricing model configurations";
     clearStaleIndicator();
     emit statusChanged(tr("Loading pricing model configurations..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void PricingModelConfigMdiWindow::onDataLoaded() {
@@ -266,12 +269,12 @@ void PricingModelConfigMdiWindow::deleteSelected() {
         return;
     }
 
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
     std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* config = model_->getConfig(sourceIndex.row())) {
-            ids.push_back(config->id);
+            ids.push_back(boost::uuids::to_string(config->id));
             codes.push_back(config->name);
         }
     }
@@ -305,8 +308,7 @@ void PricingModelConfigMdiWindow::deleteSelected() {
     }
 
     QPointer<PricingModelConfigMdiWindow> self = this;
-    using DeleteResult =
-        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
@@ -314,7 +316,7 @@ void PricingModelConfigMdiWindow::deleteSelected() {
             return {};
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Making batch delete request for " << ids.size() << " pricing model configurations";
+            << "Making delete request for " << ids.size() << " pricing model configurations";
 
         analytics::messaging::delete_pricing_model_config_request request;
         request.ids = ids;
@@ -361,7 +363,8 @@ void PricingModelConfigMdiWindow::deleteSelected() {
             }
         }
 
-        self->model_->refresh();
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
 
         if (failure_count == 0) {
             QString msg = success_count == 1 ?
@@ -388,5 +391,6 @@ void PricingModelConfigMdiWindow::deleteSelected() {
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
+
 
 }

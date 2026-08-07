@@ -31,7 +31,7 @@ literal to a smaller default (e.g. =2=), re-tangle with
 =compass build --direct tangle_codegen_templates=, then regenerate each
 service with =codegen.sh generate --model
 projects/ores.<component>/service/modeling/component_overview.org
---profile component-service= and rebuild.
+--address ores.cmake.service= and rebuild.
 
 * Status
 
@@ -136,7 +136,7 @@ literal to a smaller default (e.g. =2=), re-tangle with
 =compass build --direct tangle_codegen_templates=, then regenerate each
 service with =codegen.sh generate --model
 projects/ores.<component>/service/modeling/component_overview.org
---profile component-service= and rebuild.
+--address ores.cmake.service= and rebuild.
 
 ** Why
 

@@ -63,6 +63,15 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
     void setPricingEngineTypes(const std::vector<analytics::domain::pricing_engine_type>& items);
 
 
@@ -73,7 +82,6 @@ signals:
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
-    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -83,6 +91,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();

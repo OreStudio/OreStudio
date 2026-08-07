@@ -26,9 +26,9 @@ or =doc_generate.py= directly, bypassing the proper CLI layers:
 | Script | Replacement |
 |--------+-------------|
 | =generate_doc.sh= | =compass add <type>= |
-| =generate_dq_schema.sh= | =codegen.py generate --profile all-sql= |
-| =generate_trade_schema.sh= | =codegen.py generate --profile all-sql= |
-| =generate_workflow_schema.sh= | =codegen.py generate --profile all-sql= |
+| =generate_dq_schema.sh= | =codegen.py generate --address ores.sql= |
+| =generate_trade_schema.sh= | =codegen.py generate --address ores.sql= |
+| =generate_workflow_schema.sh= | =codegen.py generate --address ores.sql= |
 | =generate_workspace_entities.sh= | =codegen.py generate= |
 | =generate_crypto_refdata.sh= | =codegen.py generate= |
 | =generate_flags_refdata.sh= | =codegen.py generate= |

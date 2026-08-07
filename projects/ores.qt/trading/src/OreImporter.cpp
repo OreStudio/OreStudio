@@ -25,6 +25,7 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <boost/lexical_cast.hpp>

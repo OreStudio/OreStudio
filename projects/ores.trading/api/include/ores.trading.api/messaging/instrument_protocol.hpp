@@ -61,16 +61,9 @@ namespace ores::trading::messaging {
 
 // ---- Typed FX instrument protocol ----
 
-struct save_fx_forward_instrument_request {
-    using response_type = struct save_fx_forward_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_forward_instruments.save";
-    ores::trading::domain::fx_forward_instrument data;
-};
-
-struct save_fx_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
+// fx_forward_instrument's save request/response now lives in the
+// codegen-generated ores.trading.api/messaging/fx_forward_instrument_protocol.hpp
+// (list/save/history/remove), alongside the generated event registrar.
 
 struct save_fx_vanilla_option_instrument_request {
     using response_type = struct save_fx_vanilla_option_instrument_response;

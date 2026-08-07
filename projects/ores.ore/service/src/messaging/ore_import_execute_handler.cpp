@@ -31,6 +31,7 @@
 #include "ores.storage/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"

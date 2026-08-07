@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: CD698EB1-D411-4BF7-84B0-9794D47C802A
+:END:
+#+title: ores.cpp.eventing-integration-test
+#+description: Per-entity Catch2 test proving the DB-write -> pg_notify -> postgres_event_source -> event_bus -> NATS-publish pipeline end to end.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+default: disabled
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-08-07
+#+updated: 2026-08-07
+
+This page is the node for the =ores.cpp.eventing-integration-test=
+facet of the codegen template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical
+space]]. Each archetype below is documented, and holds its =mustache=
+source, in its own linked page — this page is the facet-level
+summary and the routing table to them.
+
+* Summary
+
+One template: a Catch2 integration test that writes an entity via
+its repository and asserts the resulting NATS entity-changed
+notification is actually observed on the wire — no mocks, real
+Postgres LISTEN/NOTIFY, real NATS. =eventing-integration-test=
+profile.
+
+* The ores.cpp.eventing-integration-test facet
+
+Generalises the hand-written proof-of-pattern test
+(=business_unit_eventing_integration_tests.cpp=, see
+[[id:02BC190D-6B74-4058-9418-E898CBB07216][the task that proved it]]) into a per-entity archetype: assembles the
+same =postgres_event_source= + =event_bus= + =publish_entity_event=
+wiring the entity's production event-registrar uses (see
+[[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]]), directly in the test rather than via
+a running service process, writes a generated instance through the
+entity's repository, and polls a buffered NATS subscription for the
+matching notification.
+
+*Opt-in, disabled by default* — every entity with a repository and
+=ores.cpp.nats-eventing= enabled (the default set) is eligible, but
+enabling this facet is a per-entity decision: the generated test
+needs its component's =tests/CMakeLists.txt= to link
+=ores.eventing.api.lib=, =ores.eventing.core.lib=, and =ores.nats.lib=
+(a one-time, hand-maintained addition — see
+=ores.refdata.core.tests/CMakeLists.txt= for the pattern) and, for any
+entity with =party_id_from_session= set, also
+=ores.refdata.api.lib=/=ores.refdata.core.lib= for party scoping.
+Requires a live Postgres + NATS to run (it is a real integration
+test, not a unit test) — not something to blanket-enable across
+every entity without considering CI cost.
+
+Handles both the flat and C1202-nested (=has_identity_group=/
+=has_audit_group=) entity shapes, branching identically to every
+other facet that already does this (mapper, repository, service,
+presentation).
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:5365DC63-A9BF-4C19-9822-C5BA9B6F9A23][ores.cpp.eventing-integration-test.nats_integration_test]] | Write-then-observe-NATS-notification Catch2 test. =eventing-integration-test= profile. |
+
+* See also
+
+- [[id:9F996EA1-63C6-4D35-A681-5DBAB28BA15F][ores.cpp.nats-event-registrar]] — the production wiring this test replicates directly rather than exercising through a running service.
+- [[id:5703E520-4BC0-4B9D-BA2D-8C3285FC1DC9][ores.cpp.nats-eventing]] — the changed-event type this test subscribes to.
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

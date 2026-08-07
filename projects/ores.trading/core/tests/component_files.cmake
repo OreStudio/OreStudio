@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "equity_position_instrument_eventing_integration_tests.cpp"
     "main.cpp"
     "repository_activity_type_repository_tests.cpp"
     "repository_equity_accumulator_instrument_repository_tests.cpp"

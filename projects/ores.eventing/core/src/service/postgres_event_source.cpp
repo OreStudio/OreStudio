@@ -68,6 +68,10 @@ void postgres_event_source::stop() {
     listener_.stop();
 }
 
+bool postgres_event_source::wait_until_ready(std::chrono::milliseconds timeout) {
+    return listener_.wait_until_ready(timeout);
+}
+
 void postgres_event_source::on_entity_change(const domain::entity_change_event& e) {
     BOOST_LOG_SEV(lg(), info) << "Received PostgreSQL notification for entity: " << e.entity
                               << " with " << e.entity_ids.size() << " entity IDs";

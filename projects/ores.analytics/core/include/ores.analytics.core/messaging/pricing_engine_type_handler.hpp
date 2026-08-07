@@ -51,7 +51,7 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for pricing engine type operations.
  *
- *  are system-owned global entities; list and history
+ * Pricing Engine Types are system-owned global entities; list and history
  * operations use the system tenant context.
  */
 class pricing_engine_type_handler {

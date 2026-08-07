@@ -239,7 +239,7 @@ void populateDynamicCombo(
             combo->clear();
             if (!blank_label.isEmpty()) {
                 combo->addItem(blank_label);
-                combo->setItemData(0, blank_label, Qt::UserRole);
+                combo->setItemData(0, QString(), Qt::UserRole);
                 combo->setItemData(0, QString(), Qt::ToolTipRole);
             }
             for (const auto& item : items) {

@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr:
+#+pr: 1893
 #+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
 #+blocked_since:
 #+created: 2026-05-31
@@ -70,7 +70,7 @@ projects/ores.codegen/codegen.sh regenerate --component analytics-cpp --address 
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1893][#1893]] | [analytics,codegen] Apply safe drift to analytics-cpp |
 
 * Review
 

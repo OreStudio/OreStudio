@@ -77,6 +77,17 @@ Concrete rules:
 - The =IYieldCurveProcess= implementation is a thin shell delegating to these free functions.
 - RNG is a =std::mt19937= passed by reference — no owned RNG state in params structs.
 
+** QuantLib reference
+
+QuantLib source available at =/home/marco/Development/ORE/Engine/QuantLib/=.
+Key paths for IR process models:
+- =ql/models/shortrate/= — Vasicek, CIR, Hull-White, Black-Karasinski, BDT
+- =ql/models/marketmodels/= — LMM/BGM
+- =ql/termstructures/yield/= — HJM, forward curves
+- =ql/methods/lattices/= — binomial/trinomial tree engines
+- =ql/experimental/shortrate/= — G2, two-factor models
+- =test-suite/= — QuantLib's own tests (reference vectors for our Catch2 tests)
+
 ** Current architecture
 
 =yield_curve_process_type= catalogues short-rate process engines as a

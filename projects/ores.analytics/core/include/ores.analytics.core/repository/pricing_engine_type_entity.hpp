@@ -41,7 +41,7 @@ struct pricing_engine_type_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    std::optional<std::string> instrument_type_code;
+    std::string instrument_type_code;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

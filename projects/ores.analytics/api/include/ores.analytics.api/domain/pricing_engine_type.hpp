@@ -58,10 +58,10 @@ struct pricing_engine_type final {
     std::string description;
 
     /**
-     * @brief Optional reference to the corresponding trading instrument type.
+     * @brief Reference to the corresponding instrument type code. Use the NONE sentinel for engine
+     * types (e.g. leg-/coupon-level pricers) with no direct instrument type mapping.
      *
-     * Soft FK to ores_trading_trade_types_tbl. May be NULL for engine types with no direct
-     * instrument mapping.
+     * Soft FK to ores_refdata_instrument_codes_tbl.
      */
     std::string instrument_type_code;
 

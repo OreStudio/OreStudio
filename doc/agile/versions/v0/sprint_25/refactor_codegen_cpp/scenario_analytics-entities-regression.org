@@ -80,8 +80,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | instrument type should be a dynamic combo box. also we need a instrument type of none to be the sentinel rather than leaving it as null. |
+| Status | PASS |
 
 ** Edit the pricing engine type
 
@@ -95,7 +94,8 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | PASS |
+| Status | FAIL |
+| Notes  | the combo box ends with FXTARF. however, I see some engines have SWPTN, etc. seems like the list is clipped. |
 
 ** View pricing engine type history
 
@@ -109,7 +109,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | history does not come up. |
+| Notes  | history dialog comes up but its blank.; ; [[file:scenario_analytics-entities-regression_step5_20260807_093514.png]] |
 
 ** Delete the pricing engine type
 
@@ -123,7 +123,7 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open Pricing Model Configs and create a config
 
@@ -213,9 +213,9 @@ This page documents a test scenario verifying [[id:1ABAAF88-B7A4-4774-8843-CF9CB
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-07T00:13:18Z |
+| Completed at  | 2026-08-07T08:36:25Z |
 | Branch        | feature/refactor-codegen-cpp |
-| Commit        | 053144143 |
+| Commit        | e0f825c20 |
 | Worktree      | bright_faraday |
 
 * Notes

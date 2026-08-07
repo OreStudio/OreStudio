@@ -42,6 +42,7 @@ generate_synthetic_pricing_engine_type(utility::generation::generation_context& 
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.instrument_type_code = std::string("NONE");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

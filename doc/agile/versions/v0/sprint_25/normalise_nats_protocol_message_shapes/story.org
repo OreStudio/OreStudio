@@ -56,7 +56,7 @@ dq, scheduler, reporting, workspace, assets, trading, ...).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8B981AD8-2F1A-42D3-850A-8785B5FBA947][Analyse the right shape for NATS response messages]] | STARTED | 2026-08-07 | | Analyse whether all NATS response structs should carry a standard success/message error path, weigh pros and cons, audit the current state across all components, and produce a recommendation for the codegen template convention. |
+| [[id:8B981AD8-2F1A-42D3-850A-8785B5FBA947][Analyse the right shape for NATS response messages]] | DONE | 2026-08-07 | 2026-08-07 | Analyse whether all NATS response structs should carry a standard success/message error path, weigh pros and cons, audit the current state across all components, and produce a recommendation for the codegen template convention. |
 
 * Decisions
 

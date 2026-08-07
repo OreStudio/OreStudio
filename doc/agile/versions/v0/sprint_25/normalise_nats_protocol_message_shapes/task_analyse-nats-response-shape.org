@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] |
-| Now          | Implementation complete — 3 of 4 hand-written protocols fixed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build and test; raise PR. |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -137,3 +137,13 @@ via its "Verifies task" field.
 | 3 | get_step_result_response.success conflates "not found" with "error" | steps_query_protocol.hpp | Declined | Consumer treats !success and !found identically; harmless. Revisit if second consumer added. |
 
 * Result
+
+All 4 hand-written protocol files now carry success/message on every
+response struct, matching the codegen-generated convention. Server-side
+handlers set success=true on success paths and message on failure.
+Client-side consumers check success before using the response.
+
+Codegen template did not need changes — it already generates
+success/message on all response types including list responses.
+
+Build: green. Tests: 71/71 passed. Site: built successfully.

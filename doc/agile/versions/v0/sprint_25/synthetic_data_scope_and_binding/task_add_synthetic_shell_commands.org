@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 8EAD4F99-1F09-45AB-BCA3-C0A701791CEC
+:END:
+#+title: Task: Add synthetic market simulator commands to ores.shell
+#+description: Add shell commands to list folders, configs, and start/stop feeds for synthetic market data
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-05
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a `synthetic` command group to ores.shell with subcommands to interact with market simulator functionality: listing folders and configs, starting/stopping feeds, and validating vintage data. These commands enable non-GUI market simulator operations, scripting, and testing without requiring the Qt client.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-05                               |
+
+* Acceptance
+
+- `synthetic list folders` shows only folders visible to the logged-in party (via RLS filtering)
+- `synthetic list configs` shows only market_data_generation_configs visible to the logged-in party/tenant (system/tenant/party scope filtering)
+- `synthetic start <feed>` and `synthetic stop <feed>` start/stop individual feeds or folders of feeds
+- `synthetic validate-vintage <feed>` validates vintage data availability for a feed
+- All commands respect RLS and scope-based filtering (same as Market Simulator Qt client)
+
+* Plan
+
+** Extend ores.shell.synthetic_commands
+- Add `list folders [--config-id=<id>]` subcommand
+  - Calls `get_folders_request` with viewer's context (RLS automatically filters by party)
+  - Displays folder hierarchy (root > collection > asset class > instrument type)
+  - Optional --config-id filters to children of a specific collection
+
+- Add `list configs [--scope=system|tenant|party]` subcommand
+  - Calls `get_market_data_generation_configs_request`
+  - RLS automatically filters by scope (system/tenant/party)
+  - Optional --scope flag filters to specific scope level(s)
+  - Display: name, id, scope, party_id, binding_mode, enabled status
+
+- Add `start <folder-id>` and `stop <folder-id>` subcommands
+  - Folder-scoped: calls `start_feeds_under_folder_request` / `stop_feeds_under_folder_request`
+  - Resolves to all FX pairs and IR curves under the folder
+
+- Add `start <feed-id>` and `stop <feed-id>` subcommands for individual feeds
+  - Per-feed: calls `start_feed_binding_request` / `stop_feed_binding_request`
+
+- Add `validate-vintage <feed-id>` subcommand
+  - Calls `get_vintage_validity_request` to check data availability
+  - Displays vintage validity status (pass/fail + reason)
+
+** Implementation details
+- Add methods to synthetic_commands class for each subcommand
+- Reuse existing NATS request/response patterns from MarketSimulatorWindow
+- All commands inherit viewer context automatically (via process_authenticated_request)
+- Error handling: report RLS violations, missing entities, feed state errors
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

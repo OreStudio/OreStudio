@@ -52,11 +52,11 @@ Per-field migration:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | In-depth analysis complete; 5 implementation tasks queued. |
+| Now           | 5 of 6 tasks DONE; XML round-trip descoped to [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd]] story. |
 | Waiting on    | Nothing.                               |
-| Next          | Start [[id:657F1AF9-0B49-40DA-9F2D-68006B53F814][Add oresmd parsing/projection library]]. |
+| Next          | Nothing. |
 | Last touched  | 2026-08-07                               |
 
 * Acceptance

@@ -57,19 +57,19 @@ public:
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, list_sessions_response{});
+        reply(nats_, msg, list_sessions_response{.success = true});
     }
 
     void active(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, get_active_sessions_response{});
+        reply(nats_, msg, get_active_sessions_response{.success = true});
     }
 
     void samples(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, get_session_samples_response{});
+        reply(nats_, msg, get_session_samples_response{.success = true});
     }
 
 private:

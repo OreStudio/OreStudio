@@ -69,6 +69,7 @@ public:
         auto req = decode<get_asset_classes_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(asset_class_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            resp.message = "Failed to decode request";
             reply(nats_, msg, resp);
             return;
         }
@@ -83,6 +84,7 @@ public:
             BOOST_LOG_SEV(asset_class_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
         }
+        resp.success = true;
         reply(nats_, msg, resp);
     }
 

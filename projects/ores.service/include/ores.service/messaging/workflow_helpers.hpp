@@ -255,7 +255,7 @@ inline std::optional<cached_step_result> check_step_idempotency(ores::nats::serv
 
         const auto resp =
             ores::nats::default_wire_codec().decode<get_step_result_response>(reply_msg.data);
-        if (!resp || !resp->found)
+        if (!resp || !resp->success || !resp->found)
             return std::nullopt;
 
         return cached_step_result{.outcome = resp->outcome,

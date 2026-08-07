@@ -521,7 +521,7 @@ void accounts_commands::process_list_sessions(std::ostream& out,
 
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
         out, session, "iam.v1.sessions.list", req);
-    if (!result)
+    if (!result || !result->success)
         return;
 
     const auto& sessions = result->sessions;
@@ -570,7 +570,7 @@ void accounts_commands::process_active_sessions(std::ostream& out, nats_client& 
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
         out, session, "iam.v1.sessions.active", iam::messaging::get_active_sessions_request{});
-    if (!result)
+    if (!result || !result->success)
         return;
 
     const auto& sessions = result->sessions;
@@ -616,7 +616,7 @@ void accounts_commands::process_session_stats(std::ostream& out, nats_client& se
 
     auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
         out, session, "iam.v1.sessions.statistics", req);
-    if (!result)
+    if (!result || !result->success)
         return;
 
     const auto& stats = result->statistics;

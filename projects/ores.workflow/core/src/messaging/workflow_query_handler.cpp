@@ -333,7 +333,8 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
                                    .outcome = step_outcome,
                                    .result_json = is_success ? step->response_json : "",
                                    .error_message = is_success ? "" : step->error,
-                                   .log = std::move(log)});
+                                   .log = std::move(log),
+                                   .success = true});
 }
 
 } // namespace ores::workflow::messaging

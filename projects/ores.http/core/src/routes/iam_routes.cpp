@@ -1355,6 +1355,7 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         iam::messaging::list_sessions_response resp;
         resp.sessions = std::move(sessions_list);
         resp.total_count = total_count;
+        resp.success = true;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1416,6 +1417,7 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
 
         iam::messaging::get_session_statistics_response resp;
         resp.statistics = std::move(stats);
+        resp.success = true;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1450,6 +1452,7 @@ asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http
 
         iam::messaging::get_active_sessions_response resp;
         resp.sessions = std::move(active_sessions);
+        resp.success = true;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

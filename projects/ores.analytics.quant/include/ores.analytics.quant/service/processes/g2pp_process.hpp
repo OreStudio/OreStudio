@@ -46,9 +46,18 @@ namespace ores::analytics::quant::service {
  *   P(t,T) = A(t,T) * exp(-B_x(t,T) * x(t) - B_y(t,T) * y(t))
  *
  * Derivation follows Brigo & Mercurio, "Interest Rate Models — Theory
- * and Practice", ch. 4 (two-factor Gaussian G2++ model). The recursion
- * reduces to the one-factor hull_white_process case when sigma_y = 0
- * and kappa_y -> infinity (factor y pinned to zero).
+ * and Practice", ch. 4 (two-factor Gaussian G2++ model).
+ *
+ * At construction the entire initial_rate is placed in factor_x_ (the
+ * factor that persists under the one-factor reduction below), with
+ * factor_y_ starting at zero — this asymmetry is deliberate so that
+ * the one-factor reduction preserves the initial short rate.
+ *
+ * One-factor reduction: when sigma_y = 0 and kappa_y -> infinity,
+ * factor_y is pinned to zero and the model reduces to a one-factor
+ * Gaussian (Vasicek) process for factor_x alone. The constructor's
+ * initial-state split (all initial_rate in factor_x) ensures this
+ * limit starts at the user's specified rate, not zero.
  *
  * Parameters are annualised; dt is the year-fraction per tick, matching
  * hull_white_process. Callers never pre-scale parameters for finer

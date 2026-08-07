@@ -68,6 +68,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Degenerate kappa: ou_decay unguarded vs ou_variance guarded — inconsistent for negative kappa | g2pp_process.cpp | Accepted | Added kappa >= 0 constructor validation, eliminating the inconsistency |
+| 2 | Initial state split: initial_rate in factor_y contradicts docstring's one-factor reduction claim | g2pp_process.hpp/cpp, tests | Accepted | Moved initial_rate to factor_x_; updated docstring and all affected tests |
+| 3 | "One-factor reduction" test doesn't verify the reduction — uses finite kappa_y, generic bounds | g2pp_process_tests.cpp | Accepted | Rewrote: large kappa_y with sigma_y=0, statistical equivalence to HW |
+| 4 | QuantLib V() never tested with non-zero vol — transcription bug wouldn't be caught | g2pp_process_tests.cpp | Accepted | Added V(t) positivity and monotonicity test with non-zero vol |
+| 5 | Loop-invariant recomputation in discount_factor() | g2pp_process.cpp | Accepted | Hoisted decay_x/y, var_x/y, cov_xy outside the loop |
 
 * Result

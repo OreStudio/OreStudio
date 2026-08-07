@@ -222,6 +222,161 @@ multi-decade horizon. Adding G2++ gives ORE Studio's synthetic feeds
 the same modelling capability that the multicurve docs anticipate for
 bootstrapped official curves.
 
+** Single-curve constraint: which models actually fit
+
+ORE Studio currently supports only single-curve generation: one
+short-rate process driving one =ir_curve_generation_config=, producing
+one curve. This constrains which of the 7 models are practically useful:
+
+| Model | Single-curve fit? | Rationale |
+|-------+-------------------+-----------|
+| G2++ | ✅ Implemented | Two-factor short-rate model, same single-curve use case as Hull-White — just richer dynamics. |
+| Black-Karasinski | ✅ Next | Log-normal short rate, same single-curve use case. SDE approach fits directly. |
+| BDT | ✅ Fits | Short-rate via binomial tree, still a single curve. |
+| Affine Term Structure (1-factor) | ✅ Fits | 1-factor affine subsumes Vasicek/CIR/HW. Multi-factor generalisation is future work. |
+| Affine Term Structure (N-factor) | ⚠️ Future | Multi-factor affine needs multi-curve context (each factor projects a different curve segment). |
+| HJM | ❌ Out of scope for single-curve | Models the entire forward curve f(t,T) — multi-curve by construction. Revisit when we have curve families. |
+| LMM/BGM | ❌ Out of scope for single-curve | Models forward LIBOR rates at multiple tenors simultaneously. Revisit when we have curve families. |
+| Quadratic Gaussian (1-factor) | ✅ Fits (low priority) | 1-factor QG is a richer short-rate model. Practical value is mainly in multi-factor form. |
+
+Revised build order for single-curve: G2++ → Black-Karasinski → BDT → 1-factor Affine.
+HJM, LMM, and multi-factor forms are deferred to a future multi-curve story.
+
+** Exposure plan: two-PR split
+
+PR 1 (this task): quant engine only — =g2pp_process= class + tests.
+PR 2 (separate infra task): wire it into the system end-to-end.
+
+*** PR 2 design: strongly-typed parameter structs per model
+
+No JSONB. No overloaded factory with 9 scalar parameters. Each model
+gets its own aggregate parameter struct, and the factory gets one
+strongly-typed static method per model:
+
+#+begin_src c++
+// ores.analytics.quant/domain/process_parameters.hpp
+
+namespace ores::analytics::quant::domain {
+
+struct vasicek_parameters {
+    double kappa;
+    double theta;
+    double sigma;
+    double initial_rate;
+};
+
+struct hull_white_parameters {
+    double kappa;
+    std::vector<double> theta_path;
+    double sigma;
+    double initial_rate;
+};
+
+struct cox_ingersoll_ross_parameters {
+    double kappa;
+    double theta;
+    double sigma;
+    double initial_rate;
+};
+
+struct g2_parameters {
+    double kappa_x;     // factor x mean-reversion (a in QuantLib)
+    double kappa_y;     // factor y mean-reversion (b in QuantLib)
+    double sigma_x;     // factor x volatility (sigma in QuantLib)
+    double sigma_y;     // factor y volatility (eta in QuantLib)
+    double rho;         // correlation ∈ [-1, 1]
+    double initial_rate;
+};
+#+end_src
+
+The factory gains one strongly-typed method per model:
+
+#+begin_src c++
+// process_factory — additions
+
+static std::unique_ptr<IYieldCurveProcess>
+make_g2(const g2_parameters& p, std::uint32_t seed = 42, double dt = 1.0);
+#+end_src
+
+The existing =make_yield_curve_process(string, kappa, theta_path, sigma, ...)=
+stays for backward compatibility but is internally a thin dispatcher
+that constructs the appropriate parameter struct and delegates.
+New callers use the strongly-typed methods directly.
+
+*** Parameter storage in the database
+
+One child table per process type that needs non-standard columns:
+
+#+begin_src sql
+-- G2 parameters: one row per ir_curve_generation_config that selects G2
+create table ores_synthetic_ir_curve_generation_config_g2_params_tbl (
+    config_id      uuid not null references ir_curve_generation_config(id),
+    kappa_x        double precision not null default 0.0,
+    kappa_y        double precision not null default 0.0,
+    sigma_x        double precision not null default 0.0,
+    sigma_y        double precision not null default 0.0,
+    rho            double precision not null default 0.0
+);
+#+end_src
+
+The existing =kappa=, =theta=, =sigma= columns on =ir_curve_generation_config=
+stay — they're the default parameter set for the existing 3 models
+(Vasicek, CIR, Hull-White). New models that don't fit those three
+scalars get their own parameter table. A CHECK constraint ensures
+the child row exists iff process_type matches.
+
+This is the relational equivalent of =std::variant= — each table
+holds exactly the columns its model needs, FK-constrained to the
+parent config. No nullable-column soup, no JSONB.
+
+*** Qt UI: dynamic parameter forms
+
+=YieldCurveProcessTypeDetailDialog= already shows the catalogue entry
+(name, description). The parameter editing happens in
+=IrCurveGenerationConfigDetailDialog=.
+
+Current state: a fixed form with =kappa=, =theta=, =sigma=,
+=initial_rate= fields. After G2:
+
+1. The dialog reads =process_type= from the config.
+2. A =QStackedWidget= or simply show/hide groups switches the
+   parameter form based on the selected process type:
+   - Vasicek/CIR/Hull-White → existing form (kappa, theta, sigma)
+   - G2 → new form (kappa_x, kappa_y, sigma_x, sigma_y, rho)
+3. Each form reads/writes its own strongly-typed struct.
+4. The controller maps between the struct and the DB layer (the
+   parent config row + the child parameter table row if needed).
+
+The combo box population (=ClientYieldCurveProcessTypeModel=) is
+unaffected — it already reads from the catalogue table. Adding a
+row to the seed data makes G2 appear automatically.
+
+*** What the existing 3 models look like after this
+
+Vasicek, CIR, Hull-White don't need child parameter tables — their
+=kappa=, =theta=, =sigma=, =initial_rate= live on the parent config
+row. They get vasicek_parameters / cir_parameters /
+hull_white_parameters structs too, for consistency, but the
+existing columns serve as their storage.
+
+G2 is the first model that genuinely needs *different* parameters.
+Black-Karasinski will need its own child table too (same shape as
+Vasicek's params but semantically different — log-normal, so
+initial_rate > 0 constraint). BDT will need a tree-specific table
+(term structure + vol curve). Each new model adds one child table
+and one parameter struct — no cross-model coupling.
+
+*** Build order for PR 2
+
+1. Add =g2_parameters= struct in =ores.analytics.quant/domain/=
+2. Add =process_factory::make_g2()=
+3. Add seed data row (=synthetic_yield_curve_process_types_populate.sql=)
+4. Add child table + migration
+5. Extend =ir_curve_generation_config= domain/repository to
+   read/write G2 params alongside the parent row
+6. Extend =IrCurveGenerationConfigDetailDialog= with G2 parameter form
+7. Extend the config controller to map between UI and DB layers
+
 * Notes
 
 * Test Scenarios

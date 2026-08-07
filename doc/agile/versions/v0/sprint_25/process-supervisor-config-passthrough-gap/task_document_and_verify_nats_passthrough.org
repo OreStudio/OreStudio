@@ -8,12 +8,12 @@
 #+filetags: :controller:process-supervisor:config:tech-debt:environment:podman:process-supervisor-config-passthrough-gap:sprint_25:v0:
 #+owner: marco
 #+branch: feature/document-and-verify-nats-passthrough
-#+pr: 1900
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment: brave_hopper
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A future engineer adding a new shared NATS knob only has to touch .env and the m
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Nothing. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Next         | Begin implementation.                  |
 | Last touched | 2026-08-04                               |
 
 * Acceptance
@@ -39,53 +39,9 @@ A future engineer adding a new shared NATS knob only has to touch .env and the m
 
 * Plan
 
-Audit what the fallback tier already shipped on main (the mapper
-fallback-tier task, the parser consolidation, the systemd/shell
-threading strips) against what the task's two deliverables still need:
-
-1. *Doc*: =nats_wire_format.org= mentioned =ORES_NATS_WIRE_FORMAT=
-   only in passing; no doc described the config-flow at all. The old
-   five-layer threading (controller-launch argv, C++
-   =default_args_template=, SQL =args_template= rows, Qt client launch,
-   shell =flag_for= + .env mirror) lived only in the story. Add a
-   "Config flow" section describing the single-source-of-truth design:
-   shared knobs set once in .env, two edits to add a knob (env_init.py
-   emission + register_shared_domain suffix), the allowed-suffix
-   contract, the deliberate exclusions (TLS trio, shell mirror,
-   app-prefix precedence), and where the regression tests live.
-2. *Regression test*: the mechanism-level tests already exist
-   (config_nats_configuration_tests.cpp: shared-var resolution + TLS_CA
-   exclusion) and service parser tests only proved the blanking
-   direction (defaults with env stripped). Add the missing positive
-   proof at the real service-parser level: a shared =ORES_NATS_URL=
-   set in env reaches =ores.iam.service='s parser with empty argv.
-
-No code changes to process_supervisor, SQL args_template rows, or
-systemd_generate.py — verification confirmed they need none.
-
-* Result
-
-Shipped in the feature/document-and-verify-nats-passthrough branch
-(commit range ff33b0595..HEAD, PR to follow):
-
-- =doc/knowledge/architecture/nats_wire_format.org=: new "Config flow:
-  shared NATS knobs reach every service from .env alone" section
-  documenting the single-source-of-truth design — the collapsed
-  five-layer passthrough, the two-edit contract for adding a shared
-  knob, the =environment_mapper_factory= shared-domain fallback
-  mechanism, the allowed-suffix scope, the deliberate exclusions (TLS
-  trio CLI-supplied, shell's own ORES_SHELL_NATS_* mirror, app-prefix
-  precedence), and pointers to the regression tests.
-- =ores.iam/service/tests/config_parser_tests.cpp=: new
-  =shared_nats_env_var_reaches_service_without_argv= test — a shared
-  =ORES_NATS_URL= set in the environment reaches the real service
-  parser's =nats.url= with zero argv, proving the passthrough contract
-  end to end through =standard_service_options::parse()=.
-
-Acceptance met: the knowledge doc reflects the new architecture, and
-an automated test demonstrates a passthrough knob reaching a service
-via .env only. Verified locally: ores.iam.service.tests and
-ores.nats.tests both pass under ctest.
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
@@ -104,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1900][#1900]] | [docs,nats] Document the single-source-of-truth NATS config flow and prove it with a regression test |
+|    |       |
 
 * Review
 

@@ -26,11 +26,11 @@ No trace of the decommissioned controller process/architecture remains in the DB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9E3EC9E2-742F-4830-839D-99EF2C2BC626][Collapse NATS config passthrough to a single environment-mapper fallback tier]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:ED259270-CEAF-4456-A6C9-8974E9E5B8B2][Wire systemd generate to the codegen model and strip redundant NATS CLI threading]] -- the SQL schema can't be dropped while systemd_generate.py still queries it. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -39,11 +39,36 @@ No trace of the decommissioned controller process/architecture remains in the DB
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Implementation strategy, as executed:
+
+1. Inventory every controller trace in the SQL codebase: the three
+   =controller/= dirs under =projects/ores.sql/{create,drop,populate}=
+   (14 files), the =\\ir= includes in =create.sql=/=drop.sql= and the
+   RLS orchestration files, the populate section + summary count in
+   =foundation_populate.sql=, the =_controller_service= DB role in
+   =drop_roles.sql=, the IAM =ControllerService= role and
+   =controller::*= permissions, the =validation_ignore.txt= entries,
+   and the dead =ores_controller_= prefix mapping in
+   =plantuml_er_parse_sql.py=.
+2. Classify every remaining 'controller' string across
+   =projects/ores.sql= as unrelated before leaving it in place: the
+   Qt MVC =SettingGatedActionController= comments (acceptance-exempt),
+   the Greek LEI legal-name data (AIR TRAFFIC CONTROLLERS OF GREECE),
+   and the synthetic =curve_feed_controller= comment.
+3. Delete the dirs, strip the includes, remove the roles/grants, then
+   regenerate =ores_schema.puml/.png/.cmapx= from the SQL via
+   =plantuml_er_generate.sh= (270 tables, 21 packages, 0 warnings).
+4. Verify: grep clean, =compass db recreate= succeeds with zero
+   controller mentions, all 22 services start and the Acme holding
+   group provisions end to end.
 
 * Notes
+
+The generated =ores.wt.service= unit still substitutes
+=ORES_CONTROLLER_SERVICE_WT_PORT= (=env_init.py= emits it,
+=systemd_generate.py= reads it) — genuinely out of scope for this
+task; the sibling task "Rename still-functionally-used
+ORES_CONTROLLER_SERVICE_* env vars" covers it.
 
 * Test Scenarios
 
@@ -69,3 +94,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in [[id:6d2ecd070][6d2ecd070]]: the legacy controller SQL schema
+is gone from the codebase. Deleted 14 files across the three
+=controller/= dirs (the five tables service_definitions,
+service_dependencies, service_instances, service_events and
+rls_policies, plus their drops and populates), removed the =\\ir=
+includes from =create.sql=/=drop.sql=/=rls_create.sql=/=rls_drop.sql=,
+the foundation populate section and its summary count, the
+=ores_<label>_controller_service= role from =drop_roles.sql=, the IAM
+=ControllerService= role and =controller::*= permissions, the
+=validation_ignore.txt= entries, and the =ores_controller_= prefix
+mapping in =plantuml_er_parse_sql.py=; regenerated
+=ores_schema.puml=.png=.cmapx= (270 tables, 21 packages, 0 warnings).
+
+Acceptance met: grep for 'controller' across =projects/ores.sql= shows
+only the four known-unrelated hits (Qt MVC comments, LEI data,
+=curve_feed_controller=); =compass db recreate= succeeds cleanly
+(schema 0.0.25, zero controller mentions in the run); all 22 service
+units start and connect, and the Acme Corporation holding group
+provisions end to end.

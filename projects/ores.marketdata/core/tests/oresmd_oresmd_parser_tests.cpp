@@ -161,7 +161,13 @@ TEST_CASE("parse_commodity_quote", tags) {
  */
 
 TEST_CASE("round_trip_fx", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote"));
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=spot"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_fx_fwd", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }

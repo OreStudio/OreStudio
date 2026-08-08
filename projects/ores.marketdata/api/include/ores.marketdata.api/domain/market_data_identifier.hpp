@@ -38,6 +38,8 @@ namespace ores::marketdata::domain {
 struct fx_market_data_identifier final {
     std::string pair;
     instrument_type type = instrument_type::quote;
+    std::optional<domain::fx_quote_type> quote_type;
+    std::optional<std::string> point;
 
     bool operator==(const fx_market_data_identifier&) const = default;
 };

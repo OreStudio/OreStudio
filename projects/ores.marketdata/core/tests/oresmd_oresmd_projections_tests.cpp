@@ -41,11 +41,21 @@ ores::marketdata::domain::market_data_identifier parse(std::string_view s) {
  * documents for each oresmd URI.
  */
 
-TEST_CASE("fx_quote_key_matches_worked_example", tags) {
-    const auto id = parse("oresmd://fx/eurusd?type=quote");
+TEST_CASE("fx_spot_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FX/RATE/EUR/USD");
     REQUIRE_FALSE(oresmd_projections::to_index_name(id).has_value());
     REQUIRE_FALSE(oresmd_projections::to_curve_key(id).has_value());
+}
+
+TEST_CASE("fx_quote_key_defaults_to_spot", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FX/RATE/EUR/USD");
+}
+
+TEST_CASE("fx_fwd_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FXFWD/RATE/EUR/USD/6M");
 }
 
 TEST_CASE("ir_usd_libor_3m_index_name_and_curve_key", tags) {

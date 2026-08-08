@@ -187,10 +187,34 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
 }
 
+std::string_view ore_type(fx_quote_type qt) {
+    switch (qt) {
+    case fx_quote_type::spot: return "FX";
+    case fx_quote_type::fwd:  return "FXFWD";
+    }
+    return "FX";
+}
+
+std::string_view ore_fx_metric(fx_quote_type qt) {
+    switch (qt) {
+    case fx_quote_type::spot:
+    case fx_quote_type::fwd: return "RATE";
+    }
+    return "RATE";
+}
+
 std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
     if (id.type != instrument_type::quote || id.pair.size() != 6)
         return std::nullopt;
-    return std::format("FX/RATE/{}/{}", id.pair.substr(0, 3), id.pair.substr(3, 3));
+    const auto qt = id.quote_type.value_or(fx_quote_type::spot);
+    // spot: FX/RATE/CCY1/CCY2 (scalar).
+    if (qt == fx_quote_type::spot)
+        return std::format("FX/RATE/{}/{}", id.pair.substr(0, 3), id.pair.substr(3, 3));
+    // fwd: FXFWD/RATE/CCY1/CCY2/TENOR — forward curve, needs point for tenor.
+    if (!id.point)
+        return std::nullopt;
+    return std::format("FXFWD/RATE/{}/{}/{}", id.pair.substr(0, 3), id.pair.substr(3, 3),
+                       to_upper(*id.point));
 }
 
 std::string_view ore_type(equity_quote_type qt) {

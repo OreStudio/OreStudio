@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered FX quote-type representation: =fx_quote_type= (2 values: =spot=,
+=fwd=) with per-type =quote_key_fx= dispatching. =spot= stays 4-segment
+scalar =FX/RATE/CCY1/CCY2=; =fwd= emits 5-segment forward-key with
+=point= tenor (=FXFWD/RATE/CCY1/CCY2/TENOR=). =quote= absent defaults to
+=spot=. =point= field added to =fx_market_data_identifier=; parser guards
+=quote= against =type≠quote=. 135 test cases, 245 assertions, all passing.

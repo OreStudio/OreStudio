@@ -67,6 +67,8 @@ market_data_identifier resolve_fx(const fx_market_data_requirement& req,
     fx_market_data_identifier id;
     id.pair = pick_mandatory_string(req.pair, d ? d->pair : std::string{}, "pair");
     id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    id.point = pick_optional(req.point, d ? d->point : std::nullopt);
     return id;
 }
 

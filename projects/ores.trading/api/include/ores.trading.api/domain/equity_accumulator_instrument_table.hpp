@@ -17,17 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/equity_accumulator_instrument_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_TABLE_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_TABLE_HPP
 
-namespace ores::trading::repository {
+#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const equity_accumulator_instrument_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::trading::domain {
+
+/**
+ * @brief Converts equity_accumulator_instruments to the table format.
+ */
+ORES_TRADING_API_EXPORT std::string
+convert_to_table(const std::vector<equity_accumulator_instrument>& v);
+
 }
 
-}
+#endif

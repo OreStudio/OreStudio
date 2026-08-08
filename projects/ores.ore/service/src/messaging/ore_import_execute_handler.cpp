@@ -29,6 +29,7 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_option_instrument_protocol.hpp"

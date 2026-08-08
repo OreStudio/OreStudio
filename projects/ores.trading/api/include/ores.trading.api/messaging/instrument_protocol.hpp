@@ -28,7 +28,6 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
@@ -176,18 +175,6 @@ struct save_equity_asian_option_instrument_request {
 };
 
 struct save_equity_asian_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_accumulator_instrument_request {
-    using response_type = struct save_equity_accumulator_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_accumulator_instruments.save";
-    ores::trading::domain::equity_accumulator_instrument data;
-};
-
-struct save_equity_accumulator_instrument_response {
     bool success = false;
     std::string message;
 };

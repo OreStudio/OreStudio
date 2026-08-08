@@ -23,6 +23,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_option_instrument_protocol.hpp"

@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 12/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument. |
+| Now          | 13/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. equity_accumulator). |
+| Next         | Convert the next flat instrument (equity_asian_option). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -481,6 +481,55 @@ Zero-diff verified via a second regeneration pass. Build green;
 =ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
 75 cases incl. the new
 =write_equity_barrier_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_accumulator_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (EquityAccumulator, EquityTaRF) -- the
+=trade_type_code= check is the 2-value in-list plus an XOR
+cross-column check tying =target_amount/=target_type= non-null to
+EquityTaRF (both must be null for a plain EquityAccumulator). The
+XOR is satisfied by the default row via the empty-to-NULL mapper
+convention: =target_amount= is a =std::optional<double>= with no
+generator block (=std::nullopt=) and =target_type= is nullable text
+with no block (empty string, mapped to SQL NULL). =knock_out_level=
+is likewise a nullable =std::optional<double>= with no block.
+=payoff_type= (Accumulator/Decumulator/TaRF) carries the generator
+block, =std::string("Decumulator")=; =start_date/=expiry_date= are
+=date=-typed columns modelled as =std::string= (ISO 8601), per family
+precedent. All =double ... = 0.0= initializers preserved via
+=:default_value: 0.0=.
+
+Carries the hand-crafted =trade_type= index (only the third equity
+variant to have one, after equity_swap and equity_barrier_option) --
+preserved verbatim in the model. This one actually bit on the first
+diff pass: the model's Indexes table defaulted the row name to =type=
+(emitting =equity_accumulator_instruments_type_idx=) until renamed to
+=trade_type=, matching the hand-crafted
+=equity_accumulator_instruments_trade_type_idx=.
+
+Messaging path reconciled in the same commit:
+=save_equity_accumulator_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_accumulator()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 2 methods -- digital, asian). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_accumulator_instrument_handlers=; the three consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=)
+include the generated =equity_accumulator_instrument_protocol.hpp=;
+the generated struct is shape-identical (same =data= member, same
+=trading.v1.equity_accumulator_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_accumulator, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+76 cases incl. the new
+=write_equity_accumulator_instrument_publishes_nats_changed_event=;
 service: 10 cases); consumer libs =ores.ore.service.lib= and
 =ores.qt.trading.lib= green.
 

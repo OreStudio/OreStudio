@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "messaging/equity_accumulator_instrument_registrar.cpp"
     "messaging/equity_barrier_option_instrument_registrar.cpp"
     "messaging/equity_forward_instrument_registrar.cpp"
     "messaging/equity_option_instrument_registrar.cpp"
@@ -42,6 +43,7 @@ set(files
     "messaging/registrar_scripted.cpp"
     "messaging/registrar_trades.cpp"
     "messaging/trade_type_registrar.cpp"
+    "presentation/equity_accumulator_instrument_history_field_mapper.cpp"
     "presentation/equity_barrier_option_instrument_history_field_mapper.cpp"
     "presentation/equity_forward_instrument_history_field_mapper.cpp"
     "presentation/equity_option_instrument_history_field_mapper.cpp"
@@ -229,6 +231,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/commodity_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/composite_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/credit_instrument_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_accumulator_instrument_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_accumulator_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_barrier_option_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_barrier_option_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_forward_instrument_handler.hpp"
@@ -267,6 +271,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/trade_type_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/typed_equity_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/ores.trading.core.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_accumulator_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_barrier_option_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_forward_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_option_instrument_history_field_mapper.hpp"

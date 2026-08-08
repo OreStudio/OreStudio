@@ -29,7 +29,6 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/service/equity_accumulator_instrument_service.hpp"
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
 #include <optional>
@@ -111,14 +110,6 @@ public:
                                  save_equity_asian_option_instrument_response,
                                  Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_asian_option_instrument);
-    }
-
-    void save_accumulator(ores::nats::message msg) {
-        using Svc = service::equity_accumulator_instrument_service;
-        handle_typed_equity_save<save_equity_accumulator_instrument_request,
-                                 save_equity_accumulator_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_accumulator_instrument);
     }
 
 private:

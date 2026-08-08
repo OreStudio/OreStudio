@@ -84,11 +84,11 @@ Market Data regardless of backend component ownership.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -278,7 +278,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:757855AD-6A93-401F-B0B4-6A0A2E738284][Test Scenario: Verify Curve Builder Workbench]] | PASS (after fixes) | Multiple rounds; each real failure led to a fix, see Result. |
 
 * PRs
 
@@ -293,3 +293,73 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped as planned: =CurveBuilderWorkbench= (non-modal, three tabs, Save/Bootstrap/Publish never
+fused), the backend compute/publish split, =forward_rate_calculator= and =curve_health_checker=
+(the latter added mid-build, not in the original Plan -- see below), and the Market Data menu
+wiring. All acceptance criteria met, with two deliberate scope adjustments and a long tail of
+real bugs found and fixed via iterative manual QA against the test scenario (each one a genuine
+defect, not a scenario-authoring mistake):
+
+** Scope adjustments from the original Plan
+
+- *Pillar tenor/curve-role dropdowns*: shipped as real dropdowns as planned (=tenor= reference
+  table, ordered by its own =sort_order= ladder position rather than alphabetically), but
+  Curve Role is a fixed in-code vocabulary (=DEPOSIT=/=FRA=/=SWAP=, mirroring
+  =bootstrap_curve_role_code=), not a DB reference table -- there is no =curve_role= table row
+  set for this fixed enum today.
+- *Curve templates for novice curve-building*: identified mid-build (the Pillars tab alone, even
+  with dropdowns, doesn't tell a novice *which* tenors/roles a real curve needs) as a genuinely
+  separate, larger piece of work. Shipped a cheap stopgap now (*New from Existing...*, clones
+  another config's Conventions + Pillars into a blank recipe) and filed the proper curated-
+  template-entity version as its own follow-on task
+  ([[id:776740DD-B2BA-483F-8E30-72D4A9B00616][task_curve_builder_templates.org]]) rather than scope-creeping this one.
+
+** Bugs found and fixed via manual QA (not in the original Plan)
+
+Each of these was caught by actually running the test scenario end to end, not by review --
+several were pre-existing gaps in code this task built on top of, not regressions this task
+introduced:
+- =IrCurveBootstrapConfigController= was never wired into =RefdataPlugin= at all (missing menu
+  registration + controller construction).
+- =ir_curve_bootstrap_config=/=pillar='s codegen-generated NATS handlers existed but were never
+  called from =registrar::register_handlers()= -- the backend never subscribed to their subjects.
+- =MarketSeriesPickerDialog='s "New Series..." never assigned a client-minted id (every other
+  entity in this codebase mints its own).
+- =CurveBuilderWorkbench::setConfig()= never actually loaded a config's pillars -- editing an
+  existing curve silently showed an empty Pillars tab.
+- No guard anywhere (client or server) against =source_series_id == output_series_id=, which
+  would have let =curve_republish_service= permanently reclassify a raw input series as its own
+  derived output on first Publish.
+- =split_tenor_code= (a DB =NOT NULL= + non-empty check constraint) was never validated or
+  auto-derived client-side, so single-segment interpolation methods always failed the check
+  constraint at Save.
+- Pillar =sequence_index= was assigned from Pillars-table row order, not actual maturity --
+  entering rows out of chronological order produced a spurious "does not mature strictly after
+  the previous pillar" engine failure despite every individual pillar being valid.
+- Two hardcoded, never-seeded =change_reason_code= literals
+  (=system.derived_series=, =system.curve_bootstrap=) in =curve_republish_service.cpp= made every
+  first Publish fail -- fixed by seeding the (already sensible, already-representative) codes the
+  write path intended, not by adding a change-reason picker to an automatic system write.
+  =CurveBuilderWorkbench='s own Save action was missing a real change-reason prompt entirely
+  (hardcoded a third, also-unseeded literal) -- fixed with the standard
+  =ChangeReasonDialog=/=ChangeReasonCache= flow every other detail dialog already uses.
+- =curve_republish_service::republish()= minted a fresh random id for every
+  =observation_lineage= row on every call, so re-publishing the same (series, as-of, point)
+  natural key always hit the natural-key unique index instead of the intended close-prior-
+  row/insert-new-version behaviour the table's own doc comment describes.
+- =MarketSeriesPickerDialog=/=BootstrapConfigPickerDialog= only ever showed genuine server errors
+  inline, never in the standard copiable =MessageBoxHelper::critical= box every other dialog
+  uses.
+
+Also filed two capture-level design gaps surfaced along the way, deliberately not fixed here
+since each needs its own design pass:
+[[id:86B41936-1186-4FEC-B001-C62F59DF0013][strongly-typed market_series index/currency filter fields]] (currently string-matching a
+free-text qualifier) and
+[[id:79474500-DC8E-456C-8BD6-A52127F7FD94][Qt codegen has no UUID-to-friendly-name mechanism for list columns]].
+
+Verification: full local build clean (=linux-clang-debug-make=); =rat= 0 failures across the
+whole suite. Manually verified end to end via the test scenario above, iterating through several
+real rounds of Save/Bootstrap/Publish against the seeded Acme Corporation data until a full
+7-pillar desk-standard curve (DEPOSIT 1M/3M/6M/12M, SWAP 2Y/5Y/10Y) bootstrapped and published
+successfully.

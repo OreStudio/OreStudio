@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-08
 #+updated: 2026-08-08
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E599E5A0-84C9-4636-B478-5D1478688B9B][Compass quality-of-life improvements: remaining follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -69,3 +69,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+PR [#1916](https://github.com/OreStudio/OreStudio/pull/1916) — merged
+9ef6ce4b9.
+
+Created doc-review-ste100 skill under doc/llm/skills/ — SKILL.org
+tangles SKILL.md, LICENSE.txt (MIT, attributed upstream), writing-rules.md,
+and before-after.md. Skill is cross-referenced from s1_agent.org and the
+Skills catalogue. CLAUDE.md loads it after compass bearings, scoped to
+user-facing prose. Memory always-load-ste100-skill.org records the
+session-start rule.

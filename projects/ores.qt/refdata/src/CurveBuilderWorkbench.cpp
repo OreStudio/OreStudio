@@ -329,6 +329,17 @@ QWidget* CurveBuilderWorkbench::buildPillarsTab() {
     auto* page = new QWidget(this);
     auto* layout = new QVBoxLayout(page);
 
+    auto* explainerLabel = new QLabel(
+        tr("Each row is one instrument's date range, not a single point: Start Tenor is when its "
+           "rate period begins (relative to the As Of date), End Tenor is when it matures. A "
+           "1-month deposit starting today is Start Tenor 0D, End Tenor 1M; a 3-month deposit "
+           "starting today is Start Tenor 0D, End Tenor 3M -- both share the same start (spot) "
+           "but differ in maturity, standard money-market convention."),
+        page);
+    explainerLabel->setWordWrap(true);
+    explainerLabel->setStyleSheet("color: #94a3b8; font-style: italic;");
+    layout->addWidget(explainerLabel);
+
     pillarsTable_ = new QTableWidget(0, 3, page);
     pillarsTable_->setHorizontalHeaderLabels(
         {tr("Start Tenor"), tr("End Tenor"), tr("Curve Role")});
@@ -473,7 +484,9 @@ void CurveBuilderWorkbench::loadPillarsIntoTable() {
 void CurveBuilderWorkbench::onAddPillarClicked() {
     const int row = pillarsTable_->rowCount();
     pillarsTable_->insertRow(row);
-    pillarsTable_->setItem(row, 0, new QTableWidgetItem("SPOT"));
+    // "0D" (spot-starting), not "SPOT" -- start_tenor_code/end_tenor_code are genuine tenor
+    // codes, and "SPOT" isn't a valid one (it was a stray placeholder, not a real default).
+    pillarsTable_->setItem(row, 0, new QTableWidgetItem("0D"));
     pillarsTable_->setItem(row, 1, new QTableWidgetItem(""));
     pillarsTable_->setItem(row, 2, new QTableWidgetItem("DEPOSIT"));
 }
@@ -660,6 +673,26 @@ void CurveBuilderWorkbench::onSaveClicked() {
     if (pillars_.empty()) {
         showBanner(tr("Add at least one pillar before saving."), true);
         return;
+    }
+    if (config_.split_tenor_code.empty()) {
+        // split_tenor_code is never optional (see the table's own DB check constraint) -- for a
+        // single-segment interpolation method it is, per that table's doc comment, a genuine
+        // value equal to the curve's own last pillar's end_tenor_code, not a fabricated
+        // sentinel, so it can be derived automatically rather than making the user type a
+        // duplicate of data already on the Pillars tab. FLAT_FORWARD_THEN_LOG_LINEAR's split is
+        // a genuine independent choice (the knot between its two segments), so it still requires
+        // an explicit value.
+        if (config_.interpolation_method != "FLAT_FORWARD_THEN_LOG_LINEAR") {
+            config_.split_tenor_code = pillars_.back().end_tenor_code;
+            splitTenorCodeEdit_->setText(QString::fromStdString(config_.split_tenor_code));
+        }
+        if (config_.split_tenor_code.empty()) {
+            showBanner(tr("Split Tenor Code is required -- for %1, enter the curve's own split "
+                          "point (the knot tenor between its two interpolation segments).")
+                          .arg(QString::fromStdString(config_.interpolation_method)),
+                      true);
+            return;
+        }
     }
     if (!(config_.source_series_id == boost::uuids::nil_uuid()) &&
         config_.source_series_id == config_.output_series_id) {

@@ -20,6 +20,7 @@
 #include "ores.qt/MarketSeriesPickerDialog.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include <QAbstractItemView>
 #include <QComboBox>
 #include <QFutureWatcher>
@@ -165,6 +166,12 @@ QString MarketSeriesPickerDialog::display_label(const marketdata::domain::market
     return QString::fromStdString(s.series_type + " / " + s.metric + " / " + s.qualifier);
 }
 
+void MarketSeriesPickerDialog::showError(const QString& shortMessage, const QString& details) {
+    statusLabel_->setText(shortMessage);
+    statusLabel_->setVisible(true);
+    MessageBoxHelper::critical(this, tr("Market Series Error"), shortMessage, details);
+}
+
 void MarketSeriesPickerDialog::reload() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         statusLabel_->setText(tr("Not connected to server."));
@@ -197,9 +204,7 @@ void MarketSeriesPickerDialog::reload() {
         if (!self)
             return;
         if (!result) {
-            self->statusLabel_->setText(
-                self->tr("Failed to load market series: %1").arg(result.error()));
-            self->statusLabel_->setVisible(true);
+            self->showError(self->tr("Failed to load market series."), result.error());
             return;
         }
         self->statusLabel_->setVisible(false);
@@ -310,8 +315,7 @@ void MarketSeriesPickerDialog::onCreateClicked() {
         if (!self)
             return;
         if (!result) {
-            self->statusLabel_->setText(self->tr("Create failed: %1").arg(result.error()));
-            self->statusLabel_->setVisible(true);
+            self->showError(self->tr("Failed to create market series."), result.error());
             return;
         }
         // The freshly-created series has no server-assigned id in our local copy -- re-fetch the
@@ -339,8 +343,8 @@ void MarketSeriesPickerDialog::onCreateClicked() {
             if (!self)
                 return;
             if (!r) {
-                self->statusLabel_->setText(self->tr("Created, but reload failed: %1").arg(r.error()));
-                self->statusLabel_->setVisible(true);
+                self->showError(self->tr("Series created, but reloading the list failed."),
+                                r.error());
                 return;
             }
             self->rows_ = std::move(r->market_series);

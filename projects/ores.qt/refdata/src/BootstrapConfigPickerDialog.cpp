@@ -20,6 +20,7 @@
 #include "ores.qt/BootstrapConfigPickerDialog.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include <QAbstractItemView>
 #include <QFutureWatcher>
@@ -142,9 +143,12 @@ void BootstrapConfigPickerDialog::reload() {
         if (!self)
             return;
         if (!result) {
-            self->statusLabel_->setText(
-                self->tr("Failed to load bootstrap configs: %1").arg(result.error()));
+            self->statusLabel_->setText(self->tr("Failed to load bootstrap configs."));
             self->statusLabel_->setVisible(true);
+            MessageBoxHelper::critical(self,
+                                       self->tr("Bootstrap Config Error"),
+                                       self->tr("Failed to load bootstrap configs."),
+                                       result.error());
             return;
         }
         self->statusLabel_->setVisible(false);

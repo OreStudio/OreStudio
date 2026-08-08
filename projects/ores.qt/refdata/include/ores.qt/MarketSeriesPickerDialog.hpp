@@ -89,6 +89,11 @@ private:
     QWidget* buildCreatePanel();
     void populateTable();
     static QString display_label(const marketdata::domain::market_series& s);
+    /// Sets the inline status label to @p shortMessage (for in-context visibility) and pops a
+    /// standard MessageBoxHelper::critical with @p details in its expandable "Details" section --
+    /// used for genuine server-returned technical errors (raw repository/SQL text), which the
+    /// inline label alone made easy to miss and impossible to copy out.
+    void showError(const QString& shortMessage, const QString& details);
 
     ClientManager* clientManager_;
     Options options_;

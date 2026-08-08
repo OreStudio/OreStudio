@@ -74,6 +74,7 @@ struct equity_market_data_identifier final {
     std::string ticker;
     std::string ccy;
     instrument_type type = instrument_type::quote;
+    std::optional<domain::equity_quote_type> quote_type;
 
     bool operator==(const equity_market_data_identifier&) const = default;
 };

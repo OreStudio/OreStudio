@@ -60,6 +60,7 @@ struct equity_market_data_requirement final {
     std::optional<std::string> ticker;
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
+    std::optional<equity_quote_type> quote_type;
 
     bool operator==(const equity_market_data_requirement&) const = default;
 };

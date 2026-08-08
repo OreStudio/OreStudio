@@ -101,6 +101,16 @@ enum class credit_quote_type {
     // its own task.
 };
 
+/**
+ * @brief The `quote` query key for equity instruments — the ORE TYPE. Equity-only;
+ * only meaningful when `type=quote`.
+ */
+enum class equity_quote_type {
+    spot,       ///< EQUITY/PRICE (spot price, the default).
+    dividend,   ///< EQUITY_DIVIDEND/RATE (dividend yield rate).
+    fwd         ///< EQUITY_FWD/PRICE (equity forward price).
+};
+
 }
 
 #endif

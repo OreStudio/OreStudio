@@ -204,9 +204,24 @@ TEST_CASE("reject_fx_uri_with_ir_only_quote_field", tags) {
         ores::marketdata::core::oresmd_exception);
 }
 
-TEST_CASE("equity_quote_key_matches_worked_example", tags) {
+TEST_CASE("equity_spot_quote_key_matches_worked_example", tags) {
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY/PRICE/AAPL/USD");
+}
+
+TEST_CASE("equity_quote_key_defaults_to_spot", tags) {
     const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote");
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY/PRICE/AAPL/USD");
+}
+
+TEST_CASE("equity_dividend_quote_key", tags) {
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_DIVIDEND/RATE/AAPL/USD");
+}
+
+TEST_CASE("equity_fwd_quote_key", tags) {
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=fwd");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_FWD/PRICE/AAPL/USD");
 }
 
 TEST_CASE("cds_quote_key_matches_worked_example", tags) {

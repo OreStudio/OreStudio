@@ -136,13 +136,12 @@ void validate_no_ir_only_keys(std::string_view asset_class, const query_params& 
     reject_if_present(asset_class, "metric", qp.metric);
 }
 
-void validate_ir_or_credit_only_keys(std::string_view asset_class, const query_params& qp) {
+void validate_no_quote(std::string_view asset_class, const query_params& qp) {
     reject_if_present(asset_class, "quote", qp.quote);
 }
 
 void validate_equity(const query_params& qp) {
     validate_no_ir_only_keys("equity", qp);
-    validate_ir_or_credit_only_keys("equity", qp);
     reject_if_present("equity", "point", qp.point);
 }
 
@@ -198,6 +197,8 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://equity/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
+    if (qp.quote)
+        id.quote_type = parse_enum<equity_quote_type>("quote", *qp.quote);
     return id;
 }
 
@@ -218,7 +219,7 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
 
 market_data_identifier parse_commodity(const boost::urls::url_view& u, const query_params& qp) {
     validate_no_ir_only_keys("commodity", qp);
-    validate_ir_or_credit_only_keys("commodity", qp);
+    validate_no_quote("commodity", qp);
     commodity_market_data_identifier id;
     id.commodity_code = to_upper(first_segment(u));
     if (!qp.ccy)
@@ -300,6 +301,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.segments().push_back(to_lower(id.ticker));
                 u.params().append({"ccy", to_lower(id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
             } else if constexpr (std::is_same_v<T, credit_market_data_identifier>) {
                 u.set_host("credit");
                 u.segments().push_back(to_lower(id.reference_entity));

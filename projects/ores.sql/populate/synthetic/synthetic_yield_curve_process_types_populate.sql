@@ -22,7 +22,7 @@
  * Yield Curve Process Types Population Script
  *
  * Populates the short-rate process engines an ir_curve_generation_config
- * can select (VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE), matching the IYieldCurveProcess
+ * can select (VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, TWO_FACTOR_GAUSSIAN), matching the IYieldCurveProcess
  * engines process_factory::make_yield_curve_process() can construct.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
@@ -43,7 +43,10 @@ values
      2, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
     (ores_utility_system_tenant_id_fn(), 'HULL_WHITE', 0, 'Hull-White',
      'Extended Vasicek short-rate model with a time-dependent mean-reversion target, admitting a closed-form affine zero-coupon bond price.',
-     3, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types')
+     3, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
+    (ores_utility_system_tenant_id_fn(), 'TWO_FACTOR_GAUSSIAN', 0, 'Two-Factor Gaussian',
+     'Two-factor Gaussian (G2++) short-rate model: a sum of two correlated mean-reverting Ornstein-Uhlenbeck factors around a long-term mean, giving a richer (humped) initial term structure than one-factor models while remaining analytically tractable.',
+     4, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

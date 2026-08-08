@@ -434,6 +434,12 @@ TEST_CASE("reject_unrecognised_query_key", tags) {
                       oresmd_exception);
 }
 
+TEST_CASE("reject_fx_quote_when_type_not_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&quote=spot")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eur?type=quote")), oresmd_exception);
 }

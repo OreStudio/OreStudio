@@ -58,6 +58,11 @@ TEST_CASE("fx_fwd_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "FXFWD/RATE/EUR/USD/6M");
 }
 
+TEST_CASE("fx_fwd_requires_point", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=fwd");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
 TEST_CASE("ir_usd_libor_3m_index_name_and_curve_key", tags) {
     const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing");
     REQUIRE(oresmd_projections::to_index_name(id) == "USD-LIBOR-3M");

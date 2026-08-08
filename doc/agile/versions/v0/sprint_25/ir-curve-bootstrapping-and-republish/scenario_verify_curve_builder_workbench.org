@@ -183,8 +183,7 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | curve_bootstrap_engine: DEPOSIT pillar '6M' must have start_date == value_date |
+| Status | PASS |
 
 *** Publish the bootstrapped curve
 - Click Publish.
@@ -195,7 +194,8 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | first publish worked. second published error:; ; Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "observation_lineages_party_series_obs_point_uniq_idx"; ; moved time forward then got on save:; ; curve_republish_resolver: no observed rate for pillar '1M' in the raw grid |
 
 *** Edit the config and verify change tracking
 - Reopen the config's detail window from the list (Edit).
@@ -268,9 +268,9 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-08T11:37:12Z |
+| Completed at  | 2026-08-08T18:01:19Z |
 | Branch        | feature/curve-builder-ui |
-| Commit        | ee3ce278c |
+| Commit        | 8ef65f066 |
 | Worktree      | swift_curie |
 
 * Notes

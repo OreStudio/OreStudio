@@ -154,6 +154,12 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
   staging table, feeding a different UI, the GLEIF counterparty
   picker) and has been removed rather than given a broken read path.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm report definitions has no menu entry
 
 - Open every submenu under Data Quality (Badges, Classifications,
@@ -186,9 +192,9 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Field         | Value |
 |---------------+-------|
 | Status        | PASSED |
-| Completed at  | 2026-08-08T18:16:29Z |
-| Branch        | feature/fix-dq-shared-edit-and-lei-ui |
-| Commit        | 25bbbbe61 |
+| Completed at  | 2026-08-08T22:14:53Z |
+| Branch        | main |
+| Commit        | d4800ebca |
 | Worktree      | jolly_knuth |
 
 * Notes

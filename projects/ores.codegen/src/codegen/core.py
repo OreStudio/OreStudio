@@ -32,6 +32,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.lookup_entity":    "schema",
     "ores.codegen.service_registry": "service_registry",
     "ores.codegen.dataset":          "dataset",
+    "ores.codegen.oresmd_quote_type": "oresmd_quote_type",
 }
 
 
@@ -1049,6 +1050,7 @@ def load_model(model_path):
             load_org_field_group_model,
             load_org_junction_model,
             load_org_lookup_entity_model,
+            load_org_oresmd_quote_type_model,
             load_org_service_registry_model,
             load_org_component_model,
             load_org_component_overview_model,
@@ -1058,6 +1060,8 @@ def load_model(model_path):
         org_type = _read_org_type(model_path)
         if org_type == 'dataset':
             return load_org_dataset_model(model_path)
+        if org_type == 'oresmd_quote_type':
+            return load_org_oresmd_quote_type_model(model_path)
         if org_type == 'field_group':
             return load_org_field_group_model(model_path)
         if org_type == 'junction':

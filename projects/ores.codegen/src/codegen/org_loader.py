@@ -2092,6 +2092,65 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
     return {"component": c}
 
 
+def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
+    """Load an oresmd quote-type org model into a dict.
+
+    Parses frontmatter (=#+asset_class=, =#+authority=, =#+component=),
+    the =* Quote types= table, the =* Fields= table, the =* Reject keys=
+    table, and the test-case tables under =* Test cases=.
+
+    Returns ``{"oresmd_quote_type": {...}}`` with the asset class's quote
+    types, entity field metadata, reject-key list, and test cases.
+    """
+    text = Path(path).read_text(encoding="utf-8")
+    doc  = parse_org(text)
+    fm   = doc.frontmatter
+
+    result: dict[str, Any] = {}
+    result["asset_class"] = fm.get("asset_class", "")
+    result["authority"]   = fm.get("authority", "")
+    result["component"]   = fm.get("component", "ores.marketdata")
+
+    # --- Quote types table ---
+    qt_section = _section(doc.root, "Quote types")
+    qts: list[dict[str, Any]] = []
+    if qt_section:
+        for row in _parse_org_table_rows(qt_section):
+            qts.append({k: v for k, v in row.items()})
+    result["quote_types"] = qts
+
+    # --- Fields table ---
+    fields_section = _section(doc.root, "Fields")
+    fields: list[dict[str, Any]] = []
+    if fields_section:
+        for row in _parse_org_table_rows(fields_section):
+            fields.append({k: v for k, v in row.items()})
+    result["fields"] = fields
+
+    # --- Reject keys table ---
+    reject_section = _section(doc.root, "Reject keys")
+    reject_keys: list[str] = []
+    if reject_section:
+        for row in _parse_org_table_rows(reject_section):
+            if "key" in row:
+                reject_keys.append(row["key"])
+    result["reject_keys"] = reject_keys
+
+    # --- Test cases ---
+    tests: dict[str, list[dict[str, str]]] = {}
+    tc_section = _section(doc.root, "Test cases")
+    if tc_section:
+        for child in tc_section.children:
+            kind = child.title.lower()  # "Projections", "Round-trip", "Rejection"
+            cases: list[dict[str, str]] = []
+            for row in _parse_org_table_rows(child):
+                cases.append({k: v for k, v in row.items()})
+            tests[kind] = cases
+    result["test_cases"] = tests
+
+    return {"oresmd_quote_type": result}
+
+
 def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     """Load a ``component_overview.org`` into the
     ``{component: {name, full_name, brief, description}}`` dict

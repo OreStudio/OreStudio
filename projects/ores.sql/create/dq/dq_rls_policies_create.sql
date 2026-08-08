@@ -242,14 +242,35 @@ using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
+-- Artefact Types
+-- -----------------------------------------------------------------------------
+-- No RLS existed for this table at all until now -- every tenant's rows
+-- (and every ephemeral ctest tenant's rows) were visible to every session.
+alter table ores_dq_artefact_types_tbl enable row level security;
+
+create policy artefact_types_read_policy on ores_dq_artefact_types_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy artefact_types_modification_policy on ores_dq_artefact_types_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- -----------------------------------------------------------------------------
 -- Dataset Bundles
 -- -----------------------------------------------------------------------------
 alter table ores_dq_dataset_bundles_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies the full
+-- system-tenant taxonomy into every tenant's own scope at provisioning
+-- time, so a fallback here would show each tenant its own copy plus the
+-- system-tenant original it was copied from (and, worse, an edit through
+-- the Qt UI can only ever close THIS tenant's own row, not the original).
 create policy dataset_bundles_read_policy on ores_dq_dataset_bundles_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy dataset_bundles_modification_policy on ores_dq_dataset_bundles_tbl

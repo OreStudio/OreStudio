@@ -637,6 +637,44 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % change reasons', v_copied_count;
 
+    -- DQ artefact types (staging/publish infrastructure mapping) -- copied
+    -- per-tenant rather than left system-tenant-only + shared-read, so a
+    -- tenant admin's edit through the Qt UI closes THIS tenant's own row
+    -- (the insert trigger's "close previous version" lookup filters on
+    -- tenant_id = NEW.tenant_id, which can never match a system-tenant row).
+    insert into ores_dq_artefact_types_tbl (
+        code, tenant_id, version, name, description,
+        artefact_table, target_table, target_subject, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        t.artefact_table, t.target_table, t.target_subject, t.display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_artefact_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % artefact types', v_copied_count;
+
+    -- DQ dataset bundles -- same rationale as artefact types above.
+    insert into ores_dq_dataset_bundles_tbl (
+        id, tenant_id, version, code, name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.id, v_tenant_id, 0, t.code, t.name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_dataset_bundles_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % dataset bundles', v_copied_count;
+
     -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================

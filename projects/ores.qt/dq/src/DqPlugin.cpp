@@ -33,8 +33,6 @@
 #include "ores.qt/DatasetController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/LeiEntityController.hpp"
-#include "ores.qt/LeiRelationshipController.hpp"
 #include "ores.qt/MethodologyController.hpp"
 #include "ores.qt/NatureDimensionController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
@@ -108,23 +106,6 @@ void DqPlugin::on_login(const plugin_context& ctx) {
                                                   ctx_.username,
                                                   this);
     connectControllerSignals(artefactTypeController_.get());
-
-    leiEntityController_ = std::make_unique<LeiEntityController>(ctx_.main_window,
-                                                                  ctx_.mdi_area,
-                                                                  ctx_.client_manager,
-                                                                  ctx_.change_reason_cache,
-                                                                  ctx_.username,
-                                                                  this);
-    connectControllerSignals(leiEntityController_.get());
-
-    leiRelationshipController_ =
-        std::make_unique<LeiRelationshipController>(ctx_.main_window,
-                                                     ctx_.mdi_area,
-                                                     ctx_.client_manager,
-                                                     ctx_.change_reason_cache,
-                                                     ctx_.username,
-                                                     this);
-    connectControllerSignals(leiRelationshipController_.get());
 
     // BadgeDefinitionController cross-domain relays: toolbar buttons on
     // BadgeDefinitionMdiWindow open the related badge catalogue windows,
@@ -318,27 +299,14 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
         });
     }
 
-    // &LEI Registry submenu: the two GLEIF LEI entities (entity + corporate
-    // hierarchy relationship) belong together as a single registry concept,
-    // read-only browse windows populated by automated ingestion.
-    auto* leiRegistry = dq->addMenu(tr("&LEI Registry"));
-
-    auto* actLeiEntities = leiRegistry->addAction(tr("LEI &Entities"));
-    connect(actLeiEntities, &QAction::triggered, this, [this]() {
-        if (leiEntityController_)
-            leiEntityController_->showListWindow();
-    });
-
-    auto* actLeiRelationships = leiRegistry->addAction(tr("LEI &Relationships"));
-    connect(actLeiRelationships, &QAction::triggered, this, [this]() {
-        if (leiRelationshipController_)
-            leiRelationshipController_->showListWindow();
-    });
-
-    // report_definition/synthetic_fx_spot_config deliberately have no menu
-    // entry here: they are DQ-side staging views with no Qt UI of their own
-    // (ores.cpp.qt disabled -- see each model's "* Physical space" table).
-    // Their authoritative, editable home is ores.reporting/ores.synthetic
+    // lei_entity/lei_relationship/report_definition/synthetic_fx_spot_config
+    // deliberately have no menu entry here: they are DQ-side staging views
+    // with no Qt UI of their own (ores.cpp.qt disabled -- see each model's
+    // "* Physical space" table). The two LEI entities have no working read
+    // path other than the artefact table (which powers the GLEIF
+    // counterparty picker, a different UI surface, not a same-component
+    // browsing screen); report_definition/synthetic_fx_spot_config's
+    // authoritative, editable home is ores.reporting/ores.synthetic
     // respectively.
 
     dq->addSeparator();
@@ -501,8 +469,6 @@ void DqPlugin::on_logout() {
     codingSchemeAuthorityTypeController_.reset();
     changeReasonController_.reset();
     changeReasonCategoryController_.reset();
-    leiRelationshipController_.reset();
-    leiEntityController_.reset();
     artefactTypeController_.reset();
     codeDomainController_.reset();
     badgeSeverityController_.reset();

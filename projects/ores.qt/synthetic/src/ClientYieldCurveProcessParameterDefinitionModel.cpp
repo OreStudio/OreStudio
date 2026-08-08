@@ -95,9 +95,11 @@ QVariant ClientYieldCurveProcessParameterDefinitionModel::data(const QModelIndex
             case DefaultValue:
                 return parameter_definition.default_value;
             case MinValue:
-                return parameter_definition.min_value;
+                return parameter_definition.min_value ? QVariant(*parameter_definition.min_value) :
+                                                        QVariant();
             case MaxValue:
-                return parameter_definition.max_value;
+                return parameter_definition.max_value ? QVariant(*parameter_definition.max_value) :
+                                                        QVariant();
             case DisplayOrder:
                 return static_cast<qlonglong>(parameter_definition.display_order);
             case Version:

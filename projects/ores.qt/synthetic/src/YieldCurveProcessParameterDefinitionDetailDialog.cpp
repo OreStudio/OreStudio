@@ -188,8 +188,12 @@ void YieldCurveProcessParameterDefinitionDetailDialog::updateUiFromDefinition() 
     ui_->descriptionEdit->setPlainText(QString::fromStdString(parameter_definition_.description));
     ui_->dataTypeEdit->setText(QString::fromStdString(parameter_definition_.data_type));
     ui_->defaultValueEdit->setText(QString::number(parameter_definition_.default_value));
-    ui_->minValueEdit->setText(QString::fromStdString(parameter_definition_.min_value));
-    ui_->maxValueEdit->setText(QString::fromStdString(parameter_definition_.max_value));
+    ui_->minValueEdit->setText(parameter_definition_.min_value ?
+                                   QString::number(*parameter_definition_.min_value) :
+                                   QString{});
+    ui_->maxValueEdit->setText(parameter_definition_.max_value ?
+                                   QString::number(*parameter_definition_.max_value) :
+                                   QString{});
     ui_->displayOrderEdit->setValue(parameter_definition_.display_order);
 
     populateProvenance(parameter_definition_.version,
@@ -213,8 +217,14 @@ void YieldCurveProcessParameterDefinitionDetailDialog::updateDefinitionFromUi() 
     parameter_definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     parameter_definition_.data_type = ui_->dataTypeEdit->text().trimmed().toStdString();
     parameter_definition_.default_value = ui_->defaultValueEdit->text().trimmed().toDouble();
-    parameter_definition_.min_value = ui_->minValueEdit->text().trimmed().toStdString();
-    parameter_definition_.max_value = ui_->maxValueEdit->text().trimmed().toStdString();
+    parameter_definition_.min_value =
+        ui_->minValueEdit->text().trimmed().isEmpty() ?
+            std::nullopt :
+            std::optional<double>(ui_->minValueEdit->text().trimmed().toDouble());
+    parameter_definition_.max_value =
+        ui_->maxValueEdit->text().trimmed().isEmpty() ?
+            std::nullopt :
+            std::optional<double>(ui_->maxValueEdit->text().trimmed().toDouble());
     parameter_definition_.display_order = ui_->displayOrderEdit->value();
     parameter_definition_.modified_by = username_;
 }

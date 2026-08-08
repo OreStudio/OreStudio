@@ -1031,6 +1031,12 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
         : QString{});
 {{/is_optional_string}}
 {{^is_optional_string}}
+{{#is_optional_double}}
+    ui_->{{widget}}->setText({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}
+        ? QString::number(*{{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}})
+        : QString{});
+{{/is_optional_double}}
+{{^is_optional_double}}
 {{#is_double}}
     ui_->{{widget}}->setText(QString::number({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_double}}
@@ -1043,6 +1049,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::updateUiFrom{{domain_entity.en
     ui_->{{widget}}->setText(QString::fromStdString({{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}}));
 {{/is_date}}
 {{/is_double}}
+{{/is_optional_double}}
 {{/is_optional_string}}
 {{/is_uuid}}
 {{/is_optional_uuid}}
@@ -1217,6 +1224,13 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     }
 {{/is_optional_string}}
 {{^is_optional_string}}
+{{#is_optional_double}}
+    {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} =
+        ui_->{{widget}}->text().trimmed().isEmpty()
+        ? std::nullopt
+        : std::optional<double>(ui_->{{widget}}->text().trimmed().toDouble());
+{{/is_optional_double}}
+{{^is_optional_double}}
 {{#is_double}}
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toDouble();
 {{/is_double}}
@@ -1229,6 +1243,7 @@ void {{domain_entity.entity_pascal}}DetailDialog::update{{domain_entity.entity_p
     {{domain_entity.qt.item_var}}_.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}} = ui_->{{widget}}->text().trimmed().toStdString();
 {{/is_date}}
 {{/is_double}}
+{{/is_optional_double}}
 {{/is_optional_string}}
 {{/is_optional_uuid}}
 {{/is_uuid}}

@@ -2567,6 +2567,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if qt_col.get('is_int') and cpp_type.startswith('std::optional<'):
                         qt_col['is_optional_int'] = True
                         qt_col['is_int'] = False
+                    if qt_col.get('is_double') and cpp_type.startswith('std::optional<'):
+                        qt_col['is_optional_double'] = True
+                        qt_col['is_double'] = False
                     # Auto-assign column index for badge resolver calls
                     qt_col.setdefault('column_index', idx)
                     # Default column_style when not specified. self_colour
@@ -2783,6 +2786,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_double'] = (
                     f['is_line_edit']
                     and field_cpp in ('double', 'float')
+                )
+                # Nullable double edits with an optional<double> field:
+                # empty text reads back as nullopt, non-empty as the
+                # parsed value (mirrors is_nullable_int's spin-box
+                # sentinel).
+                f['is_optional_double'] = (
+                    f['is_line_edit']
+                    and field_cpp == 'std::optional<double>'
                 )
                 # A plain QLineEdit editing an ISO-8601 date
                 # ("YYYY-MM-DD"), converted to/from

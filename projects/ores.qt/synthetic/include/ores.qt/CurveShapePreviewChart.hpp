@@ -21,6 +21,7 @@
 #define ORES_QT_CURVE_SHAPE_PREVIEW_CHART_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include <QWidget>
 #include <string>
 #include <vector>
@@ -65,13 +66,11 @@ public:
     ~CurveShapePreviewChart() override = default;
 
     /** @brief Update the model inputs (does not refresh immediately). */
-    void setParameters(const std::string& processType,
-                       double kappa,
-                       double theta,
-                       double sigma,
-                       double initialRate,
-                       const std::string& fixedLegPaymentFrequencyCode,
-                       const std::vector<TemplateRow>& entries);
+    void setParameters(
+        const std::string& processType,
+        const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+        const std::string& fixedLegPaymentFrequencyCode,
+        const std::vector<TemplateRow>& entries);
 
     /** @brief Schedule a debounced refresh (~400 ms after the last call). */
     void scheduleRefresh();
@@ -93,10 +92,7 @@ private:
     class QTimer* debounce_;
 
     std::string processType_{"vasicek"};
-    double kappa_{0.0};
-    double theta_{0.0};
-    double sigma_{0.0};
-    double initialRate_{0.0};
+    std::vector<ores::synthetic::messaging::parameter_spec> parameters_;
     std::string fixedLegPaymentFrequencyCode_{"Annual"};
     std::vector<TemplateRow> entries_;
     bool inFlight_{false};

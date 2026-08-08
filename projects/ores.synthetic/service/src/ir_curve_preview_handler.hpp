@@ -29,10 +29,11 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include <algorithm>
-#include <cctype>
+#include <boost/uuid/random_generator.hpp>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -48,15 +49,34 @@ inline auto& ir_curve_preview_handler_lg() {
     return instance;
 }
 
-// process_factory::make_yield_curve_process() dispatches on lowercase engine names ("vasicek",
-// "cox_ingersoll_ross", "hull_white"); ir_curve_generation_config.process_type and this protocol's
-// wire value both carry the catalog's uppercase code (VASICEK/COX_INGERSOLL_ROSS/HULL_WHITE) --
-// same lowercasing ir_curve_feed's make_ir_curve_feed() does before calling the factory.
-inline std::string preview_lowercase(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
-    return s;
+// Build the short-rate process from a stateless preview request's named parameters. The request
+// carries parameter names themselves (the UI has the definitions on screen already), so
+// re-materialise the {definition, value} shape the mapping layer consumes on the fly -- with no
+// min/max bounds, which only the UI spin boxes enforce in this path. The mapping layer handles the
+// uppercase-to-lowercase dispatch and throws a clear message on missing/unexpected parameters.
+inline std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> make_preview_process(
+    const std::string& process_type,
+    const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+    std::uint32_t seed) {
+    using namespace ores::synthetic::domain;
+    std::vector<yield_curve_process_parameter_definition> definitions;
+    std::vector<ir_curve_generation_config_process_parameter_value> values;
+    definitions.reserve(parameters.size());
+    values.reserve(parameters.size());
+    for (const auto& p : parameters) {
+        const auto id = boost::uuids::random_generator()();
+        yield_curve_process_parameter_definition d;
+        d.process_type_code = process_type;
+        d.parameter_name = p.parameter_name;
+        d.id = id;
+        definitions.push_back(std::move(d));
+        ir_curve_generation_config_process_parameter_value v;
+        v.parameter_definition_id = id;
+        v.parameter_value = p.parameter_value;
+        values.push_back(std::move(v));
+    }
+    return map_parameters_to_yield_curve_process(
+        process_type, definitions, values, seed, ir_curve_feed_dt);
 }
 } // namespace
 
@@ -110,15 +130,10 @@ public:
 
         try {
             for (int p = 0; p < num_paths; ++p) {
-                auto process =
-                    ores::analytics::quant::service::process_factory::make_yield_curve_process(
-                        preview_lowercase(req->process_type),
-                        req->kappa,
-                        {req->theta},
-                        req->sigma,
-                        req->initial_rate,
-                        req->seed + static_cast<std::uint32_t>(p),
-                        ir_curve_feed_dt);
+                auto process = make_preview_process(
+                    req->process_type,
+                    req->parameters,
+                    req->seed + static_cast<std::uint32_t>(p));
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)
@@ -185,15 +200,7 @@ public:
             for (const auto& row : req->entries)
                 start_tenor_by_sequence.emplace(row.sequence_index, row.start_tenor_code);
 
-            auto process =
-                ores::analytics::quant::service::process_factory::make_yield_curve_process(
-                    preview_lowercase(req->process_type),
-                    req->kappa,
-                    {req->theta},
-                    req->sigma,
-                    req->initial_rate,
-                    42,
-                    ir_curve_feed_dt);
+            auto process = make_preview_process(req->process_type, req->parameters, 42);
 
             for (const auto& re : resolved) {
                 preview_ir_curve_shape_point pt;

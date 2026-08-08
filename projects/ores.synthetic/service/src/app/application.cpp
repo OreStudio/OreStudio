@@ -37,8 +37,10 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
+#include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
+#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
@@ -149,9 +151,13 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
 
     synth_repo::ir_curve_generation_config_repository config_repo;
     synth_repo::ir_curve_template_entry_repository entry_repo;
+    synth_repo::ir_curve_generation_config_process_parameter_value_repository value_repo;
+    synth_repo::yield_curve_process_parameter_definition_repository definition_repo;
 
     const auto configs = config_repo.read_latest(ctx);
     const auto entries = entry_repo.read_latest(ctx);
+    const auto values = value_repo.read_latest(ctx);
+    const auto definitions = definition_repo.read_latest(ctx);
 
     auto refctx = build_ir_curve_refdata_context(ctx);
     if (!refctx) {
@@ -164,6 +170,15 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
         entries_by_config;
     for (const auto& e : entries)
         entries_by_config[e.ir_curve_config_id].push_back(e);
+
+    // Row-based parameters: group the config's {parameter_definition_id, value} rows by config id
+    // (the generated repository has no parent-scoped read -- same pattern as entries_by_config),
+    // and load the system-tenant definitions catalogue once; make_ir_curve_feed joins the two.
+    std::map<boost::uuids::uuid,
+             std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
+        values_by_config;
+    for (const auto& v : values)
+        values_by_config[v.config_id].push_back(v);
 
     int started = 0;
     for (const auto& cfg : configs) {
@@ -180,10 +195,18 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
                 << cfg.index_family << " — no template entries.";
             continue;
         }
+        const auto vit = values_by_config.find(cfg.id);
+        if (vit == values_by_config.end() || vit->second.empty()) {
+            BOOST_LOG_SEV(auto_start_lg(), warn)
+                << "Skipping enabled IR curve config " << cfg.currency_code << "/"
+                << cfg.index_family << " — no parameter value rows.";
+            continue;
+        }
 
         try {
             std::string conflicting_source_name;
-            if (ctrl.add(make_ir_curve_feed(nats, auth_nats, cfg, it->second, *refctx),
+            if (ctrl.add(make_ir_curve_feed(
+                             nats, auth_nats, cfg, it->second, vit->second, definitions, *refctx),
                          &conflicting_source_name)) {
                 ++started;
             } else {

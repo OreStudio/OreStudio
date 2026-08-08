@@ -31,8 +31,10 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
+#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include <memory>
 #include <optional>
 
@@ -123,6 +125,25 @@ public:
                 return;
             }
 
+            // Row-based parameters: the config's own value rows (filtered to cfg.id -- the
+            // generated repository has no parent-scoped read) plus the system-tenant definitions
+            // catalogue; make_ir_curve_feed joins and validates the two.
+            repository::ir_curve_generation_config_process_parameter_value_repository value_repo;
+            std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
+                values;
+            for (auto& v : value_repo.read_latest(req_ctx))
+                if (v.config_id == cfg.id)
+                    values.push_back(std::move(v));
+
+            if (values.empty()) {
+                resp.message = "IR curve config has no parameter value rows: " + req->config_id;
+                reply(nats_, msg, resp);
+                return;
+            }
+
+            repository::yield_curve_process_parameter_definition_repository definition_repo;
+            const auto definitions = definition_repo.read_latest(req_ctx);
+
             auto refctx = build_ir_curve_refdata_context(req_ctx);
             if (!refctx) {
                 resp.message = "RATES_SPOT_FORWARD tenor convention not found";
@@ -131,7 +152,8 @@ public:
             }
 
             const auto bearer = ores::nats::service::extract_bearer(msg);
-            auto feed = make_ir_curve_feed(nats_, auth_nats_, cfg, entries, *refctx, bearer);
+            auto feed = make_ir_curve_feed(
+                nats_, auth_nats_, cfg, entries, values, definitions, *refctx, bearer);
             const auto source_name = feed->source_name();
             const auto qualifier = feed->qualifier();
             const auto role = feed->role();

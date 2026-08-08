@@ -19,11 +19,11 @@
  */
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
-#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <cctype>
@@ -264,23 +264,40 @@ make_ir_curve_feed(ores::nats::service::client& nats,
                    ores::nats::service::nats_client& auth_nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
                    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+                   const std::vector<
+                       ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
+                       values,
+                   const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
+                       definitions,
                    const ir_curve_refdata_context& refctx,
                    const std::string& caller_bearer_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
-    const auto initial_rate =
-        cfg.price_source == "vintage" ?
-            resolve_vintage_initial_rate(auth_nats, cfg, resolved, caller_bearer_token) :
-            cfg.initial_rate;
+    // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
+    // the stored value row before mapping; "fixed" (the default) uses the stored value as-is.
+    // See the field's own doc comment for the vintage semantics.
+    auto cfg_values = values;
+    if (cfg.price_source == "vintage") {
+        const auto initial_rate =
+            resolve_vintage_initial_rate(auth_nats, cfg, resolved, caller_bearer_token);
+        const auto def_it = std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
+            return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&
+                   d.parameter_name == "initial_rate";
+        });
+        if (def_it == definitions.end())
+            throw std::invalid_argument(
+                "make_ir_curve_feed: process type '" + cfg.process_type +
+                "' has no parameter definition for 'initial_rate'");
+        for (auto& v : cfg_values) {
+            if (v.parameter_definition_id == def_it->id) {
+                v.parameter_value = initial_rate;
+                break;
+            }
+        }
+    }
 
-    auto process = ores::analytics::quant::service::process_factory::make_yield_curve_process(
-        lowercase(cfg.process_type),
-        cfg.kappa,
-        {cfg.theta},
-        cfg.sigma,
-        initial_rate,
-        42,
-        ir_curve_feed_dt);
+    auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
+        cfg.process_type, definitions, cfg_values, 42, ir_curve_feed_dt);
 
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather

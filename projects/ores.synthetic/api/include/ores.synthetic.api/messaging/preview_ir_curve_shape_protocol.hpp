@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_PREVIEW_IR_CURVE_SHAPE_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_PREVIEW_IR_CURVE_SHAPE_PROTOCOL_HPP
 
+#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include <string>
 #include <vector>
 
@@ -53,12 +54,12 @@ struct preview_ir_curve_shape_request {
 
     static constexpr int max_entries = 50;
 
-    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", or "hull_white". */
+    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", "hull_white", or
+     * "two_factor_gaussian". */
     std::string process_type = "vasicek";
-    double kappa = 0.0;
-    double theta = 0.0;
-    double sigma = 0.0;
-    double initial_rate = 0.0;
+
+    /** @brief The process's named parameters (one entry per parameter). */
+    std::vector<parameter_spec> parameters;
 
     /** @brief References ores.refdata.payment_frequency.code -- needed to build a Swap row's
      * fixed-leg schedule. */

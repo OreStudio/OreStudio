@@ -23,6 +23,8 @@
 #include "ores.analytics.quant/service/forward_rate_calculator.hpp"
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.qt/BootstrapConfigPickerDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/MarketSeriesPickerDialog.hpp"
@@ -556,9 +558,8 @@ void CurveBuilderWorkbench::collectConfigFromUi() {
     config_.split_tenor_code = splitTenorCodeEdit_->text().toStdString();
     config_.modified_by = username_;
     config_.performed_by = username_;
-    config_.change_reason_code = "system.curve_builder_workbench";
-    config_.change_commentary =
-        createMode_ ? "Created via Curve Builder Workbench" : "Edited via Curve Builder Workbench";
+    config_.change_reason_code = pendingChangeReasonCode_;
+    config_.change_commentary = pendingChangeCommentary_;
 }
 
 void CurveBuilderWorkbench::collectPillarsFromTable() {
@@ -579,8 +580,8 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
             pillarsTable_->item(row, 2) ? pillarsTable_->item(row, 2)->text().toStdString() : "";
         p.modified_by = username_;
         p.performed_by = username_;
-        p.change_reason_code = "system.curve_builder_workbench";
-        p.change_commentary = "Edited via Curve Builder Workbench";
+        p.change_reason_code = pendingChangeReasonCode_;
+        p.change_commentary = pendingChangeCommentary_;
         collected.push_back(std::move(p));
     }
     pillars_ = std::move(collected);
@@ -601,11 +602,50 @@ void CurveBuilderWorkbench::showBanner(const QString& message, bool isError) {
     bannerLabel_->setVisible(!message.isEmpty());
 }
 
+bool CurveBuilderWorkbench::promptAndStashChangeReason() {
+    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+        showBanner(tr("Change reasons not loaded. Please try again."), true);
+        return false;
+    }
+    const auto opType =
+        createMode_ ? ChangeReasonDialog::OperationType::Create :
+                      ChangeReasonDialog::OperationType::Amend;
+    const std::string category = createMode_ ? "system" : "common";
+    std::vector<dq::domain::change_reason> reasons;
+    switch (opType) {
+        case ChangeReasonDialog::OperationType::Create:
+            reasons = changeReasonCache_->getReasonsForNew(category);
+            break;
+        case ChangeReasonDialog::OperationType::Amend:
+            reasons = changeReasonCache_->getReasonsForAmend(category);
+            break;
+        case ChangeReasonDialog::OperationType::Delete:
+            reasons = changeReasonCache_->getReasonsForDelete(category);
+            break;
+    }
+    if (reasons.empty()) {
+        showBanner(tr("No change reasons available. Please contact administrator."), true);
+        return false;
+    }
+
+    // isDirty is always true here (Save always writes) -- unlike a save-and-close dialog this
+    // workbench has no separate "touch with no field changes" path to disable
+    // common.non_material_update for.
+    ChangeReasonDialog dlg(reasons, opType, /*hasFieldChanges=*/true, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return false;
+    pendingChangeReasonCode_ = dlg.selectedReasonCode();
+    pendingChangeCommentary_ = dlg.commentary();
+    return true;
+}
+
 void CurveBuilderWorkbench::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         showBanner(tr("Not connected to server."), true);
         return;
     }
+    if (!promptAndStashChangeReason())
+        return;
     collectConfigFromUi();
     collectPillarsFromTable();
 

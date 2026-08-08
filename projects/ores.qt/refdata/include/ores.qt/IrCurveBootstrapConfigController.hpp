@@ -38,6 +38,7 @@ class IrCurveBootstrapConfigMdiWindow;
 class CurveBuilderWorkbench;
 class DetachableMdiSubWindow;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing IR curve bootstrap config windows and operations.
@@ -62,6 +63,7 @@ public:
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
                                      ImageCache* imageCache,
+                                     ChangeReasonCache* changeReasonCache,
                                      const QString& username,
                                      QObject* parent = nullptr);
 
@@ -124,6 +126,7 @@ private:
 
     IrCurveBootstrapConfigMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
 };
 
 }

@@ -43,6 +43,7 @@ namespace ores::qt {
 
 class ClientManager;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Non-modal workbench replacing the standard modal detail dialog for
@@ -76,6 +77,9 @@ public:
     /// Applies flag icons to the Currency combo once available -- independent of setClientManager
     /// call order, since the two setters are unordered from the controller's side.
     void setImageCache(ImageCache* imageCache);
+    void setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
+        changeReasonCache_ = changeReasonCache;
+    }
     void setUsername(const std::string& username) {
         username_ = username;
     }
@@ -138,15 +142,25 @@ private:
     /// series pickers actually need to filter/pre-fill against.
     [[nodiscard]] QString selectedIndexQualifier() const;
     [[nodiscard]] QString selectedCurrency() const;
+    /// Prompts via ChangeReasonDialog (same class DetailDialogBase::promptChangeReason() wraps,
+    /// replicated standalone here since this workbench deliberately doesn't inherit that base --
+    /// see its own class docs). Returns false (and shows an error banner) if the cache isn't
+    /// ready, no reasons are configured, or the user cancels; on success stashes the pair into
+    /// pendingChangeReasonCode_/pendingChangeCommentary_ for collectConfigFromUi()/
+    /// collectPillarsFromTable() to apply.
+    bool promptAndStashChangeReason();
 
     ClientManager* clientManager_ = nullptr;
     ImageCache* imageCache_ = nullptr;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
     std::string username_;
     bool createMode_ = true;
     refdata::domain::ir_curve_bootstrap_config config_;
     std::vector<refdata::domain::ir_curve_bootstrap_pillar> pillars_;
     bool hasBootstrapped_ = false;
     std::vector<refdata::domain::floating_index_type> floatingIndexTypes_;
+    std::string pendingChangeReasonCode_;
+    std::string pendingChangeCommentary_;
 
     // Conventions tab. Currency/Index gate everything below them: they constrain which market
     // series the Source/Output Series pickers offer, so a novice can't accidentally bootstrap a

@@ -44,15 +44,18 @@ constexpr std::string_view config_event_name = eventing::domain::event_traits<
     refdata::eventing::ir_curve_bootstrap_config_changed_event>::name;
 }
 
-IrCurveBootstrapConfigController::IrCurveBootstrapConfigController(QMainWindow* mainWindow,
-                                                                   QMdiArea* mdiArea,
-                                                                   ClientManager* clientManager,
-                                                                   ImageCache* imageCache,
-                                                                   const QString& username,
-                                                                   QObject* parent)
+IrCurveBootstrapConfigController::IrCurveBootstrapConfigController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
+    const QString& username,
+    QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, config_event_name, parent)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr) {
+    , listMdiSubWindow_(nullptr)
+    , changeReasonCache_(changeReasonCache) {
     setImageCache(imageCache);
     BOOST_LOG_SEV(lg(), debug) << "IrCurveBootstrapConfigController created";
 }
@@ -174,6 +177,7 @@ void IrCurveBootstrapConfigController::wireWorkbenchCommon(CurveBuilderWorkbench
                                                             DetachableMdiSubWindow* window) {
     workbench->setClientManager(clientManager_);
     workbench->setImageCache(imageCache());
+    workbench->setChangeReasonCache(changeReasonCache_);
     workbench->setUsername(username_.toStdString());
 
     connect(workbench,

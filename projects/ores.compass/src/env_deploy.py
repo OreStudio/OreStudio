@@ -31,8 +31,7 @@ from pathlib import Path
 DEFAULT_REMOTE_ROOT = "~/ores-deploy"
 DEFAULT_REMOTE_DB_PORT = "5433"
 
-# Image names (the remote-run.sh / remote-stop.sh scripts use these).
-IMAGE_RUNTIME = "localhost/ores-service-runtime"
+# Image names.
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
 
@@ -144,6 +143,14 @@ def _version_tag(project_root: Path) -> str:
         cwd=project_root, capture_output=True, text=True)
     commit = result.stdout.strip() if result.returncode == 0 else "unknown"
     return f"{version}-{commit}"
+
+
+def _runtime_services(project_root: Path) -> list:
+    """Return the list of enabled runtime service names from the service
+    registry (the same model consumed by systemd_generate)."""
+    from systemd_generate import load_service_registry  # noqa: PLC0415
+    raw = load_service_registry(project_root)
+    return [s["name"] for s in raw if s.get("enabled") and s["name"] != "ores.compute.wrapper"]
 
 
 # --- Profile generation ---------------------------------------------------
@@ -349,11 +356,21 @@ def _stage_and_build(project_root, role):
               "-f", "docker/service-runtime.Dockerfile", "."],
              project_root)
     else:
-        _run(["podman", "build", "--format", "docker",
-              "-t", f"{IMAGE_RUNTIME}:local",
-              "-t", f"{IMAGE_RUNTIME}:{tag}",
-              "-f", "docker/service-runtime.Dockerfile", "."],
-             project_root)
+        # Per-service images: one image per service in the registry,
+        # each with its own entrypoint symlink. Same Dockerfile, different
+        # --build-arg. The quadlet generator references these as
+        # localhost/<service_name>:local.
+        services = _runtime_services(project_root)
+        print(f"  Runtime services: {len(services)} (from service registry)")
+        for svc in services:
+            image = f"localhost/{svc}"
+            _run(["podman", "build", "--format", "docker",
+                  "--build-arg", f"SERVICE_NAME={svc}",
+                  "-t", f"{image}:local",
+                  "-t", f"{image}:{tag}",
+                  "-f", "docker/service-runtime.Dockerfile", "."],
+                 project_root)
+            print(f"    {image}:{tag}")
         _run(["podman", "build", "--format", "docker",
               "-t", f"{IMAGE_NATS}:local",
               "-t", f"{IMAGE_NATS}:{tag}",
@@ -408,12 +425,16 @@ def _transfer_compute(project_root, host, remote_root, env_path, keys_stage):
 def _deploy_runtime(project_root, host, profile_env, remote_root):
     label = _label(profile_env, project_root)
     tag = _version_tag(project_root)
+    services = _runtime_services(project_root)
     print(f"=== Deploying runtime to {host} (label '{label}', tag '{tag}') ===")
+    print(f"  Services: {len(services)}")
+    # Space-separated list for remote-run.sh to loop over.
+    services_arg = " ".join(services)
     script = (project_root / "docker" / "remote-run.sh").read_text(
         encoding="utf-8")
     _remote_script(host, script,
                    {"REMOTE_ROOT": remote_root, "ROLE": "runtime",
-                    "IMAGE_TAG": tag})
+                    "IMAGE_TAG": tag, "SERVICES": services_arg})
 
 
 def _deploy_compute(project_root, host, profile_env, remote_root):
@@ -577,9 +598,10 @@ def _cmd_deploy(argv, project_root):
 
     _stage_and_build(project_root, args.role)
     tag = _version_tag(project_root)
+    svc_images = [f"localhost/{s}:{tag}"
+                  for s in _runtime_services(project_root)]
     _stream_images(project_root, remote_host,
-                   [f"{IMAGE_RUNTIME}:{tag}",
-                    f"{IMAGE_NATS}:{tag}"])
+                   [*svc_images, f"{IMAGE_NATS}:{tag}"])
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
     _deploy_runtime(project_root, remote_host, profile_env, remote_root)

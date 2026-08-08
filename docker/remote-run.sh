@@ -100,7 +100,7 @@ if [[ "$ROLE" == "compute" ]]; then
     exit 0
 fi
 
-# --- Runtime role: service-runtime + NATS sidecar -------------------------
+# --- Runtime role: per-service containers + NATS sidecar -------------------
 
 env_file="$REMOTE_ROOT/docker/.env"
 if [[ ! -f "$env_file" ]]; then
@@ -112,14 +112,14 @@ source "$env_file"
 
 label="${ORES_CHECKOUT_LABEL:-ores}"
 nats_container="ores-nats-${label}"
-services_container="ores-services-${label}"
-services_image="localhost/ores-service-runtime:${IMAGE_TAG}"
 nats_image="localhost/ores-nats:${IMAGE_TAG}"
 certs_volume="ores-nats-client-certs-${label}"
 keys_dir="$REMOTE_ROOT/build/keys/nats"
 nats_config="$REMOTE_ROOT/build/config/nats-${label}.conf"
 nats_store_dir="${ORES_NATS_STORE_DIR:?ORES_NATS_STORE_DIR not set in remote env — re-run compass env deploy}"
 jwt_key_file="$REMOTE_ROOT/build/keys/iam-rsa-private.pem"
+log_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/log"
+mkdir -p "$log_dir"
 
 if [[ ! -f "$nats_config" ]]; then
     echo "Error: $nats_config not found on remote" >&2
@@ -134,20 +134,16 @@ echo "=== Staging NATS client certs into volume '$certs_volume' ==="
 podman volume create "$certs_volume" >/dev/null 2>&1 || true
 volume_mountpoint="$(podman volume inspect "$certs_volume" --format '{{.Mountpoint}}')"
 cp -a "$keys_dir"/. "$volume_mountpoint"/
-# Owner-only: the services container reads this volume as
-# --user <uid>:<gid> (the same uid doing the staging here), and $keys_dir
-# holds every service's client private key plus the CA private key.
 chmod -R u+rwX,go-rwx "$volume_mountpoint"
 
 mkdir -p "$nats_store_dir"
 
-echo "=== Recreating containers ==="
-podman rm -f "$nats_container" "$services_container" >/dev/null 2>&1 || true
+echo "=== Stopping old containers ==="
+for c in $(podman ps -aq --filter "name=ores-" 2>/dev/null); do
+    podman rm -f "$c" >/dev/null 2>&1 || true
+done
 
 echo "=== Starting NATS sidecar ($nats_image) ==="
-# The NATS server's own cert (loaded by the Go nats-server binary) is
-# unaffected by the client-cert bind-mount quirk and stays a plain bind
-# mount — same as run-pod.sh.
 nats_cid=$(podman run -d --rm --network=host --name "$nats_container" \
     -v "$nats_config:$nats_config:ro" \
     -v "$keys_dir:$keys_dir:ro" \
@@ -155,74 +151,66 @@ nats_cid=$(podman run -d --rm --network=host --name "$nats_container" \
     "$nats_image" --config "$nats_config")
 echo "  NATS container ID : $nats_cid"
 
-echo "=== Starting services container ($services_image) ==="
-# ORES_IAM_SERVICE_JWT_PRIVATE_KEY's env value only ever has escaped '\n'
-# (not real newlines), which OpenSSL's PEM parser can't read — podman's
-# --env-file format has no way to represent a real multi-line value. Pass
-# it separately, straight from the real PEM file; --env after --env-file
-# wins for the same key. Mirrors run-pod.sh and compass_services.py.
-#
-# --userns=keep-id: the cert volume files are owned by the host's
-# uid (staged by `cp -a` running as the host user). Without keep-id,
-# rootless podman remaps the container's uid through a user namespace,
-# and the container's uid no longer matches the file owner on the volume
-# — OpenSSL silently fails to read the client cert, and the TLS
-# handshake produces "bad record MAC". run-pod.sh avoids this via
-# --userns=keep-id on the pod; with --network=host (no pod) we apply it
-# per container.
-jwt_key_args=()
-if [[ -f "$jwt_key_file" ]]; then
-    jwt_key_args=(--env "ORES_IAM_SERVICE_JWT_PRIVATE_KEY=$(cat "$jwt_key_file")")
-    echo "  JWT key : $jwt_key_file (real PEM, via --env)"
-else
-    echo "  WARNING : JWT key not found at $jwt_key_file — services will start without signing capability"
+# SERVICES is a space-separated list from env_deploy.py (_runtime_services).
+SERVICES="${SERVICES:-}"
+if [[ -z "$SERVICES" ]]; then
+    echo "Error: SERVICES not set — env_deploy.py should pass the service list" >&2
+    exit 1
 fi
-# Per-service mTLS cert: systemd units pass --nats-tls-cert/--nats-tls-key
-# per service (e.g. ores.iam.service.crt for the IAM entrypoint). The
-# shared env vars ORES_NATS_TLS_CERT / ORES_NATS_TLS_KEY use the Qt
-# client cert, which is NOT valid for service-to-NATS mTLS (the server
-# rejects it with "bad record MAC"). Pass the actual service cert as a
-# CLI arg; --nats-tls-* flags override the env vars.
-tls_cert="$keys_dir/ores.iam.service.crt"
-tls_key="$keys_dir/ores.iam.service.key"
-tls_ca="$keys_dir/ca.crt"
-# Mount the host's publish/log so logs survive container restarts and
-# are inspectable via `ssh <host> tail -f <remote_root>/publish/log/...`
-log_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/log"
-mkdir -p "$log_dir"
-svc_cid=$(podman run -d --network=host --userns=keep-id \
-    --name "$services_container" \
-    --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
-    --env-file "$env_file" \
-    "${jwt_key_args[@]}" \
-    -v "$certs_volume:$keys_dir:ro" \
-    -v "$log_dir:/app/log:rw" \
-    "$services_image" \
-    --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
-    --nats-tls-ca "$tls_ca" \
-    --nats-tls-cert "$tls_cert" \
-    --nats-tls-key "$tls_key")
-echo "  Services container ID : $svc_cid"
+
+running=0
+failed=0
+for svc in $SERVICES; do
+    container="ores-${svc//./-}-${label}"
+    image="localhost/${svc}:${IMAGE_TAG}"
+    tls_cert="$keys_dir/${svc}.crt"
+    tls_key="$keys_dir/${svc}.key"
+
+    # Only IAM needs the JWT signing key.
+    jwt_args=()
+    if [[ "$svc" == "ores.iam.service" && -f "$jwt_key_file" ]]; then
+        jwt_args=(--env "ORES_IAM_SERVICE_JWT_PRIVATE_KEY=$(cat "$jwt_key_file")")
+    fi
+
+    echo -n "  $svc ... "
+    cid=$(podman run -d --network=host --userns=keep-id \
+        --name "$container" \
+        --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
+        --env-file "$env_file" \
+        "${jwt_args[@]}" \
+        -v "$certs_volume:$keys_dir:ro" \
+        -v "$log_dir:/app/log:rw" \
+        "$image" \
+        --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
+        --nats-tls-ca "$keys_dir/ca.crt" \
+        --nats-tls-cert "$tls_cert" \
+        --nats-tls-key "$tls_key" \
+        2>/dev/null) || true
+    if [[ -n "$cid" ]]; then
+        echo "running ($cid)"
+        ((running++))
+    else
+        echo "FAILED"
+        ((failed++))
+    fi
+done
 
 echo
-echo "=== ${ROLE} containers started ==="
-echo "  NATS     : $nats_container ($nats_cid)"
-echo "  Services : $services_container ($svc_cid)"
-echo "  Logs (NATS)     : podman logs -f $nats_container"
-echo "  Logs (services) : podman logs -f $services_container"
-echo "  Stop            : compass env deploy <host> --stop"
+echo "=== ${ROLE} containers started: ${running} running, ${failed} failed ==="
+echo "  Logs (NATS) : podman logs -f $nats_container"
+echo "  Logs        : $log_dir/*.log"
+echo "  Stop        : compass env deploy <host> --stop"
 
-# Give the services a few seconds to pass their own healthcheck before
-# the ssh session closes — if they exit immediately we want to see it.
 echo "=== Waiting for healthcheck (5s) ==="
 sleep 5
-if podman ps --filter "name=$nats_container" --format "{{.Status}}" | grep -q "Up"; then
-    echo "  NATS     : running"
-else
-    echo "  NATS     : STOPPED — podman logs $nats_container"
-fi
-if podman ps --filter "name=$services_container" --format "{{.Status}}" | grep -q "Up"; then
-    echo "  Services : running"
-else
-    echo "  Services : STOPPED — podman logs $services_container"
-fi
+nats_ok=$(podman ps --filter "name=$nats_container" --format "{{.Status}}" | grep -c "Up" || true)
+echo "  NATS     : $([ "$nats_ok" -gt 0 ] && echo "running" || echo "STOPPED")"
+for svc in $SERVICES; do
+    container="ores-${svc//./-}-${label}"
+    status=$(podman ps --filter "name=$container" --format "{{.Status}}" 2>/dev/null)
+    if [[ -n "$status" ]]; then
+        echo "  $svc : $status"
+    else
+        echo "  $svc : EXITED — podman logs $container"
+    fi
+done

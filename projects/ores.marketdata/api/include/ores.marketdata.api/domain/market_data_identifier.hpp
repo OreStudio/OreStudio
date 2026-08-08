@@ -103,6 +103,7 @@ struct commodity_market_data_identifier final {
     std::string commodity_code;
     std::string ccy;
     instrument_type type = instrument_type::quote;
+    std::optional<domain::commodity_quote_type> quote_type;
     std::optional<std::string> point;
 
     bool operator==(const commodity_market_data_identifier&) const = default;

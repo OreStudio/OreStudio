@@ -111,6 +111,16 @@ enum class equity_quote_type {
     fwd       ///< EQUITY_FWD/PRICE (equity forward price).
 };
 
+/**
+ * @brief The `quote` query key for commodity instruments — the ORE TYPE. Commodity-only;
+ * only meaningful when `type=quote`.
+ */
+enum class commodity_quote_type {
+    spot,   ///< COMMODITY/PRICE (spot price, the default).
+    fwd,    ///< COMMODITY_FWD/PRICE (commodity forward price).
+    cpr     ///< CPR/RATE (conditional prepayment rate).
+};
+
 }
 
 #endif

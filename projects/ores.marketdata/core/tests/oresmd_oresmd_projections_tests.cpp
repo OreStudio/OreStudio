@@ -276,9 +276,24 @@ TEST_CASE("index_cds_tranche_base_correlation_quote_key_no_ccy", tags) {
             "INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07");
 }
 
-TEST_CASE("commodity_quote_key_matches_worked_example", tags) {
+TEST_CASE("commodity_spot_quote_key", tags) {
+    const auto id = parse("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY/PRICE/GOLD/USD");
+}
+
+TEST_CASE("commodity_quote_key_defaults_to_spot", tags) {
     const auto id = parse("oresmd://commodity/gold?ccy=usd&type=quote");
     REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY/PRICE/GOLD/USD");
+}
+
+TEST_CASE("commodity_fwd_quote_key", tags) {
+    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY_FWD/PRICE/WTI/USD/6M");
+}
+
+TEST_CASE("commodity_cpr_quote_key", tags) {
+    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");
 }
 
 TEST_CASE("discount_vs_projection_gap_resolved_structurally", tags) {

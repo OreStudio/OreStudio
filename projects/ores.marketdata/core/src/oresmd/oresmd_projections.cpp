@@ -301,10 +301,43 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
         "{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], id.ccy, parts[1]);
 }
 
+std::string_view ore_type(commodity_quote_type qt) {
+    switch (qt) {
+    case commodity_quote_type::spot: return "COMMODITY";
+    case commodity_quote_type::fwd:  return "COMMODITY_FWD";
+    // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
+    // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
+    // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
+    // commodity_market_data_identifier is a deliberate simplification since
+    // ORE Studio has no security-level identifier yet; the key emitted here
+    // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
+    case commodity_quote_type::cpr:  return "CPR";
+    }
+    return "COMMODITY";
+}
+
+std::string_view ore_commodity_metric(commodity_quote_type qt) {
+    switch (qt) {
+    case commodity_quote_type::spot:
+    case commodity_quote_type::fwd: return "PRICE";
+    case commodity_quote_type::cpr: return "RATE";
+    }
+    return "PRICE";
+}
+
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
     if (id.type != instrument_type::quote)
         return std::nullopt;
-    return std::format("COMMODITY/PRICE/{}/{}", id.commodity_code, id.ccy);
+    const auto qt = id.quote_type.value_or(commodity_quote_type::spot);
+    // spot: COMMODITY/PRICE/CODE/CCY (scalar).
+    if (qt == commodity_quote_type::spot)
+        return std::format("{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt),
+                           id.commodity_code, id.ccy);
+    // fwd/cpr: TYPE/METRIC/CODE/CCY/TENOR — curves, need point for the tenor.
+    if (!id.point)
+        return std::nullopt;
+    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt),
+                       id.commodity_code, id.ccy, to_upper(*id.point));
 }
 
 }

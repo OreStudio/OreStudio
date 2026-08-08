@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-profile-binding-single-canonical-point
-#+pr:
+#+pr: 1921
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -102,7 +102,7 @@ require per-entity edits, defeating the purpose of profiles.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1921][#1921]] | [codegen] Fix profile binding: single canonical point in * Flags |
 
 * Review
 

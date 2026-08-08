@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/equity-dividend-forward
+#+pr: 1905
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -60,12 +60,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1905][#1905]] | [marketdata] Extend oresmd equity coverage: dividend, forward |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | dividend/fwd drop tenor — 4-seg key collides across term-structure points | oresmd_projections.cpp | Accepted | Added point field, 5-seg key with tenor |
+| 2 | parse_equity doesn't guard quote against type | oresmd_parser.cpp | Accepted | Added guard matching IR pattern + test |
 
 * Result
+
+Delivered equity quote-type representation in oresmd: =equity_quote_type=
+(3 values: =spot=, =dividend=, =fwd=) with per-type =quote_key_equity=
+dispatching. =spot= stays the 4-segment scalar =EQUITY/PRICE/TICKER/CCY=;
+=dividend= and =fwd= emit the catalogue's 5-segment curve keys with a
+=point= tenor dimension (=EQUITY_DIVIDEND/RATE/TICKER/CCY/TENOR=,
+=EQUITY_FWD/PRICE/TICKER/CCY/TENOR=). =point= field added to
+=equity_market_data_identifier= with parser guard (=quote= rejected when
+=type≠quote=) matching the IR pattern. =quote= absent defaults to =spot=.
+126 test cases, 235 assertions, all passing.

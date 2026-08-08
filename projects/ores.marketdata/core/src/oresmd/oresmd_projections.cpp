@@ -172,10 +172,36 @@ std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
     return std::format("FX/RATE/{}/{}", id.pair.substr(0, 3), id.pair.substr(3, 3));
 }
 
+std::string_view ore_type(equity_quote_type qt) {
+    switch (qt) {
+    case equity_quote_type::spot:     return "EQUITY";
+    case equity_quote_type::dividend: return "EQUITY_DIVIDEND";
+    case equity_quote_type::fwd:      return "EQUITY_FWD";
+    }
+    return "EQUITY";
+}
+
+std::string_view ore_equity_metric(equity_quote_type qt) {
+    switch (qt) {
+    case equity_quote_type::spot:
+    case equity_quote_type::fwd:      return "PRICE";
+    case equity_quote_type::dividend: return "RATE";
+    }
+    return "PRICE";
+}
+
 std::optional<std::string> quote_key_equity(const equity_market_data_identifier& id) {
     if (id.type != instrument_type::quote)
         return std::nullopt;
-    return std::format("EQUITY/PRICE/{}/{}", id.ticker, id.ccy);
+    const auto qt = id.quote_type.value_or(equity_quote_type::spot);
+    // spot: EQUITY/PRICE/TICKER/CCY (scalar, no tenor).
+    if (qt == equity_quote_type::spot)
+        return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, id.ccy);
+    // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need point for the tenor dimension.
+    if (!id.point)
+        return std::nullopt;
+    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt),
+                       id.ticker, id.ccy, to_upper(*id.point));
 }
 
 std::string_view ore_type(credit_quote_type qt) {

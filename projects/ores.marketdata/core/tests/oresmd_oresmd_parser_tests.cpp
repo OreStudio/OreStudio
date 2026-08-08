@@ -175,7 +175,19 @@ TEST_CASE("round_trip_ir_quote", tags) {
 }
 
 TEST_CASE("round_trip_equity", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote"));
+    const auto original = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_equity_dividend", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_equity_fwd", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -305,10 +317,10 @@ TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags
     REQUIRE(ir.metric == metric::rate);
 }
 
-TEST_CASE("reject_equity_uri_with_quote_field", tags) {
-    REQUIRE_THROWS_AS(
-        oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=cds")),
-        oresmd_exception);
+TEST_CASE("parse_equity_dividend_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend"));
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    REQUIRE(eq.quote_type == equity_quote_type::dividend);
 }
 
 TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {
@@ -316,9 +328,17 @@ TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {
                       oresmd_exception);
 }
 
-TEST_CASE("reject_equity_uri_with_point_field", tags) {
-    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&point=5y")),
-                      oresmd_exception);
+TEST_CASE("parse_equity_with_point", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    REQUIRE(eq.quote_type == equity_quote_type::dividend);
+    REQUIRE(eq.point == "1y");
+}
+
+TEST_CASE("reject_equity_quote_when_type_not_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=fixing&quote=dividend")),
+        oresmd_exception);
 }
 
 TEST_CASE("reject_equity_uri_missing_mandatory_ccy", tags) {

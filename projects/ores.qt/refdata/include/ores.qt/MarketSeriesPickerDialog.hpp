@@ -47,12 +47,32 @@ class ORES_QT_REFDATA_EXPORT MarketSeriesPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    /// @param initialFilter Pre-fills the search box and the New Series qualifier field, e.g. an
-    /// index code such as "USD-SOFR" -- narrows the list to that index's series by construction,
-    /// rather than showing every FX/rates/credit series in the tenant unfiltered.
+    /// Tunables for a specific call site -- e.g. Source vs. Output Series want different New
+    /// Series defaults (raw grid vs. published curve conventions) so they don't look
+    /// interchangeable, and Output additionally excludes whatever was already picked as Source so
+    /// the two can never accidentally end up pointing at the same market_series row (which would
+    /// otherwise let curve_republish_service reclassify the raw input series as its own output --
+    /// see ir_curve_bootstrap_config_service::save_bootstrap_config()'s own guard against this).
+    struct Options {
+        /// Pre-fills the search box and the New Series qualifier field, e.g. an index qualifier
+        /// such as "USD/SOFR" -- narrows the list to that index's series by construction, rather
+        /// than showing every FX/rates/credit series in the tenant unfiltered.
+        QString initialFilter;
+        /// Empty means fall back to "RATES" -- kept a plain empty default (rather than "RATES"
+        /// as a default member initializer) since a default member initializer here would need
+        /// Options to be a complete type at the constructor declaration's `= {}` below, which it
+        /// isn't yet inside the enclosing class body.
+        QString defaultSeriesType;
+        /// Empty means fall back to "YIELD" -- see defaultSeriesType's own comment.
+        QString defaultMetric;
+        /// Never shown in the existing-rows list, e.g. the Source series already picked -- empty
+        /// string means no exclusion.
+        QString excludeSeriesId;
+    };
+
     MarketSeriesPickerDialog(ClientManager* clientManager,
                              QWidget* parent = nullptr,
-                             const QString& initialFilter = QString());
+                             const Options& options = {});
 
     /// Set once the user picks an existing row or successfully creates+selects a new one.
     [[nodiscard]] std::optional<marketdata::domain::market_series> selectedSeries() const {
@@ -71,6 +91,7 @@ private:
     static QString display_label(const marketdata::domain::market_series& s);
 
     ClientManager* clientManager_;
+    Options options_;
     QLineEdit* filterEdit_ = nullptr;
     QTableWidget* table_ = nullptr;
     QPushButton* selectButton_ = nullptr;

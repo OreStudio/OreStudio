@@ -486,7 +486,11 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexQualifier());
+    // Source is the raw, externally-fed grid -- RATES/YIELD is the convention every seeded raw
+    // rates row actually uses.
+    MarketSeriesPickerDialog::Options options;
+    options.initialFilter = selectedIndexQualifier();
+    MarketSeriesPickerDialog dialog(clientManager_, this, options);
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
@@ -498,12 +502,29 @@ void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexQualifier());
+    // Output is the published curve, not the raw grid -- defaults to DISCOUNT/RATE (the
+    // published-curve convention per the oresmd design doc's own worked examples) rather than
+    // RATES/YIELD, so a freshly-created output series is never mistakable for its own raw input.
+    // The already-picked Source series is excluded outright: the two must never resolve to the
+    // same market_series row -- see ir_curve_bootstrap_config_service::save_bootstrap_config()'s
+    // matching server-side guard for why.
+    MarketSeriesPickerDialog::Options options;
+    options.initialFilter = selectedIndexQualifier();
+    options.defaultSeriesType = "DISCOUNT";
+    options.defaultMetric = "RATE";
+    if (!(config_.source_series_id == boost::uuids::nil_uuid()))
+        options.excludeSeriesId =
+            QString::fromStdString(boost::uuids::to_string(config_.source_series_id));
+    MarketSeriesPickerDialog dialog(clientManager_, this, options);
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
     if (!series)
         return;
+    if (series->id == config_.source_series_id) {
+        showBanner(tr("Output series cannot be the same as the Source series."), true);
+        return;
+    }
     config_.output_series_id = series->id;
     outputSeriesIdEdit_->setText(QString::fromStdString(
         series->series_type + " / " + series->metric + " / " + series->qualifier));
@@ -590,6 +611,12 @@ void CurveBuilderWorkbench::onSaveClicked() {
 
     if (pillars_.empty()) {
         showBanner(tr("Add at least one pillar before saving."), true);
+        return;
+    }
+    if (!(config_.source_series_id == boost::uuids::nil_uuid()) &&
+        config_.source_series_id == config_.output_series_id) {
+        showBanner(tr("Source and Output series must be different (server also rejects this)."),
+                  true);
         return;
     }
 

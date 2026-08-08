@@ -71,9 +71,10 @@ const QStringList& subclass_names() {
 
 MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
                                                     QWidget* parent,
-                                                    const QString& initialFilter)
+                                                    const Options& options)
     : QDialog(parent)
-    , clientManager_(clientManager) {
+    , clientManager_(clientManager)
+    , options_(options) {
     setWindowTitle(tr("Select Market Series"));
     resize(720, 480);
 
@@ -115,10 +116,13 @@ MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
     statusLabel_->setVisible(false);
     layout->addWidget(statusLabel_);
 
-    if (!initialFilter.isEmpty()) {
-        filterEdit_->setText(initialFilter);
-        newQualifierEdit_->setText(initialFilter);
+    if (!options_.initialFilter.isEmpty()) {
+        filterEdit_->setText(options_.initialFilter);
+        newQualifierEdit_->setText(options_.initialFilter);
     }
+    newSeriesTypeEdit_->setText(options_.defaultSeriesType.isEmpty() ? "RATES" :
+                                                                       options_.defaultSeriesType);
+    newMetricEdit_->setText(options_.defaultMetric.isEmpty() ? "YIELD" : options_.defaultMetric);
 
     reload();
 }
@@ -131,13 +135,10 @@ QWidget* MarketSeriesPickerDialog::buildCreatePanel() {
                                 panel));
 
     auto* row = new QHBoxLayout();
+    // Defaults (RATES/YIELD, or whatever the call site's Options::defaultSeriesType/defaultMetric
+    // say) are applied after construction, once options_ is set -- see the constructor body.
     newSeriesTypeEdit_ = new QLineEdit(panel);
-    // RATES/YIELD is the convention every existing rates market_series row in the seeded data
-    // actually uses (e.g. "RATES"/"YIELD"/"USD/SOFR") -- default to it rather than a plausible-
-    // looking but unused label like "YieldCurve"/"DISCOUNT".
-    newSeriesTypeEdit_->setText("RATES");
     newMetricEdit_ = new QLineEdit(panel);
-    newMetricEdit_->setText("YIELD");
     newQualifierEdit_ = new QLineEdit(panel);
     newQualifierEdit_->setPlaceholderText(tr("Qualifier, e.g. USD/SOFR"));
     newAssetClassCombo_ = new QComboBox(panel);
@@ -211,6 +212,9 @@ void MarketSeriesPickerDialog::populateTable() {
     const QString filter = filterEdit_->text().trimmed().toLower();
     table_->setRowCount(0);
     for (const auto& s : rows_) {
+        if (!options_.excludeSeriesId.isEmpty() &&
+            boost::uuids::to_string(s.id) == options_.excludeSeriesId.toStdString())
+            continue;
         if (!filter.isEmpty()) {
             const QString haystack = QString::fromStdString(s.series_type + " " + s.metric + " " +
                                                              s.qualifier)

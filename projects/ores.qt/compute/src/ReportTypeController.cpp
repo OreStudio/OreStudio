@@ -24,6 +24,7 @@
 #include "ores.qt/ReportTypeDetailDialog.hpp"
 #include "ores.qt/ReportTypeHistoryDialog.hpp"
 #include "ores.qt/ReportTypeMdiWindow.hpp"
+#include "ores.reporting.api/eventing/report_type_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -31,6 +32,13 @@
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+
+constexpr std::string_view report_type_event_name =
+    eventing::domain::event_traits<reporting::eventing::report_type_changed_event>::name;
+
+} // namespace
 
 ReportTypeController::ReportTypeController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
@@ -44,6 +52,23 @@ ReportTypeController::ReportTypeController(QMainWindow* mainWindow,
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportTypeController created";
+
+    if (clientManager_) {
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &ReportTypeController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<ReportTypeController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to report type change events";
+            self->clientManager_->subscribeToEvent(std::string{report_type_event_name});
+        };
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+        if (clientManager_->isConnected())
+            subscribeAll();
+    }
 }
 
 void ReportTypeController::showListWindow() {
@@ -432,6 +457,21 @@ void ReportTypeController::onRevertVersion(const reporting::domain::report_type&
 
 EntityListMdiWindow* ReportTypeController::listWindow() const {
     return listWindow_;
+}
+
+void ReportTypeController::onNotificationReceived(const QString& eventType,
+                                                   const QDateTime& timestamp,
+                                                   const QStringList& entityIds,
+                                                   const QString& /*tenantId*/) {
+    if (eventType.toStdString() != report_type_event_name)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Received report_type_changed notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " id(s)";
+
+    if (listWindow_)
+        listWindow_->markAsStale();
 }
 
 }

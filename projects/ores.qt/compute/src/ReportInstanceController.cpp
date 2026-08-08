@@ -24,6 +24,7 @@
 #include "ores.qt/ReportInstanceDetailDialog.hpp"
 #include "ores.qt/ReportInstanceHistoryDialog.hpp"
 #include "ores.qt/ReportInstanceMdiWindow.hpp"
+#include "ores.reporting.api/eventing/report_instance_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -31,6 +32,13 @@
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+
+constexpr std::string_view report_instance_event_name =
+    eventing::domain::event_traits<reporting::eventing::report_instance_changed_event>::name;
+
+} // namespace
 
 ReportInstanceController::ReportInstanceController(QMainWindow* mainWindow,
                                                    QMdiArea* mdiArea,
@@ -44,6 +52,23 @@ ReportInstanceController::ReportInstanceController(QMainWindow* mainWindow,
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportInstanceController created";
+
+    if (clientManager_) {
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &ReportInstanceController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<ReportInstanceController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to report instance change events";
+            self->clientManager_->subscribeToEvent(std::string{report_instance_event_name});
+        };
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+        if (clientManager_->isConnected())
+            subscribeAll();
+    }
 }
 
 void ReportInstanceController::showListWindow() {
@@ -436,6 +461,21 @@ void ReportInstanceController::onRevertVersion(const reporting::domain::report_i
 
 EntityListMdiWindow* ReportInstanceController::listWindow() const {
     return listWindow_;
+}
+
+void ReportInstanceController::onNotificationReceived(const QString& eventType,
+                                                       const QDateTime& timestamp,
+                                                       const QStringList& entityIds,
+                                                       const QString& /*tenantId*/) {
+    if (eventType.toStdString() != report_instance_event_name)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Received report_instance_changed notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " id(s)";
+
+    if (listWindow_)
+        listWindow_->markAsStale();
 }
 
 }

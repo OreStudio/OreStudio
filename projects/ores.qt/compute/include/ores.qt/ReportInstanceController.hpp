@@ -84,6 +84,13 @@ private:
     void showHistoryWindow(const reporting::domain::report_instance& instance);
 
     ChangeReasonCache* changeReasonCache_{nullptr};
+private slots:
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
+
+private:
     ReportInstanceMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

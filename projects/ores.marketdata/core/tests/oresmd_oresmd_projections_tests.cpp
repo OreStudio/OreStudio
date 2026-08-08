@@ -325,6 +325,15 @@ TEST_CASE("seasonality_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/MULT/UKRPI/JAN");
 }
 
+/*
+ * Correlation asset class (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+TEST_CASE("correlation_pairwise_quote_key", tags) {
+    const auto id = parse("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CORRELATION/RATE/CCY-EUR-USD");
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

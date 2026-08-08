@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered new correlation asset class: =correlation_market_data_identifier=
+and =correlation_market_data_requirement= added as 7th variant member.
+=correlation_quote_type= (=pairwise=) with =quote_key_correlation=
+=format("CORRELATION/RATE/{}", factor_pair)=. =factor_pair= carries the
+descriptive factor-pair string. Full parser+to_uri+resolver wiring.
+145 test cases, 258 assertions, all passing.

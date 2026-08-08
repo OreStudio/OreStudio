@@ -383,6 +383,19 @@ TEST_CASE("reject_credit_uri_missing_mandatory_ccy", tags) {
         oresmd_exception);
 }
 
+TEST_CASE("parse_correlation_pairwise", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto& cr = std::get<correlation_market_data_identifier>(id);
+    REQUIRE(cr.factor_pair == "CCY-EUR-USD");
+    REQUIRE(cr.quote_type == correlation_quote_type::pairwise);
+}
+
+TEST_CASE("round_trip_correlation", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
 TEST_CASE("parse_inflation_zc_swap", tags) {
     const auto id = oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
     const auto& inf = std::get<inflation_market_data_identifier>(id);

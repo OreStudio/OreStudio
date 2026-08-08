@@ -267,6 +267,12 @@ std::string_view ore_type(commodity_quote_type qt) {
     switch (qt) {
     case commodity_quote_type::spot: return "COMMODITY";
     case commodity_quote_type::fwd:  return "COMMODITY_FWD";
+    // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
+    // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
+    // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
+    // commodity_market_data_identifier is a deliberate simplification since
+    // ORE Studio has no security-level identifier yet; the key emitted here
+    // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
     case commodity_quote_type::cpr:  return "CPR";
     }
     return "COMMODITY";

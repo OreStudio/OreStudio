@@ -87,8 +87,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | on edits of the original artefact types, we get duplicates. all other types are fine. |
+| Status | PASS |
 
 ** Create and save a change reason category
 
@@ -142,8 +141,7 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | get duplicates when saving an existing bundle, check db |
+| Status | PASS |
 
 ** Confirm LEI registry has no menu entry
 
@@ -187,10 +185,10 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-08-08T17:19:40Z |
-| Branch        | main |
-| Commit        | ff3e91d79 |
+| Status        | PASSED |
+| Completed at  | 2026-08-08T18:16:29Z |
+| Branch        | feature/fix-dq-shared-edit-and-lei-ui |
+| Commit        | 25bbbbe61 |
 | Worktree      | jolly_knuth |
 
 * Notes

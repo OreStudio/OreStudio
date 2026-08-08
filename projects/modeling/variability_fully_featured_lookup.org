@@ -44,6 +44,12 @@ here is left to the model's own choice:
 | [[id:74EB0234-97F3-459C-8806-5A979B9E5A22][has_csv_xml_io]] | true |
 | [[id:5A843D4A-2FF7-4410-8B70-A29FD01622FD][has_version_navigation]] | true |
 
+* Physical space
+
+| Address | Enabled |
+|---------+---------|
+| =ores.cpp.eventing-integration-test= | true |
+
 * See also
 
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

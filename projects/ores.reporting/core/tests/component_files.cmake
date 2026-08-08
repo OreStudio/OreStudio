@@ -17,7 +17,11 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "concurrency_policy_eventing_integration_tests.cpp"
     "main.cpp"
+    "report_definition_eventing_integration_tests.cpp"
+    "report_instance_eventing_integration_tests.cpp"
+    "report_type_eventing_integration_tests.cpp"
     "repository_report_definition_repository_tests.cpp"
     "repository_report_type_repository_tests.cpp"
 )

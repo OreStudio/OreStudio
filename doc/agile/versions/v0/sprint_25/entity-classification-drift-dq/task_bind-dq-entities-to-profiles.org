@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
 #+owner: marco
 #+branch: feature/bind-dq-sql-entities-to-profiles
-#+pr: 1915
+#+pr: 1920
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -221,6 +221,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1920][#1920]] | [agile] Add retest scenario for PR #1915's fix |
 | [[https://github.com/OreStudio/OreStudio/pull/1915][#1915]] | [dq,qt,sql] Fix shared-tenant edit duplicates; remove broken LEI browsing UI |
 | [[https://github.com/OreStudio/OreStudio/pull/1910][#1910]] | [agile] Add retest scenario for PR #1898's bug fixes |
 | [[https://github.com/OreStudio/OreStudio/pull/1898][#1898]] | [dq] Bind ores.dq entities to profiles; commission full C++/Qt stack |

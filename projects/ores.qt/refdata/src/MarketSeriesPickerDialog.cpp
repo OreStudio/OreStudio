@@ -34,6 +34,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <algorithm>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/enums.hpp>
 
@@ -273,6 +274,7 @@ void MarketSeriesPickerDialog::onCreateClicked() {
     }
 
     marketdata::domain::market_series series;
+    series.id = boost::uuids::random_generator{}();
     series.series_type = seriesType.toStdString();
     series.metric = metric.toStdString();
     series.qualifier = newQualifierEdit_->text().trimmed().toStdString();
@@ -343,11 +345,9 @@ void MarketSeriesPickerDialog::onCreateClicked() {
             }
             self->rows_ = std::move(r->market_series);
             self->populateTable();
-            const auto it =
-                std::find_if(self->rows_.begin(), self->rows_.end(), [&](const auto& s) {
-                    return s.series_type == created.series_type && s.metric == created.metric &&
-                           s.qualifier == created.qualifier;
-                });
+            const auto it = std::find_if(self->rows_.begin(), self->rows_.end(), [&](const auto& s) {
+                return s.id == created.id;
+            });
             if (it != self->rows_.end()) {
                 self->selected_ = *it;
                 self->accept();

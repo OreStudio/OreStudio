@@ -8,7 +8,7 @@
 #+filetags: :compass_quality_of_life_followups:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1916
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1916][#1916]] | [doc] Add ASD-STE100 Simplified Technical English skill for agent output |
 
 * Review
 

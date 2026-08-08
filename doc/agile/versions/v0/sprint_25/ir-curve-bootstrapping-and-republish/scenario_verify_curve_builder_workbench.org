@@ -110,13 +110,31 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
   Curve Building > Tenors), ordered by that table's own ladder
   position (=sort_order=), not alphabetically -- =Add Pillar= stays
   disabled with a tooltip until the tenor list has loaded.
-- Click Add Pillar twice. Each new row defaults to Start Tenor
-  =SPOT= (the real seeded spot-starting code -- not =0D=, which
-  isn't a valid tenor) and Curve Role =DEPOSIT=; leave both as-is.
-- For the first row's End Tenor combo, select =1M=; for the second
-  row's End Tenor combo, select =3M=.
-- Confirms: both rows show Start Tenor =SPOT= with the End Tenor you
-  picked, End Tenor's dropdown list is in time order (short-dated
+- Click Add Pillar seven times and set each row's End Tenor/Curve
+  Role per the table below (Start Tenor stays =SPOT= on every row --
+  =FRA= is the only role where it would differ, not needed here).
+  This matches the seeded raw grid's own available points
+  (=1M/3M/6M/12M/2Y/5Y/10Y=) and the correct desk role per tenor
+  (deposits at the short end, par swap rates from 2Y out -- a
+  =SWAP= pillar's fixed leg is built from every prior pillar's own
+  maturity date plus its own, which is why the exact desk-standard
+  role split matters, not just picking any role):
+
+  | Row | Start Tenor | End Tenor | Curve Role |
+  |-----+-------------+-----------+------------|
+  |   1 | SPOT        | 1M        | DEPOSIT    |
+  |   2 | SPOT        | 3M        | DEPOSIT    |
+  |   3 | SPOT        | 6M        | DEPOSIT    |
+  |   4 | SPOT        | 12M       | DEPOSIT    |
+  |   5 | SPOT        | 2Y        | SWAP       |
+  |   6 | SPOT        | 5Y        | SWAP       |
+  |   7 | SPOT        | 10Y       | SWAP       |
+
+  Rows can be added/edited in any order -- the actual bootstrap
+  order is derived from each row's own End Tenor maturity, not the
+  order you added them in.
+- Confirms: all seven rows show the Start Tenor/End Tenor/Curve Role
+  above; End Tenor's dropdown list is in time order (short-dated
   first) rather than alphabetical; Remove deletes a selected row
   correctly if tried.
 

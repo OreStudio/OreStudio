@@ -82,6 +82,7 @@ struct commodity_market_data_requirement final {
     std::optional<std::string> commodity_code;
     std::optional<std::string> ccy;
     std::optional<instrument_type> type;
+    std::optional<commodity_quote_type> quote_type;
     std::optional<std::string> point;
 
     bool operator==(const commodity_market_data_requirement&) const = default;

@@ -221,7 +221,19 @@ TEST_CASE("round_trip_cds_index", tags) {
 }
 
 TEST_CASE("round_trip_commodity", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote"));
+    const auto original = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_commodity_fwd", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_commodity_cpr", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -358,9 +370,16 @@ TEST_CASE("reject_credit_uri_missing_mandatory_ccy", tags) {
         oresmd_exception);
 }
 
-TEST_CASE("reject_commodity_uri_with_quote_field", tags) {
+TEST_CASE("parse_commodity_fwd_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=fwd&point=6m"));
+    const auto& co = std::get<commodity_market_data_identifier>(id);
+    REQUIRE(co.quote_type == commodity_quote_type::fwd);
+    REQUIRE(co.point == "6m");
+}
+
+TEST_CASE("reject_commodity_quote_when_type_not_quote", tags) {
     REQUIRE_THROWS_AS(
-        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=cds")),
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=fixing&quote=fwd")),
         oresmd_exception);
 }
 

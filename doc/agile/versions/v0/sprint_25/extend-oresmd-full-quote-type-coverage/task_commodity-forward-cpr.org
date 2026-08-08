@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -69,3 +69,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered commodity quote-type representation: =commodity_quote_type= (3
+values: =spot=, =fwd=, =cpr=) with per-type =quote_key_commodity=
+dispatching. =spot= stays 4-segment scalar =COMMODITY/PRICE/CODE/CCY=;
+=fwd= and =cpr= emit 5-segment curve keys with point/tenor. =quote= absent
+defaults to =spot=. =validate_no_quote= removed (now all five asset classes
+support it). Parser guards =quote= against =type≠quote= (matching IR/
+equity pattern). 132 test cases, 242 assertions, all passing.

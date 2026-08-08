@@ -115,20 +115,19 @@ void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
         if (pricingEngineTypeController_)
             pricingEngineTypeController_->showListWindow();
     });
+
+    // Attach Pricing Configuration submenu to Reporting menu — goes
+    // after Report Configuration (attached by ComputePlugin).
+    if (reporting_menu_)
+        reporting_menu_->addMenu(pricing_configuration_menu_);
 }
 
 QList<QMenu*> AnalyticsPlugin::create_menus() {
-    BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    if (!reporting_menu_ || !pricing_configuration_menu_) {
+    BOOST_LOG_SEV(lg(), debug) << "Reporting menu controls bar position.";
+    if (!reporting_menu_) {
         BOOST_LOG_SEV(lg(), warn) << "Reporting menu not initialised via setup_menus.";
         return {};
     }
-
-    // Pricing Configuration submenu is populated by setup_menus().
-    // Attach it here so it appears after the main-menu items in create_menus() order.
-    reporting_menu_->addMenu(pricing_configuration_menu_);
-
-    BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {reporting_menu_};
 }
 

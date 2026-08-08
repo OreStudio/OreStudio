@@ -30,9 +30,7 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
-#include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
-#include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
@@ -96,14 +94,6 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void save_barrier_option(ores::nats::message msg) {
-        using Svc = service::fx_barrier_option_instrument_service;
-        handle_typed_fx_save<save_fx_barrier_option_instrument_request,
-                             save_fx_barrier_option_instrument_response,
-                             Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_barrier_option_instrument);
-    }
-
     void save_digital_option(ores::nats::message msg) {
         using Svc = service::fx_digital_option_instrument_service;
         handle_typed_fx_save<save_fx_digital_option_instrument_request,
@@ -118,14 +108,6 @@ public:
                              save_fx_asian_forward_instrument_response,
                              Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_asian_forward_instrument);
-    }
-
-    void save_variance_swap(ores::nats::message msg) {
-        using Svc = service::fx_variance_swap_instrument_service;
-        handle_typed_fx_save<save_fx_variance_swap_instrument_request,
-                             save_fx_variance_swap_instrument_response,
-                             Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_variance_swap_instrument);
     }
 
 private:

@@ -17,38 +17,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_BARRIER_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_BARRIER_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_BARRIER_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_BARRIER_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Barrier Option instrument.
  *
- * Routes: FxBarrierOption, FxDoubleBarrierOption, FxEuropeanBarrierOption,
- * FxKIKOBarrierOption, FxGenericBarrierOption.
- *
- * lower_barrier holds the primary (or KO-side for KIKO) barrier level.
- * upper_barrier holds the second level for double-barrier and KIKO products;
- * absent for single-barrier types.
- * underlying_code is used by KIKO and generic barrier products.
+ * Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
+ * FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
+ * upper_barrier is optional (single-barrier products leave it NULL).
  */
 struct fx_barrier_option_instrument final {
     instrument_identity identity;
 
+    /**
+     * @brief Currency being bought.
+     */
     std::string bought_currency;
+
+    /**
+     * @brief Amount being bought. Must be positive.
+     */
     double bought_amount = 0.0;
+
+    /**
+     * @brief Currency being sold.
+     */
     std::string sold_currency;
+
+    /**
+     * @brief Amount being sold. Must be positive.
+     */
     double sold_amount = 0.0;
 
     /**
-     * @brief Option type: Call or Put. Absent for FxGenericBarrierOption
-     * with PayoffType=AssetOrNothing.
+     * @brief Option type (e.g. Call or Put).
      */
     std::string option_type;
 
@@ -58,35 +69,47 @@ struct fx_barrier_option_instrument final {
     std::string expiry_date;
 
     /**
-     * @brief Optional settlement method (e.g. Cash, Physical).
+     * @brief Optional settlement instructions.
      */
     std::string settlement;
 
     /**
-     * @brief Primary barrier type (e.g. UpAndIn, DownAndOut, KIKO).
+     * @brief Barrier style (e.g. UpAndIn, DownAndOut).
      */
     std::string barrier_type;
 
     /**
-     * @brief Primary (or lower) barrier level. Must be positive.
+     * @brief Lower barrier level. Must be positive.
      */
     double lower_barrier = 0.0;
 
     /**
-     * @brief Second barrier level for double-barrier and KIKO products.
+     * @brief Upper barrier level (double-barrier products only; NULL otherwise).
      */
     std::optional<double> upper_barrier;
 
     /**
-     * @brief FX pair or index code (e.g. TR20H-EUR-USD). Used by
-     * KIKO and generic barrier products.
+     * @brief Optional underlying identifier.
      */
     std::string underlying_code;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_barrier_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_barrier_option_instrument&) {
+    return "ores.trading.fx_barrier_option_instrument";
+}
 
 }
 

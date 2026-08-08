@@ -64,6 +64,7 @@
 \ir ./trading_fx_accumulator_instruments_drop.sql
 \ir ./trading_fx_asian_forward_instruments_drop.sql
 \ir ./trading_fx_digital_option_instruments_drop.sql
+\ir ./trading_fx_barrier_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_barrier_option_instruments_drop.sql
 \ir ./trading_fx_vanilla_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_vanilla_option_instruments_drop.sql

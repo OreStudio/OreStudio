@@ -1,0 +1,314 @@
+:PROPERTIES:
+:ID: 18C9735A-9143-4E00-B2C6-6B432FB0DDCE
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.trading.fx_barrier_option_instrument
+#+description: Codegen entity model for the trading =fx_barrier_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: fx_barrier_option_instrument
+#+entity_plural: fx_barrier_option_instruments
+#+entity_title: FX Barrier Option Instrument
+#+brief: FX Barrier Option instrument.
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
+FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
+=upper_barrier= is optional (single-barrier products leave it NULL).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:has_workspace_id: true
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this FX barrier option instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
+FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
+
+#+begin_src cpp :name generator
+std::string("FxBarrierOption")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** bought_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency being bought.
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** bought_amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Amount being bought. Must be positive.
+
+#+begin_src cpp :name generator
+1000000.0
+#+end_src
+
+** sold_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency being sold.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** sold_amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Amount being sold. Must be positive.
+
+#+begin_src cpp :name generator
+1100000.0
+#+end_src
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Option type (e.g. Call or Put).
+
+#+begin_src cpp :name generator
+std::string("Call")
+#+end_src
+
+** expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Option expiry date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2033-02-20")
+#+end_src
+
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional settlement instructions.
+
+** barrier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Barrier style (e.g. UpAndIn, DownAndOut).
+
+#+begin_src cpp :name generator
+std::string("UpAndIn")
+#+end_src
+
+** lower_barrier
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Lower barrier level. Must be positive.
+
+#+begin_src cpp :name generator
+1.2
+#+end_src
+
+** upper_barrier
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Upper barrier level (double-barrier products only; NULL otherwise).
+
+** underlying_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional underlying identifier.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_fx_barrier_option_instruments_tbl
+:party_id_from_session: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "bought_amount" > 0 |
+| "sold_amount" > 0 |
+| "bought_currency" <> '' |
+| "sold_currency" <> '' |
+| "barrier_type" <> '' |
+| "lower_barrier" > 0 |
+| "trade_type_code" in ('FxBarrierOption', 'FxDoubleBarrierOption', 'FxEuropeanBarrierOption', 'FxKIKOBarrierOption', 'FxGenericBarrierOption') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_barrier_option_instrument
+:entity_plural_short:   fx_barrier_option_instruments
+:entity_singular_words: FX barrier option instrument
+:entity_plural_words:   FX barrier option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fboi
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.

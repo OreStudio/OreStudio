@@ -40,11 +40,9 @@
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/product_type.hpp"
@@ -60,18 +58,6 @@
 namespace ores::trading::messaging {
 
 // ---- Typed FX instrument protocol ----
-
-struct save_fx_barrier_option_instrument_request {
-    using response_type = struct save_fx_barrier_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_barrier_option_instruments.save";
-    ores::trading::domain::fx_barrier_option_instrument data;
-};
-
-struct save_fx_barrier_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
 
 struct save_fx_digital_option_instrument_request {
     using response_type = struct save_fx_digital_option_instrument_response;
@@ -92,17 +78,6 @@ struct save_fx_asian_forward_instrument_request {
 };
 
 struct save_fx_asian_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_variance_swap_instrument_request {
-    using response_type = struct save_fx_variance_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_variance_swap_instruments.save";
-    ores::trading::domain::fx_variance_swap_instrument data;
-};
-
-struct save_fx_variance_swap_instrument_response {
     bool success = false;
     std::string message;
 };

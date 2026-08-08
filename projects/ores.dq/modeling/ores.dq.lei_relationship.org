@@ -276,6 +276,16 @@ explicitly terminal, not published anywhere. GLEIF LEI
 corporate-hierarchy data is queried directly from the artefact table;
 a same-component main table would be an orphan nobody designed for.
 
+Qt UI deliberately disabled (see Physical space below): same rationale
+as =lei_entity= -- the generated read-only Explorer list window
+queried the (correctly nonexistent) main table and errored on open.
+
+* Physical space
+
+| Address     | Enabled |
+|-------------+---------|
+| ores.cpp.qt | false   |
+
 * See also
 
 - [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

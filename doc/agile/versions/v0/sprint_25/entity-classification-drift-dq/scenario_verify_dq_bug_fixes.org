@@ -145,21 +145,16 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 | Status | FAIL |
 | Notes  | get duplicates when saving an existing bundle, check db |
 
-** Browse LEI entities read-only list
+** Confirm LEI registry has no menu entry
 
-- Navigate: Data Quality > LEI Registry > LEI Entities.
-- Confirms: the list loads and paginates (page-size/offset controls
-  work); no Add/Delete action is present anywhere on the list window;
-  double-clicking a row opens a read-only view with no Save button
-  (or opens nothing beyond a non-editable display) — there must be no
-  way to create, edit, or delete a row from this window.
-
-*** Result
-
-| Field  | Value |
-|--------+-------|
-| Status | FAIL |
-| Notes  | does not come up, get an error: Repository error: Query execution failed: ERROR:  relation "public.ores_dq_lei_entities_tbl" does not exist; LINE 1: ...change_commentary", "valid_from", "valid_to" FROM "public"."... |
+- Open every submenu under Data Quality (Badges, Classifications,
+  Audit Trail, Data Catalogue) and search for "LEI Registry" / "LEI
+  Entities" / "LEI Relationships".
+- Confirms: no menu item anywhere opens an LEI browsing window — the
+  previous "LEI Registry" submenu queried a main table that
+  deliberately does not exist (LEI data lives only in the artefact/
+  staging table, feeding a different UI, the GLEIF counterparty
+  picker) and has been removed rather than given a broken read path.
 
 ** Confirm report definitions has no menu entry
 

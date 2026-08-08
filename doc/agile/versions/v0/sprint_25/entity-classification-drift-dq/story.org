@@ -21,11 +21,11 @@ Bring ores.dq to the same proven state as the ores.refdata pilot: every codegen-
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-08-04                               |
 
 * Acceptance
@@ -41,9 +41,23 @@ Bring ores.dq to the same proven state as the ores.refdata pilot: every codegen-
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq entities to profiles; verify zero-diff regen]] | STARTED | 2026-08-04 | | Implement profile binding for ores.dq's org-mode entity set (dq and dq-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq entities to profiles; verify zero-diff regen]] | DONE | 2026-08-04 | 2026-08-08 | Implement profile binding for ores.dq's org-mode entity set (dq and dq-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
 
 * Decisions
+
+- Consolidated all ores.dq-owned entities' Qt layer into a single
+  =ores.qt.dq= plugin rather than continuing to grow the interim
+  =ores.qt.data_management= stepping-stone plugin -- DQ entities belong
+  in the DQ plugin, no exceptions, to keep variability under control.
+  =ores.qt.data_management= is deleted entirely as a result.
+- Migrated the 4 lookup_entity holdouts (lei_entity, lei_relationship,
+  report_definition, synthetic_fx_spot_config) onto domain_entity rather
+  than patching lookup_entity's C++ generation further -- lookup_entity
+  is being retired, not maintained (per task DDBD522D's earlier,
+  explicitly-abandoned attempt at the latter).
+- History browsing for every newly-commissioned entity routes through
+  the generic =HistoryDialog= plus the shared history/diff registries,
+  not new hand-written per-entity dialogs.
 
 * Out of scope
 

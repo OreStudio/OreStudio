@@ -8,7 +8,7 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr: 1904
+#+pr: 1918
 #+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
 #+blocked_since:
 #+created: 2026-05-31
@@ -60,6 +60,7 @@ producing only cosmetic / additive diffs.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1918][#1918]] | [reporting,qt,codegen] Apply safe drift to reporting-cpp -- follow-up fixes |
 | [[https://github.com/OreStudio/OreStudio/pull/1904][#1904]] | [reporting,codegen] Apply safe drift to reporting-cpp |
 
 * Review

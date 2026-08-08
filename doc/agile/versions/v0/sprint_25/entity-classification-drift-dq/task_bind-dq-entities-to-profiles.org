@@ -214,7 +214,8 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 | [[id:E3AC8CAB-2908-4407-8DC6-16C0000A092E][Verify ores.dq commissioned entities]] | FAILED | CRUD+history on catalog/data_domain/change_reason/change_reason_category/artefact_type/dataset_bundle; read-only browse on lei_entity/lei_relationship; confirms report_definition/synthetic_fx_spot_config have no Qt UI; two-client eventing check. Found 3 bugs (artefact_type missing fields + no eventing, change_reason/change_reason_category duplicates), all fixed on this PR before merge. |
-| [[id:E691EEB4-9F66-4099-953E-F41F641D45AE][Verify ores.dq PR #1898 bug fixes]] | PENDING | Retest of the 3 bugs found above, plus the steps left PENDING last round (dataset_bundle CRUD, LEI registry read-only, report_definition/synthetic_fx_spot_config absence). |
+| [[id:E691EEB4-9F66-4099-953E-F41F641D45AE][Verify ores.dq PR #1898 bug fixes]] | PASSED | Retest of the 3 bugs found above, plus the steps left PENDING last round (dataset_bundle CRUD, LEI registry read-only, report_definition/synthetic_fx_spot_config absence). All 8 steps passed. |
+| [[id:EBF4E9D0-1359-458C-A045-696E3F5A9630][Verify PR #1915's shared-tenant edit fix]] | PENDING | Edits a seeded row of all 10 tables PR #1915 extended the per-tenant-copy fix to (data_domain, subject_area, methodology, origin/nature/treatment_dimension, coding_scheme, coding_scheme_authority_type, badge_severity, badge_definition); confirms none produce a duplicate row. |
 
 * PRs
 

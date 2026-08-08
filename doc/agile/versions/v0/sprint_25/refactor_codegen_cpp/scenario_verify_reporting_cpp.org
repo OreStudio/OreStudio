@@ -83,8 +83,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | no report definitions show. is this because we do not have reports for ACME corp? we should have the appropriate reports for each entity. |
+| Status | PASS |
 
 ** Open Report Instances and verify list loads
 
@@ -96,7 +95,8 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | no eventing. manual reload worked though. |
 
 ** Create a new Report Definition
 
@@ -114,7 +114,8 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | eventing failed, manual reload worked |
 
 ** Edit the Report Definition and verify update
 
@@ -127,7 +128,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** View Report Definition history
 
@@ -141,7 +142,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Delete the Report Definition and confirm removal
 
@@ -153,7 +154,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Create a new Concurrency Policy (CRUD end-to-end)
 
@@ -168,16 +169,17 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | no eventing, manual reload works |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-08T08:55:10Z |
+| Completed at  | 2026-08-08T11:28:04Z |
 | Branch        | fix/reporting-main-break |
-| Commit        | 954cc1375 |
+| Commit        | a5e24fe64 |
 | Worktree      | bright_faraday |
 
 * Notes

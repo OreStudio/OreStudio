@@ -74,9 +74,10 @@ public:
         username_ = username;
     }
 
-    /// New-recipe mode: no existing config, output_series_id must already have been minted
-    /// server-side (config-creation still mints it, per the republish task's own Plan) before
-    /// this workbench can be used meaningfully -- shown blank, user fills in and Saves.
+    /// New-recipe mode: no existing config -- shown blank, user picks Source/Output Series Id via
+    /// MarketSeriesPickerDialog (which can also create the output series inline, since
+    /// curve_republish_service::compute() requires it to already be catalogued before the first
+    /// Publish) and Saves.
     void setCreateMode(bool createMode);
 
     /// Loads an existing config + its pillars into the workbench.
@@ -117,6 +118,9 @@ private:
     void showBanner(const QString& message, bool isError);
     void
     renderBootstrapResults(const std::vector<marketdata::messaging::computed_curve_point>& points);
+    void onBrowseSourceSeriesClicked();
+    void onBrowseOutputSeriesClicked();
+    void onBrowseDiscountCurveConfigClicked();
 
     ClientManager* clientManager_ = nullptr;
     std::string username_;
@@ -125,11 +129,16 @@ private:
     std::vector<refdata::domain::ir_curve_bootstrap_pillar> pillars_;
     bool hasBootstrapped_ = false;
 
-    // Conventions tab
+    // Conventions tab. sourceSeriesIdEdit_/outputSeriesIdEdit_/discountCurveConfigIdEdit_ are
+    // read-only display fields fed by a picker dialog (Browse... button) rather than free-typed
+    // UUIDs -- the ids themselves live only in config_, never re-parsed from displayed text.
     QLineEdit* sourceSeriesIdEdit_ = nullptr;
+    QPushButton* browseSourceSeriesButton_ = nullptr;
     QLineEdit* outputSeriesIdEdit_ = nullptr;
+    QPushButton* browseOutputSeriesButton_ = nullptr;
     QComboBox* curveFamilyRoleCombo_ = nullptr;
     QLineEdit* discountCurveConfigIdEdit_ = nullptr;
+    QPushButton* browseDiscountCurveConfigButton_ = nullptr;
     QComboBox* interpolationMethodCombo_ = nullptr;
     QComboBox* dayCountConventionCombo_ = nullptr;
     QLineEdit* splitTenorCodeEdit_ = nullptr;

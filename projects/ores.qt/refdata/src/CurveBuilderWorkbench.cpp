@@ -22,7 +22,9 @@
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.analytics.quant/service/forward_rate_calculator.hpp"
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
+#include "ores.qt/BootstrapConfigPickerDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/MarketSeriesPickerDialog.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include <QComboBox>
@@ -112,26 +114,52 @@ QWidget* CurveBuilderWorkbench::buildConventionsTab() {
         form->addLayout(row);
     };
 
+    auto add_picker_row = [&](const QString& label, QLineEdit* field, QPushButton*& browseButton) {
+        field->setReadOnly(true);
+        auto* row = new QHBoxLayout();
+        auto* l = new QLabel(label, page);
+        l->setMinimumWidth(160);
+        row->addWidget(l);
+        row->addWidget(field, 1);
+        browseButton = new QPushButton(tr("Browse..."), page);
+        row->addWidget(browseButton);
+        form->addLayout(row);
+    };
+
     sourceSeriesIdEdit_ = new QLineEdit(page);
-    sourceSeriesIdEdit_->setPlaceholderText(tr("Source (raw grid) market series id"));
-    add_row(tr("Source Series Id"), sourceSeriesIdEdit_);
+    sourceSeriesIdEdit_->setPlaceholderText(tr("Source (raw grid) market series"));
+    add_picker_row(tr("Source Series"), sourceSeriesIdEdit_, browseSourceSeriesButton_);
+    connect(browseSourceSeriesButton_,
+            &QPushButton::clicked,
+            this,
+            &CurveBuilderWorkbench::onBrowseSourceSeriesClicked);
 
     outputSeriesIdEdit_ = new QLineEdit(page);
-    outputSeriesIdEdit_->setPlaceholderText(tr("Output (published curve) market series id"));
-    add_row(tr("Output Series Id"), outputSeriesIdEdit_);
+    outputSeriesIdEdit_->setPlaceholderText(tr("Output (published curve) market series"));
+    add_picker_row(tr("Output Series"), outputSeriesIdEdit_, browseOutputSeriesButton_);
+    connect(browseOutputSeriesButton_,
+            &QPushButton::clicked,
+            this,
+            &CurveBuilderWorkbench::onBrowseOutputSeriesClicked);
 
     curveFamilyRoleCombo_ = new QComboBox(page);
     curveFamilyRoleCombo_->addItems({"FUNDING", "PROJECTION"});
     add_row(tr("Curve Family Role"), curveFamilyRoleCombo_);
     connect(
         curveFamilyRoleCombo_, &QComboBox::currentTextChanged, this, [this](const QString& role) {
-            discountCurveConfigIdEdit_->setEnabled(role == "PROJECTION");
+            const bool isProjection = role == "PROJECTION";
+            browseDiscountCurveConfigButton_->setEnabled(isProjection);
         });
 
     discountCurveConfigIdEdit_ = new QLineEdit(page);
     discountCurveConfigIdEdit_->setPlaceholderText(tr("Required for a Projection config"));
-    discountCurveConfigIdEdit_->setEnabled(false);
-    add_row(tr("Discount Curve Config Id"), discountCurveConfigIdEdit_);
+    add_picker_row(
+        tr("Discount Curve Config"), discountCurveConfigIdEdit_, browseDiscountCurveConfigButton_);
+    browseDiscountCurveConfigButton_->setEnabled(false);
+    connect(browseDiscountCurveConfigButton_,
+            &QPushButton::clicked,
+            this,
+            &CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked);
 
     interpolationMethodCombo_ = new QComboBox(page);
     interpolationMethodCombo_->addItems(
@@ -260,14 +288,25 @@ QString CurveBuilderWorkbench::code() const {
 }
 
 void CurveBuilderWorkbench::loadConfigIntoUi() {
-    sourceSeriesIdEdit_->setText(
-        QString::fromStdString(boost::uuids::to_string(config_.source_series_id)));
-    outputSeriesIdEdit_->setText(
-        QString::fromStdString(boost::uuids::to_string(config_.output_series_id)));
+    // Existing records show the raw id (no cached friendly label to display without an extra
+    // fetch); a fresh pick via Browse... below sets a friendly "type / metric / qualifier" label
+    // instead. Either way the id itself lives only in config_, never re-parsed from this text.
+    const auto nilSourceId = boost::uuids::nil_uuid();
+    sourceSeriesIdEdit_->setText(config_.source_series_id == nilSourceId ?
+                                     QString() :
+                                     QString::fromStdString(
+                                         boost::uuids::to_string(config_.source_series_id)));
+    outputSeriesIdEdit_->setText(config_.output_series_id == nilSourceId ?
+                                     QString() :
+                                     QString::fromStdString(
+                                         boost::uuids::to_string(config_.output_series_id)));
     curveFamilyRoleCombo_->setCurrentText(QString::fromStdString(
         config_.curve_family_role.empty() ? "FUNDING" : config_.curve_family_role));
     discountCurveConfigIdEdit_->setText(
-        QString::fromStdString(boost::uuids::to_string(config_.discount_curve_config_id)));
+        config_.discount_curve_config_id == nilSourceId ?
+            QString() :
+            QString::fromStdString(boost::uuids::to_string(config_.discount_curve_config_id)));
+    browseDiscountCurveConfigButton_->setEnabled(config_.curve_family_role == "PROJECTION");
     interpolationMethodCombo_->setCurrentText(QString::fromStdString(
         config_.interpolation_method.empty() ? "LOG_LINEAR_DISCOUNT" :
                                                config_.interpolation_method));
@@ -309,30 +348,51 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
         pillarsTable_->removeRow(r);
 }
 
+void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
+    MarketSeriesPickerDialog dialog(clientManager_, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const auto series = dialog.selectedSeries();
+    if (!series)
+        return;
+    config_.source_series_id = series->id;
+    sourceSeriesIdEdit_->setText(QString::fromStdString(
+        series->series_type + " / " + series->metric + " / " + series->qualifier));
+}
+
+void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
+    MarketSeriesPickerDialog dialog(clientManager_, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const auto series = dialog.selectedSeries();
+    if (!series)
+        return;
+    config_.output_series_id = series->id;
+    outputSeriesIdEdit_->setText(QString::fromStdString(
+        series->series_type + " / " + series->metric + " / " + series->qualifier));
+}
+
+void CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked() {
+    BootstrapConfigPickerDialog dialog(clientManager_, this);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const auto picked = dialog.selectedConfig();
+    if (!picked)
+        return;
+    config_.discount_curve_config_id = picked->id;
+    discountCurveConfigIdEdit_->setText(
+        QString("Config %1 (%2)")
+            .arg(QString::fromStdString(boost::uuids::to_string(picked->id)).left(8))
+            .arg(QString::fromStdString(picked->interpolation_method)));
+}
+
 void CurveBuilderWorkbench::collectConfigFromUi() {
-    try {
-        config_.source_series_id =
-            boost::lexical_cast<boost::uuids::uuid>(sourceSeriesIdEdit_->text().toStdString());
-    } catch (const std::exception&) {
-        config_.source_series_id = boost::uuids::nil_uuid();
-    }
-    try {
-        config_.output_series_id =
-            boost::lexical_cast<boost::uuids::uuid>(outputSeriesIdEdit_->text().toStdString());
-    } catch (const std::exception&) {
-        config_.output_series_id = boost::uuids::nil_uuid();
-    }
+    // source_series_id/output_series_id/discount_curve_config_id are set directly by the
+    // Browse... picker slots (onBrowseSourceSeriesClicked etc.), not parsed from the display
+    // text here -- the text is a friendly label, not necessarily a valid UUID string.
     config_.curve_family_role = curveFamilyRoleCombo_->currentText().toStdString();
-    if (config_.curve_family_role == "PROJECTION") {
-        try {
-            config_.discount_curve_config_id = boost::lexical_cast<boost::uuids::uuid>(
-                discountCurveConfigIdEdit_->text().toStdString());
-        } catch (const std::exception&) {
-            config_.discount_curve_config_id = boost::uuids::nil_uuid();
-        }
-    } else {
+    if (config_.curve_family_role != "PROJECTION")
         config_.discount_curve_config_id = boost::uuids::nil_uuid();
-    }
     config_.interpolation_method = interpolationMethodCombo_->currentText().toStdString();
     config_.day_count_convention = dayCountConventionCombo_->currentText().toStdString();
     config_.split_tenor_code = splitTenorCodeEdit_->text().toStdString();

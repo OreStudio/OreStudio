@@ -112,15 +112,6 @@ struct commodity_market_data_identifier final {
 };
 
 /**
- * @brief Tagged union of the five per-asset-class identifier structs.
- *
- * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
- * authority component already tells a consumer which concrete struct applies, and
- * reflection-based serialisation (`rfl`/reflect-cpp) handles plain structs and
- * `std::variant` well but not polymorphic hierarchies -- see
- * id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
- */
-/**
  * @brief A fully-resolved oresmd identifier for an inflation instrument (asset_class=inflation).
  */
 struct inflation_market_data_identifier final {
@@ -132,6 +123,15 @@ struct inflation_market_data_identifier final {
     bool operator==(const inflation_market_data_identifier&) const = default;
 };
 
+/**
+ * @brief Tagged union of the six per-asset-class identifier structs.
+ *
+ * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
+ * authority component already tells a consumer which concrete struct applies, and
+ * reflection-based serialisation (`rfl`/reflect-cpp) handles plain structs and
+ * `std::variant` well but not polymorphic hierarchies -- see
+ * id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
+ */
 using market_data_identifier = std::variant<fx_market_data_identifier,
                                             ir_market_data_identifier,
                                             equity_market_data_identifier,

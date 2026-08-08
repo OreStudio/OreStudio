@@ -322,7 +322,7 @@ TEST_CASE("yy_inflation_swap_quote_key", tags) {
 
 TEST_CASE("seasonality_quote_key", tags) {
     const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/UKRPI/JAN");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/MULT/UKRPI/JAN");
 }
 
 TEST_CASE("commodity_cpr_quote_key", tags) {

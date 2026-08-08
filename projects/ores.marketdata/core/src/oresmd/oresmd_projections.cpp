@@ -372,6 +372,10 @@ std::optional<std::string> quote_key_inflation(const inflation_market_data_ident
     if (id.type != instrument_type::quote || !id.quote_type || !id.point)
         return std::nullopt;
     const auto qt = *id.quote_type;
+    // SEASONALITY/RATE/MULT/<INDEX>/<POINT> — 5-segment key with literal MULT.
+    if (qt == inflation_quote_type::seasonality)
+        return std::format("{}/{}/MULT/{}/{}", ore_type(qt), ore_inflation_metric(qt),
+                           id.index_code, to_upper(*id.point));
     return std::format("{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt),
                        id.index_code, to_upper(*id.point));
 }

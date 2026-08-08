@@ -90,10 +90,6 @@ struct commodity_market_data_requirement final {
     bool operator==(const commodity_market_data_requirement&) const = default;
 };
 
-/**
- * @brief Tagged union of the five per-asset-class requirement structs -- see
- * market_data_identifier.hpp for the rationale against a common base class.
- */
 /** @brief A logical, possibly-partial oresmd requirement for an inflation instrument. */
 struct inflation_market_data_requirement final {
     std::optional<std::string> index_code;
@@ -104,6 +100,10 @@ struct inflation_market_data_requirement final {
     bool operator==(const inflation_market_data_requirement&) const = default;
 };
 
+/**
+ * @brief Tagged union of the six per-asset-class requirement structs -- see
+ * market_data_identifier.hpp for the rationale against a common base class.
+ */
 using market_data_requirement = std::variant<fx_market_data_requirement,
                                              ir_market_data_requirement,
                                              equity_market_data_requirement,

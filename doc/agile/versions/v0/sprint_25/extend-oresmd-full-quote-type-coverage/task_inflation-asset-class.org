@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/inflation-asset-class
+#+pr: 1911
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -60,12 +60,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1911][#1911]] | [marketdata] Add oresmd inflation asset class: ZC/YY swap, seasonality |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SEASONALITY missing MULT segment | oresmd_projections.cpp | Accepted | Fixed: 5-seg SEASONALITY/RATE/MULT/INDEX/POINT |
+| 2 | Doc comments misplaced, 'five'→'six' stale | market_data_identifier/requirement.hpp | Accepted | Fixed |
 
 * Result
+
+Delivered new inflation asset class: =inflation_market_data_identifier= and
+=inflation_market_data_requirement= added to the =market_data_identifier=/
+=market_data_requirement= variants. =inflation_quote_type= (3 values: =zc_swap=,
+=yy_swap=, =seasonality=) with =quote_key_inflation= dispatching. =index_code=
+carries the inflation index (e.g. UKRPI); =point= carries the tenor/period.
+=parse_inflation= validates and rejects IR/credit-only keys. Full
+parser+to_uri+resolver wiring. 142 test cases, 254 assertions, all passing.

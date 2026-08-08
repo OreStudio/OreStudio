@@ -130,6 +130,16 @@ enum class fx_quote_type {
     fwd   ///< FXFWD/RATE (forward points).
 };
 
+/**
+ * @brief The `quote` query key for inflation instruments — the ORE TYPE. Inflation-only;
+ * only meaningful when `type=quote`.
+ */
+enum class inflation_quote_type {
+    zc_swap,  ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
+    yy_swap,  ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
+    seasonality ///< SEASONALITY/RATE (seasonality adjustment factor).
+};
+
 }
 
 #endif

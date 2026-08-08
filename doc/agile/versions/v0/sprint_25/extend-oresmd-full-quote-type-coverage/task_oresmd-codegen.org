@@ -20,7 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a new codegen metatype (=ores.codegen.oresmd_quote_type=) and profile
+so that adding an oresmd quote-type family (extending an existing asset
+class, or creating a new one) requires only a compact org-model spec file
+— the enum, struct fields, parser branches, query-key validation,
+projection functions, resolver wiring, dispatch updates, and test cases
+are all generated, producing zero diffs against the hand-crafted 7-asset-class
+implementation.
 
 * Status
 
@@ -28,20 +34,76 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis complete; spec model design underway. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Design the spec org-model format; implement the profile. |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
 
--
+- [ ] New org-model metatype =ores.codegen.oresmd_quote_type= with a
+  documented spec format (frontmatter + sections) covering: asset class,
+  identifier/requirement struct fields, quote type table (ORE TYPE/METRIC
+  pairs), query-key allow/reject lists, point semantics (scalar vs curve,
+  format variants like curve_id/MULT), variant registration, and test-case
+  URIs with expected projections.
+- [ ] Codegen profile that generates, per asset class:
+  - =oresmd_enums.hpp=: enum addition
+  - =market_data_identifier.hpp=: struct field additions
+  - =market_data_requirement.hpp=: requirement field additions
+  - =oresmd_parser.cpp=: query_params field, parse_*, validate_*, to_uri branch
+  - =oresmd_projections.cpp=: ore_type/ore_*_metric helpers, quote_key_*
+  - =oresmd_resolver.cpp=: resolve_*, dispatch branch
+  - Test files: projection, round-trip, parse, rejection tests
+- [ ] Zero-diff verification: run the profile against a spec for every
+  existing asset class (ir, credit, equity, commodity, fx, inflation,
+  correlation) and confirm =git diff= is empty (or only intended
+  whitespace/normalisation changes that are identical across runs).
+- [ ] No hand-crafted asset class diverges from its generated counterpart
+  after the profile lands.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Analysis
+
+The 7 oresmd quote-type implementations share a mechanical six-file
+pattern per asset class. The invariants are:
+
+| What varies per asset class | What is completely mechanical |
+|-----------------------------+-------------------------------|
+| Quote type names, ORE TYPE/METRIC strings | Enum definition and =magic_enum= integration |
+| Struct field names and types | Field addition to identifier/requirement structs |
+| Query-key allow/reject list | =query_params= field + =from()= dispatch |
+| Whether index appears in qualifier | =parse_*= function skeleton + =to_uri= branch |
+| Point format (scalar, tenor-only, composite) | =quote_key_*= dispatch body |
+| Test-case URIs and expected strings | Round-trip, projection, rejection test scaffolding |
+
+The codegen approach captures the variable parts in a spec file and
+generates the mechanical parts deterministically — same pattern as how
+=ores.codegen.entity= captures column/FK/display metadata and generates
+SQL, C++ domain, repository, service, protocol, and Qt layers.
+
+** Spec model design (draft)
+
+An oresmd quote-type spec file would be an org-mode document with
+=#+type: ores.codegen.oresmd_quote_type= frontmatter and these sections:
+
+- =* Quote types=: org table mapping enum name → ORE TYPE → ORE METRIC →
+  qualifier shape (includes_index, no_index, curve_id, mult_literal)
+- =* Fields=: org table of struct fields (name, C++ type, mandatory,
+  query_key, non-IR reject?)
+- =* Point semantics=: per-quote-type point format (scalar, 1-part,
+  2-part, 3-part composite)
+- =* Test cases=: org table of URI → expected projection string
+
+** Profile design
+
+A new codegen profile (=ores.marketdata.oresmd_quote_type= address) that
+reads the org spec and generates into the ores.marketdata component's
+physical space. It would use the existing =ores.codegen= profile
+infrastructure (Jinja2 templates) and follow the same
+=generate()= / =diff()= / =check_staleness()= contract as existing
+profiles.
 
 * Notes
 

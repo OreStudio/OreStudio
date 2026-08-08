@@ -176,6 +176,17 @@ BEGIN
         65      -- display order
     );
 
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.curve_bootstrap',
+        'Market observation and lineage rows written by an IR curve bootstrap republish',
+        'system',
+        true,   -- applies to new
+        false,  -- not for amend (lineage rows are never amended, only newly written)
+        false,  -- not for delete
+        false,  -- no commentary required
+        66      -- display order
+    );
+
     -- =============================================================================
     -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
     -- =============================================================================

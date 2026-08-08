@@ -186,13 +186,19 @@ fi
 tls_cert="$keys_dir/ores.iam.service.crt"
 tls_key="$keys_dir/ores.iam.service.key"
 tls_ca="$keys_dir/ca.crt"
-svc_cid=$(podman run -d --rm --network=host --userns=keep-id \
+# Mount the host's publish/log so logs survive container restarts and
+# are inspectable via `ssh <host> tail -f <remote_root>/publish/log/...`
+log_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/log"
+mkdir -p "$log_dir"
+svc_cid=$(podman run -d --network=host --userns=keep-id \
     --name "$services_container" \
     --user "${ORES_REMOTE_USER:-$(id -u)}:${ORES_REMOTE_GROUP:-$(id -g)}" \
     --env-file "$env_file" \
     "${jwt_key_args[@]}" \
     -v "$certs_volume:$keys_dir:ro" \
+    -v "$log_dir:/app/log:rw" \
     "$services_image" \
+    --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
     --nats-tls-ca "$tls_ca" \
     --nats-tls-cert "$tls_cert" \
     --nats-tls-key "$tls_key")

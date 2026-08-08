@@ -28,7 +28,6 @@
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -52,6 +51,7 @@ struct query_params final {
     std::optional<std::string> type;
     std::optional<std::string> metric;
     std::optional<std::string> quote;
+    std::optional<std::string> model;
     std::optional<std::string> point;
 
     static query_params from(const boost::urls::url_view& u) {
@@ -71,6 +71,8 @@ struct query_params final {
                 qp.metric = p.value;
             else if (p.key == "quote")
                 qp.quote = p.value;
+            else if (p.key == "model")
+                qp.model = p.value;
             else if (p.key == "point")
                 qp.point = p.value;
             else
@@ -186,7 +188,6 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
     if (qp.point) {
         id.point = to_lower(*qp.point);
         if (id.type == instrument_type::vol) {
-            // Parse "expiry,tenor,strike" into vol struct.
             std::vector<std::string> parts;
             std::stringstream ss(*id.point);
             std::string part;
@@ -202,6 +203,8 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
             }
         }
     }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
     if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
         BOOST_THROW_EXCEPTION(oresmd_exception(
             std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",

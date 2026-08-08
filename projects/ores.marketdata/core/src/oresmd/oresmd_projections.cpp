@@ -164,11 +164,19 @@ std::string_view ore_vol_model(volatility_model_subtype m) {
 
 std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
     if (id.type == instrument_type::vol) {
-        if (!id.vol || !id.tenor)
+        // Use typed vol struct if available, else fall back to point composite.
+        if (id.vol && id.tenor) {
+            const auto& v = *id.vol;
+            return std::format("SWAPTION/{}/{}/{}/{}/{}", ore_vol_model(v.model_subtype),
+                               id.ccy, to_upper(v.expiry), to_upper(*id.tenor), to_upper(v.strike));
+        }
+        if (!id.point)
             return std::nullopt;
-        const auto& v = *id.vol;
-        return std::format("SWAPTION/{}/{}/{}/{}/{}", ore_vol_model(v.model_subtype),
-                           id.ccy, to_upper(v.expiry), to_upper(*id.tenor), to_upper(v.strike));
+        const auto parts = split_point(*id.point);
+        if (parts.size() != 3)
+            return std::nullopt;
+        const auto t = id.tenor ? to_upper(*id.tenor) : parts[1];
+        return std::format("SWAPTION/RATE_LNVOL/{}/{}/{}/{}", id.ccy, parts[0], t, parts[2]);
     }
     if (id.type != instrument_type::quote || !id.quote_type || !id.point || !id.tenor)
         return std::nullopt;

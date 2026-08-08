@@ -79,6 +79,9 @@ private:
      * contributes, and (unlike ores.qt.iam's &Testing) isn't meant
      * to work before login.
      */
+    QMenu* reporting_menu_{nullptr};
+    QMenu* report_configuration_menu_{nullptr};
+    QMenu* compute_configuration_menu_{nullptr};
     QMenu* messageQueueMenu_{nullptr};
 
     std::unique_ptr<AppController> appController_;

@@ -80,36 +80,37 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
 
 void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-                               << " analytics_codes=" << (smc.analytics_codes_menu ? "ok" : "null");
-    if (!smc.analytics_menu || !smc.analytics_codes_menu)
+                               << " reporting=" << (smc.reporting_menu ? "ok" : "null")
+                               << " pricing_config=" << (smc.pricing_configuration_menu ? "ok" : "null");
+    if (!smc.reporting_menu || !smc.pricing_configuration_menu)
         return;
 
-    analytics_menu_ = smc.analytics_menu;
-    analytics_codes_menu_ = smc.analytics_codes_menu;
+    reporting_menu_ = smc.reporting_menu;
+    pricing_configuration_menu_ = smc.pricing_configuration_menu;
 
     auto* actModelConfigs =
-        analytics_menu_->addAction(ico(Icon::Chart), tr("Model &Configurations"));
+        pricing_configuration_menu_->addAction(ico(Icon::Chart), tr("Model &Configurations"));
     connect(actModelConfigs, &QAction::triggered, this, [this]() {
         if (pricingModelConfigController_)
             pricingModelConfigController_->showListWindow();
     });
 
-    auto* actModelProducts = analytics_menu_->addAction(ico(Icon::Table), tr("Model &Products"));
+    auto* actModelProducts =
+        pricing_configuration_menu_->addAction(ico(Icon::Table), tr("Model &Products"));
     connect(actModelProducts, &QAction::triggered, this, [this]() {
         if (pricingModelProductController_)
             pricingModelProductController_->showListWindow();
     });
 
     auto* actModelProductParameters =
-        analytics_menu_->addAction(ico(Icon::Settings), tr("Model Product &Parameters"));
+        pricing_configuration_menu_->addAction(ico(Icon::Settings), tr("Model Product &Parameters"));
     connect(actModelProductParameters, &QAction::triggered, this, [this]() {
         if (pricingModelProductParameterController_)
             pricingModelProductParameterController_->showListWindow();
     });
 
     auto* actPricingEngineTypes =
-        analytics_codes_menu_->addAction(ico(Icon::Tag), tr("&Pricing Engine Types"));
+        pricing_configuration_menu_->addAction(ico(Icon::Tag), tr("&Pricing Engine Types"));
     connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
         if (pricingEngineTypeController_)
             pricingEngineTypeController_->showListWindow();
@@ -118,16 +119,17 @@ void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
 
 QList<QMenu*> AnalyticsPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
-    if (!analytics_menu_ || !analytics_codes_menu_) {
-        BOOST_LOG_SEV(lg(), warn) << "Analytics menu not initialised via setup_menus.";
+    if (!reporting_menu_ || !pricing_configuration_menu_) {
+        BOOST_LOG_SEV(lg(), warn) << "Reporting menu not initialised via setup_menus.";
         return {};
     }
 
-    analytics_menu_->addSeparator();
-    analytics_menu_->addMenu(analytics_codes_menu_);
+    // Pricing Configuration submenu is populated by setup_menus().
+    // Attach it here so it appears after the main-menu items in create_menus() order.
+    reporting_menu_->addMenu(pricing_configuration_menu_);
 
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
-    return {analytics_menu_};
+    return {reporting_menu_};
 }
 
 void AnalyticsPlugin::on_logout() {

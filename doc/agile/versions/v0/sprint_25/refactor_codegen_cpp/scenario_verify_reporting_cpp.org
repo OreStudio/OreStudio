@@ -56,8 +56,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | empty; [[file:scenario_verify_reporting_cpp_step2_20260808_030958.png]] |
+| Status | PASS |
 
 ** Open Report Types and verify seed data
 
@@ -70,7 +69,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Open Report Definitions and verify seed data
 
@@ -84,7 +83,8 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | no report definitions show. is this because we do not have reports for ACME corp? we should have the appropriate reports for each entity. |
 
 ** Open Report Instances and verify list loads
 
@@ -175,9 +175,9 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-08T02:10:05Z |
-| Branch        | HEAD |
-| Commit        | 7ca43d490 |
+| Completed at  | 2026-08-08T08:55:10Z |
+| Branch        | fix/reporting-main-break |
+| Commit        | 954cc1375 |
 | Worktree      | bright_faraday |
 
 * Notes

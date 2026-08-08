@@ -521,14 +521,16 @@ MainWindow::MainWindow(QWidget* parent,
     // both MktdataPlugin and SyntheticPlugin contribute to it via setup_menus().
     auto* marketDataMenu = new QMenu(tr("&Market Data"), this);
 
-    // Pre-create &Analytics menu. NOT inserted directly — AnalyticsPlugin
+    // Pre-create &Reporting menu. NOT inserted directly — AnalyticsPlugin
     // returns it from create_menus() to control bar position.
-    auto* analyticsMenu = new QMenu(tr("&Analytics"), this);
+    auto* reportingMenu = new QMenu(tr("&Reporting"), this);
 
-    // Pre-create Analytics Codes submenu. Contributed to by AnalyticsPlugin
-    // and ComputePlugin via setup_menus(); appended to analyticsMenu by
-    // AnalyticsPlugin in create_menus().
-    auto* analyticsCodesMenu = new QMenu(tr("Analytics &Codes"), this);
+    // Pre-create Reporting submenus — each plugin populates its assigned
+    // handle in setup_menus(); the top-level menu assembles them in
+    // create_menus().
+    auto* reportConfigurationMenu = new QMenu(tr("Report Con&figuration"), this);
+    auto* pricingConfigurationMenu = new QMenu(tr("Pricing Con&figuration"), this);
+    auto* computeConfigurationMenu = new QMenu(tr("Compute Con&figuration"), this);
 
     // Pre-create &Operations menu. NOT inserted directly — SchedulerPlugin
     // returns it from create_menus() to control bar position.
@@ -586,8 +588,10 @@ MainWindow::MainWindow(QWidget* parent,
     smc.telemetry_menu = ui_->menuTelemetry;
     smc.data_quality_menu = dataQualityMenu;
     smc.coding_schemes_menu = codingSchemesMenu;
-    smc.analytics_menu = analyticsMenu;
-    smc.analytics_codes_menu = analyticsCodesMenu;
+    smc.reporting_menu = reportingMenu;
+    smc.report_configuration_menu = reportConfigurationMenu;
+    smc.pricing_configuration_menu = pricingConfigurationMenu;
+    smc.compute_configuration_menu = computeConfigurationMenu;
     smc.operations_menu = operationsMenu;
     smc.data_transfer_menu = dataTransferMenu;
     smc.message_queue_menu = messageQueueMenu;

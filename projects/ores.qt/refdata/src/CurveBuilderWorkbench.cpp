@@ -27,6 +27,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MarketSeriesPickerDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
@@ -94,6 +95,7 @@ CurveBuilderWorkbench::CurveBuilderWorkbench(QWidget* parent)
 void CurveBuilderWorkbench::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     loadFloatingIndexTypes();
+    loadTenors();
 }
 
 void CurveBuilderWorkbench::setImageCache(ImageCache* imageCache) {
@@ -134,6 +136,48 @@ void CurveBuilderWorkbench::loadFloatingIndexTypes() {
         self->refreshCurrencyCombo();
     });
     watcher->setFuture(future);
+}
+
+void CurveBuilderWorkbench::loadTenors() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<CurveBuilderWorkbench> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run(
+        [clientManager]() { return fetch_tenors(clientManager); });
+
+    using ResultType = std::expected<std::vector<refdata::domain::tenor>, QString>;
+    auto* watcher = new QFutureWatcher<ResultType>(this);
+    connect(watcher, &QFutureWatcher<ResultType>::finished, this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self || !result)
+            return;
+        self->tenorCodes_.clear();
+        for (const auto& t : *result)
+            self->tenorCodes_.push_back(t.code);
+        std::sort(self->tenorCodes_.begin(), self->tenorCodes_.end());
+        self->addPillarButton_->setEnabled(true);
+        self->addPillarButton_->setToolTip(QString());
+    });
+    watcher->setFuture(future);
+}
+
+QComboBox* CurveBuilderWorkbench::makeTenorCombo(const QString& initial) {
+    auto* combo = new QComboBox(pillarsTable_);
+    for (const auto& code : tenorCodes_)
+        combo->addItem(QString::fromStdString(code));
+    const int idx = combo->findText(initial);
+    combo->setCurrentIndex(idx);
+    return combo;
+}
+
+QComboBox* CurveBuilderWorkbench::makeCurveRoleCombo(const QString& initial) {
+    auto* combo = new QComboBox(pillarsTable_);
+    combo->addItems({"DEPOSIT", "FRA", "SWAP"});
+    combo->setCurrentText(initial.isEmpty() ? "DEPOSIT" : initial);
+    return combo;
 }
 
 void CurveBuilderWorkbench::refreshCurrencyCombo() {
@@ -332,9 +376,10 @@ QWidget* CurveBuilderWorkbench::buildPillarsTab() {
     auto* explainerLabel = new QLabel(
         tr("Each row is one instrument's date range, not a single point: Start Tenor is when its "
            "rate period begins (relative to the As Of date), End Tenor is when it matures. A "
-           "1-month deposit starting today is Start Tenor 0D, End Tenor 1M; a 3-month deposit "
-           "starting today is Start Tenor 0D, End Tenor 3M -- both share the same start (spot) "
-           "but differ in maturity, standard money-market convention."),
+           "1-month deposit starting today is Start Tenor SPOT, End Tenor 1M; a 3-month deposit "
+           "starting today is Start Tenor SPOT, End Tenor 3M -- both share the same start (spot) "
+           "but differ in maturity, standard money-market convention. Both fields are seeded "
+           "tenor codes (Reference Data > Curve Building > Tenors), not free text."),
         page);
     explainerLabel->setWordWrap(true);
     explainerLabel->setStyleSheet("color: #94a3b8; font-style: italic;");
@@ -347,12 +392,15 @@ QWidget* CurveBuilderWorkbench::buildPillarsTab() {
     layout->addWidget(pillarsTable_);
 
     auto* buttonsRow = new QHBoxLayout();
-    auto* addButton = new QPushButton(tr("Add Pillar"), page);
+    addPillarButton_ = new QPushButton(tr("Add Pillar"), page);
+    addPillarButton_->setEnabled(false);
+    addPillarButton_->setToolTip(tr("Loading tenor codes..."));
     auto* removeButton = new QPushButton(tr("Remove Selected"), page);
-    connect(addButton, &QPushButton::clicked, this, &CurveBuilderWorkbench::onAddPillarClicked);
+    connect(
+        addPillarButton_, &QPushButton::clicked, this, &CurveBuilderWorkbench::onAddPillarClicked);
     connect(
         removeButton, &QPushButton::clicked, this, &CurveBuilderWorkbench::onRemovePillarClicked);
-    buttonsRow->addWidget(addButton);
+    buttonsRow->addWidget(addPillarButton_);
     buttonsRow->addWidget(removeButton);
     buttonsRow->addStretch();
     layout->addLayout(buttonsRow);
@@ -472,23 +520,24 @@ void CurveBuilderWorkbench::loadPillarsIntoTable() {
     for (const auto& p : pillars_) {
         const int row = pillarsTable_->rowCount();
         pillarsTable_->insertRow(row);
-        pillarsTable_->setItem(
-            row, 0, new QTableWidgetItem(QString::fromStdString(p.start_tenor_code)));
-        pillarsTable_->setItem(
-            row, 1, new QTableWidgetItem(QString::fromStdString(p.end_tenor_code)));
-        pillarsTable_->setItem(
-            row, 2, new QTableWidgetItem(QString::fromStdString(p.curve_role_code)));
+        pillarsTable_->setCellWidget(
+            row, 0, makeTenorCombo(QString::fromStdString(p.start_tenor_code)));
+        pillarsTable_->setCellWidget(
+            row, 1, makeTenorCombo(QString::fromStdString(p.end_tenor_code)));
+        pillarsTable_->setCellWidget(
+            row, 2, makeCurveRoleCombo(QString::fromStdString(p.curve_role_code)));
     }
 }
 
 void CurveBuilderWorkbench::onAddPillarClicked() {
     const int row = pillarsTable_->rowCount();
     pillarsTable_->insertRow(row);
-    // "0D" (spot-starting), not "SPOT" -- start_tenor_code/end_tenor_code are genuine tenor
-    // codes, and "SPOT" isn't a valid one (it was a stray placeholder, not a real default).
-    pillarsTable_->setItem(row, 0, new QTableWidgetItem("0D"));
-    pillarsTable_->setItem(row, 1, new QTableWidgetItem(""));
-    pillarsTable_->setItem(row, 2, new QTableWidgetItem("DEPOSIT"));
+    // "SPOT" is the real seeded spot-starting tenor code (Reference Data > Curve Building >
+    // Tenors) -- both columns are combos over that same table now, so an invalid code like the
+    // free-text era's "0D" (which curve_republish_resolver rejected) can no longer be entered.
+    pillarsTable_->setCellWidget(row, 0, makeTenorCombo("SPOT"));
+    pillarsTable_->setCellWidget(row, 1, makeTenorCombo(QString()));
+    pillarsTable_->setCellWidget(row, 2, makeCurveRoleCombo("DEPOSIT"));
 }
 
 void CurveBuilderWorkbench::onRemovePillarClicked() {
@@ -586,12 +635,13 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
         p.bootstrap_config_id = config_.id;
         p.party_id = config_.party_id;
         p.sequence_index = row;
-        p.start_tenor_code =
-            pillarsTable_->item(row, 0) ? pillarsTable_->item(row, 0)->text().toStdString() : "";
-        p.end_tenor_code =
-            pillarsTable_->item(row, 1) ? pillarsTable_->item(row, 1)->text().toStdString() : "";
-        p.curve_role_code =
-            pillarsTable_->item(row, 2) ? pillarsTable_->item(row, 2)->text().toStdString() : "";
+        auto combo_text = [&](int col) -> std::string {
+            auto* combo = qobject_cast<QComboBox*>(pillarsTable_->cellWidget(row, col));
+            return combo ? combo->currentText().toStdString() : "";
+        };
+        p.start_tenor_code = combo_text(0);
+        p.end_tenor_code = combo_text(1);
+        p.curve_role_code = combo_text(2);
         p.modified_by = username_;
         p.performed_by = username_;
         p.change_reason_code = pendingChangeReasonCode_;

@@ -140,6 +140,15 @@ private:
     void loadFloatingIndexTypes();
     void refreshCurrencyCombo();
     void refreshIndexCombo();
+    void loadTenors();
+    /// Builds a non-editable combo populated from tenorCodes_ (Reference Data's seeded tenor
+    /// table), so a pillar's Start/End Tenor can never hold an invalid code the way free text
+    /// let it (e.g. "0D", which curve_republish_resolver rejects -- the real seeded spot-starting
+    /// code is "SPOT"). @p initial selects that entry if present, else leaves no selection.
+    QComboBox* makeTenorCombo(const QString& initial);
+    /// bootstrap_curve_role_code's three fixed values (DEPOSIT/FRA/SWAP) -- same rationale as
+    /// makeTenorCombo(), a small closed vocabulary that free text let drift.
+    QComboBox* makeCurveRoleCombo(const QString& initial);
     /// The currently selected index code (e.g. "USD-SOFR"), or empty until both Currency and
     /// Index are chosen -- used to pre-filter the series pickers and the discount-curve picker.
     [[nodiscard]] QString selectedIndexCode() const;
@@ -165,6 +174,7 @@ private:
     std::vector<refdata::domain::ir_curve_bootstrap_pillar> pillars_;
     bool hasBootstrapped_ = false;
     std::vector<refdata::domain::floating_index_type> floatingIndexTypes_;
+    std::vector<std::string> tenorCodes_;
     std::string pendingChangeReasonCode_;
     std::string pendingChangeCommentary_;
 
@@ -190,6 +200,7 @@ private:
 
     // Pillars tab
     QTableWidget* pillarsTable_ = nullptr;
+    QPushButton* addPillarButton_ = nullptr;
 
     // Build & Diagnostics tab
     QDateTimeEdit* asOfEdit_ = nullptr;

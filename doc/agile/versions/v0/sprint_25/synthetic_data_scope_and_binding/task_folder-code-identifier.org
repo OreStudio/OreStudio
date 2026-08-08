@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: D61E99A8-FACC-497F-A8D4-D3310E6622DA
 :END:
-#+title: Task: Add a stable code identifier to market simulator folders
+#+title: Task: Resolve market simulator folders by derived slug identifier
 #+description: Task for: Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Market simulator folders currently have only a human-readable name (multi-word, spaces allowed), so shell commands must address them by exact full name or UUID. Add a stable, slug-like code (like tenant.code) so folders can be addressed by a short unambiguous token; resolver order: uuid first, then code, then exact name.
+Market simulator folders currently have only a human-readable name (multi-word, spaces allowed), so shell commands must address them by exact full name (quoted) or UUID. Rather than a stored code column, derive a machine-readable identifier from the name at resolve time, mirroring the existing =source_name= slug convention: folders resolve as uuid, then exact name, then slugified name (=lower(replace(name, ' ', ''))=), with path-qualified tokens for disambiguation. No schema change.
 
 * Status
 
@@ -30,14 +30,15 @@ Market simulator folders currently have only a human-readable name (multi-word, 
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Implement slug resolution in ores.shell: uuid -> exact name -> slugified name, path-qualified tokens for disambiguation. |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
 
-- folder domain gains a code field (unique per tenant and party, mirroring market_data_generation_config.name)
-- folder creation paths (publish_from_dq, folder_generator) populate code
-- ores.shell synthetic commands resolve folder tokens as uuid, then code, then exact name
+- no schema change: folders gain no =code= column; the identifier is derived by a pure function mirroring the =source_name= slug convention (=lower(replace(name, ' ', ''))=)
+- ores.shell synthetic commands resolve folder tokens as uuid, then exact name, then slugified name
+- path-qualified tokens disambiguate same-named folders under different collections (="2026 Realistic > FX"= or =2026realistic/fx=); ambiguity messages keep listing folder paths
+- a bare slug matching folders in more than one collection reports ambiguous, listing candidates
 
 * Plan
 
@@ -46,6 +47,15 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+A stored =code= column was considered and rejected. Rationale: the
+codebase already derives machine tokens from display names
+(=source_name= is ='synthetic.' || lower(replace(config, ' ', '')) ||
+lower(pair)= in publish_from_dq), and folder names are themselves
+derived from DQ dataset names at publish -- not user-renamed -- so a
+stored code would have no rename-stability consumer, would drift from
+the name, and would force schema regeneration across every layer
+(domain, table I/O, generator, repository, Qt).
 
 * Test Scenarios
 

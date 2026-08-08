@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :synthetic:market_data:architecture:acme:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-08-08
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -25,7 +25,7 @@ Give synthetic market data generation two orthogonal primitives -- scope (system
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Scope/binding axes live on configs; sandboxed feeds run under a distinct namespace; ACME consolidated to one tenant-level bound reality; Market Simulator tree RLS-filtered by viewer scope; scriptable shell commands (list folders/configs, start/stop folder/feed, validate-vintage) added and verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task (stable machine-readable folder identifiers). |
+| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task, re-scoped to derive folder slug identifiers at resolve time (no stored code column). |
 | Last touched  | 2026-08-08                             |
 
 * Acceptance
@@ -197,9 +197,19 @@ No workspace changes are made in this story.
   with =--tenant-name "Acme Corporation"= elsewhere in the shell.
 - Folders are the one market-simulator entity without a stable
   machine-readable identifier (no =code=, unlike tenant =code= /
-  config =name= / feed =ore_key=). A =code= field is tracked as
-  follow-up task folder-code-identifier; resolver order uuid -> code ->
-  exact name.
+  config =name= / feed =ore_key=). A stored =code= column was
+  considered and rejected: the codebase already derives machine tokens
+  from display names (=source_name= is the config-name slug plus the
+  pair, built in publish_from_dq), and folder names are themselves
+  derived from DQ dataset names at publish -- not user-renamed -- so a
+  stored code would have no rename-stability consumer, would drift
+  from the name, and would force schema regeneration across every
+  layer. Follow-up task folder-code-identifier is re-scoped to derive
+  the identifier at resolve time: folders resolve as uuid -> exact
+  name -> slugified name (=lower(replace(name, ' ', ''))=, mirroring
+  =source_name=), with path-qualified tokens (="2026 Realistic > FX"=
+  or =2026realistic/fx=) disambiguating same-named folders under
+  different collections.
 
 * Out of scope
 

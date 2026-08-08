@@ -131,26 +131,126 @@ def _load_profile_assignments(slug: str) -> tuple[tuple[str, Any], ...]:
     return tuple(out)
 
 
-def _profile_namespace_defaults(slug: str | None, namespace: str) -> dict[str, Any]:
-    """The subset of a profile's Assignments that belongs to one namespace
-    (``""``/``"sql"``/``"qt"``), as a plain dict -- used to seed a facet's raw
-    properties *before* that facet derives any computed flag from them (e.g.
-    ``ores.cpp.qt``'s ``has_toolbar`` from ``has_version_navigation``), so the
-    derivation sees the profile's values rather than their absence."""
-    if not slug:
+def _parse_physical_space_table(root: OrgNode) -> dict[str, bool]:
+    """Parse a ``* Physical space`` heading's ``| Address | Enabled |`` table
+    (if present) into ``{address: enabled}`` -- the same shape
+    ``_enabled_overrides`` (physical_space.py) reads from an ``ores.*.enabled``
+    drawer property, just table-authored for HTML-export visibility instead
+    of buried in a properties drawer. One row per address whose default
+    admission this doc wants to override; an address not listed here is left
+    to whatever else resolves it (a more specific/general override, or the
+    node's own ``#+default:``)."""
+    section = _section(root, "Physical space")
+    if not section:
         return {}
-    return {
-        feature: value
-        for feature, value in _load_profile_assignments(slug)
-        if _FEATURE_NAMESPACE.get(feature) == namespace
-    }
+    out: dict[str, bool] = {}
+    for row in _parse_org_table_rows(section):
+        addr = row.get("Address", "").strip().strip("=")
+        val = row.get("Enabled", "").strip().lower()
+        if addr and val in ("true", "false"):
+            out[addr] = val == "true"
+    return out
+
+
+@lru_cache(maxsize=None)
+def _load_profile_address_overrides(slug: str) -> tuple[tuple[str, bool], ...]:
+    """A profile's own ``* Physical space`` table, as ``(address, enabled)``
+    pairs a bound entity inherits as defaults (its own table, if any, always
+    wins -- see :func:`read_physical_space_overrides`). Cached like
+    :func:`_load_profile_assignments`."""
+    path = _PROFILES_DIR / f"variability_{slug.replace('-', '_')}.org"
+    if not path.is_file():
+        raise ValueError(
+            f"unknown profile '{slug}': {path} does not exist "
+            f"(see projects/modeling/variability_profiles.org for the catalogue)"
+        )
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    return tuple(_parse_physical_space_table(doc.root).items())
+
+
+def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
+    """An entity doc's effective ``ores.*.enabled`` overrides from the
+    ``* Physical space`` table mechanism: its bound profile's table (if any)
+    supplies defaults, its own table (if any) wins over those -- the same
+    "explicit beats profile default" rule every other profile-carried value
+    follows. Returns ``{"<address>.enabled": bool}`` keys ready to merge into
+    the raw drawer-properties dict :func:`resolve_targets` uses to decide
+    which archetypes are even attempted, so this must run *before* any
+    model-specific parsing (see the call site in generate.py's
+    ``_read_drawer_properties``)."""
+    merged: dict[str, bool] = {}
+    sources: dict[str, str] = {}
+    for slug in _parse_profile_list(doc.file_properties.get("profile")):
+        for addr, enabled in _load_profile_address_overrides(slug):
+            key = f"{addr}.enabled"
+            if key in merged and merged[key] != enabled:
+                raise ValueError(_profile_conflict_message(
+                    addr, sources[key], merged[key], slug, enabled))
+            merged[key] = enabled
+            sources[key] = slug
+    # The doc's own table always wins over any profile default -- same
+    # "explicit beats profile" rule every other profile-carried value follows.
+    for addr, enabled in _parse_physical_space_table(doc.root).items():
+        merged[f"{addr}.enabled"] = enabled
+    return merged
+
+
+def _parse_profile_list(raw: str | list[str] | None) -> list[str]:
+    """Parse a ``:profile:`` drawer value into an ordered list of slugs.
+
+    Comma-separated to bind against more than one profile at once -- each
+    should compose an orthogonal trait (e.g. a shape profile like
+    ``simple-lookup`` plus an unrelated enablement profile like
+    ``artefact-staging-only``); see :func:`_apply_profile`'s conflict check
+    for what happens if two disagree on the same feature."""
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return raw
+    return [s.strip() for s in raw.split(",") if s.strip()]
+
+
+def _profile_conflict_message(
+    key: str, slug_a: str, value_a: Any, slug_b: str, value_b: Any,
+) -> str:
+    return (
+        f"conflicting profiles on '{key}': '{slug_a}' says {value_a!r}, "
+        f"'{slug_b}' says {value_b!r} -- profiles bound together must "
+        "compose orthogonal traits, not disagree on the same feature"
+    )
+
+
+def _profile_namespace_defaults(
+    slugs: str | list[str] | None, namespace: str,
+) -> dict[str, Any]:
+    """The subset of a profile list's Assignments that belongs to one
+    namespace (``""``/``"sql"``/``"qt"``), as a plain dict -- used to seed a
+    facet's raw properties *before* that facet derives any computed flag
+    from them (e.g. ``ores.cpp.qt``'s ``has_toolbar`` from
+    ``has_version_navigation``), so the derivation sees the profile's
+    values rather than their absence."""
+    out: dict[str, Any] = {}
+    sources: dict[str, str] = {}
+    for slug in _parse_profile_list(slugs):
+        for feature, value in _load_profile_assignments(slug):
+            if _FEATURE_NAMESPACE.get(feature) != namespace:
+                continue
+            if feature in out and out[feature] != value:
+                raise ValueError(_profile_conflict_message(
+                    feature, sources[feature], out[feature], slug, value))
+            out[feature] = value
+            sources[feature] = slug
+    return out
 
 
 def _apply_profile(de: dict[str, Any]) -> None:
-    """If de['profile'] names a catalogued profile, merge its Assignments
-    as defaults into de (root / sql / qt namespaces per feature). An
-    already-explicit value at the entity level always wins -- a profile
-    supplies defaults, it never overrides what the model author wrote.
+    """If de['profile'] names one or more catalogued profiles, merge their
+    Assignments as defaults into de (root / sql / qt namespaces per
+    feature), in list order. An already-explicit value at the entity level
+    always wins -- a profile supplies defaults, it never overrides what the
+    model author wrote. Two profiles bound together that disagree on the
+    same feature raise rather than silently picking one -- see
+    :func:`_profile_conflict_message`.
 
     This is the final safety-net pass over the whole ``de`` dict; namespaces
     whose facet derives computed flags from these features (currently
@@ -158,21 +258,35 @@ def _apply_profile(de: dict[str, Any]) -> None:
     via :func:`_profile_namespace_defaults`, since by the time this runs the
     derivation has already happened and setdefault here is too late to
     affect it."""
-    slug = de.get("profile")
-    if not slug:
+    slugs = _parse_profile_list(de.get("profile"))
+    if not slugs:
         return
-    for feature, value in _load_profile_assignments(slug):
-        namespace = _FEATURE_NAMESPACE.get(feature)
-        if namespace is None:
-            # Not in the catalogue's namespace map (e.g. a structural
-            # property incidentally listed for context) -- skip rather
-            # than guess where it belongs.
-            continue
-        if namespace == "":
-            de.setdefault(feature, value)
-        else:
-            de.setdefault(namespace, {})
-            de[namespace].setdefault(feature, value)
+    # Tracks only what the profiles-in-this-list have contributed among
+    # themselves, independent of de's own pre-existing state -- an entity's
+    # own explicit value (which setdefault always leaves alone regardless)
+    # must never trip this check, only two *profiles* disagreeing with
+    # each other should.
+    applied: dict[str, tuple[str, Any]] = {}
+    for slug in slugs:
+        for feature, value in _load_profile_assignments(slug):
+            if feature in applied:
+                prev_slug, prev_value = applied[feature]
+                if prev_value != value:
+                    raise ValueError(_profile_conflict_message(
+                        feature, prev_slug, prev_value, slug, value))
+                continue  # same value repeated by a later profile: no-op
+            applied[feature] = (slug, value)
+            namespace = _FEATURE_NAMESPACE.get(feature)
+            if namespace is None:
+                # Not in the catalogue's namespace map (e.g. a structural
+                # property incidentally listed for context) -- skip rather
+                # than guess where it belongs.
+                continue
+            if namespace == "":
+                de.setdefault(feature, value)
+            else:
+                de.setdefault(namespace, {})
+                de[namespace].setdefault(feature, value)
 
 
 # --------------------------------------------------------------------------
@@ -855,7 +969,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
 
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
-    for k in ("has_tenant_id", "image_id"):
+    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -869,6 +983,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # File-level properties at the top of the file (if any) contribute too.
     if doc.root.org_id:
         de["entity_org_id"] = doc.root.org_id
+    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:)
+    # for every metatype -- the one place resolve_targets()'s
+    # _read_drawer_properties() reads before any model-specific parsing, so
+    # a bound profile's own physical-space table (see _load_profile_
+    # address_overrides) can gate which archetypes are even attempted, not
+    # just the render context of whichever archetype already got selected.
+    if "profile" in doc.file_properties:
+        de["profile"] = _parse_profile_list(doc.file_properties["profile"])
 
     # Top-level sections.
     flags = _section(doc.root, "Flags")
@@ -951,6 +1073,22 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                 }
                 for r in rows if r.get("name")
             ]
+
+    # Artefact indexes: extra indexes on the artefact/staging table
+    # (sql_schema_domain_entity_artefact_create.mustache), carried over from
+    # the lookup_entity convention this section originates from. A top-level
+    # heading (not nested under SQL), one ``** <name>`` child per index with
+    # a ``:columns:`` property (raw column-list text, verbatim into the
+    # index definition).
+    artefact_section = _section(doc.root, "Artefact indexes")
+    if artefact_section:
+        artefact_indexes: list[dict[str, Any]] = []
+        for node in artefact_section.children:
+            entry = {"name": node.title}
+            for k, v in node.properties.items():
+                entry[k.lower()] = v  # keep columns string verbatim
+            artefact_indexes.append(entry)
+        de["artefact_indexes"] = artefact_indexes
 
     # Used by the C++ repository facet to conditionally include the
     # datetime header only when at least one FK opts into the as-of
@@ -1368,8 +1506,12 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             j[key] = fm[key]
     if "has_tenant_id" in fm:
         j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
-    if "profile" in fm:
-        j["profile"] = fm["profile"]
+    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:),
+    # not #+profile: frontmatter -- see the equivalent comment in
+    # org_document_to_model for why (resolve_targets() needs it before any
+    # frontmatter/section-specific parsing happens).
+    if "profile" in doc.file_properties:
+        j["profile"] = _parse_profile_list(doc.file_properties["profile"])
 
     body = _strip_body(doc.root)
     if body:
@@ -1677,10 +1819,26 @@ def load_org_lookup_entity_model(path: Path | str) -> dict[str, Any]:
     if body:
         e["description"] = body
 
+    # Lookup entities declare their single-column key via a dedicated
+    # ``* Primary key`` heading (:column:/:type:/:is_text: on the heading
+    # itself), not a ``** <name>`` sub-heading with :primary_key: true
+    # under ``* Columns`` (the domain_entity convention _split_columns_section
+    # handles). Every lookup_entity model in the repo uses this heading;
+    # without reading it, entity.primary_key.column renders empty in
+    # sql_schema_table_create.mustache and silently corrupts the DDL.
+    pk_section = _section(doc.root, "Primary key")
+    if pk_section:
+        pk: dict[str, Any] = {"column": pk_section.properties.get("column", "")}
+        if "type" in pk_section.properties:
+            pk["type"] = pk_section.properties["type"]
+        if "is_text" in pk_section.properties:
+            pk["is_text"] = _parse_typed(pk_section.properties["is_text"])
+        e["primary_key"] = pk
+
     cols_section = _section(doc.root, "Columns")
     if cols_section:
         pk_fields, nk_fields, plain_fields = _split_columns_section(cols_section)
-        if pk_fields:
+        if pk_fields and "primary_key" not in e:
             e["primary_key"] = _primary_key_dict(pk_fields)
         if nk_fields:
             e["natural_keys"] = nk_fields

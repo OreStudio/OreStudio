@@ -145,10 +145,13 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_change_reason_categories_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies the full
+-- system-tenant taxonomy into every tenant's own scope at provisioning
+-- time, so a fallback here would show each tenant its own copy plus the
+-- system-tenant original it was copied from.
 create policy change_reason_categories_read_policy on ores_dq_change_reason_categories_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy change_reason_categories_modification_policy on ores_dq_change_reason_categories_tbl
@@ -161,10 +164,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_change_reasons_tbl enable row level security;
 
+-- No system-tenant fallback: see change_reason_categories_read_policy above
+-- -- ores_iam_provision_tenant_fn copies the full system-tenant taxonomy
+-- into every tenant's own scope at provisioning time.
 create policy change_reasons_read_policy on ores_dq_change_reasons_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy change_reasons_modification_policy on ores_dq_change_reasons_tbl

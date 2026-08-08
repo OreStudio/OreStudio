@@ -1,0 +1,383 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/ArtefactTypeDetailDialog.hpp"
+#include "ores.dq.api/messaging/artefact_type_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ui_ArtefactTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+ArtefactTypeDetailDialog::ArtefactTypeDetailDialog(QWidget* parent)
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ArtefactTypeDetailDialog)
+    , clientManager_(nullptr) {
+
+    ui_->setupUi(this);
+    setupUi();
+    setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
+}
+
+ArtefactTypeDetailDialog::~ArtefactTypeDetailDialog() {
+    delete ui_;
+}
+
+QTabWidget* ArtefactTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* ArtefactTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* ArtefactTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
+
+QString ArtefactTypeDetailDialog::code() const {
+    return QString::fromStdString(type_.code);
+}
+
+void ArtefactTypeDetailDialog::setupUi() {
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    ui_->saveButton->setEnabled(false);
+
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
+
+    ui_->closeButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+}
+
+void ArtefactTypeDetailDialog::setupConnections() {
+    connect(ui_->saveButton, &QPushButton::clicked, this, &ArtefactTypeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &ArtefactTypeDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &ArtefactTypeDetailDialog::onCloseClicked);
+
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &ArtefactTypeDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->artefactTableEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->targetTableEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->targetSubjectEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+    connect(ui_->displayOrderEdit,
+            &QSpinBox::valueChanged,
+            this,
+            &ArtefactTypeDetailDialog::onFieldChanged);
+}
+
+void ArtefactTypeDetailDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+}
+
+void ArtefactTypeDetailDialog::setUsername(const std::string& username) {
+    username_ = username;
+}
+
+void ArtefactTypeDetailDialog::setType(const dq::domain::artefact_type& type) {
+    type_ = type;
+    updateUiFromType();
+}
+
+void ArtefactTypeDetailDialog::setCreateMode(bool createMode) {
+    createMode_ = createMode;
+    ui_->codeEdit->setReadOnly(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
+    setProvenanceEnabled(!createMode);
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void ArtefactTypeDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void ArtefactTypeDetailDialog::setReadOnly(bool readOnly) {
+    readOnly_ = readOnly;
+    ui_->codeEdit->setReadOnly(true);
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->artefactTableEdit->setReadOnly(readOnly);
+    ui_->targetTableEdit->setReadOnly(readOnly);
+    ui_->targetSubjectEdit->setReadOnly(readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
+}
+
+void ArtefactTypeDetailDialog::updateUiFromType() {
+    ui_->codeEdit->setText(QString::fromStdString(type_.code));
+    ui_->nameEdit->setText(QString::fromStdString(type_.name));
+    ui_->descriptionEdit->setPlainText(
+        type_.description ? QString::fromStdString(*type_.description) : QString{});
+    ui_->artefactTableEdit->setText(
+        type_.artefact_table ? QString::fromStdString(*type_.artefact_table) : QString{});
+    ui_->targetTableEdit->setText(type_.target_table ? QString::fromStdString(*type_.target_table) :
+                                                       QString{});
+    ui_->targetSubjectEdit->setText(
+        type_.target_subject ? QString::fromStdString(*type_.target_subject) : QString{});
+    ui_->displayOrderEdit->setValue(type_.display_order);
+
+    populateProvenance(type_.version,
+                       type_.modified_by,
+                       type_.performed_by,
+                       type_.recorded_at,
+                       type_.change_reason_code,
+                       type_.change_commentary);
+
+    hasChanges_ = false;
+    updateSaveButtonState();
+}
+
+void ArtefactTypeDetailDialog::updateTypeFromUi() {
+    if (createMode_) {
+        type_.code = ui_->codeEdit->text().trimmed().toStdString();
+    }
+    type_.name = ui_->nameEdit->text().trimmed().toStdString();
+    {
+        const auto description_str = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+        type_.description =
+            description_str.empty() ? std::nullopt : std::optional<std::string>(description_str);
+    }
+    {
+        const auto artefact_table_str = ui_->artefactTableEdit->text().trimmed().toStdString();
+        type_.artefact_table = artefact_table_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(artefact_table_str);
+    }
+    {
+        const auto target_table_str = ui_->targetTableEdit->text().trimmed().toStdString();
+        type_.target_table =
+            target_table_str.empty() ? std::nullopt : std::optional<std::string>(target_table_str);
+    }
+    {
+        const auto target_subject_str = ui_->targetSubjectEdit->text().trimmed().toStdString();
+        type_.target_subject = target_subject_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(target_subject_str);
+    }
+    type_.display_order = ui_->displayOrderEdit->value();
+    type_.modified_by = username_;
+}
+
+void ArtefactTypeDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void ArtefactTypeDetailDialog::onFieldChanged() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void ArtefactTypeDetailDialog::updateSaveButtonState() {
+    bool canSave = hasChanges_ && validateInput() && !readOnly_;
+    ui_->saveButton->setEnabled(canSave);
+}
+
+bool ArtefactTypeDetailDialog::validateInput() {
+    const QString code_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
+
+    return true && !code_val.isEmpty() && !name_val.isEmpty();
+}
+
+void ArtefactTypeDetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save artefact type while disconnected from server.");
+        return;
+    }
+
+    if (!validateInput()) {
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
+        return;
+    }
+
+
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
+    updateTypeFromUi();
+
+    BOOST_LOG_SEV(lg(), info) << "Saving artefact type: " << type_.code;
+
+    QPointer<ArtefactTypeDetailDialog> self = this;
+
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, type = type_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        dq::messaging::save_artefact_type_request request;
+        request.data = type;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
+
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Artefact Type saved successfully";
+                    QString code = QString::fromStdString(self->type_.code);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->typeSaved(code);
+                    self->notifySaveSuccess(tr("Artefact Type '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void ArtefactTypeDetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete artefact type while disconnected from server.");
+        return;
+    }
+
+    QString code = QString::fromStdString(type_.code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Artefact Type",
+        QString("Are you sure you want to delete artefact type '%1'?").arg(code),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        return;
+    }
+
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
+    if (!crSel)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Deleting artefact type: " << type_.code;
+
+    QPointer<ArtefactTypeDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, code = type_.code]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        dq::messaging::delete_artefact_type_request request;
+        request.codes = {code};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Artefact Type deleted successfully";
+            emit self->statusMessage(QString("Artefact Type '%1' deleted").arg(code));
+            emit self->typeDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+
+}

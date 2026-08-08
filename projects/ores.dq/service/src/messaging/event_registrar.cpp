@@ -20,9 +20,20 @@
 #include "ores.dq.service/messaging/event_registrar.hpp"
 
 // Per-entity generated event-mapping registrars.
+#include "ores.dq.service/messaging/artefact_type_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_definition_event_registrar.hpp"
 #include "ores.dq.service/messaging/badge_severity_event_registrar.hpp"
+#include "ores.dq.service/messaging/catalog_event_registrar.hpp"
+#include "ores.dq.service/messaging/change_reason_category_event_registrar.hpp"
+#include "ores.dq.service/messaging/change_reason_event_registrar.hpp"
 #include "ores.dq.service/messaging/code_domain_event_registrar.hpp"
+#include "ores.dq.service/messaging/data_domain_event_registrar.hpp"
+#include "ores.dq.service/messaging/dataset_bundle_event_registrar.hpp"
+#include "ores.dq.service/messaging/lei_entity_event_registrar.hpp"
+#include "ores.dq.service/messaging/lei_relationship_event_registrar.hpp"
+#include "ores.dq.service/messaging/report_definition_event_registrar.hpp"
+#include "ores.dq.service/messaging/subject_area_event_registrar.hpp"
+#include "ores.dq.service/messaging/synthetic_fx_spot_config_event_registrar.hpp"
 
 namespace ores::dq::service::messaging {
 
@@ -38,9 +49,20 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // event_bus subscription that republishes it to NATS; we take
     // ownership of the subscriptions here so they outlive this call.
     // ----------------------------------------------------------------
+    subs.push_back(register_artefact_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_badge_definition_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_badge_severity_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_catalog_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_change_reason_category_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_change_reason_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_code_domain_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_data_domain_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_dataset_bundle_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_lei_entity_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_lei_relationship_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_report_definition_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_subject_area_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_synthetic_fx_spot_config_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

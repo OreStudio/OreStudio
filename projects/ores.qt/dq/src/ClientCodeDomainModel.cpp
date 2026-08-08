@@ -108,8 +108,15 @@ QVariant ClientCodeDomainModel::data(const QModelIndex& index, int role) const {
 
 QVariant
 ClientCodeDomainModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case Code:
@@ -199,21 +206,28 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 }
 
                 dq::messaging::get_code_domains_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch code domains: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .domains = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch code domains: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
                 if (!result->success) {
                     BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
                     return {.success = false,
@@ -224,11 +238,12 @@ void ClientCodeDomainModel::fetch_domains(std::uint32_t offset, std::uint32_t li
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->domains.size() << " code domains";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->domains.size());
+                    << "Fetched " << result->domains.size()
+                    << " code domains, total available: " << result->total_available_count;
                 return {.success = true,
                         .domains = std::move(result->domains),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },
@@ -290,6 +305,7 @@ const dq::domain::code_domain* ClientCodeDomainModel::getDomain(int row) const {
         return nullptr;
     return &domains_[idx];
 }
+
 
 QVariant ClientCodeDomainModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

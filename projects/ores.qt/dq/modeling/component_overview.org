@@ -2,12 +2,12 @@
 :ID: 090E2CA3-11E7-4835-8F49-925DEB107660
 :END:
 #+title: ores.qt.dq
-#+description: Qt widgets for the Data Quality domain: badge definitions, badge mappings, and their list/detail/history dialogs.
+#+description: Qt plugin owning every ores.dq-backed entity's controllers, dialogs, and menus: badges, classifications, LEI registry, audit trail, and data catalogue, plus the Data Librarian window.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: 
+#+filetags: :qt:dq:ui:component:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-08-07
 #+name: qt.dq
 #+full_name: ores.qt.dq
 #+brief: Qt DQ UI
@@ -20,24 +20,56 @@
 
 * Summary
 
-(Three to five sentences: what this component does and why it exists.)
+=ores.qt.dq= is the single Qt plugin for every entity owned by
+=ores.dq=: badge definitions/severities, code domains, coding schemes
+and their authority types, catalog, change reason and change reason
+category, data domains, subject areas, datasets, dataset bundles,
+methodologies, origin/nature/treatment dimensions, artefact types,
+LEI entities/relationships, plus the Data Librarian window. It absorbed
+the entities and controllers that had briefly lived in the now-deleted
+=ores.qt.data_management= stepping-stone plugin. Most entities are
+fully codegen-driven (domain/protocol/repository backend plus
+Controller/DetailDialog/MdiWindow/ClientModel Qt layer); the remainder
+are commissioned by hand pending their own codegen model. History
+browsing is served by the generic =HistoryDialog=, routed server-side
+through the shared history/diff registries rather than per-entity
+hand-written dialogs.
 
 * Inputs
 
--
+- NATS responses from the =ores.dq= service (get/save/delete/history
+  requests for every owned entity).
+- User interactions: create/edit/delete/view-history across all owned
+  entities.
+- =shared_menus_context= pointers for the Data Quality top-level menu
+  and the shared Data Transfer menu (Data Librarian contribution).
 
 * Outputs
 
--
+- Rendered MDI windows, detail dialogs, and the generic history dialog
+  for every owned entity.
+- Data Quality top-level menu (Badges, Classifications, LEI Registry,
+  Audit Trail, Data Catalogue submenus), returned via =create_menus=.
+- NATS request messages sent to the =ores.dq= service on user actions.
 
 * Entry points
 
--
+- =include/ores.qt/DqPlugin.hpp= — plugin class; menu and controller
+  owner.
+- =include/ores.qt/CatalogController.hpp= — representative entity
+  controller (each owned entity has its own).
+- =include/ores.qt/DataLibrarianWindow.hpp= — bulk ORE-data import
+  window, contributed to the shared Data Transfer menu.
 
 * Dependencies
 
--
+- =ores.qt.api= — IPlugin, base controller/window/dialog classes,
+  ClientManager, generic =HistoryDialog=.
+- =ores.dq.api= — domain types and NATS protocol schemas for every
+  owned entity.
 
 * See also
 
--
+- [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — two-phase plugin loading, IPlugin contract, and MDI patterns.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — how domain controllers, windows, and dialogs are structured.
+- [[id:30A3A7F4-E1A9-42FB-AF9D-FF36FA0F3D21][ores.qt.api]] — shared Qt infrastructure and base classes.

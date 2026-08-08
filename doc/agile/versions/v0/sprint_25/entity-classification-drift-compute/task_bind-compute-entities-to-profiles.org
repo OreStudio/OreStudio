@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: A97F58CC-6C2D-4138-AE4C-60D8C53B88A7
+:END:
+#+title: Task: Bind ores.compute entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for the compute-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: heaviest exclusion catalogue of any component -- 6 service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), 2 repositories (system_tenant union filter).
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-compute:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey every ores.compute entity against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output. Given the size of the known exclusion list, each excluded file needs a genuine, documented reason -- or the template/profile needs fixing to cover it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered via the compute-cpp catalogue entry is surveyed against all Variability Profiles.
+- Every matching entity is rebound and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- Each of the 6 hand-written service files, result_repository, workunit_repository, the 3 mappers, and the 2 repositories is either brought under codegen or verified as a genuinely correct, documented exclusion.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Full local build and ctest green after regeneration.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B6E4D3E4-1257-40F8-982D-F92C4CAC74D2
+:profile: simple-lookup
 :END:
 #+title: ores.dq.data_domain
 #+description: Codegen entity model for the dq =data_domain= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -10,7 +11,6 @@
 #+entity_singular: data_domain
 #+entity_plural: data_domains
 #+entity_title: Data Domain
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -120,6 +120,50 @@ std::string(faker::lorem::sentence())
 | modified_by | Modified By |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/data_domain.hpp
+:domain_class:           dq::domain::data_domain
+:protocol_include:       ores.dq.api/messaging/data_domain_protocol.hpp
+:collection_name:        domains
+:item_var:               domain
+:key_field:               name
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_data_domains_request
+:get_response_class:     dq::messaging::get_data_domains_response
+:get_message_type:       get_data_domains_request
+:save_request_class:     dq::messaging::save_data_domain_request
+:save_response_class:    dq::messaging::save_data_domain_response
+:save_message_type:      save_data_domain_request
+:delete_request_class:   dq::messaging::delete_data_domain_request
+:delete_response_class:  dq::messaging::delete_data_domain_response
+:delete_message_type:    delete_data_domain_request
+:history_request_class:  dq::messaging::get_data_domain_history_request
+:history_response_class: dq::messaging::get_data_domain_history_response
+:history_message_type:   get_data_domain_history_request
+:settings_group:         DataDomainListWindow
+:window_title:           Data Domains
+:icon:                   Table
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder             |
+|-------------+-------------+-----------------+-----------+--------+-------------+--------------------------|
+| name        | Name        | nameEdit        | line_edit | true   | true        | Enter data domain name  |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description     |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Name        | name        | Name        | string    | 200   |
+| Description | description | Description | string    | 300   |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
 
 * See also
 

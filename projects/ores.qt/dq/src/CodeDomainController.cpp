@@ -18,30 +18,42 @@
  *
  */
 #include "ores.qt/CodeDomainController.hpp"
-#include "ores.qt/BadgeCache.hpp"
+#include "ores.dq.api/eventing/code_domain_changed_event.hpp"
+#include "ores.dq.api/messaging/code_domain_protocol.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CodeDomainDetailDialog.hpp"
-#include "ores.qt/CodeDomainHistoryDialog.hpp"
 #include "ores.qt/CodeDomainMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view domain_event_name =
+    eventing::domain::event_traits<dq::eventing::code_domain_changed_event>::name;
+}
+
 CodeDomainController::CodeDomainController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
                                            ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
                                            const QString& username,
-                                           BadgeCache* badgeCache,
                                            QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, domain_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
-    , listMdiSubWindow_(nullptr)
-    , badgeCache_(badgeCache) {
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodeDomainController created";
 }
@@ -95,6 +107,8 @@ void CodeDomainController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -143,19 +157,17 @@ void CodeDomainController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void CodeDomainController::onShowHistory(const dq::domain::code_domain& domain) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << domain.code;
     showHistoryWindow(QString::fromStdString(domain.code));
 }
 
-void CodeDomainController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new code domain";
-
-    auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
+void CodeDomainController::wireDetailDialogCommon(CodeDomainDetailDialog* detailDialog) {
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
-    detailDialog->setBadgeCache(badgeCache_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &CodeDomainDetailDialog::statusMessage,
@@ -165,6 +177,15 @@ void CodeDomainController::showAddWindow() {
             &CodeDomainDetailDialog::errorMessage,
             this,
             &CodeDomainController::errorMessage);
+}
+
+void CodeDomainController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new code domain";
+
+    auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &CodeDomainDetailDialog::domainSaved,
             this,
@@ -201,20 +222,10 @@ void CodeDomainController::showDetailWindow(const dq::domain::code_domain& domai
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << domain.code;
 
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setDomain(domain);
 
-    connect(detailDialog,
-            &CodeDomainDetailDialog::statusMessage,
-            this,
-            &CodeDomainController::statusMessage);
-    connect(detailDialog,
-            &CodeDomainDetailDialog::errorMessage,
-            this,
-            &CodeDomainController::errorMessage);
     connect(detailDialog,
             &CodeDomainDetailDialog::domainSaved,
             this,
@@ -244,6 +255,7 @@ void CodeDomainController::showDetailWindow(const dq::domain::code_domain& domai
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<CodeDomainController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -269,10 +281,13 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new CodeDomainHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(std::string(entity_type_of(dq::domain::code_domain{})),
+                                            code.toStdString(),
+                                            clientManager_,
+                                            mainWindow_);
 
     connect(historyDialog,
-            &CodeDomainHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<CodeDomainController>(this)](const QString& message) {
                 if (!self)
@@ -280,7 +295,7 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &CodeDomainHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<CodeDomainController>(this)](const QString& message) {
                 if (!self)
@@ -288,13 +303,23 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &CodeDomainHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &CodeDomainController::onRevertVersion);
+            [self = QPointer<CodeDomainController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &CodeDomainHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &CodeDomainController::onOpenVersion);
+            [self = QPointer<CodeDomainController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -305,10 +330,12 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Code Domain History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<CodeDomainController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -335,28 +362,9 @@ void CodeDomainController::onOpenVersion(const dq::domain::code_domain& domain, 
     }
 
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setDomain(domain);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &CodeDomainDetailDialog::statusMessage,
-            this,
-            [self = QPointer<CodeDomainController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &CodeDomainDetailDialog::errorMessage,
-            this,
-            [self = QPointer<CodeDomainController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -380,25 +388,107 @@ void CodeDomainController::onOpenVersion(const dq::domain::code_domain& domain, 
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void CodeDomainController::fetchCodeDomainHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<dq::domain::code_domain>, QString>)> callback) {
+    dq::messaging::get_code_domain_history_request request;
+    request.code = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<dq::domain::code_domain>, QString>;
+
+    QPointer<CodeDomainController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void CodeDomainController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CodeDomainController> self = this;
+    fetchCodeDomainHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::code_domain>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void CodeDomainController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<CodeDomainController> self = this;
+    fetchCodeDomainHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<dq::domain::code_domain>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void CodeDomainController::onRevertVersion(const dq::domain::code_domain& domain) {
     BOOST_LOG_SEV(lg(), info) << "Reverting code domain to version: " << domain.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setBadgeCache(badgeCache_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setDomain(domain);
+    wireDetailDialogCommon(detailDialog);
+    auto reverted_domain = domain;
+    reverted_domain.version = 0;
+    detailDialog->setDomain(reverted_domain);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &CodeDomainDetailDialog::statusMessage,
-            this,
-            &CodeDomainController::statusMessage);
-    connect(detailDialog,
-            &CodeDomainDetailDialog::errorMessage,
-            this,
-            &CodeDomainController::errorMessage);
     connect(detailDialog,
             &CodeDomainDetailDialog::domainSaved,
             this,
@@ -427,6 +517,28 @@ void CodeDomainController::onRevertVersion(const dq::domain::code_domain& domain
 
 EntityListMdiWindow* CodeDomainController::listWindow() const {
     return listWindow_;
+}
+
+void CodeDomainController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

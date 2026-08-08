@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 73870A5E-9A27-4DAB-8E2A-E58E097C1218
+:profile: tenant-scoped-junction
 :END:
 #+title: ores.dq.dataset_bundle_member
 #+description: Codegen junction model for dataset_bundle_members.
@@ -13,7 +14,6 @@
 #+brief: Links a dataset to a bundle.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
 #+created: 2026-06-02
 #+updated: 2026-06-02
 

@@ -1806,6 +1806,32 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # directly — sees scope_system/scope_both/scope_tenant too.
         if 'validation_fn' in sql_table:
             domain_entity['validation_fn'] = sql_table['validation_fn']
+        # Same sync, for the artefact-table archetype (sql_schema_domain_
+        # entity_artefact_create.mustache), which also reads domain_entity.*
+        # directly rather than through this table-context projection.
+        for flag in (
+            'has_coding_scheme', 'has_nullable_coding_scheme',
+            'has_any_coding_scheme', 'has_image_id',
+        ):
+            if flag in sql_table:
+                domain_entity[flag] = sql_table[flag]
+        # Some entities (e.g. refdata's country) predate this generic
+        # coding_scheme feature and declare their own coding_scheme_code
+        # column by hand under `* Columns`. Suppress the auto-emitted
+        # CREATE TABLE column in that case -- it would duplicate the
+        # explicit one -- but keep has_any_coding_scheme (and thus the FK
+        # validation block) intact, since a hand-declared column still
+        # wants the generic existence check unless the model supplies its
+        # own validation_fn for it.
+        has_manual_coding_scheme_column = any(
+            c.get('name') == 'coding_scheme_code'
+            for c in domain_entity.get('columns', [])
+        )
+        if has_manual_coding_scheme_column:
+            domain_entity['has_coding_scheme'] = False
+            domain_entity['has_nullable_coding_scheme'] = False
+        if 'artefact_indexes' in domain_entity:
+            _mark_last_item(domain_entity['artefact_indexes'])
         if any(
             v.get('cardinality_limit_table')
             for v in domain_entity.get('insert_trigger', {}).get('validations', [])
@@ -2067,6 +2093,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
             # Split description into lines for C++ doxygen comments
             domain_entity['description_lines'] = domain_entity['description'].split('\n')
+            # Single physical line for templates that embed the description in
+            # a one-line SQL comment (e.g. sql_schema_domain_entity_artefact_
+            # create.mustache's "-- {{description}} - Artefact Table --"): a
+            # raw multi-line description would otherwise break out of the
+            # comment mid-line.
+            domain_entity['description_oneline'] = ' '.join(
+                domain_entity['description'].split()
+            )
         # Derive component paths from component + subcomponent
         if 'component' in domain_entity:
             component = domain_entity['component']

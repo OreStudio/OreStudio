@@ -47,10 +47,10 @@ separately in [[id:8C3626F4-ED75-4D48-94BE-FB7A932B1EE8][Codegen infrastructure 
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | Not yet started.                       |
-| Waiting on    | subject_area task blocked on 52FE40FA landing (see sibling infra story). |
-| Next          | Pick up the history-dialog migration or the Librarian regression first — both are unblocked. |
-| Last touched  | 2026-07-21                               |
+| Now           | Plugin-ownership half of task 2 done: all 13 remaining ores.qt.data_management DQ entities (catalog, change_reason, change_reason_category, coding_scheme, coding_scheme_authority_type, data_domain, dataset, dataset_bundle, methodology, nature/origin/treatment_dimension, subject_area) plus the Data Librarian infra moved into ores.qt.dq verbatim; ores.qt.data_management deleted entirely (empty plugin decommissioned, not left as a shell). Their per-entity HistoryDialog classes moved as-is, unchanged -- the *generic HistoryDialog migration* task 2 also names is still open. |
+| Waiting on    | subject_area's *codegen* commissioning still blocked on 52FE40FA; its Qt UI already moved with the rest and needs no further plugin work. |
+| Next          | Generic-HistoryDialog migration (7E714F07), the change_reason_code-not-assigned bug (5DF07DAD), or subject_area's codegen commissioning once unblocked. |
+| Last touched  | 2026-08-06                               |
 
 * Acceptance
 

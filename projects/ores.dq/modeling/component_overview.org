@@ -10,6 +10,7 @@
 #+updated: 2026-06-09
 #+name: dq
 #+full_name: ores.dq
+#+component_kind: composite
 #+brief: Data-quality domain component
 
 * Summary

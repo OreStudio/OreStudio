@@ -163,15 +163,11 @@ void BadgeSeverityController::onShowHistory(const dq::domain::badge_severity& se
     showHistoryWindow(QString::fromStdString(severity.code));
 }
 
-void BadgeSeverityController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new badge severity";
-
-    auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
+void BadgeSeverityController::wireDetailDialogCommon(BadgeSeverityDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &BadgeSeverityDetailDialog::statusMessage,
@@ -181,6 +177,15 @@ void BadgeSeverityController::showAddWindow() {
             &BadgeSeverityDetailDialog::errorMessage,
             this,
             &BadgeSeverityController::errorMessage);
+}
+
+void BadgeSeverityController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new badge severity";
+
+    auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &BadgeSeverityDetailDialog::severitySaved,
             this,
@@ -217,21 +222,10 @@ void BadgeSeverityController::showDetailWindow(const dq::domain::badge_severity&
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << severity.code;
 
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setSeverity(severity);
 
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::statusMessage,
-            this,
-            &BadgeSeverityController::statusMessage);
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::errorMessage,
-            this,
-            &BadgeSeverityController::errorMessage);
     connect(detailDialog,
             &BadgeSeverityDetailDialog::severitySaved,
             this,
@@ -371,29 +365,9 @@ void BadgeSeverityController::onOpenVersion(const dq::domain::badge_severity& se
     }
 
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setSeverity(severity);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::statusMessage,
-            this,
-            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::errorMessage,
-            this,
-            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -511,24 +485,13 @@ void BadgeSeverityController::onRevertVersion(const dq::domain::badge_severity& 
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_severity = severity;
     reverted_severity.version = 0;
     detailDialog->setSeverity(reverted_severity);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::statusMessage,
-            this,
-            &BadgeSeverityController::statusMessage);
-    connect(detailDialog,
-            &BadgeSeverityDetailDialog::errorMessage,
-            this,
-            &BadgeSeverityController::errorMessage);
     connect(detailDialog,
             &BadgeSeverityDetailDialog::severitySaved,
             this,

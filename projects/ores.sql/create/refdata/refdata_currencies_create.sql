@@ -47,6 +47,7 @@ create table if not exists "ores_refdata_currencies_tbl" (
     "spot_days" integer not null default 2,
     "day_basis" text not null default 'ACT/360',
     "base_precedence" integer not null default 100,
+    "coding_scheme_code" text,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -88,6 +89,16 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
 
     -- Validate rounding_type
     NEW.rounding_type := ores_refdata_validate_rounding_type_fn(NEW.tenant_id, NEW.rounding_type);

@@ -220,6 +220,8 @@ void ClientBadgeDefinitionModel::fetch_definitions(std::uint32_t offset, std::ui
                 }
 
                 dq::messaging::get_badge_definitions_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -250,11 +252,12 @@ void ClientBadgeDefinitionModel::fetch_definitions(std::uint32_t offset, std::ui
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->definitions.size() << " badge definitions";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->definitions.size());
+                    << "Fetched " << result->definitions.size()
+                    << " badge definitions, total available: " << result->total_available_count;
                 return {.success = true,
                         .definitions = std::move(result->definitions),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

@@ -113,6 +113,27 @@ inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_tim
     return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
 }
 
+/**
+ * @brief Converts a system_clock::time_point to a db_timestamp.
+ *
+ * The inverse of timestamp_to_timepoint(const db_timestamp&). Formats via
+ * datetime::to_db_string, which already produces db_timestamp's own
+ * "%Y-%m-%d %H:%M:%S" format (to_iso8601_utc with the trailing "Z" stripped),
+ * so the string round-trips through db_timestamp's strptime-based constructor
+ * without a separate timezone designator.
+ *
+ * @param tp The time_point to convert (interpreted as a UTC instant)
+ * @param lg Logger for a debug trace of the conversion
+ * @return A db_timestamp representing the same UTC instant
+ */
+inline db_timestamp timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
+                                           logging::logger_t& lg) {
+    using namespace ores::logging;
+    const auto str = platform::time::datetime::to_db_string(tp);
+    BOOST_LOG_SEV(lg, debug) << "Converted time_point to db_timestamp: " << str;
+    return db_timestamp(str);
+}
+
 }
 
 #endif

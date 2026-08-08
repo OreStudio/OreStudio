@@ -88,6 +88,16 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores_dq_coding_schemes_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

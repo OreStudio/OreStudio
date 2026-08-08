@@ -55,10 +55,10 @@ change-reason-cache wrinkle doesn't change that).
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:03A978BF-78E4-43D1-B66B-81E8FFA1D7AE][Commission remaining DQ entities]] |
-| Now          | Not yet started.                       |
+| Now          | ores.qt.dq now exists as the proper plugin owning all 14 (moved verbatim from ores.qt.data_management, which is deleted). Their legacy per-entity *HistoryDialog classes moved unchanged with them -- this task's actual goal (retiring those in favour of the generic HistoryDialog, and authoring codegen models for the 12 that have none) is still fully open. |
 | Waiting on   | Nothing.                               |
-| Next         | Author codegen models for the 12 model-less entities; migrate all 14 via full-stack codegen once ores.qt.dq exists as a proper plugin. |
-| Last touched | 2026-07-17                               |
+| Next         | Author codegen models for the 12 model-less entities; migrate all 14 onto the generic HistoryDialog via full-stack codegen (the plugin now exists, so this can start directly). |
+| Last touched | 2026-08-06                               |
 
 * Acceptance
 

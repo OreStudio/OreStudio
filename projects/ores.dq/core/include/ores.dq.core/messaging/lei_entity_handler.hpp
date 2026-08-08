@@ -21,8 +21,8 @@
 #define ORES_DQ_CORE_MESSAGING_LEI_ENTITY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.dq.api/messaging/lei_entity_protocol.hpp"
+#include "ores.dq.core/service/lei_entity_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -30,14 +30,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::dq::messaging {
-
-using ores::service::messaging::reply;
-using ores::service::messaging::decode;
-using ores::service::messaging::error_reply;
-using namespace ores::logging;
 
 namespace {
 inline auto& lei_entity_handler_lg() {
@@ -46,6 +40,15 @@ inline auto& lei_entity_handler_lg() {
 }
 } // namespace
 
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
+using namespace ores::logging;
+
+/**
+ * @brief NATS message handler for LEI entity operations.
+ */
 class lei_entity_handler {
 public:
     lei_entity_handler(ores::nats::service::client& nats,
@@ -55,66 +58,122 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void summary(ores::nats::message msg) {
+    void list(ores::nats::message msg) {
         BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Handling " << msg.subject;
-        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
-                                    msg.data.size());
-        const auto parsed = rfl::json::read<get_lei_entities_summary_request>(data);
-        if (!parsed) {
-            const auto err = parsed.error().what();
-            BOOST_LOG_SEV(lei_entity_handler_lg(), error)
-                << "Failed to decode " << msg.subject << ": " << err << " (payload: " << data
-                << ")";
-            get_lei_entities_summary_response err_resp;
-            err_resp.success = false;
-            err_resp.error_message = std::string("Failed to decode request: ") + err;
-            reply(nats_, msg, err_resp);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& req = *parsed;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        get_lei_entities_summary_response resp;
-        try {
-            using namespace ores::database::repository;
-            if (req.country_filter.empty()) {
-                const std::string sql =
-                    "SELECT * FROM ores_dq_lei_entities_distinct_countries_fn()";
-                auto rows = execute_raw_multi_column_query(
-                    ctx, sql, lei_entity_handler_lg(), "listing LEI countries");
-                for (const auto& row : rows) {
-                    if (!row.empty() && row[0])
-                        resp.entities.push_back({.country = *row[0]});
-                }
-            } else {
-                const std::string sql =
-                    "SELECT * FROM ores_dq_lei_entities_summary_by_country_fn($1, $2, $3)";
-                auto rows = execute_parameterized_multi_column_query(
-                    ctx,
-                    sql,
-                    {req.country_filter, std::to_string(req.limit), std::to_string(req.offset)},
-                    lei_entity_handler_lg(),
-                    "listing LEI entities by country");
-                for (const auto& row : rows) {
-                    if (row.size() >= 4)
-                        resp.entities.push_back({.lei = row[0].value_or(""),
-                                                 .entity_legal_name = row[1].value_or(""),
-                                                 .entity_category = row[2].value_or(""),
-                                                 .country = row[3].value_or("")});
-                }
+        const auto& req_ctx = *req_ctx_expected;
+        service::lei_entity_service svc(req_ctx);
+        get_lei_entities_response resp;
+        if (auto req = decode<get_lei_entities_request>(msg)) {
+            try {
+                resp.entities = svc.list_entities(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_entities());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-            resp.success = true;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lei_entity_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.error_message = e.what();
+        } else {
+            BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::lei_entities:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::lei_entity_service svc(req_ctx);
+        if (auto req = decode<save_lei_entity_request>(msg)) {
+            try {
+                svc.save_entity(req->data);
+                BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_lei_entity_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_lei_entity_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::lei_entity_service svc(req_ctx);
+        if (auto req = decode<get_lei_entity_history_request>(msg)) {
+            try {
+                auto hist = svc.get_entity_history(req->lei);
+                BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_lei_entity_history_response{.history = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_lei_entity_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "dq::lei_entities:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::lei_entity_service svc(req_ctx);
+        if (auto req = decode<delete_lei_entity_request>(msg)) {
+            try {
+                svc.delete_entities(req->leis);
+                BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_lei_entity_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, delete_lei_entity_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

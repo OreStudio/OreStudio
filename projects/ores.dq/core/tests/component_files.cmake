@@ -19,6 +19,7 @@
 set(files
     "generators_tests.cpp"
     "main.cpp"
+    "repository_artefact_type_repository_tests.cpp"
     "repository_catalog_repository_tests.cpp"
     "repository_change_reason_category_repository_tests.cpp"
     "repository_change_reason_repository_tests.cpp"

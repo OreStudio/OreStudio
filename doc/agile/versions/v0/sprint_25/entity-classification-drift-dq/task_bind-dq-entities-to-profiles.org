@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: 163AC07E-19E4-4486-A503-8170D9B46108
+:END:
+#+title: Task: Bind ores.dq entities to profiles; verify zero-diff regen
+#+description: Implement profile binding for ores.dq's org-mode entity set (the dq and dq-cpp catalogue entries share the same modeling_dir, projects/ores.dq/modeling -- one survey, not two), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
+#+owner: marco
+#+branch: feature/bind-dq-sql-entities-to-profiles
+#+pr: 1898
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Same method as the pilot task (Bind ores.refdata entities to profiles): survey every ores.dq entity (projects/ores.dq/modeling) against the profile catalogue, rebind matches, regenerate, and require zero additional diff against the pre-rebind checked-in output.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Entity classification and drift baseline: ores.dq]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-04                               |
+
+* Acceptance
+
+- Every entity discovered under projects/ores.dq/modeling is surveyed against all Variability Profiles.
+- Every matching entity is rebound (profile property set, explicit per-entity properties the profile covers removed) and regenerated with zero additional diff versus its pre-rebind checked-in output.
+- No-match entities are recorded with their actual feature values, not silently dropped.
+- Any pre-existing drift the regen+diff surfaces (template bug, stale checked-in output) is fixed, not worked around.
+- The known dataset_bundle service_find_by_uuid/service_find_by_code gap and the HexPrefix model typo (carried over from the superseded ad hoc task) are resolved as part of reaching zero drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+- Found and fixed a real codegen bug while establishing the pre-rebind
+  baseline (regen+diff before touching any model, per the pilot method):
+  =load_org_lookup_entity_model()= never read the =* Primary key= heading
+  every =*_lookup_entity.org= model in the repo uses to declare its key
+  (:column:/:type:/:is_text: on the heading itself) -- it only handled the
+  domain_entity convention of a =:primary_key: true=-flagged =** column=
+  sub-heading under =* Columns=. Silent effect: =entity.primary_key.column=
+  rendered empty in =sql_schema_table_create.mustache=, corrupting the
+  generated DDL (empty column name in CREATE TABLE / PRIMARY KEY / CHECK)
+  for every lookup entity component-wide -- not dq-specific. Fixed in
+  =projects/ores.codegen/src/codegen/org_loader.py=, regression-tested in
+  =projects/ores.codegen/tests/test_org_loader_lookup_entity.py=; confirmed
+  zero-diff for =artefact_type= (the previously-broken entity) after the
+  fix. Full codegen test suite (110 tests) green.
+- Baseline check also surfaced pre-existing drift unrelated to the primary-
+  key bug: a stale blank line before a comment in the notify/validation
+  trigger SQL, on 6 tables (change_reasons, code_domains, data_domains,
+  dataset_bundles, subject_areas, change_reason_categories) -- same class
+  as the pilot's currency_calendar finding. Not yet fixed; next step.
+- A full-component regeneration (triggered incidentally by
+  =check_component_drift.py --components dq=, which regenerates every
+  address) additionally surfaced ~130 modified/untracked C++/Qt files
+  across =ores.dq.api=, =ores.dq.core=, and =ores.qt.dq= -- the component's
+  C++/Qt layers appear to have substantial pre-existing drift beyond SQL,
+  including 4 entities (lei_entity, lei_relationship, report_definition,
+  synthetic_fx_spot_config) with no checked-in generated code at all yet.
+  Reverted rather than committed blind -- this is a large, separate
+  investigation (each new table needs drop.sql, notify trigger, population,
+  validation-ignore entries, and full DB/CMake wiring, not just template
+  output) and deserves its own deliberate pass rather than folding into
+  this survey uninspected.
+- Root-caused the C++ gap via deep analysis (user-requested) rather than
+  patching lookup_entity's own C++ path further: =lookup_entity= is
+  deliberately being retired, not maintained. Task 464B5EC6 (DONE) already
+  proved and executed the fix -- migrate each remaining =lookup_entity=
+  model to =domain_entity= (=has_uuid_primary_key: false=), which gets a
+  complete, mature SQL+C++ projection for free. Task AEFAE247 (BACKLOG) is
+  the pre-existing, already-filed follow-up covering exactly dq's 5
+  remaining lookup entities plus 10 more outside dq. Adopted AEFAE247's
+  plan here instead of patching lookup_entity's C++ generation (the
+  approach DDBD522D already tried and explicitly abandoned).
+- =artefact_type= migrated to =domain_entity= (commit on this branch),
+  following the 464B5EC6/catalog playbook exactly: one address at a time
+  (SQL schema + notify trigger, domain/json_io/table, repository/entity/
+  mapper, service, protocol, NATS handler/registrar/event-registrar,
+  presentation, generator), each reviewed before the next, idempotency
+  verified (zero additional diff on a second regenerate pass). Repository
+  moved from stateful (ctx in constructor) to the standard stateless (ctx
+  per call) shape; =publication_service= (its one caller) updated
+  accordingly. Wired into =registrar.cpp= alongside catalog/data_domain.
+  Added =repository_artefact_type_repository_tests.cpp=. =ores.dq.api.lib=/
+  =ores.dq.core.lib=/=ores.dq.service.lib= build clean;
+  =ores.dq.api.tests= (273/50) and =ores.dq.core.tests= (300/95, incl. 7
+  new cases) pass against the live DB.
+- Built the =has_artefact_insert_fn= port 464B5EC6 flagged as missing, then
+  migrated =lei_entity=: added a new =ores.sql.schema.domain_entity_artefact_create=
+  archetype (=#+model_types: domain_entity=, disabled by default -- most
+  domain_entity models have no artefact table at all, an entity opts in
+  with =:ores.sql.schema.domain_entity_artefact_create.enabled: true= in
+  its file-level PROPERTIES drawer), ported from the lookup_entity-only
+  =sql_schema_artefact_create.mustache=; wired =has_artefact_insert_fn= and
+  =* Artefact indexes= as domain_entity frontmatter/section support in
+  org_loader.py. Regenerated artefact table matches the pre-existing
+  checked-in one exactly bar two harmless deltas (template-name comment;
+  two redundant =default null= clauses correctly dropped). Idempotent on a
+  second regen. Confirmed the new archetype has zero effect on any other
+  domain_entity (artefact_type and all 5 already-migrated dq entities
+  regenerate byte-identical). Tangle round-trip verified (hand-written
+  =.mustache= matches =compass build --direct tangle_codegen_templates=
+  output exactly).
+- Discovered along the way: =lei_entity= (like the other 3 remaining
+  lookup entities) has never had a "main" bi-temporal table in production
+  -- =dq_lei_entities_create.sql= never existed in the repo; LEI data is
+  queried directly from the artefact table (per
+  =dq_lei_entities_query_functions_create.sql='s own doc comment). Since
+  =domain_entity='s main-table archetype has no per-entity opt-out, it
+  still generates a speculative main table + notify trigger as a
+  byproduct when regenerated at =--address ores.sql.schema= -- correctly
+  left uncommitted (nothing in the codebase would reference it), same
+  treatment given to lei_relationship/report_definition/
+  synthetic_fx_spot_config once each is migrated.
+- =lei_relationship= migrated using the same hook. Regenerated artefact
+  table matched the checked-in one bar the template-name comment and two
+  artefact-index names: the checked-in file's "start_node_id_idx"/
+  "rel_type_idx" didn't match what its own original lookup_entity model
+  would ever have produced (no =:name:= override on either Artefact-index
+  heading) -- pre-existing drift (hand-shortened after generation, never
+  regenerated since), not something the migration introduced. Verified no
+  other checked-in SQL referenced the old names before accepting the
+  correct, template-derived ones. Idempotent on a second regen. Same
+  no-main-table treatment as =lei_entity=.
+- =report_definition= migrated (UUID primary key this time -- =:type:
+  uuid= on the =id= column is all that's needed, =is_uuid=/=cpp_type=
+  derived automatically). Surfaced and fixed a real template bug: its
+  two-line prose body broke the artefact template's single-line SQL
+  comment (embedded newline exits the comment mid-line into bare SQL).
+  Added =domain_entity.description_oneline= (whitespace-joined) alongside
+  the existing =description_formatted=, pointed the artefact template at
+  it; verified zero effect on lei_entity/lei_relationship (already
+  single-line) or any other domain_entity. Tangle round-trip re-verified.
+  Regenerated artefact table byte-identical to checked-in bar the
+  template-name comment. Idempotent.
+- =synthetic_fx_spot_config= migrated -- last of the 4. Boolean/double
+  precision column types and an auto-quoted text default (=price_source=
+  =vintage=) all rendered correctly through the domain_entity column
+  pipeline unchanged. Regenerated artefact table matched the checked-in
+  one bar the template-name comment and the header text: the checked-in
+  file's comment silently truncated the model's two-sentence body to its
+  first sentence -- same stale-checked-in-file drift class seen
+  throughout this task, not a template bug. Idempotent. Verified zero
+  effect on the other 3 migrated entities or any other domain_entity.
+- =grep -rl "ores.codegen.lookup_entity" projects/ores.dq/modeling/*.org=
+  now returns zero live models (only a stale prose mention in the
+  =publication_pipeline.org= knowledge doc, describing the now-retired
+  approach -- worth a follow-up doc fix, not blocking this task). All 4
+  of dq's lookup_entity models are migrated to domain_entity.
+- Profile-binding survey run across every =ores.dq= entity/junction (17
+  files: 13 =domain_entity=, 2 =junction=, 1 =field_group= excluded --
+  structurally not an entity, matching the pilot's own precedent for
+  non-entity metatypes). Note on method: none of dq's entities have a
+  =** Qt= drawer except =badge_definition=/=code_domain=/=dataset_bundle=,
+  so for the other 10 the =qt=-namespace half of every profile's
+  Assignments is inert (nothing reads it, since Qt generation is gated by
+  the drawer's presence, not by profile flags) -- match/no-match there
+  turns on the =root=/=sql=-namespace features alone (=has_tenant_id=,
+  =has_workspace_id=, =has_parent_id=).
+
+  *** Bound (9) -- see Result for the commit
+  | Entity/junction | Profile |
+  |---------------------------+-----------------------|
+  | catalog | simple-lookup |
+  | change_reason_category | simple-lookup |
+  | change_reason | simple-lookup |
+  | data_domain | simple-lookup |
+  | artefact_type | simple-lookup |
+  | lei_entity | simple-lookup |
+  | lei_relationship | simple-lookup |
+  | badge_mapping_junction | tenant-scoped-junction |
+  | dataset_bundle_member_junction | tenant-scoped-junction |
+
+  *** No-match (6) -- real data, not a failure; each recorded with its reason
+  | Entity | Reason |
+  |------------------------+---------------------------------------------------|
+  | subject_area | Compound primary key (name + domain_name, both flagged =:primary_key: true=) -- no named profile covers a compound-key shape; matches 464B5EC6's own note that subject_area's key situation (52FE40FA) remains open. |
+  | report_definition | UUID surrogate key, no Qt, no parent/hierarchy relation. No profile fits: simple-lookup/fully-featured-lookup require a text natural key; self-referencing-hierarchy/fk-scoped-child require has_parent_id/parent_entity_singular, neither applicable. |
+  | synthetic_fx_spot_config | Same shape as report_definition (UUID PK, no Qt, no hierarchy) -- same no-match reasoning. |
+  | dataset_bundle | UUID PK *with* Qt (has_uuid_primary_key: true already correctly set), but not hierarchical/parent-scoped -- no profile's Purpose matches an editable, non-hierarchical UUID-keyed entity; forcing self-referencing-hierarchy or fk-scoped-child purely on flag proximity would be wrong the same way business_unit was correctly left unbound in the pilot. |
+  | badge_definition | Qt present, has_uuid_primary_key: false and has_change_reason_cache: true already match simple-lookup, but has_pagination is unset (defaults false) where the profile fixes true. Not treated as an obvious gap like the pilot's leg_type (missing audit trail) -- pagination is a UI/product decision, not a data-integrity omission; recorded as a real, deliberate-looking mismatch rather than force-added. |
+  | code_domain | Qt present, has_uuid_primary_key: false matches simple-lookup, but both has_change_reason_cache and has_pagination are unset (default false) against the profile's true/true. Same reasoning as badge_definition -- a real mismatch, not silently forced. |
+
+  Both Qt gaps (badge_definition, code_domain) are worth a follow-up
+  product conversation (add pagination/change-reason-cache, or the
+  profile genuinely doesn't fit and that's fine) -- out of scope to
+  decide unilaterally here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:E3AC8CAB-2908-4407-8DC6-16C0000A092E][Verify ores.dq commissioned entities]] | PENDING | CRUD+history on catalog/data_domain/change_reason/change_reason_category/artefact_type/dataset_bundle; read-only browse on lei_entity/lei_relationship; confirms report_definition/synthetic_fx_spot_config have no Qt UI; two-client eventing check |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1898][#1898]] | [dq] Bind ores.dq entities to profiles; commission full C++/Qt stack |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Dangling org-link to deleted ores.qt.data_management (site build failing) | 5 modeling docs | Accepted | Repointed all id-links to the deleted component onto ores.qt.dq; verified =compass build --direct site= succeeds |
+| 2 | ores.qt.dq/modeling/component_overview.org still describes only badges, template placeholders unfilled | projects/ores.qt/dq/modeling/component_overview.org | Accepted | Rewrote Summary/Inputs/Outputs/Entry points/Dependencies/See also to reflect the full consolidated scope |
+| 3 | artefact_type roundtrip test only checks code/description, not the fields this PR fixed | projects/ores.dq/core/tests/repository_artefact_type_repository_tests.cpp | Accepted | Added CHECKs for artefact_table/target_table/target_subject/display_order |
+
+* Result
+
+Bound ores.dq SQL entities to variability profiles with verified zero-diff
+regen. Commissioned full C++/Qt for lei_entity, lei_relationship,
+report_definition, and synthetic_fx_spot_config. Consolidated every
+ores.dq-owned entity's Qt layer into ores.qt.dq, decommissioning the
+ores.qt.data_management stepping-stone plugin entirely. Migrated
+catalog/change_reason/change_reason_category/data_domain/dataset_bundle
+onto full codegen with the generic HistoryDialog; migrated subject_area's
+history dialog by hand (compound-key exception). Found and fixed several
+bugs surfaced by end-to-end GUI test scenarios: artefact_type's missing
+Detail fields and its never-firing NOTIFY trigger (same gap fixed for
+code_domain and dataset_bundle), and a duplicate-row RLS bug on
+change_reason/change_reason_category caused by a redundant system-tenant
+read-policy fallback on tables the tenant provisioner already copies
+per-tenant. All fixes verified via direct SQL queries against a freshly
+provisioned Acme Corporation tenant and compass build rat. PR #1898
+merged after one review round (dangling org-link to the deleted
+component, stale component_overview.org, thin test coverage -- all
+addressed).

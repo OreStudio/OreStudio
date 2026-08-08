@@ -19,12 +19,12 @@
  */
 /*
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_artefact_create.mustache
+ * Template: sql_schema_domain_entity_artefact_create.mustache
  * To modify, update the template and regenerate.
  */
 
 -- =============================================================================
--- Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle - Artefact Table
+-- Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config rows for the synthetic market data bundle. Each row is a complete FX config combining the parent market_data_generation_config fields (name, description, enabled) with the FX spot sub-config fields (currency pair, initial price, tick cadence, process type). - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_synthetic_fx_spot_configs_artefact_tbl" (

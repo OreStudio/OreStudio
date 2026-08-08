@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 649C97F1-EB47-4CA8-A3AE-AA7D78FCD46D
+:END:
+#+title: Story: Entity classification and drift baseline: ores.marketdata
+#+description: Apply the ores.refdata pilot's proven pattern to ores.marketdata: bind every eligible entity to a variability profile, resolve every drift the zero-diff regen check surfaces, and extend the refdata-codegen-drift CI job to cover marketdata. Supersedes the ad hoc 'Audit and apply safe codegen drift to ores.marketdata' backlog capture and task.
+#+type: story
+#+level: s2
+#+filetags: :codegen:drift:tooling:sprint_25:v0:
+#+created: 2026-08-04
+#+updated: 2026-08-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring ores.marketdata to the same proven state as the ores.refdata pilot: every codegen-eligible entity bound to a profile or recorded as a genuine no-match, zero-diff regeneration verified, and any real gap the check surfaces fixed rather than skipped. Once trusted, marketdata is added to the CI regeneration-drift check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-04                               |
+
+* Acceptance
+
+- Every ores.marketdata entity is bound to a matching Variability Profile, or recorded as a genuine no-match with a documented reason.
+- Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around.
+- Full local build clean, validate_schemas.sh green, full ctest suite green after regeneration.
+- check_component_drift.py --components is extended to include marketdata, and the refdata-codegen-drift CI job is updated so future PRs touching ores.marketdata fail on any regeneration drift.
+- The known market_fixing untracked-file drift (messaging/presentation registrars regenerating with new untracked files on clean origin/main) is resolved, not left outstanding.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C98C9A7D-C679-41C7-B93B-F3BF10A94582][Bind ores.marketdata entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the marketdata catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main -- the 75-model drift catalog never audited this component. |
+
+* Decisions
+
+* Out of scope
+
+-

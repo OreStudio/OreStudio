@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 55C9F620-03D7-421C-BC6B-911CF956AC7F
+:profile: simple-lookup
 :END:
 #+title: ores.dq.catalog
 #+description: Codegen entity model for the dq =catalog= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -10,7 +11,6 @@
 #+entity_singular: catalog
 #+entity_plural: catalogs
 #+entity_title: Catalog
-#+has_tenant_id: true
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-18
@@ -140,6 +140,53 @@ std::string(faker::person::fullName())
 | version     | Version     |
 
 ** Custom repository methods
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.dq.api/domain/catalog.hpp
+:domain_class:           dq::domain::catalog
+:protocol_include:       ores.dq.api/messaging/catalog_protocol.hpp
+:collection_name:        catalogs
+:item_var:               catalog
+:key_field:               name
+:has_uuid_primary_key:   false
+:get_request_class:      dq::messaging::get_catalogs_request
+:get_response_class:     dq::messaging::get_catalogs_response
+:get_message_type:       get_catalogs_request
+:save_request_class:     dq::messaging::save_catalog_request
+:save_response_class:    dq::messaging::save_catalog_response
+:save_message_type:      save_catalog_request
+:delete_request_class:   dq::messaging::delete_catalog_request
+:delete_response_class:  dq::messaging::delete_catalog_response
+:delete_message_type:    delete_catalog_request
+:history_request_class:  dq::messaging::get_catalog_history_request
+:history_response_class: dq::messaging::get_catalog_history_response
+:history_message_type:   get_catalog_history_request
+:settings_group:         CatalogListWindow
+:window_title:           Catalogs
+:icon:                   Table
+:has_change_reason_cache: true
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field       | label       | widget          | type      | is_key | is_required | placeholder                       |
+|-------------+-------------+-----------------+-----------+--------+-------------+------------------------------------|
+| name        | Name        | nameEdit        | line_edit | true   | true        | Enter catalog name                |
+| description | Description | descriptionEdit | text_edit |        |             | Enter a description               |
+| owner       | Owner       | ownerEdit       | line_edit |        |             | Enter the owning team or person   |
+
+*** Columns (Qt model)
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Name        | name        | Name        | string    | 200   |
+| Description | description | Description | string    | 300   |
+| Owner       | owner       | Owner       | string    | 150   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
 
 * See also
 

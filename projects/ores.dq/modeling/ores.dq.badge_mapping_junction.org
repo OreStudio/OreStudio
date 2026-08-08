@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BBB49AAA-E476-435B-88CF-CC252B76655C
+:profile: tenant-scoped-junction
 :ores.cpp.nats-handler.enabled: false
 :ores.cpp.nats-sub-registrar.enabled: false
 :ores.cpp.protocol.enabled: false
@@ -17,7 +18,6 @@
 #+brief: Links a (code domain, entity code) pair to a badge definition.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
 #+created: 2026-06-02
 #+updated: 2026-06-02
 

@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class BadgeSeverityMdiWindow;
+class BadgeSeverityDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -88,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::badge_severity& severity);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * BadgeSeverityDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(BadgeSeverityDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

@@ -178,9 +178,25 @@ def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
     which archetypes are even attempted, so this must run *before* any
     model-specific parsing (see the call site in generate.py's
     ``_read_drawer_properties``)."""
+    # Profile must only be declared in * Flags, never in the file-level
+    # :PROPERTIES: drawer. Two binding points with different behaviour is a
+    # footgun — a single, canonical place is simpler and already the
+    # convention every entity model follows.
+    if "profile" in doc.file_properties:
+        raise ValueError(
+            ":profile: found in file-level :PROPERTIES: drawer — "
+            "move it to the * Flags section's :PROPERTIES: drawer instead. "
+            "Only * Flags is the canonical binding point for profiles.")
+
     merged: dict[str, bool] = {}
     sources: dict[str, str] = {}
-    for slug in _parse_profile_list(doc.file_properties.get("profile")):
+
+    # Read :profile: from the * Flags section — the single canonical binding
+    # point, consistent with how _profile_namespace_defaults reads it for
+    # feature assignments.
+    flags = _section(doc.root, "Flags")
+    flags_profile = flags.properties.get("profile") if flags else None
+    for slug in _parse_profile_list(flags_profile):
         for addr, enabled in _load_profile_address_overrides(slug):
             key = f"{addr}.enabled"
             if key in merged and merged[key] != enabled:
@@ -188,6 +204,7 @@ def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
                     addr, sources[key], merged[key], slug, enabled))
             merged[key] = enabled
             sources[key] = slug
+
     # The doc's own table always wins over any profile default -- same
     # "explicit beats profile" rule every other profile-carried value follows.
     for addr, enabled in _parse_physical_space_table(doc.root).items():

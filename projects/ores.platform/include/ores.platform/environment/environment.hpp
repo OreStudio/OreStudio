@@ -20,8 +20,8 @@
 #ifndef ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 #define ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 
-#include "ores.platform/export.hpp"
 #include "ores.platform/environment/environment_provider.hpp"
+#include "ores.platform/export.hpp"
 #include <memory>
 #include <optional>
 #include <string>

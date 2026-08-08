@@ -69,23 +69,23 @@ std::optional<std::string> curve_key_ir(const ir_market_data_identifier& id) {
 // Default metric from ir_quote_type when metric is absent (e.g. quote=mm implies metric=rate).
 metric default_metric(ir_quote_type qt) {
     switch (qt) {
-    case ir_quote_type::ir_swap:
-    case ir_quote_type::discount:
-    case ir_quote_type::mm:
-    case ir_quote_type::fra:
-    case ir_quote_type::imm_fra:
-    case ir_quote_type::cc_fix_float_swap:
-        return metric::rate;
-    case ir_quote_type::basis_swap:
-    case ir_quote_type::cc_basis_swap:
-        return metric::basis_spread;
-    case ir_quote_type::bma_swap:
-        return metric::ratio;
-    case ir_quote_type::zero:
-        return metric::rate;
-    case ir_quote_type::mm_future:
-    case ir_quote_type::oi_future:
-        return metric::price;
+        case ir_quote_type::ir_swap:
+        case ir_quote_type::discount:
+        case ir_quote_type::mm:
+        case ir_quote_type::fra:
+        case ir_quote_type::imm_fra:
+        case ir_quote_type::cc_fix_float_swap:
+            return metric::rate;
+        case ir_quote_type::basis_swap:
+        case ir_quote_type::cc_basis_swap:
+            return metric::basis_spread;
+        case ir_quote_type::bma_swap:
+            return metric::ratio;
+        case ir_quote_type::zero:
+            return metric::rate;
+        case ir_quote_type::mm_future:
+        case ir_quote_type::oi_future:
+            return metric::price;
     }
     return metric::rate;
 }
@@ -93,18 +93,30 @@ metric default_metric(ir_quote_type qt) {
 // ORE TYPE string for each ir_quote_type.
 std::string_view ore_type(ir_quote_type qt) {
     switch (qt) {
-    case ir_quote_type::ir_swap:          return "IR_SWAP";
-    case ir_quote_type::discount:         return "DISCOUNT";
-    case ir_quote_type::mm:               return "MM";
-    case ir_quote_type::fra:              return "FRA";
-    case ir_quote_type::imm_fra:          return "IMM_FRA";
-    case ir_quote_type::basis_swap:       return "BASIS_SWAP";
-    case ir_quote_type::bma_swap:         return "BMA_SWAP";
-    case ir_quote_type::cc_basis_swap:    return "CC_BASIS_SWAP";
-    case ir_quote_type::cc_fix_float_swap:return "CC_FIX_FLOAT_SWAP";
-    case ir_quote_type::zero:             return "ZERO";
-    case ir_quote_type::mm_future:        return "MM_FUTURE";
-    case ir_quote_type::oi_future:        return "OI_FUTURE";
+        case ir_quote_type::ir_swap:
+            return "IR_SWAP";
+        case ir_quote_type::discount:
+            return "DISCOUNT";
+        case ir_quote_type::mm:
+            return "MM";
+        case ir_quote_type::fra:
+            return "FRA";
+        case ir_quote_type::imm_fra:
+            return "IMM_FRA";
+        case ir_quote_type::basis_swap:
+            return "BASIS_SWAP";
+        case ir_quote_type::bma_swap:
+            return "BMA_SWAP";
+        case ir_quote_type::cc_basis_swap:
+            return "CC_BASIS_SWAP";
+        case ir_quote_type::cc_fix_float_swap:
+            return "CC_FIX_FLOAT_SWAP";
+        case ir_quote_type::zero:
+            return "ZERO";
+        case ir_quote_type::mm_future:
+            return "MM_FUTURE";
+        case ir_quote_type::oi_future:
+            return "OI_FUTURE";
     }
     return "IR_SWAP";
 }
@@ -112,11 +124,16 @@ std::string_view ore_type(ir_quote_type qt) {
 // ORE METRIC string for each metric.
 std::string_view ore_metric(metric m) {
     switch (m) {
-    case metric::rate:           return "RATE";
-    case metric::price:          return "PRICE";
-    case metric::basis_spread:   return "BASIS_SPREAD";
-    case metric::ratio:          return "RATIO";
-    case metric::yield_spread:   return "YIELD_SPREAD";
+        case metric::rate:
+            return "RATE";
+        case metric::price:
+            return "PRICE";
+        case metric::basis_spread:
+            return "BASIS_SPREAD";
+        case metric::ratio:
+            return "RATIO";
+        case metric::yield_spread:
+            return "YIELD_SPREAD";
     }
     return "RATE";
 }
@@ -125,12 +142,12 @@ std::string_view ore_metric(metric m) {
 // ccy/tenor for xccy/BMA types).
 bool qualifier_includes_index(ir_quote_type qt) {
     switch (qt) {
-    case ir_quote_type::cc_basis_swap:
-    case ir_quote_type::cc_fix_float_swap:
-    case ir_quote_type::bma_swap:
-        return false;
-    default:
-        return true;
+        case ir_quote_type::cc_basis_swap:
+        case ir_quote_type::cc_fix_float_swap:
+        case ir_quote_type::bma_swap:
+            return false;
+        default:
+            return true;
     }
 }
 
@@ -155,8 +172,12 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         if (qt == ir_quote_type::ir_swap)
             return std::format("{}/{}/{}/2D/{}/{}", ore_type(qt), ore_metric(m), id.ccy, t, point);
         if (qt == ir_quote_type::discount)
-            return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_metric(m), id.ccy,
-                               curve_id(id.ccy, *id.tenor), point);
+            return std::format("{}/{}/{}/{}/{}",
+                               ore_type(qt),
+                               ore_metric(m),
+                               id.ccy,
+                               curve_id(id.ccy, *id.tenor),
+                               point);
         if (!id.index)
             return std::nullopt;
         const auto idx = to_upper(std::string(magic_enum::enum_name(*id.index)));
@@ -174,18 +195,23 @@ std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
 
 std::string_view ore_type(equity_quote_type qt) {
     switch (qt) {
-    case equity_quote_type::spot:     return "EQUITY";
-    case equity_quote_type::dividend: return "EQUITY_DIVIDEND";
-    case equity_quote_type::fwd:      return "EQUITY_FWD";
+        case equity_quote_type::spot:
+            return "EQUITY";
+        case equity_quote_type::dividend:
+            return "EQUITY_DIVIDEND";
+        case equity_quote_type::fwd:
+            return "EQUITY_FWD";
     }
     return "EQUITY";
 }
 
 std::string_view ore_equity_metric(equity_quote_type qt) {
     switch (qt) {
-    case equity_quote_type::spot:
-    case equity_quote_type::fwd:      return "PRICE";
-    case equity_quote_type::dividend: return "RATE";
+        case equity_quote_type::spot:
+        case equity_quote_type::fwd:
+            return "PRICE";
+        case equity_quote_type::dividend:
+            return "RATE";
     }
     return "PRICE";
 }
@@ -200,28 +226,40 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
     // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need point for the tenor dimension.
     if (!id.point)
         return std::nullopt;
-    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt),
-                       id.ticker, id.ccy, to_upper(*id.point));
+    return std::format("{}/{}/{}/{}/{}",
+                       ore_type(qt),
+                       ore_equity_metric(qt),
+                       id.ticker,
+                       id.ccy,
+                       to_upper(*id.point));
 }
 
 std::string_view ore_type(credit_quote_type qt) {
     switch (qt) {
-    case credit_quote_type::cds:               return "CDS";
-    case credit_quote_type::hazard_rate:       return "HAZARD_RATE";
-    case credit_quote_type::recovery_rate:     return "RECOVERY_RATE";
-    case credit_quote_type::cds_index:         return "CDS_INDEX";
-    case credit_quote_type::index_cds_tranche: return "INDEX_CDS_TRANCHE";
+        case credit_quote_type::cds:
+            return "CDS";
+        case credit_quote_type::hazard_rate:
+            return "HAZARD_RATE";
+        case credit_quote_type::recovery_rate:
+            return "RECOVERY_RATE";
+        case credit_quote_type::cds_index:
+            return "CDS_INDEX";
+        case credit_quote_type::index_cds_tranche:
+            return "INDEX_CDS_TRANCHE";
     }
     return "CDS";
 }
 
 std::string_view ore_credit_metric(credit_quote_type qt) {
     switch (qt) {
-    case credit_quote_type::cds:               return "CREDIT_SPREAD";
-    case credit_quote_type::hazard_rate:
-    case credit_quote_type::recovery_rate:     return "RATE";
-    case credit_quote_type::cds_index:
-    case credit_quote_type::index_cds_tranche: return "BASE_CORRELATION";
+        case credit_quote_type::cds:
+            return "CREDIT_SPREAD";
+        case credit_quote_type::hazard_rate:
+        case credit_quote_type::recovery_rate:
+            return "RATE";
+        case credit_quote_type::cds_index:
+        case credit_quote_type::index_cds_tranche:
+            return "BASE_CORRELATION";
     }
     return "CREDIT_SPREAD";
 }
@@ -242,8 +280,8 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
     if (qt == credit_quote_type::recovery_rate) {
         if (parts.size() != 1)
             return std::nullopt;
-        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
-                           parts[0], id.ccy);
+        return std::format(
+            "{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], id.ccy);
     }
 
     // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT — no ccy dimension.
@@ -251,16 +289,16 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
     if (qt == credit_quote_type::cds_index || qt == credit_quote_type::index_cds_tranche) {
         if (parts.size() != 2)
             return std::nullopt;
-        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
-                           parts[0], parts[1]);
+        return std::format(
+            "{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], parts[1]);
     }
 
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — point=seniority,tenor (2 parts).
     // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — same 6-segment shape.
     if (parts.size() != 2)
         return std::nullopt;
-    return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
-                       parts[0], id.ccy, parts[1]);
+    return std::format(
+        "{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity, parts[0], id.ccy, parts[1]);
 }
 
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {

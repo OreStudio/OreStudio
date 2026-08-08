@@ -50,11 +50,10 @@ public:
      *   you want the parser NOT to see — they are saved and restored
      *   on destruction.
      */
-    explicit scoped_environment_override(
-        std::unordered_map<std::string, std::string> values = {},
-        std::vector<std::string> stripped_keys = {})
-        : fake_(std::move(values)),
-          stripped_(std::move(stripped_keys)) {
+    explicit scoped_environment_override(std::unordered_map<std::string, std::string> values = {},
+                                         std::vector<std::string> stripped_keys = {})
+        : fake_(std::move(values))
+        , stripped_(std::move(stripped_keys)) {
         using ores::platform::environment::environment;
 
         // Save and unset stripped keys.

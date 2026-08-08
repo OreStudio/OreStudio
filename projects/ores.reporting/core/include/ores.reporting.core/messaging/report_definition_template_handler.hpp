@@ -80,7 +80,8 @@ public:
         ores::dq::messaging::list_dq_report_definition_templates_response resp;
         try {
             std::string bundle_code = "risk_management";
-            if (auto req = decode<ores::dq::messaging::list_dq_report_definition_templates_request>(msg))
+            if (auto req =
+                    decode<ores::dq::messaging::list_dq_report_definition_templates_request>(msg))
                 bundle_code = req->bundle_code;
 
             ores::dq::messaging::list_dq_report_definition_templates_request dq_req;

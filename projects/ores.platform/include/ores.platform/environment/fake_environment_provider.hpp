@@ -42,8 +42,7 @@ public:
      * @brief Constructs a fake provider pre-populated with the given
      * key-value pairs.
      */
-    explicit fake_environment_provider(
-        std::unordered_map<std::string, std::string> values = {})
+    explicit fake_environment_provider(std::unordered_map<std::string, std::string> values = {})
         : values_(std::move(values)) {}
 
     std::optional<std::string> get(const std::string& name) const override {

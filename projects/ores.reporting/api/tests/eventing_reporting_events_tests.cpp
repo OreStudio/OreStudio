@@ -104,7 +104,8 @@ TEST_CASE("create_report_definition_changed_event", tags) {
     sut.definition_ids = {"uuid-def-1", "uuid-def-2"};
     sut.tenant_id = "tenant1";
 
-    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: " << sut.definition_ids.size();
+    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: "
+                            << sut.definition_ids.size();
 
     CHECK(sut.definition_ids.size() == 2);
     CHECK(sut.tenant_id == "tenant1");

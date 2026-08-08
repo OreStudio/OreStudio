@@ -25,7 +25,7 @@
 namespace ores::platform::environment {
 
 namespace {
-    thread_local environment_provider* current_provider = nullptr;
+thread_local environment_provider* current_provider = nullptr;
 }
 
 environment_provider& environment::default_provider_instance() {

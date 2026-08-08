@@ -52,11 +52,11 @@ enum class curve_role {
  * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    rate,           ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
-    price,          ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
-    basis_spread,   ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
-    ratio,          ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread    ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    rate,         ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,        ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread, ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,        ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread  ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
 };
 
 /**
@@ -66,18 +66,18 @@ enum class metric {
  * query key.
  */
 enum class ir_quote_type {
-    ir_swap,          ///< IR_SWAP (par swap rate).
-    discount,         ///< DISCOUNT (curve-sampled discount factor).
-    mm,               ///< MM (money market rate).
-    fra,              ///< FRA (forward rate agreement rate).
-    imm_fra,          ///< IMM_FRA (IMM-settled FRA rate).
-    basis_swap,       ///< BASIS_SWAP (single-currency basis swap spread).
-    bma_swap,         ///< BMA_SWAP (Bond Market Association swap ratio).
-    cc_basis_swap,    ///< CC_BASIS_SWAP (cross-currency basis swap spread).
-    cc_fix_float_swap,///< CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate).
-    zero,             ///< ZERO (zero-coupon rate).
-    mm_future,        ///< MM_FUTURE (money market future price).
-    oi_future         ///< OI_FUTURE (overnight index future price).
+    ir_swap,           ///< IR_SWAP (par swap rate).
+    discount,          ///< DISCOUNT (curve-sampled discount factor).
+    mm,                ///< MM (money market rate).
+    fra,               ///< FRA (forward rate agreement rate).
+    imm_fra,           ///< IMM_FRA (IMM-settled FRA rate).
+    basis_swap,        ///< BASIS_SWAP (single-currency basis swap spread).
+    bma_swap,          ///< BMA_SWAP (Bond Market Association swap ratio).
+    cc_basis_swap,     ///< CC_BASIS_SWAP (cross-currency basis swap spread).
+    cc_fix_float_swap, ///< CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate).
+    zero,              ///< ZERO (zero-coupon rate).
+    mm_future,         ///< MM_FUTURE (money market future price).
+    oi_future          ///< OI_FUTURE (overnight index future price).
 };
 
 /**
@@ -91,11 +91,11 @@ enum class index_family { libor, euribor, sofr, estr, sonia, tona };
  * METRIC column. Credit-only; only meaningful when `type=quote`.
  */
 enum class credit_quote_type {
-    cds,                ///< CDS/CREDIT_SPREAD (single-name CDS spread).
-    hazard_rate,        ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
-    recovery_rate,      ///< RECOVERY_RATE/RATE (recovery rate assumption).
-    cds_index,          ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
-    index_cds_tranche   ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    cds,              ///< CDS/CREDIT_SPREAD (single-name CDS spread).
+    hazard_rate,      ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
+    recovery_rate,    ///< RECOVERY_RATE/RATE (recovery rate assumption).
+    cds_index,        ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
+    index_cds_tranche ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
     // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating
     // fields the current credit_market_data_identifier has no equivalent for; tracked for
     // its own task.
@@ -106,9 +106,9 @@ enum class credit_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class equity_quote_type {
-    spot,       ///< EQUITY/PRICE (spot price, the default).
-    dividend,   ///< EQUITY_DIVIDEND/RATE (dividend yield rate).
-    fwd         ///< EQUITY_FWD/PRICE (equity forward price).
+    spot,     ///< EQUITY/PRICE (spot price, the default).
+    dividend, ///< EQUITY_DIVIDEND/RATE (dividend yield rate).
+    fwd       ///< EQUITY_FWD/PRICE (equity forward price).
 };
 
 }

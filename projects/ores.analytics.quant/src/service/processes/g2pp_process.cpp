@@ -45,8 +45,9 @@ double ou_variance(double kappa, double dt) {
  * @brief Exact OU B-factor: (1 - exp(-kappa * dt)) / kappa.
  *
  * This is the factor that multiplies the current OU state in the
- * one-step Gaussian transition: x_{i+1} = theta + (x_i - theta) * exp(-kappa*dt) + sigma * sqrt(var) * Z.
- * But here for B accumulation in discount_factor: B_i = dt + B_{i+1} * exp(-kappa*dt).
+ * one-step Gaussian transition: x_{i+1} = theta + (x_i - theta) * exp(-kappa*dt) + sigma *
+ * sqrt(var) * Z. But here for B accumulation in discount_factor: B_i = dt + B_{i+1} *
+ * exp(-kappa*dt).
  */
 double ou_decay(double kappa, double dt) {
     return std::exp(-kappa * dt);
@@ -128,8 +129,7 @@ double g2pp_process::discount_factor(std::size_t ticks_ahead) const {
     double cov_xy;
     const double kappa_sum = kappa_x_ + kappa_y_;
     if (kappa_sum > small_kappa_threshold) {
-        cov_xy = rho_ * sigma_x_ * sigma_y_ *
-            (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum;
+        cov_xy = rho_ * sigma_x_ * sigma_y_ * (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum;
     } else {
         cov_xy = rho_ * sigma_x_ * sigma_y_ * dt_;
     }
@@ -142,10 +142,8 @@ double g2pp_process::discount_factor(std::size_t ticks_ahead) const {
         const double next_b_x = dt_ + b_x * decay_x;
         const double next_b_y = dt_ + b_y * decay_y;
 
-        a = a
-            + 0.5 * b_x * b_x * sigma_x_ * sigma_x_ * var_x
-            + 0.5 * b_y * b_y * sigma_y_ * sigma_y_ * var_y
-            + b_x * b_y * cov_xy;
+        a = a + 0.5 * b_x * b_x * sigma_x_ * sigma_x_ * var_x +
+            0.5 * b_y * b_y * sigma_y_ * sigma_y_ * var_y + b_x * b_y * cov_xy;
 
         b_x = next_b_x;
         b_y = next_b_y;

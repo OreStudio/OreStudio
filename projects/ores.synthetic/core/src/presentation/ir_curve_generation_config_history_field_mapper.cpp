@@ -36,10 +36,6 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Tenor", .value = v.tenor});
     fields.push_back({.name = "Role", .value = v.role});
     fields.push_back({.name = "Process Type", .value = v.process_type});
-    fields.push_back({.name = "Kappa", .value = std::to_string(v.kappa)});
-    fields.push_back({.name = "Theta", .value = std::to_string(v.theta)});
-    fields.push_back({.name = "Sigma", .value = std::to_string(v.sigma)});
-    fields.push_back({.name = "Initial Rate", .value = std::to_string(v.initial_rate)});
     fields.push_back({.name = "Ticks Per Hour", .value = std::to_string(v.ticks_per_hour)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});

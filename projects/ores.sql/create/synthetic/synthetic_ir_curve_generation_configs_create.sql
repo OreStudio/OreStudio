@@ -26,12 +26,16 @@
  *
  * A typed sub-configuration owned by a market_data_generation_config. Describes
  * how to synthesise a single currency+index interest-rate curve: which
- * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white, per
- * ores.analytics.quant's IYieldCurveProcess engines) and that process's
- * parameters. The actual instrument grid (which tenors to publish at which
- * role) is held separately as ordered ir_curve_template_entry rows, the
- * same one-config-many-children shape fx_spot_generation_config uses for
- * its gmm_component rows. Scoped to a tenant and a party.
+ * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/
+ * two_factor_gaussian, per ores.analytics.quant's IYieldCurveProcess
+ * engines) and that process's parameters, stored row-based as
+ * ir_curve_generation_config_process_parameter_value children joined onto the
+ * yield_curve_process_parameter_definition catalogue -- so a new process
+ * type or parameter is seed data, not a schema change. The actual instrument
+ * grid (which tenors to publish at which role) is held separately as ordered
+ * ir_curve_template_entry rows, the same one-config-many-children shape
+ * fx_spot_generation_config uses for its gmm_component rows. Scoped to a
+ * tenant and a party.
  */
 
 create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
@@ -45,10 +49,6 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "tenor" text not null,
     "role" text not null,
     "process_type" text not null,
-    "kappa" double precision not null,
-    "theta" double precision not null,
-    "sigma" double precision not null,
-    "initial_rate" double precision not null,
     "ticks_per_hour" integer not null,
     "enabled" boolean not null,
     "auto_start" boolean not null,
@@ -78,9 +78,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '')),
     check ("role" in ('discount', 'projection', 'self_discounting')),
     check ("source_name" <> ''),
-    check ("sigma" >= 0),
     check ("ticks_per_hour" > 0),
-    check ("process_type" <> 'COX_INGERSOLL_ROSS' or "initial_rate" >= 0),
     check ("price_source" in ('fixed', 'vintage')),
     check (("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> ''))
 );
@@ -159,7 +157,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent

@@ -31,6 +31,13 @@
 -- parameter for a different model than the one the mapping layer will
 -- dispatch on. Fires on insert and on update of either key column, so a
 -- late retargeting of an existing row is checked too.
+--
+-- The definitions are system-tenant reference data (seeded by
+-- synthetic_yield_curve_process_parameter_definitions_populate.sql under
+-- the system tenant, like the process types themselves, whose validation
+-- function resolves against ores_utility_system_tenant_id_fn()); the
+-- definition lookup therefore resolves there, while the parent config --
+-- a genuine tenant row -- resolves against the value row's own tenant.
 
 create or replace function ores_synthetic_validate_ir_curve_generation_config_process_parameter_value_process_type_fn()
 returns trigger as $$
@@ -41,7 +48,7 @@ begin
     -- Resolve the process type of the referenced parameter definition.
     select "process_type_code" into v_definition_process_type
     from "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
-    where tenant_id = NEW.tenant_id
+    where tenant_id = ores_utility_system_tenant_id_fn()
       and id = NEW.parameter_definition_id
       and valid_to = ores_utility_infinity_timestamp_fn();
 

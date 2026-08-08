@@ -53,10 +53,6 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     r.role = v.role;
 
     r.process_type = v.process_type;
-    r.kappa = v.kappa;
-    r.theta = v.theta;
-    r.sigma = v.sigma;
-    r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
@@ -104,10 +100,6 @@ ir_curve_generation_config_mapper::map(const domain::ir_curve_generation_config&
     r.role = v.role;
 
     r.process_type = v.process_type;
-    r.kappa = v.kappa;
-    r.theta = v.theta;
-    r.sigma = v.sigma;
-    r.initial_rate = v.initial_rate;
     r.ticks_per_hour = v.ticks_per_hour;
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;

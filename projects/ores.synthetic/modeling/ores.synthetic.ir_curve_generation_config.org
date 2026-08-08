@@ -11,16 +11,20 @@
 #+entity_title: IR Curve Generation Config
 #+brief: Configuration for generating a synthetic IR curve from a short-rate process.
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-08-08
 
 A typed sub-configuration owned by a =market_data_generation_config=. Describes
 how to synthesise a single currency+index interest-rate curve: which
-short-rate process drives it (=vasicek=/=cox_ingersoll_ross=/=hull_white=, per
-=ores.analytics.quant='s =IYieldCurveProcess= engines) and that process's
-parameters. The actual instrument grid (which tenors to publish at which
-role) is held separately as ordered =ir_curve_template_entry= rows, the
-same one-config-many-children shape =fx_spot_generation_config= uses for
-its =gmm_component= rows. Scoped to a tenant and a party.
+short-rate process drives it (=vasicek=/=cox_ingersoll_ross=/=hull_white/=
+=two_factor_gaussian=, per =ores.analytics.quant='s =IYieldCurveProcess=
+engines) and that process's parameters, stored row-based as
+=ir_curve_generation_config_process_parameter_value= children joined onto the
+=yield_curve_process_parameter_definition= catalogue -- so a new process
+type or parameter is seed data, not a schema change. The actual instrument
+grid (which tenors to publish at which role) is held separately as ordered
+=ir_curve_template_entry= rows, the same one-config-many-children shape
+=fx_spot_generation_config= uses for its =gmm_component= rows. Scoped to a
+tenant and a party.
 
 * Flags
 :PROPERTIES:
@@ -164,73 +168,21 @@ std::string("self_discounting")
 :END:
 
 Short-rate process engine driving this curve (references
-=yield_curve_process_type.code=: =VASICEK=, =COX_INGERSOLL_ROSS=, or =HULL_WHITE=) --
-selects among =ores.analytics.quant='s =IYieldCurveProcess= engines via
-=process_factory::make_yield_curve_process()=.
+=yield_curve_process_type.code=: =VASICEK=, =COX_INGERSOLL_ROSS=,
+=HULL_WHITE=, or =TWO_FACTOR_GAUSSIAN=) -- selects among
+=ores.analytics.quant='s =IYieldCurveProcess= engines. The engine's
+parameters are not stored as columns on this record; each process type
+has a =yield_curve_process_parameter_definition= catalogue (name,
+description, min/max, defaults) and this config's values live as
+=ir_curve_generation_config_process_parameter_value= rows, one per
+parameter, joined onto the definitions at feed-start time by
+=map_parameters_to_yield_curve_process()= -- the same one-config-
+many-children shape =fx_spot_generation_config= uses for its
+=gmm_component= rows. Adding a new process type (or parameter) is
+therefore purely seed data: no ALTER TABLE, no codegen.
 
 #+begin_src cpp :name generator
 std::string("VASICEK")
-#+end_src
-
-** kappa
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Mean-reversion speed parameter.
-
-#+begin_src cpp :name generator
-faker::number::decimal(0.01, 2.0)
-#+end_src
-
-** theta
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Constant mean-reversion target level. Persisted as a single scalar, not
-a full time-varying =theta_path=: fitting =theta(t)= to reproduce an
-observed market curve exactly is out of scope (needs curve
-bootstrapping, a separate future story) -- a constant =theta= still
-drives a real, internally-consistent latent curve via each engine's
-=discount_factor()=, just not one fitted to today's market.
-
-#+begin_src cpp :name generator
-faker::number::decimal(0.0, 0.1)
-#+end_src
-
-** sigma
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Volatility parameter.
-
-#+begin_src cpp :name generator
-faker::number::decimal(0.0, 0.05)
-#+end_src
-
-** initial_rate
-:PROPERTIES:
-:type:          double precision
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Starting short rate the process simulates from.
-
-#+begin_src cpp :name generator
-faker::number::decimal(-0.01, 0.1)
 #+end_src
 
 ** ticks_per_hour
@@ -295,21 +247,21 @@ faker::datatype::boolean()
 :default_value: "fixed"
 :END:
 
-Where this curve's starting short rate comes from: "fixed" (use
-=initial_rate= as entered) or "vintage" (derive it from the
-=vintage_source=/=vintage_date= market-data observation on this
-config's shortest-tenor DEPO entry, guarded by availability). The
-=vintage_source=/=vintage_date= pair is populated only when this is
-"vintage" -- see the SQL check. Unlike
+Where this curve's starting short rate comes from: "fixed" (use the
+=initial_rate= parameter value as entered in the parameter rows) or
+"vintage" (derive it from the =vintage_source=/=vintage_date=
+market-data observation on this config's shortest-tenor DEPO entry,
+guarded by availability). The =vintage_source=/=vintage_date= pair is
+populated only when this is "vintage" -- see the SQL check. Unlike
 =fx_spot_generation_config.price_source=, this check does not sentinel
 =initial_rate= to a fixed value when "vintage": real short rates can
 legitimately be zero or negative (unlike an FX spot price), so
 =initial_rate= is simply left at whatever was last stored/computed and
 overwritten by the resolved vintage value at feed-start time. Defaults
 to "fixed" (unlike =fx_spot_generation_config.price_source=, which
-defaults to "vintage"): existing IR curve configs are all hand-entered
-kappa/theta/sigma/initial_rate today, so "fixed" is the non-breaking
-default for this column's introduction.
+defaults to "vintage"): existing IR curve configs migrated from the
+flat-column era all predate vintage-awareness, so "fixed" is the
+non-breaking default for this column's introduction.
 
 #+begin_src cpp :name generator
 std::string("fixed")
@@ -442,9 +394,7 @@ std::nullopt
 | ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '') |
 | "role" in ('discount', 'projection', 'self_discounting') |
 | "source_name" <> ''                                       |
-| "sigma" >= 0                                              |
 | "ticks_per_hour" > 0                                       |
-| "process_type" <> 'COX_INGERSOLL_ROSS' or "initial_rate" >= 0             |
 | "price_source" in ('fixed', 'vintage')                    |
 | ("price_source" = 'fixed' and "vintage_source" = '' and "vintage_date" = '') or ("price_source" = 'vintage' and "vintage_source" <> '' and "vintage_date" <> '') |
 
@@ -551,11 +501,7 @@ std::nullopt
 | index_family                      | Index Family                 | indexFamilyCombo             | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | libor,euribor,sofr,estr,sonia,tona,saron,aonia,corra,honia,sora,swestr,nowa,kofr,mibor,zaronia,destr,polonia,nzonia,shibor,tiie,taibor   |
 | tenor                             | Tenor                         | tenorCombo                    | dynamic_combo |        |             |                                            | refdata::domain::tenor  | display_name         | ores.qt/LookupFetcher.hpp  | fetch_tenors   | irCurveGenerationConfigTenorWatcher  | code               | description          | sort_order         | tenors      |                                      |
 | role                              | Role                          | roleCombo                     | static_combo  |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             | discount,projection,self_discounting |
-| process_type                      | Process Type                  | processTypeEdit                | line_edit     |        | true        | VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE               |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| kappa                              | Kappa                         | kappaEdit                     | line_edit     |        | true        | Mean-reversion speed                     |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| theta                              | Theta                          | thetaEdit                     | line_edit     |        | true        | Mean-reversion target level               |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| sigma                              | Sigma                          | sigmaEdit                     | line_edit     |        | true        | Volatility                                |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
-| initial_rate                       | Initial Rate                   | initialRateEdit                | line_edit     |        | true        | Starting short rate                       |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
+| process_type                      | Process Type                  | processTypeEdit                | line_edit     |        | true        | VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or TWO_FACTOR_GAUSSIAN |               |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | ticks_per_hour                     | Ticks per Hour                 | ticksPerHourEdit               | spin_box      |        | true        |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | fixed_leg_payment_frequency_code   | Fixed Leg Payment Frequency    | fixedLegPaymentFrequencyEdit   | line_edit     |        | true        | Enter payment frequency code (e.g. Annual)|                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
 | enabled                            | Enabled                        | enabledCheck                   | check_box     |        |             |                                            |                          |                      |                            |                |                                      |                    |                      |                    |             |                                      |
@@ -574,10 +520,6 @@ std::nullopt
 | Tenor                        | tenor                              | Tenor                        | string    | 80    |
 | Role                         | role                               | Role                         | string    | 100   |
 | ProcessType                  | process_type                       | Process Type                 | string    | 100   |
-| Kappa                        | kappa                              | Kappa                       | double    | 90    |
-| Theta                        | theta                               | Theta                       | double    | 90    |
-| Sigma                        | sigma                               | Sigma                       | double    | 90    |
-| InitialRate                  | initial_rate                        | Initial Rate                 | double    | 100   |
 | TicksPerHour                 | ticks_per_hour                      | Ticks/Hr                    | int       | 80    |
 | FixedLegPaymentFrequencyCode | fixed_leg_payment_frequency_code    | Fixed Leg Payment Frequency  | string    | 140   |
 | Enabled                      | enabled                             | Enabled                      | bool      | 70    |

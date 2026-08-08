@@ -57,10 +57,6 @@ struct ir_curve_generation_config_entity {
     std::string role = "self_discounting";
 
     std::string process_type = "VASICEK";
-    double kappa = 0.0;
-    double theta = 0.0;
-    double sigma = 0.0;
-    double initial_rate = 0.0;
     int ticks_per_hour = 0;
     bool enabled = false;
     bool auto_start = false;

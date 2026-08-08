@@ -33,12 +33,16 @@ namespace ores::synthetic::domain {
  *
  * A typed sub-configuration owned by a market_data_generation_config. Describes
  * how to synthesise a single currency+index interest-rate curve: which
- * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white, per
- * ores.analytics.quant's IYieldCurveProcess engines) and that process's
- * parameters. The actual instrument grid (which tenors to publish at which
- * role) is held separately as ordered ir_curve_template_entry rows, the
- * same one-config-many-children shape fx_spot_generation_config uses for
- * its gmm_component rows. Scoped to a tenant and a party.
+ * short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/
+ * two_factor_gaussian, per ores.analytics.quant's IYieldCurveProcess
+ * engines) and that process's parameters, stored row-based as
+ * ir_curve_generation_config_process_parameter_value children joined onto the
+ * yield_curve_process_parameter_definition catalogue -- so a new process
+ * type or parameter is seed data, not a schema change. The actual instrument
+ * grid (which tenors to publish at which role) is held separately as ordered
+ * ir_curve_template_entry rows, the same one-config-many-children shape
+ * fx_spot_generation_config uses for its gmm_component rows. Scoped to a
+ * tenant and a party.
  */
 struct ir_curve_generation_config final {
     /**
@@ -72,14 +76,16 @@ struct ir_curve_generation_config final {
     std::string currency_code;
 
     /**
-     * @brief Floating-rate index family this curve represents (oresmd's index_family:
-     * libor/euribor/sofr/estr/sonia/tona), stored as a fixed lower-case token rather than the full
-     * ISDA/ORE code the predecessor index_name column held ("USD-SOFR") -- currency_code already
-     * carries the currency half of that pair. The (currency_code, index_family) pair is validated
-     * as a whole by a hand-written composite trigger (not the codegen single-argument Validations
-     * mechanism, which cannot express a two-column lookup) against
-     * overnight_index_convention/ibor_index_convention, whose own id is currency_code + "-" +
-     * upper(index_family).
+     * @brief Floating-rate index family this curve represents (oresmd's index_family: libor/euribor
+     * for term IBOR-style indices, or one of the overnight/RFR-style families --
+     * sofr/estr/sonia/tona/ saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
+     * zaronia/destr/polonia/nzonia/shibor/tiie/taibor), stored as a fixed lower-case token rather
+     * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --
+     * currency_code already carries the currency half of that pair. The (currency_code,
+     * index_family) pair is validated as a whole by a hand-written composite trigger (not the
+     * codegen single-argument Validations mechanism, which cannot express a two-column lookup)
+     * against overnight_index_convention/ibor_index_convention, whose own id is currency_code + "-"
+     * + upper(index_family).
      */
     std::string index_family;
 
@@ -110,35 +116,17 @@ struct ir_curve_generation_config final {
 
     /**
      * @brief Short-rate process engine driving this curve (references
-     * yield_curve_process_type.code: VASICEK, COX_INGERSOLL_ROSS, or HULL_WHITE) -- selects among
-     * ores.analytics.quant's IYieldCurveProcess engines via
-     * process_factory::make_yield_curve_process().
+     * yield_curve_process_type.code: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or
+     * TWO_FACTOR_GAUSSIAN) -- selects among ores.analytics.quant's IYieldCurveProcess engines. The
+     * engine's parameters are not stored as columns on this record; each process type has a
+     * yield_curve_process_parameter_definition catalogue (name, description, min/max, defaults) and
+     * this config's values live as ir_curve_generation_config_process_parameter_value rows, one per
+     * parameter, joined onto the definitions at feed-start time by
+     * map_parameters_to_yield_curve_process() -- the same one-config- many-children shape
+     * fx_spot_generation_config uses for its gmm_component rows. Adding a new process type (or
+     * parameter) is therefore purely seed data: no ALTER TABLE, no codegen.
      */
     std::string process_type = "VASICEK";
-
-    /**
-     * @brief Mean-reversion speed parameter.
-     */
-    double kappa = 0.0;
-
-    /**
-     * @brief Constant mean-reversion target level. Persisted as a single scalar, not a full
-     * time-varying theta_path: fitting theta(t) to reproduce an observed market curve exactly is
-     * out of scope (needs curve bootstrapping, a separate future story) -- a constant theta still
-     * drives a real, internally-consistent latent curve via each engine's discount_factor(), just
-     * not one fitted to today's market.
-     */
-    double theta = 0.0;
-
-    /**
-     * @brief Volatility parameter.
-     */
-    double sigma = 0.0;
-
-    /**
-     * @brief Starting short rate the process simulates from.
-     */
-    double initial_rate = 0.0;
 
     /**
      * @brief Number of synthetic ticks (curve publications) produced per hour.
@@ -166,17 +154,17 @@ struct ir_curve_generation_config final {
     bool auto_start = false;
 
     /**
-     * @brief Where this curve's starting short rate comes from: "fixed" (use initial_rate as
-     * entered) or "vintage" (derive it from the vintage_source/vintage_date market-data observation
-     * on this config's shortest-tenor DEPO entry, guarded by availability). The
-     * vintage_source/vintage_date pair is populated only when this is "vintage" -- see the SQL
-     * check. Unlike fx_spot_generation_config.price_source, this check does not sentinel
-     * initial_rate to a fixed value when "vintage": real short rates can legitimately be zero or
-     * negative (unlike an FX spot price), so initial_rate is simply left at whatever was last
-     * stored/computed and overwritten by the resolved vintage value at feed-start time. Defaults to
-     * "fixed" (unlike fx_spot_generation_config.price_source, which defaults to "vintage"):
-     * existing IR curve configs are all hand-entered kappa/theta/sigma/initial_rate today, so
-     * "fixed" is the non-breaking default for this column's introduction.
+     * @brief Where this curve's starting short rate comes from: "fixed" (use the initial_rate
+     * parameter value as entered in the parameter rows) or "vintage" (derive it from the
+     * vintage_source/vintage_date market-data observation on this config's shortest-tenor DEPO
+     * entry, guarded by availability). The vintage_source/vintage_date pair is populated only when
+     * this is "vintage" -- see the SQL check. Unlike fx_spot_generation_config.price_source, this
+     * check does not sentinel initial_rate to a fixed value when "vintage": real short rates can
+     * legitimately be zero or negative (unlike an FX spot price), so initial_rate is simply left at
+     * whatever was last stored/computed and overwritten by the resolved vintage value at feed-start
+     * time. Defaults to "fixed" (unlike fx_spot_generation_config.price_source, which defaults to
+     * "vintage"): existing IR curve configs migrated from the flat-column era all predate
+     * vintage-awareness, so "fixed" is the non-breaking default for this column's introduction.
      */
     std::string price_source = "fixed";
 

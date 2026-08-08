@@ -17,46 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
-#define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
+#ifndef ORES_REPORTING_API_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
+#define ORES_REPORTING_API_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
 
 #include "ores.reporting.api/domain/report_definition.hpp"
-#include "ores.reporting.api/domain/report_definition_template.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::reporting::messaging {
 
-struct get_report_definition_templates_request {
-    using response_type = struct get_report_definition_templates_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-definition-templates.list";
-    std::string bundle_code = "risk_management";
-};
-
-struct get_report_definition_templates_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::reporting::domain::report_definition_template> templates;
-};
-
 struct get_report_definitions_request {
     using response_type = struct get_report_definitions_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.list";
-    int offset = 0;
-    int limit = 100;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_definitions.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_report_definitions_response {
     std::vector<ores::reporting::domain::report_definition> definitions;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_report_definition_request {
     using response_type = struct save_report_definition_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.save";
-    ores::reporting::domain::report_definition definition;
+    static constexpr std::string_view nats_subject = "reporting.v1.report_definitions.save";
+    ores::reporting::domain::report_definition data;
+
+    static save_report_definition_request from(ores::reporting::domain::report_definition v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_report_definition_response {
@@ -66,7 +58,7 @@ struct save_report_definition_response {
 
 struct delete_report_definition_request {
     using response_type = struct delete_report_definition_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.delete";
+    static constexpr std::string_view nats_subject = "reporting.v1.report_definitions.delete";
     std::vector<std::string> ids;
 };
 
@@ -77,40 +69,14 @@ struct delete_report_definition_response {
 
 struct get_report_definition_history_request {
     using response_type = struct get_report_definition_history_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.history";
+    static constexpr std::string_view nats_subject = "reporting.v1.report_definitions.history";
     std::string id;
 };
 
 struct get_report_definition_history_response {
-    bool success = false;
-    std::string message;
     std::vector<ores::reporting::domain::report_definition> history;
-};
-
-struct schedule_report_definitions_request {
-    using response_type = struct schedule_report_definitions_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.schedule";
-    std::vector<std::string> ids;
-};
-
-struct schedule_report_definitions_response {
     bool success = false;
     std::string message;
-    int scheduled_count = 0;
-    std::vector<std::string> failed_ids;
-};
-
-struct unschedule_report_definitions_request {
-    using response_type = struct unschedule_report_definitions_response;
-    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.unschedule";
-    std::vector<std::string> ids;
-};
-
-struct unschedule_report_definitions_response {
-    bool success = false;
-    std::string message;
-    int unscheduled_count = 0;
-    std::vector<std::string> failed_ids;
 };
 
 }

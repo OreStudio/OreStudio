@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_EVENTING_REPORT_TYPE_CHANGED_EVENT_HPP
-#define ORES_REPORTING_EVENTING_REPORT_TYPE_CHANGED_EVENT_HPP
+#ifndef ORES_REPORTING_API_EVENTING_REPORT_TYPE_CHANGED_EVENT_HPP
+#define ORES_REPORTING_API_EVENTING_REPORT_TYPE_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -30,9 +30,8 @@ namespace ores::reporting::eventing {
 /**
  * @brief Domain event indicating that report type data has changed.
  *
- * This event is published when any report type entity is created, updated, or
- * deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any report type entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct report_type_changed_event final {
     /**
@@ -41,7 +40,7 @@ struct report_type_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief Codes of report types that changed.
+     * @brief Changed report type codes.
      */
     std::vector<std::string> codes;
 
@@ -55,6 +54,9 @@ struct report_type_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for report_type_changed_event.
+ */
 template <>
 struct event_traits<ores::reporting::eventing::report_type_changed_event> {
     static constexpr std::string_view name = "ores.reporting.report_type_changed";

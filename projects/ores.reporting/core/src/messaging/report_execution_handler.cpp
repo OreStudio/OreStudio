@@ -91,7 +91,7 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
     try {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.find_instance(instance_id);
+        auto inst = inst_svc.get_instance(instance_id);
         if (inst) {
             inst->fsm_state_id = instance_states_.require("failed");
             inst->completed_at = std::chrono::system_clock::now();
@@ -167,7 +167,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
 
         // ── Update instance state to running ─────────────────────────
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.find_instance(req.report_instance_id);
+        auto inst = inst_svc.get_instance(req.report_instance_id);
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
             return;
@@ -371,7 +371,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
 
         service::report_instance_service inst_svc(tenant_ctx);
-        auto inst = inst_svc.find_instance(req.report_instance_id);
+        auto inst = inst_svc.get_instance(req.report_instance_id);
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
             return;

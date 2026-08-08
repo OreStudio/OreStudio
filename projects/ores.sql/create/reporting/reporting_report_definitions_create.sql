@@ -42,11 +42,11 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "version" integer not null,
     "name" text not null,
     "party_id" uuid not null,
-    "description" text not null default '',
+    "description" text not null,
     "report_type" text not null,
     "fsm_state_id" uuid null,
     "schedule_expression" text not null,
-    "concurrency_policy" text not null default 'skip',
+    "concurrency_policy" text not null,
     "scheduler_job_id" uuid null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
@@ -62,14 +62,12 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("name" <> ''),
-    check ("schedule_expression" <> '')
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Unique name for active records
 create unique index if not exists report_definitions_name_uniq_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, party_id, name)
+on "ores_reporting_report_definitions_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -83,19 +81,6 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists report_definitions_tenant_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create unique index if not exists report_definitions_scheduler_job_id_uniq_idx
-on "ores_reporting_report_definitions_tbl" (scheduler_job_id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and scheduler_job_id is not null;
-
-create index if not exists report_definitions_party_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, party_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists report_definitions_fsm_state_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, fsm_state_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists report_definitions_workspace_idx
@@ -112,36 +97,6 @@ begin
 
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
-
-    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
-    if not exists (
-        select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate fsm_state_id (optional soft FK to ores_dq_fsm_states_tbl)
-    if NEW.fsm_state_id is not null then
-        if not exists (
-            select 1 from ores_dq_fsm_states_tbl
-            where tenant_id = ores_utility_system_tenant_id_fn()
-              and id = NEW.fsm_state_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid fsm_state_id: %. No active FSM state found with this id.', NEW.fsm_state_id
-                using errcode = '23503';
-        end if;
-    end if;
-
-    -- Validate report_type
-    NEW.report_type := ores_reporting_validate_report_type_fn(NEW.tenant_id, NEW.report_type);
-
-    -- Validate concurrency_policy
-    NEW.concurrency_policy := ores_reporting_validate_concurrency_policy_fn(NEW.tenant_id, NEW.concurrency_policy);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -161,18 +116,22 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_reporting_report_definitions_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -186,9 +145,10 @@ before insert on "ores_reporting_report_definitions_tbl"
 for each row execute function ores_reporting_report_definitions_insert_fn();
 
 create or replace rule ores_reporting_report_definitions_delete_rule as
-on delete to "ores_reporting_report_definitions_tbl" do instead
+on delete to "ores_reporting_report_definitions_tbl" do instead (
     update "ores_reporting_report_definitions_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

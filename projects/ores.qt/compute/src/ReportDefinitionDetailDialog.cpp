@@ -380,7 +380,7 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
         }
 
         reporting::messaging::save_report_definition_request request;
-        request.definition = definition;
+        request.data = definition;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

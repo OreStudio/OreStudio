@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_DOMAIN_REPORT_DEFINITION_HPP
-#define ORES_REPORTING_DOMAIN_REPORT_DEFINITION_HPP
+#ifndef ORES_REPORTING_API_DOMAIN_REPORT_DEFINITION_HPP
+#define ORES_REPORTING_API_DOMAIN_REPORT_DEFINITION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::reporting::domain {
 
@@ -132,6 +133,16 @@ struct report_definition final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for report_definition, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const report_definition&) {
+    return "ores.reporting.report_definition";
+}
 
 }
 

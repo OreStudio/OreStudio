@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

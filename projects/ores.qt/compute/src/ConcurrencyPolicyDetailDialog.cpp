@@ -214,7 +214,7 @@ void ConcurrencyPolicyDetailDialog::onSaveClicked() {
         }
 
         reporting::messaging::save_concurrency_policy_request request;
-        request.policy = policy;
+        request.data = policy;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

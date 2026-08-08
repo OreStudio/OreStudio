@@ -200,7 +200,7 @@ void ReportTypeDetailDialog::onSaveClicked() {
         }
 
         reporting::messaging::save_report_type_request request;
-        request.type = type;
+        request.data = type;
         auto response_result =
             self->clientManager_->process_authenticated_request(std::move(request));
 

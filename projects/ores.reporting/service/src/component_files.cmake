@@ -22,6 +22,10 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/concurrency_policy_event_registrar.cpp"
+    "messaging/report_definition_event_registrar.cpp"
+    "messaging/report_instance_event_registrar.cpp"
+    "messaging/report_type_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -33,5 +37,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_definition_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_instance_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/messaging/report_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.service/ores.reporting.service.hpp"
 )

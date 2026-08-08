@@ -31,6 +31,7 @@ domain::concurrency_policy concurrency_policy_mapper::map(const concurrency_poli
 
     domain::concurrency_policy r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
@@ -50,6 +51,7 @@ concurrency_policy_entity concurrency_policy_mapper::map(const domain::concurren
 
     concurrency_policy_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;

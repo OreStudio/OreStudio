@@ -23,7 +23,7 @@
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"

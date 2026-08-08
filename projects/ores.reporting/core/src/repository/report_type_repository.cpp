@@ -37,23 +37,17 @@ std::string report_type_repository::sql() {
 }
 
 void report_type_repository::write(context ctx, const domain::report_type& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing report type: " << v.code;
-    auto entity = report_type_mapper::map(v);
-    entity.tenant_id = ctx.tenant_id().to_string();
-    execute_write_query(ctx, entity, lg(), "Writing report type to database.");
+    BOOST_LOG_SEV(lg(), debug) << "Writing report type. " << "code: " << v.code;
+    execute_write_query(ctx, report_type_mapper::map(v), lg(), "Writing report type to database.");
 }
 
 void report_type_repository::write(context ctx, const std::vector<domain::report_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report types. Count: " << v.size();
-    const auto tid = ctx.tenant_id().to_string();
-    auto entities = report_type_mapper::map(v);
-    for (auto& e : entities)
-        e.tenant_id = tid;
-    execute_write_query(ctx, entities, lg(), "Writing report types to database.");
+    execute_write_query(ctx, report_type_mapper::map(v), lg(), "Writing report types to database.");
 }
 
 std::vector<domain::report_type> report_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<report_type_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -69,8 +63,8 @@ std::vector<domain::report_type> report_type_repository::read_latest(context ctx
 
 std::vector<domain::report_type> report_type_repository::read_latest(context ctx,
                                                                      const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest report type. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<report_type_entity>> |
@@ -84,13 +78,14 @@ std::vector<domain::report_type> report_type_repository::read_latest(context ctx
         "Reading latest report type by code.");
 }
 
+
 std::vector<domain::report_type> report_type_repository::read_all(context ctx,
                                                                   const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all report type versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all report type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<report_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<report_type_entity, domain::report_type>(
         ctx,
@@ -100,9 +95,31 @@ std::vector<domain::report_type> report_type_repository::read_all(context ctx,
         "Reading all report type versions by code.");
 }
 
+std::optional<domain::report_type> report_type_repository::read_at_version(context ctx,
+                                                                           const std::string& code,
+                                                                           std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading report type at version. " << "code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<report_type_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<report_type_entity, domain::report_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return report_type_mapper::map(entities); },
+        lg(),
+        "Reading report type at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void report_type_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report type: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing report type. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::delete_from<report_type_entity> |
@@ -110,5 +127,54 @@ void report_type_repository::remove(context ctx, const std::string& code) {
 
     execute_delete_query(ctx, query, lg(), "Removing report type from database.");
 }
+
+std::vector<domain::report_type>
+report_type_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest report types with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<report_type_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<report_type_entity, domain::report_type>(
+        ctx,
+        query,
+        [](const auto& entities) { return report_type_mapper::map(entities); },
+        lg(),
+        "Reading latest report types with pagination.");
+}
+
+std::uint32_t report_type_repository::get_total_type_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report type count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<report_type_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active report type count: " << count;
+    return count;
+}
+
+void report_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<report_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing report types.");
+}
+
 
 }

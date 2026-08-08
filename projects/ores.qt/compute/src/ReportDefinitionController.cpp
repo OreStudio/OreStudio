@@ -28,6 +28,7 @@
 #include "ores.qt/ReportDefinitionMdiWindow.hpp"
 #include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
 #include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>

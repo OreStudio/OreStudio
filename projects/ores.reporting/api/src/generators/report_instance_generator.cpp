@@ -19,9 +19,11 @@
  */
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
-#include <boost/uuid/random_generator.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::reporting::generators {
 
@@ -31,12 +33,20 @@ domain::report_instance
 generate_synthetic_report_instance(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::report_instance r;
-    r.version = 1;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
-    r.party_id = boost::uuids::random_generator()();
-    r.definition_id = boost::uuids::random_generator()();
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.name = std::string(faker::word::noun()) + "_instance" + "-" + std::to_string(idx);
+    r.description = std::string(faker::lorem::sentence());
+    r.party_id = ctx.generate_uuid();
+    r.definition_id = ctx.generate_uuid();
     r.fsm_state_id = std::nullopt;
     r.trigger_run_id = faker::number::integer<std::int64_t>(1, 1000000);
     r.output_message = std::string();

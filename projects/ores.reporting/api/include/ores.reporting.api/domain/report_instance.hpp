@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_DOMAIN_REPORT_INSTANCE_HPP
-#define ORES_REPORTING_DOMAIN_REPORT_INSTANCE_HPP
+#ifndef ORES_REPORTING_API_DOMAIN_REPORT_INSTANCE_HPP
+#define ORES_REPORTING_API_DOMAIN_REPORT_INSTANCE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::reporting::domain {
 
@@ -51,6 +52,13 @@ struct report_instance final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief UUID uniquely identifying this report instance.
@@ -129,6 +137,16 @@ struct report_instance final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for report_instance, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const report_instance&) {
+    return "ores.reporting.report_instance";
+}
 
 }
 

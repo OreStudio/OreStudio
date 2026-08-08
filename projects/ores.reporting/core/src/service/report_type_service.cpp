@@ -18,7 +18,11 @@
  *
  */
 #include "ores.reporting.core/service/report_type_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::reporting::service {
 
@@ -27,13 +31,27 @@ using namespace ores::logging;
 report_type_service::report_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::report_type> report_type_service::list_types() {
+std::vector<domain::report_type> report_type_service::list_types(std::uint32_t offset,
+                                                                 std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all report types";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::report_type> report_type_service::find_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding report type: " << code;
+std::uint32_t report_type_service::count_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total report types count";
+    return repo_.get_total_type_count(ctx_);
+}
+
+
+std::optional<domain::report_type> report_type_service::get_type_at_version(const std::string& code,
+                                                                            std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting report type at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::report_type> report_type_service::get_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting report type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -43,19 +61,37 @@ std::optional<domain::report_type> report_type_service::find_type(const std::str
 void report_type_service::save_type(const domain::report_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Report Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving report type: " << v.code;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved report type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving report type. " << "code: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved report type. " << "code: " << v.code;
 }
 
-void report_type_service::remove_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing report type: " << code;
+void report_type_service::save_types(const std::vector<domain::report_type>& types) {
+    for (const auto& e : types) {
+        if (e.code.empty())
+            throw std::invalid_argument("Report Type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " report types";
+    auto ts = types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void report_type_service::delete_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing report type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed report type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed report type. " << "code: " << code;
+}
+
+void report_type_service::delete_types(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
 }
 
 std::vector<domain::report_type> report_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for report type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for report type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

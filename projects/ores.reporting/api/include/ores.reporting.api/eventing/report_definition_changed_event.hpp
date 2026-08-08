@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
-#define ORES_REPORTING_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
+#ifndef ORES_REPORTING_API_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
+#define ORES_REPORTING_API_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -30,9 +30,8 @@ namespace ores::reporting::eventing {
 /**
  * @brief Domain event indicating that report definition data has changed.
  *
- * This event is published when any report definition entity is created,
- * updated, or deleted in the database. Subscribers can use the timestamp
- * to query for changes since that point.
+ * Published when any report definition entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct report_definition_changed_event final {
     /**
@@ -41,9 +40,9 @@ struct report_definition_changed_event final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief UUIDs of report definitions that changed.
+     * @brief Changed report definition UUIDs (as strings).
      */
-    std::vector<std::string> ids;
+    std::vector<std::string> definition_ids;
 
     /**
      * @brief The tenant that owns the changed entity.
@@ -55,6 +54,9 @@ struct report_definition_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for report_definition_changed_event.
+ */
 template <>
 struct event_traits<ores::reporting::eventing::report_definition_changed_event> {
     static constexpr std::string_view name = "ores.reporting.report_definition_changed";

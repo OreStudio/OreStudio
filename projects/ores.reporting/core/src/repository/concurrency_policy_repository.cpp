@@ -37,7 +37,7 @@ std::string concurrency_policy_repository::sql() {
 }
 
 void concurrency_policy_repository::write(context ctx, const domain::concurrency_policy& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policy: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policy. " << "code: " << v.code;
     execute_write_query(
         ctx, concurrency_policy_mapper::map(v), lg(), "Writing concurrency policy to database.");
 }
@@ -50,9 +50,11 @@ void concurrency_policy_repository::write(context ctx,
 }
 
 std::vector<domain::concurrency_policy> concurrency_policy_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
         ctx,
@@ -64,10 +66,12 @@ std::vector<domain::concurrency_policy> concurrency_policy_repository::read_late
 
 std::vector<domain::concurrency_policy>
 concurrency_policy_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policy. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-                       where("code"_c == code && "valid_to"_c == max.value());
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policy. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<concurrency_policy_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
         ctx,
@@ -77,11 +81,14 @@ concurrency_policy_repository::read_latest(context ctx, const std::string& code)
         "Reading latest concurrency policy by code.");
 }
 
+
 std::vector<domain::concurrency_policy>
 concurrency_policy_repository::read_all(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all concurrency policy versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all concurrency policy versions. " << "code: " << code;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-                       where("code"_c == code) | order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
         ctx,
@@ -91,13 +98,85 @@ concurrency_policy_repository::read_all(context ctx, const std::string& code) {
         "Reading all concurrency policy versions by code.");
 }
 
+std::optional<domain::concurrency_policy> concurrency_policy_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading concurrency policy at version. " << "code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
+                       where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
+        ctx,
+        query,
+        [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
+        lg(),
+        "Reading concurrency policy at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void concurrency_policy_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing concurrency policy: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::delete_from<concurrency_policy_entity> |
-                       where("code"_c == code && "valid_to"_c == max.value());
+    BOOST_LOG_SEV(lg(), debug) << "Removing concurrency policy. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<concurrency_policy_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing concurrency policy from database.");
 }
+
+std::vector<domain::concurrency_policy>
+concurrency_policy_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policies with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
+        ctx,
+        query,
+        [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
+        lg(),
+        "Reading latest concurrency policies with pagination.");
+}
+
+std::uint32_t concurrency_policy_repository::get_total_policy_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active concurrency policy count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::select_from<concurrency_policy_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active concurrency policy count: " << count;
+    return count;
+}
+
+void concurrency_policy_repository::remove(context ctx, const std::vector<std::string>& codes) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::delete_from<concurrency_policy_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing concurrency policies.");
+}
+
 
 }

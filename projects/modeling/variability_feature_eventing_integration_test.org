@@ -41,10 +41,10 @@ Postgres with LISTEN/NOTIFY support during test execution.
 
 - [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]]
 - [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]]
-- [[id:F8C3D2A1-5E4B-4C7D-9F1E-6B5A3D8C2E9F][Fully-featured lookup]]
-- [[id:A1B2C3D4-5E6F-4A7B-8C9D-0E1F2A3B4C5D][UUID-identified lookup]]
-- [[id:B2C3D4E5-6F7A-4B8C-9D0E-1F2A3B4C5D6E][FK-scoped child]]
-- [[id:C3D4E5F6-7A8B-4C9D-0E1F-2A3B4C5D6E7F][Self-referencing hierarchy]]
+- [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+- [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]]
+- [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]]
+- [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
 
 * See also
 

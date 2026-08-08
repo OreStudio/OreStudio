@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
-#define ORES_TRADING_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
+#define ORES_TRADING_CORE_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
-#include <vector>
 
 namespace ores::trading::repository {
 

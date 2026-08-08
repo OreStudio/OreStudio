@@ -17,16 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/domain/equity_asian_option_instrument_table_io.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument_table.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
-namespace ores::trading::repository {
+namespace ores::trading::domain {
 
-std::ostream& operator<<(std::ostream& s, const equity_asian_option_instrument_entity& v) {
-    rfl::json::write(v, s);
+namespace {
+
+void print_equity_asian_option_instrument_table(
+    std::ostream& s, const std::vector<equity_asian_option_instrument>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
+std::ostream& operator<<(std::ostream& s, const std::vector<equity_asian_option_instrument>& v) {
+    print_equity_asian_option_instrument_table(s, v);
     return s;
 }
 

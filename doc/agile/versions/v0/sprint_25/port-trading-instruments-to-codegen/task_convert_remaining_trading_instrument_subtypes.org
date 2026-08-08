@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
-#+updated: 2026-08-08
+#+updated: 2026-08-09
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 13/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument. |
+| Now          | 14/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (equity_asian_option). |
+| Next         | Convert the next flat instrument (equity_digital_option). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -530,6 +530,56 @@ Zero-diff verified via a second regeneration pass. Build green;
 =ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
 76 cases incl. the new
 =write_equity_accumulator_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_asian_option_instrument (converted 2026-08-09)
+
+Flat instrument, no leg children, eventing facet enabled, bound to the
+trading-instrument variability profile. Routes the single ORE product
+type EquityAsianOption; the =trade_type_code= check is the 1-value
+in-list. All ten flat columns carried over with hand-crafted
+initializers preserved (=notional= 0.0, =strike= 0.0 via
+=:default_value: 0.0=); =expiry_date= and the averaging dates are
+=date=-typed columns modelled as =std::string= (ISO 8601), per family
+precedent. =underlying_name= carries the ORE equity Name identifier
+(gen "RIC:.SPX").
+
+First equity variant to land the PR #1846 inheritance query: the
+hand-crafted =read_latest(ctx)= lacked it, so the first-pass diff
+showed the workspace resolution chain
+(=ctx.workspace_resolution()= if non-empty else =ctx.workspace_id()=)
+appearing in the generated repository -- a systemic template
+improvement, matching the story acceptance "land the has_workspace_id
+inheritance query for every one of them".
+
+Org-emphasis pitfall hit on the first diff pass: an unbalanced
+==averaging_start_date/=averaging_end_date== pair in the model intro
+leaked a stray trailing == into the generated domain doc-comments and
+the create.sql AUTO-GENERATED header. Rewrote the intro with balanced
+emphasis pairs; re-diff clean.
+
+Messaging path reconciled in the same commit:
+=save_equity_asian_option_instrument_request= deleted from
+=instrument_protocol.hpp= (the typed-equity section now holds only
+digital) and =save_asian_option()= from
+=typed_equity_instrument_handler.hpp= (leaving only
+=save_digital_option()=). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_asian_option_instrument_handlers=; the three
+consumers include the generated
+=equity_asian_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_asian_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_asian_option, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+77 cases incl. the new
+=write_equity_asian_option_instrument_publishes_nats_changed_event=;
 service: 10 cases); consumer libs =ores.ore.service.lib= and
 =ores.qt.trading.lib= green.
 

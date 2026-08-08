@@ -17,17 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_CORE_MESSAGING_EQUITY_ASIAN_OPTION_INSTRUMENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_EQUITY_ASIAN_OPTION_INSTRUMENT_REGISTRAR_HPP
 
-namespace ores::trading::repository {
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const equity_asian_option_instrument_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::trading::messaging {
 
-}
+std::vector<ores::nats::service::subscription> register_equity_asian_option_instrument_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+
+} // namespace ores::trading::messaging
+
+#endif

@@ -61,6 +61,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <limits>
 #include <unordered_map>
 
 namespace ores::qt {
@@ -165,10 +166,12 @@ void CurveBuilderWorkbench::loadTenors() {
             return a.sort_order < b.sort_order;
         });
         self->tenorCodes_.clear();
+        self->tenorSortOrderByCode_.clear();
         for (const auto& t : tenors) {
             if (std::find(self->tenorCodes_.begin(), self->tenorCodes_.end(), t.code) ==
                 self->tenorCodes_.end())
                 self->tenorCodes_.push_back(t.code);
+            self->tenorSortOrderByCode_.emplace(t.code, t.sort_order);
         }
         self->addPillarButton_->setEnabled(true);
         self->addPillarButton_->setToolTip(QString());
@@ -401,7 +404,11 @@ QWidget* CurveBuilderWorkbench::buildPillarsTab() {
            "1-month deposit starting today is Start Tenor SPOT, End Tenor 1M; a 3-month deposit "
            "starting today is Start Tenor SPOT, End Tenor 3M -- both share the same start (spot) "
            "but differ in maturity, standard money-market convention. Both fields are seeded "
-           "tenor codes (Reference Data > Curve Building > Tenors), not free text."),
+           "tenor codes (Reference Data > Curve Building > Tenors), not free text. Rows can be "
+           "added in any order -- the actual bootstrap order is derived from each row's own "
+           "maturity, not the order you typed them in. Bootstrap will fail clearly (not "
+           "silently) if a chosen End Tenor has no observed rate in the Source Series -- not "
+           "every tenor is necessarily quoted."),
         page);
     explainerLabel->setWordWrap(true);
     explainerLabel->setStyleSheet("color: #94a3b8; font-style: italic;");
@@ -761,7 +768,6 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
                    boost::uuids::random_generator{}();
         p.bootstrap_config_id = config_.id;
         p.party_id = config_.party_id;
-        p.sequence_index = row;
         auto combo_text = [&](int col) -> std::string {
             auto* combo = qobject_cast<QComboBox*>(pillarsTable_->cellWidget(row, col));
             return combo ? combo->currentText().toStdString() : "";
@@ -775,6 +781,25 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
         p.change_commentary = pendingChangeCommentary_;
         collected.push_back(std::move(p));
     }
+
+    // sequence_index must reflect the pillars' actual maturity order (what
+    // curve_republish_resolver/curve_bootstrap_engine require, "strictly increasing maturity"),
+    // not the Pillars table's row order -- a user who adds rows out of chronological order (e.g.
+    // a 2Y row before a 12M row) would otherwise get a "does not mature strictly after the
+    // previous pillar" failure despite every individual pillar being valid on its own. Derived
+    // from End Tenor's tenor.sort_order (the same ladder position the combo itself is sorted by),
+    // not the row position, so entry order stops mattering.
+    std::stable_sort(collected.begin(), collected.end(), [this](const auto& a, const auto& b) {
+        const auto sortOrder = [this](const std::string& code) {
+            const auto it = tenorSortOrderByCode_.find(code);
+            return it != tenorSortOrderByCode_.end() ? it->second :
+                                                        std::numeric_limits<int>::max();
+        };
+        return sortOrder(a.end_tenor_code) < sortOrder(b.end_tenor_code);
+    });
+    for (std::size_t i = 0; i < collected.size(); ++i)
+        collected[i].sequence_index = static_cast<int>(i);
+
     pillars_ = std::move(collected);
 }
 

@@ -28,6 +28,7 @@
 #include <QWidget>
 #include <functional>
 #include <optional>
+#include <unordered_map>
 #include <vector>
 
 class QComboBox;
@@ -190,6 +191,10 @@ private:
     bool hasBootstrapped_ = false;
     std::vector<refdata::domain::floating_index_type> floatingIndexTypes_;
     std::vector<std::string> tenorCodes_;
+    /// tenor.sort_order by code -- the tenor ladder's own chronological position, used to derive
+    /// each pillar's sequence_index from its End Tenor rather than from the Pillars table's row
+    /// order (see collectPillarsFromTable()'s own comment for why row order alone is unsafe).
+    std::unordered_map<std::string, int> tenorSortOrderByCode_;
     std::string pendingChangeReasonCode_;
     std::string pendingChangeCommentary_;
 

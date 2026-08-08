@@ -161,7 +161,13 @@ TEST_CASE("parse_commodity_quote", tags) {
  */
 
 TEST_CASE("round_trip_fx", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote"));
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=spot"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_fx_fwd", tags) {
+    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -426,6 +432,12 @@ TEST_CASE("reject_malformed_uri", tags) {
 TEST_CASE("reject_unrecognised_query_key", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenr=3m&type=fixing")),
                       oresmd_exception);
+}
+
+TEST_CASE("reject_fx_quote_when_type_not_quote", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&quote=spot")),
+        oresmd_exception);
 }
 
 TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {

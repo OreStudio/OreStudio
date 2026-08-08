@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fx-forward-points
+#+pr: 1909
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -60,12 +60,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1909][#1909]] | [marketdata] Extend oresmd FX coverage: forward points |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead ore_type/ore_fx_metric helpers never called | oresmd_projections.cpp | Accepted | Wired helpers into quote_key_fx |
+| 2 | Missing reject_fx_quote_when_type_not_quote test | tests | Accepted | Added |
+| 3 | Missing fx_fwd_requires_point test | tests | Accepted | Added |
 
 * Result
+
+Delivered FX quote-type representation: =fx_quote_type= (2 values: =spot=,
+=fwd=) with per-type =quote_key_fx= dispatching. =spot= stays 4-segment
+scalar =FX/RATE/CCY1/CCY2=; =fwd= emits 5-segment forward-key with
+=point= tenor (=FXFWD/RATE/CCY1/CCY2/TENOR=). =quote= absent defaults to
+=spot=. =point= field added to =fx_market_data_identifier=; parser guards
+=quote= against =type≠quote=. 135 test cases, 245 assertions, all passing.

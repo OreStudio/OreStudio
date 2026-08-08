@@ -115,8 +115,6 @@ void validate_fx(const query_params& qp) {
     reject_if_present("fx", "tenor", qp.tenor);
     reject_if_present("fx", "role", qp.role);
     reject_if_present("fx", "metric", qp.metric);
-    reject_if_present("fx", "quote", qp.quote);
-    reject_if_present("fx", "point", qp.point);
 }
 
 void validate_ir(const query_params& qp) {
@@ -157,6 +155,14 @@ market_data_identifier parse_fx(const boost::urls::url_view& u, const query_para
         BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
             "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
     id.type = parse_type(qp);
+    if (qp.quote) {
+        if (id.type != instrument_type::quote)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception("oresmd://fx/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<fx_quote_type>("quote", *qp.quote);
+    }
+    if (qp.point)
+        id.point = to_lower(*qp.point);
     return id;
 }
 
@@ -292,6 +298,8 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.set_host("fx");
                 u.segments().push_back(to_lower(id.pair));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "point", id.point);
             } else if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
                 u.set_host("ir");
                 u.segments().push_back(to_lower(id.ccy));

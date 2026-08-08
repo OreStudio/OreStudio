@@ -121,6 +121,15 @@ enum class commodity_quote_type {
     cpr     ///< CPR/RATE (conditional prepayment rate).
 };
 
+/**
+ * @brief The `quote` query key for FX instruments — the ORE TYPE. FX-only;
+ * only meaningful when `type=quote`.
+ */
+enum class fx_quote_type {
+    spot, ///< FX/RATE (spot rate, the default).
+    fwd   ///< FXFWD/RATE (forward points).
+};
+
 }
 
 #endif

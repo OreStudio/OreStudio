@@ -132,11 +132,14 @@ QWidget* MarketSeriesPickerDialog::buildCreatePanel() {
 
     auto* row = new QHBoxLayout();
     newSeriesTypeEdit_ = new QLineEdit(panel);
-    newSeriesTypeEdit_->setPlaceholderText(tr("Series Type, e.g. YieldCurve"));
+    // RATES/YIELD is the convention every existing rates market_series row in the seeded data
+    // actually uses (e.g. "RATES"/"YIELD"/"USD/SOFR") -- default to it rather than a plausible-
+    // looking but unused label like "YieldCurve"/"DISCOUNT".
+    newSeriesTypeEdit_->setText("RATES");
     newMetricEdit_ = new QLineEdit(panel);
-    newMetricEdit_->setPlaceholderText(tr("Metric, e.g. DISCOUNT"));
+    newMetricEdit_->setText("YIELD");
     newQualifierEdit_ = new QLineEdit(panel);
-    newQualifierEdit_->setPlaceholderText(tr("Qualifier, e.g. EUR-EONIA"));
+    newQualifierEdit_->setPlaceholderText(tr("Qualifier, e.g. USD/SOFR"));
     newAssetClassCombo_ = new QComboBox(panel);
     newAssetClassCombo_->addItems(asset_class_names());
     newAssetClassCombo_->setCurrentText("rates");

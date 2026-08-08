@@ -190,6 +190,18 @@ QString CurveBuilderWorkbench::selectedIndexCode() const {
     return indexCombo_->currentText();
 }
 
+QString CurveBuilderWorkbench::selectedIndexQualifier() const {
+    // floating_index_type codes use a dash after the currency (e.g. "USD-SOFR",
+    // "EUR-EURIBOR-3M"), but market_series.qualifier for rates uses a slash there instead (e.g.
+    // "USD/SOFR", "EUR/EURIBOR-3M" -- see ir_curve_feed.cpp's own qualifier construction). Only
+    // the first dash is currency/family separator; any further dash (the tenor one) stays as-is.
+    const QString code = selectedIndexCode();
+    const int firstDash = code.indexOf('-');
+    if (firstDash < 0)
+        return code;
+    return code.left(firstDash) + "/" + code.mid(firstDash + 1);
+}
+
 void CurveBuilderWorkbench::buildUi() {
     auto* layout = new QVBoxLayout(this);
 
@@ -474,7 +486,7 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexCode());
+    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexQualifier());
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
@@ -486,7 +498,7 @@ void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexCode());
+    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexQualifier());
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();

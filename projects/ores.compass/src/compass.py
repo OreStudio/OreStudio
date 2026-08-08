@@ -4700,6 +4700,9 @@ def cmd_env(argv):
     if argv and argv[0] == "activity":
         import env_activity
         return env_activity.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "deploy":
+        import env_deploy
+        return env_deploy.run(argv[1:], PROJECT_ROOT)
     # No/unknown subcommand: render help (and error on unknown).
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
@@ -4720,6 +4723,9 @@ def cmd_env(argv):
     sub.add_parser("activity", help="List outstanding environment activities for this "
                                     "checkout; 'activity new <title> <recipe-id>' records "
                                     "one, 'activity ack <N>' acknowledges it")
+    sub.add_parser("deploy", help="Deploy the service runtime (or a compute node) to a "
+                                  "named remote WSL host over SSH; 'deploy list' shows "
+                                  "the known host profiles (.env.<host> at the repo root)")
     ap.parse_args(argv or ["--help"])
     return 0
 

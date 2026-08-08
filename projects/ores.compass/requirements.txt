@@ -13,3 +13,8 @@ pystache>=0.6.0
 # in-browser via Pyodide). Not pinned as a hard requirement here since it's
 # a heavy dependency needed only by that one subcommand — install manually
 # with: projects/ores.compass/venv/bin/pip install flamapy
+
+# Tests. The compass test suites under projects/ores.compass/tests run with
+# pytest (see their docstrings): install with
+# projects/ores.compass/venv/bin/pip install pytest
+pytest>=9.0

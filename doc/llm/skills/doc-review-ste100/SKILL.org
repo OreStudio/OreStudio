@@ -14,6 +14,7 @@
 ---
 name: doc-review-ste100
 description: Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short sentences. Use when agent output is hard to parse; triggers: simplify this, STE100 rewrite.
+license: MIT
 ---
 #+end_export
 
@@ -42,39 +43,18 @@ persuasion is the point.
    the original meaning exactly. If a rewrite would drop necessary
    precision (a safety condition, a scope qualifier, a number), keep
    the longer phrasing and flag it instead of silently simplifying.
-4. Produce a before/after table following the format in the output
-   section below.
+4. Produce a before/after table (see
+   [[file:before-after.md][examples]]) with columns: rule violated, original,
+   simplified. Add a one-line note for anything deliberately left
+   unsimplified.
 5. If the input already complies, say so — do not force changes onto
    compliant text.
 
-**Core rewrite rules**
-
-| Rule | Do | Don't |
-|---|---|---|
-| One word, one meaning | Pick one verb for one action and reuse it every time (e.g. always "check", never mix "check"/"verify"/"confirm" for the same action) | Rotate synonyms for the same idea across a document |
-| One part of speech per word | "Apply oil to the valve" (oil = noun) | "Oil the valve" (oil = verb) — if "oil" is only approved as a noun |
-| Active voice | "The agent deletes the file." | "The file is deleted (by the agent)." — unless the actor is genuinely unknown or irrelevant |
-| Simple tenses only | "We received the report." (simple past) | "We have received the report." (present perfect) |
-| One instruction per sentence | "Open the file. Read line 3." | "Open the file and read line 3, then check if it matches." |
-| Sentence length | ≤20 words for instructions/procedures, ≤25 words for descriptions | Long compound/subordinate-clause sentences |
-| Noun clusters | ≤3 words stacked as a noun phrase ("fuel pump valve") | 4+ word noun stacks ("high pressure fuel pump inlet valve assembly") |
-| No ellipsis | Keep the subject, verb, and article explicit even if it reads longer | Drop words to save space ("Files not backed up will be lost" → ambiguous which files) |
-| Paragraph limits | One topic per paragraph, ≤6 sentences | Multi-topic paragraphs |
-| Lists for sequences | Use a numbered or bulleted list for 3+ steps or conditions | Bury a sequence inside one prose sentence |
-| Domain terms | Keep necessary technical nouns/verbs, but define them once if not common English | Use jargon without ever defining it |
-
-**Output format**
-
-```markdown
-| Rule violated | Original | Simplified |
-|---|---|---|
-| Present perfect tense | "We have received your request." | "We received your request." |
-| Noun cluster (4+ words) | "the agent task queue priority handler" | "the handler that sets task-queue priority" |
-```
-
-Follow the table with a one-line note on anything you deliberately did
-not simplify, and why (usually: simplifying would lose required
-precision).
+Apply the 11 core STE100 rules from [[file:writing-rules.md][the writing rules reference]]
+— one meaning per word, one part of speech, active voice, simple
+tenses, one instruction per sentence, ≤20-25 word sentences, ≤3-word
+noun clusters, no ellipsis, one topic per paragraph, lists for
+sequences, and defined domain terms.
 
 **Boundaries**
 

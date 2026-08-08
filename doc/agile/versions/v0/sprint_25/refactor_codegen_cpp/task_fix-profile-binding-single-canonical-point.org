@@ -29,11 +29,11 @@ file-level drawer, and revert the manual workaround on 4 reporting entities.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Fix implemented, pending PR.           |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR.                              |
+| Next         | Nothing. |
 | Last touched | 2026-08-08                             |
 
 * Acceptance
@@ -111,3 +111,13 @@ require per-entity edits, defeating the purpose of profiles.
 |   |                 |      |          |       |
 
 * Result
+
+- Fixed =read_physical_space_overrides= in =org_loader.py= to read =:profile:= from =* Flags=
+  section instead of file-level =:PROPERTIES:= drawer. File-level =:profile:= now raises a
+  clear validation error.
+- Reverted the file-level =:profile:= workaround from the 4 reporting entities
+  (concurrency_policy, report_type, report_definition, report_instance).
+- Verified: =book_status= (refdata, =simple-lookup=) gets =_eventing_integration_tests.cpp=
+  from its =* Flags= profile without any per-entity edits.
+- 7 files changed: 1 codegen fix, 4 entity reverts, 1 task doc, 1 story update.
+- Build 100%, all CI checks pass.

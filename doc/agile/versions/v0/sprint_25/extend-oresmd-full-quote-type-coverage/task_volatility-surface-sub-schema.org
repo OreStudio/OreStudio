@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/volatility-surface-sub-schema
+#+pr: 1913
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -60,12 +60,23 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1913][#1913]] | [marketdata] Add volatility-surface sub-schema: shared expiry/strike/model |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | model_subtype always default, never settable | parser | Accepted | Added 'model' query param |
+| 2 | Resolver doesn't populate vol — regression | projections | Accepted | Fall back to point composite when vol absent |
+| 3 | Duplicated comma-split logic | parser, projections | Declined | Toolchain issue with sstream in shared header |
 
 * Result
+
+Delivered shared volatility-surface sub-schema: =volatility_surface_point= struct
+(expiry, strike, model_subtype) added to all five asset-class identifier structs.
+=volatility_model_subtype= enum (5 values: rate_lnvol, rate_nvol, rate_slnvol,
+shift, price). Parser populates vol struct from point=expiry,tenor,strike
+composite when type=vol; =quote_key_ir= vol path uses typed fields
+(=SWAPTION/MODEL/CCY/EXPIRY/TENOR/STRIKE=). Vol struct on FX/equity/credit/
+commodity identifiers ready for future per-asset-class vol projections.
+145 test cases, 260 assertions, all passing.

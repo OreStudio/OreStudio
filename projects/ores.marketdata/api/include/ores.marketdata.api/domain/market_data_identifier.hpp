@@ -28,6 +28,18 @@
 namespace ores::marketdata::domain {
 
 /**
+ * @brief Volatility surface point: expiry, strike, and model subtype — the three dimensions
+ * shared across all 8 ORE volatility sub-families. Only meaningful when `type=vol`.
+ */
+struct volatility_surface_point final {
+    std::string expiry;
+    std::string strike;
+    volatility_model_subtype model_subtype = volatility_model_subtype::rate_lnvol;
+
+    bool operator==(const volatility_surface_point&) const = default;
+};
+
+/**
  * @brief A fully-resolved oresmd identifier for an FX pair (asset_class=fx).
  *
  * `pair` is the 6-character currency pair carried in the URI's `entity` path segment
@@ -40,6 +52,7 @@ struct fx_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::fx_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const fx_market_data_identifier&) const = default;
 };
@@ -62,6 +75,7 @@ struct ir_market_data_identifier final {
     std::optional<domain::metric> metric;
     std::optional<domain::ir_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const ir_market_data_identifier&) const = default;
 };
@@ -78,6 +92,7 @@ struct equity_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::equity_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const equity_market_data_identifier&) const = default;
 };
@@ -94,6 +109,7 @@ struct credit_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::credit_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const credit_market_data_identifier&) const = default;
 };
@@ -107,6 +123,7 @@ struct commodity_market_data_identifier final {
     instrument_type type = instrument_type::quote;
     std::optional<domain::commodity_quote_type> quote_type;
     std::optional<std::string> point;
+    std::optional<volatility_surface_point> vol;
 
     bool operator==(const commodity_market_data_identifier&) const = default;
 };

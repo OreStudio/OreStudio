@@ -113,15 +113,17 @@ TEST_CASE("parse_discount_quote", tags) {
     REQUIRE(ir.point == "6m");
 }
 
-TEST_CASE("parse_swaption_vol_point_has_no_index_tenor_role", tags) {
+TEST_CASE("parse_swaption_vol_populates_tenor_and_vol_struct", tags) {
     const auto id = oresmd_parser::parse(uri("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
     const auto& ir = std::get<ir_market_data_identifier>(id);
     REQUIRE(ir.ccy == "EUR");
     REQUIRE(ir.type == instrument_type::vol);
     REQUIRE_FALSE(ir.index.has_value());
-    REQUIRE_FALSE(ir.tenor.has_value());
+    REQUIRE(ir.tenor == "2y");
     REQUIRE_FALSE(ir.role.has_value());
-    REQUIRE(ir.point == "5y,2y,atm");
+    REQUIRE(ir.vol.has_value());
+    REQUIRE(ir.vol->expiry == "5Y");
+    REQUIRE(ir.vol->strike == "ATM");
 }
 
 TEST_CASE("parse_equity_quote", tags) {

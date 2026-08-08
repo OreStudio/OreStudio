@@ -94,11 +94,22 @@ struct commodity_market_data_requirement final {
  * @brief Tagged union of the five per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
  */
+/** @brief A logical, possibly-partial oresmd requirement for an inflation instrument. */
+struct inflation_market_data_requirement final {
+    std::optional<std::string> index_code;
+    std::optional<instrument_type> type;
+    std::optional<inflation_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const inflation_market_data_requirement&) const = default;
+};
+
 using market_data_requirement = std::variant<fx_market_data_requirement,
                                              ir_market_data_requirement,
                                              equity_market_data_requirement,
                                              credit_market_data_requirement,
-                                             commodity_market_data_requirement>;
+                                             commodity_market_data_requirement,
+                                             inflation_market_data_requirement>;
 
 }
 

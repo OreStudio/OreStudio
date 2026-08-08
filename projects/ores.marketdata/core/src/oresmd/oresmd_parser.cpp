@@ -224,6 +224,27 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
     return id;
 }
 
+market_data_identifier parse_inflation(const boost::urls::url_view& u, const query_params& qp) {
+    // Validation: only quote, type, and point are meaningful for inflation.
+    reject_if_present("inflation", "ccy", qp.ccy);
+    reject_if_present("inflation", "index", qp.index);
+    reject_if_present("inflation", "tenor", qp.tenor);
+    reject_if_present("inflation", "role", qp.role);
+    reject_if_present("inflation", "metric", qp.metric);
+    inflation_market_data_identifier id;
+    id.index_code = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    if (qp.quote) {
+        if (id.type != instrument_type::quote)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception("oresmd://inflation/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<inflation_quote_type>("quote", *qp.quote);
+    }
+    if (qp.point)
+        id.point = to_lower(*qp.point);
+    return id;
+}
+
 market_data_identifier parse_commodity(const boost::urls::url_view& u, const query_params& qp) {
     validate_no_ir_only_keys("commodity", qp);
     commodity_market_data_identifier id;
@@ -282,6 +303,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_credit(u, qp);
     if (asset_token == "commodity")
         return parse_commodity(u, qp);
+    if (asset_token == "inflation")
+        return parse_inflation(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -328,6 +351,12 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.set_host("commodity");
                 u.segments().push_back(to_lower(id.commodity_code));
                 u.params().append({"ccy", to_lower(id.ccy)});
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "point", id.point);
+            } else if constexpr (std::is_same_v<T, inflation_market_data_identifier>) {
+                u.set_host("inflation");
+                u.segments().push_back(to_lower(id.index_code));
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);

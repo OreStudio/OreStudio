@@ -120,11 +120,24 @@ struct commodity_market_data_identifier final {
  * `std::variant` well but not polymorphic hierarchies -- see
  * id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
  */
+/**
+ * @brief A fully-resolved oresmd identifier for an inflation instrument (asset_class=inflation).
+ */
+struct inflation_market_data_identifier final {
+    std::string index_code;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::inflation_quote_type> quote_type;
+    std::optional<std::string> point;
+
+    bool operator==(const inflation_market_data_identifier&) const = default;
+};
+
 using market_data_identifier = std::variant<fx_market_data_identifier,
                                             ir_market_data_identifier,
                                             equity_market_data_identifier,
                                             credit_market_data_identifier,
-                                            commodity_market_data_identifier>;
+                                            commodity_market_data_identifier,
+                                            inflation_market_data_identifier>;
 
 }
 

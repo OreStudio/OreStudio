@@ -350,6 +350,32 @@ std::string_view ore_commodity_metric(commodity_quote_type qt) {
     return "PRICE";
 }
 
+std::string_view ore_type(inflation_quote_type qt) {
+    switch (qt) {
+    case inflation_quote_type::zc_swap:     return "ZC_INFLATIONSWAP";
+    case inflation_quote_type::yy_swap:     return "YY_INFLATIONSWAP";
+    case inflation_quote_type::seasonality: return "SEASONALITY";
+    }
+    return "ZC_INFLATIONSWAP";
+}
+
+std::string_view ore_inflation_metric(inflation_quote_type qt) {
+    switch (qt) {
+    case inflation_quote_type::zc_swap:
+    case inflation_quote_type::yy_swap:
+    case inflation_quote_type::seasonality: return "RATE";
+    }
+    return "RATE";
+}
+
+std::optional<std::string> quote_key_inflation(const inflation_market_data_identifier& id) {
+    if (id.type != instrument_type::quote || !id.quote_type || !id.point)
+        return std::nullopt;
+    const auto qt = *id.quote_type;
+    return std::format("{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt),
+                       id.index_code, to_upper(*id.point));
+}
+
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -396,8 +422,10 @@ oresmd_projections::to_quote_key(const domain::market_data_identifier& identifie
                 return quote_key_equity(id);
             else if constexpr (std::is_same_v<T, credit_market_data_identifier>)
                 return quote_key_credit(id);
-            else
+            else if constexpr (std::is_same_v<T, commodity_market_data_identifier>)
                 return quote_key_commodity(id);
+            else
+                return quote_key_inflation(id);
         },
         identifier);
 }

@@ -306,6 +306,25 @@ TEST_CASE("commodity_fwd_quote_key", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "COMMODITY_FWD/PRICE/WTI/USD/6M");
 }
 
+/*
+ * Inflation asset class — new instrument family (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+TEST_CASE("zc_inflation_swap_quote_key", tags) {
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "ZC_INFLATIONSWAP/RATE/UKRPI/5Y");
+}
+
+TEST_CASE("yy_inflation_swap_quote_key", tags) {
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "YY_INFLATIONSWAP/RATE/UKRPI/5Y");
+}
+
+TEST_CASE("seasonality_quote_key", tags) {
+    const auto id = parse("oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "SEASONALITY/RATE/UKRPI/JAN");
+}
+
 TEST_CASE("commodity_cpr_quote_key", tags) {
     const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");

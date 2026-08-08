@@ -8,7 +8,7 @@
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
 #+branch: feature/equity-dividend-forward
-#+pr:
+#+pr: 1905
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1905][#1905]] | [marketdata] Extend oresmd equity coverage: dividend, forward |
 
 * Review
 

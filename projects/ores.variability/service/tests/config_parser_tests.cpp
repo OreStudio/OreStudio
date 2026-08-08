@@ -40,8 +40,8 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     // Local (non-CI) ctest loads the whole .env into the test process,
     // including shared ORES_NATS_* vars the parser now genuinely reads --
     // clear them so this test asserts real compiled-in defaults.
-    const ores::testing::scoped_environment_override env_guard({},
-        {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
+    const ores::testing::scoped_environment_override env_guard(
+        {}, {"ORES_NATS_URL", "ORES_NATS_SUBJECT_PREFIX", "ORES_NATS_WIRE_FORMAT"});
 
 
     const std::vector<std::string> args;

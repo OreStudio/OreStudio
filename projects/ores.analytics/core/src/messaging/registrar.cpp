@@ -20,13 +20,10 @@
 #include "ores.analytics.core/messaging/registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_config_registrar.hpp"
-#include "ores.analytics.core/messaging/pricing_model_product_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_model_product_parameter_registrar.hpp"
+#include "ores.analytics.core/messaging/pricing_model_product_registrar.hpp"
 
 // Generic history.v1.get subject.
-#include "ores.history.api/service/version_builder.hpp"
-#include "ores.history.core/messaging/registrar.hpp"
-#include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
@@ -37,8 +34,11 @@
 #include "ores.analytics.core/presentation/pricing_model_product_parameter_history_field_mapper.hpp"
 #include "ores.analytics.core/service/pricing_engine_type_service.hpp"
 #include "ores.analytics.core/service/pricing_model_config_service.hpp"
-#include "ores.analytics.core/service/pricing_model_product_service.hpp"
 #include "ores.analytics.core/service/pricing_model_product_parameter_service.hpp"
+#include "ores.analytics.core/service/pricing_model_product_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
 
 // Function-local static: must outlive the history.v1.get subscription.
 ores::history::service::dispatch_registry& history_registry() {
@@ -52,9 +52,7 @@ namespace {
 
 template <typename T>
 void append(std::vector<T>& dst, std::vector<T>&& src) {
-    dst.insert(dst.end(),
-               std::make_move_iterator(src.begin()),
-               std::make_move_iterator(src.end()));
+    dst.insert(dst.end(), std::make_move_iterator(src.begin()), std::make_move_iterator(src.end()));
 }
 
 } // namespace

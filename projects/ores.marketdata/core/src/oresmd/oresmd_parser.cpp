@@ -198,8 +198,8 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
     id.type = parse_type(qp);
     if (qp.quote) {
         if (id.type != instrument_type::quote)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception("oresmd://equity/... 'quote' is only meaningful when type=quote."));
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://equity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<equity_quote_type>("quote", *qp.quote);
     }
     if (qp.point)

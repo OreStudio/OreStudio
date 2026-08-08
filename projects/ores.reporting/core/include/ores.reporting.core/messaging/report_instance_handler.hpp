@@ -30,12 +30,12 @@
 #include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -262,10 +262,11 @@ public:
                 BOOST_LOG_SEV(report_instance_handler_lg(), info)
                     << "Created report instance " << inst_id_str << " for definition " << def->id
                     << " state="
-                    << (should_dispatch ? "pending"
-                                        : (def->concurrency_policy == "queue"   ? "queued"
-                                           : def->concurrency_policy == "skip" ? "skipped"
-                                                                               : def->concurrency_policy))
+                    << (should_dispatch ?
+                            "pending" :
+                            (def->concurrency_policy == "queue" ? "queued" :
+                             def->concurrency_policy == "skip"  ? "skipped" :
+                                                                  def->concurrency_policy))
                     << " (job_instance_id=" << trigger_msg->job_instance_id << ")";
 
                 if (should_dispatch) {
@@ -284,8 +285,9 @@ public:
                         .correlation_id = inst_id_str,
                         .instance_id = wf_instance_id};
 
-                    nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                                     ores::nats::default_wire_codec().encode(swm));
+                    nats_.js_publish(
+                        ores::workflow::messaging::start_workflow_message::nats_subject,
+                        ores::nats::default_wire_codec().encode(swm));
 
                     BOOST_LOG_SEV(report_instance_handler_lg(), info)
                         << "Dispatched report_execution_workflow for instance " << inst_id_str

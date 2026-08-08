@@ -24,16 +24,14 @@
 
 namespace ores::platform::environment {
 
-std::optional<std::string>
-real_environment_provider::get(const std::string& name) const {
+std::optional<std::string> real_environment_provider::get(const std::string& name) const {
     const char* value = std::getenv(name.c_str());
     if (value == nullptr)
         return {};
     return std::string(value);
 }
 
-void real_environment_provider::set(const std::string& name,
-                                    const std::string& value) {
+void real_environment_provider::set(const std::string& name, const std::string& value) {
 #ifdef _WIN32
     _putenv_s(name.c_str(), value.c_str());
 #else

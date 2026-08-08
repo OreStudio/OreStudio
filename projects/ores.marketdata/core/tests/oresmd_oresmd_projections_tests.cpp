@@ -81,7 +81,8 @@ TEST_CASE("ir_eur_estr_index_name_drops_tenor_suffix_for_overnight_index", tags)
 
 TEST_CASE("ir_swap_quote_key_matches_worked_example", tags) {
     const auto id = parse(
-        "oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y");
+        "oresmd://ir/"
+        "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IR_SWAP/RATE/USD/2D/3M/5Y");
 }
 
@@ -102,57 +103,70 @@ TEST_CASE("swaption_vol_quote_key_matches_worked_example", tags) {
  */
 
 TEST_CASE("ir_mm_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m");
+    const auto id =
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM/RATE/EUR/EURIBOR/3M/1M");
 }
 
 TEST_CASE("ir_fra_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m");
+    const auto id =
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m");
     REQUIRE(oresmd_projections::to_quote_key(id) == "FRA/RATE/EUR/EURIBOR/3M/6M");
 }
 
 TEST_CASE("ir_imm_fra_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "IMM_FRA/RATE/USD/LIBOR/3M/5Y");
 }
 
 TEST_CASE("ir_basis_swap_spread_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y");
+    const auto id = parse(
+        "oresmd://ir/"
+        "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y");
 }
 
 TEST_CASE("ir_cc_basis_swap_spread_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y");
+    const auto id = parse(
+        "oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y");
 }
 
 TEST_CASE("ir_cc_fix_float_swap_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y");
 }
 
 TEST_CASE("ir_bma_swap_ratio_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y");
+    const auto id =
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BMA_SWAP/RATIO/USD/3M/5Y");
 }
 
 TEST_CASE("ir_zero_rate_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y");
+    const auto id =
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/RATE/EUR/EURIBOR/3M/5Y");
 }
 
 TEST_CASE("ir_zero_yield_spread_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y");
+    const auto id =
+        parse("oresmd://ir/"
+              "eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y");
 }
 
 TEST_CASE("ir_mm_future_price_quote_key", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme");
+    const auto id = parse(
+        "oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME");
 }
 
 TEST_CASE("ir_oi_future_price_quote_key", tags) {
-    const auto id = parse("oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme");
+    const auto id = parse(
+        "oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme");
     REQUIRE(oresmd_projections::to_quote_key(id) == "OI_FUTURE/PRICE/USD/SOFR/3M/CME");
 }
 
@@ -166,12 +180,14 @@ TEST_CASE("ir_mm_rate_metric_defaulted_from_quote_type", tags) {
 }
 
 TEST_CASE("ir_basis_swap_metric_defaulted_to_basis_spread", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y");
+    const auto id =
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y");
 }
 
 TEST_CASE("ir_mm_future_metric_defaulted_to_price", tags) {
-    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme");
+    const auto id =
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme");
     REQUIRE(oresmd_projections::to_quote_key(id) == "MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME");
 }
 
@@ -189,9 +205,8 @@ TEST_CASE("ir_quote_key_requires_quote_type", tags) {
  */
 
 TEST_CASE("reject_ir_quote_present_when_type_is_not_quote", tags) {
-    REQUIRE_THROWS_AS(
-        parse("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&quote=ir_swap"),
-        ores::marketdata::core::oresmd_exception);
+    REQUIRE_THROWS_AS(parse("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&quote=ir_swap"),
+                      ores::marketdata::core::oresmd_exception);
 }
 
 /*
@@ -199,9 +214,8 @@ TEST_CASE("reject_ir_quote_present_when_type_is_not_quote", tags) {
  */
 
 TEST_CASE("reject_fx_uri_with_ir_only_quote_field", tags) {
-    REQUIRE_THROWS_AS(
-        parse("oresmd://fx/eurusd?type=quote&quote=mm"),
-        ores::marketdata::core::oresmd_exception);
+    REQUIRE_THROWS_AS(parse("oresmd://fx/eurusd?type=quote&quote=mm"),
+                      ores::marketdata::core::oresmd_exception);
 }
 
 TEST_CASE("equity_spot_quote_key_matches_worked_example", tags) {
@@ -250,13 +264,16 @@ TEST_CASE("recovery_rate_quote_key", tags) {
 }
 
 TEST_CASE("cds_index_base_correlation_quote_key_no_ccy", tags) {
-    const auto id = parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
+    const auto id =
+        parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1");
 }
 
 TEST_CASE("index_cds_tranche_base_correlation_quote_key_no_ccy", tags) {
-    const auto id = parse("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07");
+    const auto id =
+        parse("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07");
+    REQUIRE(oresmd_projections::to_quote_key(id) ==
+            "INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07");
 }
 
 TEST_CASE("commodity_quote_key_matches_worked_example", tags) {

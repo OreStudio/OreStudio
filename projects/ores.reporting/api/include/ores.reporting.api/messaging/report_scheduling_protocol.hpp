@@ -32,8 +32,7 @@ namespace ores::reporting::messaging {
  */
 struct schedule_report_definitions_request {
     using response_type = struct schedule_report_definitions_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-definitions.schedule";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.schedule";
     std::vector<std::string> ids;
 };
 
@@ -49,8 +48,7 @@ struct schedule_report_definitions_response {
  */
 struct unschedule_report_definitions_request {
     using response_type = struct unschedule_report_definitions_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-definitions.unschedule";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-definitions.unschedule";
     std::vector<std::string> ids;
 };
 
@@ -69,8 +67,7 @@ struct unschedule_report_definitions_response {
  * The reporting service handles it by creating a new report_instance.
  */
 struct trigger_report_instance_message {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.trigger";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.trigger";
     std::string report_definition_id;
     std::string tenant_id;
     std::int64_t job_instance_id = 0;

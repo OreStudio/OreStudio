@@ -17,20 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_TABLE_IO_HPP
 
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Dumps the fx_asian_forward_instrument to a stream in JSON format.
+ * @brief Dumps the fx_asian_forward_instrument objects to a stream in table format.
  */
 ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const fx_asian_forward_instrument& v);
+                                                 const std::vector<fx_asian_forward_instrument>& v);
 
 }
 

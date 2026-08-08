@@ -1,27 +1,33 @@
 :PROPERTIES:
-:ID: A630130B-DED5-45A7-AD10-25FD85A3735E
+:ID: A654BCD8-2D53-41E9-8C53-BAF606467863
 :ores.cpp.eventing-integration-test.enabled: true
 :END:
-#+title: ores.trading.fx_variance_swap_instrument
-#+description: Codegen entity model for the trading =fx_variance_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+title: ores.trading.fx_asian_forward_instrument
+#+description: Codegen entity model for the trading =fx_asian_forward_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+entity_singular: fx_variance_swap_instrument
-#+entity_plural: fx_variance_swap_instruments
-#+entity_title: FX Variance Swap Instrument
-#+brief: FX Variance Swap instrument.
-#+created: 2026-08-06
+#+entity_singular: fx_asian_forward_instrument
+#+entity_plural: fx_asian_forward_instruments
+#+entity_title: FX Asian Forward Instrument
+#+brief: FX Asian Forward instrument.
+#+created: 2026-08-08
 #+updated: 2026-08-08
 
-Routes ORE product type: FxVarianceSwap. =moment_type= distinguishes
-Variance swaps from Volatility swaps.
+Routes ORE product types: FxAverageForward, FxTaRF. =fx_index=
+captures Underlying.Name for the fixing source. The
+=reference_currency/reference_notional/settlement_currency/
+settlement_notional/payment_date/long_short= fields are
+FxAverageForward-specific; =currency/fixing_amount/target_amount/
+strike= are FxTaRF-specific (empty/absent for FxAverageForward).
+Complex observation schedules and range bounds are not modelled in
+Phase 2.
 
 * Flags
 :PROPERTIES:
-:schema:           public
-:product:          ores
-:component:        trading
+:schema:    public
+:product:   ores
+:component: trading
 :profile:   trading-instrument
 :END:
 
@@ -38,7 +44,7 @@ Variance swaps from Volatility swaps.
 :nullable:     false
 :END:
 
-UUID uniquely identifying this FX variance swap instrument.
+UUID uniquely identifying this FX Asian Forward instrument.
 
 Surrogate key for the instrument record.
 
@@ -52,10 +58,10 @@ Surrogate key for the instrument record.
 
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
-Routes ORE product type: FxVarianceSwap.
+Routes ORE product types: FxAverageForward, FxTaRF.
 
 #+begin_src cpp :name generator
-std::string("FxVarianceSwap")
+std::string("FxAverageForward")
 #+end_src
 
 ** party_id
@@ -82,113 +88,133 @@ Optional soft FK to the parent trade.
 
 Links instrument to a trade if applicable.
 
-** start_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Variance observation start date (ISO 8601 date string).
-
-#+begin_src cpp :name generator
-std::string("2024-01-15")
-#+end_src
-
-** end_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Variance observation end date (ISO 8601 date string).
-
-Must be after start_date.
-
-#+begin_src cpp :name generator
-std::string("2025-01-15")
-#+end_src
-
-** currency
+** fx_index
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-Settlement currency.
+Fixing source index (Underlying.Name from ORE XML).
+
+#+begin_src cpp :name generator
+std::string("FX-TR20H-EUR-USD")
+#+end_src
+
+** reference_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Currency the average is computed on (FxAverageForward).
+
+#+begin_src cpp :name generator
+std::string("EUR")
+#+end_src
+
+** reference_notional
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Notional in reference_currency (FxAverageForward).
+
+#+begin_src cpp :name generator
+8614.0
+#+end_src
+
+** settlement_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Currency of the settlement payment (FxAverageForward).
 
 #+begin_src cpp :name generator
 std::string("USD")
 #+end_src
 
-** underlying_code
+** settlement_notional
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
 :END:
 
-FX pair or index identifier (e.g. TR20H-EUR-USD).
+Notional in settlement_currency (FxAverageForward).
 
 #+begin_src cpp :name generator
-std::string("TR20H-EUR-USD")
+10000.0
+#+end_src
+
+** payment_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Settlement payment date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2025-09-30")
 #+end_src
 
 ** long_short
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Position direction: Long or Short.
+Position direction: Long or Short. Hardcoded to Long by the mapper.
 
 #+begin_src cpp :name generator
 std::string("Long")
 #+end_src
 
-** strike
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Fixed variance or volatility strike. Must be positive.
-
-#+begin_src cpp :name generator
-0.04
-#+end_src
-
-** notional
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Notional amount for PnL scaling. Must be positive.
-
-#+begin_src cpp :name generator
-1000000.0
-#+end_src
-
-** moment_type
+** currency
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Whether the product is a Variance or Volatility swap.
+Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
 
-#+begin_src cpp :name generator
-std::string("Variance")
-#+end_src
+** fixing_amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Per-fixing target amount (FxTaRF-specific). Absent for
+FxAverageForward.
+
+** target_amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Total target amount (FxTaRF-specific). Absent for FxAverageForward.
+
+** strike
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Target strike level (FxTaRF-specific). Absent for FxAverageForward.
 
 ** description
 :PROPERTIES:
@@ -203,21 +229,15 @@ Optional free-text description.
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_trading_fx_variance_swap_instruments_tbl
+:tablename: ores_trading_fx_asian_forward_instruments_tbl
 :END:
 
 ** Checks
 
 | expression |
 |---|
-| "end_date" > "start_date" |
-| "strike" > 0 |
-| "notional" > 0 |
-| "currency" <> '' |
-| "underlying_code" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "moment_type" in ('Variance', 'Volatility') |
-| "trade_type_code" = 'FxVarianceSwap' |
+| "fx_index" <> '' |
+| "trade_type_code" in ('FxAverageForward', 'FxTaRF') |
 
 ** Indexes
 
@@ -260,25 +280,26 @@ repository profiles regenerate correctly.
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: fx_variance_swap_instrument
-:entity_plural_short:   fx_variance_swap_instruments
-:entity_singular_words: FX variance swap instrument
-:entity_plural_words:   FX variance swap instruments
+:entity_singular_short: fx_asian_forward_instrument
+:entity_plural_short:   fx_asian_forward_instruments
+:entity_singular_words: FX Asian Forward instrument
+:entity_plural_words:   FX Asian Forward instruments
 :END:
 
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #+end_src
 
 ** Conventions
 :PROPERTIES:
-:iterator_var: fxvsi
+:iterator_var: fafi
 :END:
 
 ** Custom repository methods
 
 * See also
 
-- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

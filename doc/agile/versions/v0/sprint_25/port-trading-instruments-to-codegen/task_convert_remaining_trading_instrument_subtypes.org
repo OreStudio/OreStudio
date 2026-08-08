@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 9/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument. |
+| Now          | 10/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. fx_asian_forward). |
+| Next         | Convert the next flat instrument (e.g. equity_option). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -338,6 +338,58 @@ Zero-diff verified via a second regeneration pass. Build green;
 =ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
 71 cases incl. the new
 =write_fx_barrier_option_instrument_publishes_nats_changed_event=;
+service: 10 cases).
+
+** All converted instruments bound to the trading-instrument variability profile (2026-08-08)
+
+Per review direction, every converted instrument model must follow the
+standard model shape and bind to a variability profile instead of
+carrying scope knobs inline. Created
+=projects/modeling/variability_trading_instrument.org= (scaffolded via
+=compass add profile=) assigning =has_tenant_id=, =has_workspace_id=
+and =party_id_from_session=, and bound all 10 converted instrument
+models to it: root Flags now carry only
+=schema/product/component/:profile:=, and the SQL Flags drawer carries
+only the =tablename=. All 10 verified zero-diff after the retrofit
+(via =compass codegen entity generate <entity> --diff=).
+
+** fx_asian_forward_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (FxAverageForward, FxTaRF) -- the =trade_type_code=
+check is the 2-value in-list =('FxAverageForward', 'FxTaRF')=.
+=reference_currency/reference_notional/settlement_currency/
+settlement_notional/payment_date/long_short= are
+FxAverageForward-specific; =currency/fixing_amount/target_amount/
+strike= are FxTaRF-specific (nullable with no generator blocks, left
+empty). Carries the hand-crafted unique index on =trade_id= (with
+=where_extra: trade_id is not null=) -- preserved verbatim in the
+model. =payment_date= is a =date=-typed column modelled as
+=std::string= (ISO 8601), per family precedent.
+
+Messaging path reconciled in the same commit -- and this time the
+typed-FX pattern is *gone outright*: deleting the asian_forward save
+struct left =instrument_protocol.hpp= with no typed section at all and
+=typed_fx_instrument_handler.hpp= with no methods left, so the whole
+file was deleted (=git rm=). The typed subscription in
+=registrar_fx.cpp= is replaced with
+=register_fx_asian_forward_instrument_handlers=; the four consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=,
+=FxAsianForwardInstrumentForm=) include the generated
+=fx_asian_forward_instrument_protocol.hpp=; the generated struct is
+shape-identical (same =data= member, same
+=trading.v1.fx_asian_forward_instruments.save= subject), so no call-site
+changes were needed.
+
+The =trading_fx_asian_forward_instruments_notify_trigger_drop.sql= file
+did not exist before this conversion (the hand-crafted drop.sql carried
+the notify drops inline), so the missing =\\ir= line was added to
+=drop_trading.sql=, per the established pattern.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+73 cases incl. the new
+=write_fx_asian_forward_instrument_publishes_nats_changed_event=;
 service: 10 cases).
 
 * Test Scenarios

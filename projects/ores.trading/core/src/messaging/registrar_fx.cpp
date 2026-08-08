@@ -18,13 +18,13 @@
  *
  */
 #include "ores.trading.core/messaging/fx_accumulator_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/fx_asian_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_digital_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_vanilla_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_variance_swap_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
-#include "ores.trading.core/messaging/typed_fx_instrument_handler.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -35,14 +35,11 @@ register_fx_handlers(ores::nats::service::client& nats,
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = queue_name;
 
-    // Typed FX instruments
-    subs.push_back(
-        nats.queue_subscribe(std::string(save_fx_asian_forward_instrument_request::nats_subject),
-                             queue,
-                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                 typed_fx_instrument_handler h(nats, ctx, verifier);
-                                 h.save_asian_forward(std::move(msg));
-                             }));
+    auto fx_asian_forward_instrument_subs =
+        register_fx_asian_forward_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(fx_asian_forward_instrument_subs.begin()),
+                std::make_move_iterator(fx_asian_forward_instrument_subs.end()));
 
     auto fx_digital_option_instrument_subs =
         register_fx_digital_option_instrument_handlers(nats, ctx, verifier);

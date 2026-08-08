@@ -22,6 +22,7 @@ set(files
     "equity_swap_instrument_eventing_integration_tests.cpp"
     "equity_variance_swap_instrument_eventing_integration_tests.cpp"
     "fx_accumulator_instrument_eventing_integration_tests.cpp"
+    "fx_asian_forward_instrument_eventing_integration_tests.cpp"
     "fx_barrier_option_instrument_eventing_integration_tests.cpp"
     "fx_digital_option_instrument_eventing_integration_tests.cpp"
     "fx_forward_instrument_eventing_integration_tests.cpp"

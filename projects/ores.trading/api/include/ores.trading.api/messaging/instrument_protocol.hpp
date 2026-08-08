@@ -39,7 +39,6 @@
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
@@ -55,19 +54,6 @@
 #include <vector>
 
 namespace ores::trading::messaging {
-
-// ---- Typed FX instrument protocol ----
-
-struct save_fx_asian_forward_instrument_request {
-    using response_type = struct save_fx_asian_forward_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_asian_forward_instruments.save";
-    ores::trading::domain::fx_asian_forward_instrument data;
-};
-
-struct save_fx_asian_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
 
 // ---- Bond instrument protocol ----
 

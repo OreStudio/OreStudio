@@ -18,16 +18,27 @@
  *
  */
 #include "ores.shell/app/commands/synthetic_commands.hpp"
+#include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.synthetic.api/messaging/folder_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
+#include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
+#include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <cctype>
 #include <chrono>
 #include <cli/cli.h>
 #include <functional>
+#include <map>
 #include <ostream>
 #include <rfl/json.hpp>
+#include <set>
 
 namespace ores::shell::app::commands {
 
@@ -40,7 +51,228 @@ namespace {
 // wizard's generous timeout.
 constexpr std::chrono::minutes generate_timeout(10);
 
+std::optional<boost::uuids::uuid>
+parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
+    try {
+        return boost::lexical_cast<boost::uuids::uuid>(value);
+    } catch (const boost::bad_lexical_cast&) {
+        fail(out) << "Invalid " << what << " format. Expected UUID: " << value << std::endl;
+        return std::nullopt;
+    }
 }
+
+std::string scope_label(synthetic::domain::scope value) {
+    switch (value) {
+        case synthetic::domain::scope::system:
+            return "system";
+        case synthetic::domain::scope::tenant:
+            return "tenant";
+        case synthetic::domain::scope::party:
+            return "party";
+    }
+    return "unknown";
+}
+
+std::string binding_mode_label(synthetic::domain::binding_mode value) {
+    switch (value) {
+        case synthetic::domain::binding_mode::bound:
+            return "bound";
+        case synthetic::domain::binding_mode::sandboxed:
+            return "sandboxed";
+    }
+    return "unknown";
+}
+
+std::optional<synthetic::domain::scope> parse_scope(std::ostream& out, const std::string& value) {
+    if (value == "system")
+        return synthetic::domain::scope::system;
+    if (value == "tenant")
+        return synthetic::domain::scope::tenant;
+    if (value == "party")
+        return synthetic::domain::scope::party;
+    fail(out) << "Invalid --scope value '" << value << "'; expected system, tenant or party."
+              << std::endl;
+    return std::nullopt;
+}
+
+// Parse "folder <token>" / "feed <token>" into (target, token); reports
+// usage. The token is a UUID or a human-friendly name/key; the
+// executors resolve it (see resolve_folder_id/resolve_feed). Multi-word
+// names are quoted at the shell ("2026 Realistic"), as everywhere in
+// the REPL; the cli tokenizer passes them through as a single token.
+std::optional<std::pair<std::string, std::string>> parse_target(
+    std::ostream& out, const std::vector<std::string>& positionals, std::string_view verb) {
+    if (positionals.size() != 2) {
+        fail(out) << "Usage: synthetic " << verb
+                  << " folder <folder-id|\"folder name\"> | feed <feed-id|ore-key|source-name>"
+                  << std::endl;
+        return std::nullopt;
+    }
+    if (positionals[0] != "folder" && positionals[0] != "feed") {
+        fail(out) << "Unknown target '" << positionals[0] << "'; expected folder or feed."
+                  << std::endl;
+        return std::nullopt;
+    }
+    return std::pair{positionals[0], positionals[1]};
+}
+
+// Parse a UUID, silently returning nullopt for non-UUID tokens (which
+// may be names) -- unlike parse_uuid, which reports an error.
+std::optional<boost::uuids::uuid> try_uuid(const std::string& value) {
+    try {
+        return boost::lexical_cast<boost::uuids::uuid>(value);
+    } catch (const boost::bad_lexical_cast&) {
+        return std::nullopt;
+    }
+}
+
+// Report an ambiguous name match, listing the candidate labels (folder
+// paths, feed source_names, ...) so the user can pick one.
+void report_ambiguous(std::ostream& out,
+                      std::string_view what,
+                      const std::string& token,
+                      const std::vector<std::string>& labels) {
+    fail(out) << "Ambiguous " << what << " name '" << token << "' matches " << labels.size()
+              << " entries:" << std::endl;
+    for (const auto& label : labels)
+        out << "  " << label << std::endl;
+}
+
+// Render a folder's path from the tree root ("Synthetic > 2026 Realistic
+// > FX"), for disambiguating same-named folders.
+std::string folder_path(const std::map<std::string, synthetic::domain::folder>& by_id,
+                        const std::string& id) {
+    std::vector<std::string> parts;
+    std::string cur = id;
+    while (!cur.empty() && parts.size() < 32) { // cycle guard
+        auto it = by_id.find(cur);
+        if (it == by_id.end())
+            break;
+        parts.push_back(it->second.name);
+        cur = it->second.parent_id ? boost::uuids::to_string(*it->second.parent_id) : std::string{};
+    }
+
+    std::string path;
+    for (auto it = parts.rbegin(); it != parts.rend(); ++it) {
+        if (!path.empty())
+            path += " > ";
+        path += *it;
+    }
+    return path;
+}
+
+// Resolve a folder token -- UUID or exact folder name -- to a folder
+// id. The name must be unique within the visible tree; a name shared by
+// several folders (e.g. the same asset class under different
+// collections) is reported as ambiguous, listing each folder's path.
+std::optional<std::string>
+resolve_folder_id(std::ostream& out, nats_client& session, const std::string& token) {
+    if (const auto id = try_uuid(token))
+        return boost::uuids::to_string(*id);
+
+    synthetic::messaging::get_folders_request req{.offset = 0, .limit = 1000};
+    auto result = do_auth_request<synthetic::messaging::get_folders_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return std::nullopt;
+    if (!result->success) {
+        fail(out) << "Failed to list folders: " << result->message << std::endl;
+        return std::nullopt;
+    }
+
+    std::map<std::string, synthetic::domain::folder> by_id;
+    for (const auto& f : result->folders)
+        by_id.emplace(boost::uuids::to_string(f.id), f);
+
+    std::vector<std::string> exact;
+    for (const auto& [id, f] : by_id)
+        if (f.name == token)
+            exact.push_back(id);
+    if (exact.size() == 1)
+        return exact.front();
+    if (exact.size() > 1) {
+        std::vector<std::string> labels;
+        for (const auto& id : exact)
+            labels.push_back(folder_path(by_id, id));
+        report_ambiguous(out, "folder", token, labels);
+        return std::nullopt;
+    }
+    fail(out) << "No folder matching '" << token << "'." << std::endl;
+    return std::nullopt;
+}
+
+// Resolve a feed token -- UUID, exact ore key or exact source_name --
+// to its fx_spot_generation_config row. A token shared by several
+// visible feeds (e.g. the same ore key under different collections) is
+// reported as ambiguous, listing each feed's source_name.
+std::optional<synthetic::domain::fx_spot_generation_config>
+resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
+    synthetic::messaging::get_fx_spot_generation_configs_request req{.offset = 0, .limit = 1000};
+    auto result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return std::nullopt;
+
+    if (const auto id = try_uuid(token)) {
+        const auto needle = boost::uuids::to_string(*id);
+        for (const auto& c : result->fx_spot_generation_configs)
+            if (boost::uuids::to_string(c.id) == needle)
+                return c;
+        fail(out) << "Feed not found: " << token << std::endl;
+        return std::nullopt;
+    }
+
+    std::vector<synthetic::domain::fx_spot_generation_config> exact;
+    for (const auto& c : result->fx_spot_generation_configs)
+        if (c.ore_key == token || c.source_name == token)
+            exact.push_back(c);
+    if (exact.size() == 1)
+        return exact.front();
+    if (exact.size() > 1) {
+        std::vector<std::string> labels;
+        for (const auto& c : exact)
+            labels.push_back(c.source_name);
+        report_ambiguous(out, "feed", token, labels);
+        return std::nullopt;
+    }
+    fail(out) << "No feed matching '" << token << "'." << std::endl;
+    return std::nullopt;
+}
+
+// Render one folder row; collection rows additionally show the
+// market_data_generation_config they represent.
+void print_folder(std::ostream& out, const synthetic::domain::folder& f) {
+    out << "  " << f.name << " [" << f.kind << "] " << boost::uuids::to_string(f.id);
+    if (f.collection_id)
+        out << " (config " << boost::uuids::to_string(*f.collection_id) << ")";
+    out << std::endl;
+}
+
+// Recursively print a folder and its children (depth-first, indented),
+// returning the number of nodes printed.
+std::size_t print_folder_tree(std::ostream& out,
+                              const std::string& folder_id,
+                              const std::map<std::string, synthetic::domain::folder>& by_id,
+                              std::set<std::string>& visited,
+                              int depth) {
+    if (!visited.insert(folder_id).second)
+        return 0; // parent cycles are not expected, but never loop forever
+    auto it = by_id.find(folder_id);
+    if (it == by_id.end())
+        return 0;
+
+    if (depth > 0)
+        out << std::string(static_cast<std::size_t>(depth) * 2, ' ');
+    print_folder(out, it->second);
+
+    std::size_t printed = 1;
+    for (const auto& [id, child] : by_id)
+        if (child.parent_id && boost::uuids::to_string(*child.parent_id) == folder_id)
+            printed += print_folder_tree(out, id, by_id, visited, depth + 1);
+    return printed;
+}
+
+} // namespace
 
 void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
     auto synthetic_menu = std::make_unique<cli::Menu>("synthetic");
@@ -59,6 +291,43 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
          "[--business-unit-max-depth N] [--contacts-per-party N] "
          "[--contacts-per-counterparty N] [--no-addresses] [--no-identifiers] "
          "[--seed N]"});
+
+    // Market simulator operations, mirroring the Qt Market Simulator window.
+    auto list_menu = std::make_unique<cli::Menu>("list");
+    list_menu->Insert("folders",
+                      [&session](std::ostream& out, std::vector<std::string> args) {
+                          process_list_folders(std::ref(out), std::ref(session), args);
+                      },
+                      "List the synthetic folder hierarchy visible to the logged-in party",
+                      {"[--config-id <collection-id>] [--name <folder-name>]"});
+    list_menu->Insert("configs",
+                      [&session](std::ostream& out, std::vector<std::string> args) {
+                          process_list_configs(std::ref(out), std::ref(session), args);
+                      },
+                      "List market_data_generation_configs visible to the logged-in party/tenant",
+                      {"[--scope system|tenant|party]"});
+    synthetic_menu->Insert(std::move(list_menu));
+
+    synthetic_menu->Insert("start",
+                           [&session](std::ostream& out, std::vector<std::string> args) {
+                               process_start(std::ref(out), std::ref(session), args);
+                           },
+                           "Start feeds under a folder or an individual feed",
+                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"});
+
+    synthetic_menu->Insert("stop",
+                           [&session](std::ostream& out, std::vector<std::string> args) {
+                               process_stop(std::ref(out), std::ref(session), args);
+                           },
+                           "Stop feeds under a folder or an individual feed",
+                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"});
+
+    synthetic_menu->Insert("validate-vintage",
+                           [&session](std::ostream& out, std::vector<std::string> args) {
+                               process_validate_vintage(std::ref(out), std::ref(session), args);
+                           },
+                           "Validate vintage data availability for a feed",
+                           {"feed <feed-id|ore-key|source-name>"});
 
     root_menu.Insert(std::move(synthetic_menu));
 }
@@ -206,6 +475,393 @@ void synthetic_commands::process_generate(std::ostream& out,
     if (!req)
         return;
     generate(out, session, *req);
+}
+
+void synthetic_commands::process_list_folders(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "config-id", .requires_value = true, .default_value = ""},
+                              {.name = "name", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!parsed->positionals.empty()) {
+        fail(out) << "synthetic list folders takes no positional arguments; see help." << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    const auto& config_id = parsed->flag("config-id");
+    if (!config_id.empty() && !parse_uuid(out, config_id, "config ID"))
+        return;
+    list_folders(out, session, config_id, parsed->flag("name"));
+}
+
+bool synthetic_commands::list_folders(std::ostream& out,
+                                      nats_client& session,
+                                      const std::string& collection_id,
+                                      const std::string& folder_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing synthetic folders.";
+
+    synthetic::messaging::get_folders_request req{.offset = 0, .limit = 1000};
+    auto result = do_auth_request<synthetic::messaging::get_folders_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Failed to list folders: " << result->message << std::endl;
+        return false;
+    }
+
+    // Index by id for parent/child resolution and subtree collection.
+    std::map<std::string, synthetic::domain::folder> by_id;
+    for (const auto& f : result->folders)
+        by_id.emplace(boost::uuids::to_string(f.id), f);
+
+    // --config-id narrows the listing to one collection and its
+    // descendants: find the collection folder representing that config,
+    // then print only its subtree.
+    std::string subtree_root;
+    if (!collection_id.empty()) {
+        for (const auto& [id, f] : by_id)
+            if (f.collection_id && boost::uuids::to_string(*f.collection_id) == collection_id)
+                subtree_root = id;
+        if (subtree_root.empty()) {
+            fail(out) << "No collection folder for config " << collection_id << std::endl;
+            return false;
+        }
+    }
+
+    // --name narrows the listing to the subtree(s) rooted at the
+    // folder(s) whose name matches exactly. Multiple matches print each
+    // subtree.
+    std::vector<std::string> subtree_roots;
+    if (!folder_name.empty()) {
+        for (const auto& [id, f] : by_id)
+            if (f.name == folder_name)
+                subtree_roots.push_back(id);
+        if (subtree_roots.empty()) {
+            fail(out) << "No folder matching '" << folder_name << "'." << std::endl;
+            return false;
+        }
+    }
+
+    // Roots are folders without a parent, or whose parent is not
+    // visible (RLS never hides a folder from its own party, but be
+    // defensive and still print such orphans).
+    std::vector<std::string> roots;
+    for (const auto& [id, f] : by_id)
+        if (!f.parent_id || !by_id.contains(boost::uuids::to_string(*f.parent_id)))
+            roots.push_back(id);
+
+    std::size_t printed = 0;
+    std::set<std::string> visited;
+    if (!subtree_root.empty())
+        printed = print_folder_tree(out, subtree_root, by_id, visited, 0);
+    else if (!subtree_roots.empty())
+        for (const auto& root : subtree_roots)
+            printed += print_folder_tree(out, root, by_id, visited, 0);
+    else
+        for (const auto& root : roots)
+            printed += print_folder_tree(out, root, by_id, visited, 0);
+
+    out << printed << " of " << result->total_available_count << " folders shown." << std::endl;
+    return true;
+}
+
+void synthetic_commands::process_list_configs(std::ostream& out,
+                                              nats_client& session,
+                                              const std::vector<std::string>& args) {
+    auto parsed =
+        parse_args(args, {{.name = "scope", .requires_value = true, .default_value = ""}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!parsed->positionals.empty()) {
+        fail(out) << "synthetic list configs takes no positional arguments; see help." << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    std::optional<synthetic::domain::scope> scope_filter;
+    const auto& scope = parsed->flag("scope");
+    if (!scope.empty()) {
+        scope_filter = parse_scope(out, scope);
+        if (!scope_filter)
+            return;
+    }
+    list_configs(out, session, scope_filter);
+}
+
+bool synthetic_commands::list_configs(std::ostream& out,
+                                      nats_client& session,
+                                      std::optional<synthetic::domain::scope> scope_filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing market data generation configs.";
+
+    synthetic::messaging::get_market_data_generation_configs_request req{.offset = 0,
+                                                                         .limit = 1000};
+    auto result =
+        do_auth_request<synthetic::messaging::get_market_data_generation_configs_response>(
+            out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Failed to list configs: " << result->message << std::endl;
+        return false;
+    }
+
+    std::size_t shown = 0;
+    for (const auto& c : result->market_data_generation_configs) {
+        if (scope_filter && c.scope != *scope_filter)
+            continue;
+        ++shown;
+        out << "  " << c.name << " (" << boost::uuids::to_string(c.id)
+            << ") scope=" << scope_label(c.scope)
+            << " binding=" << binding_mode_label(c.binding_mode)
+            << " enabled=" << (c.enabled ? "true" : "false");
+        if (c.party_id)
+            out << " party_id=" << boost::uuids::to_string(*c.party_id);
+        out << std::endl;
+    }
+    out << shown << " of " << result->total_available_count << " configs shown." << std::endl;
+    return true;
+}
+
+void synthetic_commands::process_start(std::ostream& out,
+                                       nats_client& session,
+                                       const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    auto target = parse_target(out, parsed->positionals, "start");
+    if (!target)
+        return;
+    if (target->first == "folder")
+        start_folder(out, session, target->second);
+    else
+        start_feed(out, session, target->second);
+}
+
+bool synthetic_commands::start_folder(std::ostream& out,
+                                      nats_client& session,
+                                      const std::string& token) {
+    const auto folder_id = resolve_folder_id(out, session, token);
+    if (!folder_id)
+        return false;
+    BOOST_LOG_SEV(lg(), info) << "Starting feeds under folder " << *folder_id << ".";
+    marketdata::messaging::start_feeds_under_folder_request req{.folder_id = *folder_id};
+    auto result = do_auth_request<marketdata::messaging::start_feeds_under_folder_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Start failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Started " << result->started << " feed(s) under folder " << *folder_id << " ("
+        << result->already_running << " already running, " << result->skipped << " skipped)."
+        << std::endl;
+    return true;
+}
+
+bool synthetic_commands::start_feed(std::ostream& out,
+                                    nats_client& session,
+                                    const std::string& token) {
+    // Resolve the feed row and its GMM components, mirroring the Qt
+    // Market Simulator's per-pair start: the request carries the full
+    // price process, so the service never falls back to ad-hoc defaults.
+    const auto fx = resolve_feed(out, session, token);
+    if (!fx)
+        return false;
+    const auto feed_id = boost::uuids::to_string(fx->id);
+
+    synthetic::messaging::get_gmm_components_request gmm_req{.offset = 0, .limit = 1000};
+    auto gmm_result = do_auth_request<synthetic::messaging::get_gmm_components_response>(
+        out, session, std::string(gmm_req.nats_subject), gmm_req);
+    if (!gmm_result)
+        return false;
+
+    std::vector<const synthetic::domain::gmm_component*> comps;
+    for (const auto& c : gmm_result->gmm_components)
+        if (boost::uuids::to_string(c.fx_spot_config_id) == feed_id)
+            comps.push_back(&c);
+    if (comps.empty()) {
+        fail(out) << "Feed " << feed_id << " has no price model components." << std::endl;
+        return false;
+    }
+    std::sort(comps.begin(), comps.end(), [](const auto* a, const auto* b) {
+        return a->component_index < b->component_index;
+    });
+
+    marketdata::messaging::start_market_feed_config_request req;
+    req.ore_key = fx->ore_key;
+    req.source_name = fx->source_name;
+    for (const auto* c : comps) {
+        req.gmm_means.push_back(c->mean);
+        req.gmm_stdevs.push_back(c->stdev);
+        req.gmm_weights.push_back(c->weight);
+    }
+    req.gmm_initial_price = fx->gmm_initial_price;
+    req.ticks_per_hour = static_cast<double>(fx->ticks_per_hour);
+    req.process_type = fx->process_type;
+    req.vintage_source = fx->vintage_source;
+    req.vintage_date = fx->vintage_date;
+
+    BOOST_LOG_SEV(lg(), info) << "Starting feed " << req.source_name << ".";
+    auto result = do_auth_request<marketdata::messaging::start_market_feed_config_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Start failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Started feed " << req.source_name << " (" << feed_id << ")." << std::endl;
+    return true;
+}
+
+void synthetic_commands::process_stop(std::ostream& out,
+                                      nats_client& session,
+                                      const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    auto target = parse_target(out, parsed->positionals, "stop");
+    if (!target)
+        return;
+    if (target->first == "folder")
+        stop_folder(out, session, target->second);
+    else
+        stop_feed(out, session, target->second);
+}
+
+bool synthetic_commands::stop_folder(std::ostream& out,
+                                     nats_client& session,
+                                     const std::string& token) {
+    const auto folder_id = resolve_folder_id(out, session, token);
+    if (!folder_id)
+        return false;
+    BOOST_LOG_SEV(lg(), info) << "Stopping feeds under folder " << *folder_id << ".";
+    marketdata::messaging::stop_feeds_under_folder_request req{.folder_id = *folder_id};
+    auto result = do_auth_request<marketdata::messaging::stop_feeds_under_folder_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Stop failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Stopped " << result->stopped << " feed(s) under folder " << *folder_id << "."
+        << std::endl;
+    return true;
+}
+
+bool synthetic_commands::stop_feed(std::ostream& out,
+                                   nats_client& session,
+                                   const std::string& token) {
+    // The stop request is keyed by source_name; resolve it from the feed row.
+    const auto fx = resolve_feed(out, session, token);
+    if (!fx)
+        return false;
+
+    marketdata::messaging::stop_market_feed_config_request req;
+    req.source_name = fx->source_name;
+    BOOST_LOG_SEV(lg(), info) << "Stopping feed " << req.source_name << ".";
+    auto result = do_auth_request<marketdata::messaging::stop_market_feed_config_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Stop failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Stopped feed " << req.source_name << " (" << boost::uuids::to_string(fx->id) << ")."
+        << std::endl;
+    return true;
+}
+
+void synthetic_commands::process_validate_vintage(std::ostream& out,
+                                                  nats_client& session,
+                                                  const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (parsed->positionals.size() != 1) {
+        fail(out) << "Usage: synthetic validate-vintage <feed-id|ore-key|source-name>" << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    validate_vintage(out, session, parsed->positionals[0]);
+}
+
+bool synthetic_commands::validate_vintage(std::ostream& out,
+                                          nats_client& session,
+                                          const std::string& token) {
+    // Resolve the feed (id, ore key or source name), then look up its
+    // live server-side vintage validity entry.
+    const auto fx = resolve_feed(out, session, token);
+    if (!fx)
+        return false;
+    const auto feed_id = boost::uuids::to_string(fx->id);
+
+    marketdata::messaging::get_vintage_validity_request req;
+    auto result = do_auth_request<marketdata::messaging::get_vintage_validity_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Vintage validity check failed: " << result->message << std::endl;
+        return false;
+    }
+
+    for (const auto& e : result->entries) {
+        if (e.fx_spot_generation_config_id != feed_id)
+            continue;
+        if (!e.applicable) {
+            out << "⚠ Vintage check not applicable to feed " << fx->source_name << " ("
+                << fx->ore_key << ", fixed price source)." << std::endl;
+            return true;
+        }
+        if (e.valid) {
+            out << "✓ Vintage data available for feed " << fx->source_name << " (" << fx->ore_key
+                << ")." << std::endl;
+            return true;
+        }
+        fail(out) << "Vintage data missing for feed " << fx->source_name << " (" << fx->ore_key
+                  << ")." << std::endl;
+        return false;
+    }
+    fail(out) << "No vintage validity entry for feed " << fx->source_name << "." << std::endl;
+    return false;
 }
 
 }

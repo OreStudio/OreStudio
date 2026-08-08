@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
 #+branch: feature/curve-builder-ui
-#+pr:
+#+pr: 1919
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -284,7 +284,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1919][#1919]] | [qt.refdata] Curve Builder Workbench: Save/Bootstrap/Publish |
 
 * Review
 

@@ -142,7 +142,6 @@ void validate_no_quote(std::string_view asset_class, const query_params& qp) {
 
 void validate_equity(const query_params& qp) {
     validate_no_ir_only_keys("equity", qp);
-    reject_if_present("equity", "point", qp.point);
 }
 
 std::string first_segment(const boost::urls::url_view& u) {
@@ -197,8 +196,14 @@ market_data_identifier parse_equity(const boost::urls::url_view& u, const query_
         BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://equity/... requires a ccy query key."));
     id.ccy = to_upper(*qp.ccy);
     id.type = parse_type(qp);
-    if (qp.quote)
+    if (qp.quote) {
+        if (id.type != instrument_type::quote)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception("oresmd://equity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<equity_quote_type>("quote", *qp.quote);
+    }
+    if (qp.point)
+        id.point = to_lower(*qp.point);
     return id;
 }
 
@@ -302,6 +307,7 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"ccy", to_lower(id.ccy)});
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
+                append_if(u, "point", id.point);
             } else if constexpr (std::is_same_v<T, credit_market_data_identifier>) {
                 u.set_host("credit");
                 u.segments().push_back(to_lower(id.reference_entity));

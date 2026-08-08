@@ -215,13 +215,18 @@ TEST_CASE("equity_quote_key_defaults_to_spot", tags) {
 }
 
 TEST_CASE("equity_dividend_quote_key", tags) {
-    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_DIVIDEND/RATE/AAPL/USD");
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_DIVIDEND/RATE/AAPL/USD/1Y");
 }
 
 TEST_CASE("equity_fwd_quote_key", tags) {
-    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=fwd");
-    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_FWD/PRICE/AAPL/USD");
+    const auto id = parse("oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M");
+}
+
+TEST_CASE("equity_dividend_requires_point", tags) {
+    const auto id = parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
 }
 
 TEST_CASE("cds_quote_key_matches_worked_example", tags) {

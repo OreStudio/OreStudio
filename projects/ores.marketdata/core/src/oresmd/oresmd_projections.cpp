@@ -194,7 +194,14 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
     if (id.type != instrument_type::quote)
         return std::nullopt;
     const auto qt = id.quote_type.value_or(equity_quote_type::spot);
-    return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, id.ccy);
+    // spot: EQUITY/PRICE/TICKER/CCY (scalar, no tenor).
+    if (qt == equity_quote_type::spot)
+        return std::format("{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt), id.ticker, id.ccy);
+    // dividend/fwd: TYPE/METRIC/TICKER/CCY/TENOR — curves, need point for the tenor dimension.
+    if (!id.point)
+        return std::nullopt;
+    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_equity_metric(qt),
+                       id.ticker, id.ccy, to_upper(*id.point));
 }
 
 std::string_view ore_type(credit_quote_type qt) {

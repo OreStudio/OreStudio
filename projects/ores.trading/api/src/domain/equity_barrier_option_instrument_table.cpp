@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.api/domain/equity_barrier_option_instrument_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
-drop rule if exists ores_trading_equity_barrier_option_instruments_delete_rule on "ores_trading_equity_barrier_option_instruments_tbl";
-drop trigger if exists ores_trading_equity_barrier_option_instruments_insert_trg on "ores_trading_equity_barrier_option_instruments_tbl";
-drop function if exists ores_trading_equity_barrier_option_instruments_insert_fn;
-drop table if exists "ores_trading_equity_barrier_option_instruments_tbl";
+namespace ores::trading::domain {
+
+
+std::string convert_to_table(const std::vector<equity_barrier_option_instrument>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for (const auto& eboi : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
+}
+
+}

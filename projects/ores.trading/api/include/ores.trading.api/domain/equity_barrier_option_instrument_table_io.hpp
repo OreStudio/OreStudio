@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_TABLE_IO_HPP
 
-drop rule if exists ores_trading_equity_barrier_option_instruments_delete_rule on "ores_trading_equity_barrier_option_instruments_tbl";
-drop trigger if exists ores_trading_equity_barrier_option_instruments_insert_trg on "ores_trading_equity_barrier_option_instruments_tbl";
-drop function if exists ores_trading_equity_barrier_option_instruments_insert_fn;
-drop table if exists "ores_trading_equity_barrier_option_instruments_tbl";
+#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
+
+namespace ores::trading::domain {
+
+/**
+ * @brief Dumps the equity_barrier_option_instrument objects to a stream in table format.
+ */
+ORES_TRADING_API_EXPORT std::ostream&
+operator<<(std::ostream& s, const std::vector<equity_barrier_option_instrument>& v);
+
+}
+
+#endif

@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 11/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument. |
+| Now          | 12/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. equity_barrier_option). |
+| Next         | Convert the next flat instrument (e.g. equity_accumulator). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -442,6 +442,45 @@ Zero-diff verified via a second regeneration pass. Build green;
 =ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
 74 cases incl. the new
 =write_equity_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_barrier_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes three
+ORE product types (EquityBarrierOption, EquityDoubleBarrierOption,
+EquityEuropeanBarrierOption) -- the =trade_type_code= check is the
+3-value in-list. Single-barrier shape: =lower_barrier= (non-null,
+=:default_value: 0.0=) plus =lower_barrier_type= (UpIn/UpOut/DownIn/
+DownOut); double-barrier-only =upper_barrier= is a nullable
+=std::optional<double>= with no generator block and
+=upper_barrier_type= is nullable text left empty (mapped to SQL NULL),
+matching the hand-crafted defaults; =rebate= is likewise nullable.
+=expiry_date= is a =date=-typed column modelled as =std::string=
+(ISO 8601), per family precedent. All hand-crafted
+=double ... = 0.0= initializers preserved via =:default_value: 0.0=.
+
+Messaging path reconciled in the same commit:
+=save_equity_barrier_option_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_barrier_option()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 3 methods -- digital, asian, accumulator). The typed
+subscription in =registrar_equity.cpp= is replaced with
+=register_equity_barrier_option_instrument_handlers=; the three
+consumers (=ore_import_execute_handler=, =OreImporter=,
+=ImportTradeDialog=) include the generated
+=equity_barrier_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_barrier_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_barrier_option, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+75 cases incl. the new
+=write_equity_barrier_option_instrument_publishes_nats_changed_event=;
 service: 10 cases); consumer libs =ores.ore.service.lib= and
 =ores.qt.trading.lib= green.
 

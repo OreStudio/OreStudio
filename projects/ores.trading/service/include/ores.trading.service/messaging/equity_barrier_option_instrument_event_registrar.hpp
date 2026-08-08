@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADING_SERVICE_MESSAGING_EQUITY_BARRIER_OPTION_INSTRUMENT_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_EQUITY_BARRIER_OPTION_INSTRUMENT_EVENT_REGISTRAR_HPP
 
-drop rule if exists ores_trading_equity_barrier_option_instruments_delete_rule on "ores_trading_equity_barrier_option_instruments_tbl";
-drop trigger if exists ores_trading_equity_barrier_option_instruments_insert_trg on "ores_trading_equity_barrier_option_instruments_tbl";
-drop function if exists ores_trading_equity_barrier_option_instruments_insert_fn;
-drop table if exists "ores_trading_equity_barrier_option_instruments_tbl";
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
+
+namespace ores::trading::service::messaging {
+
+[[nodiscard]] ores::eventing::service::subscription
+register_equity_barrier_option_instrument_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
+
+} // namespace ores::trading::service::messaging
+
+#endif

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/equity_barrier_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_instrument_registrar.hpp"
@@ -42,14 +43,6 @@ register_equity_handlers(ores::nats::service::client& nats,
             h.save_digital_option(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_equity_barrier_option_instrument_request::nats_subject),
-        queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_equity_instrument_handler h(nats, ctx, verifier);
-            h.save_barrier_option(std::move(msg));
-        }));
-
     subs.push_back(
         nats.queue_subscribe(std::string(save_equity_asian_option_instrument_request::nats_subject),
                              queue,
@@ -65,6 +58,12 @@ register_equity_handlers(ores::nats::service::client& nats,
                                  typed_equity_instrument_handler h(nats, ctx, verifier);
                                  h.save_accumulator(std::move(msg));
                              }));
+
+    auto equity_barrier_option_instrument_subs =
+        register_equity_barrier_option_instrument_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(equity_barrier_option_instrument_subs.begin()),
+                std::make_move_iterator(equity_barrier_option_instrument_subs.end()));
 
     auto equity_option_instrument_subs =
         register_equity_option_instrument_handlers(nats, ctx, verifier);

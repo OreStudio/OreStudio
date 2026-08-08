@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-synthetic-shell-commands
-#+pr:
+#+pr: 1914
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1914][#1914]] | [ores.shell] Add synthetic market simulator commands |
 
 * Review
 

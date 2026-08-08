@@ -103,17 +103,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate process_type_code (soft FK to ores_synthetic_yield_curve_process_types_tbl)
-    if not exists (
-        select 1 from ores_synthetic_yield_curve_process_types_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.process_type_code
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid process_type_code: %. No active yield_curve_process_type found with this code.', NEW.process_type_code
-            using errcode = '23503';
-    end if;
-
     -- Validate process_type_code
     NEW.process_type_code := ores_synthetic_validate_yield_curve_process_type_fn(NEW.tenant_id, NEW.process_type_code);
 

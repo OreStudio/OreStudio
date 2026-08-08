@@ -185,15 +185,6 @@ faker::number::integer(1, 10)
 | "parameter_name" <> ''      |
 | "process_type_code" <> ''   |
 
-* Foreign keys
-
-** process_type_code
-:PROPERTIES:
-:table:         ores_synthetic_yield_curve_process_types_tbl
-:error_message: Invalid process_type_code: %. No active yield_curve_process_type found with this code.
-:nullable:      false
-:END:
-
 * Insert trigger
 ** Validations
 

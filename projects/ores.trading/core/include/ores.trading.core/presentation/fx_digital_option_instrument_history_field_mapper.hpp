@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_FX_DIGITAL_OPTION_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_FX_DIGITAL_OPTION_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::presentation {
 
 /**
- * @brief Dumps the fx_digital_option_instrument to a stream in JSON format.
+ * @brief Renders a fx_digital_option_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const fx_digital_option_instrument& v);
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_fx_digital_option_instrument_fields(const domain::fx_digital_option_instrument& v);
 
 }
 

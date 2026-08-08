@@ -30,7 +30,6 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
-#include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
@@ -93,14 +92,6 @@ public:
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
-
-    void save_digital_option(ores::nats::message msg) {
-        using Svc = service::fx_digital_option_instrument_service;
-        handle_typed_fx_save<save_fx_digital_option_instrument_request,
-                             save_fx_digital_option_instrument_response,
-                             Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_digital_option_instrument);
-    }
 
     void save_asian_forward(ores::nats::message msg) {
         using Svc = service::fx_asian_forward_instrument_service;

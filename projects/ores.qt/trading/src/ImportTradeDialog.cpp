@@ -28,6 +28,7 @@
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_barrier_option_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/fx_digital_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"

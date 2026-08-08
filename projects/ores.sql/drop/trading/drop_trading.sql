@@ -59,10 +59,12 @@
 \ir ./trading_instruments_drop.sql
 
 -- Per-type FX instruments (Phase 2, drop before generic FX table)
+\ir ./trading_fx_variance_swap_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_variance_swap_instruments_drop.sql
 \ir ./trading_fx_accumulator_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_accumulator_instruments_drop.sql
 \ir ./trading_fx_asian_forward_instruments_drop.sql
+\ir ./trading_fx_digital_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_digital_option_instruments_drop.sql
 \ir ./trading_fx_barrier_option_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_barrier_option_instruments_drop.sql

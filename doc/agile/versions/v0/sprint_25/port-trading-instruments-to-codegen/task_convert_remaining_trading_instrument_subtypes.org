@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 8/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument. |
+| Now          | 9/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. fx_digital_option, fx_asian_forward). |
+| Next         | Convert the next flat instrument (e.g. fx_asian_forward). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -263,6 +263,43 @@ consumers (=ore_import_execute_handler=, =OreImporter=,
 generated protocol; the generated struct is shape-identical (same
 =data= member, same =nats_subject=), so no call-site changes were
 needed. Subject unchanged -- subscribers are unaware.
+
+** fx_digital_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Richest
+optional-numeric column set in the family: =strike=,
+=lower_barrier=, =upper_barrier= all =std::optional<double>=. =strike=
+is the first optional-double in the converted family to carry a
+generator block -- emitted verbatim as =r.strike = 1.1;=, which
+compiles because =std::optional<double>= is implicitly constructible
+from =double=. The two barrier levels have no generator blocks
+(default =std::nullopt=), matching the plain-FxDigitalOption test data
+(barrier fields absent). =option_type= (Call), =barrier_type=,
+=description= nullable with empty-string defaults per the empty-to-NULL
+mapper convention. =long_short= carries the in-check ('Long',
+'Short'); the =trade_type_code= check is the 4-value in-list of the
+digital/touch family.
+
+As with fx_barrier: the notify-trigger drop file did not exist before
+this conversion, so the missing =\\ir= line was added to
+=drop_trading.sql=. Also wired the *pre-existing but unwired*
+=trading_fx_variance_swap_instruments_notify_trigger_drop.sql= into
+=drop_trading.sql= -- the variance-swap conversion regenerated its
+drop.sql without the inline notify drops but never added the =\\ir=
+line, leaving its notify trigger/function un-droppable via a full
+=drop.sql= run since the conversion.
+
+Messaging path reconciled in the same commit (hand-crafted save struct
+deleted from =instrument_protocol.hpp=, =save_digital_option()= removed
+from =typed_fx_instrument_handler.hpp=, typed subscription replaced
+with =register_fx_digital_option_instrument_handlers= in
+=registrar_fx.cpp=; consumers migrated to the generated protocol).
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+72 cases incl. the new
+=write_fx_digital_option_instrument_publishes_nats_changed_event=;
+service: 10 cases).
 
 ** fx_barrier_option_instrument (converted 2026-08-08)
 

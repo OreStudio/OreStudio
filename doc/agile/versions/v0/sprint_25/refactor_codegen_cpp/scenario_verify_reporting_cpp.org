@@ -95,8 +95,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | no eventing. manual reload worked though. |
+| Status | PASS |
 
 ** Create a new Report Definition
 
@@ -114,8 +113,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | eventing failed, manual reload worked |
+| Status | PASS |
 
 ** Edit the Report Definition and verify update
 
@@ -169,17 +167,17 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
+| Status | PASS |
 | Notes  | no eventing, manual reload works |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | FAILED |
-| Completed at  | 2026-08-08T11:28:04Z |
+| Status        | PASSED |
+| Completed at  | 2026-08-08T19:10:45Z |
 | Branch        | fix/reporting-main-break |
-| Commit        | a5e24fe64 |
+| Commit        | 7b0ab7fc3 |
 | Worktree      | bright_faraday |
 
 * Notes

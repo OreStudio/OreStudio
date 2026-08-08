@@ -230,3 +230,22 @@ via its "Verifies task" field.
 | 3 | artefact_type roundtrip test only checks code/description, not the fields this PR fixed | projects/ores.dq/core/tests/repository_artefact_type_repository_tests.cpp | Accepted | Added CHECKs for artefact_table/target_table/target_subject/display_order |
 
 * Result
+
+Bound ores.dq SQL entities to variability profiles with verified zero-diff
+regen. Commissioned full C++/Qt for lei_entity, lei_relationship,
+report_definition, and synthetic_fx_spot_config. Consolidated every
+ores.dq-owned entity's Qt layer into ores.qt.dq, decommissioning the
+ores.qt.data_management stepping-stone plugin entirely. Migrated
+catalog/change_reason/change_reason_category/data_domain/dataset_bundle
+onto full codegen with the generic HistoryDialog; migrated subject_area's
+history dialog by hand (compound-key exception). Found and fixed several
+bugs surfaced by end-to-end GUI test scenarios: artefact_type's missing
+Detail fields and its never-firing NOTIFY trigger (same gap fixed for
+code_domain and dataset_bundle), and a duplicate-row RLS bug on
+change_reason/change_reason_category caused by a redundant system-tenant
+read-policy fallback on tables the tenant provisioner already copies
+per-tenant. All fixes verified via direct SQL queries against a freshly
+provisioned Acme Corporation tenant and compass build rat. PR #1898
+merged after one review round (dangling org-link to the deleted
+component, stale component_overview.org, thin test coverage -- all
+addressed).

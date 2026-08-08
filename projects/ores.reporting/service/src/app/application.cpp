@@ -107,6 +107,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             });
         });
 
+    // Publish report_definition changed events to NATS so the Qt client
+    // can auto-refresh the list. Runs alongside the scheduling subscriber
+    // above (event_bus supports multiple subscribers per event type).
+    auto rd_nats_sub =
+        ores::reporting::service::messaging::register_report_definition_event_mapping(
+            event_source, event_bus, nats);
+
     // Wire eventing for the remaining entities — publishes changed events
     // to NATS so the Qt client can refresh lists without manual reload.
     auto cp_changed_sub =

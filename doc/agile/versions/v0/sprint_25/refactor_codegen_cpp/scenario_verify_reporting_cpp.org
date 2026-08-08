@@ -6,7 +6,7 @@
 #+type: test_scenario
 #+level: s1
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
-#+target_dialog: ConcurrencyPolicyDetailDialog, ReportTypeDetailDialog, ReportDefinitionDetailDialog, ReportInstanceDetailDialog — Menus: Analytics > Report Definitions, Analytics > Report Instances, Analytics > Analytics Codes > Report Types, Analytics > Analytics Codes > Concurrency Policies
+#+target_dialog: ConcurrencyPolicyDetailDialog, ReportTypeDetailDialog, ReportDefinitionDetailDialog, ReportInstanceDetailDialog — Menus: Reporting > Report Definitions / Report Instances; Reporting > Report Configuration > Concurrency Policies / Report Types; Reporting > Compute Configuration > Apps / App Versions; Reporting > Pricing Configuration > Model Configurations / Model Products / Model Product Parameters / Pricing Engine Types
 #+created: 2026-08-08
 #+updated: 2026-08-08
 #+environment: bright_faraday
@@ -27,7 +27,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 |---------------+------------------------------------------|
 | Verifies task | [[id:193FF620-BB98-4EB4-9124-2D06CA8FFCE0][Apply safe drift to reporting-cpp]] |
 | Parent story  | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]]   |
-| Target dialog | ConcurrencyPolicyDetailDialog, ReportTypeDetailDialog, ReportDefinitionDetailDialog, ReportInstanceDetailDialog — Menus: Analytics > Report Definitions / Report Instances; Analytics > Analytics Codes > Report Types / Concurrency Policies |
+| Target dialog | ConcurrencyPolicyDetailDialog, ReportTypeDetailDialog, ReportDefinitionDetailDialog, ReportInstanceDetailDialog — Menus: Reporting > Report Definitions / Report Instances; Reporting > Report Configuration > Concurrency Policies / Report Types; Reporting > Compute Configuration > Apps / App Versions; Reporting > Pricing Configuration > Model Configurations etc. |
 | Clients       |                                          |
 | State         | PENDING                               |
 
@@ -47,7 +47,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 ** Open Concurrency Policies and verify seed data
 
-- Navigate to: Analytics > Analytics Codes > Concurrency Policies.
+- Navigate to: Reporting > Report Configuration > Concurrency Policies.
 - Verify the list window titled "Concurrency Policies" opens.
 - Confirm three entries are present: =skip=, =queue=, =fail=.
 - Open each detail dialog; verify code, name, and description fields display correctly.
@@ -60,7 +60,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 ** Open Report Types and verify seed data
 
-- Navigate to: Analytics > Analytics Codes > Report Types.
+- Navigate to: Reporting > Report Configuration > Report Types.
 - Verify the list window titled "Report Types" opens.
 - Confirm two entries are present: =risk= and =grid=.
 - Open each detail dialog; verify code, name, and description fields display.
@@ -73,7 +73,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 ** Open Report Definitions and verify seed data
 
-- Navigate to: Analytics > Report Definitions.
+- Navigate to: Reporting > Report Definitions.
 - Verify the list window titled "Report Definitions" opens.
 - Confirm the list shows 28 report definitions loaded from seed data.
 - Verify columns: Name, Type, Schedule, Concurrency, Version, Modified By.
@@ -87,7 +87,7 @@ This page documents a test scenario verifying [[id:193FF620-BB98-4EB4-9124-2D06C
 
 ** Open Report Instances and verify list loads
 
-- Navigate to: Analytics > Report Instances.
+- Navigate to: Reporting > Report Instances.
 - Verify the list window titled "Report Instances" opens.
 - The list may be empty — report instances are created by the scheduler trigger.
 

@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 98D0B4FD-EBF9-4DB4-863F-CF0EACD2A1B2
+:END:
+#+title: Profile Physical-space overrides only read file-level :PROPERTIES:, not * Flags section
+#+description: :profile: declared in the * Flags section works for feature assignments (has_pagination, etc.) but not for Physical space facet enablement (like eventing-integration-test). The codegen's read_physical_space_overrides function only reads doc.file_properties.get("profile"), missing the :profile: that every entity model puts in its * Flags section. Fix read_physical_space_overrides to find :profile: from * Flags, so a single binding point drives both mechanisms.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:variability:dx:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The codegen has two profile binding points with different behaviour — adding a
+Physical-space facet override to a profile file only works for entities that
+declare =:profile:= in their file-level =:PROPERTIES:= drawer, which none do:
+
+| Where =:profile:= lives                     | What it drives                                          |
+|---------------------------------------------+---------------------------------------------------------|
+| =* Flags= section =:PROPERTIES:= drawer     | Feature assignments (=has_pagination=, =has_tenant_id=) |
+| File-level =:PROPERTIES:= drawer            | Physical-space facet enablement (=eventing-integration-test=) |
+
+Every entity model declares =:profile:= in its =* Flags= section — that's the
+existing convention. But =read_physical_space_overrides= (org_loader.py:183)
+only reads =doc.file_properties.get("profile")=, missing every entity's profile.
+
+Fix: =read_physical_space_overrides= should also find =:profile:= from the
+=* Flags= section (the same place =_profile_namespace_defaults= reads it), so a
+single binding point in =* Flags= drives both feature assignments and facet
+enablement. Then revert the file-level =:profile:= additions made to the 4
+reporting entity models as a workaround.
+
+* Why
+
+Discovered during the reporting-cpp safe drift task in sprint 25. We added a
+=* Physical space= table to all 6 domain archetype profiles to enable
+=ores.cpp.eventing-integration-test= by default. Entity regeneration produced
+the test files for reporting entities only because we manually added
+=:profile:= to their file-level =:PROPERTIES:= drawers. Other entities
+(e.g. all of refdata) silently got nothing — the profile Physical-space table
+had no effect. The two-binding-point design makes adding a facet to a profile
+require per-entity edits, defeating the purpose of profiles.
+
+* References
+
+- org_loader.py:183 — =read_physical_space_overrides= reads file-level only
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup profile]] — example profile with Physical-space table added
+- [[id:CD698EB1-D411-4BF7-84B0-9794D47C802A][ores.cpp.eventing-integration-test facet]] — the facet gated by this mechanism
+- [[id:E9A2F4B1-7C3D-4E8B-A5F0-2D6C1B8E3A7F][eventing_integration_test feature]] — created alongside this work
+
+* See also
+
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the story where this was discovered

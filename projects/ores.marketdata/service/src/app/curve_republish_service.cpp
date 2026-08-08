@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
@@ -216,6 +217,7 @@ void curve_republish_service::republish(context ctx,
     observations.reserve(bootstrapped.size());
     lineages.reserve(bootstrapped.size());
 
+    repository::observation_lineage_repository lineage_repo;
     for (const auto& point : bootstrapped) {
         domain::market_observation obs;
         obs.id = uuid_gen();
@@ -228,9 +230,18 @@ void curve_republish_service::republish(context ctx,
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
         observations.push_back(std::move(obs));
 
+        // A rerun over the same (series, as_of, point_id) natural key must reuse the prior
+        // lineage row's own id -- the insert trigger's version-bump/close-prior-row logic only
+        // fires when it finds an existing row with that same id, per this table's own doc
+        // comment ("A rerun of a derivation over the same tenor/point natural key closes the
+        // prior generation's lineage row and inserts a new one"). Minting a fresh id every
+        // republish bypassed that and hit the natural-key unique index instead.
+        const auto existing = lineage_repo.read_latest_by_observation(
+            ctx, config.output_series_id, as_of, point.point_id);
+
         domain::observation_lineage lin;
         lin.tenant_id = ctx.tenant_id();
-        lin.id = uuid_gen();
+        lin.id = existing ? existing->id : uuid_gen();
         lin.party_id = config.party_id;
         lin.series_id = config.output_series_id;
         lin.observation_datetime = as_of;

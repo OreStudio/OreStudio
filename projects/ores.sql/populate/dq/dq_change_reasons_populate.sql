@@ -165,6 +165,17 @@ BEGIN
         60      -- display order
     );
 
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.derived_series',
+        'A market_series claimed as a derived output on its first republish (e.g. IR curve bootstrap)',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (reclassifying an existing OBSERVED series)
+        false,  -- not for delete
+        false,  -- no commentary required
+        65      -- display order
+    );
+
     -- =============================================================================
     -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
     -- =============================================================================

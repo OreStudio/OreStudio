@@ -88,15 +88,26 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | hazard_rate drops seniority — 5-seg key, catalogue says 6 seg | oresmd_projections.cpp | Accepted | Fixed: 2-part point (seniority,tenor), same branch as CDS |
+| 2 | cds_index/index_cds_tranche inject spurious CCY — 6-seg key, catalogue says 5 seg no ccy | oresmd_projections.cpp | Accepted | Fixed: dedicated branch without ccy segment |
+| 3 | rating key fundamentally wrong — needs provider/from/to fields | oresmd_projections.cpp | Accepted | Descoped from this task; rating removed from enum |
+| 4 | dead default_metric(credit_quote_type) overload | oresmd_projections.cpp | Accepted | Removed |
+| 5 | no reject_commodity_uri_with_quote_field test | oresmd_oresmd_parser_tests.cpp | Accepted | Added |
+| 6 | misleading base-correlation comment | oresmd_projections.cpp | Accepted | Fixed inline with format correction |
 
 * Result
 
 Delivered full credit quote-type representation in oresmd:
 
-- =credit_quote_type= (6 values) + per-type =quote_key_credit= dispatching,
-  covering all 4 catalogued credit quote types not yet represented.
+- =credit_quote_type= (5 values) + per-type =quote_key_credit= dispatching,
+  covering 3 of the 4 catalogued credit quote types not yet represented.
+  =rating= (RATING/TRANSITION_PROBABILITY) descoped — it needs
+  provider/from_rating/to_rating fields the current
+  =credit_market_data_identifier= has no equivalent for; tracked for its
+  own task.
 - =quote= query parameter generalised from IR-only to IR+credit with
   clean per-asset-class rejection (FX/equity/commodity still reject it).
-- 12 new test cases (projection format, round-trip, parse) bringing the
-  suite to 120/229 — all passing, no regressions.
+- 119 test cases, 227 assertions, all passing — no regressions.
+- Review round 1: fixed hazard_rate seniority (6-seg key), cds_index/
+  index_cds_tranche ccy injection (5-seg key), removed dead code, added
+  commodity quote rejection test.

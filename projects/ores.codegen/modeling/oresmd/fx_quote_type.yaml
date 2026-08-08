@@ -1,0 +1,65 @@
+# oresmd quote type specification for the FX asset class.
+# This is the source of truth that codegen reads to produce:
+#   - enum definition (oresmd_enums.hpp)
+#   - struct fields (market_data_identifier.hpp, market_data_requirement.hpp)
+#   - parser (validate, parse, to_uri in oresmd_parser.cpp)
+#   - projections (ore_type, ore_metric, quote_key in oresmd_projections.cpp)
+#   - resolver (resolve in oresmd_resolver.cpp)
+#   - tests (oresmd_oresmd_parser_tests.cpp, oresmd_oresmd_projections_tests.cpp)
+#
+# Zero-diff target: the hand-crafted implementation in 8 merged PRs.
+
+asset_class: fx
+authority_token: fx        # the URI authority/host component
+entity_field:
+  name: pair
+  type: std::string
+  mandatory: true
+  parse: |
+    id.pair = to_upper(first_segment(u));
+    if (id.pair.size() != 6 ||
+        !std::ranges::all_of(id.pair, [](unsigned char c) { return std::isalpha(c); }))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
+  to_uri: |
+    u.segments().push_back(to_lower(id.pair));
+
+# Query keys allowed for this asset class (beyond the universal type/quote/point).
+# Keys NOT in this list are rejected via reject_if_present.
+reject_keys: [ccy, index, tenor, role, metric]
+
+# Each quote type: its enum name, ORE TYPE string, ORE METRIC string, and
+# point semantics (whether point is required and what shape the qualifier takes).
+quote_types:
+  - name: spot
+    ore_type: FX
+    ore_metric: RATE
+    point: scalar        # no point needed, 4-segment key: FX/RATE/CCY1/CCY2
+  - name: fwd
+    ore_type: FXFWD
+    ore_metric: RATE
+    point: tenor         # point required, 5-segment key: FXFWD/RATE/CCY1/CCY2/TENOR
+
+default_quote_type: spot
+
+# Test cases for projections, round-trip, parse, and rejection.
+tests:
+  projections:
+    - uri: "oresmd://fx/eurusd?type=quote&quote=spot"
+      expected: "FX/RATE/EUR/USD"
+      description: "fx_spot_quote_key"
+    - uri: "oresmd://fx/eurusd?type=quote"
+      expected: "FX/RATE/EUR/USD"
+      description: "fx_quote_key_defaults_to_spot"
+    - uri: "oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"
+      expected: "FXFWD/RATE/EUR/USD/6M"
+      description: "fx_fwd_quote_key"
+  round_trip:
+    - uri: "oresmd://fx/eurusd?type=quote&quote=spot"
+      description: "round_trip_fx"
+    - uri: "oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"
+      description: "round_trip_fx_fwd"
+  rejection:
+    - uri: "oresmd://fx/eurusd?type=fixing&quote=spot"
+      exception: oresmd_exception
+      description: "reject_fx_quote_when_type_not_quote"

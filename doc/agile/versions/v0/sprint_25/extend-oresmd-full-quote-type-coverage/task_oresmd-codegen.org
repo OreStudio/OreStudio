@@ -64,46 +64,159 @@ implementation.
 
 * Plan
 
-** Analysis
+** High-level approach
 
-The 7 oresmd quote-type implementations share a mechanical six-file
-pattern per asset class. The invariants are:
+Integrate oresmd quote-type codegen as a new metatype in the existing
+=ores.codegen= meta-model — a ninth concrete metaclass alongside
+=entity=, =junction=, =component=, etc. The existing framework already
+provides the org-loader, Mustache template rendering, physical-space
+graph, =clang-format= normalisation, and =--check= / =--diff= tooling;
+all of it is reused. No new Python framework is built.
 
-| What varies per asset class | What is completely mechanical |
-|-----------------------------+-------------------------------|
-| Quote type names, ORE TYPE/METRIC strings | Enum definition and =magic_enum= integration |
-| Struct field names and types | Field addition to identifier/requirement structs |
-| Query-key allow/reject list | =query_params= field + =from()= dispatch |
-| Whether index appears in qualifier | =parse_*= function skeleton + =to_uri= branch |
-| Point format (scalar, tenor-only, composite) | =quote_key_*= dispatch body |
-| Test-case URIs and expected strings | Round-trip, projection, rejection test scaffolding |
+The key difference from entity codegen is that oresmd codegen does NOT
+generate net-new files — it generates *complete replacement files* that
+happen to contain both the oresmd-specific content AND the unchanging
+framework code (=namespace= declarations, =#include= lines, etc.). The
+generated file is byte-for-byte identical to the hand-crafted version
+once =clang-format= runs.
 
-The codegen approach captures the variable parts in a spec file and
-generates the mechanical parts deterministically — same pattern as how
-=ores.codegen.entity= captures column/FK/display metadata and generates
-SQL, C++ domain, repository, service, protocol, and Qt layers.
+** How existing codegen works (for context)
 
-** Spec model design (draft)
+The framework has three layers:
 
-An oresmd quote-type spec file would be an org-mode document with
-=#+type: ores.codegen.oresmd_quote_type= frontmatter and these sections:
+- *Logical space*: org model files with =#+type: ores.codegen.<metatype>=.
+  Eight metatypes exist; the metatype determines which loader parses the
+  file and what dict shape it produces. Model files live under a
+  component's =modeling/= directory.
 
-- =* Quote types=: org table mapping enum name → ORE TYPE → ORE METRIC →
-  qualifier shape (includes_index, no_index, curve_id, mult_literal)
-- =* Fields=: org table of struct fields (name, C++ type, mandatory,
-  query_key, non-IR reject?)
-- =* Point semantics=: per-quote-type point format (scalar, 1-part,
-  2-part, 3-part composite)
-- =* Test cases=: org table of URI → expected projection string
+- *Physical space*: a graph of org nodes under =library/templates/=,
+  organized by MASD address (e.g. =ores.cpp.domain.class_header=). Each
+  node is either a =facet= (declares =#+model_types= it supports) or an
+  =archetype= (declares =#+output= path and tangles a Mustache template).
 
-** Profile design
+- *Code pipeline*: =load_model()= dispatches on =#+type:= → model-type
+  string → org-loader function → dict. =generate_from_model()= reads the
+  dict, picks templates, renders with =pystache=, writes output files,
+  and runs =clang-format -i= (twice) so template whitespace never causes
+  spurious diffs.
 
-A new codegen profile (=ores.marketdata.oresmd_quote_type= address) that
-reads the org spec and generates into the ores.marketdata component's
-physical space. It would use the existing =ores.codegen= profile
-infrastructure (Jinja2 templates) and follow the same
-=generate()= / =diff()= / =check_staleness()= contract as existing
-profiles.
+** Step 1 — Register the new metatype
+
+File: =projects/ores.codegen/src/codegen/core.py=
+
+Add =ores.codegen.oresmd_quote_type → oresmd_quote_type= to
+=_ORG_TYPE_TO_MODEL_TYPE=. This makes the framework recognise a model
+file carrying =#+type: ores.codegen.oresmd_quote_type=.
+
+** Step 2 — Write org model files (one per asset class)
+
+Directory: =projects/ores.marketdata/modeling/oresmd/=
+
+Each file carries =#+type: ores.codegen.oresmd_quote_type= and a
+=* Quote types= org table. The table columns capture everything that
+varies per asset class:
+
+| enum_name | ore_type    | ore_metric      | point_semantics | qualifier_shape         | notes |
+|-----------+-------------+-----------------+----------------+-------------------------+-------|
+| ir_swap   | IR_SWAP     | RATE            | tenor          | includes_index_2d       |       |
+| discount  | DISCOUNT    | RATE            | tenor          | curve_id                |       |
+
+The frontmatter carries structural metadata: =#+asset_class=,
+=#+authority= (the URI host token), =#+component= (always
+=ores.marketdata=), entity field name/type, query-key allow/reject lists.
+
+Files: =fx_quote_type.org=, =ir_quote_type.org=, =credit_quote_type.org=,
+=equity_quote_type.org=, =commodity_quote_type.org=,
+=inflation_quote_type.org=, =correlation_quote_type.org=.
+
+** Step 3 — Write a model loader
+
+File: =projects/ores.codegen/src/codegen/org_loader.py=
+
+New function =load_org_oresmd_quote_type_model()= that parses the org
+model file and produces a dict with keys: =asset_class=, =authority=,
+=entity_field=, =quote_types= (list of dicts), =reject_keys=,
+=test_cases=. Follows the same pattern as the existing eight loaders:
+parse frontmatter, parse the =* Quote types= table, parse test-case
+tables.
+
+Wire it into =load_model()= in =core.py= (add an =if org_type ==
+'oresmd_quote_type'= branch).
+
+** Step 4 — Create the physical-space facet and archetypes
+
+Directory: =projects/ores.codegen/library/templates/ores.marketdata.oresmd/=
+
+One facet org file: =ores.marketdata.oresmd.org= with
+=#+type: facet=, =#+model_types: oresmd_quote_type=. It routes to the
+archetypes below.
+
+One archetype per output file. Each archetype is an org file with
+=#+type: archetype= and a =* Template= section that tangles a Mustache
+=.mustache= file:
+
+| Archetype | Output file | What it generates |
+|-----------+-------------+-------------------|
+| =enums.org= | =oresmd_enums.hpp= fragment | All quote-type enums, volatility model subtype enum |
+| =identifiers.org= | =market_data_identifier.hpp= | Identifier structs with quote_type + vol fields |
+| =requirements.org= | =market_data_requirement.hpp= | Requirement structs |
+| =parser.org= | =oresmd_parser.cpp= | =query_params=, =parse_*=, =validate_*=, =to_uri= branches |
+| =projections.org= | =oresmd_projections.cpp= | =ore_type= / =ore_*_metric= / =quote_key_*= functions |
+| =resolver.org= | =oresmd_resolver.cpp= | =resolve_*= functions, =std::visit= dispatch |
+| =parser_tests.org= | =oresmd_oresmd_parser_tests.cpp= | Round-trip + parse + rejection tests |
+| =projection_tests.org= | =oresmd_oresmd_projections_tests.cpp= | Quote-key projection tests |
+
+In the first iteration only the enums, projections, and projection-tests
+archetypes are fully implemented (they are the most mechanical and have
+the clearest spec→output mapping). The others are scaffolded and filled
+incrementally, verified against the hand-crafted files at each step.
+
+** Step 5 — Wire template mappings
+
+File: =projects/ores.codegen/src/codegen/core.py=
+
+Add a =get_oresmd_template_mappings()= function that returns the list of
+(template, output_pattern) pairs for the new model type. Wire it into
+=generate_from_model()= (add an =is_oresmd_quote_type= branch alongside
+=is_domain_entity= / =is_junction= etc.).
+
+** Step 6 — Generate and diff
+
+Run: =compass codegen entity generate <spec>= (or a new =--type
+oresmd_quote_type= flag). The generator renders all 8 output files.
+
+Zero-diff verification step:
+1. Save the current hand-crafted files as =<file>.hand_crafted=
+2. Run codegen to generate =<file>= from the org specs
+3. =diff <file>.hand_crafted <file>= — expect empty
+4. If any diffs, fix the templates or the spec until they converge
+5. Repeat for every asset-class spec
+
+** Step 7 — Remove the standalone prototype
+
+After verification, remove =projects/ores.codegen/scripts/oresmd_codegen.py=
+and =projects/ores.codegen/modeling/oresmd/*.yaml= (the YAML prototype).
+The org model files in =projects/ores.marketdata/modeling/oresmd/= are
+the permanent spec.
+
+** Step 8 — Commit and raise PR
+
+One or two PRs:
+- PR 1 (infrastructure): new metatype, model loader, facet + archetypes,
+  template mappings — with the framework compiling but no generated files
+  replacing the hand-crafted ones yet.
+- PR 2 (adoption): wire the generated files as the canonical source,
+  delete the hand-crafted boilerplate, confirm zero diffs on CI via
+  =cmake-sources-drift=.
+
+** What the generated code replaces
+
+After adoption, adding a new oresmd quote-type family (or extending an
+existing one, or adding a new asset class) changes from ~10 files / ~60-120
+hand-edited LOC to:
+1. One org spec file (the logical model)
+2. One codegen run
+3. Zero-diff verification via CI
 
 * Notes
 

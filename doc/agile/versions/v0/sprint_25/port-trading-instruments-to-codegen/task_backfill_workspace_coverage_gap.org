@@ -5,7 +5,7 @@
 #+description: ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) carry workspace_id in SQL but have no codegen model at all. Decide whether to bring them under codegen (large, separate effort) or explicitly accept them as permanently hand-crafted -- either way, verify their hand-written repository/service code actually filters by workspace_id correctly today. (book/portfolio, originally scoped here, turned out to already be correctly covered via the fk-scoped-child profile -- see the audit task's correction note -- and were regenerated/verified in PR #1846, so they're no longer part of this task.)
 #+type: task
 #+level: s1
-#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
 #+branch: feature/backfill-workspace-coverage-gap
 #+pr: 1857
@@ -16,7 +16,7 @@
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -40,7 +40,7 @@ the audit task's correction note.)
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

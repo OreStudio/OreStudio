@@ -5,7 +5,7 @@
 #+description: Bring the remaining ~19 hand-crafted trading instrument sub-types (bond, most equity_*/fx_* variants, commodity, composite + composite_legs, credit, scripted, swap_legs) under codegen, following the equity_position_instrument pilot's proven pattern. Most of these use the legacy Primary key heading format and need task 836BB4CE resolved or worked around per-entity first.
 #+type: task
 #+level: s1
-#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
 #+branch: feature/convert-remaining-trading-instrument-subtypes
 #+pr: 1874
@@ -16,7 +16,7 @@
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -37,7 +37,7 @@ pilot did) is a prerequisite for each one individually.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
 | Now          | 7/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument. |
 | Waiting on   | Nothing.                               |
 | Next         | Convert the next flat instrument (e.g. fx_barrier_option, fx_digital_option). |

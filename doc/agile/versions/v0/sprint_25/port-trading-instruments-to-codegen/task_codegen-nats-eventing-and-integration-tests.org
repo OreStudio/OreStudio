@@ -5,7 +5,7 @@
 #+description: Wire the existing but unused nats-changed-event/nats-event-registrar templates into the generator behind a per-entity opt-in, then add a new test facet that generates the write-entity-observe-NATS-notification integration test proven by hand against business_unit.
 #+type: task
 #+level: s1
-#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-nats-eventing-and-integration-tests
 #+pr: 1896
@@ -16,7 +16,7 @@
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -61,7 +61,7 @@ converges on one entity shape.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

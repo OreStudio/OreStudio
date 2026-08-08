@@ -25,6 +25,10 @@
 
 \ir ./dq_fsm_rls_policies_drop.sql
 
+-- Artefact Types
+drop policy if exists artefact_types_modification_policy on "ores_dq_artefact_types_tbl";
+drop policy if exists artefact_types_read_policy on "ores_dq_artefact_types_tbl";
+
 -- Dataset Bundle Members
 drop policy if exists dataset_bundle_members_modification_policy on "ores_dq_dataset_bundle_members_tbl";
 drop policy if exists dataset_bundle_members_read_policy on "ores_dq_dataset_bundle_members_tbl";

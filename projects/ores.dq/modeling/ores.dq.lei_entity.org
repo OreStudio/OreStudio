@@ -421,6 +421,19 @@ rows (=lei_counterparties=, =lei_parties=) publish this same artefact
 data onward, but to =ores.refdata='s own tables, not a
 =ores.dq=-owned one.
 
+Qt UI deliberately disabled (see Physical space below): the generated
+read-only Explorer list window queried the (correctly nonexistent)
+main table and errored on open. Its data has no working Qt read path
+of its own -- it powers the GLEIF counterparty picker, a different UI
+surface -- so there is no browsing screen to commission until that
+path exists.
+
+* Physical space
+
+| Address     | Enabled |
+|-------------+---------|
+| ores.cpp.qt | false   |
+
 * See also
 
 - [[id:AAF28605-81BE-4B7F-9B6E-7B9B1D99D7C3][ores.dq]] — component group overview.

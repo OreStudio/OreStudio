@@ -65,10 +65,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_methodologies_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy methodologies_read_policy on ores_dq_methodologies_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy methodologies_modification_policy on ores_dq_methodologies_tbl
@@ -81,10 +83,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_subject_areas_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy subject_areas_read_policy on ores_dq_subject_areas_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy subject_areas_modification_policy on ores_dq_subject_areas_tbl
@@ -97,10 +101,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_data_domains_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy data_domains_read_policy on ores_dq_data_domains_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy data_domains_modification_policy on ores_dq_data_domains_tbl
@@ -113,10 +119,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_coding_schemes_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy coding_schemes_read_policy on ores_dq_coding_schemes_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy coding_schemes_modification_policy on ores_dq_coding_schemes_tbl
@@ -129,10 +137,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_coding_scheme_authority_types_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy coding_scheme_authority_types_read_policy on ores_dq_coding_scheme_authority_types_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy coding_scheme_authority_types_modification_policy on ores_dq_coding_scheme_authority_types_tbl
@@ -182,10 +192,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_origin_dimensions_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy origin_dimensions_read_policy on ores_dq_origin_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy origin_dimensions_modification_policy on ores_dq_origin_dimensions_tbl
@@ -198,10 +210,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_nature_dimensions_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy nature_dimensions_read_policy on ores_dq_nature_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy nature_dimensions_modification_policy on ores_dq_nature_dimensions_tbl
@@ -214,10 +228,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_treatment_dimensions_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy treatment_dimensions_read_policy on ores_dq_treatment_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy treatment_dimensions_modification_policy on ores_dq_treatment_dimensions_tbl
@@ -242,14 +258,35 @@ using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
+-- Artefact Types
+-- -----------------------------------------------------------------------------
+-- No RLS existed for this table at all until now -- every tenant's rows
+-- (and every ephemeral ctest tenant's rows) were visible to every session.
+alter table ores_dq_artefact_types_tbl enable row level security;
+
+create policy artefact_types_read_policy on ores_dq_artefact_types_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy artefact_types_modification_policy on ores_dq_artefact_types_tbl
+for all
+using (tenant_id = ores_iam_current_tenant_id_fn())
+with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- -----------------------------------------------------------------------------
 -- Dataset Bundles
 -- -----------------------------------------------------------------------------
 alter table ores_dq_dataset_bundles_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies the full
+-- system-tenant taxonomy into every tenant's own scope at provisioning
+-- time, so a fallback here would show each tenant its own copy plus the
+-- system-tenant original it was copied from (and, worse, an edit through
+-- the Qt UI can only ever close THIS tenant's own row, not the original).
 create policy dataset_bundles_read_policy on ores_dq_dataset_bundles_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy dataset_bundles_modification_policy on ores_dq_dataset_bundles_tbl
@@ -281,10 +318,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_badge_severities_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy badge_severities_read_policy on ores_dq_badge_severities_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy badge_severities_modification_policy on ores_dq_badge_severities_tbl
@@ -300,10 +339,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_badge_definitions_tbl enable row level security;
 
+-- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
+-- table per-tenant at provisioning time (see change_reason_categories_read_policy
+-- above for the full rationale).
 create policy badge_definitions_read_policy on ores_dq_badge_definitions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
-    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 create policy badge_definitions_modification_policy on ores_dq_badge_definitions_tbl

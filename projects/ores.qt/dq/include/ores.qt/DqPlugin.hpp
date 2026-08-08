@@ -41,8 +41,6 @@ class DataDomainController;
 class DatasetBundleController;
 class DatasetController;
 class DetachableMdiSubWindow;
-class LeiEntityController;
-class LeiRelationshipController;
 class MethodologyController;
 class NatureDimensionController;
 class OriginDimensionController;
@@ -127,8 +125,6 @@ private:
     std::unique_ptr<DataDomainController> dataDomainController_;
     std::unique_ptr<DatasetBundleController> datasetBundleController_;
     std::unique_ptr<DatasetController> datasetController_;
-    std::unique_ptr<LeiEntityController> leiEntityController_;
-    std::unique_ptr<LeiRelationshipController> leiRelationshipController_;
     std::unique_ptr<MethodologyController> methodologyController_;
     std::unique_ptr<NatureDimensionController> natureDimensionController_;
     std::unique_ptr<OriginDimensionController> originDimensionController_;

@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-dq:
 #+owner: marco
 #+branch: feature/bind-dq-sql-entities-to-profiles
-#+pr: 1910
+#+pr: 1915
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -220,6 +220,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1915][#1915]] | [dq,qt,sql] Fix shared-tenant edit duplicates; remove broken LEI browsing UI |
 | [[https://github.com/OreStudio/OreStudio/pull/1910][#1910]] | [agile] Add retest scenario for PR #1898's bug fixes |
 | [[https://github.com/OreStudio/OreStudio/pull/1898][#1898]] | [dq] Bind ores.dq entities to profiles; commission full C++/Qt stack |
 
@@ -230,6 +231,9 @@ via its "Verifies task" field.
 | 1 | Dangling org-link to deleted ores.qt.data_management (site build failing) | 5 modeling docs | Accepted | Repointed all id-links to the deleted component onto ores.qt.dq; verified =compass build --direct site= succeeds |
 | 2 | ores.qt.dq/modeling/component_overview.org still describes only badges, template placeholders unfilled | projects/ores.qt/dq/modeling/component_overview.org | Accepted | Rewrote Summary/Inputs/Outputs/Entry points/Dependencies/See also to reflect the full consolidated scope |
 | 3 | artefact_type roundtrip test only checks code/description, not the fields this PR fixed | projects/ores.dq/core/tests/repository_artefact_type_repository_tests.cpp | Accepted | Added CHECKs for artefact_table/target_table/target_subject/display_order |
+| 4 | PR #1915 fixes only 2 of ~13 tables sharing the same duplicate-on-edit RLS pattern | projects/ores.sql/create/dq/dq_rls_policies_create.sql, iam_tenant_provisioner_create.sql | Accepted | Audited all flagged tables for the two true preconditions (DDL-seeded + Qt-editable); extended the same per-tenant-copy + RLS fix to 10 confirmed positives (data_domains, subject_areas, coding_scheme_authority_types, coding_schemes, origin/nature/treatment_dimensions, methodologies, badge_severities, badge_definitions). Deliberately excluded catalogs (not seeded), datasets (7-table FK chain, too risky to rush), and badge_mappings/dataset_bundle_members (read-only in the UI, not reachable) |
+| 5 | New artefact_types RLS policies missing matching drop statements | projects/ores.sql/drop/dq/dq_rls_policies_drop.sql | Accepted | Added the missing drop policy pair |
+| 6 | Stale "LEI Registry" menu references in 2 component-overview docs | projects/ores.qt/dq/modeling/component_overview.org, projects/ores.qt/application/modeling/component_overview.org | Accepted | Removed all 4 references |
 
 * Result
 

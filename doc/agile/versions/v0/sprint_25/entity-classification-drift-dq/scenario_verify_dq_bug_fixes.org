@@ -47,6 +47,12 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 - Confirms: login succeeds and the main window loads with the Data
   Quality menu present.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Create an artefact type with all fields
 
 - Navigate: Data Quality > Data Catalogue > Artefact Types.
@@ -56,6 +62,12 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 - Save.
 - Confirms: the dialog showed all 7 fields (not just Code/Name as
   before the fix), and the new row appears in the list.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm artefact type eventing fires
 
@@ -71,11 +83,23 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
   type, then reopen the list and confirm it's already there with no
   extra refresh click).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Create and save a change reason category
 
 - Navigate: Data Quality > Audit Trail > Change Reason Categories.
 - Click Add, fill in Code/Description, Save.
 - Confirms: the list shows the new row with no manual refresh needed.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Confirm no duplicate categories appear
 
@@ -86,12 +110,24 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
   were visible from both the tenant's own copy and the system-tenant
   original it was copied from during provisioning).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm no duplicate change reasons appear
 
 - Navigate: Data Quality > Audit Trail > Change Reasons.
 - Confirms: same check as the previous step — every seeded change
   reason code (e.g. =system.new_record=) appears exactly once, not
   duplicated.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Create and save a dataset bundle
 
@@ -101,14 +137,22 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
 - Confirms: list refreshes after each save with no manual reload;
   reopened values match what was entered.
 
-** Browse LEI entities read-only list
+*** Result
 
-- Navigate: Data Quality > LEI Registry > LEI Entities.
-- Confirms: the list loads and paginates (page-size/offset controls
-  work); no Add/Delete action is present anywhere on the list window;
-  double-clicking a row opens a read-only view with no Save button
-  (or opens nothing beyond a non-editable display) — there must be no
-  way to create, edit, or delete a row from this window.
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm LEI registry has no menu entry
+
+- Open every submenu under Data Quality (Badges, Classifications,
+  Audit Trail, Data Catalogue) and search for "LEI Registry" / "LEI
+  Entities" / "LEI Relationships".
+- Confirms: no menu item anywhere opens an LEI browsing window — the
+  previous "LEI Registry" submenu queried a main table that
+  deliberately does not exist (LEI data lives only in the artefact/
+  staging table, feeding a different UI, the GLEIF counterparty
+  picker) and has been removed rather than given a broken read path.
 
 ** Confirm report definitions has no menu entry
 
@@ -119,20 +163,32 @@ This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D
   this entity is DQ-side staging data only, its Qt UI is deliberately
   disabled.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Confirm synthetic FX configs has no menu entry
 
 - Repeat the same menu search for "Synthetic FX" / "FX Spot".
 - Confirms: no menu item anywhere opens a synthetic_fx_spot_config
   window, for the same reason as the previous step.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | PASSED |
+| Completed at  | 2026-08-08T18:16:29Z |
+| Branch        | feature/fix-dq-shared-edit-and-lei-ui |
+| Commit        | 25bbbbe61 |
+| Worktree      | jolly_knuth |
 
 * Notes

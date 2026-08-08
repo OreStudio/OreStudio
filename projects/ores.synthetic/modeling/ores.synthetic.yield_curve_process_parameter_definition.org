@@ -1,0 +1,323 @@
+:PROPERTIES:
+:ID: 5F5B8448-ADA9-4424-8A5D-91B30A200DAA
+:END:
+#+title: ores.synthetic.yield_curve_process_parameter_definition
+#+description: Codegen entity model for the synthetic yield_curve_process_parameter_definition table; reference data describing which named parameters each yield curve process type accepts, with user-facing descriptions and validation bounds.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: yield_curve_process_parameter_definition
+#+entity_plural: yield_curve_process_parameter_definitions
+#+entity_title: Yield Curve Process Parameter Definition
+#+brief: Reference data: named parameters each yield curve process type accepts.
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+Reference data table describing, per =yield_curve_process_type=, the
+named parameters that process accepts and their validation bounds. This
+is the "vocabulary" half of the row-based parameter architecture: an
+=ir_curve_generation_config= stores its process parameters as
+=ir_curve_generation_config_process_parameter_value= rows, one per
+definition, and the mapping layer materialises those rows into the
+strongly-typed process-parameter structs of =ores.analytics.quant=
+(=two_factor_gaussian_params=, =vasicek_params=, ...). The
+=(process_type_code, parameter_name)= pair uniquely identifies a
+parameter; the =description= field is the rich user-facing text shown
+in the Qt parameter table explaining what the parameter means, and
+=min_value=/=max_value= (NULL = unbounded) plus =default_value= drive
+the dialog's spin-box ranges and pre-fill.
+
+Why this exists as a table rather than hardcoded structs: it makes the
+parameter vocabulary queryable and extensible -- adding a new model or
+parameter is a seed-data change, not a schema or code change, and the
+same vocabulary drives the DB (validation of value rows), the mapping
+layer (expected parameter names), and the UI (rows to display). Managed
+by the system tenant as read-only reference data; tenant users never
+edit definitions, only the values of their own configs.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:has_tenant_id:    true
+:has_workspace_id: false
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this parameter definition.
+
+** process_type_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+The =yield_curve_process_type.code= this parameter belongs to (soft FK
+to =ores_synthetic_yield_curve_process_types_tbl=, validated via the
+system-tenant validation function -- the same mechanism
+=ir_curve_generation_config.process_type= uses). Examples: 'VASICEK',
+'COX_INGERSOLL_ROSS', 'HULL_WHITE', 'TWO_FACTOR_GAUSSIAN'.
+
+** parameter_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:END:
+
+Machine-readable name of the parameter, as used by the mapping layer
+and the value rows, e.g. =kappa=, =theta=, =sigma=, =initial_rate= for
+the one-factor models; =kappa_x=, =kappa_y=, =sigma_x=, =sigma_y=,
+=rho=, =theta=, =initial_rate= for the two-factor Gaussian. Unique
+within a process type.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Rich, user-facing description of what the parameter means and its
+domain constraints (e.g. "Correlation between the two factor Brownian
+motions; must lie in [-1, 1]"). This is the text the Qt parameter
+table shows next to each value field -- write it for a non-specialist
+reader, not a quant.
+
+** data_type
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "double"
+:END:
+
+Data type of the parameter's value. "double" today (all current
+process parameters are scalars); future models may add e.g. "text" or
+"vector". Not enforced by a check for now -- the mapping layer
+validates against its own per-process expectations.
+
+** default_value
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Value a new config is pre-filled with when this parameter's row is
+added to the Qt table. Not a fallback for missing rows -- the mapping
+layer throws on a missing parameter rather than silently using a
+default; this is purely a UI convenience.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.05)
+#+end_src
+
+** min_value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Lower bound of the parameter's valid range (inclusive), enforced by
+the Qt spin box and the mapping layer; NULL means unbounded. E.g.
+=kappa_x= min 0 (a negative mean-reversion speed is ill-posed for the
+two-factor Gaussian), =rho= min -1.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** max_value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Upper bound of the parameter's valid range (inclusive), enforced by
+the Qt spin box and the mapping layer; NULL means unbounded. E.g.
+=rho= max 1.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 0
+:END:
+
+Order in which this parameter's row appears in the Qt parameter table,
+within its process type. The process's own natural order (e.g. kappa_x
+before rho) should match the strong-typed struct's field order.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 10)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:END:
+
+** Checks
+
+| expression                  |
+|-----------------------------|
+| "parameter_name" <> ''      |
+| "process_type_code" <> ''   |
+
+* Foreign keys
+
+** process_type_code
+:PROPERTIES:
+:table:         ores_synthetic_yield_curve_process_types_tbl
+:error_message: Invalid process_type_code: %. No active yield_curve_process_type found with this code.
+:nullable:      false
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| process_type_code  | ores_synthetic_validate_yield_curve_process_type_fn |
+| change_reason_code | ores_dq_validate_change_reason_fn  |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: parameter_definition
+:entity_plural_short:   parameter_definitions
+:entity_singular_words: yield curve process parameter definition
+:entity_plural_words:   yield curve process parameter definitions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pd
+:END:
+
+** Table display
+
+| column           | header         |
+|------------------+----------------|
+| process_type_code | Process Type  |
+| parameter_name   | Parameter      |
+| description      | Description    |
+| data_type        | Data Type      |
+| default_value    | Default        |
+| min_value        | Min            |
+| max_value        | Max            |
+| display_order    | Display Order  |
+| modified_by      | Modified By    |
+| version          | Version        |
+
+** Qt
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp
+:domain_class:            synthetic::domain::yield_curve_process_parameter_definition
+:protocol_include:        ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp
+:collection_name:         parameter_definitions
+:item_var:                parameter_definition
+:key_field:                parameter_name
+:has_uuid_primary_key:   true
+:has_pagination:          true
+:has_readonly_paginated_list: true
+:get_request_class:       synthetic::messaging::get_yield_curve_process_parameter_definitions_request
+:get_response_class:      synthetic::messaging::get_yield_curve_process_parameter_definitions_response
+:get_message_type:        get_yield_curve_process_parameter_definitions_request
+:save_request_class:      synthetic::messaging::save_yield_curve_process_parameter_definition_request
+:save_response_class:     synthetic::messaging::save_yield_curve_process_parameter_definition_response
+:save_message_type:       save_yield_curve_process_parameter_definition_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_yield_curve_process_parameter_definition_request
+:delete_response_class:   synthetic::messaging::delete_yield_curve_process_parameter_definition_response
+:delete_message_type:     delete_yield_curve_process_parameter_definition_request
+:history_request_class:   synthetic::messaging::get_yield_curve_process_parameter_definition_history_request
+:history_response_class:  synthetic::messaging::get_yield_curve_process_parameter_definition_history_response
+:history_message_type:    get_yield_curve_process_parameter_definition_history_request
+:settings_group:          YieldCurveProcessParameterDefinitionListWindow
+:window_title:            Yield Curve Process Parameter Definitions
+:icon:                    Tag
+:END:
+
+*** Detail fields
+
+| field            | label            | widget                | type      | is_key | is_required | placeholder                    |
+|------------------+------------------+-----------------------+-----------+--------+-------------+--------------------------------|
+| process_type_code | Process Type    | processTypeCodeEdit   | line_edit |        | true        | e.g. VASICEK, TWO_FACTOR_GAUSSIAN |
+| parameter_name   | Parameter        | parameterNameEdit     | line_edit | true   | true        | e.g. kappa_x                    |
+| description      | Description      | descriptionEdit       | text_edit |        | true        | What this parameter means       |
+| data_type        | Data Type        | dataTypeEdit          | line_edit |        | true        | double                          |
+| default_value    | Default Value    | defaultValueEdit      | line_edit |        |             |                                 |
+| min_value        | Min Value        | minValueEdit          | line_edit |        |             | Unbounded if empty              |
+| max_value        | Max Value        | maxValueEdit          | line_edit |        |             | Unbounded if empty              |
+| display_order    | Display Order    | displayOrderEdit      | spin_box  |        | true        |                                 |
+
+*** Columns (Qt model)
+
+| enum_name      | field            | header         | type      | width |
+|----------------+------------------+----------------+-----------+-------|
+| ProcessTypeCode | process_type_code | Process Type  | string    | 140   |
+| ParameterName  | parameter_name   | Parameter      | string    | 120   |
+| Description    | description      | Description    | string    | 300   |
+| DataType       | data_type        | Data Type      | string    | 80    |
+| DefaultValue   | default_value    | Default        | double    | 90    |
+| MinValue       | min_value        | Min            | double    | 80    |
+| MaxValue       | max_value        | Max            | double    | 80    |
+| DisplayOrder   | display_order    | Display Order  | int       | 90    |
+| Version        | version          | Version        | int       | 70    |
+| ModifiedBy     | modified_by      | Modified By    | string    | 120   |
+| RecordedAt     | recorded_at      | Recorded At    | timestamp | 150   |
+
+* See also
+
+- [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][IR Curve Generation Config]] -- the entity whose parameter values these definitions describe.
+- [[id:B6FDABE7-C146-4B63-9C87-B18DEA09D27A][Yield Curve Process Type]] -- the entity each definition belongs to.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

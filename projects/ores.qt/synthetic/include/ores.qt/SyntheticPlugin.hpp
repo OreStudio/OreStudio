@@ -34,6 +34,7 @@ class FxSpotGenerationConfigController;
 class GmmComponentController;
 class IrCurveGenerationConfigController;
 class IrCurveTemplateEntryController;
+class YieldCurveProcessParameterDefinitionController;
 class YieldCurveProcessTypeController;
 
 /**
@@ -75,6 +76,8 @@ private:
     std::unique_ptr<IrCurveGenerationConfigController> irCurveGenerationConfigController_;
     std::unique_ptr<IrCurveTemplateEntryController> irCurveTemplateEntryController_;
     std::unique_ptr<YieldCurveProcessTypeController> yieldCurveProcessTypeController_;
+    std::unique_ptr<YieldCurveProcessParameterDefinitionController>
+        yieldCurveProcessParameterDefinitionController_;
 };
 
 }

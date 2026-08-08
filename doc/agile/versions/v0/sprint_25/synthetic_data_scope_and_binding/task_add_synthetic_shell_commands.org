@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-synthetic-shell-commands
+#+pr: 1914
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
 #+updated: 2026-08-05
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a `synthetic` command group to ores.shell with subcommands to interact with 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-05                               |
 
 * Acceptance
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1914][#1914]] | [ores.shell] Add synthetic market simulator commands |
 
 * Review
 
@@ -98,3 +98,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented a `synthetic` command group in ores.shell with six
+market-simulator operations, all scriptable and RLS/scope-aware:
+
+- `synthetic list folders [--config-id=<collection-id>] [--name=<name>]`
+  prints the folder hierarchy visible to the logged-in viewer (root >
+  collection > asset class > instrument type), narrowed to one
+  collection's subtree or the subtree(s) rooted at an exact folder
+  name.
+- `synthetic list configs [--scope=system|tenant|party]` prints
+  market_data_generation_configs (name, id, scope, party_id, binding,
+  enabled) with an optional scope filter.
+- `synthetic start|stop folder <token>` starts/stops every feed under a
+  folder subtree (server-side resolve via start/stop_feeds_under_folder_request).
+- `synthetic start|stop feed <token>` starts/stops one feed, building
+  the start request from the feed row and its GMM components exactly as
+  the Market Simulator Qt client does.
+- `synthetic validate-vintage <token>` reports vintage data availability
+  for a feed.
+
+Entity tokens resolve by UUID or *exact* name (folder name, ore key,
+source_name) — no partial/substring matching, per review feedback.
+Ambiguous tokens (e.g. the ore key `FX/RATE/EUR/USD` under two
+collections) list every candidate with its folder path / source_name.
+Multi-word names use the REPL quoting idiom:
+`synthetic list folders --name "2026 Realistic"`.
+
+Verified end-to-end against a freshly recreated prime_origin database:
+list folders (11/11), --name/--config-id subtrees (5/11), list configs
+(2/2, scope filter), validate-vintage (both collections), start/stop
+feed, start/stop folder (1 started, 12 already running; 13 stopped),
+and exact-match rejection of `--name=Realistic`.
+
+Follow-up: folders lack a stable machine-readable identifier (only a
+human-readable multi-word name); tracked as task
+folder-code-identifier (resolver order: uuid -> code -> exact name).

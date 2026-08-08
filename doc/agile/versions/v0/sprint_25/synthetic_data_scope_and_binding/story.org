@@ -21,12 +21,12 @@ Give synthetic market data generation two orthogonal primitives -- scope (system
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Scope/binding axes live on configs; sandboxed feeds run under a distinct namespace; ACME consolidated to one tenant-level bound reality; Market Simulator tree RLS-filtered by viewer scope; scriptable shell commands (list folders/configs, start/stop folder/feed, validate-vintage) added and verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-04                               |
+| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task (stable machine-readable folder identifiers). |
+| Last touched  | 2026-08-08                             |
 
 * Acceptance
 
@@ -187,6 +187,18 @@ No workspace changes are made in this story.
   =ores.marketdata= unrelated to this story, one regression in this
   story's own first task): each was small, contained, and directly
   blocking, so fixed inline rather than deferred as separate captures.
+- Shell command tokens resolve by *exact* match only (UUID, folder
+  name, ore key, source_name) -- no substring/partial matching, which
+  was considered and rejected as a recipe for confusion; ambiguous
+  tokens list every candidate (folder path / source_name) so the user
+  can pick the full token. Multi-word names use the REPL quoting idiom
+  (="synthetic list folders --name \"2026 Realistic\""=), consistent
+  with =--tenant-name "Acme Corporation"= elsewhere in the shell.
+- Folders are the one market-simulator entity without a stable
+  machine-readable identifier (no =code=, unlike tenant =code= /
+  config =name= / feed =ore_key=). A =code= field is tracked as
+  follow-up task folder-code-identifier; resolver order uuid -> code ->
+  exact name.
 
 * Out of scope
 

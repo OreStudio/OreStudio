@@ -24,6 +24,7 @@
 #include "ores.qt/ConcurrencyPolicyMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -31,6 +32,13 @@
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+
+constexpr std::string_view concurrency_policy_event_name =
+    eventing::domain::event_traits<reporting::eventing::concurrency_policy_changed_event>::name;
+
+} // namespace
 
 ConcurrencyPolicyController::ConcurrencyPolicyController(QMainWindow* mainWindow,
                                                          QMdiArea* mdiArea,
@@ -44,6 +52,23 @@ ConcurrencyPolicyController::ConcurrencyPolicyController(QMainWindow* mainWindow
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ConcurrencyPolicyController created";
+
+    if (clientManager_) {
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &ConcurrencyPolicyController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<ConcurrencyPolicyController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to concurrency policy change events";
+            self->clientManager_->subscribeToEvent(std::string{concurrency_policy_event_name});
+        };
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+        if (clientManager_->isConnected())
+            subscribeAll();
+    }
 }
 
 void ConcurrencyPolicyController::showListWindow() {
@@ -437,6 +462,21 @@ void ConcurrencyPolicyController::onRevertVersion(
 
 EntityListMdiWindow* ConcurrencyPolicyController::listWindow() const {
     return listWindow_;
+}
+
+void ConcurrencyPolicyController::onNotificationReceived(const QString& eventType,
+                                                          const QDateTime& timestamp,
+                                                          const QStringList& entityIds,
+                                                          const QString& /*tenantId*/) {
+    if (eventType.toStdString() != concurrency_policy_event_name)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Received concurrency_policy_changed notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " id(s)";
+
+    if (listWindow_)
+        listWindow_->markAsStale();
 }
 
 }

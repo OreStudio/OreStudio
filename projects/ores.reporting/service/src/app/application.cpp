@@ -25,8 +25,15 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
 #include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
+#include "ores.reporting.api/eventing/report_instance_changed_event.hpp"
+#include "ores.reporting.api/eventing/report_type_changed_event.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
+#include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
+#include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
+#include "ores.reporting.service/messaging/report_instance_event_registrar.hpp"
+#include "ores.reporting.service/messaging/report_type_event_registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -99,6 +106,25 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                     boost::asio::detached);
             });
         });
+
+    // Publish report_definition changed events to NATS so the Qt client
+    // can auto-refresh the list. Runs alongside the scheduling subscriber
+    // above (event_bus supports multiple subscribers per event type).
+    auto rd_nats_sub =
+        ores::reporting::service::messaging::register_report_definition_event_mapping(
+            event_source, event_bus, nats);
+
+    // Wire eventing for the remaining entities — publishes changed events
+    // to NATS so the Qt client can refresh lists without manual reload.
+    auto cp_changed_sub =
+        ores::reporting::service::messaging::register_concurrency_policy_event_mapping(
+            event_source, event_bus, nats);
+    auto ri_changed_sub =
+        ores::reporting::service::messaging::register_report_instance_event_mapping(
+            event_source, event_bus, nats);
+    auto rt_changed_sub =
+        ores::reporting::service::messaging::register_report_type_event_mapping(
+            event_source, event_bus, nats);
 
     event_source.start();
 

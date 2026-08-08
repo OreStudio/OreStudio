@@ -78,6 +78,12 @@ private slots:
     void onRevertVersion(const reporting::domain::concurrency_policy& policy);
     void onOpenVersion(const reporting::domain::concurrency_policy& policy, int versionNumber);
 
+private slots:
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
+
 private:
     void showAddWindow();
     void showDetailWindow(const reporting::domain::concurrency_policy& policy);

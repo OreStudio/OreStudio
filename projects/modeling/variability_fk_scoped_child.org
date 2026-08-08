@@ -44,6 +44,12 @@ here is left to the model's own choice:
 | [[id:9D8D1849-D721-47D1-B477-95058D1FAC32][has_explorer_api]] | true |
 | [[id:A12F591B-DF0E-4112-8457-550FA9323DDF][parent_entity_singular]] | required, string — the adopting entity's own parent entity name (e.g. =portfolio= for =book=); this profile fixes that the value must be set, not which literal string, since that is necessarily specific to the adopting entity |
 
+* Physical space
+
+| Address | Enabled |
+|---------+---------|
+| =ores.cpp.eventing-integration-test= | true |
+
 * See also
 
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

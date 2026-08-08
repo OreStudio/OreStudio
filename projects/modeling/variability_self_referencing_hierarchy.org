@@ -50,6 +50,12 @@ here is left to the model's own choice:
 | [[id:9307F2AC-EFBE-4D4A-873A-C609CD94C363][has_uuid_primary_key]] | true |
 | [[id:6EDA740C-D053-4E1B-98EB-E1AD87B6A639][has_change_reason_cache]] | true |
 
+* Physical space
+
+| Address | Enabled |
+|---------+---------|
+| =ores.cpp.eventing-integration-test= | true |
+
 * See also
 
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the feature bundles this profile composes.

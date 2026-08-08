@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: E9A2F4B1-7C3D-4E8B-A5F0-2D6C1B8E3A7F
+:END:
+#+title: Feature: eventing_integration_test
+#+description: Enable per-entity Catch2 integration test proving the DB-write → pg_notify → postgres_event_source → event_bus → NATS-publish pipeline end to end.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:ores.cpp.eventing-integration-test.enabled:= |
+| Bundle | =ores.cpp.testing= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Enables the =ores.cpp.eventing-integration-test= facet, which generates a
+=projects/{component_core_dir}/tests/{entity}_eventing_integration_tests.cpp=
+Catch2 test case per entity. The test writes the entity via its repository,
+waits for the resulting NATS entity-changed notification on the wire, and
+asserts the payload matches — no mocks, real Postgres LISTEN/NOTIFY, real
+NATS. Guards against regressions in the full eventing pipeline (PG trigger →
+event source → event bus → NATS publish) that unit tests alone cannot catch.
+
+* Structural consequence
+
+Adds one test source file per entity. Requires a running NATS server and
+Postgres with LISTEN/NOTIFY support during test execution.
+
+* Used by
+
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup]]
+- [[id:EB5118BB-925A-4414-AB38-FFF15DAFDF0C][Workspace-scoped lookup]]
+- [[id:C17F8A6D-35FC-4EED-AD0B-4EFB2A741DDB][Fully-featured lookup]]
+- [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]]
+- [[id:E6EEAC72-FD59-4277-BF33-E26F981262E0][FK-scoped child]]
+- [[id:645C63A6-6F1E-405F-8062-6C245C0C658C][Self-referencing hierarchy]]
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

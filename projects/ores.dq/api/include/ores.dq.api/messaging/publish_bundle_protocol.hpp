@@ -36,6 +36,8 @@ struct publish_bundle_params {
     std::vector<std::string> opted_in_datasets;
     std::optional<lei_parties_params> lei_parties;
     std::optional<std::string> party_id;
+    std::optional<std::string> tiers;
+    std::optional<std::string> jurisdiction;
 };
 
 inline std::string build_params_json(const publish_bundle_params& params) {

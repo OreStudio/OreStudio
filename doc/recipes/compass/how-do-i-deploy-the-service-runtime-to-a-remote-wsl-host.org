@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 98D8986A-3EF0-4BE3-AFB7-441B81ACA94C
+:END:
+#+title: How do I deploy the service runtime to a remote WSL host?
+#+description: Build, stage, transfer, and deploy the service-runtime + NATS images (or a compute node) to a named remote WSL host over SSH via compass env deploy.
+#+type: recipe
+#+level: cross
+#+filetags: :compass:env:deploy:wsl:devops:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This is the first-class replacement for the manual podman
+build / save / ssh ... load / run-pod.sh sequence used to deploy to
+Newton in sprint 24 (see the
+[[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] story and its
+sprint-24 sibling's session notes). Two deployment roles are supported:
+a *runtime* role that runs the full service/DB environment, and a
+*compute* role that runs a partial environment with just an
+=ores.compute.wrapper= compute node, connecting outward to the serving
+environment's NATS core.
+
+* Question
+
+How do I deploy the service runtime to a remote WSL host over SSH?
+
+* Answer
+
+One command, per role:
+
+#+begin_src sh :results verbatim
+# Full environment (service-runtime + NATS containers, Postgres native
+# on the WSL host): build → stage → transfer → remote up
+compass env deploy newton
+
+# Partial environment — just a compute node (ores.compute.wrapper),
+# serving some environment's ores.compute.core
+compass env deploy newton --role compute
+
+# Tear down (role-appropriate; --purge also drops the certs volume)
+compass env deploy newton --stop
+compass env deploy newton --role compute --stop
+
+# One-time host prep: podman present, linger enabled, user dbus socket
+# up (idempotent — safe to re-run)
+compass env deploy newton --setup-host
+
+# What hosts do we know about?
+compass env deploy list
+#+end_src
+
+The first deploy to a new host generates its profile, =.env.<host>= at
+the repo root (e.g. =.env.newton=), from the current environment via
+the sprint-24 sed rewrites: every =*_DB_PORT= matching the local
+=ORES_DB_PORT= becomes the remote port (5433 by default — Postgres is
+native on the WSL host), and every absolute path under the checkout
+becomes =$ORES_REMOTE_ROOT= (the WSL host has no checkout of this
+repo). Inspect and tweak the profile, then re-run:
+
+#+begin_src sh :results verbatim
+# .env.newton — the remote config block (all optional):
+ORES_REMOTE_HOST=marco@192.168.1.22   # ssh target (default: the alias)
+ORES_REMOTE_ROOT=~/ores-deploy        # remote deploy root (expanded on
+                                      # first deploy, pinned back into
+                                      # the profile)
+ORES_REMOTE_DB_PORT=5433              # remote Postgres port
+#+end_src
+
+Because the profile is a named env file, every other compass command
+can target the same host: =compass db recreate -y -k --env newton=,
+=compass services status --env newton=, etc.
+
+The compute role additionally needs the serving environment's details
+in the profile (the wrapper is NATS/TLS-only — no DB credentials):
+
+#+begin_src sh :results verbatim
+ORES_COMPUTE_HOST_ID=<uuid>            # row in the serving env's compute.hosts
+ORES_COMPUTE_TENANT_ID=<tenant>        # required by the wrapper parser
+ORES_COMPUTE_NATS_URL=nats://<serving-host>:4222
+ORES_COMPUTE_NATS_SUBJECT_PREFIX=ores.<serving-env-label>
+ORES_COMPUTE_NATS_WIRE_FORMAT=json
+ORES_COMPUTE_NATS_TLS_CA=/path/in/serving/checkout/ca.crt
+ORES_COMPUTE_NATS_TLS_CERT=/path/in/serving/checkout/client.crt
+ORES_COMPUTE_NATS_TLS_KEY=/path/in/serving/checkout/client.key
+ORES_COMPUTE_HTTP_BASE_URL=http://<serving-host>:8080   # optional
+#+end_src
+
+The TLS file paths point at the *serving* environment's checkout (the
+compute node authenticates to the serving environment's NATS server);
+they are copied into the transfer with their basenames.
+
+* Script
+
+- =docker/remote-run.sh= / =docker/remote-stop.sh= — the remote side,
+  executed on the target host via =ssh <host> bash -s= with
+  =REMOTE_ROOT= and =ROLE= as inline assignments.
+- =projects/ores.compass/src/env_deploy.py= — the orchestrator
+  (profile generation, staging, image build, transfer, invocation).
+
+* How it works
+
+** Pipeline (runtime role)
+
+1. *Profile*: read =.env.<host>=, generating it from =.env= →
+   =docker/.env= if missing (rewrites above), then expanding a
+   =~=-prefixed =ORES_REMOTE_ROOT= against the remote =HOME= and
+   pinning the expansion back into the profile (podman's =--env-file=
+   and the C++ parsers never expand =~=).
+2. *Stage*: =docker/stage-runtime.sh= (default mode — every supervised
+   service binary plus its ldd closure).
+3. *Build*: =podman build --format docker= for
+   =localhost/ores-service-runtime:local= and =localhost/ores-nats:local=
+   (the =--format docker= is required — OCI silently drops the
+   Dockerfile's HEALTHCHECK).
+4. *Transfer*: =podman save ... | gzip -1 | ssh <host> podman load=
+   (load auto-detects the gzip stream); the rendered NATS config
+   (path-rewritten copy), the NATS client certs, the IAM JWT key and
+   the profile are =scp='d to =$REMOTE_ROOT= under the mirrored layout
+   (=build/config/...=, =build/keys/...=, =docker/.env=).
+5. *Remote up*: both containers run with =--network=host= (the
+   Newton-proven model: Postgres is native on the WSL host at
+   =localhost:5433=, unreachable through a pod's slirp4netns — no pod
+   object, no =-p= mappings), the services container passes
+   =--user <uid>:<gid>= explicitly (no pod to carry
+   =--userns=keep-id=; defaults queried from the host). NATS client
+   certs are staged into a podman-managed volume (the bind-mount TLS
+   quirk), the JWT key goes via =--env= from the real PEM file
+   (=--env-file= cannot hold a multi-line value).
+
+** Pipeline (compute role)
+
+Same stage/build/transfer machinery, but =docker/stage-runtime.sh
+--service ores.compute.wrapper= plus the Dockerfile's existing
+=SERVICE_NAME= build-arg produce =localhost/ores-compute-wrapper:local=.
+The node env file is an =ORES_COMPUTE_WRAPPER_NATS_*= block — app-
+prefixed, because the wrapper's parser maps its environment via
+=make_mapper("COMPUTE_WRAPPER")= and the TLS trio is deliberately
+excluded from the shared-domain fallback — and the required argv pair
+=--host-id= / =--tenant-id= comes from the profile. The container runs
+with =--network=host=, its client certs through a volume, and its
+=--work-dir= under =$REMOTE_ROOT/compute/work=. No NATS sidecar, no
+Postgres, no service set.
+
+** Idempotency
+
+Re-running any command is safe: containers are =rm -f='d before
+recreate, files are overwritten, volumes are recreated, and the image
+build is layer-cached. Picking up a new build is just
+=compass env deploy <host>= again.
+
+** One-time host setup (=--setup-host=)
+
+=podman= must be installed on the host (the command fails with
+instructions if not), then it enables the user's linger (so rootless
+podman keeps working after logout) and starts the user dbus socket
+(the sprint-24 Newton finding — a non-login ssh shell may not inherit
+=XDG_RUNTIME_DIR=; the remote scripts set it defensively).
+
+* Tested by
+
+- =projects/ores.compass/tests/test_env_deploy.py= (pytest — profile
+  generation rewrites, env parsing, compute env writing, transfer
+  pipeline composition) runs in CI.
+- The sprint-24 Newton deploy-and-verify session exercised every step
+  of this pipeline by hand; the cutover to running the dev environment
+  on Newton day-to-day via =compass env deploy= is the story's
+  end-to-end acceptance.
+
+* See also
+
+- [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — the =--env <host>= registry this
+  recipe's profiles live in.
+- [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — the
+  =compass nats init= step that renders the config this recipe
+  transfers.
+- [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][Story: Offload service and DB runtime to a WSL host over SSH]] — the
+  parent story and its decision trail.

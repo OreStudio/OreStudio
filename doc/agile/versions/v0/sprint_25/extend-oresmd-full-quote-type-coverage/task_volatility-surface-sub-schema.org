@@ -66,7 +66,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | model_subtype always default, never settable | parser | Accepted | Added 'model' query param |
+| 2 | Resolver doesn't populate vol — regression | projections | Accepted | Fall back to point composite when vol absent |
+| 3 | Duplicated comma-split logic | parser, projections | Declined | Toolchain issue with sstream in shared header |
 
 * Result
 

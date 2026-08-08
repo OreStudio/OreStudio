@@ -7,41 +7,63 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/credit-hazard-recovery-correlation-rating
+#+pr: 1903
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
-#+updated: 2026-07-30
-#+environment:
+#+updated: 2026-08-08
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Extend =credit_market_data_identifier= with a =credit_quote_type= enum
+covering all 6 ORE credit quote TYPEs: single-name CDS, hazard rate,
+recovery rate, index/tranche base correlation, and rating transition
+probability — each projecting to its documented ORE quote key format via
+the new =quote= query parameter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-08                               |
 
 * Acceptance
 
--
+- [X] =credit_quote_type= enum added with 6 values (=cds=, =hazard_rate=,
+  =recovery_rate=, =cds_index=, =index_cds_tranche=, =rating=).
+- [X] =quote= query parameter generalised from IR-only to IR+credit;
+  still rejected for FX, equity, commodity.
+- [X] =quote_key_credit= handles all 6 formats: =cds= (existing
+  seniority+tenor shape), =hazard_rate= (tenor only, no seniority),
+  =recovery_rate= (seniority only, no tenor), =cds_index=/
+  =index_cds_tranche= (series+tenor), =rating= (ccy only, no entity or
+  point).
+- [X] Backward-compatible: =quote= absent defaults to =cds=, matching the
+  pre-existing worked-example behaviour exactly.
+- [X] Round-trip parse→to_uri tests for all new types.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Added =credit_quote_type= enum to =oresmd_enums.hpp= and =quote_type=
+field to both =credit_market_data_identifier= and
+=credit_market_data_requirement=. Refactored =validate_no_ir_only_keys=
+to split out =validate_ir_or_credit_only_keys= so =quote= is allowed on
+IR and credit but rejected on FX/equity/commodity. Extended
+=quote_key_credit= with per-type format dispatch: =cds= uses
+=ENTITY/SENIORITY/CCY/TENOR=, =hazard_rate= uses =ENTITY/CCY/TENOR=,
+=recovery_rate= uses =ENTITY/SENIORITY/CCY=, =cds_index=/=index_cds_tranche=
+use =INDEX/SERIES/CCY/TENOR=, =rating= uses just =CCY= with no point
+requirement. Wired =quote= through resolver and parser =to_uri=.
 
 * Notes
 
@@ -60,12 +82,32 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1903][#1903]] | [marketdata] Extend oresmd credit coverage: hazard rate, recovery rate, base correlation, rating transition |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | hazard_rate drops seniority — 5-seg key, catalogue says 6 seg | oresmd_projections.cpp | Accepted | Fixed: 2-part point (seniority,tenor), same branch as CDS |
+| 2 | cds_index/index_cds_tranche inject spurious CCY — 6-seg key, catalogue says 5 seg no ccy | oresmd_projections.cpp | Accepted | Fixed: dedicated branch without ccy segment |
+| 3 | rating key fundamentally wrong — needs provider/from/to fields | oresmd_projections.cpp | Accepted | Descoped from this task; rating removed from enum |
+| 4 | dead default_metric(credit_quote_type) overload | oresmd_projections.cpp | Accepted | Removed |
+| 5 | no reject_commodity_uri_with_quote_field test | oresmd_oresmd_parser_tests.cpp | Accepted | Added |
+| 6 | misleading base-correlation comment | oresmd_projections.cpp | Accepted | Fixed inline with format correction |
 
 * Result
+
+Delivered full credit quote-type representation in oresmd:
+
+- =credit_quote_type= (5 values) + per-type =quote_key_credit= dispatching,
+  covering 3 of the 4 catalogued credit quote types not yet represented.
+  =rating= (RATING/TRANSITION_PROBABILITY) descoped — it needs
+  provider/from_rating/to_rating fields the current
+  =credit_market_data_identifier= has no equivalent for; tracked for its
+  own task.
+- =quote= query parameter generalised from IR-only to IR+credit with
+  clean per-asset-class rejection (FX/equity/commodity still reject it).
+- 119 test cases, 227 assertions, all passing — no regressions.
+- Review round 1: fixed hazard_rate seniority (6-seg key), cds_index/
+  index_cds_tranche ccy injection (5-seg key), removed dead code, added
+  commodity quote rejection test.

@@ -131,12 +131,21 @@ TEST_CASE("parse_equity_quote", tags) {
     REQUIRE(eq.ccy == "USD");
 }
 
-TEST_CASE("parse_credit_quote", tags) {
+TEST_CASE("parse_credit_cds_quote", tags) {
     const auto id =
-        oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y"));
+        oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));
     const auto& cr = std::get<credit_market_data_identifier>(id);
     REQUIRE(cr.reference_entity == "ITRAXX-EUROPE");
     REQUIRE(cr.ccy == "EUR");
+    REQUIRE(cr.quote_type == credit_quote_type::cds);
+    REQUIRE(cr.point == "sr,5y");
+}
+
+TEST_CASE("parse_credit_hazard_rate", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
+    const auto& cr = std::get<credit_market_data_identifier>(id);
+    REQUIRE(cr.quote_type == credit_quote_type::hazard_rate);
     REQUIRE(cr.point == "sr,5y");
 }
 
@@ -173,7 +182,28 @@ TEST_CASE("round_trip_equity", tags) {
 
 TEST_CASE("round_trip_credit", tags) {
     const auto original =
-        oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y"));
+        oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_hazard_rate", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_recovery_rate", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+TEST_CASE("round_trip_cds_index", tags) {
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -275,6 +305,12 @@ TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags
     REQUIRE(ir.metric == metric::rate);
 }
 
+TEST_CASE("reject_equity_uri_with_quote_field", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=cds")),
+        oresmd_exception);
+}
+
 TEST_CASE("reject_equity_uri_with_ir_only_tenor_field", tags) {
     REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&tenor=3m")),
                       oresmd_exception);
@@ -299,6 +335,12 @@ TEST_CASE("reject_credit_uri_with_ir_only_index_field", tags) {
 TEST_CASE("reject_credit_uri_missing_mandatory_ccy", tags) {
     REQUIRE_THROWS_AS(
         oresmd_parser::parse(uri("oresmd://credit/itraxx-europe?type=quote&point=sr,5y")),
+        oresmd_exception);
+}
+
+TEST_CASE("reject_commodity_uri_with_quote_field", tags) {
+    REQUIRE_THROWS_AS(
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=cds")),
         oresmd_exception);
 }
 

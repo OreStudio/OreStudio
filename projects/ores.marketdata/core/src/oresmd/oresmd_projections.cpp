@@ -178,14 +178,63 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
     return std::format("EQUITY/PRICE/{}/{}", id.ticker, id.ccy);
 }
 
+std::string_view ore_type(credit_quote_type qt) {
+    switch (qt) {
+    case credit_quote_type::cds:               return "CDS";
+    case credit_quote_type::hazard_rate:       return "HAZARD_RATE";
+    case credit_quote_type::recovery_rate:     return "RECOVERY_RATE";
+    case credit_quote_type::cds_index:         return "CDS_INDEX";
+    case credit_quote_type::index_cds_tranche: return "INDEX_CDS_TRANCHE";
+    }
+    return "CDS";
+}
+
+std::string_view ore_credit_metric(credit_quote_type qt) {
+    switch (qt) {
+    case credit_quote_type::cds:               return "CREDIT_SPREAD";
+    case credit_quote_type::hazard_rate:
+    case credit_quote_type::recovery_rate:     return "RATE";
+    case credit_quote_type::cds_index:
+    case credit_quote_type::index_cds_tranche: return "BASE_CORRELATION";
+    }
+    return "CREDIT_SPREAD";
+}
+
 std::optional<std::string> quote_key_credit(const credit_market_data_identifier& id) {
-    if (id.type != instrument_type::quote || !id.point)
+    if (id.type != instrument_type::quote)
         return std::nullopt;
+
+    const auto qt = id.quote_type.value_or(credit_quote_type::cds);
+    const auto qm = ore_credit_metric(qt);
+
+    if (!id.point)
+        return std::nullopt;
+
     const auto parts = split_point(*id.point);
+
+    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — point is just the seniority.
+    if (qt == credit_quote_type::recovery_rate) {
+        if (parts.size() != 1)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
+                           parts[0], id.ccy);
+    }
+
+    // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT — no ccy dimension.
+    // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES_TENOR/DETACHMENT — no ccy dimension.
+    if (qt == credit_quote_type::cds_index || qt == credit_quote_type::index_cds_tranche) {
+        if (parts.size() != 2)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
+                           parts[0], parts[1]);
+    }
+
+    // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — point=seniority,tenor (2 parts).
+    // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — same 6-segment shape.
     if (parts.size() != 2)
         return std::nullopt;
-    return std::format(
-        "CDS/CREDIT_SPREAD/{}/{}/{}/{}", id.reference_entity, parts[0], id.ccy, parts[1]);
+    return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
+                       parts[0], id.ccy, parts[1]);
 }
 
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {

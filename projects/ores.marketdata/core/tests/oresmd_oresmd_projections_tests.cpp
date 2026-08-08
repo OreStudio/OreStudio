@@ -209,9 +209,34 @@ TEST_CASE("equity_quote_key_matches_worked_example", tags) {
     REQUIRE(oresmd_projections::to_quote_key(id) == "EQUITY/PRICE/AAPL/USD");
 }
 
-TEST_CASE("credit_quote_key_matches_worked_example", tags) {
+TEST_CASE("cds_quote_key_matches_worked_example", tags) {
+    const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
+}
+
+TEST_CASE("cds_quote_key_defaults_when_quote_absent", tags) {
     const auto id = parse("oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y");
     REQUIRE(oresmd_projections::to_quote_key(id) == "CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y");
+}
+
+TEST_CASE("hazard_rate_quote_key_matches_ore_format_6_segments", tags) {
+    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "HAZARD_RATE/RATE/VOD/SR/EUR/5Y");
+}
+
+TEST_CASE("recovery_rate_quote_key", tags) {
+    const auto id = parse("oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "RECOVERY_RATE/RATE/VOD/SR/EUR");
+}
+
+TEST_CASE("cds_index_base_correlation_quote_key_no_ccy", tags) {
+    const auto id = parse("oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1");
+}
+
+TEST_CASE("index_cds_tranche_base_correlation_quote_key_no_ccy", tags) {
+    const auto id = parse("oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07");
 }
 
 TEST_CASE("commodity_quote_key_matches_worked_example", tags) {

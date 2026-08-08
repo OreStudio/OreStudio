@@ -2,7 +2,7 @@
 :ID: 090E2CA3-11E7-4835-8F49-925DEB107660
 :END:
 #+title: ores.qt.dq
-#+description: Qt plugin owning every ores.dq-backed entity's controllers, dialogs, and menus: badges, classifications, LEI registry, audit trail, and data catalogue, plus the Data Librarian window.
+#+description: Qt plugin owning every ores.dq-backed entity's controllers, dialogs, and menus: badges, classifications, audit trail, and data catalogue, plus the Data Librarian window.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :qt:dq:ui:component:
@@ -25,8 +25,8 @@
 and their authority types, catalog, change reason and change reason
 category, data domains, subject areas, datasets, dataset bundles,
 methodologies, origin/nature/treatment dimensions, artefact types,
-LEI entities/relationships, plus the Data Librarian window. It absorbed
-the entities and controllers that had briefly lived in the now-deleted
+plus the Data Librarian window. It absorbed the entities and
+controllers that had briefly lived in the now-deleted
 =ores.qt.data_management= stepping-stone plugin. Most entities are
 fully codegen-driven (domain/protocol/repository backend plus
 Controller/DetailDialog/MdiWindow/ClientModel Qt layer); the remainder
@@ -48,8 +48,8 @@ hand-written dialogs.
 
 - Rendered MDI windows, detail dialogs, and the generic history dialog
   for every owned entity.
-- Data Quality top-level menu (Badges, Classifications, LEI Registry,
-  Audit Trail, Data Catalogue submenus), returned via =create_menus=.
+- Data Quality top-level menu (Badges, Classifications, Audit Trail,
+  Data Catalogue submenus), returned via =create_menus=.
 - NATS request messages sent to the =ores.dq= service on user actions.
 
 * Entry points

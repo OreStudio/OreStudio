@@ -675,6 +675,186 @@ begin
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % dataset bundles', v_copied_count;
 
+    -- The following DQ reference/lookup tables share the exact same
+    -- shared-tenant-edit hazard as artefact_types/dataset_bundles above:
+    -- DDL-seeded under the system tenant, tenant_read_scope: shared (or
+    -- hand-maintained equivalent), and editable through the Qt UI. Copied
+    -- in dependency order (data_domains before subject_areas/coding_schemes,
+    -- badge_severities before badge_definitions) though none of the FK
+    -- validations below are actually tenant-scoped -- they just check
+    -- existence, which the untouched system-tenant rows still satisfy.
+    -- ores_dq_datasets_tbl is deliberately NOT included here: its insert
+    -- trigger validates seven FK references (catalog, subject_area, coding
+    -- scheme, three dimensions, methodology, artefact_type), and it is not
+    -- DDL-seeded as a standalone entity the same way as the tables below --
+    -- tracked separately rather than rushed.
+
+    -- DQ data domains
+    insert into ores_dq_data_domains_tbl (
+        name, tenant_id, version, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.name, v_tenant_id, 0, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_data_domains_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % data domains', v_copied_count;
+
+    -- DQ subject areas (compound natural key: name + domain_name)
+    insert into ores_dq_subject_areas_tbl (
+        name, tenant_id, version, domain_name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.name, v_tenant_id, 0, t.domain_name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_subject_areas_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % subject areas', v_copied_count;
+
+    -- DQ coding scheme authority types
+    insert into ores_dq_coding_scheme_authority_types_tbl (
+        code, tenant_id, version, name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_coding_scheme_authority_types_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % coding scheme authority types', v_copied_count;
+
+    -- DQ coding schemes
+    insert into ores_dq_coding_schemes_tbl (
+        code, tenant_id, version, name, authority_type,
+        subject_area_name, domain_name, uri, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.authority_type,
+        t.subject_area_name, t.domain_name, t.uri, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_coding_schemes_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % coding schemes', v_copied_count;
+
+    -- DQ origin dimensions
+    insert into ores_dq_origin_dimensions_tbl (
+        code, tenant_id, version, name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_origin_dimensions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % origin dimensions', v_copied_count;
+
+    -- DQ nature dimensions
+    insert into ores_dq_nature_dimensions_tbl (
+        code, tenant_id, version, name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_nature_dimensions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % nature dimensions', v_copied_count;
+
+    -- DQ treatment dimensions
+    insert into ores_dq_treatment_dimensions_tbl (
+        code, tenant_id, version, name, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_treatment_dimensions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % treatment dimensions', v_copied_count;
+
+    -- DQ methodologies
+    insert into ores_dq_methodologies_tbl (
+        id, tenant_id, version, name, description,
+        logic_reference, implementation_details,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.id, v_tenant_id, 0, t.name, t.description,
+        t.logic_reference, t.implementation_details,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_methodologies_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % methodologies', v_copied_count;
+
+    -- DQ badge severities
+    insert into ores_dq_badge_severities_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description, t.display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_badge_severities_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % badge severities', v_copied_count;
+
+    -- DQ badge definitions (FK: severity_code -> badge_severities, copied above)
+    insert into ores_dq_badge_definitions_tbl (
+        code, tenant_id, version, name, description,
+        background_colour, text_colour, severity_code, css_class, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        t.code, v_tenant_id, 0, t.name, t.description,
+        t.background_colour, t.text_colour, t.severity_code, t.css_class, t.display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_dq_badge_definitions_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % badge definitions', v_copied_count;
+
     -- =========================================================================
     -- Create the system party for the new tenant
     -- =========================================================================

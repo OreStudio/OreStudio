@@ -261,7 +261,7 @@ domain::{{entity_singular}}
     r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.identity.{{name}})) : std::nullopt;
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
-    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(timepoint_to_timestamp(*v.identity.{{name}}, lg())) : std::nullopt;
+    r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.identity.{{name}})) : std::nullopt;
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.identity.{{name}});

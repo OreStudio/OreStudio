@@ -726,14 +726,28 @@ void CurveBuilderWorkbench::onSaveClicked() {
         showBanner(tr("Not connected to server."), true);
         return;
     }
-    if (!promptAndStashChangeReason())
-        return;
     collectConfigFromUi();
     collectPillarsFromTable();
 
     if (pillars_.empty()) {
         showBanner(tr("Add at least one pillar before saving."), true);
         return;
+    }
+    // curve_bootstrap_engine anchors every DEPOSIT pillar's rate at df_start == 1.0 (the
+    // valuation date itself, per curve_instrument_pricer::deposit_rate's own contract) -- a
+    // DEPOSIT pillar whose Start Tenor isn't SPOT (e.g. a forward-starting 3M-into-6M pillar)
+    // fails at Bootstrap time with a bare "start_date == value_date" exception. Catch the
+    // mismatch here instead: a forward-starting pillar is an FRA or SWAP, not a DEPOSIT.
+    for (const auto& p : pillars_) {
+        if (p.curve_role_code == "DEPOSIT" && p.start_tenor_code != "SPOT") {
+            showBanner(tr("Pillar '%1' is a DEPOSIT starting at %2, not SPOT -- DEPOSIT pillars "
+                          "must start today. For a forward-starting instrument, change its Curve "
+                          "Role to FRA or SWAP instead.")
+                          .arg(QString::fromStdString(p.end_tenor_code))
+                          .arg(QString::fromStdString(p.start_tenor_code)),
+                      true);
+            return;
+        }
     }
     if (config_.split_tenor_code.empty()) {
         // split_tenor_code is never optional (see the table's own DB check constraint) -- for a
@@ -761,6 +775,12 @@ void CurveBuilderWorkbench::onSaveClicked() {
                   true);
         return;
     }
+    if (!promptAndStashChangeReason())
+        return;
+    // Re-collect: pendingChangeReasonCode_/pendingChangeCommentary_ were just set by the prompt
+    // above, and both collect functions stamp them onto config_/each pillar.
+    collectConfigFromUi();
+    collectPillarsFromTable();
 
     saveButton_->setEnabled(false);
     const auto configRequest =

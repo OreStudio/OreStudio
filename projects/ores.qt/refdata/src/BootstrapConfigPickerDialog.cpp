@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/BootstrapConfigPickerDialog.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include <QAbstractItemView>
@@ -31,6 +32,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <algorithm>
+#include <unordered_map>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -40,15 +42,20 @@ namespace rd = ores::refdata;
 }
 
 BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientManager,
-                                                          QWidget* parent)
+                                                          QWidget* parent,
+                                                          const QString& currencyFilter)
     : QDialog(parent)
-    , clientManager_(clientManager) {
+    , clientManager_(clientManager)
+    , currencyFilter_(currencyFilter) {
     setWindowTitle(tr("Select Discount Curve Config"));
     resize(640, 420);
 
     auto* layout = new QVBoxLayout(this);
     layout->addWidget(new QLabel(
-        tr("Existing FUNDING-role bootstrap configs (the discount curve to project from):"),
+        currencyFilter_.isEmpty() ?
+            tr("Existing FUNDING-role bootstrap configs (the discount curve to project from):") :
+            tr("Existing %1 FUNDING-role bootstrap configs (the discount curve to project from):")
+                .arg(currencyFilter_),
         this));
 
     table_ = new QTableWidget(0, 4, this);
@@ -92,25 +99,42 @@ void BootstrapConfigPickerDialog::reload() {
         return;
     }
 
-    rd::messaging::get_ir_curve_bootstrap_configs_request request;
-    request.offset = 0;
-    request.limit = 1000;
+    rd::messaging::get_ir_curve_bootstrap_configs_request configRequest;
+    configRequest.offset = 0;
+    configRequest.limit = 1000;
+    marketdata::messaging::get_market_series_request seriesRequest;
+    seriesRequest.offset = 0;
+    seriesRequest.limit = 1000;
+
+    struct FetchResult {
+        std::vector<rd::domain::ir_curve_bootstrap_config> configs;
+        std::unordered_map<std::string, std::string> qualifierById;
+    };
 
     QPointer<BootstrapConfigPickerDialog> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
     auto future = QtConcurrent::run(
-        [clientManager,
-         request]() -> std::expected<rd::messaging::get_ir_curve_bootstrap_configs_response, QString> {
-            auto result = clientManager->process_authenticated_request(request);
-            if (!result)
-                return std::unexpected(QString::fromStdString(result.error()));
-            if (!result->success)
-                return std::unexpected(QString::fromStdString(result->message));
-            return *result;
+        [clientManager, configRequest, seriesRequest]() -> std::expected<FetchResult, QString> {
+            auto configResult = clientManager->process_authenticated_request(configRequest);
+            if (!configResult)
+                return std::unexpected(QString::fromStdString(configResult.error()));
+            if (!configResult->success)
+                return std::unexpected(QString::fromStdString(configResult->message));
+
+            auto seriesResult = clientManager->process_authenticated_request(seriesRequest);
+            if (!seriesResult)
+                return std::unexpected(QString::fromStdString(seriesResult.error()));
+            if (!seriesResult->success)
+                return std::unexpected(QString::fromStdString(seriesResult->message));
+
+            FetchResult out;
+            out.configs = std::move(configResult->bootstrap_configs);
+            for (const auto& s : seriesResult->market_series)
+                out.qualifierById.emplace(boost::uuids::to_string(s.id), s.qualifier);
+            return out;
         });
 
-    using ResultType =
-        std::expected<rd::messaging::get_ir_curve_bootstrap_configs_response, QString>;
+    using ResultType = std::expected<FetchResult, QString>;
     auto* watcher = new QFutureWatcher<ResultType>(this);
     connect(watcher, &QFutureWatcher<ResultType>::finished, this, [self, watcher]() {
         auto result = watcher->result();
@@ -125,19 +149,32 @@ void BootstrapConfigPickerDialog::reload() {
         }
         self->statusLabel_->setVisible(false);
         self->rows_.clear();
-        for (auto& c : result->bootstrap_configs) {
-            if (c.curve_family_role == "FUNDING")
-                self->rows_.push_back(std::move(c));
+        std::vector<QString> qualifiers;
+        for (auto& c : result->configs) {
+            if (c.curve_family_role != "FUNDING")
+                continue;
+            const auto it = result->qualifierById.find(boost::uuids::to_string(c.output_series_id));
+            const QString qualifier =
+                it != result->qualifierById.end() ? QString::fromStdString(it->second) : QString();
+            if (!self->currencyFilter_.isEmpty() &&
+                !qualifier.contains(self->currencyFilter_, Qt::CaseInsensitive))
+                continue;
+            qualifiers.push_back(qualifier);
+            self->rows_.push_back(std::move(c));
         }
 
         self->table_->setRowCount(0);
-        for (const auto& c : self->rows_) {
+        for (std::size_t i = 0; i < self->rows_.size(); ++i) {
+            const auto& c = self->rows_[i];
             const int row = self->table_->rowCount();
             self->table_->insertRow(row);
             self->table_->setItem(
                 row,
                 0,
-                new QTableWidgetItem(QString::fromStdString(boost::uuids::to_string(c.output_series_id))));
+                new QTableWidgetItem(qualifiers[i].isEmpty() ?
+                                         QString::fromStdString(
+                                             boost::uuids::to_string(c.output_series_id)) :
+                                         qualifiers[i]));
             self->table_->setItem(
                 row, 1, new QTableWidgetItem(QString::fromStdString(c.interpolation_method)));
             self->table_->setItem(

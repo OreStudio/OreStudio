@@ -47,7 +47,12 @@ class ORES_QT_REFDATA_EXPORT MarketSeriesPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    MarketSeriesPickerDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    /// @param initialFilter Pre-fills the search box and the New Series qualifier field, e.g. an
+    /// index code such as "USD-SOFR" -- narrows the list to that index's series by construction,
+    /// rather than showing every FX/rates/credit series in the tenant unfiltered.
+    MarketSeriesPickerDialog(ClientManager* clientManager,
+                             QWidget* parent = nullptr,
+                             const QString& initialFilter = QString());
 
     /// Set once the user picks an existing row or successfully creates+selects a new one.
     [[nodiscard]] std::optional<marketdata::domain::market_series> selectedSeries() const {

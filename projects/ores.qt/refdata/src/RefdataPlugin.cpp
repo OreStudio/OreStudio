@@ -729,6 +729,7 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         std::make_unique<IrCurveBootstrapConfigController>(ctx_.main_window,
                                                             ctx_.mdi_area,
                                                             ctx_.client_manager,
+                                                            ctx_.image_cache,
                                                             ctx_.username,
                                                             this);
     connectControllerSignals(irCurveBootstrapConfigController_.get());

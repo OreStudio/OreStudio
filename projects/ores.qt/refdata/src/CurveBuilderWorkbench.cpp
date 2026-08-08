@@ -24,7 +24,9 @@
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.qt/BootstrapConfigPickerDialog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/MarketSeriesPickerDialog.hpp"
+#include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include <QComboBox>
@@ -86,6 +88,108 @@ CurveBuilderWorkbench::CurveBuilderWorkbench(QWidget* parent)
     updateActionStates();
 }
 
+void CurveBuilderWorkbench::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+    loadFloatingIndexTypes();
+}
+
+void CurveBuilderWorkbench::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    setup_flag_combo(this, currencyCombo_, imageCache_, FlagSource::Currency);
+}
+
+void CurveBuilderWorkbench::loadFloatingIndexTypes() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    refdata::messaging::get_floating_index_types_request request;
+    request.offset = 0;
+    request.limit = 1000;
+
+    QPointer<CurveBuilderWorkbench> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run(
+        [clientManager,
+         request]() -> std::expected<refdata::messaging::get_floating_index_types_response, QString> {
+            auto result = clientManager->process_authenticated_request(request);
+            if (!result)
+                return std::unexpected(QString::fromStdString(result.error()));
+            if (!result->success)
+                return std::unexpected(QString::fromStdString(result->message));
+            return *result;
+        });
+
+    using ResultType =
+        std::expected<refdata::messaging::get_floating_index_types_response, QString>;
+    auto* watcher = new QFutureWatcher<ResultType>(this);
+    connect(watcher, &QFutureWatcher<ResultType>::finished, this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self || !result)
+            return;
+        self->floatingIndexTypes_ = std::move(result->types);
+        self->refreshCurrencyCombo();
+    });
+    watcher->setFuture(future);
+}
+
+void CurveBuilderWorkbench::refreshCurrencyCombo() {
+    QStringList currencies;
+    for (const auto& t : floatingIndexTypes_) {
+        const auto dash = t.code.find('-');
+        if (dash == std::string::npos)
+            continue;
+        const QString currency = QString::fromStdString(t.code.substr(0, dash));
+        if (!currencies.contains(currency))
+            currencies << currency;
+    }
+    currencies.sort();
+
+    const QString previous = currencyCombo_->currentText();
+    currencyCombo_->blockSignals(true);
+    currencyCombo_->clear();
+    currencyCombo_->addItems(currencies);
+    currencyCombo_->setCurrentText(previous);
+    currencyCombo_->blockSignals(false);
+
+    if (imageCache_)
+        setup_flag_combo(this, currencyCombo_, imageCache_, FlagSource::Currency);
+
+    refreshIndexCombo();
+}
+
+void CurveBuilderWorkbench::refreshIndexCombo() {
+    const QString currency = currencyCombo_->currentText();
+    const QString previous = indexCombo_->currentText();
+
+    QStringList codes;
+    for (const auto& t : floatingIndexTypes_) {
+        const QString code = QString::fromStdString(t.code);
+        if (!currency.isEmpty() && !code.startsWith(currency + "-"))
+            continue;
+        codes << code;
+    }
+    codes.sort();
+
+    indexCombo_->blockSignals(true);
+    indexCombo_->clear();
+    indexCombo_->addItems(codes);
+    indexCombo_->setCurrentText(codes.contains(previous) ? previous : QString());
+    indexCombo_->blockSignals(false);
+
+    const bool hasIndex = !indexCombo_->currentText().isEmpty();
+    browseSourceSeriesButton_->setEnabled(hasIndex);
+    browseOutputSeriesButton_->setEnabled(hasIndex);
+}
+
+QString CurveBuilderWorkbench::selectedCurrency() const {
+    return currencyCombo_->currentText();
+}
+
+QString CurveBuilderWorkbench::selectedIndexCode() const {
+    return indexCombo_->currentText();
+}
+
 void CurveBuilderWorkbench::buildUi() {
     auto* layout = new QVBoxLayout(this);
 
@@ -126,9 +230,29 @@ QWidget* CurveBuilderWorkbench::buildConventionsTab() {
         form->addLayout(row);
     };
 
+    // Currency/Index come first and gate everything below: picking these up front constrains
+    // the Source/Output Series pickers to that index's series, instead of letting a novice
+    // browse every FX/rates/credit series in the tenant unfiltered.
+    currencyCombo_ = new QComboBox(page);
+    currencyCombo_->setPlaceholderText(tr("Select..."));
+    add_row(tr("Currency"), currencyCombo_);
+    connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
+        refreshIndexCombo();
+    });
+
+    indexCombo_ = new QComboBox(page);
+    indexCombo_->setPlaceholderText(tr("Select a currency first"));
+    add_row(tr("Index"), indexCombo_);
+    connect(indexCombo_, &QComboBox::currentTextChanged, this, [this](const QString& code) {
+        const bool hasIndex = !code.isEmpty();
+        browseSourceSeriesButton_->setEnabled(hasIndex);
+        browseOutputSeriesButton_->setEnabled(hasIndex);
+    });
+
     sourceSeriesIdEdit_ = new QLineEdit(page);
     sourceSeriesIdEdit_->setPlaceholderText(tr("Source (raw grid) market series"));
     add_picker_row(tr("Source Series"), sourceSeriesIdEdit_, browseSourceSeriesButton_);
+    browseSourceSeriesButton_->setEnabled(false);
     connect(browseSourceSeriesButton_,
             &QPushButton::clicked,
             this,
@@ -137,6 +261,7 @@ QWidget* CurveBuilderWorkbench::buildConventionsTab() {
     outputSeriesIdEdit_ = new QLineEdit(page);
     outputSeriesIdEdit_->setPlaceholderText(tr("Output (published curve) market series"));
     add_picker_row(tr("Output Series"), outputSeriesIdEdit_, browseOutputSeriesButton_);
+    browseOutputSeriesButton_->setEnabled(false);
     connect(browseOutputSeriesButton_,
             &QPushButton::clicked,
             this,
@@ -349,7 +474,7 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this);
+    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexCode());
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
@@ -361,7 +486,7 @@ void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
-    MarketSeriesPickerDialog dialog(clientManager_, this);
+    MarketSeriesPickerDialog dialog(clientManager_, this, selectedIndexCode());
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
@@ -373,7 +498,7 @@ void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked() {
-    BootstrapConfigPickerDialog dialog(clientManager_, this);
+    BootstrapConfigPickerDialog dialog(clientManager_, this, selectedCurrency());
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto picked = dialog.selectedConfig();

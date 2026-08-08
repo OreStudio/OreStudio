@@ -37,6 +37,7 @@ namespace ores::qt {
 class IrCurveBootstrapConfigMdiWindow;
 class CurveBuilderWorkbench;
 class DetachableMdiSubWindow;
+class ImageCache;
 
 /**
  * @brief Controller for managing IR curve bootstrap config windows and operations.
@@ -60,6 +61,7 @@ public:
     IrCurveBootstrapConfigController(QMainWindow* mainWindow,
                                      QMdiArea* mdiArea,
                                      ClientManager* clientManager,
+                                     ImageCache* imageCache,
                                      const QString& username,
                                      QObject* parent = nullptr);
 

@@ -45,7 +45,12 @@ class ORES_QT_REFDATA_EXPORT BootstrapConfigPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    BootstrapConfigPickerDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    /// @param currencyFilter When non-empty (e.g. "USD"), only shows FUNDING configs whose output
+    /// series qualifier contains this currency -- cross-currency discounting is the unusual case,
+    /// not the default, so this keeps a novice from picking a mismatched discount curve.
+    BootstrapConfigPickerDialog(ClientManager* clientManager,
+                                QWidget* parent = nullptr,
+                                const QString& currencyFilter = QString());
 
     [[nodiscard]] std::optional<refdata::domain::ir_curve_bootstrap_config> selectedConfig() const {
         return selected_;
@@ -58,6 +63,7 @@ private slots:
 
 private:
     ClientManager* clientManager_;
+    QString currencyFilter_;
     QTableWidget* table_ = nullptr;
     QPushButton* selectButton_ = nullptr;
     QLabel* statusLabel_ = nullptr;

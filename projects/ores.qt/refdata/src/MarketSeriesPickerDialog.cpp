@@ -69,7 +69,9 @@ const QStringList& subclass_names() {
 
 }
 
-MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager, QWidget* parent)
+MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
+                                                    QWidget* parent,
+                                                    const QString& initialFilter)
     : QDialog(parent)
     , clientManager_(clientManager) {
     setWindowTitle(tr("Select Market Series"));
@@ -112,6 +114,11 @@ MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
     statusLabel_->setWordWrap(true);
     statusLabel_->setVisible(false);
     layout->addWidget(statusLabel_);
+
+    if (!initialFilter.isEmpty()) {
+        filterEdit_->setText(initialFilter);
+        newQualifierEdit_->setText(initialFilter);
+    }
 
     reload();
 }

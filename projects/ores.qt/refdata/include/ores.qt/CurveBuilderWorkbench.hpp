@@ -22,6 +22,7 @@
 
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.qt/RefdataExport.hpp"
+#include "ores.refdata.api/domain/floating_index_type.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include <QWidget>
@@ -41,6 +42,7 @@ class QChartView;
 namespace ores::qt {
 
 class ClientManager;
+class ImageCache;
 
 /**
  * @brief Non-modal workbench replacing the standard modal detail dialog for
@@ -67,9 +69,13 @@ class ORES_QT_REFDATA_EXPORT CurveBuilderWorkbench : public QWidget {
 public:
     explicit CurveBuilderWorkbench(QWidget* parent = nullptr);
 
-    void setClientManager(ClientManager* clientManager) {
-        clientManager_ = clientManager;
-    }
+    /// Also kicks off the Currency/Index combo data load (floating_index_type list), since that
+    /// needs a live ClientManager and this is the first setter the controller is guaranteed to
+    /// call regardless of construction-site variant.
+    void setClientManager(ClientManager* clientManager);
+    /// Applies flag icons to the Currency combo once available -- independent of setClientManager
+    /// call order, since the two setters are unordered from the controller's side.
+    void setImageCache(ImageCache* imageCache);
     void setUsername(const std::string& username) {
         username_ = username;
     }
@@ -121,17 +127,31 @@ private:
     void onBrowseSourceSeriesClicked();
     void onBrowseOutputSeriesClicked();
     void onBrowseDiscountCurveConfigClicked();
+    void loadFloatingIndexTypes();
+    void refreshCurrencyCombo();
+    void refreshIndexCombo();
+    /// The currently selected index code (e.g. "USD-SOFR"), or empty until both Currency and
+    /// Index are chosen -- used to pre-filter the series pickers and the discount-curve picker.
+    [[nodiscard]] QString selectedIndexCode() const;
+    [[nodiscard]] QString selectedCurrency() const;
 
     ClientManager* clientManager_ = nullptr;
+    ImageCache* imageCache_ = nullptr;
     std::string username_;
     bool createMode_ = true;
     refdata::domain::ir_curve_bootstrap_config config_;
     std::vector<refdata::domain::ir_curve_bootstrap_pillar> pillars_;
     bool hasBootstrapped_ = false;
+    std::vector<refdata::domain::floating_index_type> floatingIndexTypes_;
 
-    // Conventions tab. sourceSeriesIdEdit_/outputSeriesIdEdit_/discountCurveConfigIdEdit_ are
-    // read-only display fields fed by a picker dialog (Browse... button) rather than free-typed
-    // UUIDs -- the ids themselves live only in config_, never re-parsed from displayed text.
+    // Conventions tab. Currency/Index gate everything below them: they constrain which market
+    // series the Source/Output Series pickers offer, so a novice can't accidentally bootstrap a
+    // USD curve off an FX or JPY series. sourceSeriesIdEdit_/outputSeriesIdEdit_/
+    // discountCurveConfigIdEdit_ are read-only display fields fed by a picker dialog (Browse...
+    // button) rather than free-typed UUIDs -- the ids themselves live only in config_, never
+    // re-parsed from displayed text.
+    QComboBox* currencyCombo_ = nullptr;
+    QComboBox* indexCombo_ = nullptr;
     QLineEdit* sourceSeriesIdEdit_ = nullptr;
     QPushButton* browseSourceSeriesButton_ = nullptr;
     QLineEdit* outputSeriesIdEdit_ = nullptr;

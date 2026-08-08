@@ -26,6 +26,7 @@
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include <QWidget>
+#include <functional>
 #include <optional>
 #include <vector>
 
@@ -113,6 +114,13 @@ private slots:
     void onPublishClicked();
     void onAddPillarClicked();
     void onRemovePillarClicked();
+    /// Create-mode helper: opens a picker over every existing config (any curve_family_role),
+    /// clones its Conventions + Pillars into this blank recipe (fresh pillar ids, since a pillar
+    /// id is unique per row regardless of parent config), and leaves Source/Output Series/
+    /// split tenor for the user to fill in themselves, since those are always tenant/series-
+    /// specific. A stopgap for novice-unfriendly blank-slate curve building until a proper
+    /// curated template entity exists (see the story's own follow-on task).
+    void onNewFromExistingClicked();
 
 private:
     void buildUi();
@@ -164,6 +172,13 @@ private:
     /// pendingChangeReasonCode_/pendingChangeCommentary_ for collectConfigFromUi()/
     /// collectPillarsFromTable() to apply.
     bool promptAndStashChangeReason();
+    /// Fetches every pillar belonging to @p configId (client-side filtered -- the list request
+    /// has no server-side config-id filter) and hands the sorted-by-sequence_index result to
+    /// @p onLoaded on the UI thread. Shared by setConfig() (load this config's own pillars) and
+    /// onNewFromExistingClicked() (clone another config's pillars).
+    void fetchPillarsForConfig(
+        const boost::uuids::uuid& configId,
+        std::function<void(std::vector<refdata::domain::ir_curve_bootstrap_pillar>)> onLoaded);
 
     ClientManager* clientManager_ = nullptr;
     ImageCache* imageCache_ = nullptr;
@@ -184,6 +199,7 @@ private:
     // discountCurveConfigIdEdit_ are read-only display fields fed by a picker dialog (Browse...
     // button) rather than free-typed UUIDs -- the ids themselves live only in config_, never
     // re-parsed from displayed text.
+    QPushButton* newFromExistingButton_ = nullptr;
     QComboBox* currencyCombo_ = nullptr;
     QComboBox* indexCombo_ = nullptr;
     QLineEdit* sourceSeriesIdEdit_ = nullptr;

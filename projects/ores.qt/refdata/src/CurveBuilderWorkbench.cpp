@@ -61,6 +61,7 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
+#include <unordered_map>
 
 namespace ores::qt {
 
@@ -300,6 +301,16 @@ QWidget* CurveBuilderWorkbench::buildConventionsTab() {
         form->addLayout(row);
     };
 
+    // Stopgap for a novice building a curve from scratch, until a proper curated template entity
+    // exists (see the story's own follow-on task): clone an existing config's Conventions +
+    // Pillars rather than starting from a blank Pillars tab with no guidance on what to enter.
+    newFromExistingButton_ = new QPushButton(tr("New from Existing..."), page);
+    connect(newFromExistingButton_,
+            &QPushButton::clicked,
+            this,
+            &CurveBuilderWorkbench::onNewFromExistingClicked);
+    form->addWidget(newFromExistingButton_);
+
     // Currency/Index come first and gate everything below: picking these up front constrains
     // the Source/Output Series pickers to that index's series, instead of letting a novice
     // browse every FX/rates/credit series in the tenant unfiltered.
@@ -451,8 +462,9 @@ QWidget* CurveBuilderWorkbench::buildDiagnosticsTab() {
     publishHintLabel_->setStyleSheet("color: #94a3b8; font-style: italic;");
     layout->addWidget(publishHintLabel_);
 
-    resultsTable_ = new QTableWidget(0, 3, page);
-    resultsTable_->setHorizontalHeaderLabels({tr("Tenor"), tr("Date"), tr("Discount Factor")});
+    resultsTable_ = new QTableWidget(0, 4, page);
+    resultsTable_->setHorizontalHeaderLabels(
+        {tr("Tenor"), tr("Date"), tr("Discount Factor"), tr("Instantaneous Forward Rate")});
     resultsTable_->horizontalHeader()->setStretchLastSection(true);
     resultsTable_->setMaximumHeight(180);
     layout->addWidget(resultsTable_);
@@ -481,6 +493,7 @@ void CurveBuilderWorkbench::setCreateMode(bool createMode) {
         config_.id = boost::uuids::random_generator{}();
         pillars_.clear();
     }
+    newFromExistingButton_->setVisible(createMode_);
     loadConfigIntoUi();
     loadPillarsIntoTable();
     updateActionStates();
@@ -488,9 +501,19 @@ void CurveBuilderWorkbench::setCreateMode(bool createMode) {
 
 void CurveBuilderWorkbench::setConfig(const refdata::domain::ir_curve_bootstrap_config& config) {
     createMode_ = false;
+    newFromExistingButton_->setVisible(false);
     config_ = config;
     loadConfigIntoUi();
     updateActionStates();
+
+    QPointer<CurveBuilderWorkbench> self = this;
+    fetchPillarsForConfig(config_.id, [self](auto pillars) {
+        if (!self)
+            return;
+        self->pillars_ = std::move(pillars);
+        self->loadPillarsIntoTable();
+        self->updateActionStates();
+    });
 }
 
 QString CurveBuilderWorkbench::code() const {
@@ -618,6 +641,99 @@ void CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked() {
         QString("Config %1 (%2)")
             .arg(QString::fromStdString(boost::uuids::to_string(picked->id)).left(8))
             .arg(QString::fromStdString(picked->interpolation_method)));
+}
+
+void CurveBuilderWorkbench::fetchPillarsForConfig(
+    const boost::uuids::uuid& configId,
+    std::function<void(std::vector<refdata::domain::ir_curve_bootstrap_pillar>)> onLoaded) {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    refdata::messaging::get_ir_curve_bootstrap_pillars_request request;
+    request.offset = 0;
+    request.limit = 1000;
+
+    QPointer<CurveBuilderWorkbench> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run(
+        [clientManager, request]()
+            -> std::expected<refdata::messaging::get_ir_curve_bootstrap_pillars_response, QString> {
+            auto result = clientManager->process_authenticated_request(request);
+            if (!result)
+                return std::unexpected(QString::fromStdString(result.error()));
+            if (!result->success)
+                return std::unexpected(QString::fromStdString(result->message));
+            return *result;
+        });
+
+    using ResultType =
+        std::expected<refdata::messaging::get_ir_curve_bootstrap_pillars_response, QString>;
+    auto* watcher = new QFutureWatcher<ResultType>(this);
+    connect(watcher,
+            &QFutureWatcher<ResultType>::finished,
+            this,
+            [self, watcher, configId, onLoaded = std::move(onLoaded)]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self || !result)
+                    return;
+                std::vector<refdata::domain::ir_curve_bootstrap_pillar> matched;
+                for (auto& p : result->pillars) {
+                    if (p.bootstrap_config_id == configId)
+                        matched.push_back(std::move(p));
+                }
+                std::sort(matched.begin(), matched.end(), [](const auto& a, const auto& b) {
+                    return a.sequence_index < b.sequence_index;
+                });
+                onLoaded(std::move(matched));
+            });
+    watcher->setFuture(future);
+}
+
+void CurveBuilderWorkbench::onNewFromExistingClicked() {
+    BootstrapConfigPickerDialog dialog(clientManager_, this, QString(), QString());
+    if (dialog.exec() != QDialog::Accepted)
+        return;
+    const auto picked = dialog.selectedConfig();
+    if (!picked)
+        return;
+
+    // Clone Conventions except the tenant/series-specific fields (source/output series ids stay
+    // blank -- cloning a UUID that already belongs to another curve would be exactly the
+    // clobbering bug fixed elsewhere in this workbench; the user must pick their own).
+    config_.curve_family_role = picked->curve_family_role;
+    config_.discount_curve_config_id = picked->discount_curve_config_id;
+    config_.interpolation_method = picked->interpolation_method;
+    config_.day_count_convention = picked->day_count_convention;
+    config_.split_tenor_code = picked->split_tenor_code;
+
+    QPointer<CurveBuilderWorkbench> self = this;
+    const auto newConfigId = config_.id;
+    const auto newPartyId = config_.party_id;
+    fetchPillarsForConfig(picked->id, [self, newConfigId, newPartyId](auto sourcePillars) {
+        if (!self)
+            return;
+        // Fresh ids: a pillar's id is its own primary identity regardless of parent config, so
+        // reusing the source config's pillar ids under a different bootstrap_config_id would
+        // collide with those still-existing rows.
+        std::vector<refdata::domain::ir_curve_bootstrap_pillar> cloned;
+        cloned.reserve(sourcePillars.size());
+        for (const auto& p : sourcePillars) {
+            auto c = p;
+            c.id = boost::uuids::random_generator{}();
+            c.bootstrap_config_id = newConfigId;
+            c.party_id = newPartyId;
+            cloned.push_back(std::move(c));
+        }
+        self->pillars_ = std::move(cloned);
+        self->loadConfigIntoUi();
+        self->loadPillarsIntoTable();
+        self->updateActionStates();
+        self->showBanner(
+            self->tr("Cloned recipe from an existing config -- pick your own Source/Output "
+                     "Series before saving."),
+            false);
+    });
 }
 
 void CurveBuilderWorkbench::collectConfigFromUi() {
@@ -928,11 +1044,33 @@ void CurveBuilderWorkbench::renderBootstrapResults(
     const std::vector<marketdata::messaging::computed_curve_point>& points) {
     namespace quant = ores::analytics::quant::service;
 
+    std::vector<quant::bootstrapped_point> bootstrapped;
+    bootstrapped.reserve(points.size());
+    for (const auto& p : points)
+        bootstrapped.push_back({p.point_id, p.date, p.discount_factor});
+
+    // Computed client-side from the same discount factors the server already returned -- no
+    // extra round trip needed, per the day count convention already saved on this recipe.
+    // point_id == the interval's own end point, so a point_id -> rate map lines up directly with
+    // the results table's rows (row 0, the first pillar, has no prior point and stays blank).
+    std::unordered_map<std::string, double> forwardRateByPointId;
+    quant::day_count_convention_code dayCountConvention{};
+    bool haveDayCountConvention = true;
+    try {
+        dayCountConvention = quant::parse_day_count_convention_code(config_.day_count_convention);
+    } catch (const std::exception&) {
+        haveDayCountConvention = false;
+    }
+    std::vector<quant::forward_rate_point> forwards;
+    if (haveDayCountConvention) {
+        forwards = quant::forward_rate_calculator::calculate(bootstrapped, dayCountConvention);
+        for (const auto& f : forwards)
+            forwardRateByPointId.emplace(f.point_id, f.instantaneous_forward_rate);
+    }
+
     resultsTable_->setRowCount(0);
     QStringList tenorLabels;
     auto* dfSeries = new QLineSeries();
-    std::vector<quant::bootstrapped_point> bootstrapped;
-    bootstrapped.reserve(points.size());
 
     for (std::size_t i = 0; i < points.size(); ++i) {
         const auto& p = points[i];
@@ -942,10 +1080,16 @@ void CurveBuilderWorkbench::renderBootstrapResults(
         resultsTable_->setItem(row, 1, new QTableWidgetItem(to_qstring(p.date)));
         resultsTable_->setItem(
             row, 2, new QTableWidgetItem(QString::number(p.discount_factor, 'f', 6)));
+        const auto fwdIt = forwardRateByPointId.find(p.point_id);
+        resultsTable_->setItem(
+            row,
+            3,
+            new QTableWidgetItem(fwdIt == forwardRateByPointId.end() ?
+                                     QString("--") :
+                                     QString::number(fwdIt->second * 100.0, 'f', 4) + "%"));
 
         tenorLabels << QString::fromStdString(p.point_id);
         dfSeries->append(static_cast<double>(i), p.discount_factor);
-        bootstrapped.push_back({p.point_id, p.date, p.discount_factor});
     }
 
     dfChart_->removeAllSeries();
@@ -963,12 +1107,10 @@ void CurveBuilderWorkbench::renderBootstrapResults(
 
     healthFindingsList_->clear();
 
-    quant::day_count_convention_code dayCountConvention;
-    try {
-        dayCountConvention = quant::parse_day_count_convention_code(config_.day_count_convention);
-    } catch (const std::exception& e) {
-        healthFindingsList_->addItem(
-            QString("Could not run diagnostics: %1").arg(QString::fromStdString(e.what())));
+    if (!haveDayCountConvention) {
+        healthFindingsList_->addItem(tr("Could not run diagnostics: invalid day count "
+                                        "convention '%1'.")
+                                         .arg(QString::fromStdString(config_.day_count_convention)));
         return;
     }
 
@@ -976,8 +1118,6 @@ void CurveBuilderWorkbench::renderBootstrapResults(
     for (const auto& f : dfFindings)
         healthFindingsList_->addItem(QString::fromStdString(f.point_id + ": " + f.message));
 
-    const auto forwards =
-        quant::forward_rate_calculator::calculate(bootstrapped, dayCountConvention);
     auto* forwardSeries = new QLineSeries();
     QStringList forwardLabels;
     for (std::size_t i = 0; i < forwards.size(); ++i) {

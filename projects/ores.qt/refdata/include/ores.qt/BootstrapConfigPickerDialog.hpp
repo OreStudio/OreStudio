@@ -35,22 +35,26 @@ namespace ores::qt {
 class ClientManager;
 
 /**
- * @brief Modal picker over existing ir_curve_bootstrap_config rows with curve_family_role ==
- * FUNDING -- used by CurveBuilderWorkbench for a PROJECTION config's Discount Curve Config Id,
- * instead of a hand-typed UUID. Read-only: unlike MarketSeriesPickerDialog there is no inline
- * "create new" here, since a discount curve config must already exist (and ideally already be
- * published) before another config can reference it as its discounting leg.
+ * @brief Modal picker over existing ir_curve_bootstrap_config rows -- used by
+ * CurveBuilderWorkbench both for a PROJECTION config's Discount Curve Config Id (roleFilter
+ * "FUNDING") and for cloning any existing config's Conventions/Pillars into a new one
+ * (roleFilter empty -- any role) -- instead of a hand-typed UUID. Read-only: unlike
+ * MarketSeriesPickerDialog there is no inline "create new" here, since a config must already
+ * exist before another config can reference or clone it.
  */
 class ORES_QT_REFDATA_EXPORT BootstrapConfigPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    /// @param currencyFilter When non-empty (e.g. "USD"), only shows FUNDING configs whose output
-    /// series qualifier contains this currency -- cross-currency discounting is the unusual case,
-    /// not the default, so this keeps a novice from picking a mismatched discount curve.
+    /// @param currencyFilter When non-empty (e.g. "USD"), only shows configs whose output series
+    /// qualifier contains this currency -- cross-currency discounting is the unusual case, not
+    /// the default, so this keeps a novice from picking a mismatched discount curve.
+    /// @param roleFilter When non-empty (e.g. "FUNDING"), only shows configs with that exact
+    /// curve_family_role; empty means any role.
     BootstrapConfigPickerDialog(ClientManager* clientManager,
                                 QWidget* parent = nullptr,
-                                const QString& currencyFilter = QString());
+                                const QString& currencyFilter = QString(),
+                                const QString& roleFilter = "FUNDING");
 
     [[nodiscard]] std::optional<refdata::domain::ir_curve_bootstrap_config> selectedConfig() const {
         return selected_;
@@ -64,6 +68,7 @@ private slots:
 private:
     ClientManager* clientManager_;
     QString currencyFilter_;
+    QString roleFilter_;
     QTableWidget* table_ = nullptr;
     QPushButton* selectButton_ = nullptr;
     QLabel* statusLabel_ = nullptr;

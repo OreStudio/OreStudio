@@ -44,19 +44,23 @@ namespace rd = ores::refdata;
 
 BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientManager,
                                                           QWidget* parent,
-                                                          const QString& currencyFilter)
+                                                          const QString& currencyFilter,
+                                                          const QString& roleFilter)
     : QDialog(parent)
     , clientManager_(clientManager)
-    , currencyFilter_(currencyFilter) {
-    setWindowTitle(tr("Select Discount Curve Config"));
+    , currencyFilter_(currencyFilter)
+    , roleFilter_(roleFilter) {
+    setWindowTitle(roleFilter_.isEmpty() ? tr("Select Existing Config") :
+                                           tr("Select Discount Curve Config"));
     resize(640, 420);
 
     auto* layout = new QVBoxLayout(this);
+    const QString roleLabel = roleFilter_.isEmpty() ? tr("Existing") : tr("Existing %1-role")
+                                                                          .arg(roleFilter_);
     layout->addWidget(new QLabel(
         currencyFilter_.isEmpty() ?
-            tr("Existing FUNDING-role bootstrap configs (the discount curve to project from):") :
-            tr("Existing %1 FUNDING-role bootstrap configs (the discount curve to project from):")
-                .arg(currencyFilter_),
+            tr("%1 bootstrap configs:").arg(roleLabel) :
+            tr("%1 %2 bootstrap configs:").arg(roleLabel).arg(currencyFilter_),
         this));
 
     table_ = new QTableWidget(0, 4, this);
@@ -155,7 +159,8 @@ void BootstrapConfigPickerDialog::reload() {
         self->rows_.clear();
         std::vector<QString> qualifiers;
         for (auto& c : result->configs) {
-            if (c.curve_family_role != "FUNDING")
+            if (!self->roleFilter_.isEmpty() &&
+                QString::fromStdString(c.curve_family_role) != self->roleFilter_)
                 continue;
             const auto it = result->qualifierById.find(boost::uuids::to_string(c.output_series_id));
             const QString qualifier =

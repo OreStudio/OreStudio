@@ -149,8 +149,7 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | it appears on the list but we display the IDs which is confusing. does codegen support some kind of mapping of UUIDs into names or something?; ; [[file:scenario_verify_curve_builder_workbench_step7_20260808_113009.png]] |
+| Status | PASS |
 
 *** Run a Bootstrap preview
 - In the workbench, set the As Of date/time to today, then click
@@ -167,7 +166,7 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | curve_republish_resolver: unknown tenor code '0D';  |
+| Notes  | curve_bootstrap_engine: DEPOSIT pillar '6M' must have start_date == value_date |
 
 *** Publish the bootstrapped curve
 - Click Publish.
@@ -251,9 +250,9 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-08T10:30:57Z |
+| Completed at  | 2026-08-08T11:37:12Z |
 | Branch        | feature/curve-builder-ui |
-| Commit        | db57289f6 |
+| Commit        | ee3ce278c |
 | Worktree      | swift_curie |
 
 * Notes

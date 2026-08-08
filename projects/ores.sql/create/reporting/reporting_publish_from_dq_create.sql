@@ -74,7 +74,11 @@ begin
         return;
     end if;
 
-    -- Bulk insert all report definitions for this party
+    -- Bulk insert report definitions filtered by tier and jurisdiction.
+    -- p_params may contain:
+    --   tiers:       comma-separated tier list (default: all four)
+    --   jurisdiction: ISO 3166 alpha-2 for jurisdiction-specific reports
+    --   party_id:    optional explicit root party override
     insert into ores_reporting_report_definitions_tbl (
         tenant_id, id, version, party_id, name,
         description, report_type, schedule_expression, concurrency_policy,
@@ -90,6 +94,10 @@ begin
         'system.external_data_import', 'Published from DQ dataset'
     from ores_dq_report_definitions_artefact_tbl a
     where a.dataset_id = p_dataset_id
+      and a.tier = any(string_to_array(
+          coalesce(p_params->>'tiers', 'common,regulatory,strategic,trading'), ', '))
+      and (a.applicable_jurisdiction is null
+           or a.applicable_jurisdiction = p_params->>'jurisdiction')
     order by a.display_order, a.name;
 
     get diagnostics v_inserted = row_count;

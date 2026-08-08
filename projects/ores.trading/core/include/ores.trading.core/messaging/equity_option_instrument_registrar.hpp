@@ -17,21 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_EQUITY_OPTION_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_EQUITY_OPTION_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_EQUITY_OPTION_INSTRUMENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_EQUITY_OPTION_INSTRUMENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the equity_option_instrument to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const equity_option_instrument& v);
+std::vector<ores::nats::service::subscription> register_equity_option_instrument_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

@@ -18,6 +18,7 @@
 #
 set(files
     "equity_forward_instrument_eventing_integration_tests.cpp"
+    "equity_option_instrument_eventing_integration_tests.cpp"
     "equity_position_instrument_eventing_integration_tests.cpp"
     "equity_swap_instrument_eventing_integration_tests.cpp"
     "equity_variance_swap_instrument_eventing_integration_tests.cpp"

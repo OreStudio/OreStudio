@@ -18,6 +18,7 @@
 #
 set(files
     "messaging/equity_forward_instrument_registrar.cpp"
+    "messaging/equity_option_instrument_registrar.cpp"
     "messaging/equity_position_instrument_registrar.cpp"
     "messaging/equity_swap_instrument_registrar.cpp"
     "messaging/equity_variance_swap_instrument_registrar.cpp"
@@ -41,6 +42,7 @@ set(files
     "messaging/registrar_trades.cpp"
     "messaging/trade_type_registrar.cpp"
     "presentation/equity_forward_instrument_history_field_mapper.cpp"
+    "presentation/equity_option_instrument_history_field_mapper.cpp"
     "presentation/equity_position_instrument_history_field_mapper.cpp"
     "presentation/equity_swap_instrument_history_field_mapper.cpp"
     "presentation/equity_variance_swap_instrument_history_field_mapper.cpp"
@@ -227,6 +229,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/credit_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_forward_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_forward_instrument_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_option_instrument_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_option_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_position_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_position_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/equity_swap_instrument_handler.hpp"
@@ -260,6 +264,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/typed_equity_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/ores.trading.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_forward_instrument_history_field_mapper.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_option_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_position_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_swap_instrument_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/presentation/equity_variance_swap_instrument_history_field_mapper.hpp"

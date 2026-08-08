@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 10/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument. |
+| Now          | 11/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. equity_option). |
+| Next         | Convert the next flat instrument (e.g. equity_barrier_option). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -391,6 +391,59 @@ Zero-diff verified via a second regeneration pass. Build green;
 73 cases incl. the new
 =write_fx_asian_forward_instrument_publishes_nats_changed_event=;
 service: 10 cases).
+
+** equity_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (EquityOption, EquityCliquetOption) -- the
+=trade_type_code= check is the 2-value in-list =('EquityOption',
+'EquityCliquetOption')= plus an XOR cross-column check tying
+=cliquet_frequency= non-null to EquityCliquetOption (null for a plain
+EquityOption). =expiry_date= is a =date=-typed column modelled as
+=std::string= (ISO 8601), per family precedent. =notional= and
+=strike= carry =:default_value: 0.0= so the generated domain keeps the
+hand-crafted initializers (the missing-default-value trap found via
+the equity_swap conversion).
+
+Messaging path reconciled in the same commit:
+=save_equity_option_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_option()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 4 methods -- digital, barrier, asian, accumulator -- until
+the last equity entities convert). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_option_instrument_handlers=; the four consumers
+(=EquityInstrumentForm=, =ore_import_execute_handler=, =OreImporter=,
+=ImportTradeDialog=) include the generated
+=equity_option_instrument_protocol.hpp=; the generated struct is
+shape-identical (same =data= member, same
+=trading.v1.equity_option_instruments.save= subject), so no call-site
+changes were needed.
+
+Also folded in the *equity_swap leftover*: equity_swap converted in an
+earlier commit without its messaging path, so the hand-crafted
+=save_equity_swap_instrument_request=, the typed =save_swap()=
+subscription, and the =equity_swap_instrument.hpp= domain include all
+still lingered -- and the generated equity_swap registrar would have
+double-subscribed the same subject had it been wired alongside them.
+Reconciled here mirroring the fx_barrier/fx_variance_swap precedent:
+struct and method deleted, =register_equity_swap_instrument_handlers=
+wired in =registrar_equity.cpp=, the three swap consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=)
+migrated to the generated protocol include.
+
+=drop_trading.sql= not touched for equity_option: the entire
+equity_*_instruments family (including the new
+=trading_equity_option_instruments_notify_trigger_drop.sql= extracted
+file) remains absent from it, per the follow-up note above -- a
+dedicated cleanup task wires the whole family up at once.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+74 cases incl. the new
+=write_equity_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
 
 * Test Scenarios
 

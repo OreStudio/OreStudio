@@ -33,8 +33,6 @@
 #include "ores.trading.core/service/equity_asian_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/equity_digital_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_option_instrument_service.hpp"
-#include "ores.trading.core/service/equity_swap_instrument_service.hpp"
 #include <optional>
 
 namespace ores::trading::messaging {
@@ -100,14 +98,6 @@ public:
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
 
-    void save_option(ores::nats::message msg) {
-        using Svc = service::equity_option_instrument_service;
-        handle_typed_equity_save<save_equity_option_instrument_request,
-                                 save_equity_option_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_option_instrument);
-    }
-
     void save_digital_option(ores::nats::message msg) {
         using Svc = service::equity_digital_option_instrument_service;
         handle_typed_equity_save<save_equity_digital_option_instrument_request,
@@ -130,14 +120,6 @@ public:
                                  save_equity_asian_option_instrument_response,
                                  Svc>(
             nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_asian_option_instrument);
-    }
-
-    void save_swap(ores::nats::message msg) {
-        using Svc = service::equity_swap_instrument_service;
-        handle_typed_equity_save<save_equity_swap_instrument_request,
-                                 save_equity_swap_instrument_response,
-                                 Svc>(
-            nats_, std::move(msg), ctx_, verifier_, &Svc::save_equity_swap_instrument);
     }
 
     void save_accumulator(ores::nats::message msg) {

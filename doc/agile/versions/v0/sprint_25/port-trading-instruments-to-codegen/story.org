@@ -31,9 +31,9 @@ event registrar, and the eventing integration test.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | 10/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument. |
+| Now           | 11/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument. |
 | Waiting on    | Nothing.                               |
-| Next          | Convert the next flat instrument (e.g. equity_option). |
+| Next          | Convert the next flat instrument (e.g. equity_barrier_option). |
 | Last touched  | 2026-08-08                               |
 
 * Acceptance

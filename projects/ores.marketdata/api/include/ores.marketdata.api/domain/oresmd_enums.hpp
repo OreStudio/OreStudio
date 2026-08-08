@@ -95,8 +95,10 @@ enum class credit_quote_type {
     hazard_rate,        ///< HAZARD_RATE/RATE (bootstrapped hazard rate).
     recovery_rate,      ///< RECOVERY_RATE/RATE (recovery rate assumption).
     cds_index,          ///< CDS_INDEX/BASE_CORRELATION (index base correlation).
-    index_cds_tranche,  ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
-    rating              ///< RATING/TRANSITION_PROBABILITY (rating transition matrix).
+    index_cds_tranche   ///< INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation).
+    // rating descoped — RATING/TRANSITION_PROBABILITY needs provider/from_rating/to_rating
+    // fields the current credit_market_data_identifier has no equivalent for; tracked for
+    // its own task.
 };
 
 }

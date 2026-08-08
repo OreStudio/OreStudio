@@ -185,25 +185,8 @@ std::string_view ore_type(credit_quote_type qt) {
     case credit_quote_type::recovery_rate:     return "RECOVERY_RATE";
     case credit_quote_type::cds_index:         return "CDS_INDEX";
     case credit_quote_type::index_cds_tranche: return "INDEX_CDS_TRANCHE";
-    case credit_quote_type::rating:            return "RATING";
     }
     return "CDS";
-}
-
-metric default_metric(credit_quote_type qt) {
-    switch (qt) {
-    case credit_quote_type::cds:
-        return metric::basis_spread; // CREDIT_SPREAD is a spread
-    case credit_quote_type::cds_index:
-    case credit_quote_type::index_cds_tranche:
-        return metric::basis_spread; // BASE_CORRELATION
-    case credit_quote_type::hazard_rate:
-    case credit_quote_type::recovery_rate:
-        return metric::rate;
-    case credit_quote_type::rating:
-        return metric::rate; // TRANSITION_PROBABILITY
-    }
-    return metric::rate;
 }
 
 std::string_view ore_credit_metric(credit_quote_type qt) {
@@ -213,7 +196,6 @@ std::string_view ore_credit_metric(credit_quote_type qt) {
     case credit_quote_type::recovery_rate:     return "RATE";
     case credit_quote_type::cds_index:
     case credit_quote_type::index_cds_tranche: return "BASE_CORRELATION";
-    case credit_quote_type::rating:            return "TRANSITION_PROBABILITY";
     }
     return "CREDIT_SPREAD";
 }
@@ -225,22 +207,10 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
     const auto qt = id.quote_type.value_or(credit_quote_type::cds);
     const auto qm = ore_credit_metric(qt);
 
-    // RATING/TRANSITION_PROBABILITY/CCY — no entity, no point needed.
-    if (qt == credit_quote_type::rating)
-        return std::format("{}/{}/{}", ore_type(qt), qm, id.ccy);
-
     if (!id.point)
         return std::nullopt;
 
     const auto parts = split_point(*id.point);
-
-    // HAZARD_RATE/RATE/ENTITY/CCY/TENOR — point is just the tenor.
-    if (qt == credit_quote_type::hazard_rate) {
-        if (parts.size() != 1)
-            return std::nullopt;
-        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
-                           id.ccy, parts[0]);
-    }
 
     // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — point is just the seniority.
     if (qt == credit_quote_type::recovery_rate) {
@@ -250,9 +220,17 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
                            parts[0], id.ccy);
     }
 
+    // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT — no ccy dimension.
+    // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES_TENOR/DETACHMENT — no ccy dimension.
+    if (qt == credit_quote_type::cds_index || qt == credit_quote_type::index_cds_tranche) {
+        if (parts.size() != 2)
+            return std::nullopt;
+        return std::format("{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,
+                           parts[0], parts[1]);
+    }
+
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR — point=seniority,tenor (2 parts).
-    // CDS_INDEX/BASE_CORRELATION/INDEX/SERIES/TENOR — point=series,tenor (2 parts).
-    // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES/TENOR — point=series,tenor (2 parts).
+    // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — same 6-segment shape.
     if (parts.size() != 2)
         return std::nullopt;
     return std::format("{}/{}/{}/{}/{}/{}", ore_type(qt), qm, id.reference_entity,

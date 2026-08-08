@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: E691EEB4-9F66-4099-953E-F41F641D45AE
+:END:
+#+title: Test Scenario: Verify ores.dq PR #1898 bug fixes (artefact type fields/eventing, change reason duplicates, remaining commissioning checks)
+#+description: Retest the three bugs found and fixed after PR #1898 merged: artefact_type missing detail fields, artefact_type eventing, change_reason/change_reason_category duplicate rows. Also cover the scenario steps that were still PENDING last round: dataset_bundle CRUD, LEI registry read-only browsing, report_definition/synthetic_fx_spot_config menu absence.
+#+type: test_scenario
+#+level: s1
+#+filetags: :entity-classification-drift-dq:sprint_25:v0:
+#+target_dialog:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] in [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Build must include PR #1898's merge commit (05d48b3b9 or later on
+  =main=). Confirm via =compass build= (full build, green, including
+  =ores.qt.exe=).
+- The database must be freshly provisioned with Acme Corporation:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- Services must be running: =compass services start= — confirm
+  =ores.dq.service= and =nats-server= reach =running= via =compass
+  services status=.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] |
+| Parent story  | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]   |
+| Target dialog | =ArtefactTypeDetailDialog= / =ChangeReasonCategoryDetailDialog= (Data Quality > Data Catalogue > Artefact Types / Data Quality > Audit Trail > Change Reason Categories) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as tenant_admin@acme_corporation
+
+- Username: =tenant_admin@acme_corporation=
+- Password: =Secure-Password-123=
+- Confirms: login succeeds and the main window loads with the Data
+  Quality menu present.
+
+** Create an artefact type with all fields
+
+- Navigate: Data Quality > Data Catalogue > Artefact Types.
+- Click Add. Fill in Code, Name, Description, Artefact Table, Target
+  Table, Target Subject, Display Order — all seven fields must be
+  present and editable in the dialog.
+- Save.
+- Confirms: the dialog showed all 7 fields (not just Code/Name as
+  before the fix), and the new row appears in the list.
+
+** Confirm artefact type eventing fires
+
+- With the row from the previous step still visible, without touching
+  the keyboard or mouse elsewhere, watch the list.
+- If eventing is broken you will see nothing arrive automatically and
+  will only see the row after a manual refresh; if fixed, the row
+  from the previous step already appeared without any manual reload
+  action (this step is really just confirming step 2's Save produced
+  a live update, not a stale cached one — reopen the list window fresh
+  via Data Quality > Data Catalogue > Artefact Types if you want a
+  clean before/after: close the window, create a *second* artefact
+  type, then reopen the list and confirm it's already there with no
+  extra refresh click).
+
+** Create and save a change reason category
+
+- Navigate: Data Quality > Audit Trail > Change Reason Categories.
+- Click Add, fill in Code/Description, Save.
+- Confirms: the list shows the new row with no manual refresh needed.
+
+** Confirm no duplicate categories appear
+
+- In the same Change Reason Categories list, look at the pre-existing
+  seeded rows (=common=, =system=, =trade=).
+- Confirms: each seeded code appears *exactly once* in the list — not
+  twice with different Modified By values (the original bug: rows
+  were visible from both the tenant's own copy and the system-tenant
+  original it was copied from during provisioning).
+
+** Confirm no duplicate change reasons appear
+
+- Navigate: Data Quality > Audit Trail > Change Reasons.
+- Confirms: same check as the previous step — every seeded change
+  reason code (e.g. =system.new_record=) appears exactly once, not
+  duplicated.
+
+** Create and save a dataset bundle
+
+- Navigate: Data Quality > Data Catalogue > Dataset Bundles.
+- Add a new record (Code/Name/Description), Save; reopen it to confirm
+  the fields round-trip; edit the Description and Save again.
+- Confirms: list refreshes after each save with no manual reload;
+  reopened values match what was entered.
+
+** Browse LEI entities read-only list
+
+- Navigate: Data Quality > LEI Registry > LEI Entities.
+- Confirms: the list loads and paginates (page-size/offset controls
+  work); no Add/Delete action is present anywhere on the list window;
+  double-clicking a row opens a read-only view with no Save button
+  (or opens nothing beyond a non-editable display) — there must be no
+  way to create, edit, or delete a row from this window.
+
+** Confirm report definitions has no menu entry
+
+- Open every submenu under Data Quality (Badges, Classifications,
+  LEI Registry, Audit Trail, Data Catalogue) and search for
+  "Report Definition".
+- Confirms: no menu item anywhere opens a report_definition window —
+  this entity is DQ-side staging data only, its Qt UI is deliberately
+  disabled.
+
+** Confirm synthetic FX configs has no menu entry
+
+- Repeat the same menu search for "Synthetic FX" / "FX Spot".
+- Confirms: no menu item anywhere opens a synthetic_fx_spot_config
+  window, for the same reason as the previous step.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

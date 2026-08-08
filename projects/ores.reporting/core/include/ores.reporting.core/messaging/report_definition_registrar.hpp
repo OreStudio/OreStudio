@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
@@ -32,7 +33,8 @@ namespace ores::reporting::messaging {
 std::vector<ores::nats::service::subscription>
 register_report_definition_handlers(ores::nats::service::client& nats,
                                     ores::database::context ctx,
-                                    std::optional<ores::security::jwt::jwt_authenticator> verifier);
+                                    std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                    ores::nats::service::nats_client& svc_nats);
 
 } // namespace ores::reporting::messaging
 

@@ -31,9 +31,10 @@ static constexpr std::string_view queue_group = "ores.reporting.service";
 std::vector<ores::nats::service::subscription>
 register_report_instance_handlers(ores::nats::service::client& nats,
                                   ores::database::context ctx,
-                                  std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                                  std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                  ores::workflow::service::fsm_state_map instance_states) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<report_instance_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<report_instance_handler>(nats, std::move(ctx), std::move(verifier), std::move(instance_states));
     subs.push_back(nats.queue_subscribe(get_report_instances_request::nats_subject,
                                         queue_group,
                                         [h](ores::nats::message msg) { h->list(std::move(msg)); }));

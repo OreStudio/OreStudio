@@ -62,8 +62,8 @@ public:
 private:
     plugin_context ctx_;
 
-    QMenu* analytics_menu_{nullptr};
-    QMenu* analytics_codes_menu_{nullptr};
+    QMenu* reporting_menu_{nullptr};
+    QMenu* pricing_configuration_menu_{nullptr};
 
     std::unique_ptr<PricingEngineTypeController> pricingEngineTypeController_;
     std::unique_ptr<PricingModelConfigController> pricingModelConfigController_;

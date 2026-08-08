@@ -176,73 +176,91 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-                               << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-                               << " message_queue=" << (smc.message_queue_menu ? "ok" : "null")
-                               << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
+                               << " reporting=" << (smc.reporting_menu ? "ok" : "null")
+                               << " report_config=" << (smc.report_configuration_menu ? "ok" : "null")
+                               << " compute_config=" << (smc.compute_configuration_menu ? "ok" : "null")
+                               << " message_queue=" << (smc.message_queue_menu ? "ok" : "null");
 
-    // ---- Analytics menu: reporting + compute items ----------------------
-    if (smc.analytics_menu) {
-        smc.analytics_menu->addSeparator();
+    // ---- Reporting menu: compute infrastructure (how) ------------------
+    if (smc.reporting_menu) {
+        reporting_menu_ = smc.reporting_menu;
+
+        auto* actConsole =
+            reporting_menu_->addAction(ico(Icon::ServerLink), tr("&Compute Console"));
+        connect(actConsole, &QAction::triggered, this, [this]() {
+            if (computeConsoleController_)
+                computeConsoleController_->showConsole();
+        });
+
+        auto* actDashboard =
+            reporting_menu_->addAction(ico(Icon::Chart), tr("Compute &Dashboard"));
+        connect(actDashboard, &QAction::triggered, this, [this]() {
+            if (computeDashboardController_)
+                computeDashboardController_->showDashboard();
+        });
+
+        // Compute Configuration submenu — attached here so it sits under
+        // the compute items, before the section separator.
+        if (smc.compute_configuration_menu) {
+            compute_configuration_menu_ = smc.compute_configuration_menu;
+            reporting_menu_->addMenu(compute_configuration_menu_);
+        }
+
+        reporting_menu_->addSeparator();
 
         act_report_definitions_ =
-            smc.analytics_menu->addAction(ico(Icon::ChartMultiple), tr("Report &Definitions"));
+            reporting_menu_->addAction(ico(Icon::ChartMultiple), tr("Report &Definitions"));
         connect(act_report_definitions_, &QAction::triggered, this, [this]() {
             if (reportDefinitionController_)
                 reportDefinitionController_->showListWindow();
         });
 
         act_report_instances_ =
-            smc.analytics_menu->addAction(ico(Icon::Record), tr("Report &Instances"));
+            reporting_menu_->addAction(ico(Icon::Record), tr("Report &Instances"));
         connect(act_report_instances_, &QAction::triggered, this, [this]() {
             if (reportInstanceController_)
                 reportInstanceController_->showListWindow();
         });
 
-        smc.analytics_menu->addSeparator();
+        // Report Configuration submenu — attached here so it sits under
+        // the report items, after the section separator.
+        if (smc.report_configuration_menu) {
+            report_configuration_menu_ = smc.report_configuration_menu;
+            reporting_menu_->addMenu(report_configuration_menu_);
+        }
+    }
 
-        auto* actDashboard = smc.analytics_menu->addAction(ico(Icon::Chart), tr("&Dashboard"));
-        connect(actDashboard, &QAction::triggered, this, [this]() {
-            if (computeDashboardController_)
-                computeDashboardController_->showDashboard();
-        });
-
-        auto* actConsole =
-            smc.analytics_menu->addAction(ico(Icon::ServerLink), tr("&Compute Console"));
-        connect(actConsole, &QAction::triggered, this, [this]() {
-            if (computeConsoleController_)
-                computeConsoleController_->showConsole();
-        });
-
-        smc.analytics_menu->addSeparator();
-
-        auto* actApps = smc.analytics_menu->addAction(ico(Icon::TasksApp), tr("&Apps"));
-        connect(actApps, &QAction::triggered, this, [this]() {
-            if (appController_)
-                appController_->showListWindow();
-        });
-
+    // ---- Compute Configuration submenu: apps + app versions -------------
+    if (smc.compute_configuration_menu) {
         auto* actAppVersions =
-            smc.analytics_menu->addAction(ico(Icon::TasksApp), tr("App &Versions"));
+            smc.compute_configuration_menu->addAction(ico(Icon::TasksApp), tr("App &Versions"));
         connect(actAppVersions, &QAction::triggered, this, [this]() {
             if (appVersionController_)
                 appVersionController_->showListWindow();
         });
+
+        auto* actApps =
+            smc.compute_configuration_menu->addAction(ico(Icon::TasksApp), tr("&Apps"));
+        connect(actApps, &QAction::triggered, this, [this]() {
+            if (appController_)
+                appController_->showListWindow();
+        });
     }
 
-    // ---- Analytics Codes: report types + concurrency policies -----------
-    if (smc.analytics_codes_menu) {
-        auto* actReportTypes =
-            smc.analytics_codes_menu->addAction(ico(Icon::Chart), tr("Report &Types"));
-        connect(actReportTypes, &QAction::triggered, this, [this]() {
-            if (reportTypeController_)
-                reportTypeController_->showListWindow();
-        });
-
+    // ---- Report Configuration submenu: report types + concurrency policies
+    if (smc.report_configuration_menu) {
         auto* actConcurrencyPolicies =
-            smc.analytics_codes_menu->addAction(ico(Icon::Settings), tr("&Concurrency Policies"));
+            smc.report_configuration_menu->addAction(ico(Icon::Settings), tr("&Concurrency Policies"));
         connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
             if (concurrencyPolicyController_)
                 concurrencyPolicyController_->showListWindow();
+        });
+
+        auto* actReportTypes =
+            smc.report_configuration_menu->addAction(ico(Icon::Chart), tr("Report &Types"));
+        connect(actReportTypes, &QAction::triggered, this, [this]() {
+            if (reportTypeController_)
+                reportTypeController_->showListWindow();
         });
     }
 

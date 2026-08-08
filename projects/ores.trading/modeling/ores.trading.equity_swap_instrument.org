@@ -1,21 +1,22 @@
 :PROPERTIES:
-:ID: A630130B-DED5-45A7-AD10-25FD85A3735E
+:ID: 5DD8CE29-130E-4E4A-93C5-EF6E2800062A
 :ores.cpp.eventing-integration-test.enabled: true
 :END:
-#+title: ores.trading.fx_variance_swap_instrument
-#+description: Codegen entity model for the trading =fx_variance_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+title: ores.trading.equity_swap_instrument
+#+description: Codegen entity model for the trading =equity_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+entity_singular: fx_variance_swap_instrument
-#+entity_plural: fx_variance_swap_instruments
-#+entity_title: FX Variance Swap Instrument
-#+brief: FX Variance Swap instrument.
-#+created: 2026-08-06
+#+entity_singular: equity_swap_instrument
+#+entity_plural: equity_swap_instruments
+#+entity_title: Equity Swap Instrument
+#+brief: Equity Swap instrument.
+#+created: 2026-08-08
 #+updated: 2026-08-08
 
-Routes ORE product type: FxVarianceSwap. =moment_type= distinguishes
-Variance swaps from Volatility swaps.
+Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
+basket swaps, underlying_name is NULL and basket_json holds the basket
+definition; for single-name swaps, basket_json is NULL.
 
 * Flags
 :PROPERTIES:
@@ -39,7 +40,7 @@ Variance swaps from Volatility swaps.
 :nullable:     false
 :END:
 
-UUID uniquely identifying this FX variance swap instrument.
+UUID uniquely identifying this equity swap instrument.
 
 Surrogate key for the instrument record.
 
@@ -53,10 +54,10 @@ Surrogate key for the instrument record.
 
 Trade type code (soft FK to ores_trading_trade_types_tbl).
 
-Routes ORE product type: FxVarianceSwap.
+Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap.
 
 #+begin_src cpp :name generator
-std::string("FxVarianceSwap")
+std::string("EquitySwap")
 #+end_src
 
 ** party_id
@@ -83,32 +84,35 @@ Optional soft FK to the parent trade.
 
 Links instrument to a trade if applicable.
 
-** start_date
+** underlying_name
 :PROPERTIES:
-:type:     date
+:type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Variance observation start date (ISO 8601 date string).
+Single underlying; empty for basket swaps.
 
 #+begin_src cpp :name generator
-std::string("2024-01-15")
+std::string("ACME Corp")
 #+end_src
 
-** end_date
+** basket_json
 :PROPERTIES:
-:type:     date
+:type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Variance observation end date (ISO 8601 date string).
+JSON array of underlyings for EquityWorstOfBasketSwap; empty for single-underlying.
 
-Must be after start_date.
+Empty generator value: the mapper maps empty strings to SQL NULL
+(see equity_swap_instrument_mapper.cpp), so the generated instrument
+keeps basket_json NULL and satisfies the SQL XOR check with
+trade_type_code = 'EquitySwap'.
 
 #+begin_src cpp :name generator
-std::string("2025-01-15")
+std::string("")
 #+end_src
 
 ** currency
@@ -118,50 +122,10 @@ std::string("2025-01-15")
 :nullable: false
 :END:
 
-Settlement currency.
+ISO 4217 currency code.
 
 #+begin_src cpp :name generator
 std::string("USD")
-#+end_src
-
-** underlying_code
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-FX pair or index identifier (e.g. TR20H-EUR-USD).
-
-#+begin_src cpp :name generator
-std::string("TR20H-EUR-USD")
-#+end_src
-
-** long_short
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Position direction: Long or Short.
-
-#+begin_src cpp :name generator
-std::string("Long")
-#+end_src
-
-** strike
-:PROPERTIES:
-:type:          numeric(28, 10)
-:cpp_type:      double
-:nullable:      false
-:default_value: 0.0
-:END:
-
-Fixed variance or volatility strike. Must be positive.
-
-#+begin_src cpp :name generator
-0.04
 #+end_src
 
 ** notional
@@ -172,23 +136,75 @@ Fixed variance or volatility strike. Must be positive.
 :default_value: 0.0
 :END:
 
-Notional amount for PnL scaling. Must be positive.
+Must be positive.
 
 #+begin_src cpp :name generator
 1000000.0
 #+end_src
 
-** moment_type
+** return_type
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
 :nullable: false
 :END:
 
-Whether the product is a Variance or Volatility swap.
+TotalReturn or PriceReturn.
 
 #+begin_src cpp :name generator
-std::string("Variance")
+std::string("TotalReturn")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 8601 date.
+
+#+begin_src cpp :name generator
+std::string("2024-01-15")
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 8601 date.
+
+#+begin_src cpp :name generator
+std::string("2026-01-15")
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Long or Short.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** payment_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+e.g. 3M, 6M, 1Y.
+
+#+begin_src cpp :name generator
+std::string("Quarterly")
 #+end_src
 
 ** description
@@ -204,7 +220,7 @@ Optional free-text description.
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_trading_fx_variance_swap_instruments_tbl
+:tablename: ores_trading_equity_swap_instruments_tbl
 :party_id_from_session: true
 :END:
 
@@ -212,14 +228,10 @@ Optional free-text description.
 
 | expression |
 |---|
-| "end_date" > "start_date" |
-| "strike" > 0 |
+| ("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null) |
 | "notional" > 0 |
 | "currency" <> '' |
-| "underlying_code" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "moment_type" in ('Variance', 'Volatility') |
-| "trade_type_code" = 'FxVarianceSwap' |
+| "trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap') |
 
 ** Indexes
 
@@ -227,6 +239,7 @@ Optional free-text description.
 |------+---------+--------+--------------+-------------|
 | party | tenant_id, party_id | false | true | |
 | trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
 
 * Insert trigger
 
@@ -235,6 +248,7 @@ Optional free-text description.
 | column | validation_function |
 |--------+----------------------|
 | trade_type_code | ores_trading_validate_trade_type_fn |
+| payment_frequency | ores_refdata_validate_payment_frequency_fn |
 
 * C++
 
@@ -262,10 +276,10 @@ repository profiles regenerate correctly.
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: fx_variance_swap_instrument
-:entity_plural_short:   fx_variance_swap_instruments
-:entity_singular_words: FX variance swap instrument
-:entity_plural_words:   FX variance swap instruments
+:entity_singular_short: equity_swap_instrument
+:entity_plural_short:   equity_swap_instruments
+:entity_singular_words: equity swap instrument
+:entity_plural_words:   equity swap instruments
 :END:
 
 ** Domain includes
@@ -276,7 +290,7 @@ repository profiles regenerate correctly.
 
 ** Conventions
 :PROPERTIES:
-:iterator_var: fxvsi
+:iterator_var: eqsi
 :END:
 
 ** Custom repository methods

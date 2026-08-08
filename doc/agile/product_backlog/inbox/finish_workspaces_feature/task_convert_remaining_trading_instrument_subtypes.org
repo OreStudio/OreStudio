@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
-#+updated: 2026-08-05
+#+updated: 2026-08-08
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -38,10 +38,10 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
-| Now          | 6/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument. |
+| Now          | 7/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (e.g. equity_swap, fx_barrier_option). |
-| Last touched | 2026-08-05                               |
+| Next         | Convert the next flat instrument (e.g. fx_barrier_option, fx_digital_option). |
+| Last touched | 2026-08-08                               |
 
 * Acceptance
 
@@ -195,6 +195,51 @@ the model exactly. No renamed/orphaned files -- every file with a
 hand-crafted predecessor was modified in place at its original path.
 Zero further drift confirmed via a second regeneration pass;
 =ores.trading.*= tests green.
+
+** equity_swap_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children. Carries the
+=:ores.cpp.eventing-integration-test.enabled: true= property (per
+explicit direction: every entity converted going forward gets the
+eventing facet), so this conversion additionally generates the
+changed-event, messaging protocol/handler/registrar, presentation
+history_field_mapper, service event registrar, and the eventing
+integration test -- the full per-entity eventing stack.
+
+Two generator-value subtleties surfaced during verification (both
+caught by the eventing integration test hitting the live DB):
+- =payment_frequency= generated ="3M"=, which
+  =ores_refdata_validate_payment_frequency_fn= rejects (only Once,
+  Annual, Semiannual, Quarterly, Bimonthly, Monthly, Lunarmonth,
+  Weekly, Daily). Changed the generator block to ="Quarterly"=
+  (semantically 3M).
+- =basket_json= generated ="[]"=, which maps to a non-NULL DB value
+  and violates the XOR check
+  (=EquitySwap= requires basket_json NULL). The mapper maps empty
+  strings to SQL NULL, so the generator block now emits
+  =std::string("")=, keeping basket_json NULL for the default
+  EquitySwap row.
+
+Also carries the hand-crafted trade_type index (the only equity
+variant with one; fx_variance_swap never had one) -- preserved
+verbatim in the model. XOR check, workspace validation, and the
+batch-remove workspace fix all verified present after regeneration.
+Zero further drift via a second regeneration pass; build green;
+=ores.trading.{api,core,service}.tests= all pass via the
+=test_ores.trading.*.tests= targets (core: 69 cases incl. the eventing
+integration test).
+
+** fx_variance_swap_instrument: eventing facet added (2026-08-08)
+
+Per the same direction, the already-converted
+=fx_variance_swap_instrument= gained the
+=:ores.cpp.eventing-integration-test.enabled: true= property and was
+regenerated. Purely additive: 10 new files (changed-event,
+protocol/handler/registrar, history_field_mapper, event registrar,
+eventing integration test), zero modifications to any existing
+generated file, zero further drift on a second pass. Build green;
+=ores.trading.core.tests= passes 70 cases incl. the new
+=write_fx_variance_swap_instrument_publishes_nats_changed_event=.
 
 * Test Scenarios
 

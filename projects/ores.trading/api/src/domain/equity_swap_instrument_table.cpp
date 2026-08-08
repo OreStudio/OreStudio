@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_JSON_IO_HPP
-
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.trading.api/domain/equity_swap_instrument_table.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::trading::domain {
 
-/**
- * @brief Dumps the equity_swap_instrument to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const equity_swap_instrument& v);
 
+std::string convert_to_table(const std::vector<equity_swap_instrument>& v) {
+    fort::char_table table;
+    table.set_border_style(FT_BASIC_STYLE);
+
+    table << fort::header << fort::endr;
+
+    for (const auto& eqsi : v) {
+        table << fort::endr;
+    }
+    return table.to_string();
 }
 
-#endif
+}

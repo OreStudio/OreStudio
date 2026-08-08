@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,20 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_JSON_IO_HPP
 
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-
-namespace ores::trading::domain {
-
-/**
- * @brief Dumps the equity_swap_instrument to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const equity_swap_instrument& v);
-
-}
-
-#endif
+drop trigger if exists ores_trading_equity_swap_instruments_notify_trg on "ores_trading_equity_swap_instruments_tbl";
+drop function if exists ores_trading_equity_swap_instruments_notify_fn;

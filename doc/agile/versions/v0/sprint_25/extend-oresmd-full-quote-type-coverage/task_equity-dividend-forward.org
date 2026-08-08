@@ -70,3 +70,13 @@ via its "Verifies task" field.
 | 2 | parse_equity doesn't guard quote against type | oresmd_parser.cpp | Accepted | Added guard matching IR pattern + test |
 
 * Result
+
+Delivered equity quote-type representation in oresmd: =equity_quote_type=
+(3 values: =spot=, =dividend=, =fwd=) with per-type =quote_key_equity=
+dispatching. =spot= stays the 4-segment scalar =EQUITY/PRICE/TICKER/CCY=;
+=dividend= and =fwd= emit the catalogue's 5-segment curve keys with a
+=point= tenor dimension (=EQUITY_DIVIDEND/RATE/TICKER/CCY/TENOR=,
+=EQUITY_FWD/PRICE/TICKER/CCY/TENOR=). =point= field added to
+=equity_market_data_identifier= with parser guard (=quote= rejected when
+=type≠quote=) matching the IR pattern. =quote= absent defaults to =spot=.
+126 test cases, 235 assertions, all passing.

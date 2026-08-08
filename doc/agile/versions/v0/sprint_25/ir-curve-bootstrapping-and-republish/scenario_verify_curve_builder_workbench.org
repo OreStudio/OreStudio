@@ -57,16 +57,35 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 - Confirms: main window opens with the standard menu bar, including a
   Market Data menu.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Open the Curve Bootstrap Configs list
 - Menu: Market Data > Curve &Bootstrapping > Bootstrap &Configs...
 - Confirms: an =IrCurveBootstrapConfigMdiWindow= opens showing a
   (possibly empty) list with Add/Edit/Delete/History toolbar buttons.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Build a new curve via the direct menu action
 - Menu: Market Data > Curve &Bootstrapping > &Build Curve...
 - Confirms: a blank =CurveBuilderWorkbench= window opens directly
   (not via the list's Add button), with three tabs: Conventions,
   Pillars, Build & Diagnostics.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | i for the output series on create and select i get create failed: market data series id cannot be empty. |
 
 *** Fill in the Conventions tab
 - Enter a Source Series Id and Output Series Id (any distinct text
@@ -79,13 +98,33 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 - Confirms: no validation error banner appears; fields retain the
   entered values.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Add pillars in the Pillars tab
-- Switch to the Pillars tab.
-- Click Add and enter at least two rows, e.g. Start Tenor =0D=, End
-  Tenor =1M=, Curve Role =DEPOSIT=; and Start Tenor =0D=, End Tenor
-  =3M=, Curve Role =DEPOSIT=.
-- Confirms: both rows appear in the table; Remove deletes a selected
-  row correctly if tried.
+- Switch to the Pillars tab. Start Tenor/End Tenor/Curve Role are
+  combo boxes sourced from the seeded tenor table (Reference Data >
+  Curve Building > Tenors), ordered by that table's own ladder
+  position (=sort_order=), not alphabetically -- =Add Pillar= stays
+  disabled with a tooltip until the tenor list has loaded.
+- Click Add Pillar twice. Each new row defaults to Start Tenor
+  =SPOT= (the real seeded spot-starting code -- not =0D=, which
+  isn't a valid tenor) and Curve Role =DEPOSIT=; leave both as-is.
+- For the first row's End Tenor combo, select =1M=; for the second
+  row's End Tenor combo, select =3M=.
+- Confirms: both rows show Start Tenor =SPOT= with the End Tenor you
+  picked, End Tenor's dropdown list is in time order (short-dated
+  first) rather than alphabetical; Remove deletes a selected row
+  correctly if tried.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 *** Save the new recipe
 - Switch to the Build & Diagnostics tab.
@@ -93,12 +132,25 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 - Confirms: a success status message/banner appears; the workbench
   stays open (no auto-close); the Bootstrap button becomes enabled.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 *** Verify the config appears in the list
 - Return to (or reopen) the Bootstrap Configs list window.
 - Confirms: the newly saved config appears with the entered Output
   Series Id / role, and reopening its detail (double-click, or
   Edit) shows the same Conventions and Pillars values just entered
   (round-trip check).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | it appears on the list but we display the IDs which is confusing. does codegen support some kind of mapping of UUIDs into names or something?; ; [[file:scenario_verify_curve_builder_workbench_step7_20260808_113009.png]] |
 
 *** Run a Bootstrap preview
 - In the workbench, set the As Of date/time to today, then click
@@ -110,10 +162,23 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
   becomes enabled; nothing has been written to =market_observations=
   yet (Bootstrap is preview-only).
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | curve_republish_resolver: unknown tenor code '0D';  |
+
 *** Publish the bootstrapped curve
 - Click Publish.
 - Confirms: a success status message appears; no error is raised by
   the =marketdata::curve_bootstrap:republish= permission check.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Edit the config and verify change tracking
 - Reopen the config's detail window from the list (Edit).
@@ -121,16 +186,34 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
 - Confirms: the save succeeds; reopening the config shows the new
   value; the list refreshes to reflect the change.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** View history for the config
 - Select the config in the list and click History.
 - Confirms: the History dialog lists at least two versions (initial
   Save, then the day-count-convention edit) with correct change
   reasons and timestamps.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 *** Delete the config
 - Select the config in the list and click Delete; confirm the prompt.
 - Confirms: the config disappears from the list; History (if reopened
   via a version, if still tracked) still shows the deletion event.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** red
 
@@ -140,6 +223,12 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
   the Acme Corporation party.
 - Open Market Data > Curve &Bootstrapping > Bootstrap &Configs... and
   leave the list window visible.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 *** Confirm the new config appears without a manual reload
 - While the red client's Bootstrap Configs list is open and visible,
@@ -151,14 +240,20 @@ This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B5
   eventing relay) to show the new row, with no manual reload/refresh
   click needed.
 
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-08-08T10:30:57Z |
+| Branch        | feature/curve-builder-ui |
+| Commit        | db57289f6 |
+| Worktree      | swift_curie |
 
 * Notes

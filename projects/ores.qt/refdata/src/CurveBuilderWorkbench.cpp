@@ -154,10 +154,21 @@ void CurveBuilderWorkbench::loadTenors() {
         watcher->deleteLater();
         if (!self || !result)
             return;
+        // Sort by sort_order (explicit ladder position, e.g. O/N < S/N < SPOT < 1W < 1M < ... <
+        // 30Y), not lexicographically -- alphabetical order scatters "12M" before "1Y" and puts
+        // SPOT nowhere near the other short-dated special codes it belongs with. Also dedupe by
+        // code, keeping the lowest sort_order seen: fetch_tenors() can return more than one row
+        // per code (e.g. multiple tenant-scoped rows).
+        auto tenors = std::move(*result);
+        std::sort(tenors.begin(), tenors.end(), [](const auto& a, const auto& b) {
+            return a.sort_order < b.sort_order;
+        });
         self->tenorCodes_.clear();
-        for (const auto& t : *result)
-            self->tenorCodes_.push_back(t.code);
-        std::sort(self->tenorCodes_.begin(), self->tenorCodes_.end());
+        for (const auto& t : tenors) {
+            if (std::find(self->tenorCodes_.begin(), self->tenorCodes_.end(), t.code) ==
+                self->tenorCodes_.end())
+                self->tenorCodes_.push_back(t.code);
+        }
         self->addPillarButton_->setEnabled(true);
         self->addPillarButton_->setToolTip(QString());
     });

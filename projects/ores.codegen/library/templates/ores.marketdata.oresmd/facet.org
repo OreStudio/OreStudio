@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: 8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D
+:END:
+#+title: ores.marketdata.oresmd
+#+description: oresmd quote-type codegen: enums, identifier/requirement structs, parser, projections, resolver, and tests.
+#+type: facet
+#+model_types: oresmd_quote_type
+#+level: cross
+#+facet_group: ores.marketdata
+#+filetags: :codegen:physical-space:marketdata:oresmd:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This facet generates the eight source files that oresmd quote-type
+families touch. See the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]]
+story and [[id:884C6B00-0849-430D-9D32-F3544269DC56][Codegen meta-model]] for the metatype this facet processes.
+
+* Archetypes
+
+| Archetype | Output | Description |
+|-----------+--------+-------------|
+| [[id:9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][ores.marketdata.oresmd.enums]] | oresmd_enums.hpp | All per-asset-class quote-type enums plus volatility_model_subtype |
+| [[id:A3C4D5E6-F7A8-B9C0-D1E2-F3A4B5C6D7E8][ores.marketdata.oresmd.domain]] | market_data_identifier.hpp + market_data_requirement.hpp | Identifier and requirement structs with quote_type + vol fields |
+| [[id:B4D5E6F7-A8B9-C0D1-E2F3-A4B5C6D7E8F9][ores.marketdata.oresmd.parser]] | oresmd_parser.cpp | query_params, parse_*, validate_*, to_uri |
+| [[id:C5E6F7A8-B9C0-D1E2-F3A4-B5C6D7E8F9A0][ores.marketdata.oresmd.projections]] | oresmd_projections.cpp | ore_type, ore_*_metric, quote_key_* |
+| [[id:D6F7A8B9-C0D1-E2F3-A4B5-C6D7E8F9A0B1][ores.marketdata.oresmd.resolver]] | oresmd_resolver.cpp | resolve_*, dispatch |
+| [[id:E7A8B9C0-D1E2-F3A4-B5C6-D7E8F9A0B1C2][ores.marketdata.oresmd.tests]] | Tests | Parser + projection test cases |

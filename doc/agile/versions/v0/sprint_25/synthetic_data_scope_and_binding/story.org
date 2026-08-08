@@ -187,6 +187,18 @@ No workspace changes are made in this story.
   =ores.marketdata= unrelated to this story, one regression in this
   story's own first task): each was small, contained, and directly
   blocking, so fixed inline rather than deferred as separate captures.
+- Shell command tokens resolve by *exact* match only (UUID, folder
+  name, ore key, source_name) -- no substring/partial matching, which
+  was considered and rejected as a recipe for confusion; ambiguous
+  tokens list every candidate (folder path / source_name) so the user
+  can pick the full token. Multi-word names use the REPL quoting idiom
+  (="synthetic list folders --name \"2026 Realistic\""=), consistent
+  with =--tenant-name "Acme Corporation"= elsewhere in the shell.
+- Folders are the one market-simulator entity without a stable
+  machine-readable identifier (no =code=, unlike tenant =code= /
+  config =name= / feed =ore_key=). A =code= field is tracked as
+  follow-up task folder-code-identifier; resolver order uuid -> code ->
+  exact name.
 
 * Out of scope
 

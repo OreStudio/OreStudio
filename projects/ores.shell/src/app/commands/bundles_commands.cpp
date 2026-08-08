@@ -86,6 +86,8 @@ void bundles_commands::process_publish(std::ostream& out,
                               {.name = "root-lei", .requires_value = true, .default_value = ""},
                               {.name = "party-id", .requires_value = true, .default_value = ""},
                               {.name = "dataset", .requires_value = true, .default_value = ""},
+                              {.name = "tiers", .requires_value = true, .default_value = ""},
+                              {.name = "jurisdiction", .requires_value = true, .default_value = ""},
                               {.name = "timeout",
                                .requires_value = true,
                                .default_value = std::to_string(default_wait_timeout.count())}});
@@ -126,6 +128,10 @@ void bundles_commands::process_publish(std::ostream& out,
             dq::messaging::lei_parties_params{.root_lei = parsed->flag("root-lei")};
     if (!parsed->flag("party-id").empty())
         params.party_id = parsed->flag("party-id");
+    if (!parsed->flag("tiers").empty())
+        params.tiers = parsed->flag("tiers");
+    if (!parsed->flag("jurisdiction").empty())
+        params.jurisdiction = parsed->flag("jurisdiction");
 
     dq::messaging::publish_bundle_request req;
     req.bundle_code = code;
@@ -133,7 +139,8 @@ void bundles_commands::process_publish(std::ostream& out,
     req.published_by = session.auth().username;
     req.atomic = true;
     const bool has_params = !params.opted_in_datasets.empty() || params.lei_parties.has_value() ||
-                            params.party_id.has_value();
+                            params.party_id.has_value() || params.tiers.has_value() ||
+                            params.jurisdiction.has_value();
     if (has_params)
         req.params_json = dq::messaging::build_params_json(params);
 

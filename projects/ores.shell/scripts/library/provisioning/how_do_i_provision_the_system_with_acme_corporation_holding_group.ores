@@ -12,4 +12,5 @@ logout
 
 login tenant_admin@acme_corporation Secure-Password-123
 provision tenant --source acme
+bundles publish risk_management --wait
 logout

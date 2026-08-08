@@ -95,8 +95,9 @@ begin
     from ores_dq_report_definitions_artefact_tbl a
     where a.dataset_id = p_dataset_id
       and a.tier = any(string_to_array(
-          coalesce(p_params->>'tiers', 'common,regulatory,strategic,trading'), ', '))
-      and (a.applicable_jurisdiction is null
+          coalesce(nullif(p_params->>'tiers', ''), 'common,regulatory,strategic,trading'), ','))
+      and (p_params->>'jurisdiction' is null
+           or a.applicable_jurisdiction is null
            or a.applicable_jurisdiction = p_params->>'jurisdiction')
     order by a.display_order, a.name;
 

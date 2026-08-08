@@ -114,10 +114,6 @@ HistoryDialogBase::DiffResult IrCurveGenerationConfigHistoryDialog::calculateDif
     checkString(diffs, tr("Tenor"), curr.tenor, prev.tenor);
     checkString(diffs, tr("Role"), curr.role, prev.role);
     checkString(diffs, tr("Process Type"), curr.process_type, prev.process_type);
-    checkDouble(diffs, tr("Kappa"), curr.kappa, prev.kappa);
-    checkDouble(diffs, tr("Theta"), curr.theta, prev.theta);
-    checkDouble(diffs, tr("Sigma"), curr.sigma, prev.sigma);
-    checkDouble(diffs, tr("Initial Rate"), curr.initial_rate, prev.initial_rate);
     checkInt(diffs, tr("Ticks per Hour"), curr.ticks_per_hour, prev.ticks_per_hour);
     checkBool(diffs, tr("Enabled"), curr.enabled, prev.enabled);
     return diffs;
@@ -133,10 +129,6 @@ void IrCurveGenerationConfigHistoryDialog::displayFullDetails(int index) {
     ui_->indexNameValue->setText(QString::fromStdString(
         version.tenor.empty() ? version.index_family : version.index_family + "-" + version.tenor));
     ui_->processTypeValue->setText(QString::fromStdString(version.process_type));
-    ui_->kappaValue->setText(QString::number(version.kappa));
-    ui_->thetaValue->setText(QString::number(version.theta));
-    ui_->sigmaValue->setText(QString::number(version.sigma));
-    ui_->initialRateValue->setText(QString::number(version.initial_rate));
     ui_->ticksPerHourValue->setText(QString::number(version.ticks_per_hour));
     ui_->enabledCheck->setText(version.enabled ? tr("true") : tr("false"));
     ui_->versionNumberValue->setText(QString::number(version.version));

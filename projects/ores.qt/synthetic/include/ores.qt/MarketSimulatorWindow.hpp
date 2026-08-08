@@ -29,8 +29,10 @@
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include <QFormLayout>
 #include <QLabel>
 #include <QList>
@@ -338,6 +340,12 @@ private:
     std::map<std::string, synthetic::domain::ir_curve_generation_config> irCurves_;
     std::map<std::string, synthetic::domain::gmm_component> components_;
     std::map<std::string, synthetic::domain::ir_curve_template_entry> irCurveEntries_;
+    // Row-based process parameters: value rows grouped by config id (child rows, keyed by parent
+    // -- the codegen repository has no parent-scoped read), plus the system-tenant parameter
+    // definitions catalogue the summary page joins them onto to display names/values.
+    std::map<std::string, std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>>
+        irCurveValuesByConfig_;
+    std::vector<synthetic::domain::yield_curve_process_parameter_definition> parameterDefinitions_;
     std::map<std::string, synthetic::domain::folder> folders_;
 
     // source_names of feeds the client has successfully started this session.

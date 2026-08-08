@@ -24,10 +24,12 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
+#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include <QCheckBox>
 #include <QComboBox>
-#include <QDoubleSpinBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QSpinBox>
@@ -37,11 +39,9 @@
 #include <string>
 #include <vector>
 
-class QButtonGroup;
+class QDoubleSpinBox;
 class QPushButton;
 class QRadioButton;
-class QSlider;
-class QStackedWidget;
 class QTableWidget;
 
 namespace ores::qt {
@@ -58,10 +58,13 @@ class CurveShapePreviewChart;
  *
  * Edits the ir_curve_generation_config together with its ir_curve_template_entry tenor grid in
  * one place (Instrument, Process, Curve Template, Provenance). Unlike FX's gmm_component mixture,
- * an IR curve has exactly one short-rate process (Vasicek/Cox-Ingersoll-Ross/Hull-White) -- the
- * Process tab edits scalar parameters directly rather than a component table -- plus a curve-shape
- * preview chart FX has no equivalent of, since FX publishes one scalar spot rather than a tenor
- * grid.
+ * an IR curve has exactly one short-rate process (Vasicek/Cox-Ingersoll-Ross/Hull-White/
+ * Two-Factor Gaussian) -- the Process tab edits its parameters row-based, one table row per
+ * yield_curve_process_parameter_definition (name, description, min/max, default) with the
+ * config's own value row -- plus a curve-shape preview chart FX has no equivalent of, since FX
+ * publishes one scalar spot rather than a tenor grid. Adding a process type (or parameter) is
+ * seed data only: the table is rebuilt from the definitions catalogue whenever the engine
+ * changes.
  */
 class IrCurveEditor final : public DetailDialogBase {
     Q_OBJECT
@@ -125,7 +128,6 @@ private slots:
     void onMoveTemplateRowDown();
     void onProcessFieldChanged();
     void onTemplateChanged();
-    void onModeChanged();
     void onBrowseVintageClicked();
 
 private:
@@ -162,6 +164,17 @@ private:
     void syncTableFromModel();
     void rebuildModelFromTable();
 
+    // Process tab: fetch the selected engine's parameter definitions + this config's value rows
+    // (edit mode), then rebuild parameterTable_. Async, mirroring populateTenorCodes()'s watcher
+    // pattern -- the editor is self-contained and the caller doesn't pass either in.
+    void populateParameterRows();
+    void rebuildParameterTable();
+    void updatePriceSourceEnablement();
+    [[nodiscard]] QDoubleSpinBox* valueSpinAt(int row) const;
+    // Current parameter values from the table, in definition display_order -- the shape the two
+    // preview charts' setParameters() and the mapping layer consume.
+    [[nodiscard]] std::vector<ores::synthetic::messaging::parameter_spec> currentParameters() const;
+
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
@@ -189,9 +202,9 @@ private:
     QLineEdit* sourceNameEdit_;
     // Price source: mirrors FxSpotRateEditor's own radio-group pattern (see its header's
     // priceSourceGroup_ comment). Checking "Vintage" makes vintageSourceEdit_/vintageDateEdit_
-    // authoritative and disables the Process tab's r0 controls (initialRateSlider_/Spin_ and the
-    // Advanced table's r0 cell), since the starting rate is then resolved server-side from a real
-    // DEPOSIT-tenor observation -- see ir_curve_generation_config.price_source.
+    // authoritative and disables the Process tab's initial-rate parameter row (initialRateSpin_),
+    // since the starting rate is then resolved server-side from a real DEPOSIT-tenor observation
+    // -- see ir_curve_generation_config.price_source.
     QRadioButton* fixedRadio_;
     QRadioButton* vintageRadio_;
     QButtonGroup* priceSourceGroup_;
@@ -201,20 +214,24 @@ private:
 
     // Process tab.
     QComboBox* engineCombo_;
-    // Simple/Advanced mode toggle, mirroring FxSpotRateEditor's own -- Simple is slider+spin
-    // pairs for quick exploration, Advanced is a compact table for precise direct entry. Both
-    // surfaces edit the same four scalars; onModeChanged() syncs whichever becomes active.
-    QButtonGroup* modeGroup_;
-    QStackedWidget* modeStack_;
-    QSlider* initialRateSlider_;
+    // One table row per yield_curve_process_parameter_definition for the selected engine:
+    // read-only parameter name/description (column 0) + a QDoubleSpinBox per value row (column
+    // 1), the spin's range clamped to the definition's min/max and its value seeded from the
+    // config's value row (edit mode) or the definition's default_value. Rebuilt by
+    // populateParameterRows() whenever the engine changes -- the single editing surface, precise
+    // entry included, so there is no Simple/Advanced split to keep in sync with a dynamic
+    // parameter set (4 rows for the one-factor engines, 7 for Two-Factor Gaussian).
+    QTableWidget* parameterTable_;
+    // The initial_rate spin box, looked up when the table is rebuilt -- the one parameter the
+    // vintage price source overrides server-side, so its editor control is disabled in vintage
+    // mode (see updatePriceSourceEnablement()).
     QDoubleSpinBox* initialRateSpin_;
-    QSlider* thetaSlider_;
-    QDoubleSpinBox* thetaSpin_;
-    QSlider* kappaSlider_;
-    QDoubleSpinBox* kappaSpin_;
-    QSlider* sigmaSlider_;
-    QDoubleSpinBox* sigmaSpin_;
-    QTableWidget* advancedTable_; // 1 row x 4 columns: r0, theta, kappa, sigma
+    QLabel* parametersLoadingLabel_;
+    std::vector<synthetic::domain::yield_curve_process_parameter_definition>
+        parameterDefinitions_; // current engine's, sorted by display_order
+    std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>
+        valueRows_; // the config's existing value rows (edit mode): seeds the table's spins, and
+                    // save compares against them to find stale rows for deletion
     SampleShortRatePathsChart* pathsChart_;
     CurveShapePreviewChart* shapeChart_;
 

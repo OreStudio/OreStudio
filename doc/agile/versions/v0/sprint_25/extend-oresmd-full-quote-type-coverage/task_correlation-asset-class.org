@@ -8,7 +8,7 @@
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
 #+branch: feature/correlation-asset-class
-#+pr:
+#+pr: 1912
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1912][#1912]] | [marketdata] Add oresmd correlation asset class: pairwise factor correlation |
 
 * Review
 

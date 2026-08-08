@@ -24,8 +24,9 @@ for a report definition that already has a running instance.
 :schema:        public
 :product:       ores
 :component:     reporting
-:has_tenant_id: true
-:profile:      simple-lookup
+:has_tenant_id:            true
+:system_tenant_validation: true
+:profile:                  simple-lookup
 :END:
 
 * Columns

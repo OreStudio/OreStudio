@@ -8,7 +8,7 @@
 #+filetags: :devops:environment:wsl:infrastructure:product_backlog:inbox:
 #+created: 2026-08-03
 #+updated: 2026-08-03
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,7 +33,7 @@ Same word ("deploy"), different problem.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -48,7 +48,7 @@ Same word ("deploy"), different problem.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
+| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | STARTED | 2026-08-08 | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
 
 * Decisions
 

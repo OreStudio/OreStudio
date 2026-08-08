@@ -19,7 +19,6 @@
  */
 #include "ores.reporting.core/repository/report_instance_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -85,9 +84,10 @@ report_instance_entity report_instance_mapper::map(const domain::report_instance
     r.started_at = v.started_at.has_value() ?
                        std::optional(ores::platform::time::datetime::to_db_string(*v.started_at)) :
                        std::nullopt;
-    r.completed_at = v.completed_at.has_value() ?
-                         std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
-                         std::nullopt;
+    r.completed_at =
+        v.completed_at.has_value() ?
+            std::optional(ores::platform::time::datetime::to_db_string(*v.completed_at)) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

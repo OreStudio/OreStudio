@@ -1834,6 +1834,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 is_already_optional = (
                     col.get('cpp_type', '').startswith('std::optional<')
                     and not is_uuid_type
+                    and not is_timestamp_type
                 )
                 col['is_already_optional'] = is_already_optional
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)

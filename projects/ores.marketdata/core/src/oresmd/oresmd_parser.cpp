@@ -28,7 +28,9 @@
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <optional>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -181,8 +183,25 @@ market_data_identifier parse_ir(const boost::urls::url_view& u, const query_para
         id.metric = parse_enum<metric>("metric", *qp.metric);
     if (qp.quote)
         id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
-    if (qp.point)
+    if (qp.point) {
         id.point = to_lower(*qp.point);
+        if (id.type == instrument_type::vol) {
+            // Parse "expiry,tenor,strike" into vol struct.
+            std::vector<std::string> parts;
+            std::stringstream ss(*id.point);
+            std::string part;
+            while (std::getline(ss, part, ','))
+                parts.push_back(to_upper(part));
+            if (parts.size() == 3) {
+                volatility_surface_point v;
+                v.expiry = parts[0];
+                if (!id.tenor)
+                    id.tenor = to_lower(parts[1]);
+                v.strike = parts[2];
+                id.vol = std::move(v);
+            }
+        }
+    }
     if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
         BOOST_THROW_EXCEPTION(oresmd_exception(
             std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",

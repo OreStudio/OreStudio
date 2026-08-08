@@ -148,6 +148,19 @@ enum class correlation_quote_type {
     pairwise ///< CORRELATION/RATE (pairwise factor correlation).
 };
 
+/**
+ * @brief Volatility model subtype — the third segment of ORE's vol quote key
+ * (e.g. RATE_LNVOL in SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM). Shared across all
+ * volatility sub-families per the vol sub-schema design.
+ */
+enum class volatility_model_subtype {
+    rate_lnvol,  ///< RATE_LNVOL (log-normal volatility, the default).
+    rate_nvol,   ///< RATE_NVOL (normal volatility).
+    rate_slnvol, ///< RATE_SLNVOL (shifted log-normal volatility).
+    shift,       ///< SHIFT (shift surface).
+    price        ///< PRICE (price surface).
+};
+
 }
 
 #endif

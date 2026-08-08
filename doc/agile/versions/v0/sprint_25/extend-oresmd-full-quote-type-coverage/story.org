@@ -65,7 +65,7 @@ oresmd already represents).
 | [[id:B87C97B8-415B-4C7D-9ACB-2B58EEFCB26E][Extend oresmd FX coverage: FX forward points]] | DONE | 2026-08-08 | 2026-08-08 | Represent the 1 of 2 catalogued FX quote types not yet covered: FXFWD/RATE. |
 | [[id:DD35387F-D84B-4392-9C07-8F6F7F2FFF8F][Add oresmd inflation asset class: ZC/YoY swap rate, seasonality]] | DONE | 2026-08-08 | 2026-08-08 | oresmd has no inflation asset class at all today. Add inflation_market_data_identifier covering the 3 catalogued inflation quote types: ZC_INFLATIONSWAP/RATE, YY_INFLATIONSWAP/RATE, SEASONALITY/RATE. |
 | [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]] | BACKLOG | | | oresmd only represents swaption RATE_LNVOL today. Design one shared strike/expiry/model-subtype sub-schema and apply it across all 8 catalogued vol sub-families: swaption, cap/floor, FX option, equity option, commodity option, bond option, inflation cap/floor, credit index option (12 quote types total). |
-| [[id:6D1CA504-D70A-4ACB-9560-3C124162FC80][Add oresmd correlation asset class: pairwise factor correlation]] | BACKLOG | | | oresmd has no correlation asset class at all today. Add correlation_market_data_identifier covering CORRELATION/RATE (pairwise correlation between two risk factors, e.g. CCY-CMS-TENOR, FX-FIX-CCY1-CCY2, EQ-TICKER). |
+| [[id:6D1CA504-D70A-4ACB-9560-3C124162FC80][Add oresmd correlation asset class: pairwise factor correlation]] | DONE | 2026-08-08 | 2026-08-08 | oresmd has no correlation asset class at all today. Add correlation_market_data_identifier covering CORRELATION/RATE (pairwise correlation between two risk factors, e.g. CCY-CMS-TENOR, FX-FIX-CCY1-CCY2, EQ-TICKER). |
 
 * Decisions
 

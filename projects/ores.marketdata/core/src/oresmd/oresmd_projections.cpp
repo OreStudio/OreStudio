@@ -380,6 +380,12 @@ std::optional<std::string> quote_key_inflation(const inflation_market_data_ident
                        id.index_code, to_upper(*id.point));
 }
 
+std::optional<std::string> quote_key_correlation(const correlation_market_data_identifier& id) {
+    if (id.type != instrument_type::quote)
+        return std::nullopt;
+    return std::format("CORRELATION/RATE/{}", id.factor_pair);
+}
+
 std::optional<std::string> quote_key_commodity(const commodity_market_data_identifier& id) {
     if (id.type != instrument_type::quote)
         return std::nullopt;
@@ -428,8 +434,10 @@ oresmd_projections::to_quote_key(const domain::market_data_identifier& identifie
                 return quote_key_credit(id);
             else if constexpr (std::is_same_v<T, commodity_market_data_identifier>)
                 return quote_key_commodity(id);
-            else
+            else if constexpr (std::is_same_v<T, inflation_market_data_identifier>)
                 return quote_key_inflation(id);
+            else if constexpr (std::is_same_v<T, correlation_market_data_identifier>)
+                return quote_key_correlation(id);
         },
         identifier);
 }

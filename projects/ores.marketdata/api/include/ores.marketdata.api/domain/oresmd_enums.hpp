@@ -140,6 +140,14 @@ enum class inflation_quote_type {
     seasonality ///< SEASONALITY/RATE (seasonality adjustment factor).
 };
 
+/**
+ * @brief The `quote` query key for correlation instruments — the ORE TYPE. Correlation-only;
+ * only meaningful when `type=quote`.
+ */
+enum class correlation_quote_type {
+    pairwise ///< CORRELATION/RATE (pairwise factor correlation).
+};
+
 }
 
 #endif

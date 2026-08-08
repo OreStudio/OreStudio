@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/correlation-asset-class
+#+pr: 1912
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -60,12 +60,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1912][#1912]] | [marketdata] Add oresmd correlation asset class: pairwise factor correlation |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | factor_pair opaque vs 6-seg ORE key | projections | Declined | Task uses composite strings per its own worked examples |
+| 2 | bare else unsafe for future variants | projections, resolver | Accepted | Changed to explicit if constexpr |
+| 3 | redundant quote_type nullopt check | projections | Accepted | Removed, consistent with single-enum default |
 
 * Result
+
+Delivered new correlation asset class: =correlation_market_data_identifier=
+and =correlation_market_data_requirement= added as 7th variant member.
+=correlation_quote_type= (=pairwise=) with =quote_key_correlation=
+=format("CORRELATION/RATE/{}", factor_pair)=. =factor_pair= carries the
+descriptive factor-pair string. Full parser+to_uri+resolver wiring.
+145 test cases, 258 assertions, all passing.

@@ -224,6 +224,25 @@ market_data_identifier parse_credit(const boost::urls::url_view& u, const query_
     return id;
 }
 
+market_data_identifier parse_correlation(const boost::urls::url_view& u, const query_params& qp) {
+    reject_if_present("correlation", "ccy", qp.ccy);
+    reject_if_present("correlation", "index", qp.index);
+    reject_if_present("correlation", "tenor", qp.tenor);
+    reject_if_present("correlation", "role", qp.role);
+    reject_if_present("correlation", "metric", qp.metric);
+    reject_if_present("correlation", "point", qp.point);
+    correlation_market_data_identifier id;
+    id.factor_pair = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    if (qp.quote) {
+        if (id.type != instrument_type::quote)
+            BOOST_THROW_EXCEPTION(
+                oresmd_exception("oresmd://correlation/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<correlation_quote_type>("quote", *qp.quote);
+    }
+    return id;
+}
+
 market_data_identifier parse_inflation(const boost::urls::url_view& u, const query_params& qp) {
     // Validation: only quote, type, and point are meaningful for inflation.
     reject_if_present("inflation", "ccy", qp.ccy);
@@ -305,6 +324,8 @@ market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
         return parse_commodity(u, qp);
     if (asset_token == "inflation")
         return parse_inflation(u, qp);
+    if (asset_token == "correlation")
+        return parse_correlation(u, qp);
 
     BOOST_THROW_EXCEPTION(
         oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
@@ -360,6 +381,11 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
                 u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
                 append_enum_if(u, "quote", id.quote_type);
                 append_if(u, "point", id.point);
+            } else if constexpr (std::is_same_v<T, correlation_market_data_identifier>) {
+                u.set_host("correlation");
+                u.segments().push_back(to_lower(id.factor_pair));
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+                append_enum_if(u, "quote", id.quote_type);
             }
         },
         identifier);

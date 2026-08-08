@@ -112,6 +112,17 @@ market_data_identifier resolve_credit(const credit_market_data_requirement& req,
     return id;
 }
 
+market_data_identifier resolve_correlation(const correlation_market_data_requirement& req,
+                                            const market_data_identifier& defaults) {
+    const auto* d = std::get_if<correlation_market_data_identifier>(&defaults);
+    correlation_market_data_identifier id;
+    id.factor_pair = pick_mandatory_string(
+        req.factor_pair, d ? d->factor_pair : std::string{}, "factor_pair");
+    id.type = pick(req.type, d ? std::optional(d->type) : std::nullopt, "type");
+    id.quote_type = pick_optional(req.quote_type, d ? d->quote_type : std::nullopt);
+    return id;
+}
+
 market_data_identifier resolve_inflation(const inflation_market_data_requirement& req,
                                           const market_data_identifier& defaults) {
     const auto* d = std::get_if<inflation_market_data_identifier>(&defaults);
@@ -157,8 +168,10 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_credit(req, defaults);
             else if constexpr (std::is_same_v<T, commodity_market_data_requirement>)
                 return resolve_commodity(req, defaults);
-            else
+            else if constexpr (std::is_same_v<T, inflation_market_data_requirement>)
                 return resolve_inflation(req, defaults);
+            else if constexpr (std::is_same_v<T, correlation_market_data_requirement>)
+                return resolve_correlation(req, defaults);
         },
         requirement);
 }

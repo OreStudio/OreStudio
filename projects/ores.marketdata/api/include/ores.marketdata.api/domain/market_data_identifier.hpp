@@ -124,7 +124,18 @@ struct inflation_market_data_identifier final {
 };
 
 /**
- * @brief Tagged union of the six per-asset-class identifier structs.
+ * @brief A fully-resolved oresmd identifier for a pairwise correlation (asset_class=correlation).
+ */
+struct correlation_market_data_identifier final {
+    std::string factor_pair;
+    instrument_type type = instrument_type::quote;
+    std::optional<domain::correlation_quote_type> quote_type;
+
+    bool operator==(const correlation_market_data_identifier&) const = default;
+};
+
+/**
+ * @brief Tagged union of the seven per-asset-class identifier structs.
  *
  * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
  * authority component already tells a consumer which concrete struct applies, and
@@ -137,7 +148,8 @@ using market_data_identifier = std::variant<fx_market_data_identifier,
                                             equity_market_data_identifier,
                                             credit_market_data_identifier,
                                             commodity_market_data_identifier,
-                                            inflation_market_data_identifier>;
+                                            inflation_market_data_identifier,
+                                            correlation_market_data_identifier>;
 
 }
 

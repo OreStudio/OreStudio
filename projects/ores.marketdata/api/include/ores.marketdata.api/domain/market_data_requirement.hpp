@@ -100,8 +100,17 @@ struct inflation_market_data_requirement final {
     bool operator==(const inflation_market_data_requirement&) const = default;
 };
 
+/** @brief A logical, possibly-partial oresmd requirement for a correlation instrument. */
+struct correlation_market_data_requirement final {
+    std::optional<std::string> factor_pair;
+    std::optional<instrument_type> type;
+    std::optional<correlation_quote_type> quote_type;
+
+    bool operator==(const correlation_market_data_requirement&) const = default;
+};
+
 /**
- * @brief Tagged union of the six per-asset-class requirement structs -- see
+ * @brief Tagged union of the seven per-asset-class requirement structs -- see
  * market_data_identifier.hpp for the rationale against a common base class.
  */
 using market_data_requirement = std::variant<fx_market_data_requirement,
@@ -109,7 +118,8 @@ using market_data_requirement = std::variant<fx_market_data_requirement,
                                              equity_market_data_requirement,
                                              credit_market_data_requirement,
                                              commodity_market_data_requirement,
-                                             inflation_market_data_requirement>;
+                                             inflation_market_data_requirement,
+                                             correlation_market_data_requirement>;
 
 }
 

@@ -170,7 +170,7 @@ oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
                 return resolve_commodity(req, defaults);
             else if constexpr (std::is_same_v<T, inflation_market_data_requirement>)
                 return resolve_inflation(req, defaults);
-            else
+            else if constexpr (std::is_same_v<T, correlation_market_data_requirement>)
                 return resolve_correlation(req, defaults);
         },
         requirement);

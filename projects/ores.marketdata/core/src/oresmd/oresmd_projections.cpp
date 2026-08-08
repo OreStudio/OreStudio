@@ -381,7 +381,7 @@ std::optional<std::string> quote_key_inflation(const inflation_market_data_ident
 }
 
 std::optional<std::string> quote_key_correlation(const correlation_market_data_identifier& id) {
-    if (id.type != instrument_type::quote || !id.quote_type)
+    if (id.type != instrument_type::quote)
         return std::nullopt;
     return std::format("CORRELATION/RATE/{}", id.factor_pair);
 }
@@ -436,7 +436,7 @@ oresmd_projections::to_quote_key(const domain::market_data_identifier& identifie
                 return quote_key_commodity(id);
             else if constexpr (std::is_same_v<T, inflation_market_data_identifier>)
                 return quote_key_inflation(id);
-            else
+            else if constexpr (std::is_same_v<T, correlation_market_data_identifier>)
                 return quote_key_correlation(id);
         },
         identifier);

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: EBF4E9D0-1359-458C-A045-696E3F5A9630
+:END:
+#+title: Test Scenario: Verify PR #1915's shared-tenant edit fix across all 10 extended tables
+#+description: Edit a seeded row of every table PR #1915 extended the per-tenant-copy fix to (data_domain, subject_area, coding_scheme_authority_type, coding_scheme, origin/nature/treatment_dimension, methodology, badge_severity, badge_definition) and confirm none produce a duplicate row -- the same bug class fixed for artefact_type/dataset_bundle.
+#+type: test_scenario
+#+level: s1
+#+filetags: :entity-classification-drift-dq:sprint_25:v0:
+#+target_dialog:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] in [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Build must include PR #1915's merge commit (d4800ebca or later on
+  =main=). Confirm via =compass build= (full build, green).
+- The database must be freshly provisioned with Acme Corporation:
+  =compass db recreate -y -k= then =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- Services must be running: =compass services start= — confirm
+  =ores.dq.service= and =nats-server= reach =running= via =compass
+  services status=.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:163AC07E-19E4-4486-A503-8170D9B46108][Task: Bind ores.dq entities to profiles; verify zero-diff regen]] |
+| Parent story  | [[id:A452F2A7-D9CB-48E6-8B23-4509AFFC5699][Story: Entity classification and drift baseline: ores.dq]]   |
+| Target dialog | =DataDomainDetailDialog= / =SubjectAreaDetailDialog= / =CodingSchemeDetailDialog= / =MethodologyDetailDialog= / =BadgeDefinitionDetailDialog= and 6 siblings (Data Quality > Data Catalogue / Classifications / Badges) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step edits one seeded (pre-existing, not tester-created) row of
+the named entity, changes a text field, and saves. Confirms (all
+steps): the list shows exactly *one* row for that code/name afterwards
+— not two rows with the same code and different Modified By values
+(the bug: editing a system-tenant-seeded row through the Qt UI could
+never close the original, leaving both visible as "current").
+
+** Log in as tenant_admin@acme_corporation
+
+- Username: =tenant_admin@acme_corporation=
+- Password: =Secure-Password-123=
+- Confirms: login succeeds and the main window loads with the Data
+  Quality menu present.
+
+** Edit a seeded data domain
+
+- Navigate: Data Quality > Data Catalogue > Data Domains.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded subject area
+
+- Navigate: Data Quality > Data Catalogue > Subject Areas.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded methodology
+
+- Navigate: Data Quality > Data Catalogue > Methodologies.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded origin dimension
+
+- Navigate: Data Quality > Data Catalogue > Origin Dimensions.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded nature dimension
+
+- Navigate: Data Quality > Data Catalogue > Nature Dimensions.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded treatment dimension
+
+- Navigate: Data Quality > Data Catalogue > Treatment Dimensions.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded coding scheme
+
+- Navigate: Data Quality > Classifications > Coding Schemes.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded coding scheme authority type
+
+- Navigate: Data Quality > Classifications > Coding Scheme Authority Types.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded badge severity
+
+- Navigate: Data Quality > Badges > Badge Severities.
+- Double-click any pre-existing row, change the Description, Save.
+
+** Edit a seeded badge definition
+
+- Navigate: Data Quality > Badges > Badge Definitions.
+- Double-click any pre-existing row, change the Description, Save.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

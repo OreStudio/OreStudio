@@ -28,6 +28,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/MarketSeriesPickerDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
@@ -602,6 +603,13 @@ void CurveBuilderWorkbench::showBanner(const QString& message, bool isError) {
     bannerLabel_->setVisible(!message.isEmpty());
 }
 
+void CurveBuilderWorkbench::showError(const QString& title,
+                                      const QString& shortMessage,
+                                      const QString& details) {
+    showBanner(shortMessage, true);
+    MessageBoxHelper::critical(this, title, shortMessage, details);
+}
+
 bool CurveBuilderWorkbench::promptAndStashChangeReason() {
     if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
         showBanner(tr("Change reasons not loaded. Please try again."), true);
@@ -698,7 +706,9 @@ void CurveBuilderWorkbench::onSaveClicked() {
                     return;
                 self->saveButton_->setEnabled(true);
                 if (!result) {
-                    self->showBanner(tr("Save failed: %1").arg(result.error()), true);
+                    self->showError(tr("Save Failed"),
+                                    tr("Failed to save the curve bootstrap recipe."),
+                                    result.error());
                     return;
                 }
                 self->createMode_ = false;
@@ -742,7 +752,8 @@ void CurveBuilderWorkbench::onBootstrapClicked() {
             return;
         self->bootstrapButton_->setEnabled(true);
         if (!result) {
-            self->showBanner(tr("Bootstrap failed: %1").arg(result.error()), true);
+            self->showError(
+                tr("Bootstrap Failed"), tr("Failed to bootstrap the curve."), result.error());
             self->hasBootstrapped_ = false;
             self->updateActionStates();
             return;
@@ -790,7 +801,8 @@ void CurveBuilderWorkbench::onPublishClicked() {
                 self->publishButton_->setEnabled(true);
                 self->updateActionStates();
                 if (!result) {
-                    self->showBanner(tr("Publish failed: %1").arg(result.error()), true);
+                    self->showError(
+                        tr("Publish Failed"), tr("Failed to publish the curve."), result.error());
                     return;
                 }
                 self->showBanner(tr("Curve published."), false);

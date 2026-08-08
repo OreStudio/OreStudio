@@ -126,6 +126,12 @@ private:
     void collectPillarsFromTable();
     void updateActionStates();
     void showBanner(const QString& message, bool isError);
+    /// Error path for anything returned by the server (Save/Bootstrap/Publish failures): sets the
+    /// banner to @p shortMessage for in-context visibility, and additionally pops a standard
+    /// MessageBoxHelper::critical with @p details (the full technical error text, e.g. a
+    /// repository/SQL error) in its expandable "Details" section -- a banner alone buried the raw
+    /// error text inline with no way to copy it out or be sure the user actually saw it.
+    void showError(const QString& title, const QString& shortMessage, const QString& details);
     void
     renderBootstrapResults(const std::vector<marketdata::messaging::computed_curve_point>& points);
     void onBrowseSourceSeriesClicked();

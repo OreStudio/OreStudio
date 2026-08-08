@@ -529,3 +529,26 @@ TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero
     CHECK(std::abs(g2_mean) < 0.05);
     CHECK(std::abs(hw_mean) < 0.05);
 }
+
+TEST_CASE("two_factor_gaussian_process struct constructor matches flat constructor",
+          "[two_factor_gaussian_process][params]") {
+    using ores::analytics::quant::service::two_factor_gaussian_params;
+    using ores::analytics::quant::service::two_factor_gaussian_process;
+
+    const two_factor_gaussian_params params{
+        .kappa_x = 0.5, .kappa_y = 0.3, .theta = 0.04, .sigma_x = 0.01,
+        .sigma_y = 0.005, .rho = 0.6, .initial_rate = 0.03};
+    const std::uint32_t seed = 99;
+    const double dt = 0.25;
+
+    two_factor_gaussian_process from_struct(params, seed, dt);
+    two_factor_gaussian_process from_flat(
+        params.kappa_x, params.kappa_y, params.sigma_x, params.sigma_y,
+        params.rho, params.initial_rate, seed, dt);
+
+    for (int i = 0; i < 20; ++i) {
+        CHECK(from_struct.next() == from_flat.next());
+        CHECK(from_struct.current() == from_flat.current());
+    }
+    CHECK(from_struct.discount_factor(10) == from_flat.discount_factor(10));
+}

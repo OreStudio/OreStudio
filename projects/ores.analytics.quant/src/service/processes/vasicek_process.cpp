@@ -25,6 +25,9 @@ vasicek_process::vasicek_process(
     double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
     : inner_(kappa, std::vector<double>{theta}, sigma, initial_rate, seed, dt) {}
 
+vasicek_process::vasicek_process(const vasicek_params& params, std::uint32_t seed, double dt)
+    : vasicek_process(params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
+
 double vasicek_process::next() {
     return inner_.next();
 }

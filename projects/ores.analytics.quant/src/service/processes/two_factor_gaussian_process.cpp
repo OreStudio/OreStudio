@@ -84,6 +84,17 @@ two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
         throw std::invalid_argument("two_factor_gaussian_process: dt must be strictly positive");
 }
 
+two_factor_gaussian_process::two_factor_gaussian_process(
+    const two_factor_gaussian_params& params, std::uint32_t seed, double dt)
+    : two_factor_gaussian_process(params.kappa_x,
+                                  params.kappa_y,
+                                  params.sigma_x,
+                                  params.sigma_y,
+                                  params.rho,
+                                  params.initial_rate,
+                                  seed,
+                                  dt) {}
+
 double two_factor_gaussian_process::next() {
     // Correlated normals via Cholesky: Z_x = U1, Z_y = rho*U1 + sqrt(1-rho^2)*U2
     const double u1 = normal_(rng_);

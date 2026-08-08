@@ -24,6 +24,12 @@
 
 namespace ores::analytics::quant::service {
 
+hull_white_process::hull_white_process(const hull_white_params& params,
+                                       std::uint32_t seed,
+                                       double dt)
+    : hull_white_process(
+          params.kappa, std::vector<double>{params.theta}, params.sigma, params.initial_rate, seed, dt) {}
+
 hull_white_process::hull_white_process(double kappa,
                                        std::vector<double> theta_path,
                                        double sigma,

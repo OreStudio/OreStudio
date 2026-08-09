@@ -1,43 +1,34 @@
 :PROPERTIES:
-:ID: 9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E
+:ID: 8A1B2C3D-4E5F-6A7B-8C9D-0E1F2A3B4C5D6
 :END:
-#+title: ores.marketdata.oresmd.enums
-#+description: Generates oresmd_enums.hpp: all per-asset-class quote-type enums plus volatility_model_subtype.
+#+title: ores.cpp.oresmd.enums
+#+description: All per-asset-class quote-type enums plus volatility_model_subtype.
 #+type: archetype
 #+output: projects/ores.marketdata/api/include/ores.marketdata.api/domain/oresmd_enums.hpp
-#+facet: ores.marketdata.oresmd
+#+facet: ores.cpp.oresmd
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
-#+created: 2026-08-08
-#+updated: 2026-08-08
+#+created: 2026-08-09
+#+updated: 2026-08-09
 
 The enum definitions for all oresmd quote-type families. Each asset class's
-quote types produce one =*_quote_type= enum. The shared =volatility_model_subtype=
-enum covers all vol sub-families.
+quote types table produces one =*_quote_type= enum. The shared
+=volatility_model_subtype= enum covers all vol sub-families.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
 
 * Template
 
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/oresmd_enums.hpp.mustache=.
+
 #+begin_src mustache :tangle oresmd_enums.hpp.mustache
-{{! GENERATED FILE — do not edit by hand. }}
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
- * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- */
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.oresmd.enums.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#oresmd_quote_type}}
+{{#first_asset_class}}
 #ifndef ORES_MARKETDATA_API_DOMAIN_ORESMD_ENUMS_HPP
 #define ORES_MARKETDATA_API_DOMAIN_ORESMD_ENUMS_HPP
 
@@ -79,6 +70,9 @@ enum class metric {
     ratio,          ///< A ratio quote (e.g. BMA_SWAP/RATIO).
     yield_spread    ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
 };
+{{/first_asset_class}}
+{{/oresmd_quote_type}}
+
 {{#oresmd_quote_types}}
 /**
  * @brief The `quote` query key of an oresmd URI, {{asset_class}}-only and only meaningful when
@@ -88,7 +82,7 @@ enum class metric {
  */
 enum class {{asset_class}}_quote_type {
 {{#quote_types}}
-    {{enum_name}},{{#notes}}  ///< {{.}}{{/notes}}
+    {{enum_name}},  ///< {{ore_type}}/{{ore_metric}}
 {{/quote_types}}
 };
 {{/oresmd_quote_types}}
@@ -111,7 +105,7 @@ enum class volatility_model_subtype {
     price        ///< PRICE (price surface).
 };
 
-}
+}  // namespace ores::marketdata::domain
 
 #endif
 #+end_src

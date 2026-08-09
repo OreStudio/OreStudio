@@ -19,6 +19,7 @@
 set(files
     "domain/business_day_calendar_set.cpp"
     "domain/process_parameter_validation.cpp"
+    "math/rate_tree.cpp"
     "service/calendar_rule_engine.cpp"
     "service/curve_bootstrap_engine.cpp"
     "service/curve_health_checker.cpp"
@@ -64,6 +65,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/vertex_state.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/ores.analytics.quant.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/rate_tree.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/calendar_rule_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/curve_bootstrap_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/curve_health_checker.hpp"

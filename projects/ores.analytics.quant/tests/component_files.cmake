@@ -36,6 +36,7 @@ set(files
     "rate_delta_tracker_tests.cpp"
     "rate_engine_tests.cpp"
     "rate_reciprocator_tests.cpp"
+    "rate_tree_tests.cpp"
     "risk_recentering_tests.cpp"
     "topology_builder_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"

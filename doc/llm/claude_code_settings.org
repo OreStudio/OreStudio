@@ -499,9 +499,16 @@ scripts must be run with =dangerouslyDisableSandbox: true=.
 material used when writing knowledge documents and literate template
 prose; fetching it during documentation tasks must not prompt.
 
+=github.com= and =api.github.com= serve the =gh= CLI (PR create,
+checks, merge, review) — the permission allow-list already grants
+=gh *= commands, so their API traffic must not prompt either. =git=
+itself does not need these entries: it is excluded from the sandbox
+(see the Hooks section), so its pushes and fetches bypass the network
+allowlist entirely.
+
 #+begin_src json :tangle no :noweb-ref sandbox-network
     "network": {
-      "allowedHosts": ["localhost", "mcraveiro.github.io"]
+      "allowedHosts": ["localhost", "mcraveiro.github.io", "github.com", "api.github.com"]
     }
 #+end_src
 

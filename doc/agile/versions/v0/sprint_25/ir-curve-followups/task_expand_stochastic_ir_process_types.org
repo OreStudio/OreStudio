@@ -432,6 +432,8 @@ All 368 =ores.analytics.quant= tests (2,104,403 assertions) pass on
 Linux. None of the six processes is wired into =process_factory= yet --
 system-infra wiring is PR 2, following the G2 precedent.
 
+Merged via PR #1932 (merge commit 4c9b23d99) on 2026-08-10.
+
 * Promoted from capture
 
 Captured 2026-08-05 in the product backlog; promoted preserving the UUID.

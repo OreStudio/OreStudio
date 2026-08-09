@@ -27,6 +27,15 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 {{/seed_party}}
+{{#seed_country_sentinel}}
+// Country sentinel seed ({{entity_title}}'s insert trigger validates
+// country_code against the countries table, and the synthetic generator
+// always emits the ZZ sentinel): like the party seeds, the country
+// generator and repository are used regardless of the child's generator
+// facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
+{{/seed_country_sentinel}}
 {{#foreign_keys}}
 {{^nullable}}
 {{#parent_entity_singular}}
@@ -113,6 +122,9 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::{{component}}::{{generator_facet_name}};
 using ores::{{component}}::domain::{{entity_singular}};
 using ores::{{component}}::repository::{{entity_singular}}_repository;
+{{#seed_country_sentinel}}
+using ores::refdata::repository::country_repository;
+{{/seed_country_sentinel}}
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -269,6 +281,14 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{/primary_key.is_uuid}}
 {{/has_identity_group}}
     BOOST_LOG_SEV(lg, debug) << "{{entity_title}}: " << v;
+{{#seed_country_sentinel}}
+    // {{entity_title}}'s insert trigger validates country_code against
+    // the countries table for the write tenant, and the synthetic
+    // generator always uses the ZZ sentinel -- seed it first (as the
+    // materialisation tests do) or the insert is rejected.
+    country_repository cty_repo;
+    cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
+{{/seed_country_sentinel}}
 
     {{entity_singular}}_repository repo;
     repo.write(party_ctx, v);

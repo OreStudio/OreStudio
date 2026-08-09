@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
-#+updated: 2026-08-05
+#+updated: 2026-08-08
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -133,4 +133,7 @@ and exact-match rejection of `--name=Realistic`.
 
 Follow-up: folders lack a stable machine-readable identifier (only a
 human-readable multi-word name); tracked as task
-folder-code-identifier (resolver order: uuid -> code -> exact name).
+folder-code-identifier, re-scoped to derive codename identifiers at
+resolve time (resolver order: uuid -> exact name -> codename path,
+standard filesystem-style paths walked from the tree root -- no
+stored code column).

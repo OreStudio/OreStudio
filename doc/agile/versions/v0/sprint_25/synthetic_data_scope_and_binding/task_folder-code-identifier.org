@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: D61E99A8-FACC-497F-A8D4-D3310E6622DA
+:END:
+#+title: Task: Resolve market simulator folders by derived slug identifier
+#+description: Task for: Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed
+#+type: task
+#+level: s1
+#+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
+#+owner: marco
+#+branch: feature/folder-code-identifier
+#+pr: 1923
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Market simulator folders currently have only a human-readable name (multi-word, spaces allowed), so shell commands must address them by exact full name (quoted) or UUID. Rather than a stored code column, derive a machine-readable identifier from the name at resolve time: each folder gets a codename -- its =source_name=-style slug (=lower(replace(name, ' ', ''))=) -- and folders address by a standard, filesystem-style path of codenames. Folders resolve as uuid, then exact name, then codename path. No schema change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Implement codename resolution in ores.shell: uuid -> exact name -> codename path (component-wise walk from the tree root). |
+| Last touched | 2026-08-08                               |
+
+* Acceptance
+
+- no schema change: folders gain no =code= column; each folder's codename is derived by a pure function mirroring the =source_name= slug convention (=lower(replace(name, ' ', ''))=)
+- ores.shell synthetic commands resolve folder tokens as uuid, then exact name, then codename path
+- codename paths are standard, filesystem-style paths walked component-by-component from the tree root (=2026realistic/fx=, =synthetic/2026realistic/fx=, =/synthetic/2026realistic/fx=); components tolerate case and spaces (="2026 Realistic/FX"= works)
+- a bare codename matching folders in more than one collection (e.g. =fx= under two collections) reports ambiguous, listing each candidate's codename path; ambiguity and no-match messages show codename paths, copy-pasteable as tokens
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+A stored =code= column was considered and rejected. Rationale: the
+codebase already derives machine tokens from display names
+(=source_name= is ='synthetic.' || lower(replace(config, ' ', '')) ||
+lower(pair)= in publish_from_dq), and folder names are themselves
+derived from DQ dataset names at publish -- not user-renamed -- so a
+stored code would have no rename-stability consumer, would drift from
+the name, and would force schema regeneration across every layer
+(domain, table I/O, generator, repository, Qt).
+
+Mid-implementation, the original path-token idea -- display paths
+joined by =' > '= (="2026 Realistic > FX"=) -- was rejected by review
+as messy and untypable. The final addressing scheme is codenames plus
+standard folder paths: each folder's codename is its slug, and paths
+are walked component-by-component from the tree root, so
+=2026realistic/fx=, =synthetic/2026realistic/fx= and
+="2026 Realistic/FX"= all resolve to the same folder; a bare codename
+(=fx=) matches at any depth.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1923][#1923]] | [ores.shell] Resolve market simulator folders by codename path |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

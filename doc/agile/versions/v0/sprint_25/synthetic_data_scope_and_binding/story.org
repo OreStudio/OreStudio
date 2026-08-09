@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :synthetic:market_data:architecture:acme:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-08-08
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,11 +21,11 @@ Give synthetic market data generation two orthogonal primitives -- scope (system
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                   |
+| State         | STARTED                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Scope/binding axes live on configs; sandboxed feeds run under a distinct namespace; ACME consolidated to one tenant-level bound reality; Market Simulator tree RLS-filtered by viewer scope; scriptable shell commands (list folders/configs, start/stop folder/feed, validate-vintage) added and verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task (stable machine-readable folder identifiers). |
+| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task, re-scoped to derive folder codename identifiers at resolve time (no stored code column). |
 | Last touched  | 2026-08-08                             |
 
 * Acceptance
@@ -114,6 +114,7 @@ No workspace changes are made in this story.
 | [[id:45AB05B7-45D4-4F94-8011-8F293B9C676B][Run sandboxed synthetic configs end-to-end under a distinct namespace]] | DONE | 2026-08-04 | 2026-08-05 | Wire ores.synthetic.service to generate and publish data for sandboxed configs under a namespace distinct from bound feeds, and prove the bound-feed resolution path used by real consumers never picks up sandboxed output. No consumer-side selection UI in this task. |
 | [[id:78B24A7B-8FBC-4B7C-AABB-5DF11E205F58][Consolidate ACME's UK/US/HK party configs into one tenant-level bound config]] | DONE | 2026-08-05 | 2026-08-05 | Pick/merge one canonical config from ACME's three existing party-level synthetic configs, promote it to tenant scope with binding_mode=bound, and retire the other two party-level configs. Verify all three ACME parties then observe the same synthetic reality. |
 | [[id:601A7F49-E2A5-4DCB-992F-19665472E629][Filter Market Simulator tree by viewer scope (supersedes existing capture)]] | DONE | | 2026-08-07 | Market Simulator currently shows every party's synthetic configs unfiltered to any viewer. Filter the tree to the viewer's own party's configs plus any tenant/system-level configs visible to them, using the new scope field. Supersedes capture 275824BB-0DCE-4EA4-964D-9C86B0498509 (Market Simulator: scope folders to current party, clarify feed-start UX) -- close/link that capture as superseded once this lands. |
+| [[id:D61E99A8-FACC-497F-A8D4-D3310E6622DA][Add a stable code identifier to market simulator folders]] | STARTED | 2026-08-08 | | Task for: Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed |
 
 * Decisions
 
@@ -196,9 +197,25 @@ No workspace changes are made in this story.
   with =--tenant-name "Acme Corporation"= elsewhere in the shell.
 - Folders are the one market-simulator entity without a stable
   machine-readable identifier (no =code=, unlike tenant =code= /
-  config =name= / feed =ore_key=). A =code= field is tracked as
-  follow-up task folder-code-identifier; resolver order uuid -> code ->
-  exact name.
+  config =name= / feed =ore_key=). A stored =code= column was
+  considered and rejected: the codebase already derives machine tokens
+  from display names (=source_name= is the config-name slug plus the
+  pair, built in publish_from_dq), and folder names are themselves
+  derived from DQ dataset names at publish -- not user-renamed -- so a
+  stored code would have no rename-stability consumer, would drift
+  from the name, and would force schema regeneration across every
+  layer. Follow-up task folder-code-identifier is re-scoped to derive
+  the identifier at resolve time: each folder's codename is its slug
+  (=lower(replace(name, ' ', ''))=, mirroring =source_name=), and
+  folders resolve as uuid -> exact name -> codename path. Codename
+  paths are standard, filesystem-style paths walked component-by-
+  component from the tree root (=2026realistic/fx=,
+  =synthetic/2026realistic/fx=), so same-named folders under
+  different collections are addressed by path; a bare codename
+  (=fx=) matches at any depth and reports ambiguous, listing each
+  candidate's codename path. A ' > '-joined display-path token form
+  (="2026 Realistic > FX"=) was considered during implementation and
+  rejected as messy and untypable.
 
 * Out of scope
 

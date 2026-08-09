@@ -1,0 +1,20 @@
+:PROPERTIES:
+:ID: B4D5E6F7-A8B9-C0D1-E2F3-A4B5C6D7E8F9
+:END:
+#+title: ores.cpp.oresmd.parser
+#+description: query_params, parse_*, validate_*, to_uri branches.
+#+type: archetype
+#+output: projects/ores.marketdata/core/src/oresmd/oresmd_parser.cpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Template
+
+#+begin_src mustache :tangle oresmd_parser.cpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.parser.org. }}
+// oresmd_parser.cpp — generated from oresmd model specs.
+// See projects/ores.marketdata/modeling/oresmd/ for the source models.
+#+end_src

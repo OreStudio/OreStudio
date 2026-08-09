@@ -2095,19 +2095,44 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
 def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
     """Load an oresmd quote-type org model into a dict.
 
-    Parses frontmatter (=#+asset_class=, =#+authority=, =#+component=),
-    the =* Quote types= table, the =* Fields= table, the =* Reject keys=
-    table, and the test-case tables under =* Test cases=.
+    When the file is named ``model.org`` (the manifest), scans the directory
+    for all sibling ``*_quote_type.org`` files, loads each one, and returns
+    them as a combined ``{"oresmd_quote_types": [...]}`` dict — this is the
+    batch entry point that drives codegen for all asset classes at once.
 
-    Returns ``{"oresmd_quote_type": {...}}`` with the asset class's quote
-    types, entity field metadata, reject-key list, and test cases.
+    For individual spec files, returns ``{"oresmd_quote_type": {...}}`` with
+    the single asset class's data.
     """
-    text = Path(path).read_text(encoding="utf-8")
+    p = Path(path)
+
+    # --- Batch manifest (model.org) ---
+    if p.name == "model.org":
+        specs: list[dict[str, Any]] = []
+        for sibling in sorted(p.parent.glob("*_quote_type.org")):
+            spec = _load_single_oresmd_spec(sibling)
+            if spec:
+                specs.append(spec)
+        return {"oresmd_quote_types": specs}
+
+    # --- Single spec file ---
+    spec = _load_single_oresmd_spec(p)
+    if spec:
+        return {"oresmd_quote_type": spec}
+    return {}
+
+
+def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
+    """Load a single oresmd quote-type spec org file."""
+    text = path.read_text(encoding="utf-8")
     doc  = parse_org(text)
     fm   = doc.frontmatter
 
+    asset_class = fm.get("asset_class", "")
+    if not asset_class:
+        return None
+
     result: dict[str, Any] = {}
-    result["asset_class"] = fm.get("asset_class", "")
+    result["asset_class"] = asset_class
     result["authority"]   = fm.get("authority", "")
     result["component"]   = fm.get("component", "ores.marketdata")
 
@@ -2141,14 +2166,14 @@ def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
     tc_section = _section(doc.root, "Test cases")
     if tc_section:
         for child in tc_section.children:
-            kind = child.title.lower()  # "Projections", "Round-trip", "Rejection"
+            kind = child.title.lower()
             cases: list[dict[str, str]] = []
             for row in _parse_org_table_rows(child):
                 cases.append({k: v for k, v in row.items()})
             tests[kind] = cases
     result["test_cases"] = tests
 
-    return {"oresmd_quote_type": result}
+    return result
 
 
 def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:

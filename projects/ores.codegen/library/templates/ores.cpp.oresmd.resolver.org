@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: D6F7A8B9-C0D1-E2F3-A4B5-C6D7E8F9A0B1
+:END:
+#+title: ores.cpp.oresmd.resolver
+#+description: resolve_* functions and std::visit dispatch.
+#+type: archetype
+#+output: projects/ores.marketdata/core/src/oresmd/oresmd_resolver.cpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Template
+
+#+begin_src mustache :tangle oresmd_resolver.cpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.resolver.org. }}
+// oresmd_resolver.cpp — generated from oresmd model specs.
+#+end_src

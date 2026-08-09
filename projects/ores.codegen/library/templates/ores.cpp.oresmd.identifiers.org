@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 9B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E
+:END:
+#+title: ores.cpp.oresmd.identifiers
+#+description: Identifier and requirement structs with quote_type and vol fields.
+#+type: archetype
+#+output: projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_data_identifier.hpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+The market_data_identifier and market_data_requirement structs: one per
+asset class, with =quote_type= and =vol= fields. Existing structs that
+already have asset-class-specific fields beyond the oresmd common ones are
+reproduced exactly; the template generates the full file including the
+variant =using= declaration.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]].
+
+* Template
+
+#+begin_src mustache :tangle oresmd_identifiers.hpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.identifiers.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_IDENTIFIER_HPP
+#define ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_IDENTIFIER_HPP
+
+#include "ores.marketdata.api/domain/oresmd_enums.hpp"
+#include <optional>
+#include <string>
+#include <variant>
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief Volatility surface point: expiry, strike, and model subtype — the three dimensions
+ * shared across all 8 ORE volatility sub-families. Only meaningful when `type=vol`.
+ */
+struct volatility_surface_point final {
+    std::string expiry;
+    std::string strike;
+    volatility_model_subtype model_subtype = volatility_model_subtype::rate_lnvol;
+
+    bool operator==(const volatility_surface_point&) const = default;
+};
+
+{{#oresmd_quote_types}}
+struct {{asset_class}}_market_data_identifier final {
+{{#fields}}
+{{^generated}}
+    {{cpp_type}} {{name}};
+{{/generated}}
+{{/fields}}
+{{#has_quote_type}}
+    std::optional<domain::{{asset_class}}_quote_type> quote_type;
+{{/has_quote_type}}
+{{#has_point}}
+    std::optional<std::string> point;
+{{/has_point}}
+{{#has_vol}}
+    std::optional<volatility_surface_point> vol;
+{{/has_vol}}
+
+    bool operator==(const {{asset_class}}_market_data_identifier&) const = default;
+};
+
+{{/oresmd_quote_types}}
+using market_data_identifier = std::variant<
+{{#oresmd_quote_types}}
+    {{asset_class}}_market_data_identifier{{^-last}},{{/-last}}
+{{/oresmd_quote_types}}
+>;
+
+}  // namespace ores::marketdata::domain
+
+#endif
+#+end_src

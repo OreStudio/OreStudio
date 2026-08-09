@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: F8A9B0C1-D2E3-F4A5-B6C7-D8E9F0A1B2C3
+:END:
+#+title: ores.cpp.oresmd.projection_tests
+#+description: Quote-key projection Catch2 tests.
+#+type: archetype
+#+output: projects/ores.marketdata/core/tests/oresmd_oresmd_projections_tests.cpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Template
+
+#+begin_src mustache :tangle oresmd_projection_tests.cpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.projection_tests.org. }}
+// oresmd_projection_tests.cpp — generated from oresmd model specs.
+#+end_src

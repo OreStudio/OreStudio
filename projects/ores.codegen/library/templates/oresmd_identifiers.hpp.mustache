@@ -1,0 +1,54 @@
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.identifiers.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_IDENTIFIER_HPP
+#define ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_IDENTIFIER_HPP
+
+#include "ores.marketdata.api/domain/oresmd_enums.hpp"
+#include <optional>
+#include <string>
+#include <variant>
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief Volatility surface point: expiry, strike, and model subtype — the three dimensions
+ * shared across all 8 ORE volatility sub-families. Only meaningful when `type=vol`.
+ */
+struct volatility_surface_point final {
+    std::string expiry;
+    std::string strike;
+    volatility_model_subtype model_subtype = volatility_model_subtype::rate_lnvol;
+
+    bool operator==(const volatility_surface_point&) const = default;
+};
+
+{{#oresmd_quote_types}}
+struct {{asset_class}}_market_data_identifier final {
+{{#fields}}
+{{^generated}}
+    {{cpp_type}} {{name}};
+{{/generated}}
+{{/fields}}
+{{#has_quote_type}}
+    std::optional<domain::{{asset_class}}_quote_type> quote_type;
+{{/has_quote_type}}
+{{#has_point}}
+    std::optional<std::string> point;
+{{/has_point}}
+{{#has_vol}}
+    std::optional<volatility_surface_point> vol;
+{{/has_vol}}
+
+    bool operator==(const {{asset_class}}_market_data_identifier&) const = default;
+};
+
+{{/oresmd_quote_types}}
+using market_data_identifier = std::variant<
+{{#oresmd_quote_types}}
+    {{asset_class}}_market_data_identifier{{^-last}},{{/-last}}
+{{/oresmd_quote_types}}
+>;
+
+}  // namespace ores::marketdata::domain
+
+#endif

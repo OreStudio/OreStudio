@@ -50,7 +50,7 @@ echo "  cwd : $(pwd)"
 if [[ "$ROLE" == "compute" ]]; then
     compute_env="$REMOTE_ROOT/compute/compute.env"
     if [[ ! -f "$compute_env" ]]; then
-        echo "Error: $compute_env not found — run: compass env deploy $ORES_REMOTE_HOST --role compute" >&2
+        echo "Error: $compute_env not found — run: compass env deploy <host> --role compute" >&2
         exit 1
     fi
     # shellcheck disable=SC1091

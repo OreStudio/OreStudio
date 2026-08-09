@@ -1,0 +1,246 @@
+:PROPERTIES:
+:ID: 18D8CB4F-E926-49E8-83C3-7C8418861B33
+:END:
+#+title: NATS certificates: generation, TLS, layout, and container deployment
+#+description: End-to-end reference for ORE Studio's NATS mTLS certificates: how compass nats certs generates the internal CA, server cert, and per-service client certs (algorithms, validity, SANs); the TLS versions in play; how the server and clients use the certs; how services locate them (CLI trio vs env vars, shared-domain fallback exclusion); and how certs reach containers (podman volume staging, the bind-mount quirk, both deploy roles).
+#+type: knowledge
+#+level: cross
+#+filetags: :nats:certs:tls:architecture:security:knowledge:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Summary
+
+All NATS traffic in ORE Studio runs over mutual TLS. A private internal
+CA, an =EC P-256= (prime256v1) key pair, self-signs itself for 365 days
+and issues two kinds of 90-day leaves: one certificate for the NATS
+server itself (SAN =localhost= + the checkout hostname/IP) and one
+mTLS *client* certificate per service, all under
+[[proj:build/keys/nats][=build/keys/nats/=]]. =compass nats certs= (a.k.a. =nats_certs.py=) is the
+single generator, idempotent by default; =compass env configure= calls
+it automatically. The NATS server presents =nats-server.crt= and
+requires a client cert signed by =ca.crt= (=verify: true= in the
+rendered server config); services locate their certs via the
+=--nats-tls-ca/cert/key= CLI trio (deliberately *not* part of the
+shared-domain env fallback) or, for the Qt client and shell, the
+=ORES_NATS_TLS_*= environment variables. No TLS version is pinned
+anywhere: the Go nats-server (v2.14.3) and cnats/OpenSSL defaults
+negotiate TLS 1.2–1.3. In containers, client certs are staged into a
+podman-managed volume and mounted read-only — a workaround for the
+cnats/OpenSSL bind-mount quirk — while the NATS server's config and
+keys use plain bind mounts, which the Go binary handles fine.
+
+* Detail
+
+** Certificate inventory (=build/keys/nats/=)
+
+All NATS material lives under =build/keys/nats/= (gitignored; carries
+private keys):
+
+#+begin_example
+build/keys/nats/
+├── ca.key  ca.crt            # internal CA: EC P-256, self-signed, 365 days
+├── nats-server.key  nats-server.crt   # broker leaf: EC P-256, 90 days, SANs
+└── <service>.key  <service>.crt       # one mTLS client leaf per service
+     # ores.iam.service, ores.refdata.service, ..., ores.qt.client,
+     # ores.compute.wrapper, ores.analytics.service  (20 services)
+#+end_example
+
+The service list is the =_SERVICES= constant in
+[[proj:projects/ores.compass/src/nats_certs.py][=projects/ores.compass/src/nats_certs.py=]]. It is still hand-maintained
+(it mirrors the [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][service registry]] but is not generated from it);
+adding a service means adding its name there and re-running
+=compass nats certs=. The [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] doc flags driving
+certs from the registry as a known automation gap.
+
+** Generation (=compass nats certs=)
+
+The generator is =nats_certs.py=, exposed standalone as
+=compass nats certs= and called automatically by
+=compass env configure= ([[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][compass env configure]] → =env_init.py=
+invokes =nats_certs.generate()= before writing =.env=). Requires
+=openssl= in =PATH=.
+
+*Settings in effect* (all from =nats_certs.py=):
+
+| Material | Key | Subject | Validity | SAN |
+|----------+-----+---------+----------+-----|
+| CA | EC =prime256v1= (P-256), self-signed =x509= | =/CN=ores-nats-ca/O=ORE Studio= | 365 d | — |
+| NATS server leaf | EC =prime256v1= | =/CN=nats-server/O=ORE Studio= | 90 d | =DNS:localhost=, =DNS:<hostname>= or =IP:<hostname>=, =IP:127.0.0.1= |
+| Service client leaf | EC =prime256v1= | =/CN=<service>/O=ORE Studio= | 90 d | — |
+
+- *Curve choice*: =openssl ecparam -name prime256v1 -genkey -noout= —
+  EC P-256 everywhere; no RSA certs (the only RSA material in the
+  build tree is the IAM JWT signing key, see below).
+- *Server SANs*: =--hostname= (default =localhost=) is added to the
+  server certificate. The extra entry is typed =DNS:= normally, but
+  =IP:= when the argument parses as an IP address — TLS clients
+  verifying a connection to an IP target check the SAN's IP entries
+  (RFC 6125/2818), and a DNS-typed entry containing dotted-decimal
+  text fails that check with a generic SSL error.
+- *Serial file*: =ca.srl= is created by =openssl x509 -CAcreateserial=
+  during leaf signing and deleted when generation finishes.
+- *Intermediates*: there are none — leaves are signed directly by the
+  CA.
+
+*Idempotency and rotation*: generation skips any existing =*.key=
+(presence of the key is the gate), so re-running is a no-op.
+=--force= regenerates everything (use in CI with ephemeral keys, or to
+rotate); =--hostname <name>= adds a SAN to the server cert. Because
+leaves are 90-day certificates, rotation is a periodic concern; the
+365-day CA is the real clock everything chains to. After
+regeneration, the running NATS server and all services must be
+restarted to pick up new certs (=compass env deploy <host>= re-runs
+idempotently and recreates the containers).
+
+** IAM JWT signing key (not a certificate)
+
+Separate from the NATS PKI, =compass env configure= also generates
+[[proj:build/keys/iam-rsa-private.pem][=build/keys/iam-rsa-private.pem=]] (=openssl genrsa 2048=, chmod =600=,
+preset-independent). It signs the JWTs services mint for
+service-to-service authentication, and is consumed in containers only
+by =ores.iam.service= (passed via =--env
+ORES_IAM_SERVICE_JWT_PRIVATE_KEY=$(cat <pem>)= in
+[[proj:docker/remote-run.sh][=docker/remote-run.sh=]]; the value is a single-line PEM string). See
+[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] for the JWT side of the model.
+
+** TLS versions
+
+Nothing in ORE Studio pins a TLS version — not in the NATS server
+config, not in the C++ client, not in the container scripts. The
+negotiated range comes entirely from the two stacks' defaults:
+
+- *Server*: the NATS broker is the Go =nats-server= v2.14.3 binary
+  ([[proj:docker/nats.Dockerfile][=docker/nats.Dockerfile=]], statically linked, runs in a =scratch=
+  image). Go's =crypto/tls= server default is a minimum of TLS 1.2
+  (since Go 1.18) and negotiates TLS 1.3 when the client supports it.
+- *Client*: services connect through cnats (the NATS C client) over
+  OpenSSL. =client.cpp= only loads the CA and the certificate chain
+  (=natsOptions_LoadCATrustedCertificates= /
+  =natsOptions_LoadCertificatesChain=) — no version options are set.
+  The effective floor is the system OpenSSL configuration (Debian
+  bookworm's =openssl.cnf= sets =MinProtocol = TLSv1.2=).
+
+The practical outcome is that all connections negotiate TLS 1.2 or
+1.3. To verify against a live broker:
+
+#+begin_src sh
+# TLS 1.1 must be refused, TLS 1.2 accepted:
+openssl s_client -connect localhost:20405 -tls1_1 </dev/null   # fails
+openssl s_client -connect localhost:20405 -tls1_2 </dev/null   # succeeds
+#+end_src
+
+(The port is per-environment, from the =port:= line of
+=build/config/nats-<label>.conf=.)
+
+** How the NATS server uses the certificates
+
+=compass nats init= renders
+[[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into =build/config/nats-<label>.conf=
+with per-environment values; the TLS block is:
+
+#+begin_example
+tls {
+  cert_file: "<checkout>/build/keys/nats/nats-server.crt"
+  key_file:  "<checkout>/build/keys/nats/nats-server.key"
+  ca_file:   "<checkout>/build/keys/nats/ca.crt"
+  verify:    true   # require client certificates (mTLS)
+  timeout:   5
+}
+#+end_example
+
+=verify: true= is what makes the setup mutual: the server presents
+=nats-server.crt= and *requires* every connecting client to present a
+certificate signed by =ca.crt=. The server's config and certs are
+consumed on the host (or from the container's bind mounts) — the Go
+binary reads them as plain files.
+
+** How services locate their certificates
+
+- *Domain services* (the C++ =ores.<x>.service= binaries): the TLS
+  trio is a command-line option group defined in
+  [[proj:projects/ores.nats/src/config/nats_configuration.cpp][=ores.nats/src/config/nats_configuration.cpp=]]: =--nats-tls-ca=,
+  =--nats-tls-cert=, =--nats-tls-key= (env names =ORES_NATS_TLS_CA=,
+  =ORES_NATS_TLS_CERT=, =ORES_NATS_TLS_KEY=). At connect time,
+  =client.cpp= first verifies all three files exist (a clear
+  diagnostic instead of a cryptic handshake error), then loads CA +
+  chain via cnats and logs =mTLS enabled=; a missing client cert
+  trips the mTLS gate and the connection is refused.
+- *Deliberate fallback exclusion*: the trio is *not* in the
+  shared-domain env fallback ([[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format]] documents this
+  decision and its regression tests
+  =register_shared_domain_does_not_resolve_tls_ca=): the cert/key
+  paths are genuinely per-service, and letting only the CA resolve
+  from a shared =ORES_NATS_CA= would leave cert/key empty and trip the
+  mTLS gate. Per-app =ORES_<APP>_NATS_TLS_*= mirrors win where present;
+  the container runners pass the trio explicitly on the command line.
+- *Qt desktop client*: reads =ORES_NATS_TLS_CA/CERT/KEY= from =.env=,
+  where =env_init.py= points them at =ca.crt= and the
+  =ores.qt.client.crt/.key= pair.
+- *=ores.shell=*: keeps its own =ORES_SHELL_NATS_TLS_*= mirror block in
+  =.env= (same trio, =ores.qt.client= certs), read via its app-prefix
+  mapper.
+
+** How certificates reach containers
+
+Two transport paths exist, both driven by
+=compass env deploy <host>= ([[id:98D8986A-3EF0-4BE3-AFB7-441B81ACA94C][deploy recipe]]): local deployment
+(=docker/run-pod.sh=) and remote deployment
+(=docker/remote-run.sh=). The mechanism is identical in both.
+
+*Runtime role*:
+
+1. =env_deploy.py= scp's =build/keys/nats/= to
+   =$REMOTE_ROOT/build/keys/= on the remote (removing the previous
+   remote copy first so =scp -r= doesn't nest), plus the IAM PEM and a
+   path-rewritten copy of the NATS config.
+2. =remote-run.sh= stages the client certs into a podman-managed
+   volume: =podman volume create ores-nats-client-certs-<label>=,
+   =cp -a= the keys into the volume's mountpoint, then
+   =chmod -R u+rwX,go-rwx= (owner-only: the services container reads
+   the volume as the same uid, =--user $(id -u):$(id -g)=).
+3. Each service container mounts the volume read-only
+   (= -v "$certs_volume:$keys_dir:ro"=) and receives the CLI trio
+   pointing into that path. The NATS *sidecar* instead gets plain bind
+   mounts of the config and the keys directory (see below).
+
+*Compute role*: the wrapper's client certs come from the *serving*
+environment's checkout (the =ORES_COMPUTE_NATS_TLS_CA/CERT/KEY=
+profile keys, local paths in that checkout); =env_deploy.py= copies
+them into the staging tree, scp's them to =$REMOTE_ROOT/compute/keys/=,
+and =remote-run.sh= volume-stages them exactly like the runtime role.
+The wrapper resolves them via the app-prefixed
+=ORES_COMPUTE_WRAPPER_NATS_TLS_*= block in =compute.env=, with paths
+rewritten to =$REMOTE_ROOT/compute/keys/<basename>=.
+
+*The bind-mount quirk* (why the volume exists): documented in the
+header of =docker/run-pod.sh= — cnats/OpenSSL *silently fails to
+present a client certificate over a bind mount*, even though the
+bytes, path, and permissions are correct. Staging through a podman
+volume works, and so does baking the cert into the image; a bind
+mount does not. The Go nats-server binary in the sidecar has no such
+problem, which is why the server's config + keys are bind-mounted
+directly while every C++ service gets the volume.
+
+** Rotation and re-deploy
+
+- Regenerate: =compass nats certs --force= (or
+  =--hostname <name>= for a new SAN without touching the rest).
+- Re-deploy: =compass env deploy <host>= re-runs idempotently — the
+  remote keys directory is removed and re-scp'd, files are
+  overwritten, the certs volume is recreated, and the containers are
+  =rm -f= before recreate. No manual cleanup required.
+- Tear down: =compass env deploy <host> --stop=; with =--purge= the
+  staged certs volume is dropped as well.
+
+* See also
+
+- [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — the command recipe (=--force=, =--hostname=, adding services).
+- [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — =compass nats init=, the config + JetStream store side.
+- [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env configure=, which calls cert generation automatically.
+- [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]] — the end-to-end init flow.
+- [[id:98D8986A-3EF0-4BE3-AFB7-441B81ACA94C][How do I deploy the service runtime to a remote WSL host?]] — the deploy recipe covering both roles.
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and its mTLS setup.
+- [[id:8883F219-5D1F-4C29-B3F9-47D1622C9248][NATS wire format: payload, envelope, and multi-protocol support]] — the shared-domain fallback and why the TLS trio is excluded from it.
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — the per-service layer checklist (certs, IAM, registry gaps).
+- [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — JWT/signing-key side of the authentication model.

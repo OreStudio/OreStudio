@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 3E8D81D7-35D1-420F-9A0C-CE45D51C5C0E
+:END:
+#+title: Task: FOMC bootstrap segment: pillars SPOT->1F..nF->split under one config
+#+description: Implement the decided FOMC segment (story Decision D3): bootstrap the SOFR OIS short end off consecutive FOMC-dated pillars as one configuration of the existing engine -- pillars SPOT->1F, 1F->2F, ..., nF->split under ir_curve_bootstrap_configs, interpolation FLAT_FORWARD_THEN_LOG_LINEAR, split_tenor_code at the boundary, raw-grid quotes at the FOMC point ids.
+#+type: task
+#+level: s1
+#+filetags: :fomc-dated-ois-short-end:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bootstrap the SOFR OIS short end off consecutive FOMC-meeting-dated pillars with flat-forward (step) interpolation, transitioning to a continuous method at the long-end swap pillars, split at a defined tenor -- as one configuration of the existing curve_bootstrap_engine and config schema, not special-cased engine code (story * Decisions D3).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- ir_curve_bootstrap_pillars rows SPOT->1F, 1F->2F, ..., nF->split under one ir_curve_bootstrap_configs with interpolation_method FLAT_FORWARD_THEN_LOG_LINEAR and split_tenor_code marking the boundary.
+- The IR Rates synthetic feed publishes raw-grid observations at the FOMC point ids (1F..nF), so curve_republish_resolver's point-id lookup succeeds.
+- The bootstrapped short end is flat (step function) between consecutive FOMC pillars and continuous beyond the split tenor; the FOMC-to-FOMC fixing schedule falls out of the pillar order.
+- Provable as one configuration of the existing engine -- no engine code change, no schema change beyond the event-store and resolution tasks.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: A496DFCF-5952-4597-8FCF-9B54AFCED7FB
+:END:
+#+title: Task: Unified tenor resolution: tenor_schedules, SCHEDULE_STEP resolver, RATES_SPOT_FOMC, 1F..nF
+#+description: Implement the decided unified resolution model (story Decision D2): a tenor resolves as anchor + calendar offset + n steps along a named schedule axis. tenor_schedules vocabulary (ROLL_QUARTER closed-form, FOMC_MEETING event-lookup), SCHEDULE_STEP branch in tenor_resolution.cpp, RATES_SPOT_FOMC convention with 1F..nF tenors, CREDIT_CDS_IMM migrated onto the schedule model.
+#+type: task
+#+level: s1
+#+filetags: :fomc-dated-ois-short-end:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the unified tenor resolution model from the FOMC analysis (story * Decisions D2): a tenor resolves as anchor + a calendar offset + n steps along a named schedule axis. Calendar arithmetic (ANCHOR_OFFSET) stays as-is; a new SCHEDULE_STEP algorithm walks a named schedule from the tenor_schedules vocabulary -- ROLL_QUARTER (closed-form IMM rule, code-side) and FOMC_MEETING (event-lookup into US.FOMC / central_bank_meeting events). IMM and FOMC become the same mechanism; the old IMM_ROLL algorithm row is superseded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- tenor_schedules entity (ores.refdata, codegen'd): code, name, description, display_order, schedule_source, calendar_code, diary_entry_type; seeded ROLL_QUARTER (CLOSED_FORM) and FOMC_MEETING (EVENT_LOOKUP on US.FOMC / central_bank_meeting).
+- tenor_resolution_algorithms gains SCHEDULE_STEP; tenor_resolution.cpp implements walk(anchor + calendar offset, schedule, steps) for both schedule sources; the old IMM_ROLL / ROLL_QUARTER logic_error paths are gone.
+- tenor_convention_resolutions gains nullable schedule_code and schedule_step_count; offset columns remain the calendar-axis offset.
+- RATES_SPOT_FOMC convention (measured_from SPOT, algorithm SCHEDULE_STEP, schedule FOMC_MEETING) with tenors 1F..nF (kind SPECIAL, unit NONE, multiplier n) and resolution rows schedule_step_count = n, resolving to the n-th meeting on-or-after spot.
+- CREDIT_CDS_IMM migrates to (SCHEDULE_STEP, ROLL_QUARTER) with offset YEAR x 1 and 1 schedule step ('1Y 1RQ'); the IMM_ROLL algorithm row is removed from populate once nothing references it; the IMM_ROLL anchor (measured_from) stays.
+- Unit tests cover both schedules (closed-form roll stepping and event lookup) plus the migrated CDS convention.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

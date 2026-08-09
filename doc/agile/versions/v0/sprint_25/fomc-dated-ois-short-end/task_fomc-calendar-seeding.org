@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 2D202622-7400-43AE-8A66-AE1E3EF788F5
+:END:
+#+title: Task: Seed the 2025-2027 FOMC meeting dates from federalreserve.gov
+#+description: Implement the decided seeding (story Decision D4): a real window of FOMC meeting dates as central_bank_meeting calendar_event rows on US.FOMC, transcribed from the Fed's published calendar, each row carrying source='federalreserve.gov'.
+#+type: task
+#+level: s1
+#+filetags: :fomc-dated-ois-short-end:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Seed a real 2025-2027 window of FOMC meeting dates as calendar_event rows (diary_entry_type central_bank_meeting) on the US.FOMC calendar, transcribed from the Fed's published meeting calendar. No formal feed exists -- transcription with the citable source, per the Calendar Events doc survey.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- The 2025, 2026 and 2027 FOMC meeting dates are entered as calendar_event rows on US.FOMC with diary_entry_type central_bank_meeting.
+- Every row carries source='federalreserve.gov'.
+- The per-year count matches the Fed's published schedule (8 regularly scheduled meetings per year); each transcription is cross-checked against federalreserve.gov/monetarypolicy/fomccalendars.htm.
+- The seeded dates drive the FOMC_MEETING schedule lookup from the unified-tenor-resolution task (2F resolves to the second meeting on-or-after spot, etc.).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

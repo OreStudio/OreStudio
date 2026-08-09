@@ -46,9 +46,9 @@ decision lands in =* Decisions= below when the analysis completes.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Analysis task closed (2026-08-09): model decision D1–D4 landed, domain docs reviewed and committed, plan impact assessed. |
+| Now           | Analysis task closed (2026-08-09): model decision D1–D4 landed, domain docs reviewed and committed, plan impact assessed. Implementation re-scoped into four BACKLOG tasks (calendar-event-store, unified-tenor-resolution, fomc-calendar-seeding, fomc-bootstrap-segment) in the plan's dependency order. |
 | Waiting on    | Nothing.                               |
-| Next          | Re-scope the implementation task from the plan saved in the analysis task (D1 → D2 → D4 → D3). |
+| Next          | Start the calendar-event-store task (D1). |
 | Last touched  | 2026-08-09                               |
 
 * Analysis
@@ -246,7 +246,11 @@ and the raw grid carrying quotes at the FOMC point ids.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D547A088-310F-427B-9C32-A526110E706F][FOMC/IMM/tenor resolution + calendar events: model analysis and decision]] | STARTED | 2026-08-09 | | Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs. |
+| [[id:D547A088-310F-427B-9C32-A526110E706F][FOMC/IMM/tenor resolution + calendar events: model analysis and decision]] | DONE | 2026-08-09 | 2026-08-09 | Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs. |
+| [[id:2DBA9280-4C63-426B-9FD7-87BA0D92C7AE][Calendar event store: calendar_event + diary_entry_types + US.FOMC calendar]] | BACKLOG | | | Implement the decided event-store model (story Decision D1): one calendar_event table with a diary_entry_type vocabulary -- no table per calendar or per type. US.FOMC becomes a row in calendars; currency_calendars links USD to it. |
+| [[id:A496DFCF-5952-4597-8FCF-9B54AFCED7FB][Unified tenor resolution: tenor_schedules, SCHEDULE_STEP resolver, RATES_SPOT_FOMC, 1F..nF]] | BACKLOG | | | Implement the decided unified resolution model (story Decision D2): a tenor resolves as anchor + calendar offset + n steps along a named schedule axis. tenor_schedules vocabulary (ROLL_QUARTER closed-form, FOMC_MEETING event-lookup), SCHEDULE_STEP branch in tenor_resolution.cpp, RATES_SPOT_FOMC convention with 1F..nF tenors, CREDIT_CDS_IMM migrated onto the schedule model. |
+| [[id:2D202622-7400-43AE-8A66-AE1E3EF788F5][Seed the 2025-2027 FOMC meeting dates from federalreserve.gov]] | BACKLOG | | | Implement the decided seeding (story Decision D4): a real window of FOMC meeting dates as central_bank_meeting calendar_event rows on US.FOMC, transcribed from the Fed's published calendar, each row carrying source='federalreserve.gov'. |
+| [[id:3E8D81D7-35D1-420F-9A0C-CE45D51C5C0E][FOMC bootstrap segment: pillars SPOT->1F..nF->split under one config]] | BACKLOG | | | Implement the decided FOMC segment (story Decision D3): bootstrap the SOFR OIS short end off consecutive FOMC-dated pillars as one configuration of the existing engine -- pillars SPOT->1F, 1F->2F, ..., nF->split under ir_curve_bootstrap_configs, interpolation FLAT_FORWARD_THEN_LOG_LINEAR, split_tenor_code at the boundary, raw-grid quotes at the FOMC point ids. |
 
 * Decisions
 

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 2DBA9280-4C63-426B-9FD7-87BA0D92C7AE
+:END:
+#+title: Task: Calendar event store: calendar_event + diary_entry_types + US.FOMC calendar
+#+description: Implement the decided event-store model (story Decision D1): one calendar_event table with a diary_entry_type vocabulary -- no table per calendar or per type. US.FOMC becomes a row in calendars; currency_calendars links USD to it.
+#+type: task
+#+level: s1
+#+filetags: :fomc-dated-ois-short-end:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the decided event-store model from the FOMC analysis (story * Decisions D1): a single calendar_event table carrying typed diary entries, anchored to a calendar -- never a table per calendar or per type. The FOMC calendar is a row in the existing calendars table (US.FOMC, calendar_type central_bank_meeting, country_code US, source federalreserve.gov, is_editable true), and currency_calendars links USD to it. Holidays keep their existing machinery untouched.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- calendar_event entity codegen'd in ores.refdata (bitemporal, sibling of calendar_rules/calendar_exceptions): id, calendar_code FK to calendars, event_date, diary_entry_type FK to diary_entry_types, name, description nullable, source nullable, standard audit/temporal columns.
+- diary_entry_types vocabulary seeded: holiday, central_bank_meeting, data_release, other -- open-ended.
+- US.FOMC row in calendars (calendar_type central_bank_meeting, country_code US, source federalreserve.gov, is_editable true); currency_calendars links USD <-> US.FOMC.
+- Holiday machinery (calendar_rules, calendar_exceptions, calendar_date) unchanged.
+- The FOMC calendar's meeting dates are entered as calendar_event rows (diary_entry_type central_bank_meeting) -- data on the store, not a table per calendar.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

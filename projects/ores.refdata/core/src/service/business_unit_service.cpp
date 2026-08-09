@@ -130,4 +130,11 @@ business_unit_service::get_business_unit_history(const boost::uuids::uuid& id) {
     return repo_.read_all(ctx_, boost::uuids::to_string(id));
 }
 
+std::vector<ores::utility::domain::hierarchy_node>
+business_unit_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for business_unit root: " << root_id;
+    auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
+    return ores::utility::domain::build_tree(rows);
+}
+
 }

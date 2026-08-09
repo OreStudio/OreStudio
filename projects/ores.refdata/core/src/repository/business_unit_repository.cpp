@@ -23,6 +23,8 @@
 #include "ores.refdata.api/domain/business_unit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/business_unit_entity.hpp"
 #include "ores.refdata.core/repository/business_unit_mapper.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
@@ -190,6 +192,38 @@ void business_unit_repository::remove(context ctx, const std::vector<std::string
     const auto query = sqlgen::delete_from<business_unit_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing business units.");
+}
+
+std::vector<ores::utility::domain::hierarchy_flat_row> business_unit_repository::get_hierarchy(
+    context ctx, const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading business_unit hierarchy. Root: " << root_id
+                               << " from_root: " << from_root;
+
+    const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
+    const auto root_str = boost::uuids::to_string(root_id);
+    const std::string sql = "SELECT * FROM ores_refdata_business_units_hierarchy_fn('" +
+                            tenant_str + "'::uuid, '" + root_str + "'::uuid, " +
+                            (from_root ? "true" : "false") + ")";
+
+    const auto rows =
+        execute_raw_multi_column_query(ctx, sql, lg(), "Reading business_unit hierarchy");
+
+    std::vector<ores::utility::domain::hierarchy_flat_row> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() >= 3 && row[0]) {
+            ores::utility::domain::hierarchy_flat_row r;
+            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+            if (row[1])
+                r.parent_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+            if (row[2])
+                r.name = *row[2];
+            result.push_back(std::move(r));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " business_unit hierarchy rows.";
+    return result;
 }
 
 

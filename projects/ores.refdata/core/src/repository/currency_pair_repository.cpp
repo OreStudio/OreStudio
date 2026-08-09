@@ -120,6 +120,7 @@ std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
     return entities.front();
 }
 
+
 void currency_pair_repository::remove(context ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

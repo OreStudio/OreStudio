@@ -90,6 +90,7 @@ public:
     std::optional<domain::currency_pair_convention>
     read_at_version(context ctx, const std::string& pair_code, std::uint32_t version);
 
+
     /**
      * @brief Reads latest currency pair conventions with pagination support.
      * @param ctx Repository context with database connection

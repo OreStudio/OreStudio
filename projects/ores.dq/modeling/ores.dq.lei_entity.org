@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: C9B53884-25FA-4D13-AE8A-6469B1854474
-:profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.qt.detail_dialog_header.enabled: false
 :ores.cpp.qt.detail_dialog_impl.enabled: false
@@ -28,6 +27,7 @@ GLEIF LEI entity master data from LEI2 golden copy files
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   simple-lookup, artefact-staging-only
 :END:
 
 * Columns

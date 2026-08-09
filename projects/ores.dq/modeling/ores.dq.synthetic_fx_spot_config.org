@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 3F7C4A1E-2B6D-4E9A-8C5F-1D6E9A2B7C4F
-:profile: uuid-surrogate-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.synthetic_fx_spot_config
@@ -25,6 +24,7 @@ Synthetic FX Spot Config artefacts - denormalized parent+child FX generation con
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   uuid-surrogate-lookup, artefact-staging-only
 :END:
 
 

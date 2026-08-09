@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: BBB49AAA-E476-435B-88CF-CC252B76655C
-:profile: tenant-scoped-junction
 :ores.cpp.nats-handler.enabled: false
 :ores.cpp.nats-sub-registrar.enabled: false
 :ores.cpp.protocol.enabled: false
@@ -38,6 +37,11 @@ NATS/protocol/service are disabled above: badge lookups already go
 through the hand-maintained =badge_handler=/=badge_service= (see
 =registrar.cpp='s own comment), so the generic generated messaging
 stack for this junction would be dead code alongside it.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:

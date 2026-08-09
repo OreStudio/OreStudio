@@ -8,11 +8,11 @@
 #+filetags: :refactor_codegen_cpp:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-codegen-cpp
-#+pr: 1918
+#+pr: 1931
 #+blocked_on: C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A
 #+blocked_since:
 #+created: 2026-05-31
-#+updated: 2026-06-12
+#+updated: 2026-08-09
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ producing only cosmetic / additive diffs.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | [[id:C8A4D7F1-2E6B-4C3A-8F9D-5B1E3C8D2F7A][Apply safe drift to refdata-cpp (pilot)]] |
-| Next         | Start once refdata pattern is merged.  |
-| Last touched | 2026-05-31                             |
+| Next         | Nothing. |
+| Last touched | 2026-08-09                             |
 
 * Acceptance
 
@@ -60,6 +60,7 @@ producing only cosmetic / additive diffs.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1931][#1931]] | [codegen,reporting,refdata] Refactor codegen: profiles, JSON decommission, reporting composite, eventing tests |
 | [[https://github.com/OreStudio/OreStudio/pull/1918][#1918]] | [reporting,qt,codegen] Apply safe drift to reporting-cpp -- follow-up fixes |
 | [[https://github.com/OreStudio/OreStudio/pull/1904][#1904]] | [reporting,codegen] Apply safe drift to reporting-cpp |
 
@@ -67,6 +68,24 @@ producing only cosmetic / additive diffs.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Org/mustache drift: parent_required_fks blocks missing from the org source; a re-tangle would silently drop grandparent seeding | ores.cpp.eventing-integration-test.nats_integration_test.org | Fixed | Both blocks ported into the org; re-tangled mustache is byte-identical to the committed one; the CI tangle-drift check passes locally |
+| 2 | Duplicate include/comment blocks when two FKs share a parent table (currency_pair base/quote -> currency) | cpp_nats_integration_test.cpp.mustache | Declined | Cosmetic (header guards); per-column blocks document each FK leg; keep the round minimal; follow-up candidate |
 
 * Result
+
+- Reporting declared composite: =#+component_kind: composite= added to
+  =reporting/modeling/component_overview.org=; the flat-mode scaffolding
+  byproducts (untracked root =CMakeLists.txt=, stub domain) removed.
+  Regeneration is now zero-diff and drift-checked by CI.
+- Profile binding unified: =:profile:= read from =* Flags=; the
+  file-level =:PROPERTIES:= workaround reverted on the reporting entities.
+- =business_unit= gained the self-referencing-hierarchy profile;
+  eventing-test generators seed mandatory FK parents (including
+  transitive grand-parents via =parent_required_fks=) and fix nil-uuid
+  generation, so every eventing integration test passes standalone.
+- Org/mustache tangle kept in sync: the =parent_required_fks= blocks live
+  in the literate org; the tangled mustache is byte-identical, and the
+  CI drift job now covers reporting.
+- Acceptance met: full build passes; =ctest= 71/71 (including the 58 new
+  refdata eventing integration tests); codegen pytest 135; PR #1931
+  reviewed, all CI checks green, merged.

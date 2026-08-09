@@ -64,7 +64,6 @@ def _fixture_component(tmp_path):
     _write_org(modeling_dir / "ores.fixture.module.org", "ores.codegen.module")
     return Component(
         name="fixture",
-        models_dir="",
         modeling_dir=str(modeling_dir.relative_to(tmp_path)),
         exclude_org_types=("junction",),
     )

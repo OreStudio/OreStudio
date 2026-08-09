@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 7CE834E6-4E85-4C8F-BCD0-549819D1F648
-:profile: uuid-surrogate-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.dq.report_definition
@@ -26,6 +25,7 @@ analytics bundle
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   uuid-surrogate-lookup, artefact-staging-only
 :END:
 
 * Columns

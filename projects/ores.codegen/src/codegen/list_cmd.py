@@ -32,8 +32,8 @@ def cmd_list(args: Any, base_dir: Path) -> int:
         models = discover_models(comp, project_root)
         if not models:
             log.error(
-                "No models found for component %r (looked in %s and %s)",
-                comp.name, comp.models_dir or "(no models_dir)",
+                "No models found for component %r (modeling_dir: %s)",
+                comp.name,
                 comp.modeling_dir or "(no modeling dir)",
             )
             return 1

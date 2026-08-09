@@ -24,7 +24,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <optional>
 #include <vector>
 
@@ -33,8 +32,7 @@ namespace ores::reporting::messaging {
 std::vector<ores::nats::service::subscription>
 register_report_instance_handlers(ores::nats::service::client& nats,
                                   ores::database::context ctx,
-                                  std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                                  ores::workflow::service::fsm_state_map instance_states);
+                                  std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 } // namespace ores::reporting::messaging
 

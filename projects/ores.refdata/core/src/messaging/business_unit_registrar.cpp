@@ -48,6 +48,10 @@ register_business_unit_handlers(ores::nats::service::client& nats,
         get_business_unit_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->history(std::move(msg));
         }));
+    subs.push_back(
+        nats.queue_subscribe(get_business_unit_hierarchy_request::nats_subject,
+                             queue_group,
+                             [h](ores::nats::message msg) { h->hierarchy(std::move(msg)); }));
     return subs;
 }
 

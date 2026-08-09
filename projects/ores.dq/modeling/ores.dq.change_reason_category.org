@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: CC7A9D6D-100B-4217-9233-976B62178BE5
-:profile: simple-lookup
 :END:
 #+title: ores.dq.change_reason_category
 #+description: Codegen entity model for the dq =change_reason_category= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -26,6 +25,7 @@ authored directly (not mirrored from an external source).
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   simple-lookup
 :END:
 
 * Columns

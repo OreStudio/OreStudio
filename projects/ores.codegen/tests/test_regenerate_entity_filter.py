@@ -36,7 +36,7 @@ def fixture_component(tmp_path, monkeypatch):
     _write_org(modeling_dir / "ores.fixture.rounding_type.org", "ores.codegen.entity")
     _write_org(modeling_dir / "ores.fixture.monetary_nature.org", "ores.codegen.entity")
     _write_org(modeling_dir / "ores.fixture.currency_market_tier.org", "ores.codegen.entity")
-    comp = Component(name="fixture", models_dir="", modeling_dir=str(modeling_dir.relative_to(tmp_path)))
+    comp = Component(name="fixture", modeling_dir=str(modeling_dir.relative_to(tmp_path)))
     monkeypatch.setattr("codegen.manifest.get_component", lambda name: comp)
     return tmp_path
 

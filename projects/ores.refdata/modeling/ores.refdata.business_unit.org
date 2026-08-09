@@ -11,7 +11,7 @@
 #+entity_plural: business_units
 #+entity_title: Business Unit
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-09
 
 Represents internal organizational units (e.g., desks, departments, branches).
 Supports hierarchical structure via self-referencing parent_business_unit_id.
@@ -19,10 +19,14 @@ Each unit belongs to a top-level legal entity (party).
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     refdata
-:has_tenant_id: true
+:schema:               public
+:product:              ores
+:component:            refdata
+:has_tenant_id:        true
+:has_parent_id:        true
+:parent_id_column:     parent_business_unit_id
+:hierarchy_name_field: unit_name
+:profile:   self-referencing-hierarchy
 :END:
 
 * Columns

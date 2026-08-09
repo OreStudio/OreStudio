@@ -1,5 +1,10 @@
 :PROPERTIES:
 :ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
+:ores.cpp.qt.detail_dialog_header.enabled: false
+:ores.cpp.qt.detail_dialog_impl.enabled: false
+:ores.cpp.qt.detail_dialog_ui.enabled: false
+:ores.cpp.qt.controller_header.enabled: false
+:ores.cpp.qt.controller_impl.enabled: false
 :END:
 #+title: ores.refdata.ir_curve_bootstrap_config
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.
@@ -42,6 +47,15 @@ must point at a =FUNDING= config (strict two-tier, no chaining --
 Multi-Curve Construction names basis-linked/cyclic Projection
 dependencies as an explicit out-of-scope modelling gap, not something
 this design should silently permit), and must not reference itself.
+
+=source_series_id= (the raw grid this config bootstraps from) and
+=output_series_id= (the published curve it writes to) must differ.
+Without this, =curve_republish_service='s first-publish step would
+permanently reclassify the raw, externally-fed input series as this
+config's own =IR_CURVE_BOOTSTRAP=-derived output, and every
+subsequent bootstrapped observation would be written into the exact
+series id the raw feed keeps writing ticks into -- silently
+corrupting the raw data rather than failing loudly.
 
 =interpolation_method= and =curve_family_role= are small,
 fixed-vocabulary fields intrinsic to this record (not references to
@@ -237,6 +251,7 @@ std::string("1Y")
 | "split_tenor_code" <> ''                                                   |
 | "discount_curve_config_id" <> "id"                                        |
 | ("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()) |
+| "source_series_id" <> "output_series_id"                                  |
 
 * Insert trigger
 ** Validations
@@ -358,16 +373,27 @@ config that is no longer =FUNDING=, with nothing left to catch it.
 :icon:                    Chart
 :END:
 
-The generated detail dialog is deliberately unused/discarded: this
-entity's real editing surface is the hand-written =CurveBuilderWorkbench=
-(see [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][the Curve builder UI task]] for why -- a persistent, non-modal,
-three-tab workbench with Save/Bootstrap/Publish actions rather than a
-save-and-close form). Its own list window/history dialog/client
-model/controller are kept and used normally; only the detail-dialog
-trio (=.hpp=/=.cpp=/=.ui=) is removed post-generation. The =* Detail
-fields= table below exists only so codegen has valid input to generate
-against -- deliberately minimal (plain =line_edit= throughout), not a
-real editing UX.
+The generated detail dialog and controller are both disabled outright
+(=.enabled: false= above) rather than generated-then-discarded/hand-
+edited: this entity's real editing surface is the hand-written
+=CurveBuilderWorkbench= (see [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][the Curve builder UI task]] for why -- a
+persistent, non-modal, three-tab workbench with Save/Bootstrap/Publish
+actions rather than a save-and-close form), wired up by an equally
+hand-written =IrCurveBootstrapConfigController= -- both live
+permanently in =ores.qt.refdata= as ordinary hand-written files,
+outside codegen's ownership, so regenerating this model never touches
+them (confirmed against the =ores.cpp.qt.detail_dialog_*.enabled:
+false= precedent already established by =ores.refdata.calendar_date=,
+whose generated Controller simply omits Add/Edit-via-DetailDialog
+code entirely when detail_dialog is disabled -- disabling the
+controller facets too, rather than leaving a codegen-owned Controller
+with no Add/Edit hooks to hand-extend, is what keeps this entity's
+richer custom flow (Add/Edit both opening the Workbench, not just a
+missing Edit) fully drift-safe). The list window, history dialog, and
+client model stay fully codegen-generated and used unmodified. The
+=* Detail fields= table below exists only so codegen has valid input
+to generate the (unused) domain/protocol layer against -- deliberately
+minimal (plain =line_edit= throughout), not a real editing UX.
 
 *** Detail fields
 

@@ -65,16 +65,6 @@ void ir_curve_bootstrap_config_service::save_bootstrap_config(
     const domain::ir_curve_bootstrap_config& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("IR Curve Bootstrap Config id cannot be empty.");
-    // source_series_id is the raw grid this config bootstraps from; output_series_id is the
-    // published curve it writes to. If they were the same market_series row,
-    // curve_republish_service::compute()'s ensure_output_series_stamped() would permanently
-    // reclassify the raw, externally-fed series as IR_CURVE_BOOTSTRAP-derived on the first
-    // Publish, and bootstrapped observations would be written into the same series id the raw
-    // feed keeps writing ticks into -- silently corrupting the raw data.
-    if (!v.source_series_id.is_nil() && v.source_series_id == v.output_series_id)
-        throw std::invalid_argument(
-            "IR Curve Bootstrap Config: source_series_id and output_series_id must differ -- "
-            "the output curve cannot be published back into its own raw input series.");
     BOOST_LOG_SEV(lg(), debug) << "Saving IR curve bootstrap config. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);

@@ -54,6 +54,15 @@
  * dependencies as an explicit out-of-scope modelling gap, not something
  * this design should silently permit), and must not reference itself.
  *
+ * source_series_id (the raw grid this config bootstraps from) and
+ * output_series_id (the published curve it writes to) must differ.
+ * Without this, curve_republish_service's first-publish step would
+ * permanently reclassify the raw, externally-fed input series as this
+ * config's own IR_CURVE_BOOTSTRAP-derived output, and every
+ * subsequent bootstrapped observation would be written into the exact
+ * series id the raw feed keeps writing ticks into -- silently
+ * corrupting the raw data rather than failing loudly.
+ *
  * interpolation_method and curve_family_role are small,
  * fixed-vocabulary fields intrinsic to this record (not references to
  * another entity), following the same plain-check-constraint pattern
@@ -104,7 +113,8 @@ create table if not exists "ores_refdata_ir_curve_bootstrap_configs_tbl" (
     check ("day_count_convention" <> ''),
     check ("split_tenor_code" <> ''),
     check ("discount_curve_config_id" <> "id"),
-    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn()))
+    check (("curve_family_role" = 'FUNDING' and "discount_curve_config_id" = ores_utility_nil_uuid_fn()) or ("curve_family_role" = 'PROJECTION' and "discount_curve_config_id" <> ores_utility_nil_uuid_fn())),
+    check ("source_series_id" <> "output_series_id")
 );
 
 -- Unique output_series_id for active records

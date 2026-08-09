@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 2B196F0B-6C41-4CC1-8F04-747F4274D36A
+:END:
+#+title: Always load the ASD-STE100 skill at session start
+#+description: The doc-review-ste100 skill applies ASD-STE100 Simplified Technical English rules to agent output. It must be loaded first in every session so all communication follows the standard.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+After running compass bearings, load the doc-review-ste100 skill at the start of every session, before producing any user-facing prose output. This ensures all human-readable communication follows ASD-STE100 Simplified Technical English conventions. Do not apply STE100 to structured output: JSON, diffs, code, commit messages, or command output.
+
+*Why:* STE100 reduces ambiguity in inter-agent and human-agent communication, following the same discipline that makes aircraft maintenance instructions safe for non-native readers.
+
+*How to apply:* At session start, after running compass bearings, invoke the doc-review-ste100 skill via the Skill tool before producing any user-facing output. All subsequent agent output must follow STE100 rules: one meaning per word, active voice, simple tense, one instruction per sentence, ≤25 words per sentence.

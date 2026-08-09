@@ -2,6 +2,13 @@
 
 Run `./compass.sh bearings` to orient yourself before acting.
 
+**ASD-STE100 skill:** After bearings, invoke the `doc-review-ste100`
+skill via the Skill tool. It applies ASD-STE100 Simplified Technical
+English rules to all user-facing prose agent output: one meaning per
+word, active voice, simple tense, one instruction per sentence, short
+sentences. Do not apply STE100 rewriting to structured output — JSON,
+diffs, code, commit messages, or command output.
+
 **Never pipe or redirect a `compass` command.** Run it bare — no `|`,
 no `2>&1`, no `>`. Every `compass build`/`deploy`/`site` command that
 produces meaningful output prints its own well-known log file path

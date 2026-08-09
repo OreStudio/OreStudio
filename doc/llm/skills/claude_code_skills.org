@@ -87,6 +87,7 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
 | [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
 | [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
+| [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] | Doc Review Ste100 | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
 | [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show one document by UUID or prefix: metadata, blurb, incoming and outgoing links. |
 | [[id:4A986B6B-1678-453E-8357-C086E78C0698][doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
 | [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |

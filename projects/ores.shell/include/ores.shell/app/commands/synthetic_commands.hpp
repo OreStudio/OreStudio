@@ -114,15 +114,17 @@ public:
 
     /**
      * @brief List folders: synthetic list folders
-     * [--config-id=<collection-id>] [--name=<folder-name>].
+     * [--config-id=<collection-id>] [--name=<folder-token>].
      *
      * Prints the folder hierarchy (root > collection > asset class >
      * instrument type) visible to the logged-in party. --config-id
      * narrows the listing to the collection folder representing that
      * market_data_generation_config and its descendants; --name narrows
-     * it to the subtree(s) rooted at the folder(s) whose name matches
-     * exactly. Multi-word names are quoted, as everywhere in the REPL:
-     * "synthetic list folders --name \"2026 Realistic\"".
+     * it to the subtree(s) rooted at the folder(s) matching the token
+     * (exact name or standard codename path, e.g. 2026realistic/fx --
+     * see resolve_folder_id). Multi-word names are quoted, as
+     * everywhere in the REPL: "synthetic list folders --name
+     * \"2026 Realistic\"".
      */
     static void process_list_folders(std::ostream& out,
                                      ores::nats::service::nats_client& session,
@@ -170,9 +172,10 @@ public:
      * Folder-scoped starts resolve the whole subtree server-side
      * (start_feeds_under_folder_request); feed-scoped starts build a
      * start_market_feed_config_request from the feed row and its GMM
-     * components, exactly as the Qt Market Simulator does. Tokens are
-     * UUIDs or human-friendly names (folder name, ore key, source_name
-     * -- see resolve_folder_id/resolve_feed).
+     * components, exactly as the Qt Market Simulator does. Folder
+     * tokens are UUIDs, exact names or codename paths; feed tokens are
+     * UUIDs, ore keys or source_names (see
+     * resolve_folder_id/resolve_feed).
      */
     static void process_start(std::ostream& out,
                               ores::nats::service::nats_client& session,
@@ -204,7 +207,7 @@ public:
     /**
      * @brief Start every feed under a folder subtree, resolved
      * server-side via start_feeds_under_folder_request. @p token is a
-     * folder id or name.
+     * folder id, name or codename path.
      *
      * @return true on success.
      */
@@ -227,7 +230,7 @@ public:
     /**
      * @brief Stop every running feed under a folder subtree, resolved
      * server-side via stop_feeds_under_folder_request. @p token is a
-     * folder id or name.
+     * folder id, name or codename path.
      *
      * @return true on success.
      */

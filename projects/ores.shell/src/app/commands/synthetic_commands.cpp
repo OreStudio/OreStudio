@@ -29,6 +29,7 @@
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cctype>
@@ -96,10 +97,12 @@ std::optional<synthetic::domain::scope> parse_scope(std::ostream& out, const std
 }
 
 // Parse "folder <token>" / "feed <token>" into (target, token); reports
-// usage. The token is a UUID or a human-friendly name/key; the
-// executors resolve it (see resolve_folder_id/resolve_feed). Multi-word
-// names are quoted at the shell ("2026 Realistic"), as everywhere in
-// the REPL; the cli tokenizer passes them through as a single token.
+// usage. Folder tokens are UUIDs, exact names or standard codename
+// paths; feed tokens are UUIDs, ore keys or source_names -- the
+// executors resolve them (see resolve_folder_id/resolve_feed).
+// Multi-word names are quoted at the shell ("2026 Realistic"), as
+// everywhere in the REPL; the cli tokenizer passes them through as a
+// single token.
 std::optional<std::pair<std::string, std::string>> parse_target(
     std::ostream& out, const std::vector<std::string>& positionals, std::string_view verb) {
     if (positionals.size() != 2) {
@@ -126,22 +129,23 @@ std::optional<boost::uuids::uuid> try_uuid(const std::string& value) {
     }
 }
 
-// Report an ambiguous name match, listing the candidate labels (folder
+// Report an ambiguous token match, listing the candidate labels (folder
 // paths, feed source_names, ...) so the user can pick one.
 void report_ambiguous(std::ostream& out,
                       std::string_view what,
                       const std::string& token,
                       const std::vector<std::string>& labels) {
-    fail(out) << "Ambiguous " << what << " name '" << token << "' matches " << labels.size()
+    fail(out) << "Ambiguous " << what << " token '" << token << "' matches " << labels.size()
               << " entries:" << std::endl;
     for (const auto& label : labels)
         out << "  " << label << std::endl;
 }
 
-// Render a folder's path from the tree root ("Synthetic > 2026 Realistic
-// > FX"), for disambiguating same-named folders.
-std::string folder_path(const std::map<std::string, synthetic::domain::folder>& by_id,
-                        const std::string& id) {
+// Walk a folder's ancestor chain, returning each folder's name from the
+// tree root down to @p id.
+std::vector<std::string>
+folder_path_parts(const std::map<std::string, synthetic::domain::folder>& by_id,
+                  const std::string& id) {
     std::vector<std::string> parts;
     std::string cur = id;
     while (!cur.empty() && parts.size() < 32) { // cycle guard
@@ -151,20 +155,136 @@ std::string folder_path(const std::map<std::string, synthetic::domain::folder>& 
         parts.push_back(it->second.name);
         cur = it->second.parent_id ? boost::uuids::to_string(*it->second.parent_id) : std::string{};
     }
+    std::reverse(parts.begin(), parts.end());
+    return parts;
+}
 
+// Slug form of a display name, mirroring the source_name derivation in
+// publish_from_dq ("2026 Realistic" -> "2026realistic"): lowercased,
+// spaces removed. The slug is a folder's codename: the component of its
+// standard path.
+std::string slugify(const std::string& value) {
+    std::string slug;
+    slug.reserve(value.size());
+    for (const char c : value) {
+        if (c == ' ')
+            continue;
+        slug.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(c))));
+    }
+    return slug;
+}
+
+// Render a folder's codename path from the tree root
+// ("synthetic/2026realistic/fx") -- the standard, filesystem-style
+// token for addressing it, and the label ambiguity reports use.
+std::string folder_slug_path(const std::map<std::string, synthetic::domain::folder>& by_id,
+                             const std::string& id) {
     std::string path;
-    for (auto it = parts.rbegin(); it != parts.rend(); ++it) {
+    for (const auto& part : folder_path_parts(by_id, id)) {
         if (!path.empty())
-            path += " > ";
-        path += *it;
+            path += '/';
+        path += slugify(part);
     }
     return path;
 }
 
-// Resolve a folder token -- UUID or exact folder name -- to a folder
-// id. The name must be unique within the visible tree; a name shared by
-// several folders (e.g. the same asset class under different
-// collections) is reported as ambiguous, listing each folder's path.
+// Match a bare codename ("fx", "2026realistic") against folders at any
+// depth; several matches (e.g. the codename "fx" under two collections)
+// are ambiguous for the caller.
+std::vector<std::string>
+match_codename(const std::map<std::string, synthetic::domain::folder>& by_id,
+               const std::string& token) {
+    const auto needle = slugify(token);
+    std::vector<std::string> matched;
+    for (const auto& [id, f] : by_id)
+        if (slugify(f.name) == needle)
+            matched.push_back(id);
+    return matched;
+}
+
+// Walk the tree from its root(s), matching each "/"-separated component
+// of the token against the codenames of the current folder itself or
+// its children (slugify applied to both sides, so "2026 Realistic/FX"
+// and "2026Realistic/fx" both work). Matching the current folder lets
+// paths carry the root as their first component, so absolute and
+// relative forms are equivalent: "synthetic/2026realistic/fx",
+// "/synthetic/2026realistic/fx" and "2026realistic/fx" all resolve to
+// the same folder. Leading, trailing and repeated slashes are ignored.
+// Returns every folder reachable by the full chain; empty when the
+// token is empty or a component matches nothing.
+std::vector<std::string>
+match_folder_path(const std::map<std::string, synthetic::domain::folder>& by_id,
+                  const std::string& token) {
+    if (token.empty())
+        return {};
+
+    // Split the token into slugified components.
+    std::vector<std::string> components;
+    std::string current;
+    for (const char c : token) {
+        if (c == '/') {
+            if (!current.empty()) {
+                components.push_back(slugify(current));
+                current.clear();
+            }
+        } else {
+            current.push_back(c);
+        }
+    }
+    if (!current.empty())
+        components.push_back(slugify(current));
+
+    // Start at the roots (folders whose parent is not visible), then
+    // descend one level per component.
+    std::vector<std::string> level;
+    for (const auto& [id, f] : by_id)
+        if (!f.parent_id || !by_id.contains(boost::uuids::to_string(*f.parent_id)))
+            level.push_back(id);
+
+    for (const auto& component : components) {
+        std::vector<std::string> next;
+        for (const auto& cur : level)
+            for (const auto& [id, f] : by_id) {
+                if (slugify(f.name) != component)
+                    continue;
+                const auto is_self = id == cur;
+                const auto is_child =
+                    f.parent_id && boost::uuids::to_string(*f.parent_id) == cur;
+                if (is_self || is_child)
+                    next.push_back(id);
+            }
+        level = std::move(next);
+        if (level.empty())
+            return {}; // a component matched nothing anywhere
+    }
+    return level;
+}
+
+// Match a folder token against the visible tree, in order: exact name,
+// then a codename -- a bare codename ("fx") matches folders at any
+// depth, a standard path ("2026realistic/fx") is walked from the root
+// (see match_codename/match_folder_path). Returns every folder matched
+// by the first form that matches anything -- several matches (e.g. the
+// name "FX" under two collections) are ambiguous for the caller; empty
+// when nothing matches.
+std::vector<std::string>
+match_folders(const std::map<std::string, synthetic::domain::folder>& by_id,
+              const std::string& token) {
+    std::vector<std::string> matched;
+    for (const auto& [id, f] : by_id)
+        if (f.name == token)
+            matched.push_back(id);
+    if (!matched.empty())
+        return matched;
+    return token.find('/') == std::string::npos ? match_codename(by_id, token)
+                                                : match_folder_path(by_id, token);
+}
+
+// Resolve a folder token -- UUID, exact name or standard codename path
+// -- to a folder id. The match must be unique within the visible tree;
+// a token shared by several folders (e.g. the codename of an asset
+// class under different collections) is reported as ambiguous, listing
+// each folder's codename path.
 std::optional<std::string>
 resolve_folder_id(std::ostream& out, nats_client& session, const std::string& token) {
     if (const auto id = try_uuid(token))
@@ -184,16 +304,13 @@ resolve_folder_id(std::ostream& out, nats_client& session, const std::string& to
     for (const auto& f : result->folders)
         by_id.emplace(boost::uuids::to_string(f.id), f);
 
-    std::vector<std::string> exact;
-    for (const auto& [id, f] : by_id)
-        if (f.name == token)
-            exact.push_back(id);
-    if (exact.size() == 1)
-        return exact.front();
-    if (exact.size() > 1) {
+    const auto matched = match_folders(by_id, token);
+    if (matched.size() == 1)
+        return matched.front();
+    if (matched.size() > 1) {
         std::vector<std::string> labels;
-        for (const auto& id : exact)
-            labels.push_back(folder_path(by_id, id));
+        for (const auto& id : matched)
+            labels.push_back(folder_slug_path(by_id, id));
         report_ambiguous(out, "folder", token, labels);
         return std::nullopt;
     }
@@ -538,13 +655,12 @@ bool synthetic_commands::list_folders(std::ostream& out,
     }
 
     // --name narrows the listing to the subtree(s) rooted at the
-    // folder(s) whose name matches exactly. Multiple matches print each
-    // subtree.
+    // folder(s) matching the token (exact name, display path, slugified
+    // name or slugged path -- see match_folders). Multiple matches
+    // print each subtree.
     std::vector<std::string> subtree_roots;
     if (!folder_name.empty()) {
-        for (const auto& [id, f] : by_id)
-            if (f.name == folder_name)
-                subtree_roots.push_back(id);
+        subtree_roots = match_folders(by_id, folder_name);
         if (subtree_roots.empty()) {
             fail(out) << "No folder matching '" << folder_name << "'." << std::endl;
             return false;

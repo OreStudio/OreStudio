@@ -185,7 +185,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5234144357 | remote-stop.sh:35 removes never-created =ores-services-<label>=, so =--stop= leaves every per-service container running | docker/remote-stop.sh | Fixed | Label-scoped name-filter loop (=ores-.*-<label>=, matching remote-run.sh's cleanup pattern); regression test added. |
+| 5234144357 | env_deploy.py:556 unescaped backticks run =`compass env deploy <host>`= as command substitution on the remote | env_deploy.py | Fixed | Escaped (=\\`=); regression test added. |
+| 5234144676 | remote-run.sh:53 error message references =$ORES_REMOTE_HOST=, never set inside the script | remote-run.sh | Fixed | Message now prints a literal =<host>= placeholder. |
+| 5234144676 | docker/.env.* ignore pattern redundant — bare =.env.*= already matches at any depth | .gitignore | Fixed | Removed both =docker/.env= patterns (=docker/.env= is also covered by the bare =.env=, verified with =git check-ignore=); Newton-session comment preserved. |
+| 5234144357 | IAM JWT private key passed via =--env= on the =podman run= command line, visible via =/proc/<pid>/cmdline= | remote-run.sh | Declined | Single-tenant WSL host; same pattern the replaced run-pod.sh used; =--env-file=/=--secret= add complexity for no threat-model benefit. |
+| 5234144676 | nats_poller.cpp =/jsz= response reshape has no fixture test pinning the new parsing | nats_poller.cpp | Declined | Pre-existing gap (reviewer confirms not a regression); merits a fixture-test task of its own. |
 
 * Result
 

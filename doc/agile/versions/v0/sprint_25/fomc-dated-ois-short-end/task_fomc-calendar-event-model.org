@@ -55,11 +55,11 @@ and distil the decision into the story's =* Decisions=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Domain docs updated to the decided model (2026-08-09): new architecture doc (tenor_and_curve_architecture.org) plus FOMC Dates, Tenor, IMM Dates, Pillar, Calendar Events, Calendars/Holidays/Events, Term Structures and Tenors, Interest Rate Curves, Interpolation, and the knowledge index. Awaiting user review. |
-| Waiting on   | User review of the domain docs.        |
-| Next         | On review sign-off: check the plan for affected items (IMM_ROLL backlog capture superseded by SCHEDULE_STEP); then close. |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -68,20 +68,59 @@ and distil the decision into the story's =* Decisions=.
 
 * Plan
 
+** Analysis phase (done, 2026-08-09)
+
 1. Establish the current state — the bootstrap chain, tenor
    resolution, and the calendar cluster — from the story's =* Analysis=
-   and the schema (done, 2026-08-09).
+   and the schema. *Done.*
 2. Decide the calendar-event entity shape: one =calendar_event= table
    with a =diary_entry_type= vocabulary, anchored to a calendar — no
-   table per calendar or per type (user directive).
+   table per calendar or per type (user directive). *Done* — D1.
 3. Decide the unified tenor model: a =SCHEDULE_STEP= algorithm plus a
    =tenor_schedules= vocabulary (=ROLL_QUARTER= closed-form,
    =FOMC_MEETING= event-lookup); =IMM_ROLL= migrates onto it; FOMC
-   tenors =1F=..=nF=.
+   tenors =1F=..=nF=. *Done* — D2.
 4. Decide the FOMC segment config semantics (split tenor, point id)
-   and the Fed seeding source.
-5. Land the decision in the story's =* Decisions=; update the domain
-   docs; close.
+   and the Fed seeding source. *Done* — D3, D4.
+5. Land the decision in the story's =* Decisions= (D1–D4); update the
+   domain docs. *Done* — docs written, user-reviewed and committed
+   (2026-08-09).
+
+** Plan impact: what the decision changes (2026-08-09)
+
+- The backlog capture =implement-imm-roll-tenor-resolution=
+  (=doc/agile/product_backlog/next/=, ID 7746D493) is *superseded*:
+  its scope — the =IMM_ROLL= branch of =tenor_resolution.cpp= and the
+  =CREDIT_CDS_IMM= resolution rows — is now the =SCHEDULE_STEP= branch,
+  the =ROLL_QUARTER= schedule, and the =CREDIT_CDS_IMM= migration under
+  implementation step 2 below. Update the capture's =* What= or close
+  it when that step lands.
+- The codegen-DX inbox item "bring tenor-convention resolution under
+  codegen" is unaffected (orthogonal DX work), but it touches the same
+  resolver — sequence it after step 2 to avoid churn.
+- Story acceptance is unchanged; the engine needs no changes.
+
+** Implementation plan for the re-scoped story work (saved under this task)
+
+In dependency order:
+
+1. *D1 — the event store*: =calendar_event= entity + =diary_entry_types=
+   vocabulary + =US.FOMC= row in =calendars= + =currency_calendars= link
+   (schema + populate).
+2. *D2 — unified resolution*: =tenor_schedules= entity + =SCHEDULE_STEP=
+   branch in =tenor_resolution.cpp= (=ROLL_QUARTER= closed-form,
+   =FOMC_MEETING= event-lookup) + =RATES_SPOT_FOMC= convention +
+   =1F=..=nF= tenors + resolution rows; migrate =CREDIT_CDS_IMM=; drop
+   the =IMM_ROLL= algorithm row once nothing references it.
+3. *D4 — seeding*: the 2025–2027 FOMC dates from federalreserve.gov
+   (feeds step 2's event-lookup).
+4. *D3 — the FOMC segment as one config*: pillars SPOT→1F, 1F→2F, ...,
+   nF→split under =ir_curve_bootstrap_configs= with
+   =split_tenor_code= and =interpolation_method=
+   =FLAT_FORWARD_THEN_LOG_LINEAR=; raw-grid quotes at the FOMC point
+   ids (synthetic feed side) so the republish resolver's lookup
+   succeeds; verify the bootstrapped short end is flat between
+   meetings.
 
 * Notes
 
@@ -121,3 +160,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The analysis task delivered what the story was blocked on: the model
+decision, the domain-doc exercise, and the plan impact. The decision
+lands in the story's =* Decisions= as D1–D4: one =calendar_event=
+store with a =diary_entry_types= vocabulary (D1); unified tenor
+resolution as anchor + offset + steps along a named schedule axis,
+with =SCHEDULE_STEP= and the =tenor_schedules= vocabulary
+(=ROLL_QUARTER= closed-form, =FOMC_MEETING= event-lookup), and
+=IMM_ROLL= superseded (D2); the FOMC segment as one
+=ir_curve_bootstrap_configs= configuration with =split_tenor_code=
+and =FLAT_FORWARD_THEN_LOG_LINEAR=, end-tenor codes doubling as point
+ids (D3); 2025–2027 FOMC dates seeded from federalreserve.gov (D4).
+
+The docs are updated to match: a new architecture document
+(=doc/knowledge/architecture/tenor_and_curve_architecture.org=)
+documents the code model end to end — the refdata tenor vocabulary,
+the calendar/event store, resolution semantics, the bootstrap chain,
+and a terminology table (1F, 1Y 1RQ, nIMM, measured_from, point id,
+split tenor) — and the FOMC Dates, Tenor, IMM Dates, Pillar, Calendar
+Events, Calendars/Holidays/Events, Term Structures and Tenors,
+Interest Rate Curves and Interpolation docs now reflect the decided
+model. The user reviewed the docs and approved them before close.
+
+Plan impact is assessed and saved in =* Plan= above: the backlog
+capture =implement-imm-roll-tenor-resolution= is superseded by
+SCHEDULE_STEP; the re-scoped implementation order is D1 (event
+store) → D2 (unified resolution) → D4 (seeding) → D3 (FOMC segment
+config). No engine change is required.
+

@@ -46,9 +46,9 @@ decision lands in =* Decisions= below when the analysis completes.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Analysis task closed (2026-08-09): model decision D1–D4 landed, domain docs reviewed and committed, plan impact assessed. |
 | Waiting on    | Nothing.                               |
-| Next          | Analysis task: complete the model decision. |
+| Next          | Re-scope the implementation task from the plan saved in the analysis task (D1 → D2 → D4 → D3). |
 | Last touched  | 2026-08-09                               |
 
 * Analysis

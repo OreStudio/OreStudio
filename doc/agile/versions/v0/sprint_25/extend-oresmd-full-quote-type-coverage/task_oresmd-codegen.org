@@ -241,6 +241,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Variant loops use `{{^-last}}` sigil, which nothing ever sets; outer specs list unmarked | oresmd_identifiers.hpp.mustache, oresmd_requirements.hpp.mustache, core.py | Accepted | `{{^last}}` sigil + `_mark_last_item(specs)` on outer list; also unescaped `{{cpp_type}}` → `{{{cpp_type}}}` (was rendering `&lt;`/`&gt;` in Fields cells) |
+| 2 | oresmd_verify.py: broken template path, no context shaping, unreferenced | scripts/oresmd_verify.py | Accepted (dropped) | Removed — dead on arrival; context shaping lives in core.py |
 
 * Result

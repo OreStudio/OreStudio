@@ -26,7 +26,7 @@ struct volatility_surface_point final {
 struct {{asset_class}}_market_data_identifier final {
 {{#fields}}
 {{^generated}}
-    {{cpp_type}} {{name}};
+    {{{cpp_type}}} {{name}};
 {{/generated}}
 {{/fields}}
 {{#has_quote_type}}
@@ -45,7 +45,7 @@ struct {{asset_class}}_market_data_identifier final {
 {{/oresmd_quote_types}}
 using market_data_identifier = std::variant<
 {{#oresmd_quote_types}}
-    {{asset_class}}_market_data_identifier{{^-last}},{{/-last}}
+    {{asset_class}}_market_data_identifier{{^last}},{{/last}}
 {{/oresmd_quote_types}}
 >;
 

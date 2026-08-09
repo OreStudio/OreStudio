@@ -1659,9 +1659,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # first_asset_class: marks the leading spec so the template can emit
         # one-time content after the first per-class enum (the shared
         # index_family enum sits between ir and credit in the hand-crafted
-        # file); the preamble guard uses the top-level marker below.
+        # file); the preamble guard uses the top-level marker below. The
+        # outer list also gets a last marker for templates that iterate the
+        # specs themselves (identifiers/requirements emit std::variant
+        # argument lists and must not render a trailing comma).
         if specs:
             specs[0]['first_asset_class'] = True
+            _mark_last_item(specs)
         data['oresmd_quote_types'] = specs
         data['oresmd_quote_type'] = {'first_asset_class': True}
 

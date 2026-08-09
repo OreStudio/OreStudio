@@ -14,7 +14,7 @@ namespace ores::marketdata::domain {
 struct {{asset_class}}_market_data_requirement final {
 {{#fields}}
 {{^generated}}
-    std::optional<{{cpp_type}}> {{name}};
+    std::optional<{{{cpp_type}}}> {{name}};
 {{/generated}}
 {{/fields}}
 {{#has_quote_type}}
@@ -30,7 +30,7 @@ struct {{asset_class}}_market_data_requirement final {
 {{/oresmd_quote_types}}
 using market_data_requirement = std::variant<
 {{#oresmd_quote_types}}
-    {{asset_class}}_market_data_requirement{{^-last}},{{/-last}}
+    {{asset_class}}_market_data_requirement{{^last}},{{/last}}
 {{/oresmd_quote_types}}
 >;
 

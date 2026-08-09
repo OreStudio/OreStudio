@@ -4858,15 +4858,18 @@ def cmd_review(argv):
 
 
 def cmd_nats(argv):
-    """compass nats — NATS pillar: config and certificate management."""
+    """compass nats — NATS pillar: config, certificate, and server management."""
     if argv and argv[0] == "certs":
         import nats_certs
         return nats_certs.run(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "init":
         import nats_init
         return nats_init.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "ensure":
+        import nats_ensure
+        return nats_ensure.run(argv[1:], PROJECT_ROOT)
     print("Usage: compass nats <subcommand>", file=sys.stderr)
-    print("Subcommands: init, certs", file=sys.stderr)
+    print("Subcommands: init, certs, ensure", file=sys.stderr)
     return 1
 
 

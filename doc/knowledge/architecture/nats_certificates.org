@@ -18,7 +18,9 @@ server itself (SAN =localhost= + the checkout hostname/IP) and one
 mTLS *client* certificate per service, all under
 [[proj:build/keys/nats][=build/keys/nats/=]]. =compass nats certs= (a.k.a. =nats_certs.py=) is the
 single generator, idempotent by default; =compass env configure= calls
-it automatically. The NATS server presents =nats-server.crt= and
+it automatically, and =compass nats ensure= restarts the local server
+after rotation so the new certs are actually loaded (the Go broker
+reads certs only at startup). The NATS server presents =nats-server.crt= and
 requires a client cert signed by =ca.crt= (=verify: true= in the
 rendered server config); services locate their certs via the
 =--nats-tls-ca/cert/key= CLI trio (deliberately *not* part of the
@@ -86,12 +88,20 @@ invokes =nats_certs.generate()= before writing =.env=). Requires
 *Idempotency and rotation*: generation skips any existing =*.key=
 (presence of the key is the gate), so re-running is a no-op.
 =--force= regenerates everything (use in CI with ephemeral keys, or to
-rotate); =--hostname <name>= adds a SAN to the server cert. Because
-leaves are 90-day certificates, rotation is a periodic concern; the
-365-day CA is the real clock everything chains to. After
+rotate); =--hostname <name>= adds a SAN to the server cert.
+
+#+begin_src sh
+./compass.sh nats certs                       # idempotent — no-op when keys exist
+./compass.sh nats certs --force               # rotate: regenerate CA + all leaves
+./compass.sh nats certs --hostname devbox.local   # add a SAN to the server cert
+#+end_src
+
+Because leaves are 90-day certificates, rotation is a periodic concern;
+the 365-day CA is the real clock everything chains to. After
 regeneration, the running NATS server and all services must be
 restarted to pick up new certs (=compass env deploy <host>= re-runs
-idempotently and recreates the containers).
+idempotently and recreates the containers; locally, =compass nats
+ensure= restarts the systemd unit — see below).
 
 ** IAM JWT signing key (not a certificate)
 
@@ -136,8 +146,14 @@ openssl s_client -connect localhost:20405 -tls1_2 </dev/null   # succeeds
 ** How the NATS server uses the certificates
 
 =compass nats init= renders
-[[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into =build/config/nats-<label>.conf=
-with per-environment values; the TLS block is:
+[[proj:build/config/nats.conf.template][=build/config/nats.conf.template=]] into
+=build/config/nats-<label>.conf= with per-environment values:
+
+#+begin_src sh
+./compass.sh nats init
+#+end_src
+
+The TLS block of the rendered config is:
 
 #+begin_example
 tls {
@@ -224,14 +240,50 @@ directly while every C++ service gets the volume.
 
 ** Rotation and re-deploy
 
-- Regenerate: =compass nats certs --force= (or
-  =--hostname <name>= for a new SAN without touching the rest).
-- Re-deploy: =compass env deploy <host>= re-runs idempotently — the
-  remote keys directory is removed and re-scp'd, files are
-  overwritten, the certs volume is recreated, and the containers are
-  =rm -f= before recreate. No manual cleanup required.
-- Tear down: =compass env deploy <host> --stop=; with =--purge= the
-  staged certs volume is dropped as well.
+#+begin_src sh
+./compass.sh nats certs --force                 # regenerate everything
+./compass.sh nats certs --hostname devbox.local # new SAN, rest untouched
+./compass.sh nats ensure                        # local: restart the server with the new certs
+./compass.sh env deploy <host>                  # remote: idempotent re-deploy
+./compass.sh env deploy <host> --stop           # tear down (--purge drops the certs volume too)
+#+end_src
+
+=compass env deploy <host>= re-runs idempotently — the remote keys
+directory is removed and re-scp'd, files are overwritten, the certs
+volume is recreated, and the containers are =rm -f= before recreate.
+No manual cleanup required.
+
+** One-command bring-up (=compass nats ensure=)
+
+=compass nats ensure= composes the pieces above so a session never
+starts against stale infrastructure: certificates (idempotent,
+=--force= to rotate), the rendered config, and — the step nothing else
+performs — a restart of the per-environment systemd user unit
+=nats-server-<label>.service=. That restart is the whole point: the Go
+server loads certs at startup and does *not* pick up a regenerated
+CA/leaf by itself, so every regeneration must be followed by a restart
+or every mTLS client fails with =SSL Error= / =bad record MAC= (see
+Idempotency and rotation above). The command finishes by probing the
+client port for the NATS INFO handshake, so success means the server
+is actually up and speaking TLS.
+
+#+begin_src sh
+./compass.sh nats ensure            # certs + config + restart + probe
+./compass.sh nats ensure --force    # force-rotate certs, then restart
+#+end_src
+
+** Recovering a drifted local database
+
+After a rebase the local schema can drift from the code it now sits
+next to (the DB was seeded from an older commit), surfacing as
+repository errors such as =column "workspace_id" does not exist= or
+=Invalid concurrency_policy: skip=. Check with =compass db status= and,
+only when it reports drift, recreate:
+
+#+begin_src sh
+./compass.sh db status              # reports schema drift, if any
+./compass.sh db recreate -y -k      # drop + recreate + reseed (-y: skip prompt, -k: kill connections)
+#+end_src
 
 * See also
 

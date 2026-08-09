@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 149FB6E6-F13E-4886-94C3-A3E2A79521BD
+:END:
+#+title: Story: Hotfix: provision tenant publishes party-scoped bundle without party_id
+#+description: provision tenant --source synthetic picks the first available bundle, which is now marketdata.reference_vintage_2026_05_05 — a party-scoped bundle that requires party_id. At tenant-provisioning time no party exists yet, so provisioning fails. Publish the tenant-scoped base bundle explicitly.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:sprint_25:v0:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore end-to-end provisioning from acme_system_provision.ores
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-09                               |
+
+* Acceptance
+
+- provision tenant --source synthetic --seed 42 succeeds
+- acme_system_provision.ores completes without error
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F5F1A9E0-D309-46F7-9EFE-E519170F24A9][Fix provisioning: publish base bundle instead of first-available]] | BACKLOG | | | Replace the first-available bundle heuristic in process_tenant with an explicit publish of the tenant-scoped base bundle, which seeds all reference data without requiring party_id. |
+
+* Decisions
+
+* Out of scope
+
+-

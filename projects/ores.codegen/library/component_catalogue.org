@@ -39,7 +39,7 @@ of component, since it isn't in the codegen org type set.
 | database-cpp | projects/ores.codegen/models/database | *_domain_entity.json | | projects/ores.database/modeling | |
 | dq-cpp | projects/ores.codegen/models/dq | *_domain_entity.json | | projects/ores.dq/modeling | |
 | iam-cpp | projects/ores.codegen/models/iam | *_domain_entity.json | | projects/ores.iam/modeling | |
-| reporting-cpp | projects/ores.codegen/models/reporting | *_domain_entity.json | | projects/ores.reporting/modeling | |
+| reporting | | | | projects/ores.reporting/modeling | |
 | scheduler-cpp | projects/ores.codegen/models/scheduler | *_domain_entity.json | | projects/ores.scheduler/modeling | |
 | trading-cpp | projects/ores.codegen/models/trading | *_domain_entity.json | | projects/ores.trading/modeling | |
 | workflow-cpp | projects/ores.codegen/models/workflow | *_domain_entity.json | | projects/ores.workflow/modeling | |

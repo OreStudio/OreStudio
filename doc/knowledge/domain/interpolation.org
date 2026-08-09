@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-08-09
 
 * Summary
 
@@ -93,6 +93,12 @@ the two the wrong way round is a real modelling error, not a stylistic
 choice: a continuous spline between FOMC dates implies the Fed adjusts
 rates daily (false), while a flat-forward step between long-dated swap
 pillars produces jagged, arbitrageable forwards.
+
+In code, the curve split tenor is the =split_tenor_code= column of
+=ir_curve_bootstrap_configs=, and the short-end method is the config's
+=interpolation_method= (=FLAT_FORWARD_THEN_LOG_LINEAR= for the FOMC
+segment) — see [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and
+Curve Bootstrapping Architecture]].
 
 ** Agreement across consuming systems
 

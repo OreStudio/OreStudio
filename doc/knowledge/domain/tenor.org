@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-08-09
 
 * Summary
 
@@ -142,6 +142,41 @@ tenors such as =1Y= resolve to materially different dates than on a rates
 curve. A common disambiguation convention appends the roll quarter: e.g.
 =1Y 1RQ= (one year, one roll quarter).
 
+*** FOMC-meeting curves
+
+The SOFR OIS short end is built off FOMC meeting dates instead of the
+ordinary tenor grid: =1F=, =2F=, ..., =nF= denote the n-th meeting
+date on-or-after the anchor — see
+[[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] for the
+notation and the event model behind it.
+
+** How a tenor resolves: the unified model
+
+A tenor label becomes a date in exactly one way, decided 2026-08-09
+(the FOMC analysis): *anchor + a calendar offset + n steps along a
+named schedule axis*. Two axes exist:
+
+- *Calendar arithmetic*: =DAY=, =WEEK=, =MONTH=, =YEAR= offsets from an
+  anchor (the =ANCHOR_OFFSET= algorithm). A bare =1M= resolves as
+  "spot + 1 month" under the standard rates convention.
+- *A named schedule*: a fixed set of dates walked step-by-step from the
+  anchor (the =SCHEDULE_STEP= algorithm). IMM roll dates (=ROLL_QUARTER=
+  schedule, closed-form) and FOMC meeting dates (=FOMC_MEETING=
+  schedule, looked up from the event store) are both instances of this
+  axis — the same mechanism, differing only in where the dates come
+  from. =1Y 1RQ= is "anchor + 1 year, then 1 step along ROLL_QUARTER";
+  =2F= is "anchor + 0 offset, then 2 steps along FOMC_MEETING".
+
+The code-side vocabulary (the =tenor_conventions= and
+=tenor_convention_resolutions= entities) records, per convention and
+per tenor, the =measured_from= anchor (see the =tenor_anchors=
+vocabulary: =SPOT=, =TODAY=, =TOMORROW=, =NEAR_LEG=, =IMM_ROLL=,
+=NONE=), the offset, and — for schedule tenors — the schedule code and
+step count. The resolver that executes this model, and the exact
+entities, are documented in
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+Bootstrapping Architecture]].
+
 * See also
 
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
@@ -151,9 +186,9 @@ curve. A common disambiguation convention appends the roll quarter: e.g.
 - [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — how a tenor date is adjusted onto a valid business day.
 - [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — odd tenors and fixed-calendar-time discontinuities.
 - [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the quarterly roll dates behind the CDS tenor convention.
+- [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] — the meeting schedule behind =1F=..=nF=.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — how far a curve built from these labels actually extends, by curve type.
-- [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.marketdata.tenor]] — the codegen entity model persisting this document's standard tenor labels.
-- [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.marketdata.tenor_convention]] — the codegen entity model persisting this document's "Tenor conventions by curve type" section.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the code model that resolves these labels: entities, anchors, schedules, and the resolver.
 
 ** Further reading: external references
 

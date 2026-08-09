@@ -57,9 +57,9 @@ and distil the decision into the story's =* Decisions=.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Decision written to the story's * Decisions (D1–D4); update the domain docs next. |
-| Waiting on   | Nothing.                               |
-| Next         | Update the domain docs; then close.    |
+| Now          | Domain docs updated to the decided model (2026-08-09): new architecture doc (tenor_and_curve_architecture.org) plus FOMC Dates, Tenor, IMM Dates, Pillar, Calendar Events, Calendars/Holidays/Events, Term Structures and Tenors, Interest Rate Curves, Interpolation, and the knowledge index. Awaiting user review. |
+| Waiting on   | User review of the domain docs.        |
+| Next         | On review sign-off: check the plan for affected items (IMM_ROLL backlog capture superseded by SCHEDULE_STEP); then close. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -90,6 +90,12 @@ and distil the decision into the story's =* Decisions=.
   =SCHEDULE_STEP= resolution with a =tenor_schedules= vocabulary;
   FOMC tenors =nF=; split-tenor config semantics; Fed seeding. Domain
   doc updates pending.
+- 2026-08-09 — Domain docs updated to the decided model: new
+  =doc/knowledge/architecture/tenor_and_curve_architecture.org=
+  (the code model end to end) and updates to FOMC Dates, Tenor, IMM
+  Dates, Pillar, Calendar Events, Calendars/Holidays/Events, Term
+  Structures and Tenors, Interest Rate Curves, Interpolation, and the
+  knowledge index. Awaiting user review before closing.
 
 * Test Scenarios
 

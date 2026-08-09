@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-22
-#+updated: 2026-07-22
+#+updated: 2026-08-09
 
 * Summary
 
@@ -35,6 +35,40 @@ advance). Unlike a standard [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]],
 it is not computed relative to a horizon date by calendar arithmetic — it
 is a lookup into a fixed, externally-published set of dates, exactly as
 [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM dates]] are.
+
+** Notation: FOMC tenors (=1F= .. =nF=)
+
+FOMC-dated pillars are named after the meeting count: =1F= is the first
+FOMC meeting date on-or-after the anchor, =2F= the second, and so on up
+to =nF= for the n-th. The =F= suffix distinguishes the meeting axis
+from ordinary period tenors (=1M=, =1Y=) and from the IMM notation
+(=nIMM=, =1Y 1RQ= — see [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
+Dates]]). Like =O/N=, FOMC tenors are *special* labels: they carry no
+period unit or multiplier of their own — the meeting count is the
+multiplier (=SPECIAL= kind, =NONE= unit, multiplier =n=).
+
+** How FOMC dates enter the model (decided 2026-08-09)
+
+FOMC meeting dates are *typed events on a calendar*, not a hardcoded
+resolution rule and not a table per calendar. The landed model:
+
+- =US.FOMC= is a row in the =calendars= table (=calendar_type=
+  central_bank_meeting, =country_code= US, =source= federalreserve.gov,
+  =is_editable= true); =currency_calendars= links USD to it.
+- Each meeting date is a =calendar_event= row on =US.FOMC= with
+  =diary_entry_type= = central_bank_meeting and =source=
+  ='federalreserve.gov'= — the single event store that also holds data
+  releases and any future event kind (see
+  [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] for the
+  entity shape).
+- A =tenor_schedules= vocabulary row named =FOMC_MEETING=
+  (=schedule_source= EVENT_LOOKUP) points at that calendar/type pair;
+  the =RATES_SPOT_FOMC= tenor convention (measured_from =SPOT=,
+  algorithm =SCHEDULE_STEP=) resolves =1F=..=nF= as "the n-th meeting
+  date on-or-after spot".
+- The code model is documented in
+  [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+  Bootstrapping Architecture]].
 
 ** Role in SOFR OIS curve construction
 
@@ -66,6 +100,14 @@ tenor range, joined at a split point" pattern
 describes for log-linear/spline, applied here with FOMC-stepped flat
 forward as the specific short-end method for OIS/SOFR curves.
 
+In code this is one configuration, not engine work: the curve config
+carries =interpolation_method= =FLAT_FORWARD_THEN_LOG_LINEAR= and a
+=split_tenor_code= marking the boundary; the pillar list is SPOT→1F,
+1F→2F, ..., nF→split; and each end-tenor code doubles as the point id
+the bootstrap resolver reads the observed quote from (see
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+Bootstrapping Architecture]]).
+
 ** Provenance
 
 This document was prompted by two LinkedIn posts by André Luiz
@@ -80,4 +122,6 @@ integration into this codebase's domain model are original.
 - [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the sibling fixed-schedule concept for exchange-traded futures/CDS rolls, not to be confused with FOMC dates.
 - [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — the general local/non-local interpolation-method framework this specializes for the SOFR short end.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — OIS instruments and USD curve bootstrapping in general.
+- [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — the event-store model FOMC dates are entered into.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — how the FOMC model lands in code.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.

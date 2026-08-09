@@ -65,6 +65,14 @@ for vol surface tenors see
   [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] (the sibling
   fixed-schedule concept for the Fed's own meeting calendar, used for the
   FOMC-dated flat-forward short end of a SOFR OIS curve).
+- *Schedule-based tenors* → how a tenor resolves as "anchor + steps
+  along a named schedule axis" (=SCHEDULE_STEP=), the =tenor_schedules=
+  vocabulary (=ROLL_QUARTER= closed-form, =FOMC_MEETING= event-lookup),
+  the =1F=..=nF= and =1Y 1RQ= notations, and the anchors
+  (=measured_from=) every resolution starts from — see
+  [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "How a tenor
+  resolves" section, and [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor
+  and Curve Bootstrapping Architecture]] for the code model.
 - *How far a curve goes* → [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term
   Structure Extent]] (30Y for interest rate curves, 5Y-default/30Y-available
   for vol surfaces, open-ended for CDS, and the flatten-beyond-the-end
@@ -99,3 +107,4 @@ Families]]. For the equivalent tenor concept on the volatility side, see
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the companion hub for single-curve bootstrapping mechanics.
 - [[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Families]] — how several curves compose into a family for one currency.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the vol-surface tenor convention (from today, not spot).
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the code model: entities, resolver, bootstrap chain.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:calendar:refdata:ore:
 #+created: 2026-07-13
-#+updated: 2026-07-13
+#+updated: 2026-08-09
 
 * Summary
 
@@ -20,9 +20,8 @@ Diary/Effects Model]]. An event is modelled as a diary entry anchored to a time 
 interval, strictly, though a single instant is the degenerate case),
 carrying a name, the currencies or markets it touches, and a *kind* —
 public holiday, central-bank policy meeting, scheduled data release,
-or an open-ended "other" — that lets the same =calendar= (or a
-companion =calendar_event=) table hold heterogeneous entries without
-collapsing their distinct provenance. It also surveys where genuine,
+or an open-ended "other" — that lets the =calendar_event= table hold
+heterogeneous entries without collapsing their distinct provenance. It also surveys where genuine,
 citable event data can be sourced to seed data-quality test fixtures:
 the official calendar pages published by the G10 central banks (the
 Federal Reserve, the European Central Bank, the Bank of England, the
@@ -31,6 +30,45 @@ the Swiss National Bank) for their respective policy-setting
 committees.
 
 * Detail
+
+** The landed model: =calendar_event= + =diary_entry_types= (decided 2026-08-09)
+
+The FOMC analysis closed the open design questions this document left
+open. The decided shape (story * Decisions D1, D4):
+
+- *One table for all event kinds.* A new =calendar_event= entity
+  (ores.refdata, codegen'd, bitemporal, sibling of
+  =calendar_rules=/=calendar_exceptions=): =id= (uuid),
+  =calendar_code= → =calendars=, =event_date= (date),
+  =diary_entry_type= → new =diary_entry_types= vocabulary, =name=,
+  =description= (nullable), =source= (nullable provenance, e.g.
+  ='federalreserve.gov'=), plus the standard audit/temporal columns.
+  Never a table per calendar or per type.
+- *The vocabulary.* =diary_entry_types= seeds =holiday=,
+  =central_bank_meeting=, =data_release=, =other= — open-ended; a
+  future kind (earnings release, auction) costs one row.
+- *Holidays keep their own machinery.* =calendar_rules=,
+  =calendar_exceptions= and the =calendar_date= grid stay as they are;
+  =calendar_event= holds the non-holiday kinds. The =holiday= entry
+  type stays in the vocabulary so the whole classification lives in
+  one place.
+- *Template/Instance.* An event row is an instance; its template is
+  the (calendar, diary_entry_type, name) triple. FOMC meetings are
+  entered as a short run of instances. Formulaic recurrence generation
+  (e.g. Non-Farm Payrolls) is deferred; =calendar_rules='s grammar can
+  later feed a template link if a consumer needs it.
+- *The worked case.* =US.FOMC= is a row in =calendars=
+  (=calendar_type= central_bank_meeting, =country_code= US, =source=
+  federalreserve.gov, =is_editable= true); =currency_calendars= links
+  USD to it; the 2025–2027 meeting dates are seeded as
+  =central_bank_meeting= =calendar_event= rows, transcribed from
+  [[https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm][federalreserve.gov/monetarypolicy/fomccalendars.htm]] with
+  =source='federalreserve.gov'=. No formal feed exists — transcription
+  with the citable source, per the survey below.
+
+The code model is documented in
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+Bootstrapping Architecture]].
 
 ** An event as a diary entry with a time point
 
@@ -72,12 +110,12 @@ between "holiday" and "event." This keeps the classification open to
 extension (a future =earnings_release= or =auction= type costs nothing
 to add), and lets a =central_bank_meeting= entry carry the same shape
 as every other event while still being filterable and reportable on
-its own. Whether holidays themselves live alongside events with
-=diary_entry_type = holiday=, or in a separate table as
-[[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar
-Administration]] discusses, both layouts are consistent with the
-Diary/Effects split; the type discriminator matters regardless of
-which physical layout is chosen.
+its own. The layout question is settled (2026-08-09): holidays keep the
+recurrence machinery (=calendar_rules=, =calendar_exceptions=,
+=calendar_date=) and events live in one =calendar_event= table — the
+=holiday= type remains in the =diary_entry_types= vocabulary so the
+classification is unified even though the physical homes differ. See
+"the landed model" above.
 
 ** Recurrence: Template/Instance, not a general recurrence grammar
 
@@ -147,6 +185,7 @@ transcription rather than an automatable ongoing sync.
 * See also
 
 - [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the hub.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the =calendar_event= entity in the code model.
 - [[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]] — why this document stops at the diary and does not model effects.
 - [[id:381A7747-2786-45E1-8C90-B42EC5A81472][Holiday Calendar Administration]] — the Template/Instance pairing this document reuses for events.
 - [[https://datatracker.ietf.org/doc/html/rfc5545][RFC 5545: Internet Calendaring and Scheduling Core Object Specification (iCalendar)]] — the standardised recurrence/exception mechanism the Template/Instance pairing mirrors.

@@ -300,6 +300,8 @@ via its "Verifies task" field.
 | 8 | =read_latest_by_observation= is N+1 per pillar with a TOCTOU race across concurrent =republish()= calls | =curve_republish_service.cpp= | Declined | Low-risk (user-triggered, not high-frequency); the race degrades to the exact pre-fix duplicate-key error this PR resolves, not silent corruption. Worth revisiting if republish is ever automated/scheduled. |
 | 9 | =system.curve_bootstrap= seeded =applies_to_amend=false= despite reruns being an amend | =dq_change_reasons_populate.sql= | Fixed | Flipped to =true=. |
 | 10 | Pre-existing "generated NATS handler never registered" bug also affects =calendar_exception=/=calendar_rule=/=derivation_kind= | -- | Declined | Pre-existing, not introduced by this PR; out of scope here -- worth its own follow-up ticket. |
+| 11 | Fix-up commit's new discount-factor guard can crash the app: uncaught throw escapes a Qt slot | =CurveBuilderWorkbench.cpp= | Fixed | Wrapped the =forward_rate_calculator::calculate()= call in =try=/=catch=; degrades to a banner instead of terminating. |
+| 12 | =collectPillarsFromTable()=/=collectConfigFromUi()= still stamp stale (pre-prompt) change-reason values that are immediately overwritten | =CurveBuilderWorkbench.cpp= | Fixed | Dropped the dead stamping from both collect functions; the single post-prompt stamp is now the only one. |
 
 * Result
 

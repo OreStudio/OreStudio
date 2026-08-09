@@ -775,8 +775,10 @@ void CurveBuilderWorkbench::collectConfigFromUi() {
     config_.split_tenor_code = splitTenorCodeEdit_->text().toStdString();
     config_.modified_by = username_;
     config_.performed_by = username_;
-    config_.change_reason_code = pendingChangeReasonCode_;
-    config_.change_commentary = pendingChangeCommentary_;
+    // change_reason_code/change_commentary are NOT stamped here: this runs before
+    // promptAndStashChangeReason() sets pendingChangeReasonCode_/pendingChangeCommentary_ for the
+    // current save, so onSaveClicked stamps them directly onto config_ itself once the prompt
+    // returns, rather than leaving stale values here that would just be overwritten.
 }
 
 void CurveBuilderWorkbench::collectPillarsFromTable() {
@@ -797,8 +799,10 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
         p.curve_role_code = combo_text(2);
         p.modified_by = username_;
         p.performed_by = username_;
-        p.change_reason_code = pendingChangeReasonCode_;
-        p.change_commentary = pendingChangeCommentary_;
+        // change_reason_code/change_commentary are NOT stamped here: this runs before
+        // promptAndStashChangeReason() sets pendingChangeReasonCode_/pendingChangeCommentary_ for
+        // the current save, so onSaveClicked stamps them directly onto pillars_ once the prompt
+        // returns, rather than leaving stale values here that would just be overwritten.
         collected.push_back(std::move(p));
     }
 
@@ -1116,11 +1120,23 @@ void CurveBuilderWorkbench::renderBootstrapResults(
     } catch (const std::exception&) {
         haveDayCountConvention = false;
     }
+    // calculate() throws on a non-positive discount factor (e.g. a server-side numerical
+    // glitch) -- this runs synchronously inside a Qt slot (the onBootstrapClicked future
+    // watcher's finished lambda), and Qt does not catch exceptions escaping a slot, so an
+    // uncaught throw here would terminate the whole app. Degrade to "forward rates unavailable"
+    // instead: the discount factors themselves are still shown below.
     std::vector<quant::forward_rate_point> forwards;
     if (haveDayCountConvention) {
-        forwards = quant::forward_rate_calculator::calculate(bootstrapped, dayCountConvention);
-        for (const auto& f : forwards)
-            forwardRateByPointId.emplace(f.point_id, f.instantaneous_forward_rate);
+        try {
+            forwards = quant::forward_rate_calculator::calculate(bootstrapped, dayCountConvention);
+            for (const auto& f : forwards)
+                forwardRateByPointId.emplace(f.point_id, f.instantaneous_forward_rate);
+        } catch (const std::exception& e) {
+            showBanner(tr("Bootstrap succeeded, but instantaneous forward rates could not be "
+                          "computed: %1")
+                          .arg(QString::fromStdString(e.what())),
+                      true);
+        }
     }
 
     resultsTable_->setRowCount(0);

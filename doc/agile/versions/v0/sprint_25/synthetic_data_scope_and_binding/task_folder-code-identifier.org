@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/folder-code-identifier
-#+pr:
+#+pr: 1923
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1923][#1923]] | [ores.shell] Resolve market simulator folders by codename path |
 
 * Review
 

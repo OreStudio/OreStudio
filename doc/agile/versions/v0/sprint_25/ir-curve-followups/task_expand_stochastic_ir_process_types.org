@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/expand-stochastic-ir-process-types
-#+pr:
+#+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -394,7 +394,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 

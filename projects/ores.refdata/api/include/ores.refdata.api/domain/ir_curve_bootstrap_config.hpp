@@ -62,6 +62,15 @@ namespace ores::refdata::domain {
  * basis-linked/cyclic Projection dependencies as an explicit out-of-scope modelling gap, not
  * something this design should silently permit), and must not reference itself.
  *
+ * source_series_id (the raw grid this config bootstraps from) and
+ * output_series_id (the published curve it writes to) must differ.
+ * Without this, curve_republish_service's first-publish step would
+ * permanently reclassify the raw, externally-fed input series as this
+ * config's own IR_CURVE_BOOTSTRAP-derived output, and every
+ * subsequent bootstrapped observation would be written into the exact
+ * series id the raw feed keeps writing ticks into -- silently
+ * corrupting the raw data rather than failing loudly.
+ *
  * interpolation_method and curve_family_role are small,
  * fixed-vocabulary fields intrinsic to this record (not references to
  * another entity), following the same plain-check-constraint pattern

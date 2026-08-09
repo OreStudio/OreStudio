@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 776740DD-B2BA-483F-8E30-72D4A9B00616
+:END:
+#+title: Task: Curated curve bootstrap templates for novice-friendly curve building
+#+description: A first-class reference-data template entity (config + pillar rows, mirroring ir_curve_bootstrap_config/pillar's own shape) that admins curate, with a Start from Template... picker in CurveBuilderWorkbench.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give a novice user a curated, admin-maintained starting point for building an IR curve, instead
+of a blank Pillars tab with no guidance on what tenors/curve roles a real curve needs. Add a
+first-class =curve_bootstrap_template= reference-data entity (config-level conventions + child
+pillar rows, mirroring =ir_curve_bootstrap_config=/=ir_curve_bootstrap_pillar='s own one-config-
+many-pillars shape, and =ir_curve_template_entry='s precedent for the =[start_tenor, end_tenor)=
+pillar-grid shape in =ores.synthetic=) that admins curate via standard CRUD, plus a
+"Start from Template..." picker in =CurveBuilderWorkbench= (alongside the cheaper "New from
+Existing..." clone-an-existing-config stopgap already shipped in the parent task) that populates
+a blank recipe's Conventions + Pillars from a chosen template. Source/Output Series stay
+user-supplied either way, since those are always tenant/series-specific.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-08                               |
+
+* Acceptance
+
+- A new =curve_bootstrap_template= (+ child pillar) reference-data entity exists with standard
+  CRUD/history, scaffolded via codegen (org-mode model + =ores.cpp.qt=/=ores.sql= facets),
+  matching the versioned, soft-deletable, audited conventions every other reference-data entity
+  in this codebase already follows.
+- =CurveBuilderWorkbench= gains a "Start from Template..." action (create mode only) that opens a
+  picker over templates, filtered/pre-filtered by the workbench's own Currency/Index selection
+  the same way the Source/Output Series pickers already are.
+- Selecting a template populates Conventions (curve_family_role, interpolation_method,
+  day_count_convention, split_tenor_code) and Pillars (fresh pillar ids, per the same rationale
+  the "New from Existing..." clone feature already documents) into the blank recipe; Source/
+  Output Series stay blank for the user to fill in themselves.
+- At least a handful of seeded templates exist for common shapes (e.g. a SOFR-style OIS curve,
+  a EURIBOR-style term curve) so the feature is demonstrably useful out of the box, not an empty
+  catalog a tenant has to populate before it does anything.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

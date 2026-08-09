@@ -51,9 +51,9 @@ using ores::service::messaging::reply;
 using namespace ores::logging;
 
 /**
- * @brief NATS request/reply handler for republish_curve_request -- the on-demand trigger for
- * curve_republish_service::republish(), the same entry point the Qt client, shell/CLI, or a
- * scheduler job would all call.
+ * @brief NATS request/reply handler for republish_curve_request/compute_curve_request -- the
+ * on-demand triggers for curve_republish_service::republish()/compute() respectively, the same
+ * entry points the Qt client, shell/CLI, or a scheduler job would all call.
  */
 class curve_republish_handler {
 public:
@@ -85,6 +85,48 @@ public:
                     boost::lexical_cast<boost::uuids::uuid>(req->bootstrap_config_id);
                 ores::marketdata::service::app::curve_republish_service::republish(
                     req_ctx, bootstrap_config_id, req->as_of);
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(curve_republish_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(curve_republish_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        BOOST_LOG_SEV(curve_republish_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void compute(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(curve_republish_handler_lg(), msg);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "marketdata::curve_bootstrap:compute")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        compute_curve_response resp;
+        if (auto req = decode<compute_curve_request>(msg)) {
+            try {
+                const auto bootstrap_config_id =
+                    boost::lexical_cast<boost::uuids::uuid>(req->bootstrap_config_id);
+                const auto points =
+                    ores::marketdata::service::app::curve_republish_service::compute(
+                        req_ctx, bootstrap_config_id, req->as_of);
+                resp.points.reserve(points.size());
+                for (const auto& p : points)
+                    resp.points.push_back({p.point_id, p.date, p.discount_factor});
                 resp.success = true;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(curve_republish_handler_lg(), error)

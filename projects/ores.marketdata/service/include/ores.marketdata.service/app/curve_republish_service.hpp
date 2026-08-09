@@ -20,26 +20,34 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_CURVE_REPUBLISH_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_CURVE_REPUBLISH_SERVICE_HPP
 
+#include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
 /**
- * @brief Publishes an IR curve bootstrap config's output: reads the raw instrument grid,
- * bootstraps it, writes the resulting discount factors into the config's own output_series_id,
- * and stamps observation_lineage per point -- the "republish/remap" step, analogous to
- * curve_feed_ingest_loop's raw-tick remap but a transform rather than a passthrough.
+ * @brief Computes and publishes an IR curve bootstrap config's output -- the "republish/remap"
+ * step, analogous to curve_feed_ingest_loop's raw-tick remap but a transform rather than a
+ * passthrough.
  *
  * On-demand, not NATS-per-tick and not scheduler-only: a bootstrap is a batch recompute over a
  * presumed-complete grid at a given as-of, unlike curve_feed_ingest_loop's per-tick remap.
- * republish() is a pure orchestration method callable identically from a NATS request/reply
- * handler, shell/CLI, or a scheduler job -- no review/approval gate here; that is a separate,
- * later layer on top of this always-auto-publishing mechanism (see the story's own
- * "Curve review/sign-off UI" task).
+ * compute()/republish() are pure orchestration methods callable identically from a NATS
+ * request/reply handler, shell/CLI, or a scheduler job.
+ *
+ * compute() and republish() are deliberately separate: compute() is read-only (resolves pillars,
+ * reads the raw grid, runs the engine -- itself already side-effect-free) and never touches
+ * market_observations/observation_lineage, letting a caller preview a bootstrap's result before
+ * committing to it. republish() calls compute() internally and then does the actual write --
+ * this is what a Curve Builder Workbench's separate Bootstrap (preview) and Publish actions each
+ * call, and what the future Curve review/sign-off UI task's approval gate sits in front of
+ * republish() alone, not compute(). Neither method gates on any such approval today -- Bootstrap
+ * is a compute-only preview, and Publish (via republish()) still always auto-publishes.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT curve_republish_service {
 private:
@@ -55,7 +63,28 @@ public:
     using context = ores::database::context;
 
     /**
-     * @brief Bootstraps and publishes @p bootstrap_config_id's output as of @p as_of.
+     * @brief Resolves and bootstraps @p bootstrap_config_id's pillars as of @p as_of, without
+     * writing anything -- the preview half of the compute/publish split (see class docs).
+     *
+     * @param ctx Database context, already tenant-scoped by the caller.
+     * @param bootstrap_config_id The ir_curve_bootstrap_config to bootstrap.
+     * @param as_of The raw grid's as-of snapshot to bootstrap from.
+     * @return One bootstrapped_point per pillar.
+     * @throws std::invalid_argument if the config, its pillars, or the raw grid's observed rates
+     * are missing or malformed.
+     * @throws ores::analytics::quant::service::discount_curve_required_error if @p
+     * bootstrap_config_id is a PROJECTION config and its discount_curve_config_id's own output
+     * does not yet cover every pillar's dates as of @p as_of -- propagated uncaught, per the
+     * engine's own "fails/defers cleanly" contract; callers must not treat this as a bug.
+     */
+    static std::vector<ores::analytics::quant::service::bootstrapped_point>
+    compute(context ctx,
+            const boost::uuids::uuid& bootstrap_config_id,
+            std::chrono::system_clock::time_point as_of);
+
+    /**
+     * @brief Bootstraps (via compute()) and publishes @p bootstrap_config_id's output as of
+     * @p as_of -- the publish half of the compute/publish split (see class docs).
      *
      * @param ctx Database context, already tenant-scoped by the caller.
      * @param bootstrap_config_id The ir_curve_bootstrap_config to republish.
@@ -63,10 +92,7 @@ public:
      * published observations' own observation_datetime and observation_lineage's source_as_of.
      * @throws std::invalid_argument if the config, its pillars, its output market_series row, or
      * the raw grid's observed rates are missing or malformed.
-     * @throws ores::analytics::quant::service::discount_curve_required_error if @p
-     * bootstrap_config_id is a PROJECTION config and its discount_curve_config_id's own output
-     * does not yet cover every pillar's dates as of @p as_of -- propagated uncaught, per the
-     * engine's own "fails/defers cleanly" contract; callers must not treat this as a bug.
+     * @throws ores::analytics::quant::service::discount_curve_required_error -- see compute().
      */
     static void republish(context ctx,
                           const boost::uuids::uuid& bootstrap_config_id,

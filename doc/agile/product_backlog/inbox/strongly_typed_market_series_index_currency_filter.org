@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 86B41936-1186-4FEC-B001-C62F59DF0013
+:END:
+#+title: Strongly-typed index/currency filter fields for market_series, not string matching
+#+description: CurveBuilderWorkbench needs to filter market_series by currency+index to constrain curve bootstrapping, but today that means string-matching qualifier text (dash-vs-slash separator bugs already hit) -- these should be strongly-typed soft-FK fields instead.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:identifiers:oresmd:curve-builder:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+CurveBuilderWorkbench (the IR curve bootstrap builder UI) needs a way to constrain which
+=market_series= rows a user can pick as a curve's Source/Output series and as a discount curve's
+config, given a chosen currency and index (e.g. "USD" + "USD-SOFR"). Today the only way to do
+that is client-side substring matching against =market_series.qualifier= — a free-text column with
+no fixed shape. This already produced a real bug: =floating_index_type.code= uses a dash after the
+currency (=USD-SOFR=), but =market_series.qualifier= for rates uses a slash instead (=USD/SOFR=,
+per =ir_curve_feed.cpp='s own qualifier construction) — the two conventions silently diverged and
+the filter matched nothing until a hand-rolled dash→slash translation
+(=CurveBuilderWorkbench::selectedIndexQualifier()=) was added as a workaround.
+
+String matching (substring/regex) against a free-text identifier column is not a sustainable way
+to express "this series belongs to this currency and this index" — it is fragile to any future
+change in qualifier generation, cannot be validated at write time, and cannot be indexed/queried
+efficiently. What's needed instead is strongly-typed fields: a currency column and an index
+column (soft FKs into =iso.currencies= and =floating_index_type=, following the same soft-FK
+convention already used throughout the codebase — e.g. =change_reason_code=) directly on
+=market_series= (or reachable from it), so filtering is a normal equality/join predicate, not a
+string-matching workaround.
+
+* Why
+
+The dash-vs-slash bug above is a direct symptom of relying on unstructured text to encode
+structured identity (currency + index family + tenor). Every future consumer that needs to filter
+or group market series by currency/index (not just this workbench — the Rate Curves viewer,
+synthetic feed bindings, etc. all currently do their own ad-hoc parsing of the qualifier string)
+will hit the same class of bug unless the underlying data model gets typed fields.
+
+This is closely related to, but not identical with, the =oresmd= migration
+([[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]): that story's own
+=Task: Migrate market_series qualifier/point_id generation onto oresmd= explicitly keeps
+=qualifier='s *column shape* as a plain string (just generated deterministically from oresmd
+fields instead of free text) — and per the oresmd design doc's own worked examples, the resulting
+qualifier shape is still *type-dependent* (a discount-factor quote projects to =qualifier=USD3M=,
+a swap-rate quote to =qualifier=USD/2D/3M=, etc.), so oresmd alone does not give callers a stable,
+strongly-typed field to filter on either — it standardises *generation*, not *queryability*. This
+capture is about whether =market_series= (or a related lookup) should additionally carry
+structured, indexable currency/index fields, which is a genuinely open design question the oresmd
+work doesn't resolve by itself and needs its own thinking session before implementation.
+
+* References
+
+- =projects/ores.qt/refdata/src/CurveBuilderWorkbench.cpp= — =selectedIndexQualifier()=, the
+  current dash→slash workaround this capture proposes replacing.
+- =projects/ores.synthetic/service/src/ir_curve_feed.cpp= — the qualifier-construction code whose
+  slash convention the workaround had to reverse-engineer.
+
+* See also
+
+- [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
+- [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]]
+- [[id:2641F4BC-2521-4457-909C-3B549D09BC31][Task: Migrate market_series qualifier/point_id generation onto oresmd]]
+- [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Task: Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]]

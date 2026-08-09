@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 79474500-DC8E-456C-8BD6-A52127F7FD94
+:END:
+#+title: Qt codegen: no way to show a friendly name instead of a raw UUID in list columns
+#+description: ores.cpp.qt's Columns (Qt model) codegen only supports plain UUID stringification for a uuid-typed column; there is no lookup/display-name mechanism analogous to combo_display_field on detail-dialog combos, so every UUID FK-ish column in a generated list window shows a raw truncated UUID.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:qt:ux:marketdata:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The codegen-generated =ir_curve_bootstrap_configs= list window (=IrCurveBootstrapConfigMdiWindow=)
+shows =Output Series=/=Discount Curve Config= columns as raw truncated UUIDs (e.g.
+=a65d72d0-...=, =00000000-...=), noticed while manually testing the Curve Builder Workbench.
+Checked =cpp_qt_client_model.cpp.mustache= directly: a =Columns (Qt model)= entry with
+=type: uuid= only ever renders via =boost::uuids::to_string(...)= — there is no equivalent of
+detail-dialog combos' =combo_display_field= (which lets a foreign-entity combo show a friendly
+field instead of its id) for list columns. Every entity with a UUID-shaped column that references
+another entity (not just this one) hits the same problem once that column is added to a list view.
+
+* Why
+
+A raw UUID in a list column is meaningless to a user without cross-referencing another window —
+exactly the kind of thing =combo_display_field= already solves for detail-dialog combos, just not
+for list columns. A =Columns (Qt model)= table entry could plausibly gain an equivalent
+=display_lookup= annotation (entity + display field + join key) that the =ClientModel= codegen
+resolves at fetch/render time, the same way detail dialogs already resolve combo display text —
+but this needs its own design pass (fetch strategy: joined server-side vs. client-side cache
+lookup; what happens when the referenced row's own display field changes; whether it is opt-in
+per column or automatic for every =uuid=-typed column with a documented reference target) rather
+than a one-off hack in a single generated file, since any hand edit to
+=IrCurveBootstrapConfigMdiWindow.cpp= would be silently overwritten by the next codegen run for
+this entity.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_qt_client_model.cpp.mustache= — the
+  ={{#is_uuid}}...{{/is_uuid}}= column-rendering block with no lookup/display-field option.
+- =projects/ores.codegen/library/templates/cpp_qt_detail_dialog.cpp.mustache= —
+  =combo_display_field='s existing, analogous mechanism for detail-dialog combos.
+- =projects/ores.qt/refdata/src/IrCurveBootstrapConfigMdiWindow.cpp= — the generated file whose
+  list currently shows raw UUIDs for =Output Series=/=Discount Curve Config=.
+
+* See also
+
+- [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Task: Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]]

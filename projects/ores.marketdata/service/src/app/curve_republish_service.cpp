@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
@@ -37,8 +38,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <format>
-#include <map>
 #include <stdexcept>
+#include <unordered_map>
 
 namespace ores::marketdata::service::app {
 
@@ -72,11 +73,12 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     return refctx;
 }
 
-std::map<std::string, double> read_raw_rates(ores::database::context ctx,
-                                             const boost::uuids::uuid& source_series_id,
-                                             std::chrono::system_clock::time_point as_of) {
+std::unordered_map<std::string, double>
+read_raw_rates(ores::database::context ctx,
+               const boost::uuids::uuid& source_series_id,
+               std::chrono::system_clock::time_point as_of) {
     repository::market_observations_repository obs_repo;
-    std::map<std::string, double> out;
+    std::unordered_map<std::string, double> out;
     for (const auto& obs : obs_repo.read_as_of(ctx, source_series_id, as_of))
         out.emplace(obs.point_id, std::stod(obs.value));
     return out;
@@ -156,13 +158,14 @@ void ensure_output_series_stamped(ores::database::context ctx,
 
 } // namespace
 
-void curve_republish_service::republish(context ctx,
-                                        const boost::uuids::uuid& bootstrap_config_id,
-                                        std::chrono::system_clock::time_point as_of) {
+std::vector<ores::analytics::quant::service::bootstrapped_point>
+curve_republish_service::compute(context ctx,
+                                 const boost::uuids::uuid& bootstrap_config_id,
+                                 std::chrono::system_clock::time_point as_of) {
     namespace quant = ores::analytics::quant::service;
 
-    BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
-                              << " as of " << as_of;
+    BOOST_LOG_SEV(lg(), info) << "Computing bootstrap config " << bootstrap_config_id << " as of "
+                              << as_of;
 
     const auto config = read_config(ctx, bootstrap_config_id);
     const auto pillars = read_pillars(ctx, bootstrap_config_id);
@@ -183,12 +186,22 @@ void curve_republish_service::republish(context ctx,
         discount_curve = read_discount_curve(ctx, discount_config.output_series_id, as_of, refctx);
     }
 
-    const auto bootstrapped =
-        quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
-                                                 bootstrap_pillars,
-                                                 day_count_convention,
-                                                 interpolation_method,
-                                                 is_projection ? &discount_curve : nullptr);
+    return quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
+                                                    bootstrap_pillars,
+                                                    day_count_convention,
+                                                    interpolation_method,
+                                                    is_projection ? &discount_curve : nullptr);
+}
+
+void curve_republish_service::republish(context ctx,
+                                        const boost::uuids::uuid& bootstrap_config_id,
+                                        std::chrono::system_clock::time_point as_of) {
+    BOOST_LOG_SEV(lg(), info) << "Republishing bootstrap config " << bootstrap_config_id
+                              << " as of " << as_of;
+
+    const auto bootstrapped = compute(ctx, bootstrap_config_id, as_of);
+    const auto config = read_config(ctx, bootstrap_config_id);
+    const bool is_projection = config.curve_family_role == "PROJECTION";
 
     ensure_output_series_stamped(ctx, config);
 
@@ -204,6 +217,7 @@ void curve_republish_service::republish(context ctx,
     observations.reserve(bootstrapped.size());
     lineages.reserve(bootstrapped.size());
 
+    repository::observation_lineage_repository lineage_repo;
     for (const auto& point : bootstrapped) {
         domain::market_observation obs;
         obs.id = uuid_gen();
@@ -216,9 +230,18 @@ void curve_republish_service::republish(context ctx,
         obs.source = "ir_curve_bootstrap:" + boost::uuids::to_string(config.id);
         observations.push_back(std::move(obs));
 
+        // A rerun over the same (series, as_of, point_id) natural key must reuse the prior
+        // lineage row's own id -- the insert trigger's version-bump/close-prior-row logic only
+        // fires when it finds an existing row with that same id, per this table's own doc
+        // comment ("A rerun of a derivation over the same tenor/point natural key closes the
+        // prior generation's lineage row and inserts a new one"). Minting a fresh id every
+        // republish bypassed that and hit the natural-key unique index instead.
+        const auto existing = lineage_repo.read_latest_by_observation(
+            ctx, config.output_series_id, as_of, point.point_id);
+
         domain::observation_lineage lin;
         lin.tenant_id = ctx.tenant_id();
-        lin.id = uuid_gen();
+        lin.id = existing ? existing->id : uuid_gen();
         lin.party_id = config.party_id;
         lin.series_id = config.output_series_id;
         lin.observation_datetime = as_of;

@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 794D9D94-8E62-4232-A8FD-769B518DB04C
 :END:
-#+title: Task: Curve builder UI: bootstrap config CRUD + on-demand republish trigger
-#+description: Qt UI for the IR curve bootstrap pipeline, currently entirely NATS/CLI-only with no screen anywhere: standard list/detail/history dialogs for ir_curve_bootstrap_config and its pillar list, plus a Republish action that sends republish_curve_request and opens the existing CurveSnapshotMdiWindow against the config's own output series to show the result.
+#+title: Task: Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench
+#+description: Qt UI for the IR curve bootstrap pipeline, currently entirely NATS/CLI-only with no screen anywhere -- a Curve Builder Workbench under the Market Data menu guiding a novice through defining a bootstrap recipe, previewing its computed output, and explicitly publishing it, plus the analytics.quant building blocks (forward-rate calculator) its diagnostics tab needs.
 #+type: task
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/curve-builder-ui
+#+pr: 1919
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,67 +30,219 @@ for this task", and the
 user configuring or running a bootstrap today has no way to do either
 without a raw NATS call.
 
-This task closes that gap in two pieces:
+Brainstormed with the user against
+[[file:../../../../../analysis/gemini_ir_curve_bootstrapping.org][the pre-existing UX analysis]] (+ its wizard mockup) rather than
+building from the task's original, simpler assumptions. Landed on a
+persistent, non-modal *Curve Builder Workbench* -- not a linear wizard,
+not a standard modal detail dialog -- because this is explicitly meant
+to guide a first-time user through an iterative process (define, see
+results, adjust, try again), and because "step 1 of a generic UI"
+means the shape needs room to grow toward genuinely multi-curve
+scenarios later without a rewrite.
 
-- *Standard CRUD Qt entity* for =ir_curve_bootstrap_config= and its
-  child =ir_curve_bootstrap_pillar= list -- list/detail/history dialogs
-  via =codegen-add-qt-entity=, the same shape
-  =ir_curve_template_entry= already has for the generation side's own
-  recipe entity. This is what lets a user actually create/edit a
-  bootstrap recipe instead of it only being reachable via
-  =ores.refdata.core='s own repositories/tests.
-- *A "Republish" action* on the bootstrap config screen: choose an
-  as-of, send =republish_curve_request=, and report success/failure
-  (surfacing =curve_republish_service::republish()='s own error
-  messages verbatim -- including
-  =discount_curve_required_error='s "fails/defers cleanly" message for
-  a Projection config run too early). On success, open the existing
-  =CurveSnapshotMdiWindow= against the config's own output series so
-  the result is visible without hunting for it.
+Three deliberately separate actions, not two -- confirmed with the
+user mid-brainstorm as a real distinction, not just a UI nicety:
+- *Save* -- persists the recipe (config fields + pillar list) as
+  entered. No computation, nothing published.
+- *Bootstrap* -- runs the algorithm and shows the result (points,
+  zero-curve plot, forward-rate health check) without publishing
+  anything. Requires a small, clean server-side split: the engine
+  invocation was already pure
+  (=curve_bootstrap_engine::bootstrap()= has no side effects);
+  =curve_republish_service= gets a new compute-only path alongside its
+  existing write path, rather than the two staying fused as they are
+  today.
+- *Publish* -- makes the bootstrapped generation live via the existing
+  =curve_republish_service='s write path (=market_observations= +
+  =observation_lineage= + =market_series.derivation_kind= stamping),
+  unchanged from what the republish task already built.
 
-*Explicitly out of scope*: any review/approval gate before a
-republished generation is treated as live -- that is the separate
-[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][Curve review/sign-off UI]] task, which this task's own screen is the
-foundation for (sign-off needs a place to trigger/view a run before it
-can add a gate around that action).
+This split is also the foundation
+[[id:C0B2C614-5743-4826-967B-A5FCC91504EF][the Curve review/sign-off UI task]] needs -- it cannot add an approval
+gate around "publish" while compute and publish are still one atomic
+call, so building the split here (small, well-scoped) rather than
+leaving it for that task avoids that task having to do two things at
+once.
+
+*Menu placement*: settled mid-brainstorm as its own decision, not
+inherited from where the backend domain type lives.
+=ir_curve_bootstrap_config='s backend stays in =ores.refdata= (an
+already-settled story-level call), but its Qt surface registers under
+*Market Data*, not *Reference Data*. Reference Data's existing "Curve
+Building" submenu is instrument *conventions* only (CDS/Deposit/FRA/
+IBOR/OIS/Swap); this is an entity whose entire purpose is producing a
+market data series, matching where =CrmTopologyConfig='s own
+market-data-producing action already sits precedent-wise, and sitting
+naturally next to =MarketdataPlugin='s existing "Interest Rates" (raw
+grid viewer) action. General rule worth keeping for future entities:
+config/convention entities that are *looked up and referenced* stay
+Reference Data; entities whose primary purpose is *producing or
+triggering the production of* a market data series surface under
+Market Data regardless of backend component ownership.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
 
-- A bootstrap config list window and detail dialog exist (Menu:
-  Reference Data > ... ), following the standard codegen Qt entity
-  conventions -- create, edit, delete, and a History dialog showing
-  every change with its change reason.
-- The detail dialog manages the config's pillar list (add/reorder/
-  remove pillars: tenor codes, curve role, sequence) as a child grid,
-  matching =ir_curve_template_entry='s own precedent for the
-  generation-side recipe.
-- A "Republish" action is reachable from the bootstrap config screen,
-  takes an as-of, and reports the real success/failure message from
-  =curve_republish_service::republish()= -- not a generic "failed"
-  toast.
-- On a successful republish, the user can reach the resulting curve
-  (=CurveSnapshotMdiWindow= against the config's own output series)
-  without leaving the flow or hand-typing series_type/metric/qualifier.
-- No approval/sign-off gate is added here -- a republish triggered from
-  this screen auto-publishes exactly as =curve_republish_service=
-  already does.
+- A bootstrap config list window exists under *Market Data > Curve
+  Bootstrapping* (not Reference Data), following the standard codegen
+  Qt entity conventions for list/create/delete, plus a History dialog
+  showing every change with its change reason. A second menu action,
+  "Build Curve...", opens the Workbench directly in new-recipe mode.
+- Opening/creating a config opens the *Curve Builder Workbench*
+  (non-modal, stays open across iterations) instead of a standard
+  modal detail dialog, with three tabs: Conventions, Pillars, Build &
+  Diagnostics.
+- The Pillars tab manages the pillar list (add/reorder/remove; tenor
+  codes and curve role chosen from reference-data-backed dropdowns,
+  never free text) as an editable grid within the Workbench, not a
+  separate list window.
+- Three distinct, explicit actions exist -- Save, Bootstrap, Publish --
+  never fused: Save persists the recipe only; Bootstrap computes and
+  displays results without publishing; Publish makes the most recent
+  Bootstrap's generation live. Bootstrap is disabled (with an inline
+  hint, not silently) until the recipe has been saved at least once
+  and has >= 1 pillar.
+- The Build & Diagnostics tab shows, after Bootstrap: a results table
+  (tenor, date, discount factor), a zero-curve/discount-factor plot,
+  and a forward-curve health-check plot with a warning banner for
+  flawed compositions (negative or wildly discontinuous forward
+  rates) -- reusing =CurveSnapshotMdiWindow='s existing =QtCharts=
+  dark-theme pattern, not a new chart style.
+- Save/Bootstrap/Publish failures surface the real service message
+  (including =discount_curve_required_error='s "fails/defers cleanly"
+  text) in a top banner; field-level problems (an unresolvable tenor
+  code, a missing required Discount Curve Config for a Projection
+  role) surface as per-field/per-row inline errors instead -- never
+  both for the same problem.
+- No approval/sign-off gate is added here -- Publish still
+  auto-publishes exactly as =curve_republish_service= already does;
+  the gate is the separate sign-off task's job, built on top of the
+  compute/publish split this task introduces.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Backend: split compute from publish
+
+=curve_republish_service= gains a compute-only path alongside its
+existing =republish()=:
+- =compute(bootstrap_config_id, as_of) -> vector<bootstrapped_point>=
+  -- everything =republish()= already does up to and including calling
+  =curve_bootstrap_engine::bootstrap()=, minus
+  =ensure_output_series_stamped()= and the =market_observations=/
+  =observation_lineage= writes. No new resolver/engine logic; this is
+  a refactor that extracts =republish()='s own read+compute steps into
+  a reusable function =republish()= itself then calls, not a
+  duplicate implementation.
+- New NATS protocol pair =compute_curve_request=/=response= (mirrors
+  =republish_curve_request= exactly: =bootstrap_config_id= + =as_of=;
+  response carries the computed points instead of a bare success
+  flag), new =curve_republish_handler::compute()= method, same
+  =has_permission= pattern as =republish()= (a *read* of computed-not-
+  published data still needs a permission check, distinct code from
+  the publish one -- =marketdata::curve_bootstrap:compute= vs
+  =...:republish=).
+- The Workbench's Publish action still calls the existing
+  =republish_curve_request= unchanged -- it recomputes server-side
+  rather than trusting client-held preview points, matching the
+  as-of/=source_as_of= semantics =observation_lineage= already commits
+  to (the raw grid could in principle have moved between Bootstrap and
+  Publish; recomputing is the correct behaviour, not an oversight).
+
+** New building block: forward-rate calculator (=ores.analytics.quant=)
+
+Static, pure, vector-in/vector-out, matching
+=curve_bootstrap_engine::interpolate_discount_factor='s own shape
+exactly (not =std::adjacent_difference= -- its first-element-copy
+semantics don't fit an N-points-in/N-1-out transform):
+
+- =forward_rate_point { point_id; start_date; end_date;
+  instantaneous_forward_rate; }=
+- =forward_rate_calculator::calculate(const
+  vector<bootstrapped_point>& points, day_count_convention_code) ->
+  vector<forward_rate_point>= -- one forward rate per consecutive
+  pillar pair, =f = ln(df_start/df_end) / year_fraction(start, end)=,
+  reusing =day_count_calculator= for the year fraction exactly like
+  the engine's own SWAP branch does.
+
+Built as a genuine building block per the user's explicit steer, not a
+one-off: takes any span of discount-factor points (not hardcoded to
+one config's pillar list), so it is equally usable later for
+whole-curve forward analysis, not just this Workbench's health-check
+plot. Thoroughly unit tested (flat curve -> constant forward rate,
+known non-flat curve -> hand-computed rates, single-point input ->
+empty output, day-count sensitivity).
+
+** Frontend: Curve Builder Workbench
+
+- =ir_curve_bootstrap_config='s standard Qt entity artefacts
+  (=ClientIrCurveBootstrapConfigModel=, =IrCurveBootstrapConfigMdiWindow=
+  list, =IrCurveBootstrapConfigHistoryDialog=,
+  =IrCurveBootstrapConfigController=) generated via
+  =codegen-add-qt-entity= (=--address ores.cpp.qt=) into
+  =ores.qt.refdata=, matching backend domain placement -- same
+  component =CrmTopologyConfig='s own Qt lives in. Requires adding a
+  =** Qt= drawer to
+  =projects/ores.refdata/modeling/ores.refdata.ir_curve_bootstrap_config.org=
+  first (confirmed absent -- the earlier task left it out deliberately).
+  The generated =DetailDialog= is discarded/unused; the Controller's
+  New/Edit wiring is hand-edited post-codegen to construct
+  =CurveBuilderWorkbench(config_id_or_empty)= instead.
+- =ir_curve_bootstrap_pillar= gets *no* codegen Qt entity -- no
+  separate list window, deliberately diverging from
+  =ir_curve_template_entry='s precedent (two independent flat list
+  windows with no cross-navigation, confirmed by reading its own Qt
+  files -- not novice-friendly enough for this task's goal). Edited
+  entirely as an in-Workbench grid (add/reorder/remove rows
+  client-side), persisted only on the Workbench's single explicit Save
+  action (batch =save_ir_curve_bootstrap_pillars=), never implicitly
+  on tab-leave.
+- =CurveBuilderWorkbench= (new, hand-written, =ores.qt.refdata=):
+  non-modal MDI window, three tabs:
+  1. *Conventions* -- source series, curve family role, discount curve
+     config (dropdown of existing FUNDING configs, enabled only for
+     PROJECTION), interpolation method, day-count convention, split
+     tenor. Per-field inline validation (e.g. Discount Curve Config
+     required when role is PROJECTION).
+  2. *Pillars* -- the grid described above; tenor/curve-role dropdowns
+     sourced from =tenor=/=curve_role= reference tables; per-row inline
+     validation (unresolvable tenor, duplicate =sequence_index=).
+  3. *Build & Diagnostics* -- as-of picker, Bootstrap button, results
+     table, zero-curve plot, forward-rate health-check plot + warning
+     banner. Reuses =CurveSnapshotMdiWindow='s =QtChart=/=QLineSeries=
+     dark-theme pattern (=make_chart=/=style_axes= helpers) rather than
+     inventing new chart styling.
+  Toolbar: Save, Bootstrap (disabled + inline hint until saved once
+  with >= 1 pillar), Publish (disabled until a Bootstrap has run
+  against the currently-saved recipe). Top banner for
+  call-level/non-field errors, separate from per-field/per-row inline
+  errors -- never both for the same problem.
+
+** Menu wiring
+
+=RefdataPlugin::setup_menus()= already receives the full
+=shared_menus_context= (confirmed by reading =MainWindow.cpp= and
+=RefdataPlugin.cpp=), including =smc.market_data_menu= -- currently
+unused by =RefdataPlugin=. Adds a *Curve &Bootstrapping* submenu onto
+=smc.market_data_menu= (not =smc.reference_data_menu=) with two
+actions: "Bootstrap Configs..." (the list window) and "Build
+Curve..." (blank Workbench) -- the same shared-menu-contribution
+mechanism =MktdataPlugin=/=SyntheticPlugin= already use for that menu,
+so no new cross-component library dependency is needed; the Workbench
+and Controller classes stay physically in =ores.qt.refdata=.
 
 * Notes
 
@@ -119,8 +271,6 @@ literally:
 
 * Test Scenarios
 
-* Test Scenarios
-
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
 through the QA Validation Runner panel) that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
@@ -128,18 +278,99 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:757855AD-6A93-401F-B0B4-6A0A2E738284][Test Scenario: Verify Curve Builder Workbench]] | PASS (after fixes) | Multiple rounds; each real failure led to a fix, see Result. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1919][#1919]] | [qt.refdata] Curve Builder Workbench: Save/Bootstrap/Publish |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =hasBootstrapped_= never reset on Save, Publish can go stale | =CurveBuilderWorkbench.cpp= | Fixed | Reset =false= in Save's success handler; re-earns Publish via a fresh Bootstrap. |
+| 2 | =collectPillarsFromTable()= double-call scrambles pillar ids on out-of-order Edit-mode saves | =CurveBuilderWorkbench.cpp= | Fixed | Removed the second collect call; stamp the change-reason fields directly onto the already-collected =config_=/=pillars_= instead. |
+| 3 | Asymmetric Source/Output series duplicate guard (Output excludes Source, not vice versa) | =CurveBuilderWorkbench.cpp= | Fixed | Added matching =excludeSeriesId=/post-pick check to =onBrowseSourceSeriesClicked=. |
+| 4 | =notifyOpenDialogs= silently no-ops for =CurveBuilderWorkbench= windows (casts to =DetailDialogBase*=, always null) | =IrCurveBootstrapConfigController.cpp= | Fixed | Added a =CurveBuilderWorkbench::markAsStale()= and a matching cast branch. |
+| 5 | No self-reference guard on Discount Curve Config picker | =CurveBuilderWorkbench.cpp= | Fixed | Added a UI-side guard; confirmed server already rejects it via the =discount_curve_config_id <> id= SQL check. |
+| 6 | =forward_rate_calculator= has no guard for non-positive discount factors before =std::log= | =forward_rate_calculator.cpp= | Fixed | Throws =std::invalid_argument=; added a test case. |
+| 7 | =marketdata::curve_bootstrap:compute=/=:republish= not in =iam_permissions_populate.sql= | -- | Declined | Both work via the blanket =marketdata::*= wildcard already used throughout marketdata; scoping down to per-action grants is a separate, cross-cutting IAM task, not specific to this PR. |
+| 8 | =read_latest_by_observation= is N+1 per pillar with a TOCTOU race across concurrent =republish()= calls | =curve_republish_service.cpp= | Declined | Low-risk (user-triggered, not high-frequency); the race degrades to the exact pre-fix duplicate-key error this PR resolves, not silent corruption. Worth revisiting if republish is ever automated/scheduled. |
+| 9 | =system.curve_bootstrap= seeded =applies_to_amend=false= despite reruns being an amend | =dq_change_reasons_populate.sql= | Fixed | Flipped to =true=. |
+| 10 | Pre-existing "generated NATS handler never registered" bug also affects =calendar_exception=/=calendar_rule=/=derivation_kind= | -- | Declined | Pre-existing, not introduced by this PR; out of scope here -- worth its own follow-up ticket. |
+| 11 | Fix-up commit's new discount-factor guard can crash the app: uncaught throw escapes a Qt slot | =CurveBuilderWorkbench.cpp= | Fixed | Wrapped the =forward_rate_calculator::calculate()= call in =try=/=catch=; degrades to a banner instead of terminating. |
+| 12 | =collectPillarsFromTable()=/=collectConfigFromUi()= still stamp stale (pre-prompt) change-reason values that are immediately overwritten | =CurveBuilderWorkbench.cpp= | Fixed | Dropped the dead stamping from both collect functions; the single post-prompt stamp is now the only one. |
 
 * Result
+
+Shipped as planned: =CurveBuilderWorkbench= (non-modal, three tabs, Save/Bootstrap/Publish never
+fused), the backend compute/publish split, =forward_rate_calculator= and =curve_health_checker=
+(the latter added mid-build, not in the original Plan -- see below), and the Market Data menu
+wiring. All acceptance criteria met, with two deliberate scope adjustments and a long tail of
+real bugs found and fixed via iterative manual QA against the test scenario (each one a genuine
+defect, not a scenario-authoring mistake):
+
+** Scope adjustments from the original Plan
+
+- *Pillar tenor/curve-role dropdowns*: shipped as real dropdowns as planned (=tenor= reference
+  table, ordered by its own =sort_order= ladder position rather than alphabetically), but
+  Curve Role is a fixed in-code vocabulary (=DEPOSIT=/=FRA=/=SWAP=, mirroring
+  =bootstrap_curve_role_code=), not a DB reference table -- there is no =curve_role= table row
+  set for this fixed enum today.
+- *Curve templates for novice curve-building*: identified mid-build (the Pillars tab alone, even
+  with dropdowns, doesn't tell a novice *which* tenors/roles a real curve needs) as a genuinely
+  separate, larger piece of work. Shipped a cheap stopgap now (*New from Existing...*, clones
+  another config's Conventions + Pillars into a blank recipe) and filed the proper curated-
+  template-entity version as its own follow-on task
+  ([[id:776740DD-B2BA-483F-8E30-72D4A9B00616][task_curve_builder_templates.org]]) rather than scope-creeping this one.
+
+** Bugs found and fixed via manual QA (not in the original Plan)
+
+Each of these was caught by actually running the test scenario end to end, not by review --
+several were pre-existing gaps in code this task built on top of, not regressions this task
+introduced:
+- =IrCurveBootstrapConfigController= was never wired into =RefdataPlugin= at all (missing menu
+  registration + controller construction).
+- =ir_curve_bootstrap_config=/=pillar='s codegen-generated NATS handlers existed but were never
+  called from =registrar::register_handlers()= -- the backend never subscribed to their subjects.
+- =MarketSeriesPickerDialog='s "New Series..." never assigned a client-minted id (every other
+  entity in this codebase mints its own).
+- =CurveBuilderWorkbench::setConfig()= never actually loaded a config's pillars -- editing an
+  existing curve silently showed an empty Pillars tab.
+- No guard anywhere (client or server) against =source_series_id == output_series_id=, which
+  would have let =curve_republish_service= permanently reclassify a raw input series as its own
+  derived output on first Publish.
+- =split_tenor_code= (a DB =NOT NULL= + non-empty check constraint) was never validated or
+  auto-derived client-side, so single-segment interpolation methods always failed the check
+  constraint at Save.
+- Pillar =sequence_index= was assigned from Pillars-table row order, not actual maturity --
+  entering rows out of chronological order produced a spurious "does not mature strictly after
+  the previous pillar" engine failure despite every individual pillar being valid.
+- Two hardcoded, never-seeded =change_reason_code= literals
+  (=system.derived_series=, =system.curve_bootstrap=) in =curve_republish_service.cpp= made every
+  first Publish fail -- fixed by seeding the (already sensible, already-representative) codes the
+  write path intended, not by adding a change-reason picker to an automatic system write.
+  =CurveBuilderWorkbench='s own Save action was missing a real change-reason prompt entirely
+  (hardcoded a third, also-unseeded literal) -- fixed with the standard
+  =ChangeReasonDialog=/=ChangeReasonCache= flow every other detail dialog already uses.
+- =curve_republish_service::republish()= minted a fresh random id for every
+  =observation_lineage= row on every call, so re-publishing the same (series, as-of, point)
+  natural key always hit the natural-key unique index instead of the intended close-prior-
+  row/insert-new-version behaviour the table's own doc comment describes.
+- =MarketSeriesPickerDialog=/=BootstrapConfigPickerDialog= only ever showed genuine server errors
+  inline, never in the standard copiable =MessageBoxHelper::critical= box every other dialog
+  uses.
+
+Also filed two capture-level design gaps surfaced along the way, deliberately not fixed here
+since each needs its own design pass:
+[[id:86B41936-1186-4FEC-B001-C62F59DF0013][strongly-typed market_series index/currency filter fields]] (currently string-matching a
+free-text qualifier) and
+[[id:79474500-DC8E-456C-8BD6-A52127F7FD94][Qt codegen has no UUID-to-friendly-name mechanism for list columns]].
+
+Verification: full local build clean (=linux-clang-debug-make=); =rat= 0 failures across the
+whole suite. Manually verified end to end via the test scenario above, iterating through several
+real rounds of Save/Bootstrap/Publish against the seeded Acme Corporation data until a full
+7-pillar desk-standard curve (DEPOSIT 1M/3M/6M/12M, SWAP 2Y/5Y/10Y) bootstrapped and published
+successfully.

@@ -1,0 +1,276 @@
+:PROPERTIES:
+:ID: 757855AD-6A93-401F-B0B4-6A0A2E738284
+:END:
+#+title: Test Scenario: Verify Curve Builder Workbench
+#+description: Verify the Curve Builder Workbench (bootstrap config CRUD, Save/Bootstrap/Publish, diagnostics) and its Market Data menu entries.
+#+type: test_scenario
+#+level: s1
+#+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
+#+target_dialog:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]] in [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]]. It checks that the =CurveBuilderWorkbench= reached via the new Market Data > Curve Bootstrapping menu can define a bootstrap recipe with pillars, save it, run a Bootstrap preview (discount-factor and forward-rate diagnostics), Publish it to make the curve official, and that the standard CRUD/history/eventing lifecycle for the underlying =ir_curve_bootstrap_config= entity still holds. "Pass" means every step below completes with the stated outcome and no unexpected errors appear.
+
+* Before you start
+
+- The database must be freshly provisioned with the Acme Corporation
+  holding group (=--source acme=) — confirm via =compass db status=,
+  recreating only if stale: =compass db recreate -y -k= then
+  =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- All services must be running (=compass services status=), including
+  =ores.refdata.service= and =ores.marketdata.service= (the latter
+  handles the =compute_curve_request=/=republish_curve_request= calls
+  Bootstrap/Publish issue).
+- The Acme Corporation tenant must already have at least one raw
+  market-data series with observed rates for the pillars used below
+  (the =ir_deposit_rates= synthetic feed published during provisioning
+  covers EUR/USD deposit tenors, e.g. =1M=, =3M=, =6M=) — Bootstrap
+  will fail with a clear error if the chosen source series id or
+  pillar tenors have no matching raw observations, which is itself
+  worth noting if it happens unexpectedly.
+
+* Scenario Info
+
+| Field         | Value                                                                                                     |
+|---------------+------------------------------------------------------------------------------------------------------------|
+| Verifies task | [[id:794D9D94-8E62-4232-A8FD-769B518DB04C][Curve builder UI: bootstrap config CRUD + a guided Save/Bootstrap/Publish workbench]]                       |
+| Parent story  | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]]                                                        |
+| Target dialog | =CurveBuilderWorkbench= — Menu: Market Data > Curve Bootstrapping > Build Curve... (or Bootstrap Configs...) |
+| Clients       | blue, red                                                                                                   |
+| State         | PENDING                                                                                                     |
+
+* Steps
+
+** blue
+
+*** Log in as tenant_admin@acme_corporation
+- Log in with username =tenant_admin@acme_corporation= and password
+  =Secure-Password-123= (from the provisioning run in * Before you
+  start).
+- Select the Acme Corporation party once prompted.
+- Confirms: main window opens with the standard menu bar, including a
+  Market Data menu.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Open the Curve Bootstrap Configs list
+- Menu: Market Data > Curve &Bootstrapping > Bootstrap &Configs...
+- Confirms: an =IrCurveBootstrapConfigMdiWindow= opens showing a
+  (possibly empty) list with Add/Edit/Delete/History toolbar buttons.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Build a new curve via the direct menu action
+- Menu: Market Data > Curve &Bootstrapping > &Build Curve...
+- Confirms: a blank =CurveBuilderWorkbench= window opens directly
+  (not via the list's Add button), with three tabs: Conventions,
+  Pillars, Build & Diagnostics.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | i for the output series on create and select i get create failed: market data series id cannot be empty. |
+
+*** Fill in the Conventions tab
+- Enter a Source Series Id and Output Series Id (any distinct text
+  identifiers, e.g. =acme_eur_deposits= / =acme_eur_ois_curve=).
+- Set Curve Family Role to =FUNDING= (leave Discount Curve Config Id
+  disabled — it should only enable when Curve Family Role is
+  =PROJECTION=).
+- Set Interpolation Method to =LOG_LINEAR_DISCOUNT= and Day Count
+  Convention to =A360=.
+- Confirms: no validation error banner appears; fields retain the
+  entered values.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Add pillars in the Pillars tab
+- Switch to the Pillars tab. Start Tenor/End Tenor/Curve Role are
+  combo boxes sourced from the seeded tenor table (Reference Data >
+  Curve Building > Tenors), ordered by that table's own ladder
+  position (=sort_order=), not alphabetically -- =Add Pillar= stays
+  disabled with a tooltip until the tenor list has loaded.
+- Click Add Pillar seven times and set each row's End Tenor/Curve
+  Role per the table below (Start Tenor stays =SPOT= on every row --
+  =FRA= is the only role where it would differ, not needed here).
+  This matches the seeded raw grid's own available points
+  (=1M/3M/6M/12M/2Y/5Y/10Y=) and the correct desk role per tenor
+  (deposits at the short end, par swap rates from 2Y out -- a
+  =SWAP= pillar's fixed leg is built from every prior pillar's own
+  maturity date plus its own, which is why the exact desk-standard
+  role split matters, not just picking any role):
+
+  | Row | Start Tenor | End Tenor | Curve Role |
+  |-----+-------------+-----------+------------|
+  |   1 | SPOT        | 1M        | DEPOSIT    |
+  |   2 | SPOT        | 3M        | DEPOSIT    |
+  |   3 | SPOT        | 6M        | DEPOSIT    |
+  |   4 | SPOT        | 12M       | DEPOSIT    |
+  |   5 | SPOT        | 2Y        | SWAP       |
+  |   6 | SPOT        | 5Y        | SWAP       |
+  |   7 | SPOT        | 10Y       | SWAP       |
+
+  Rows can be added/edited in any order -- the actual bootstrap
+  order is derived from each row's own End Tenor maturity, not the
+  order you added them in.
+- Confirms: all seven rows show the Start Tenor/End Tenor/Curve Role
+  above; End Tenor's dropdown list is in time order (short-dated
+  first) rather than alphabetical; Remove deletes a selected row
+  correctly if tried.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Save the new recipe
+- Switch to the Build & Diagnostics tab.
+- Click Save.
+- Confirms: a success status message/banner appears; the workbench
+  stays open (no auto-close); the Bootstrap button becomes enabled.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Verify the config appears in the list
+- Return to (or reopen) the Bootstrap Configs list window.
+- Confirms: the newly saved config appears with the entered Output
+  Series Id / role, and reopening its detail (double-click, or
+  Edit) shows the same Conventions and Pillars values just entered
+  (round-trip check).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Run a Bootstrap preview
+- In the workbench, set the As Of date/time to today, then click
+  Bootstrap.
+- Confirms: the results table populates with one row per pillar
+  (point id, date, discount factor); the discount-factor chart and
+  forward-rate chart render; the health-findings list shows either no
+  findings or plausible INFO/WARNING entries; the Publish button
+  becomes enabled; nothing has been written to =market_observations=
+  yet (Bootstrap is preview-only).
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+*** Publish the bootstrapped curve
+- Click Publish.
+- Confirms: a success status message appears; no error is raised by
+  the =marketdata::curve_bootstrap:republish= permission check.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | first publish worked. second published error:; ; Repository error: Executing INSERT failed: ERROR:  duplicate key value violates unique constraint "observation_lineages_party_series_obs_point_uniq_idx"; ; moved time forward then got on save:; ; curve_republish_resolver: no observed rate for pillar '1M' in the raw grid |
+
+*** Edit the config and verify change tracking
+- Reopen the config's detail window from the list (Edit).
+- Change the Day Count Convention (e.g. =A360= to =A365=) and Save.
+- Confirms: the save succeeds; reopening the config shows the new
+  value; the list refreshes to reflect the change.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+*** View history for the config
+- Select the config in the list and click History.
+- Confirms: the History dialog lists at least two versions (initial
+  Save, then the day-count-convention edit) with correct change
+  reasons and timestamps.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+*** Delete the config
+- Select the config in the list and click Delete; confirm the prompt.
+- Confirms: the config disappears from the list; History (if reopened
+  via a version, if still tracked) still shows the deletion event.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** red
+
+*** Log in as tenant_admin@acme_corporation
+- Log in with the same credentials as the blue client
+  (=tenant_admin@acme_corporation= / =Secure-Password-123=); select
+  the Acme Corporation party.
+- Open Market Data > Curve &Bootstrapping > Bootstrap &Configs... and
+  leave the list window visible.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+*** Confirm the new config appears without a manual reload
+- While the red client's Bootstrap Configs list is open and visible,
+  have the blue client Save a *different* new config (repeat the
+  "Build a new curve via the direct menu action" and "Fill in the
+  Conventions tab"/"Save" steps above with a new, distinct Output
+  Series Id).
+- Confirms: the red client's list refreshes on its own (via the NATS
+  eventing relay) to show the new row, with no manual reload/refresh
+  click needed.
+
+**** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-08-08T18:01:19Z |
+| Branch        | feature/curve-builder-ui |
+| Commit        | 8ef65f066 |
+| Worktree      | swift_curie |
+
+* Notes

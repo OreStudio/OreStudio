@@ -21,6 +21,7 @@
 #define ORES_REFDATA_API_MESSAGING_BUSINESS_UNIT_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -77,6 +78,23 @@ struct get_business_unit_history_response {
     std::vector<ores::refdata::domain::business_unit> history;
     bool success = false;
     std::string message;
+};
+
+/**
+ * @brief Reads the business_unit hierarchy rooted at, or containing,
+ * a given business_unit.
+ */
+struct get_business_unit_hierarchy_request {
+    using response_type = struct get_business_unit_hierarchy_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business_units.hierarchy";
+    std::string root_id;
+    bool from_root = false;
+};
+
+struct get_business_unit_hierarchy_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::utility::domain::hierarchy_node> roots;
 };
 
 }

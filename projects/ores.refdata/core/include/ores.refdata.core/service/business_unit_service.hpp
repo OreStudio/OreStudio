@@ -25,6 +25,7 @@
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
@@ -157,6 +158,18 @@ public:
      * by its uuid primary key.
      */
     std::vector<domain::business_unit> get_business_unit_history(const boost::uuids::uuid& id);
+
+    /**
+     * @brief Gets the business_unit hierarchy (as a forest of trees) rooted
+     * at, or containing, the given business_unit.
+     *
+     * @param root_id The business_unit to start from.
+     * @param from_root If true, returns the whole tree the given node
+     * belongs to instead of just its subtree.
+     * @return A forest of hierarchy_node trees (normally a single root).
+     */
+    std::vector<ores::utility::domain::hierarchy_node>
+    get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
 
 private:
     context ctx_;

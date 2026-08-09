@@ -14,7 +14,7 @@
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
-#+updated: 2026-07-06
+#+updated: 2026-08-09
 
 Quoting and date-convention fields for a currency pair — pip factor,
 tick size, calendars, business day convention, spot-relative/end-of-
@@ -142,6 +142,24 @@ false
 #+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
 drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 #+end_src
+
+* Foreign keys
+
+** pair_code
+:PROPERTIES:
+:table:         ores_refdata_currency_pairs_tbl
+:target_column: pair_code
+:nullable:      false
+:error_message: Invalid pair_code: %. No active currency pair found with this code.
+:END:
+
+Soft FK to the owning pair, enforced by the insert trigger's existence
+check in addition to the =ores_refdata_validate_currency_pair_fn=
+validation below -- the same trigger-based (never hard-FK) pattern as
+=pair_code= itself has always followed, and the same dual check the
+pair's own base/quote legs carry. It also drives the generated
+eventing test's parent seeding: the test must write an active pair
+before it can write a convention.
 
 * Validation function
 :PROPERTIES:

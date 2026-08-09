@@ -11,7 +11,7 @@
 #+entity_plural: books
 #+entity_title: Book
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-09
 
 Operational ledger leaves. The only entity that holds trades.
 Serves as the basis for accounting, ownership, and regulatory
@@ -123,7 +123,13 @@ Functional/accounting currency, designated by the ledger.
 ISO 4217 currency code.
 
 #+begin_src cpp :name generator
-std::string("USD")
+// "X-0" is the first code the synthetic currency generator emits (see
+// the currency entity's own generator): the functional-currency
+// validation only accepts codes of active currencies, and every test
+// tenant inherits the system tenant's accumulated active set, which
+// always contains X-0 -- every generator process starts its counter at
+// zero, so X-0 is present whenever any synthetic currency exists.
+std::string("X-0")
 #+end_src
 
 ** gl_account_ref

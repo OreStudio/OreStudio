@@ -48,7 +48,13 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;
-    r.functional_currency = std::string("USD");
+    r.functional_currency = // "X-0" is the first code the synthetic currency generator emits (see
+                            // the currency entity's own generator): the functional-currency
+                            // validation only accepts codes of active currencies, and every test
+                            // tenant inherits the system tenant's accumulated active set, which
+                            // always contains X-0 -- every generator process starts its counter at
+                            // zero, so X-0 is present whenever any synthetic currency exists.
+        std::string("X-0");
     r.gl_account_ref = std::string("GL-10150-TEST");
     r.cost_center = std::string("CC-001");
     r.book_status = std::string("Active");

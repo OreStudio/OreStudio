@@ -31,6 +31,12 @@
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -131,6 +137,23 @@ TEST_CASE("write_portfolio_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_portfolio(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Portfolio: " << v;
 

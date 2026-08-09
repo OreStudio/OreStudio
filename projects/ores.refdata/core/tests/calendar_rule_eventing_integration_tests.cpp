@@ -31,6 +31,10 @@
 #include "ores.refdata.api/eventing/calendar_rule_changed_event.hpp"
 #include "ores.refdata.api/generators/calendar_rule_generator.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_calendars_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/calendar_generator.hpp"
+#include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -131,6 +135,14 @@ TEST_CASE("write_calendar_rule_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_calendar_rule(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active calendar row ores_refdata_calendars_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto calendar_code_parent = ores::refdata::generators::generate_synthetic_calendar(ctx);
+    calendar_code_parent.change_reason_code = "system.test";
+    ores::refdata::repository::calendar_repository calendar_code_repo;
+    calendar_code_repo.write(party_ctx, calendar_code_parent);
+    v.calendar_code = calendar_code_parent.code;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Calendar Rule: " << v;
 

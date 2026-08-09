@@ -132,6 +132,7 @@ currency_pair_convention_repository::read_at_version(context ctx,
     return entities.front();
 }
 
+
 void currency_pair_convention_repository::remove(context ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair convention. "
                                << "pair_code: " << pair_code;

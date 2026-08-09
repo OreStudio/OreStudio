@@ -45,10 +45,19 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
     r.party_id = ctx.generate_uuid();
     r.name = std::string(faker::company::companyName()) + " Portfolio" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
-    r.parent_portfolio_id = boost::uuids::uuid();
-    r.owner_unit_id = ctx.generate_uuid();
+    r.parent_portfolio_id = std::nullopt;
+    r.owner_unit_id = // nullopt, not a random UUID: the insert trigger's soft-FK existence
+                      // check would reject any id that isn't an active business unit (and no
+                      // synthetic business unit exists), so a generated portfolio must carry
+                      // no owner rather than a fabricated one.
+        std::nullopt;
     r.purpose_type = std::string("Risk");
-    r.aggregation_ccy = std::string("USD");
+    r.aggregation_ccy = // "X-0" is the first code the synthetic currency generator emits: the
+                        // aggregation-currency validation accepts only codes of active
+                        // currencies, and every test tenant inherits the system tenant's
+                        // accumulated active set, which always contains X-0 (every generator
+                        // process starts its counter at zero).
+        std::string("X-0");
     r.is_virtual = false;
     r.status = std::string("Active");
     r.modified_by = modified_by;

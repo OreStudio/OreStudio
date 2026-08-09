@@ -11,7 +11,7 @@
 #+entity_plural: portfolios
 #+entity_title: Portfolio
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-09
 
 Represents organizational, risk, or reporting groupings.
 Never holds trades directly. Supports hierarchical structure
@@ -94,7 +94,7 @@ Self-referencing FK. NULL indicates a root node.
 Links to the parent portfolio in the hierarchy.
 
 #+begin_src cpp :name generator
-boost::uuids::uuid()
+std::nullopt
 #+end_src
 
 ** owner_unit_id
@@ -109,7 +109,11 @@ Business unit responsible for management.
 References the business_units table.
 
 #+begin_src cpp :name generator
-ctx.generate_uuid()
+// nullopt, not a random UUID: the insert trigger's soft-FK existence
+// check would reject any id that isn't an active business unit (and no
+// synthetic business unit exists), so a generated portfolio must carry
+// no owner rather than a fabricated one.
+std::nullopt
 #+end_src
 
 ** purpose_type
@@ -143,7 +147,12 @@ Currency for P&L/risk aggregation at this node.
 ISO 4217 currency code.
 
 #+begin_src cpp :name generator
-std::string("USD")
+// "X-0" is the first code the synthetic currency generator emits: the
+// aggregation-currency validation accepts only codes of active
+// currencies, and every test tenant inherits the system tenant's
+// accumulated active set, which always contains X-0 (every generator
+// process starts its counter at zero).
+std::string("X-0")
 #+end_src
 
 ** is_virtual

@@ -68,7 +68,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | discount_factor() factorizes I + 2*sigma_dt*C twice per tick: .inverse() for the dressing and a separate PartialPivLU for the determinant | quadratic_gaussian_process.cpp | Accepted | One LU of M^T serves both the dressing solve and the determinant |
+| 2 | Riccati recursion unguarded: a long-dated bond under aggressive gamma could silently return NaN/Inf | quadratic_gaussian_process.cpp | Accepted | Non-positive or non-finite determinant of I + 2*sigma_dt*C throws std::runtime_error |
+| 3 | sigma documented "positive-definite" but the PSD singular limit is accepted | quadratic_gaussian_params.hpp | Accepted | Documented as positive semi-definite |
+| 4 | Cholesky-with-eigen-fallback PSD root block duplicated verbatim across affine, QG and LMM | quadratic_gaussian_process.cpp | Accepted | Shared math::psd_matrix_square_root helper |
 
 * Result
 

@@ -68,7 +68,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PD check runs on derived sigma_dt_ instead of raw sigma: an indefinite sigma (kappas=[0.01,10], sigma=[[1,2],[2,1]]) dampens into a PD per-tick covariance and slips through | affine_term_structure_process.cpp | Accepted | Validate raw sigma via the new math::psd_matrix_square_root helper; regression test with damped kappas |
+| 2 | Cholesky-with-eigen-fallback PSD root block duplicated verbatim across affine, QG and LMM | affine_term_structure_process.cpp | Accepted | Extracted into the shared math::psd_matrix_square_root helper |
+| 3 | sigma documented "positive-definite" but the PSD singular limit is accepted | affine_term_structure_params.hpp | Accepted | Documented as positive semi-definite |
+| 4 | "Exact special case (verified by tests)" overreaches for differing kappas -- the G2 equivalence is only tested at equal kappas | affine_term_structure_process.hpp | Accepted | Scoped the claim to the tested equal-kappas configuration |
 
 * Result
 

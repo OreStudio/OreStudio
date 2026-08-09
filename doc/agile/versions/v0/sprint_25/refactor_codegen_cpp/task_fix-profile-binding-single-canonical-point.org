@@ -1,0 +1,123 @@
+:PROPERTIES:
+:ID: 98D0B4FD-EBF9-4DB4-863F-CF0EACD2A1B2
+:END:
+#+title: Task: Fix profile binding — single canonical point in * Flags
+#+description: :profile: declared in the * Flags section works for feature assignments (has_pagination, etc.) but not for Physical space facet enablement (like eventing-integration-test). The codegen's read_physical_space_overrides function only reads doc.file_properties.get("profile"), missing the :profile: that every entity model puts in its * Flags section. Fix read_physical_space_overrides to find :profile: from * Flags, so a single binding point drives both mechanisms.
+#+type: task
+#+level: s1
+#+filetags: :refactor_codegen_cpp:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-profile-binding-single-canonical-point
+#+pr: 1921
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] story.
+Discovered during the reporting-cpp safe drift task — promoted from inbox capture.
+
+* Goal
+
+Unify =:profile:= binding to a single canonical point: the =* Flags= section's
+=:PROPERTIES:= drawer. Add validation that throws if =:profile:= is found in the
+file-level drawer, and revert the manual workaround on 4 reporting entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-08                             |
+
+* Acceptance
+
+- =read_physical_space_overrides= reads =:profile:= from =* Flags=, not file-level.
+- File-level =:profile:= raises a clear validation error.
+- All entity models have =:profile:= only in =* Flags= — audit passes.
+- Eventing integration tests are generated for entities using any domain profile,
+  without per-entity file-level edits.
+- Build passes, drift checks pass, site builds.
+
+* Plan
+
+1. Audit the two binding points and their differences.
+2. Fix =read_physical_space_overrides= in =org_loader.py= to read =:profile:=
+   from =* Flags= and reject file-level.
+3. Revert the file-level =:profile:= workaround on 4 reporting entities.
+4. Verify eventing tests are generated for reporting AND refdata entities.
+5. Build, regenerate, run tests.
+6. Commit and push.
+
+* What
+
+The codegen has two profile binding points with different behaviour — adding a
+Physical-space facet override to a profile file only works for entities that
+declare =:profile:= in their file-level =:PROPERTIES:= drawer, which none do:
+
+| Where =:profile:= lives                     | What it drives                                          |
+|---------------------------------------------+---------------------------------------------------------|
+| =* Flags= section =:PROPERTIES:= drawer     | Feature assignments (=has_pagination=, =has_tenant_id=) |
+| File-level =:PROPERTIES:= drawer            | Physical-space facet enablement (=eventing-integration-test=) |
+
+Every entity model declares =:profile:= in its =* Flags= section — that's the
+existing convention. But =read_physical_space_overrides= (org_loader.py:183)
+only reads =doc.file_properties.get("profile")=, missing every entity's profile.
+
+Fix: =read_physical_space_overrides= should also find =:profile:= from the
+=* Flags= section (the same place =_profile_namespace_defaults= reads it), so a
+single binding point in =* Flags= drives both feature assignments and facet
+enablement. Then revert the file-level =:profile:= additions made to the 4
+reporting entity models as a workaround.
+
+* Why
+
+Discovered during the reporting-cpp safe drift task in sprint 25. We added a
+=* Physical space= table to all 6 domain archetype profiles to enable
+=ores.cpp.eventing-integration-test= by default. Entity regeneration produced
+the test files for reporting entities only because we manually added
+=:profile:= to their file-level =:PROPERTIES:= drawers. Other entities
+(e.g. all of refdata) silently got nothing — the profile Physical-space table
+had no effect. The two-binding-point design makes adding a facet to a profile
+require per-entity edits, defeating the purpose of profiles.
+
+* References
+
+- org_loader.py:183 — =read_physical_space_overrides= reads file-level only
+- [[id:1D0B00E4-6032-4DCA-9B66-571DE9F131FC][Simple lookup profile]] — example profile with Physical-space table added
+- [[id:CD698EB1-D411-4BF7-84B0-9794D47C802A][ores.cpp.eventing-integration-test facet]] — the facet gated by this mechanism
+- [[id:E9A2F4B1-7C3D-4E8B-A5F0-2D6C1B8E3A7F][eventing_integration_test feature]] — created alongside this work
+
+* See also
+
+- [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] — the story where this was discovered
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1921][#1921]] | [codegen] Fix profile binding: single canonical point in * Flags |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- Fixed =read_physical_space_overrides= in =org_loader.py= to read =:profile:= from =* Flags=
+  section instead of file-level =:PROPERTIES:= drawer. File-level =:profile:= now raises a
+  clear validation error.
+- Reverted the file-level =:profile:= workaround from the 4 reporting entities
+  (concurrency_policy, report_type, report_definition, report_instance).
+- Verified: =book_status= (refdata, =simple-lookup=) gets =_eventing_integration_tests.cpp=
+  from its =* Flags= profile without any per-entity edits.
+- 7 files changed: 1 codegen fix, 4 entity reverts, 1 task doc, 1 story update.
+- Build 100%, all CI checks pass.

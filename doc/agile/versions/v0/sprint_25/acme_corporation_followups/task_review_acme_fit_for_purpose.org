@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 771C9D24-54BC-478A-A580-C65C1E2901EC
+:END:
+#+title: Task: Review ACME infrastructure for fit for purpose
+#+description: Walk every artefact ACME creates -- the holding-group companies, staff accounts, and simulated market data -- and verify the whole holds together as one coherent reference entity.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff, simulated market data, synthetic configs) works end-to-end and holds together as a coherent whole; gaps found are fixed or recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- Provision ACME end-to-end via ores.shell on a fresh database (--source acme) and verify the holding group, companies, staff, and synthetic configs land correctly.
+- Provision ACME end-to-end via the Qt wizard path (Acme one-click onboarding) on a fresh database and verify the same result.
+- Staff artefacts hold together: locale-matched names, per-country email domains, profile photos, and the org chart.
+- Simulated market data holds together: synthetic themes generate and publish FX ticks, IR curves, and CRM cross-rates; the Market Simulator shows the consolidated tenant-level configs; bound-feed resolution excludes sandboxed output.
+- Holding-company visibility holds: the holding party sees subsidiary FX/CRM data and the Group Treasury book.
+- Every issue found during the review is recorded in the task notes with its fix.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

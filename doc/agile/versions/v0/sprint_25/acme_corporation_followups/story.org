@@ -26,12 +26,12 @@ are extensions beyond that acceptance, not required by it.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Nothing. |
+| Now           | Review task added -- see * Tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. |
-| Last touched  | 2026-08-05                               |
+| Next          | Review ACME infrastructure for fit for purpose. |
+| Last touched  | 2026-08-09                               |
 
 * Acceptance
 
@@ -54,6 +54,7 @@ are extensions beyond that acceptance, not required by it.
 | [[id:1A5B53EF-36A6-4A14-9B78-747A00F58EB0][Start Acme's synthetic market feeds during provisioning (after PR #1741 lands)]] | DONE | 2026-08-04 | 2026-08-04 | Acme's synthetic_realistic_2026 market data is published as configuration only (fx_spot_generation_config, ir_curve_generation_config rows) -- nothing actually starts the feed producers, so CRM cross-rates and IR curves sit static/dead for a freshly-provisioned Acme party. A working implementation (start_feeds_under_folder_request for FX, per-config start_ir_curve_feed_request for IR) was drafted and then deliberately backed out uncommitted: PR #1741 (merry_newton) is independently adding a way to start feeds as part of the synthetic-theme-as-one-atomic-dataset work, and we don't want two parallel paths for the same thing. |
 | [[id:48C10D00-5940-40E0-A8D8-B935B11A24B4][GLEIF import should natively attach counterparty logos when available]] | DONE | 2026-08-05 | 2026-08-05 | Move demo-counterparty-logo attachment into the GLEIF import itself instead of a bolted-on best-effort poll after provision_acme |
 | [[id:CA9CB414-9F61-4395-8183-A134BE9A2B9B][Fix ACME provisioning recipe to be deterministic, curated, and self-contained]] | BACKLOG | | | The acme_system_provision.ores recipe uses --source synthetic which creates random UK financial firms and picks one at random to activate. It must instead produce the carefully curated ACME holding group exactly: Acme Corporation Plc plus its three offices (UK, US, HK), each with their defined staff, book structure, business units, CRM topology, and market data — identically every run. |
+| [[id:771C9D24-54BC-478A-A580-C65C1E2901EC][Review ACME infrastructure for fit for purpose]] | BACKLOG | | | Walk every artefact ACME creates -- the holding-group companies, staff accounts, and simulated market data -- and verify the whole holds together as one coherent reference entity. |
 
 * Decisions
 

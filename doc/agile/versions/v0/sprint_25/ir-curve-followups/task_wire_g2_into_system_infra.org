@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
+#+updated: 2026-08-09
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ G2 appears as a selectable process type in the IR curve generation config UI, wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-07                               |
+| Now          | All 8 steps implemented + 2 bonus fixes. PR #1926 raised. |
+| Waiting on   | Review.                                |
+| Next         | Verification: provisioning, manual Qt test, preview.   |
+| Last touched | 2026-08-09                               |
 
 * Acceptance
 
@@ -294,3 +294,66 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 8 planned steps implemented across 12 commits on
+=feature/wire-g2-into-system-infra=, plus 2 bonus fixes discovered
+during implementation:
+
+1. =[ores.analytics.quant]= Strongly-typed parameter structs
+   (=two_factor_gaussian_params=, =vasicek_params=,
+   =cox_ingersoll_ross_params=, =hull_white_params=) with struct
+   constructors on each process; renamed =g2pp_process= to
+   =two_factor_gaussian_process=.
+
+2. =[ores.synthetic]= Codegen entity
+   =yield_curve_process_parameter_definition= — read-only reference
+   table with =process_type_code=, =parameter_name=, =description=,
+   =default_value=, =min_value=, =max_value=, =display_order=.
+
+3. =[ores.synthetic]= Codegen child entity
+   =ir_curve_generation_config_process_parameter_value= — =has_many=
+   child of the config with =config_id=, =parameter_definition_id=,
+   =parameter_value=; FK trigger validates definition's
+   =process_type_code= matches config's =process_type=.
+
+4. =[ores.synthetic]= Mapping layer:
+   =map_parameters_to_yield_curve_process()= — EAV rows →
+   strongly-typed struct by named-parameter extraction, dispatches on
+   =process_type=; validates unknown/missing/out-of-range parameters.
+
+5. =[ores.sql]= Seed data: =TWO_FACTOR_GAUSSIAN= row in process types
+   + 19 parameter definition rows (4 each for Vasicek/CIR/HW, 7 for
+   G2) with user-facing descriptions, model-required bounds, and
+   defaults matching quant test values.
+
+6. =[ores.synthetic]= Data migration: one-shot SQL converts every
+   existing config's flat =kappa=/=theta=/=sigma=/=initial_rate=
+   columns into equivalent parameter-value rows, then drops the flat
+   columns and superseded CHECK constraints.
+
+7. =[ores.synthetic]= Updated factory consumers:
+   =ir_curve_feed.cpp=, =ir_curve_preview_handler.hpp=,
+   =simulate_handler.hpp= all switched to
+   =map_parameters_to_yield_curve_process()=; simulate/preview
+   protocols replaced flat parameter fields with
+   =std::vector<parameter_spec>=.
+
+8. =[ores.qt]= Rewrote =IrCurveEditor= around the
+   parameter-definitions table: one row per definition with
+   =QDoubleSpinBox= clamped to min/max; fetches definitions + value
+   rows async; save writes one value row per parameter.
+
+Bonus: =[ores.codegen]= Qt model/dialog: handle =optional<double>=
+columns (discovered when codegen regenerated the value entity's
+=parameter_value= column).
+
+Bonus: =[ores.codegen]= PostgreSQL 63-byte identifier truncation fix:
+   computed =sql_name_base= from =:tablename:= with truncation safety
+   net in =core.py=; shortened the entity's =:tablename:= from 72 to
+   50 chars (=ores_synthetic_config_process_parameter_values_tbl=);
+   updated all templates, generated SQL, C++ header, and channel names
+   (PR #1926).
+
+Verification: full build passes, quant tests (251 cases), all 3
+synthetic test suites (api/core/service), DB recreate clean with all
+new objects, services start (22/22), provisioning completes.

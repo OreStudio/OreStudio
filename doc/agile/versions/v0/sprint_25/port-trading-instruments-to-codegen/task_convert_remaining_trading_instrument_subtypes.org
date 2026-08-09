@@ -38,10 +38,10 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 15/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument, equity_digital_option_instrument. |
+| Now          | 15/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument, equity_digital_option_instrument. Remaining 4 (bond, commodity, credit, scripted) deferred -- feature-gated, see Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (bond_instrument). |
-| Last touched | 2026-08-08                               |
+| Next         | Nothing -- all remaining instruments (bond, commodity, credit, scripted) blocked by codegen domain-template gaps; see Notes. |
+| Last touched | 2026-08-09                               |
 
 * Acceptance
 
@@ -131,6 +131,52 @@ like =composite_instrument= whose PK column is =id= don't fit that
 group and would need either a rename (bigger blast radius, changes
 the DB column) or to stay flat with no identity grouping (fine --
 small entities don't need the C1202 nesting anyway).
+
+** bond/commodity/credit/scripted: blocked by codegen domain-template gaps (2026-08-09)
+
+The Next candidate =bond_instrument= turns out to be anything but flat
+-- it is the *most* nested entity in the family. Its hand-crafted
+domain decomposes into =instrument_identity= + =bond_terms=
+(=security_id=, issuer, currency, face_value, coupon_rate,
+=coupon_frequency_code=, =day_count_code=, issue_date, maturity_date)
++ =bond_features= (settlement_days, call_date, conversion_ratio,
+=security_id=/=future_expiry_date/=trs_return_type/=trs_funding_leg_code=
+-- several *non-persisted* members with no SQL column) + =bond_option=
+(option_type, option_expiry_date, option_strike, ascot_option_type --
+all non-persisted) + description + audit, per the MSVC C1202
+rfl-complexity decomposition (PRs #1047/#1071/#1075/#1083/#1085).
+=commodity_instrument= (commodity_terms/commodity_option/
+commodity_pricing/commodity_exotic) and =credit_instrument=
+(credit_terms/credit_schedule/credit_index/credit_option/credit_tranche)
+share the shape; all three also have PK column =id=, not
+=instrument_id=.
+
+The codegen domain template supports exactly one shape: the fixed
+=instrument_identity= group + flat columns + the fixed audit group. It
+has no mechanism for arbitrary nested sub-structs, nor for
+non-persisted members, so zero-diff regeneration of the domain class is
+impossible for any of the three -- and the alternative (a generated
+flat domain) would break every consumer of =bond_terms=/
+=bond_features=/=bond_option= (and their commodity/credit equivalents):
+persistence tests, the ores.ore XML round-trip mappers, and the Qt
+forms. =scripted_instrument= is flat but its PK column is =id=: the
+mapper template emits =r.identity.{{column_name}}= keyed on the model
+column name while the =instrument_identity= field-group hardcodes the
+=instrument_id= field name, so an =id=-named column cannot map into the
+group (the hand-crafted mapper bridges the gap by hand:
+=r.identity.instrument_id = v.id=). The two options the instrument_
+identity note lists are both non-zero-diff here: renaming the DB column
+changes =create.sql=, and dropping the identity group changes the
+domain shape and its consumers.
+
+Decision: defer all four to a follow-up once the codegen domain
+template gains nested-group support (beyond the fixed identity/audit
+groups) and a column-name-to-group-field mapping -- the same class of
+deferral as composite/fra/swap-legs above, and the same reasoning:
+don't force a hand-patch or a shape change that would recreate the
+silent-drift problem this task exists to eliminate. The task is
+complete at 15/19; the remaining four are feature-gated, not
+effort-gated.
 
 ** equity_variance_swap_instrument (converted 2026-08-05)
 

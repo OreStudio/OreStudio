@@ -86,3 +86,5 @@ Registered in =component_files.cmake=.
 
 All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
 =process_factory= (deferred to PR 2: system infra wiring).
+
+Merged via PR #1932 (merge commit 4c9b23d99) on 2026-08-10.

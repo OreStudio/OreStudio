@@ -42,18 +42,32 @@ void validate_node(const rate_tree& tree, const tree_node& node) {
 }
 
 /**
- * @brief Reject malformed branches: the branch lists must agree in
- * length and every target must exist at the next level.
+ * @brief Reject malformed branches: a departing node must have at least
+ * one branch, the branch lists must agree in length, every target must
+ * exist at the next level and the probabilities must form a
+ * distribution. Both the walk and the propagation depart from nodes, so
+ * both reject a malformed node the same way.
  */
 void validate_branching(const rate_tree_node& node, std::size_t next_level_size) {
+    if (node.child_indices.empty())
+        throw std::invalid_argument("rate_tree: node has no child branches");
     if (node.child_indices.size() != node.child_probabilities.size())
         throw std::invalid_argument("rate_tree: child index/probability count mismatch");
+    double probability_sum = 0.0;
     for (std::size_t c = 0; c < node.child_indices.size(); ++c) {
         if (node.child_indices[c] >= next_level_size)
             throw std::invalid_argument("rate_tree: child index out of range");
-        if (node.child_probabilities[c] < 0.0)
+        if (!(node.child_probabilities[c] >= 0.0))
             throw std::invalid_argument("rate_tree: child probability must be non-negative");
+        probability_sum += node.child_probabilities[c];
     }
+    // The probabilities must sum to one; the tolerance absorbs the
+    // rounding of the builders' moment-matching formulas (a trinomial
+    // like (1+e^2/v-3e/b)/6 + (2-e^2/v)/3 + (1+e^2/v+3e/b)/6 is 1 only
+    // up to machine precision).
+    if (!(std::abs(probability_sum - 1.0) <= 1e-10 * std::max(1.0, probability_sum)))
+        throw std::invalid_argument("rate_tree: child probabilities must sum to one, got " +
+                                    std::to_string(probability_sum));
 }
 
 } // anonymous namespace
@@ -63,8 +77,6 @@ tree_node next_tree_node(const rate_tree& tree, const tree_node& node, std::mt19
     if (node.level + 1 >= tree.step_count())
         throw std::invalid_argument("rate_tree: cannot walk from the last level of the tree");
     const auto& current = tree.levels[node.level][node.index];
-    if (current.child_indices.empty())
-        throw std::invalid_argument("rate_tree: node has no branches to walk");
     validate_branching(current, tree.levels[node.level + 1].size());
 
     std::uniform_real_distribution<double> uniform(0.0, 1.0);

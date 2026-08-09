@@ -240,4 +240,26 @@ TEST_CASE("rate_tree rejects negative dt and malformed branches", "[rate_tree]")
     out_of_range.levels[0][0].child_indices = {1, 7};
     CHECK_THROWS_AS(next_tree_node(out_of_range, {0, 0}, rng), std::invalid_argument);
     CHECK_THROWS_AS(propagate_state_prices(out_of_range, {0, 0}, 1, 1.0), std::invalid_argument);
+
+    // A node whose probabilities do not form a distribution is rejected
+    // by the walk and the propagation alike.
+    rate_tree bad_sum = build_binomial_tree(2, std::log(0.04), 0.05);
+    bad_sum.levels[0][0].child_probabilities = {0.6, 0.6};
+    CHECK_THROWS_AS(next_tree_node(bad_sum, {0, 0}, rng), std::invalid_argument);
+    CHECK_THROWS_AS(propagate_state_prices(bad_sum, {0, 0}, 1, 1.0), std::invalid_argument);
+
+    // A node with no branches at all is malformed for the propagation
+    // too, not just for the walk.
+    rate_tree no_children = build_binomial_tree(2, std::log(0.04), 0.05);
+    no_children.levels[0][0].child_indices = {};
+    no_children.levels[0][0].child_probabilities = {};
+    CHECK_THROWS_AS(next_tree_node(no_children, {0, 0}, rng), std::invalid_argument);
+    CHECK_THROWS_AS(propagate_state_prices(no_children, {0, 0}, 1, 1.0), std::invalid_argument);
+
+    // A negative probability is rejected even when the rest of the
+    // distribution is well formed.
+    rate_tree negative = build_binomial_tree(2, std::log(0.04), 0.05);
+    negative.levels[0][0].child_probabilities = {-0.2, 1.2};
+    CHECK_THROWS_AS(next_tree_node(negative, {0, 0}, rng), std::invalid_argument);
+    CHECK_THROWS_AS(propagate_state_prices(negative, {0, 0}, 1, 1.0), std::invalid_argument);
 }

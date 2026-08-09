@@ -7,9 +7,19 @@
 #+level: cross
 #+filetags: :codegen:refdata:tech-debt:
 #+created: 2026-07-27
-#+updated: 2026-07-27
+#+updated: 2026-08-09
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
+
+*Resolved (discarded 2026-08-09)*: The stale-generated-code issue was
+fixed by the subsequent refdata drift/regeneration work.
+=refdata_rounding_types_create.sql= is now stamped
+=sql_schema_domain_entity_create.mustache=, renders
+=clock_timestamp()=, and carries the =rounding_types_name_uniq_idx=
+unique index this capture flagged as a real correctness improvement
+(commits 8aecfd41b "Regenerate rounding_type/purpose_type/
+day_count_fraction_type/business_centre against current templates" and
+1f4fc2859 "Eliminate all ores.refdata generation drift").
 
 * What
 

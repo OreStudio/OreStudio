@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-08-09
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+When a user logs into the Market Simulator, they should see only the
+synthetic configs visible to their party: their own party's configs
+plus any tenant/system-level configs. Currently the tree shows every
+party's configs unfiltered, creating confusion (especially in
+multi-tenant environments like ACME where UK/US/HK used to each have
+separate configs).
 
 * Status
 
@@ -40,11 +45,71 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Understanding: RLS already enforces scope filtering
+
+RLS policies already exist in
+=projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql=:
+
+- =folders_tenant_isolation_policy= + =folders_party_isolation_policy=:
+  filter folders by tenant and party.
+- =market_data_generation_configs_tenant_isolation_policy= +
+  =market_data_generation_configs_party_isolation_policy=: filter
+  configs by scope.
+  - Configs with =party_id IS NULL= (system/tenant scope) are visible
+    to all parties in the tenant via the USING clause
+    =party_id is null=.
+  - Configs with =party_id != NULL= (party scope) are visible only to
+    the owning party via =party_id = ANY(ores_iam_visible_party_ids_fn())=.
+- These policies are applied automatically when queries run through
+  the service layer.
+
+=MarketSimulatorWindow.reload()= uses
+=process_authenticated_request(get_folders_request,
+get_market_data_generation_configs_request, ...)= which respects RLS.
+
+** Phase 1: Verify server-side filtering is working
+
+- Start services and database with fresh schema.
+- Confirm RLS policies on =ores_synthetic_folders_tbl= and
+  =ores_synthetic_market_data_generation_configs_tbl= are in place.
+- Run a test: login as ACME UK user, call =get_folders= / =get_configs=
+  via ores.shell or direct API.
+- Verify: only UK's folders appear; only UK's party configs + ACME
+  tenant configs appear (no US/HK).
+
+** Phase 2: Manual QA in Market Simulator
+
+- Build and run the application.
+- Login as ACME UK user.
+- Open Market Simulator.
+- Verify the tree shows only UK configs + tenant-level configs.
+- Verify US/HK configs do NOT appear.
+
+** Phase 3: Cleanup
+
+- Mark capture 275824BB-0DCE-4EA4-964D-9C86B0498509 as superseded.
+- Link it to this task.
 
 * Notes
+
+- **Server-side filtering is standard:** RLS policies in
+  =projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql=
+  already filter folders and configs by scope (system/tenant/party).
+  =MarketSimulatorWindow.reload()= fetches data via
+  =process_authenticated_request()=, which enforces RLS automatically.
+  Client code does not need to add filtering logic — it just displays
+  the already-filtered data returned by the server. This ensures
+  ores.shell and ores.wt can use the same server-side filtering when
+  added later.
+- **Scope mapping:** The RLS uses =party_id= and =tenant_id= fields to
+  implement scope:
+  - =scope='system'=: =party_id=NULL= → visible to all (via
+    =party_id is null= check in USING clause).
+  - =scope='tenant'=: =party_id=NULL=, =tenant_id= specific → visible
+    to all parties in the tenant.
+  - =scope='party'=: =party_id= specific → visible only to the owning
+    party.
+- Folders are always party-scoped (filtered by =party_id= via RLS).
 
 * Test Scenarios
 

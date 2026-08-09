@@ -8,7 +8,7 @@
 #+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
 #+branch: feature/convert-remaining-trading-instrument-subtypes
-#+pr: 1874
+#+pr: 1925
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-05
@@ -692,6 +692,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1925][#1925]] | [codegen,trading] Convert remaining 10 trading instrument sub-types to codegen |
 | [[https://github.com/OreStudio/OreStudio/pull/1874][#1874]] | [codegen,trading] Convert 5 flat trading instrument sub-types to codegen |
 
 * Review

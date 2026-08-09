@@ -553,7 +553,7 @@ echo "=== enabling linger (keeps the user session alive for rootless podman) ===
 loginctl enable-linger "$(id -un)" 2>/dev/null || echo "  (enable-linger skipped — no permission; run it yourself if services die after logout)"
 echo "=== starting user dbus socket (sprint-24 Newton finding) ==="
 systemctl --user start dbus.socket 2>/dev/null || true
-echo "Done — host is ready for `compass env deploy <host>`."
+echo "Done — host is ready for \\`compass env deploy <host>\\`."
 """
     _ssh(host, "bash -s", input_text=script, check=True, capture=False)
 

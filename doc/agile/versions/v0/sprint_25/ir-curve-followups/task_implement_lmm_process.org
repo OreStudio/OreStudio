@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expand-stochastic-ir-process-types
+#+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-08-09
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working LMM engine to process_factory with Catch2 tests covering: drift fo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -62,12 +62,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Division by 1 + tau_k*L_k unguarded in the drift weight and discount_factor: a high-vol Euler step could push it negative and silently price a negative (arbitrage) discount | libor_market_model_process.cpp | Accepted | Drift throws std::invalid_argument at the pole L_k = -1/tau_k; discount_factor throws std::runtime_error; pole test added |
+| 2 | Cholesky-with-eigen-fallback PSD root block duplicated verbatim across affine, QG and LMM | libor_market_model_process.cpp | Accepted | Shared math::psd_matrix_square_root helper |
 
 * Result
+
+Implemented =libor_market_model_process=: a forward-LIBOR engine under the
+spot measure with displacements. The drift is the public
+=lmm_spot_measure_drift= free function, mirroring QuantLib's
+=LMMDriftCalculator= semantics (numeraire 0); correlated shocks come from
+the Eigen Cholesky factor of =diag(sigma) * rho * diag(sigma)=.
+=discount_factor()= is the spot-measure rollover discount. 15 Catch2 tests
+covering the drift formula against hand-computed vectors, the spot-measure
+martingale property and its measured Euler bias (statistical), caplet
+repricing against Black's formula (statistical), drift sign and correlation
+effects, positivity with displacement, zero-vol frozen rates, seed
+determinism and validation. Registered in =component_files.cmake=.
+
+All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

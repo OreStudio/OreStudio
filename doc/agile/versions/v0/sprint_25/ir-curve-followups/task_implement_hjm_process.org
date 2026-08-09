@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expand-stochastic-ir-process-types
+#+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-08-09
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working HJM engine to process_factory with Catch2 tests covering: forward 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -62,12 +62,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Drift documented as "exactly the no-arbitrage drift of the piecewise-linear interpolation", but the code implements a right-endpoint sum (piecewise-constant vol convention) while discount_factor() integrates with the trapezoid rule | heath_jarrow_morton_process.hpp | Accepted | Softened: the discrete analogue of the continuum drift, first-order consistent with the continuum model |
 
 * Result
+
+Implemented =heath_jarrow_morton_process=: a forward-curve engine whose state
+is a discretized forward-rate curve at fixed relative tenors. The
+no-arbitrage drift is the public =hjm_no_arbitrage_drift= free function (the
+trapezoid of the cumulative volatility); =next()= advances every tenor,
+=current()= is the front (short) rate and =discount_factor()= integrates the
+current curve by trapezoid with flat extension past the last tenor. 10
+Catch2 tests covering frozen rates at =sigma == 0= reproducing the initial
+curve exactly, the drift formula against hand-computed vectors, the
+discounted-bond martingale property (statistical), Hull-White equivalence
+under exponential volatility (statistical), discount monotonicity, seed
+determinism and validation. Registered in =component_files.cmake=.
+
+All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

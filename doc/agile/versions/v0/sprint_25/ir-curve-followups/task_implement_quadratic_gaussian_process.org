@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expand-stochastic-ir-process-types
+#+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-08-09
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working QG engine to process_factory with Catch2 tests covering: zero Gamm
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -62,12 +62,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | discount_factor() factorizes I + 2*sigma_dt*C twice per tick: .inverse() for the dressing and a separate PartialPivLU for the determinant | quadratic_gaussian_process.cpp | Accepted | One LU of M^T serves both the dressing solve and the determinant |
+| 2 | Riccati recursion unguarded: a long-dated bond under aggressive gamma could silently return NaN/Inf | quadratic_gaussian_process.cpp | Accepted | Non-positive or non-finite determinant of I + 2*sigma_dt*C throws std::runtime_error |
+| 3 | sigma documented "positive-definite" but the PSD singular limit is accepted | quadratic_gaussian_params.hpp | Accepted | Documented as positive semi-definite |
+| 4 | Cholesky-with-eigen-fallback PSD root block duplicated verbatim across affine, QG and LMM | quadratic_gaussian_process.cpp | Accepted | Shared math::psd_matrix_square_root helper |
 
 * Result
+
+Implemented =quadratic_gaussian_process=: a short-rate engine with quadratic
+yield terms, =r = delta_0 + delta^T X + X^T Gamma X= over Gaussian
+Ornstein-Uhlenbeck factors. =discount_factor()= prices bonds with the
+exponential-quadratic recursion, completing the square over the per-tick
+shock with Eigen (matrix inverse, determinant and positive-semidefinite
+checks). At Gamma == 0 the recursion reduces to the affine process's
+exactly, verified bit-for-bit. 9 Catch2 tests covering Gamma == 0 exact
+equivalence with =affine_term_structure_process=, the zero-sigma
+deterministic path, a brute-force Monte Carlo cross-check of the recursion
+(300k paths, no systematic bias), first-tick moments against closed forms,
+positivity with PSD Gamma, discount monotonicity, seed determinism and
+validation. Registered in =component_files.cmake=.
+
+All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

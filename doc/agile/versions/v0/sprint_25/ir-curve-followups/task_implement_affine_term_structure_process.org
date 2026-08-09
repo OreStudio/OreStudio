@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/expand-stochastic-ir-process-types
+#+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-08-09
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working general affine framework to process_factory with Catch2 tests cove
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -62,12 +62,32 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PD check runs on derived sigma_dt_ instead of raw sigma: an indefinite sigma (kappas=[0.01,10], sigma=[[1,2],[2,1]]) dampens into a PD per-tick covariance and slips through | affine_term_structure_process.cpp | Accepted | Validate raw sigma via the new math::psd_matrix_square_root helper; regression test with damped kappas |
+| 2 | Cholesky-with-eigen-fallback PSD root block duplicated verbatim across affine, QG and LMM | affine_term_structure_process.cpp | Accepted | Extracted into the shared math::psd_matrix_square_root helper |
+| 3 | sigma documented "positive-definite" but the PSD singular limit is accepted | affine_term_structure_params.hpp | Accepted | Documented as positive semi-definite |
+| 4 | "Exact special case (verified by tests)" overreaches for differing kappas -- the G2 equivalence is only tested at equal kappas | affine_term_structure_process.hpp | Accepted | Scoped the claim to the tested equal-kappas configuration |
 
 * Result
+
+Implemented =affine_term_structure_process=: an N-factor Gaussian affine
+short-rate engine, =r = delta_0 + delta^T X= with correlated
+Ornstein-Uhlenbeck factors via Eigen. =discount_factor()= runs the affine
+bond-price recursion per tick with the exact per-tick factor covariance
+(sigma_dt, the affine special case of the quadratic recursion). The
+existing one-factor Vasicek/Hull-White and two-factor Gaussian engines
+reduce to it exactly, verified test-by-test at 1e-12. 11 Catch2 tests
+covering exact equivalence with =vasicek_process=, =hull_white_process= and
+=two_factor_gaussian_process=, sigma == 0 flat-curve reproduction across a
+dt sweep, correlated two-factor bond price against the G2 closed form,
+three-factor sanity, zero factors, seed determinism and validation. CIR is
+documented in the header as a future square-root-factor extension.
+Registered in =component_files.cmake=.
+
+All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

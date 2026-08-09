@@ -8,7 +8,7 @@
 #+filetags: :offload-services-to-wsl-host-cutover:next:product_backlog:
 #+owner: marco
 #+branch: feature/compass-remote-deploy-tooling
-#+pr:
+#+pr: 1937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
@@ -179,7 +179,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1937][#1937]] | [ores.compass] Remote WSL host deploy tooling for the service runtime |
 
 * Review
 

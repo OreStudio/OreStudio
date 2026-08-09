@@ -28,9 +28,9 @@ A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Design approach settled and recorded in * Plan. Begin shell provisioning leg. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Provision ACME via ores.shell on a fresh DB. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -46,9 +46,64 @@ A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Settled design approach
+
+Agreed with the user on 2026-08-09. Three design questions were
+settled before any provisioning ran:
+
+1. Step 6 vs step 7: the two-step recipe is forced by the bundle
+   layout. =risk_management= carries report definitions as a
+   non-optional member of a demo-org bundle, so the holding company
+   (whose book/portfolio tree is hand-seeded) can receive reports only
+   through a root-party republish of the whole bundle, relying on the
+   publish functions' per-party idempotency guards.
+2. Why not one publish for everything: a bundle publish copies dataset
+   rows; it cannot create the tenant, the parties, or the IAM user
+   accounts. Those are security principals instantiated by the
+   provisioning workflow. The tenant must exist before any data can
+   land, so "one publish" is structurally impossible; "one command" is
+   the ceiling.
+3. Fixture-as-data: the employees ARE data already -- per-party
+   accounts datasets (=acme.<party>.accounts=) with =username= and
+   =photo_key= rows; the workflow reads them and instantiates the IAM
+   accounts, attaching photos by key. This principle is the
+   architecture and stays.
+
+Target shape (the review's fixes):
+
+- One provisioning command covering the system and tenant phases,
+  impersonating internally -- no relogin, no user-visible loops. The
+  per-office loop already runs server-side inside =provision_acme=.
+- Report definitions move to their own bundle, published for the
+  holding party inside the workflow. This removes recipe step 7 and
+  the two-step dance.
+- Keep the per-party bundle plan, the idempotency guards, and GLEIF as
+  counterparty reference data.
+
+** Findings to verify and record
+
+| # | Finding | Status |
+|---+---------+--------|
+| F1 | Recipe step 7's purpose (root-party reports) is undocumented | to verify |
+| F2 | =report_definitions= rides in the demo-org =risk_management= bundle; all members non-optional, so reports cannot publish alone -- forces the step 6/7 split | confirmed by code |
+| F3 | Recipe has a relogin and two provisioning commands; a single command is achievable via the existing impersonation machinery | confirmed by code |
+| F4 | Tier default =common,regulatory,strategic,trading= publishes Strategic (holding-only) reports to every party | confirmed by code |
+| F5 | FX vintage: the plan includes =marketdata.reference_vintage_2026_05_05=; open task 094075A2 claims only =2016_02_05= is published -- stale? | to verify |
+| F6 | Step 7 root-party publish may insert demo-org business units/portfolios/books into the holding party unless the publish guards skip them | to verify live |
+| F7 | Wizard scenario B296624F is titled "Acme Bank wizard path" though the tenant is Acme Corporation | to verify |
+| F8 | No-other-entities invariant: after provisioning, exactly one tenant and four parties; GLEIF names appear only as counterparties | to verify live |
+
+** Execution legs
+
+1. Shell leg: fresh database; rebuild binaries (current binaries
+   predate hotfix #1929); bootstrap the database; start services; run
+   the current recipe as-is (=provision system=, =provision tenant
+   --source acme=, =bundles publish risk_management --wait=); verify
+   every acceptance criterion.
+2. Wizard leg: second fresh database; Acme one-click onboarding via
+   the Qt wizard; verify the same result.
+3. Record every finding with its fix in * Notes; close the task; raise
+   the combined PR.
 
 * Notes
 

@@ -34,11 +34,11 @@ tribal.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -188,3 +188,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Compass now has a first-class, role-based deploy family under
+~compass env deploy~: ~<host>~ (runtime role: full service set + NATS
+sidecar), ~--role compute~ (compute-node-only partial environment),
+~--stop~, ~--setup-host~, and ~list~. The host registry reuses the
+named-env-file concept (~.env.<host>~, gitignored) rather than a new
+one, so deploy, db, and build commands all agree on one per-host
+profile.
+
+The build side is per-service container images driven by the service
+registry: ~compass image build~ stages all binaries (stage-runtime +
+library partition into a shared ~ores-service-base~ and 17 thin
+per-service overlays, plus ~ores-nats~), and ~compass env deploy~
+streams base + NATS over SSH, rebuilds the overlays remotely from a
+transferred staging tree, and runs the containers via
+~docker/remote-run.sh~ — idempotent (containers rm -f'd and recreated,
+files overwritten, volumes recreated). Verified end-to-end on Newton
+twice: 17/17 containers healthy, http.server on 20400 with storage
+written to the host bind-mount, ore.service work dir mounted, telemetry
+polling the live NATS monitor.
+
+Two issues found and fixed along the way: container config is now
+supplied as env, not per-service CLI args (http.server, telemetry,
+ore.service registry "Extra args" go through the
+~ORES_<APP>_<OPTION>~ mapper in env_init.py + the newton profile), and
+the telemetry NATS poller mis-parsed nats-server v2.14's ~/jsz~
+response (~streams~ is a count; details live under
+~account_details[].stream_detail[]~) — fixed and verified: stream and
+server samples now land in the DB on a 30s cadence.
+
+Recipe documented at
+~doc/recipes/compass/how-do-i-deploy-the-service-runtime-to-a-remote-wsl-host.org~.
+All four acceptance criteria met.

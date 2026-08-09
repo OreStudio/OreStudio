@@ -119,8 +119,10 @@ std::optional<domain::fra_convention> fra_convention_repository::read_at_version
     BOOST_LOG_SEV(lg(), debug) << "Reading FRA convention at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fra_convention_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<fra_convention_entity, domain::fra_convention>(

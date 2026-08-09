@@ -359,9 +359,17 @@ std::optional<domain::{{entity_singular}}>
                                << " version: " << version;
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}} && "version"_c == version) |
+        sqlgen::limit(1);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && {{{primary_key.where_and}}} && "version"_c == version) |
         sqlgen::limit(1);
+{{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |

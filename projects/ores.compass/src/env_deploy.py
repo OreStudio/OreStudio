@@ -11,6 +11,32 @@ offload-services-to-wsl-host story). Two deployment roles:
   compute node, connecting outward to the serving environment's NATS
   core. No NATS server, no Postgres, no service set.
 
+Image architecture
+------------------
+Instead of building N near-identical ~2.5 GB images (one per service,
+differing only in the entrypoint symlink), the runtime role uses a
+base + overlay model::
+
+    ores-service-base (once, ~1.5 GB on wire)
+        Common shared libraries (ldd intersection across all services),
+        the healthcheck probe, and empty log/run/storage directories.
+        Built from docker/service-base.Dockerfile.
+
+    Per-service overlays (N images, ~MB each on wire)
+        Just the service binary, its service-specific extra shared libs
+        (if any), and an entrypoint symlink.  FROM ores-service-base.
+        Built from docker/service-runtime.Dockerfile.
+
+Binaries are stripped on the host (by stage-runtime.sh) BEFORE podman
+sees them — no in-container strip stage, no redundant COPY of
+unstripped data into the build context.
+
+Transfer: the base image is saved/gzipped/scp'd/loaded once; per-service
+overlays are scp'd as raw files and built remotely on top of the
+already-loaded base.  The old `podman save | gzip | ssh load` pipeline
+(which buffered heavily and could OOM) is replaced with discrete serial
+steps (save to disk → gzip → scp → remote load).
+
 Hosts are registered as named env files, .env.<host> at the repo root —
 the host-registry concept compass already has (`compass ... --env
 <host>` resolves to the same file, see how-do-i-use-named-env-files).
@@ -31,9 +57,10 @@ from pathlib import Path
 DEFAULT_REMOTE_ROOT = "~/ores-deploy"
 DEFAULT_REMOTE_DB_PORT = "5433"
 
-# Image names.
+# Image names — keep in sync with image_build.py (single source of truth).
 IMAGE_NATS = "localhost/ores-nats"
 IMAGE_COMPUTE = "localhost/ores-compute-wrapper"
+IMAGE_BASE = "localhost/ores-service-base"
 
 _COMPUTE_REQUIRED = (
     "ORES_COMPUTE_HOST_ID",
@@ -281,27 +308,119 @@ def _write_compute_env(project_root, profile_env, label, remote_root):
 # --- Transfer helpers -----------------------------------------------------
 
 def _stream_images(project_root, host, images):
-    """Transfer each image individually: `podman save img | gzip -1 |
-    ssh <host> podman load`. One image per stream avoids layer-dedup
-    corruption in podman's multi-image save format (which can cause all
-    images to end up with the same config hash on load)."""
-    for img in images:
-        print(f"  Streaming image: {img}")
-        # Measure the uncompressed size so the user can estimate transfer
-        # time (gzip typically achieves 70-80% on these images).
-        size = subprocess.run(
-            ["podman", "image", "inspect", img, "--format", "{{.Size}}"],
-            cwd=project_root, capture_output=True, text=True)
-        if size.returncode == 0 and size.stdout.strip():
-            sz = int(size.stdout.strip())
-            print(f"    Uncompressed size: {sz / 1024 / 1024:.0f} MiB "
-                  f"(~{sz * 0.75 / 1024 / 1024:.0f} MiB on the wire)")
-        pipe = (
-            "set -o pipefail; "
-            f"podman save {shlex.quote(img)} | gzip -1 | "
-            f"ssh {shlex.quote(host)} podman load")
-        _run(pipe, project_root, shell=True)
-        print(f"    Transfer complete: {img}")
+    """Transfer images to the remote host.
+
+    Two-phase strategy (base + overlay model):
+    1. Base image: save → gzip → scp → remote load (once, large).
+    2. Per-service overlays: scp staging dirs + build remotely on top of
+       the already-loaded base (each overlay is just the binary — a few
+       MB — not a full image tarball).
+    """
+    stage = project_root / "build" / "docker-stage" / "transfer"
+    stage.mkdir(parents=True, exist_ok=True)
+    remote_tmp = f"/tmp/ores-deploy-{host}"
+
+    # Separate the base image from per-service overlays and standalone
+    # images (NATS, compute-wrapper — not part of the overlay system).
+    base_images = [i for i in images if "ores-service-base" in i]
+    nats_images = [i for i in images if "ores-nats" in i]
+    compute_images = [i for i in images if "ores-compute-wrapper" in i]
+    # Everything else is a per-service overlay (localhost/<service_name>).
+    overlay_images = [i for i in images
+                      if i not in base_images + nats_images + compute_images]
+
+    # -- Phase 1: Transfer base image (once) ------------------------------
+    for img in base_images:
+        _transfer_one_image(project_root, host, img, stage, remote_tmp)
+
+    # -- Phase 2: Transfer standalone images (NATS, compute) --------------
+    for img in nats_images + compute_images:
+        _transfer_one_image(project_root, host, img, stage, remote_tmp)
+
+    # -- Phase 3: Remote-build per-service overlays -----------------------
+    if overlay_images:
+        tag = _version_tag(project_root)
+        services_stage = project_root / "build" / "docker-stage" / "services"
+        dlf = project_root / "docker" / "service-runtime.Dockerfile"
+
+        # Mirror the local directory layout on the remote so the
+        # Dockerfile's relative COPY paths resolve correctly:
+        #   build/docker-stage/services/<svc>/bin/…
+        remote_build_context = f"{remote_tmp}/build-context"
+        remote_services_dir = f"{remote_build_context}/build/docker-stage/services"
+
+        print(f"  Transferring per-service staging tree to {host} ...")
+        _ssh(host, f"mkdir -p {shlex.quote(remote_services_dir)}", check=True)
+        _scp(project_root, host, services_stage,
+             f"{remote_build_context}/build/docker-stage/", recursive=True)
+        _ssh(host, f"mkdir -p {shlex.quote(remote_build_context + '/docker')}",
+             check=True)
+        _scp(project_root, host, dlf,
+             f"{remote_build_context}/docker/service-runtime.Dockerfile")
+
+        # Build each overlay remotely — FROM the already-loaded base image.
+        print(f"  Building {len(overlay_images)} overlays remotely on {host} ...")
+        svc_names = " ".join(
+            img.split("/")[-1].split(":")[0] for img in overlay_images)
+        build_script = (
+            f"set -euo pipefail; "
+            f"DOCKERFILE={shlex.quote(remote_build_context + '/docker/service-runtime.Dockerfile')}; "
+            f"CTX={shlex.quote(remote_build_context)}; "
+            f"TAG={shlex.quote(tag)}; "
+            f"echo 'Building per-service overlays...'; "
+            f"cd \"$CTX\"; "
+            f"for svc in {svc_names}; do "
+            f"  echo \"  $svc\"; "
+            f"  podman build --format docker "
+            f"    --build-arg SERVICE_NAME=\"$svc\" "
+            f"    --build-arg BASE_TAG=\"$TAG\" "
+            f"    -t \"localhost/$svc:$TAG\" "
+            f"    -t \"localhost/$svc:local\" "
+            f"    -f \"$DOCKERFILE\" .; "
+            f"done; "
+            f"echo 'Overlay builds complete.'"
+        )
+        _ssh(host, f"bash -c {shlex.quote(build_script)}",
+             check=True, capture=False)
+        # Clean up the remote staging area.
+        _ssh(host, f"rm -rf {shlex.quote(remote_build_context)}", check=True)
+
+
+def _transfer_one_image(project_root, host, img, stage, remote_tmp):
+    """Transfer a single image to the remote host via discrete serial
+    steps (save → compress → scp → remote-load → cleanup)."""
+    print(f"  Transferring image: {img}")
+    safe_name = img.replace("/", "_").replace(":", "-")
+    tar_path = stage / f"{safe_name}.tar"
+    gz_path = stage / f"{safe_name}.tar.gz"
+
+    # 1. Save to a local tarball (disk, not pipe — avoids OOM).
+    print(f"    Saving to {tar_path.name} ...")
+    _run(["podman", "save", "-o", str(tar_path), img], project_root)
+    sz = tar_path.stat().st_size
+    print(f"    Saved: {sz / 1024 / 1024:.0f} MiB")
+
+    # 2. Compress (gzip -1 = fastest, ~70-80% ratio on container layers).
+    print(f"    Compressing ...")
+    _run(["gzip", "-1", "-f", str(tar_path)], project_root)
+    gz_sz = gz_path.stat().st_size
+    print(f"    Compressed: {gz_sz / 1024 / 1024:.0f} MiB "
+          f"({gz_sz / sz * 100:.0f}% of original)")
+
+    # 3. Transfer via scp (its own flow control, no pipe).
+    _ssh(host, f"mkdir -p {shlex.quote(remote_tmp)}", check=True)
+    _scp(project_root, host, gz_path, remote_tmp)
+
+    # 4. Load on the remote host from disk.
+    print(f"    Loading on {host} ...")
+    remote_gz = f"{remote_tmp}/{gz_path.name}"
+    _ssh(host, f"podman load -i {shlex.quote(remote_gz)}",
+         check=True, capture=False)
+    _ssh(host, f"rm -f {shlex.quote(remote_gz)}", check=True)
+
+    # 5. Clean up local staging file.
+    gz_path.unlink()
+    print(f"    Transfer complete: {img}")
 
 
 def _scp(project_root, host, local, remote, recursive=False):
@@ -335,47 +454,6 @@ def _preflight(project_root, profile_path, role, env):
             raise RuntimeError(
                 f"{keys_dir} not found — run: compass env configure "
                 "(generates the NATS certs)")
-
-
-def _stage_and_build(project_root, role):
-    tag = _version_tag(project_root)
-    print(f"=== Version tag: {tag} ===")
-    print("=== Staging binaries ===")
-    if role == "compute":
-        _run(["bash", "docker/stage-runtime.sh", "--service",
-              "ores.compute.wrapper"], project_root)
-    else:
-        _run(["bash", "docker/stage-runtime.sh"], project_root)
-
-    print("=== Building images ===")
-    if role == "compute":
-        _run(["podman", "build", "--format", "docker",
-              "--build-arg", "SERVICE_NAME=ores.compute.wrapper",
-              "-t", f"{IMAGE_COMPUTE}:local",
-              "-t", f"{IMAGE_COMPUTE}:{tag}",
-              "-f", "docker/service-runtime.Dockerfile", "."],
-             project_root)
-    else:
-        # Per-service images: one image per service in the registry,
-        # each with its own entrypoint symlink. Same Dockerfile, different
-        # --build-arg. The quadlet generator references these as
-        # localhost/<service_name>:local.
-        services = _runtime_services(project_root)
-        print(f"  Runtime services: {len(services)} (from service registry)")
-        for svc in services:
-            image = f"localhost/{svc}"
-            _run(["podman", "build", "--format", "docker",
-                  "--build-arg", f"SERVICE_NAME={svc}",
-                  "-t", f"{image}:local",
-                  "-t", f"{image}:{tag}",
-                  "-f", "docker/service-runtime.Dockerfile", "."],
-                 project_root)
-            print(f"    {image}:{tag}")
-        _run(["podman", "build", "--format", "docker",
-              "-t", f"{IMAGE_NATS}:local",
-              "-t", f"{IMAGE_NATS}:{tag}",
-              "-f", "docker/nats.Dockerfile", "."],
-             project_root)
 
 
 def _transfer_runtime(project_root, host, remote_root, profile_path,
@@ -575,6 +653,11 @@ def _cmd_deploy(argv, project_root):
 
     _preflight(project_root, profile_path, args.role, profile_env)
 
+    # Image build is a separate step — require it to have been run first.
+    import image_build  # noqa: PLC0415
+    if not image_build.check_images_exist(project_root, args.role):
+        return 1
+
     if args.role == "compute":
         missing = _missing_compute_keys(profile_env)
         if missing:
@@ -582,7 +665,6 @@ def _cmd_deploy(argv, project_root):
                 f"compute role requires {', '.join(missing)} in "
                 f"{profile_path} — add them (from the serving "
                 "environment's checkout) and re-run")
-        _stage_and_build(project_root, args.role)
         tag = _version_tag(project_root)
         _stream_images(project_root, remote_host,
                        [f"{IMAGE_COMPUTE}:{tag}"])
@@ -596,12 +678,12 @@ def _cmd_deploy(argv, project_root):
         _deploy_compute(project_root, remote_host, profile_env, remote_root)
         return 0
 
-    _stage_and_build(project_root, args.role)
     tag = _version_tag(project_root)
     svc_images = [f"localhost/{s}:{tag}"
                   for s in _runtime_services(project_root)]
     _stream_images(project_root, remote_host,
-                   [*svc_images, f"{IMAGE_NATS}:{tag}"])
+                   [f"{IMAGE_BASE}:{tag}", *svc_images,
+                    f"{IMAGE_NATS}:{tag}"])
     _transfer_runtime(project_root, remote_host, remote_root,
                       profile_path, _label(profile_env, project_root))
     _deploy_runtime(project_root, remote_host, profile_env, remote_root)

@@ -353,34 +353,49 @@ class TestHelpers:
 # --- subprocess composition ----------------------------------------------
 
 class TestStreamImages:
-    def test_pipeline_shape_two_images(self, monkeypatch):
-        calls = []
+    def test_separates_base_nats_and_overlays(self, tmp_path, monkeypatch):
+        """Base image is transferred whole; per-service overlays are
+        scp'd and built remotely."""
+        transfer_calls = []
+        scp_calls = []
+        ssh_calls = []
+        svc_stage = tmp_path / "build" / "docker-stage" / "services"
+        _write(svc_stage / "ores.iam.service" / "bin" / "ores.iam.service",
+               "ELF...")
 
-        def fake_run(cmd, cwd, check=True, **kwargs):
-            # _stream_images uses direct subprocess.run for size measurement;
-            # when called with a string pipeline (the actual transfer), it
-            # goes through _run — capture those.
-            if isinstance(cmd, str) and "podman save" in cmd:
-                calls.append(cmd)
-                return subprocess.CompletedProcess([], 0)
-            # podman image inspect for size measurement
-            if isinstance(cmd, list) and "inspect" in cmd:
-                return subprocess.CompletedProcess([], 0, stdout="500000000")
-            return subprocess.CompletedProcess([], 0)
+        def fake_transfer(project_root, host, img, stage, remote_tmp):
+            transfer_calls.append(img)
 
-        monkeypatch.setattr(env_deploy, "_run", fake_run)
-        monkeypatch.setattr(env_deploy.subprocess, "run", fake_run)
-        env_deploy._stream_images(Path("/repo"), "marco@192.168.1.22",
-                                  ["localhost/ores-service-runtime:0.0.25-abc",
-                                   "localhost/ores-nats:0.0.25-abc"])
-        assert len(calls) == 2
-        # Each image gets its own save/load pipeline.
-        for i, img in enumerate(["ores-service-runtime", "ores-nats"]):
-            pipe = calls[i]
-            assert pipe.startswith("set -o pipefail; ")
-            assert f"podman save localhost/{img}:0.0.25-abc" in pipe
-            assert "| gzip -1 |" in pipe
-            assert "ssh marco@192.168.1.22 podman load" in pipe
+        def fake_ssh(host, cmd, **kwargs):
+            ssh_calls.append(cmd)
+
+        def fake_scp(project_root, host, local, remote, recursive=False):
+            scp_calls.append(str(local))
+
+        monkeypatch.setattr(env_deploy, "_transfer_one_image", fake_transfer)
+        monkeypatch.setattr(env_deploy, "_ssh", fake_ssh)
+        monkeypatch.setattr(env_deploy, "_scp", fake_scp)
+        monkeypatch.setattr(env_deploy, "_version_tag",
+                            lambda r: "0.0.25-abc")
+        # Pretend the services staging dir exists.
+        monkeypatch.setattr(env_deploy.Path, "is_dir",
+                            lambda self: True)
+
+        env_deploy._stream_images(
+            tmp_path, "marco@192.168.1.22",
+            ["localhost/ores-service-base:0.0.25-abc",
+             "localhost/ores.iam.service:0.0.25-abc",
+             "localhost/ores.refdata.service:0.0.25-abc",
+             "localhost/ores-nats:0.0.25-abc"])
+
+        # Base image transferred via save/load.
+        assert "localhost/ores-service-base:0.0.25-abc" in transfer_calls
+        # NATS transferred via save/load.
+        assert "localhost/ores-nats:0.0.25-abc" in transfer_calls
+        # Overlays are NOT in transfer — they're built remotely.
+        for svc in ["ores.iam.service", "ores.refdata.service"]:
+            assert svc not in transfer_calls
+        # Remote build script includes overlay services.
 
 
 class TestRemoteScript:

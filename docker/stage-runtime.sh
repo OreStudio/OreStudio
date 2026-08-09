@@ -65,5 +65,28 @@ for lib in $needed_libs; do
     cp -a "$real" "$stage/lib/"
 done
 
+# Strip debug symbols on the host BEFORE podman ever sees the files.
+# This eliminates the dedicated strip Dockerfile stage: the build context
+# itself carries pre-stripped binaries and libraries, so the base-image
+# Dockerfile just COPYs them straight into the final image.
+strip --strip-debug "$stage"/bin/* "$stage"/lib/libores.*.so* 2>/dev/null || \
+    echo "Warning: strip not available or no matching files — continuing"
+
+# Pre-create the runtime directories that used to be mkdir'd inside the
+# (now-removed) strip Dockerfile stage.  The base-image Dockerfile COPYs
+# these from the host build context instead.
+for d in log run storage; do
+    mkdir -p "$stage/$d"
+    chmod 777 "$stage/$d"
+done
+
+# Pre-create the entrypoint symlink in the staging bin/ directory.
+# When the Dockerfile COPYs bin/ into /app/bin/, the symlink is preserved.
+# For the full staging path (all services), the per-service stage_for_build
+# creates individual entrypoints under services/<svc>/bin/ instead.
+if [[ -n "$service" ]]; then
+    ln -sf "./$service" "$stage/bin/entrypoint"
+fi
+
 echo "Staged $(ls "$stage/bin" | wc -l) service binaries and $(ls "$stage/lib" | wc -l) library files."
 du -sh "$stage/bin" "$stage/lib"

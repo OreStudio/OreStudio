@@ -6653,6 +6653,18 @@ def _read_env_map() -> dict:
     return result
 
 
+def cmd_image(argv):
+    """compass image build — Build container images (base + overlays)."""
+    import image_build
+    # argv[0] is "build" — the subcommand; pass the rest through.
+    if argv and argv[0] == "build":
+        return image_build.run(argv[1:], PROJECT_ROOT)
+    # Unknown subcommand or bare "compass image".
+    print("usage: compass image build [--base-only|--overlays-only|--nats|--compute]",
+          file=sys.stderr)
+    return 2
+
+
 def cmd_shell(argv):
     """compass shell — Shell pillar: run ores.shell with .env defaults.
 
@@ -6901,6 +6913,8 @@ def main():
         sys.exit(cmd_capture(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "journal":
         sys.exit(cmd_journal(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "image":
+        sys.exit(cmd_image(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "env":
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "nats":
@@ -6974,7 +6988,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "db", "sql", "services", "client", "claude", "test", "build",
+            "env", "image", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen", "branches",
             "inbox", "next", "deferred", "discarded", "backlog",

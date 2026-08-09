@@ -351,8 +351,8 @@ def cmd_regenerate(args: Any, base_dir: Path) -> int:
         model_files = discover_models(comp, project_root)
         if not model_files:
             log.warning(
-                "No models found for component %r (looked in %s and %s)",
-                comp_name, comp.models_dir or "(no models_dir)",
+                "No models found for component %r (modeling_dir: %s)",
+                comp_name,
                 comp.modeling_dir or "(no modeling dir)",
             )
             continue

@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 _COMPONENT_CATALOGUE = Path(__file__).parent.parent.parent / "library" / "component_catalogue.org"
 
@@ -9,22 +9,11 @@ _COMPONENT_CATALOGUE = Path(__file__).parent.parent.parent / "library" / "compon
 @dataclass
 class Component:
     name: str
-    # Legacy JSON discovery root. "" (empty, not None) for org-only
-    # components like refdata, which have no legacy JSON path at all.
-    models_dir: str = ""
-    # Either a single glob pattern or a tuple of patterns (the regenerate
-    # driver unions the matches). Tuple form supports the org-mode model
-    # POC (=*_entity.org=) alongside the legacy JSON models.
-    entity_glob: Union[str, Tuple[str, ...]] = "*_entity.json"
-    # *_entity.json also matches *_domain_entity.json; exclude the latter so
-    # regenerate only processes pure schema models, not domain entity models.
-    # None means no exclusion.
-    exclude_suffix: Optional[str] = "_domain_entity.json"
-    # Optional second discovery root: the component's own modeling/ dir
+    # Org-model discovery root: the component's modeling/ dir
     # (e.g. projects/ores.refdata/modeling/). Any *.org file in this dir
-    # whose frontmatter declares `#+type: ores.codegen.entity` is treated
-    # as an entity model. Other org files (component overviews, plantuml
-    # source, knowledge docs) are skipped. None means no second root.
+    # whose frontmatter declares a codegen model type is treated as an
+    # entity model. Other org files (component overviews, plantuml
+    # source, knowledge docs) are skipped. None means no models.
     modeling_dir: Optional[str] = None
     # Codegen org types to skip within modeling_dir even though they
     # otherwise qualify (e.g. "junction" while junction codegen is still
@@ -80,9 +69,6 @@ def _load_components() -> Dict[str, "Component"]:
         exclude_org_types = entry.get("exclude_org_types") or ""
         result[name] = Component(
             name=name,
-            models_dir=entry.get("models_dir") or "",
-            entity_glob=entry.get("entity_glob") or "*_entity.json",
-            exclude_suffix=entry.get("exclude_suffix") or None,
             modeling_dir=entry.get("modeling_dir") or None,
             exclude_org_types=tuple(
                 t.strip() for t in exclude_org_types.split(",") if t.strip()
@@ -125,12 +111,12 @@ def is_codegen_entity_org(path: Path) -> bool:
 def discover_models(
     comp: Component, project_root: Path, apply_exclusions: bool = True
 ) -> List[Path]:
-    """All model files for a component, across both discovery roots.
+    """All model files for a component via its org modeling_dir.
 
-    The legacy JSON root (models_dir) may no longer exist — the org
-    migration deletes JSON models as it converts them — so its absence
-    is not an error. Org files under modeling_dir are picked up when
-    their frontmatter declares a codegen model type.
+    Every component discovers models exclusively through its org
+    modeling_dir — JSON model support was decommissioned (all models
+    migrated to org). Files are picked up when their frontmatter
+    declares a codegen model type.
 
     apply_exclusions gates comp.exclude_org_types. It defaults to True
     for the bulk `codegen regenerate --component` path, which is what
@@ -141,20 +127,6 @@ def discover_models(
     that path pass apply_exclusions=False.
     """
     matches: set = set()
-    if comp.models_dir and (project_root / comp.models_dir).is_dir():
-        models_dir = project_root / comp.models_dir
-        globs = (
-            (comp.entity_glob,)
-            if isinstance(comp.entity_glob, str)
-            else tuple(comp.entity_glob)
-        )
-        for pattern in globs:
-            matches.update(models_dir.glob(pattern))
-        matches = {
-            f for f in matches
-            if comp.exclude_suffix is None
-            or not f.name.endswith(comp.exclude_suffix)
-        }
     if comp.modeling_dir:
         modeling_dir = project_root / comp.modeling_dir
         if modeling_dir.is_dir():

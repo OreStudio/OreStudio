@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/wire-g2-into-system-infra
-#+pr:
+#+pr: 1926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
@@ -285,7 +285,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1926][#1926]] | [ores.codegen] Fix PostgreSQL 63-byte identifier truncation: compute sql_name_base with safety net |
 
 * Review
 

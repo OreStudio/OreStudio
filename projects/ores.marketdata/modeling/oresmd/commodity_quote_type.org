@@ -14,11 +14,16 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
-|-----------+----------+------------+-----------------+-----------------|
-| spot | COMMODITY | PRICE | scalar | with_ccy |
-| fwd | COMMODITY_FWD | PRICE | tenor | with_ccy |
-| cpr | CPR | RATE | tenor | with_ccy |
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+------------+-----------------+-----------------+--------------------------------------------------|
+| spot | COMMODITY | PRICE | scalar | with_ccy | COMMODITY/PRICE (spot price, the default). |
+| fwd | COMMODITY_FWD | PRICE | tenor | with_ccy | COMMODITY_FWD/PRICE (commodity forward price). |
+| cpr | CPR | RATE | tenor | with_ccy | CPR/RATE (conditional prepayment rate). |
+
+* Enum brief
+
+The `quote` query key for commodity instruments — the ORE TYPE. Commodity-only;
+only meaningful when `type=quote`.
 
 * Fields
 

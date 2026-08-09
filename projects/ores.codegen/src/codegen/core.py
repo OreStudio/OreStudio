@@ -1643,6 +1643,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     model_dir = Path(model_path).parent
     _resolve_file_references(data[model_key], model_dir, data)
 
+    # --- oresmd quote-type models ---
+    # Project the batch/single spec dicts onto the top-level keys the
+    # oresmd_enums.hpp template consumes. The batch manifest loads as
+    # {"oresmd_quote_types": [...]}; a single spec loads as
+    # {"oresmd_quote_type": {...}}. The template's preamble guard renders
+    # once via the first_asset_class marker; each spec's quote_types list
+    # gets last-item markers for comma handling.
+    if model_type == 'oresmd_quote_type' and isinstance(model, dict):
+        specs = list(model.get('oresmd_quote_types') or [])
+        if not specs and model.get('oresmd_quote_type'):
+            specs = [model['oresmd_quote_type']]
+        for spec in specs:
+            _mark_last_item(spec.get('quote_types') or [])
+        # first_asset_class: marks the leading spec so the template can emit
+        # one-time content after the first per-class enum (the shared
+        # index_family enum sits between ir and credit in the hand-crafted
+        # file); the preamble guard uses the top-level marker below.
+        if specs:
+            specs[0]['first_asset_class'] = True
+        data['oresmd_quote_types'] = specs
+        data['oresmd_quote_type'] = {'first_asset_class': True}
+
     # For manifest.json, copy methodologies to top level for template access
     if model_key == 'manifest' and isinstance(data[model_key], dict):
         if 'methodologies' in data[model_key]:

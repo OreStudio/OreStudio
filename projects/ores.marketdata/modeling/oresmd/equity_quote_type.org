@@ -14,11 +14,16 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
-|-----------+----------+------------+-----------------+-----------------|
-| spot | EQUITY | PRICE | scalar | with_ccy |
-| dividend | EQUITY_DIVIDEND | RATE | tenor | with_ccy |
-| fwd | EQUITY_FWD | PRICE | tenor | with_ccy |
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+------------+-----------------+-----------------+-----------------------------------------------|
+| spot | EQUITY | PRICE | scalar | with_ccy | EQUITY/PRICE (spot price, the default). |
+| dividend | EQUITY_DIVIDEND | RATE | tenor | with_ccy | EQUITY_DIVIDEND/RATE (dividend yield rate). |
+| fwd | EQUITY_FWD | PRICE | tenor | with_ccy | EQUITY_FWD/PRICE (equity forward price). |
+
+* Enum brief
+
+The `quote` query key for equity instruments — the ORE TYPE. Equity-only;
+only meaningful when `type=quote`.
 
 * Fields
 

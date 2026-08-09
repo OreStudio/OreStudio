@@ -2107,8 +2107,27 @@ def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
 
     # --- Batch manifest (model.org) ---
     if p.name == "model.org":
+        # The manifest's own "* Spec files" table declares the generation
+        # order (e.g. ir first, matching the hand-crafted enum file) --
+        # NOT alphabetical glob order. Spec files that exist on disk but
+        # are not listed are appended afterwards, still deterministic.
+        text = p.read_text(encoding="utf-8")
+        doc = parse_org(text)
         specs: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        table = _section(doc.root, "Spec files")
+        if table:
+            for row in _parse_org_table_rows(table):
+                fname = row.get("file")
+                if not fname or fname in seen:
+                    continue
+                spec = _load_single_oresmd_spec(p.parent / fname)
+                if spec:
+                    specs.append(spec)
+                    seen.add(fname)
         for sibling in sorted(p.parent.glob("*_quote_type.org")):
+            if sibling.name in seen:
+                continue
             spec = _load_single_oresmd_spec(sibling)
             if spec:
                 specs.append(spec)
@@ -2143,6 +2162,29 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
         for row in _parse_org_table_rows(qt_section):
             qts.append({k: v for k, v in row.items()})
     result["quote_types"] = qts
+
+    # --- Enum brief: the class enum's doc comment, verbatim (line breaks
+    # are significant -- the generated file must match the hand-crafted
+    # text exactly; clang-format does not reflow comment prose). Each
+    # continuation line is given the doc-comment " * " prefix here so the
+    # template can emit the brief inline after "@brief ".
+    brief_section = _section(doc.root, "Enum brief")
+    if brief_section:
+        brief = _strip_body(brief_section)
+        if brief:
+            result["enum_brief"] = "\n * ".join(brief.splitlines())
+
+    # --- Enum footer: optional comment lines rendered inside the enum
+    # body, after the last enumerator (e.g. credit's "rating descoped"
+    # note). Indented to the enum-body depth by the loader so the spec
+    # section can hold plain text.
+    footer_section = _section(doc.root, "Enum footer")
+    if footer_section:
+        footer = _strip_body(footer_section)
+        if footer:
+            result["enum_footer"] = "\n".join(
+                "    " + line for line in footer.splitlines()
+            )
 
     # --- Fields table ---
     fields_section = _section(doc.root, "Fields")

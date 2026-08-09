@@ -89,6 +89,7 @@ _CODEGEN_ORG_TYPES = frozenset({
     "ores.codegen.field_group",
     "ores.codegen.junction",
     "ores.codegen.lookup_entity",
+    "ores.codegen.oresmd_quote_type",
     "ores.codegen.service_registry",
     "ores.codegen.component",
 })
@@ -130,7 +131,15 @@ def discover_models(
     if comp.modeling_dir:
         modeling_dir = project_root / comp.modeling_dir
         if modeling_dir.is_dir():
-            for org_path in modeling_dir.glob("*.org"):
+            # Direct children plus one level of subdirectories -- facet
+            # spec files live in modeling/<facet>/ (e.g. the oresmd
+            # quote-type specs in modeling/oresmd/). Deeper nesting is
+            # not scanned; the type filter below keeps any non-codegen
+            # org file out regardless of depth.
+            for org_path in (
+                list(modeling_dir.glob("*.org"))
+                + list(modeling_dir.glob("*/*.org"))
+            ):
                 if not org_path.is_file():
                     continue
                 org_type = _org_type(org_path)

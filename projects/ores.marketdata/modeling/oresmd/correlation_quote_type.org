@@ -14,9 +14,14 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
-|-----------+----------+------------+-----------------+-----------------|
-| pairwise | CORRELATION | RATE | scalar | simple |
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+------------+-----------------+-----------------+-------------------------------------------------|
+| pairwise | CORRELATION | RATE | scalar | simple | CORRELATION/RATE (pairwise factor correlation). |
+
+* Enum brief
+
+The `quote` query key for correlation instruments — the ORE TYPE. Correlation-only;
+only meaningful when `type=quote`.
 
 * Fields
 

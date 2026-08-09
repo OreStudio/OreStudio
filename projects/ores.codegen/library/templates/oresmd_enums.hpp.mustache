@@ -37,33 +37,33 @@ enum class curve_role {
  * implies metric=rate, quote=mm_future implies metric=price).
  */
 enum class metric {
-    rate,           ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
-    price,          ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
-    basis_spread,   ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
-    ratio,          ///< A ratio quote (e.g. BMA_SWAP/RATIO).
-    yield_spread    ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+    rate,         ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,        ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread, ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,        ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread  ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
 };
 {{/first_asset_class}}
 {{/oresmd_quote_type}}
-
 {{#oresmd_quote_types}}
+
 /**
- * @brief The `quote` query key of an oresmd URI, {{asset_class}}-only and only meaningful when
- * `type=quote`: the ORE quote TYPE (e.g. {{#quote_types}}{{enum_name}}{{^-last}}, {{/-last}}{{/quote_types}}) — the first segment of ORE's
- * TYPE/METRIC/... quote key, independent of the METRIC column carried by the `metric`
- * query key.
+ * @brief {{{enum_brief}}}
  */
 enum class {{asset_class}}_quote_type {
 {{#quote_types}}
-    {{enum_name}},  ///< {{ore_type}}/{{ore_metric}}
-{{/quote_types}}
-};
-{{/oresmd_quote_types}}
+    {{enum_name}}{{^last}},{{/last}} ///< {{{comment}}}
+{{/quote_types}}{{#enum_footer}}{{{enum_footer}}}
+{{/enum_footer}}};
+{{#first_asset_class}}
+
 /**
  * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
  * not free text -- closes the gap-analysis's "index_name is free text" finding.
  */
 enum class index_family { libor, euribor, sofr, estr, sonia, tona };
+{{/first_asset_class}}
+{{/oresmd_quote_types}}
 
 /**
  * @brief Volatility model subtype — the third segment of ORE's vol quote key
@@ -78,6 +78,6 @@ enum class volatility_model_subtype {
     price        ///< PRICE (price surface).
 };
 
-}  // namespace ores::marketdata::domain
+}
 
 #endif

@@ -21,10 +21,10 @@ generate <name>= — when loaded, it scans the directory for all sibling
 
 | file | asset_class |
 |------+-------------|
-| fx_quote_type.org | fx |
 | ir_quote_type.org | ir |
 | credit_quote_type.org | credit |
 | equity_quote_type.org | equity |
 | commodity_quote_type.org | commodity |
+| fx_quote_type.org | fx |
 | inflation_quote_type.org | inflation |
 | correlation_quote_type.org | correlation |

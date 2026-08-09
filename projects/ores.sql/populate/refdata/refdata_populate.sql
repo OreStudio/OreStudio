@@ -71,4 +71,8 @@
 \ir ./refdata_leg_types_populate.sql
 
 \echo ''
+\echo '--- Refdata Dataset Dependencies ---'
+\ir ./refdata_dataset_dependency_populate.sql
+
+\echo ''
 \echo '=== Refdata Component Population Complete ==='

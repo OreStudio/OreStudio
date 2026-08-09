@@ -58,8 +58,11 @@ namespace ores::analytics::quant::service {
  *
  * (dt in the zero-sum limit). This is the direct generalisation of the
  * one-factor hull_white_process recursion and the two-factor
- * two_factor_gaussian_process recursion; both, and vasicek_process,
- * are exact special cases (verified by tests).
+ * two_factor_gaussian_process recursion: with theta == 0 the model is
+ * exactly the G2 model, and the single-factor limit with delta_0 == 0
+ * and delta == 1 is exactly hull_white_process and vasicek_process.
+ * The tests verify these equivalences; the G2 equivalence is tested at
+ * equal kappas.
  *
  * The factors are Gaussian, so the short rate is unbounded below:
  * negative rates occur with positive probability. The square-root

@@ -84,9 +84,12 @@ ORES_ANALYTICS_QUANT_EXPORT Eigen::VectorXd hjm_no_arbitrage_drift(
  * piecewise-linear between grid points (the trapezoid rule), and held
  * flat at the last tenor beyond the grid. This grid discretisation is
  * the model's approximation: the simulated forward curve is linear
- * between tenors, not the true instantaneous curve. The process is
- * model-consistent: under the same grid, the drift above is exactly
- * the no-arbitrage drift of the piecewise-linear interpolation.
+ * between tenors, not the true instantaneous curve. The drift above is
+ * the discrete analogue of the continuum no-arbitrage drift: with the
+ * volatility piecewise constant on the tenor grid, the covariance sum
+ * to each tenor is the trapezoid rule for the integrated volatility,
+ * so the discretisation is first-order consistent with the continuum
+ * model.
  *
  * Parameters are annualised; dt is the year-fraction per tick,
  * matching hull_white_process. Callers never pre-scale parameters for

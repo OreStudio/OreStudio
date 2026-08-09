@@ -307,4 +307,4 @@ double black_derman_toy_process::discount_factor(std::size_t ticks_ahead) const 
     return price;
 }
 
-} // namespace ores::analytics.quant::service
+} // namespace ores::analytics::quant::service

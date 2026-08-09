@@ -38,7 +38,7 @@ register_ir_curve_generation_config_process_parameter_value_event_mapping(
         synthetic::eventing::ir_curve_generation_config_process_parameter_value_changed_event>(
         event_source,
         "ores.synthetic.ir_curve_generation_config_process_parameter_value",
-        "ores_synthetic_ir_curve_generation_config_process_parameter_values");
+        "ores_synthetic_config_process_parameter_values");
 
     return event_bus.subscribe<
         synthetic::eventing::ir_curve_generation_config_process_parameter_value_changed_event>(

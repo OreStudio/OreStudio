@@ -47,7 +47,7 @@
  * rows via the normal codegen repositories.
  */
 
-create table if not exists "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" (
+create table if not exists "ores_synthetic_config_process_parameter_values_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
@@ -72,23 +72,23 @@ create table if not exists "ores_synthetic_ir_curve_generation_config_process_pa
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists ir_curve_generation_config_process_parameter_values_config_id_parameter_definition_id_uniq_idx
-on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" (tenant_id, config_id, parameter_definition_id)
+on "ores_synthetic_config_process_parameter_values_tbl" (tenant_id, config_id, parameter_definition_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists ir_curve_generation_config_process_parameter_values_version_uniq_idx
-on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" (tenant_id, id, version)
+on "ores_synthetic_config_process_parameter_values_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists ir_curve_generation_config_process_parameter_values_id_uniq_idx
-on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" (tenant_id, id)
+on "ores_synthetic_config_process_parameter_values_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists ir_curve_generation_config_process_parameter_values_tenant_idx
-on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" (tenant_id)
+on "ores_synthetic_config_process_parameter_values_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_synthetic_ir_curve_generation_config_process_parameter_values_insert_fn()
+create or replace function ores_synthetic_config_process_parameter_values_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -129,7 +129,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl"
+    from "ores_synthetic_config_process_parameter_values_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -147,7 +147,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl"
+        update "ores_synthetic_config_process_parameter_values_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -166,13 +166,13 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_synthetic_ir_curve_generation_config_process_parameter_values_insert_trg
-before insert on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl"
-for each row execute function ores_synthetic_ir_curve_generation_config_process_parameter_values_insert_fn();
+create or replace trigger ores_synthetic_config_process_parameter_values_insert_trg
+before insert on "ores_synthetic_config_process_parameter_values_tbl"
+for each row execute function ores_synthetic_config_process_parameter_values_insert_fn();
 
-create or replace rule ores_synthetic_ir_curve_generation_config_process_parameter_values_delete_rule as
-on delete to "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl" do instead (
-    update "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl"
+create or replace rule ores_synthetic_config_process_parameter_values_delete_rule as
+on delete to "ores_synthetic_config_process_parameter_values_tbl" do instead (
+    update "ores_synthetic_config_process_parameter_values_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
@@ -199,7 +199,7 @@ begin
     -- Allow pass-through if neither this tenant nor the system tenant has
     -- seeded active ir_curve_generation_config_process_parameter_values yet (freshly provisioned tenant).
     if not exists (
-        select 1 from ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+        select 1 from ores_synthetic_config_process_parameter_values_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -208,14 +208,14 @@ begin
 
     -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
-        select 1 from ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+        select 1 from ores_synthetic_config_process_parameter_values_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and id = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid ir_curve_generation_config_process_parameter_value: %. Must be one of: %', p_value, (
             select string_agg(id::text, ', ' order by id)
-            from ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+            from ores_synthetic_config_process_parameter_values_tbl
             where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';

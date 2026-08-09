@@ -35,8 +35,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct ir_curve_generation_config_process_parameter_value_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl";
+    constexpr static const char* tablename = "ores_synthetic_config_process_parameter_values_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;

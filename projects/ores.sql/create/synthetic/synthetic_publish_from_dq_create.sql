@@ -655,7 +655,7 @@ begin
             -- are created directly against the live table, not via a DQ
             -- artefact, and a mis-targeted artefact fails loudly in the
             -- mapping layer (missing required parameters).
-            update ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl existing
+            update ores_synthetic_config_process_parameter_values_tbl existing
             set valid_to = current_timestamp
             where existing.tenant_id = p_target_tenant_id
               and existing.config_id = v_ir_config_id
@@ -670,7 +670,7 @@ begin
                    and d.valid_to = ores_utility_infinity_timestamp_fn()
               );
 
-            insert into ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl (
+            insert into ores_synthetic_config_process_parameter_values_tbl (
                 tenant_id, id, version, config_id, parameter_definition_id, parameter_value,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -692,7 +692,7 @@ begin
                and d.process_type_code = r.process_type
                and d.parameter_name = p.parameter_name
                and d.valid_to = ores_utility_infinity_timestamp_fn()
-            left join ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl existing_p
+            left join ores_synthetic_config_process_parameter_values_tbl existing_p
                 on existing_p.tenant_id = p_target_tenant_id
                and existing_p.config_id = v_ir_config_id
                and existing_p.parameter_definition_id = d.id

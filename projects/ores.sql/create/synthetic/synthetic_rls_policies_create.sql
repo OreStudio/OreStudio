@@ -245,10 +245,10 @@ with check (
 -- works: reads and writes require the parent config to be visible to /
 -- owned by the current party.
 -- -----------------------------------------------------------------------------
-alter table ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl enable row level security;
+alter table ores_synthetic_config_process_parameter_values_tbl enable row level security;
 
 create policy ir_curve_generation_config_process_parameter_values_tenant_isolation_policy
-on ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+on ores_synthetic_config_process_parameter_values_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )
@@ -257,7 +257,7 @@ with check (
 );
 
 create policy ir_curve_generation_config_process_parameter_values_party_isolation_policy
-on ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+on ores_synthetic_config_process_parameter_values_tbl
 as restrictive
 for all using (
     exists (

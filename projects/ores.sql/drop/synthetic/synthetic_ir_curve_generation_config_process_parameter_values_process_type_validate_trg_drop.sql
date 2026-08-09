@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_synthetic_ir_curve_generation_config_process_parameter_values_process_type_trg on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl";
-drop function if exists ores_synthetic_validate_ir_curve_generation_config_process_parameter_value_process_type_fn;
+drop trigger if exists ores_synthetic_config_process_parameter_values_process_type_trg on "ores_synthetic_config_process_parameter_values_tbl";
+drop function if exists ores_synthetic_validate_process_parameter_value_process_type_fn;

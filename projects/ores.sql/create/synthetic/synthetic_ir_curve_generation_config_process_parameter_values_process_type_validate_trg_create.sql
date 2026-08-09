@@ -39,7 +39,7 @@
 -- definition lookup therefore resolves there, while the parent config --
 -- a genuine tenant row -- resolves against the value row's own tenant.
 
-create or replace function ores_synthetic_validate_ir_curve_generation_config_process_parameter_value_process_type_fn()
+create or replace function ores_synthetic_validate_process_parameter_value_process_type_fn()
 returns trigger as $$
 declare
     v_definition_process_type text;
@@ -78,6 +78,6 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_synthetic_ir_curve_generation_config_process_parameter_values_process_type_trg
-before insert or update of config_id, parameter_definition_id on "ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl"
-for each row execute function ores_synthetic_validate_ir_curve_generation_config_process_parameter_value_process_type_fn();
+create or replace trigger ores_synthetic_config_process_parameter_values_process_type_trg
+before insert or update of config_id, parameter_definition_id on "ores_synthetic_config_process_parameter_values_tbl"
+for each row execute function ores_synthetic_validate_process_parameter_value_process_type_fn();

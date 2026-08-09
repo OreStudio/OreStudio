@@ -70,7 +70,7 @@ begin
     --    a definition of another type would raise -- it cannot, because
     --    the flat columns predate the row-based store and every existing
     --    config predates TWO_FACTOR_GAUSSIAN.
-    insert into ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl (
+    insert into ores_synthetic_config_process_parameter_values_tbl (
         tenant_id, id, version, config_id, parameter_definition_id, parameter_value,
         modified_by, performed_by, change_reason_code, change_commentary
     )
@@ -120,4 +120,4 @@ end $$;
 
 -- Summary
 select 'ores_synthetic_ir_curve_generation_configs_tbl' as entity, count(*) as parameter_value_rows
-from ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl;
+from ores_synthetic_config_process_parameter_values_tbl;

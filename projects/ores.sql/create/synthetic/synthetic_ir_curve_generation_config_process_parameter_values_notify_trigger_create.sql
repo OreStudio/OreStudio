@@ -23,7 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
-create or replace function ores_synthetic_ir_curve_generation_config_process_parameter_values_notify_fn()
+create or replace function ores_synthetic_config_process_parameter_values_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -47,12 +47,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_synthetic_ir_curve_generation_config_process_parameter_values', notification_payload::text);
+    perform pg_notify('ores_synthetic_config_process_parameter_values', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_synthetic_ir_curve_generation_config_process_parameter_values_notify_trg
-after insert or update or delete on ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
-for each row execute function ores_synthetic_ir_curve_generation_config_process_parameter_values_notify_fn();
+create or replace trigger ores_synthetic_config_process_parameter_values_notify_trg
+after insert or update or delete on ores_synthetic_config_process_parameter_values_tbl
+for each row execute function ores_synthetic_config_process_parameter_values_notify_fn();

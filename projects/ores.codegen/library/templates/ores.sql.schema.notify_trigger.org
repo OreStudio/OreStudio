@@ -35,7 +35,7 @@ The full template source. Edit here and re-tangle with
  * To modify, update the template and regenerate.
  */
 
-create or replace function {{product}}_{{component}}_{{entity_plural}}_notify_fn()
+create or replace function {{sql_name_base}}_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
@@ -65,9 +65,9 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger {{product}}_{{component}}_{{entity_plural}}_notify_trg
-after insert or update or delete on {{product}}_{{component}}_{{entity_plural}}_tbl
-for each row execute function {{product}}_{{component}}_{{entity_plural}}_notify_fn();
+create or replace trigger {{sql_name_base}}_notify_trg
+after insert or update or delete on {{sql_name_base}}_tbl
+for each row execute function {{sql_name_base}}_notify_fn();
 {{/domain_entity}}
 #+end_src
 

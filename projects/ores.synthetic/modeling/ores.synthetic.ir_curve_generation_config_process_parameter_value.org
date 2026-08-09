@@ -109,8 +109,20 @@ faker::number::decimal(0.0, 0.1)
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl
+:tablename: ores_synthetic_config_process_parameter_values_tbl
 :END:
+
+The =:tablename:= is the base every SQL object name for this entity is
+composed from (table, insert/notify/delete functions, triggers, delete
+rule). It deliberately drops the =ir_curve_generation_config_= prefix
+(the parent already scopes the rows): the conventional
+=ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl=
+is 72 characters, and PostgreSQL truncates identifiers to 63 bytes —
+table, functions and triggers would all collapse onto one identical
+63-character name, so the last =create or replace= silently replaces
+the earlier objects (the insert trigger that fills =valid_from= /
+=valid_to= is the one that gets lost). See the SQL naming
+conventions doc for the codegen-side rule.
 
 * Foreign keys
 

@@ -848,8 +848,14 @@ ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation
 ORES_SHELL_LOGIN_PASSWORD=Secure-Password-123
 
 # ---------------------------------------------------------------------------
-# HTTP server JWT secret (read by C++ make_mapper("HTTP_SERVER"))
+# HTTP server config (read by C++ make_mapper("HTTP_SERVER")).  The
+# registry's "Extra args" for http.server are supplied as env here so the
+# container runs need no per-service CLI args: --port {http_port} and
+# --storage-dir ../storage (resolved against WORKDIR /app/bin; the runner
+# bind-mounts a host dir over /app/storage — see docker/remote-run.sh).
 # ---------------------------------------------------------------------------
+ORES_HTTP_SERVER_PORT={http_port}
+ORES_HTTP_SERVER_STORAGE_DIR=../storage
 ORES_HTTP_SERVER_JWT_SECRET={http_jwt_secret}
 
 # ---------------------------------------------------------------------------

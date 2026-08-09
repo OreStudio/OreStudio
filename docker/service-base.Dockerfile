@@ -3,7 +3,8 @@
 # Built *once*, transferred *once*.  Contains:
 #   - Common shared libraries (the ldd intersection across all services)
 #   - The healthcheck probe
-#   - Empty /app/log, /app/run, /app/storage (mode 777)
+#   - Empty /app/log, /app/run, /app/storage (placeholders — the runtime
+#     bind-mounts host dirs over log and storage; see remote-run.sh)
 #
 # Per-service overlays (service-runtime.Dockerfile) add a single binary
 # (and any service-specific extra libs) on top of this image.
@@ -27,6 +28,12 @@ WORKDIR /app
 
 # Base staging directory — pre-stripped common libs and empty log/run/storage.
 COPY build/docker-stage/base/lib/ /app/lib/
+# Empty log/run/storage dirs.  NOTE: buildah normalizes directory modes on
+# COPY (a 0777 source lands 0755 root:root, and --chmod/--chown are
+# ignored for directory modes), so these in-image dirs are NOT writable by
+# the runtime uid — they are placeholders only.  The service runner
+# bind-mounts host-owned dirs over /app/log and /app/storage (see
+# docker/remote-run.sh); /app/run is unused today.
 COPY build/docker-stage/base/log/ /app/log/
 COPY build/docker-stage/base/run/ /app/run/
 COPY build/docker-stage/base/storage/ /app/storage/

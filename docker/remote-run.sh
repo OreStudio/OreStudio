@@ -120,6 +120,11 @@ nats_store_dir="${ORES_NATS_STORE_DIR:?ORES_NATS_STORE_DIR not set in remote env
 jwt_key_file="$REMOTE_ROOT/build/keys/iam-rsa-private.pem"
 log_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/log"
 mkdir -p "$log_dir"
+# Storage work dir.  /app/storage in the images is a 0755 placeholder
+# (buildah normalizes COPY dir modes — see service-base.Dockerfile), so
+# the writable storage dir is host-owned and bind-mounted, like /app/log.
+storage_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/storage"
+mkdir -p "$storage_dir"
 
 if [[ ! -f "$nats_config" ]]; then
     echo "Error: $nats_config not found on remote" >&2
@@ -180,6 +185,7 @@ for svc in $SERVICES; do
         "${jwt_args[@]}" \
         -v "$certs_volume:$keys_dir:ro" \
         -v "$log_dir:/app/log:rw" \
+        -v "$storage_dir:/app/storage:rw" \
         "$image" \
         --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
         --nats-tls-ca "$keys_dir/ca.crt" \
@@ -188,10 +194,13 @@ for svc in $SERVICES; do
         2>/dev/null) || true
     if [[ -n "$cid" ]]; then
         echo "running ($cid)"
-        ((running++))
+        # ((running++)) would return the pre-increment value (0 on the
+        # first service) and kill the script under `set -e` — use += so
+        # the expression value is the new, always-nonzero count.
+        ((running += 1))
     else
         echo "FAILED"
-        ((failed++))
+        ((failed += 1))
     fi
 done
 

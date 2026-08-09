@@ -72,8 +72,8 @@ Audited every ores.scheduler =domain_entity=/=junction= model against
 current codegen templates and the hand-written C++ it maps to.
 =job_definition= turned out fully hand-diverged: the model's
 =tenant_id=/=schedule_expression=/=is_active= column shapes don't
-match the hand-written =job_definition= struct's
-=utility::uuid::tenant_id=/=cron_expression=/=bool= types, so even the
+match the hand-written =job_definition= struct's actual types
+(=std::optional<boost::uuids::uuid>=/=cron_expression=/=bool=), so even the
 "safe" domain/repository-entity/mapper facets would regenerate wrong
 types, not just wrong formatting. On top of that, repository
 (=read_all_active=, =find_by_name= x2) and messaging
@@ -110,7 +110,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "DO NOT regenerate" note attributes =utility::uuid::tenant_id= to the hand-written struct; actual field type is =std::optional<boost::uuids::uuid>= (the wrapper is what codegen =has_tenant_id= would emit) | ores.scheduler.job_definition.org + task * Plan + story * Decisions | Accepted | Reworded in all three files; model file now also states codegen would emit the wrapper |
+| 2 | Hand-maintained repository/messaging operations described as intro prose, not under the schema's =** Custom repository methods= freeform heading | ores.scheduler.job_definition.org | Accepted | Moved the operation bullets under the existing =** Custom repository methods= section |
+| 3 | Qt facet exclusion not explicitly stated | ores.scheduler.job_definition.org | Accepted | Added one sentence to the exclusion rationale |
+| 4 | =#+updated= / Last touched (2026-07-30) behind the story's close date (2026-07-31) | task_fix-scheduler-model-drift.org | Declined | Matches sibling precedent (=task_fix-refdata-model-drift.org=: created 07-29 vs story End 07-30); the dates record the work period, not the close record; no convention bumps them on close |
+| 5 | =database_name= in Qt tables missing from =* Columns= | ores.scheduler.job_definition.org | Declined | Pre-existing on main (confirmed by the reviewer), out of scope for this bookkeeping PR |
 
 * Result
 

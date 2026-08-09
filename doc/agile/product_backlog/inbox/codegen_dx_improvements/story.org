@@ -165,7 +165,7 @@ deliverable.
   other facets safe to regen), =job_definition='s domain column
   shapes (=tenant_id=/=schedule_expression=/=is_active=) don't match
   the hand-written struct's actual types
-  (=utility::uuid::tenant_id=/=cron_expression=/=bool=), so even
+  (=std::optional<boost::uuids::uuid>=/=cron_expression=/=bool=), so even
   domain/repository-entity/mapper regen would emit wrong types. Its
   repository and messaging layers are also hand-maintained, with
   cross-component consumers (=ores.reporting=). No facet is currently

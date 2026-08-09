@@ -26,11 +26,11 @@ Restore provisioning end-to-end
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:149FB6E6-F13E-4886-94C3-A3E2A79521BD][Hotfix: provision tenant publishes party-scoped bundle without party_id]] |
-| Now          | Not yet started.                       |
+| Now          | Merged.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Verify provisioning end-to-end.        |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -70,3 +70,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Replaced the "first available" bundle heuristic in =process_tenant=
+with an explicit publish of the tenant-scoped ="base"= bundle (84
+reference datasets: countries, currencies, business centres, calendars,
+FpML codes, GLEIF entities). The old heuristic picked
+=marketdata.reference_vintage_2026_05_05= — a party-scoped bundle that
+requires =party_id=, which doesn't exist at tenant-provisioning time.
+
+The ="base"= bundle is the same one the =--source acme= server-side
+flow publishes as its Step 1. It seeds every reference-data table
+synthetic generation needs without requiring =party_id=.
+
+One file changed: =provision_commands.cpp= (+33/-44).

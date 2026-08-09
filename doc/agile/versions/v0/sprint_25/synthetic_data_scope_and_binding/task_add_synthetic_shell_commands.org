@@ -133,6 +133,7 @@ and exact-match rejection of `--name=Realistic`.
 
 Follow-up: folders lack a stable machine-readable identifier (only a
 human-readable multi-word name); tracked as task
-folder-code-identifier, re-scoped to derive slug identifiers at
-resolve time (resolver order: uuid -> exact name -> slugified name,
-path-qualified tokens for disambiguation -- no stored code column).
+folder-code-identifier, re-scoped to derive codename identifiers at
+resolve time (resolver order: uuid -> exact name -> codename path,
+standard filesystem-style paths walked from the tree root -- no
+stored code column).

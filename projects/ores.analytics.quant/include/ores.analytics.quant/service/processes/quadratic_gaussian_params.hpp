@@ -53,7 +53,7 @@ struct quadratic_gaussian_params final {
     /// Mean-reversion speed of each factor. Must be non-negative.
     Eigen::VectorXd kappas;
     /// Instantaneous covariance of the factor Brownian motions: the
-    /// square, symmetric, positive-definite matrix sigma with
+    /// square, symmetric, positive semi-definite matrix sigma with
     /// sigma[i][j] the covariance between factor i and factor j.
     Eigen::MatrixXd sigma;
     /// Long-run mean-reversion level of each factor.

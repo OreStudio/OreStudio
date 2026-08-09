@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/quadratic_gaussian_process.hpp"
+#include "ores.analytics.quant/math/psd_matrix.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -96,6 +97,14 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     if (!(gamma_solver.eigenvalues().minCoeff() >= tolerance))
         throw std::invalid_argument("quadratic_gaussian_process: gamma must be positive "
                                     "semidefinite");
+    // Validate the raw factor covariance itself, not the derived
+    // per-tick product (see the affine process constructor for the
+    // rationale): sigma_dt_ is the Hadamard product of sigma with a
+    // kappa-dependent Gram factor, and an indefinite sigma can damp
+    // into a positive-definite sigma_dt_ when the kappas differ. The
+    // singular limit sigma == 0 (deterministic factors) is accepted.
+    math::psd_matrix_square_root(
+        sigma, "quadratic_gaussian_process: sigma must be positive semidefinite");
     if (!(dt_ > 0.0))
         throw std::invalid_argument("quadratic_gaussian_process: dt must be strictly positive");
 
@@ -124,27 +133,16 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
             sigma_dt_(i, j) = sigma(i, j) * factor;
         }
 
-    // The Cholesky factor of the per-tick covariance realises the
-    // correlated shocks, exactly as in the affine process: LLT for the
-    // positive-definite case, the symmetric eigen root for the singular
-    // but positive-semidefinite limit (sigma == 0, or a rank-deficient
-    // covariance), and rejection when the covariance is indefinite.
-    Eigen::LLT<Eigen::MatrixXd> llt(sigma_dt_);
-    if (llt.info() != Eigen::Success) {
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(sigma_dt_);
-        if (solver.info() != Eigen::Success)
-            throw std::invalid_argument("quadratic_gaussian_process: sigma must be positive "
-                                        "definite: its per-tick covariance is not");
-        const double largest = solver.eigenvalues().maxCoeff();
-        const double tolerance = -1e-10 * std::max(1.0, std::abs(largest));
-        if (!(solver.eigenvalues().minCoeff() >= tolerance))
-            throw std::invalid_argument("quadratic_gaussian_process: sigma must be positive "
-                                        "definite: its per-tick covariance is not");
-        cholesky_ = solver.eigenvectors() *
-                    solver.eigenvalues().cwiseMax(0.0).cwiseSqrt().asDiagonal();
-    } else {
-        cholesky_ = llt.matrixL();
-    }
+    // The root of the per-tick covariance realises the correlated
+    // shocks, exactly as in the affine process: the Cholesky factor for
+    // the positive-definite case, the symmetric eigen root for the
+    // singular but positive-semidefinite limit. The raw-sigma check
+    // above already guarantees the semidefiniteness of the Hadamard
+    // product, so this call can only reject a numerical rounding
+    // failure.
+    cholesky_ = math::psd_matrix_square_root(
+        sigma_dt_, "quadratic_gaussian_process: sigma must be positive semidefinite: "
+                   "its per-tick covariance is not");
 
     // Scratch for the standard-normal shocks: allocated once per
     // construction, reused by every next() call.
@@ -194,21 +192,36 @@ double quadratic_gaussian_process::discount_factor(std::size_t ticks_ahead) cons
     Eigen::MatrixXd c = Eigen::MatrixXd::Zero(num_factors, num_factors);
     double a = 0.0;
     for (std::size_t i = 0; i < ticks_ahead; ++i) {
-        const Eigen::MatrixXd c_tilde = c * (identity + 2.0 * sigma_dt_ * c).inverse();
+        // The dressing matrix M = I + 2 V C (V = sigma_dt_): the
+        // dressed quadratic form is c_tilde = c M^-1, the solution of
+        // M^T c_tilde^T = c^T -- so one LU of M^T serves both the
+        // linear solve and the determinant (det M^T == det M). In
+        // exact arithmetic M's eigenvalues are 1 + 2 lambda_V lambda_C
+        // >= 1 (those of the symmetric positive-definite
+        // I + 2 V^(1/2) C V^(1/2)), so a non-positive or non-finite
+        // determinant is a numerical blow-up of the Riccati recursion,
+        // not a property of the inputs: the price it would produce is
+        // nonsense, so it is rejected.
+        const Eigen::MatrixXd m = identity + 2.0 * sigma_dt_ * c;
+        Eigen::PartialPivLU<Eigen::MatrixXd> lu(m.transpose());
+        const double determinant = lu.determinant();
+        if (!(std::isfinite(determinant)) || !(determinant > 0.0))
+            throw std::runtime_error("quadratic_gaussian_process: discount_factor: the "
+                                     "Riccati recursion blew up: I + 2 * sigma_dt * C is "
+                                     "not positive definite at tick " +
+                                     std::to_string(i));
+        const Eigen::MatrixXd c_tilde = lu.solve(c.transpose()).transpose();
         const Eigen::MatrixXd p = sigma_dt_ - 2.0 * sigma_dt_ * c_tilde * sigma_dt_;
 
         // The A shift: the affine pieces at the shift mean
         // m = theta_shift_, the quadratic Gaussian integral
         // E[exp(-eps' C eps - (2 C m + B)' eps)] = det(I + 2 V C)^-1/2
         //   * exp(1/2 (2 C m + B)' P (2 C m + B)),
-        // and the determinant piece. The matrix I + 2 V C is not
-        // symmetric, so the determinant comes from its LU factors; it
-        // is always positive (its eigenvalues are those of the
-        // symmetric positive-definite I + 2 V^(1/2) C V^(1/2)).
+        // and the determinant piece (the log of the determinant
+        // validated above).
         const Eigen::VectorXd c_theta = c * theta_shift_;
         const Eigen::VectorXd quadratic_arg = 2.0 * c_theta + b;
-        Eigen::PartialPivLU<Eigen::MatrixXd> lu(identity + 2.0 * sigma_dt_ * c);
-        const double log_det = 0.5 * std::log(lu.determinant());
+        const double log_det = 0.5 * std::log(determinant);
         a += -delta_0_ * dt_ - theta_shift_.dot(c_theta) - b.dot(theta_shift_)
              + 0.5 * quadratic_arg.dot(p * quadratic_arg) - log_det;
 

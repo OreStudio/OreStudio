@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 86CA88E8-E054-488B-B548-2AC4F9801D15
+:END:
+#+title: Task: Fix missing dataset dependency edges for currency refdata datasets
+#+description: Fresh db recreate + Acme provisioning aborts the base refdata publish at step 0: publication_service::resolve_publication_order() topologically sorts bundle members, and datasets with no declared dependency edges become sinks that float to the front. refdata.currency_pairs has no edge to iso.currencies, so it publishes before any currencies exist (error: Invalid base_currency EUR, no active currency found), the 38-step workflow aborts, and nothing else in the base bundle publishes, which cascades into the acme_lei_import failing on missing business centres (error: Invalid business_centre GBLO, must be one of WRLD). Same bug class fixed for refdata.calendars depending on iso.countries in commit 9527e7590; the currency siblings were never given edges.
+#+type: task
+#+level: s1
+#+filetags: :ir-rates-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-base-bundle-dataset-dependency-edges
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C29FE5A3-61F0-4D2F-BE4F-8A02223EABEF][IR Rates synthetic data: dataset seeding, index cleanup, dual-curve, quoting conventions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- refdata.currency_pairs declares a dependency on iso.currencies
+- refdata.currency_pair_conventions declares a dependency on refdata.currency_pairs
+- refdata.currency_calendars declares dependencies on refdata.calendars and iso.currencies
+- refdata.currency_countries declares dependencies on iso.countries and iso.currencies
+- refdata.currency_pair_convention_calendars declares dependencies on refdata.currency_pair_conventions and refdata.calendars
+- Fresh db recreate + Acme provisioning completes with base refdata fully published and the LEI import succeeding
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

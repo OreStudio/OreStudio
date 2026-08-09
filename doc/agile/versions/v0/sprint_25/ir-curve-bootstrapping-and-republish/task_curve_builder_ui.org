@@ -290,7 +290,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =hasBootstrapped_= never reset on Save, Publish can go stale | =CurveBuilderWorkbench.cpp= | Fixed | Reset =false= in Save's success handler; re-earns Publish via a fresh Bootstrap. |
+| 2 | =collectPillarsFromTable()= double-call scrambles pillar ids on out-of-order Edit-mode saves | =CurveBuilderWorkbench.cpp= | Fixed | Removed the second collect call; stamp the change-reason fields directly onto the already-collected =config_=/=pillars_= instead. |
+| 3 | Asymmetric Source/Output series duplicate guard (Output excludes Source, not vice versa) | =CurveBuilderWorkbench.cpp= | Fixed | Added matching =excludeSeriesId=/post-pick check to =onBrowseSourceSeriesClicked=. |
+| 4 | =notifyOpenDialogs= silently no-ops for =CurveBuilderWorkbench= windows (casts to =DetailDialogBase*=, always null) | =IrCurveBootstrapConfigController.cpp= | Fixed | Added a =CurveBuilderWorkbench::markAsStale()= and a matching cast branch. |
+| 5 | No self-reference guard on Discount Curve Config picker | =CurveBuilderWorkbench.cpp= | Fixed | Added a UI-side guard; confirmed server already rejects it via the =discount_curve_config_id <> id= SQL check. |
+| 6 | =forward_rate_calculator= has no guard for non-positive discount factors before =std::log= | =forward_rate_calculator.cpp= | Fixed | Throws =std::invalid_argument=; added a test case. |
+| 7 | =marketdata::curve_bootstrap:compute=/=:republish= not in =iam_permissions_populate.sql= | -- | Declined | Both work via the blanket =marketdata::*= wildcard already used throughout marketdata; scoping down to per-action grants is a separate, cross-cutting IAM task, not specific to this PR. |
+| 8 | =read_latest_by_observation= is N+1 per pillar with a TOCTOU race across concurrent =republish()= calls | =curve_republish_service.cpp= | Declined | Low-risk (user-triggered, not high-frequency); the race degrades to the exact pre-fix duplicate-key error this PR resolves, not silent corruption. Worth revisiting if republish is ever automated/scheduled. |
+| 9 | =system.curve_bootstrap= seeded =applies_to_amend=false= despite reruns being an amend | =dq_change_reasons_populate.sql= | Fixed | Flipped to =true=. |
+| 10 | Pre-existing "generated NATS handler never registered" bug also affects =calendar_exception=/=calendar_rule=/=derivation_kind= | -- | Declined | Pre-existing, not introduced by this PR; out of scope here -- worth its own follow-up ticket. |
 
 * Result
 

@@ -550,7 +550,14 @@ void IrCurveBootstrapConfigController::notifyOpenDialogs(const QStringList& enti
             continue;
 
         if (it.key().startsWith("details.")) {
-            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+            // CurveBuilderWorkbench deliberately doesn't inherit DetailDialogBase (see its own
+            // code()/markAsStale() comments for why), so it needs its own cast here rather than
+            // silently no-op'ing through the DetailDialogBase branch below.
+            if (auto* workbench = qobject_cast<CurveBuilderWorkbench*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(workbench->code())) {
+                    workbench->markAsStale();
+                }
+            } else if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
                 if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
                     dialog->markAsStale();
                 }

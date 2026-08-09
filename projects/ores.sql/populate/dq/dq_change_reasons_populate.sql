@@ -181,7 +181,7 @@ BEGIN
         'Market observation and lineage rows written by an IR curve bootstrap republish',
         'system',
         true,   -- applies to new
-        false,  -- not for amend (lineage rows are never amended, only newly written)
+        true,   -- applies to amend (a rerun over the same as_of version-bumps the lineage row)
         false,  -- not for delete
         false,  -- no commentary required
         66      -- display order

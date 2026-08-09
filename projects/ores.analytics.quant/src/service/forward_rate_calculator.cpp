@@ -39,6 +39,11 @@ forward_rate_calculator::calculate(const std::vector<bootstrapped_point>& points
                 "forward_rate_calculator: points must strictly increase in date -- '" +
                 end.point_id + "' does not mature after '" + start.point_id + "'");
 
+        if (start.discount_factor <= 0.0 || end.discount_factor <= 0.0)
+            throw std::invalid_argument(
+                "forward_rate_calculator: discount factors must be strictly positive -- '" +
+                start.point_id + "' -> '" + end.point_id + "' has a non-positive discount factor");
+
         const double yf =
             day_count_calculator::year_fraction(start.date, end.date, day_count_convention);
 

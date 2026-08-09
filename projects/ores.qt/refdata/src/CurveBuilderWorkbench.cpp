@@ -527,6 +527,13 @@ QString CurveBuilderWorkbench::code() const {
     return QString::fromStdString(boost::uuids::to_string(config_.id));
 }
 
+void CurveBuilderWorkbench::markAsStale() {
+    showBanner(
+        tr("This recipe has been changed by another user since it was opened here. Close and "
+           "reopen it to see the latest version before saving."),
+        true);
+}
+
 void CurveBuilderWorkbench::loadConfigIntoUi() {
     // Existing records show the raw id (no cached friendly label to display without an extra
     // fetch); a fresh pick via Browse... below sets a friendly "type / metric / qualifier" label
@@ -593,15 +600,24 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
 
 void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
     // Source is the raw, externally-fed grid -- RATES/YIELD is the convention every seeded raw
-    // rates row actually uses.
+    // rates row actually uses. The already-picked Output series is excluded, symmetrically with
+    // onBrowseOutputSeriesClicked's own exclusion of Source -- see
+    // ir_curve_bootstrap_config_service::save_bootstrap_config()'s matching server-side guard.
     MarketSeriesPickerDialog::Options options;
     options.initialFilter = selectedIndexQualifier();
+    if (!(config_.output_series_id == boost::uuids::nil_uuid()))
+        options.excludeSeriesId =
+            QString::fromStdString(boost::uuids::to_string(config_.output_series_id));
     MarketSeriesPickerDialog dialog(clientManager_, this, options);
     if (dialog.exec() != QDialog::Accepted)
         return;
     const auto series = dialog.selectedSeries();
     if (!series)
         return;
+    if (series->id == config_.output_series_id) {
+        showBanner(tr("Source series cannot be the same as the Output series."), true);
+        return;
+    }
     config_.source_series_id = series->id;
     sourceSeriesIdEdit_->setText(QString::fromStdString(
         series->series_type + " / " + series->metric + " / " + series->qualifier));
@@ -643,6 +659,10 @@ void CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked() {
     const auto picked = dialog.selectedConfig();
     if (!picked)
         return;
+    if (picked->id == config_.id) {
+        showBanner(tr("A curve cannot use itself as its own Discount Curve Config."), true);
+        return;
+    }
     config_.discount_curve_config_id = picked->id;
     discountCurveConfigIdEdit_->setText(
         QString("Config %1 (%2)")
@@ -918,10 +938,16 @@ void CurveBuilderWorkbench::onSaveClicked() {
     }
     if (!promptAndStashChangeReason())
         return;
-    // Re-collect: pendingChangeReasonCode_/pendingChangeCommentary_ were just set by the prompt
-    // above, and both collect functions stamp them onto config_/each pillar.
-    collectConfigFromUi();
-    collectPillarsFromTable();
+    // Stamp the reason the prompt above just set directly onto the already-collected config_/
+    // pillars_ -- NOT by re-collecting from the UI a second time. collectPillarsFromTable()
+    // re-sorts pillars_ by maturity and reassigns table-row-index -> pillars_[row].id, so a second
+    // call here would remap ids to the wrong rows for any pillar entered out of maturity order.
+    config_.change_reason_code = pendingChangeReasonCode_;
+    config_.change_commentary = pendingChangeCommentary_;
+    for (auto& p : pillars_) {
+        p.change_reason_code = pendingChangeReasonCode_;
+        p.change_commentary = pendingChangeCommentary_;
+    }
 
     saveButton_->setEnabled(false);
     const auto configRequest =
@@ -967,6 +993,10 @@ void CurveBuilderWorkbench::onSaveClicked() {
                     return;
                 }
                 self->createMode_ = false;
+                // A save always changes the recipe (pillars/conventions), so any Bootstrap
+                // computed before it is now against a stale recipe -- Publish must be re-earned
+                // by a fresh Bootstrap.
+                self->hasBootstrapped_ = false;
                 self->showBanner(tr("Recipe saved."), false);
                 self->updateActionStates();
                 emit self->configSaved(self->code());

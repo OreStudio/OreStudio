@@ -116,6 +116,16 @@ TEST_CASE("calculate rejects a pair that does not strictly increase in date", ta
     CHECK_THROWS_AS(forward_rate_calculator::calculate(points, A365), std::invalid_argument);
 }
 
+TEST_CASE("calculate rejects a non-positive discount factor", tags) {
+    const auto d = 2026y / January / 1d;
+    std::vector<bootstrapped_point> points{
+        make_point("a", d, 1.0),
+        make_point("b", d + months{3}, 0.0),
+    };
+
+    CHECK_THROWS_AS(forward_rate_calculator::calculate(points, A365), std::invalid_argument);
+}
+
 TEST_CASE("calculate handles more than two points, one forward rate per consecutive pair", tags) {
     const auto value_date = 2026y / January / 1d;
     std::vector<bootstrapped_point> points{

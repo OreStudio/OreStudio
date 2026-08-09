@@ -100,6 +100,11 @@ public:
     /// without inheriting that base (its save-and-close assumptions don't fit this workbench).
     [[nodiscard]] QString code() const;
 
+    /// Mirrors DetailDialogBase::markAsStale() for the controller's notifyOpenDialogs() -- warns
+    /// that another client has changed this same config since it was loaded here, without
+    /// inheriting that base (see code()'s own comment for why).
+    void markAsStale();
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& message);

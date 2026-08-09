@@ -36,6 +36,7 @@ set(files
     "main.cpp"
     "ornstein_uhlenbeck_process_tests.cpp"
     "process_factory_tests.cpp"
+    "quadratic_gaussian_process_tests.cpp"
     "process_parameter_validation_tests.cpp"
     "quantlib_calendar_rulesets_tests.cpp"
     "rate_delta_tracker_tests.cpp"

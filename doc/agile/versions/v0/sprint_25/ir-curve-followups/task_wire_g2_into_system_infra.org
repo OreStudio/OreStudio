@@ -2,18 +2,18 @@
 :ID: 8B09FCC2-0D30-4AF2-A205-01FC0A41ED3D
 :END:
 #+title: Task: Wire G2 (Two-Factor Gaussian) into the system: factory, seed data, config storage, Qt UI
-#+description: PR 2 for the G2 model: expose the raw g2pp_process engine to the system. Strongly-typed parameter structs, factory method, child DB table for G2-specific params, and dynamic Qt UI that switches the parameter form based on process_type.
+#+description: PR 2 for the G2 model: expose the raw two_factor_gaussian_process engine to the system. Strongly-typed parameter structs, factory method, child DB table for G2-specific params, and dynamic Qt UI that switches the parameter form based on process_type.
 #+type: task
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/wire-g2-into-system-infra
+#+pr: 1926
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-07
-#+environment:
+#+updated: 2026-08-09
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ G2 appears as a selectable process type in the IR curve generation config UI, wi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-07                               |
+| Now          | All 8 steps implemented + 2 bonus fixes. PR #1926 raised. |
+| Waiting on   | Review.                                |
+| Next         | Verification: provisioning, manual Qt test, preview.   |
+| Last touched | 2026-08-09                               |
 
 * Acceptance
 
@@ -43,9 +43,230 @@ G2 appears as a selectable process type in the IR curve generation config UI, wi
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+#+begin_comment
+Full implementation plan for wiring G2 in while establishing the
+row-based parameter architecture. Written 2026-08-07/08, before
+implementation began.
+#+end_comment
+
+** Context
+
+The =two_factor_gaussian_process= quant engine exists (PR #1892, merged) but is not reachable — not in the process type
+catalogue, not in the factory dispatch, not in the DB, not in the UI. The current =ir_curve_generation_config= stores
+parameters as flat scalar columns (=kappa=, =theta=, =sigma=, =initial_rate=), which hardcodes a 1-factor shape and
+requires an ALTER TABLE for every new model type. This task wires G2 in while establishing a **row-based parameter
+architecture** that scales to arbitrary future models (multi-factor, stochastic vol, etc.) without schema changes.
+
+** Architecture overview
+
+Two representations of the same parameters, bridged by a mapping layer:
+
+|                       | Representation A — row-based (EAV) | Representation B — strongly-typed      |
+|-----------------------+------------------------------------+----------------------------------------|
+| Shape                 | ={name, value}= pairs              | Named struct fields                    |
+| Lives in              | =ores.synthetic=                   | =ores.analytics.quant=                 |
+| Example               | ={"kappa_x", 0.1}, {"rho", -0.5}, …= | =two_factor_gaussian_params{.kappa_x=0.1, .rho=-0.5, …}= |
+| Good for              | DB storage, UI tables, extensibility | Type-safe construction, compile-time  |
+
+Each piece, and whether it is codegen or hand-written:
+
+| Piece                                  | Method            | Where                              |
+|----------------------------------------+-------------------+------------------------------------|
+| Parameter definitions (reference data) | Full codegen entity (read-only) | =ores.synthetic=            |
+| Parameter values (per-config EAV rows) | Codegen child of config (=has_many=) | =ores.synthetic=         |
+| Strongly-typed param structs           | Hand-written      | =ores.analytics.quant= (beside each process header) |
+| Mapping layer (EAV → typed struct)     | Hand-written paste block | =ores.synthetic=            |
+| Qt dialog                              | Hand-crafted (already is) | =ores.qt.synthetic=         |
+
+** Data flow
+
+#+begin_example
+DB (EAV child table)                 Qt Dialog
+  config_id │ param_name │ value       (reads parameter definitions,
+  ──────────┼────────────┼──────       shows table of name/value rows,
+  g2-1      │ kappa_x    │ 0.1          edits values as rows)
+  g2-1      │ kappa_y    │ 0.05
+  g2-1      │ rho        │ -0.5
+       │                                    ▲
+       │ load/save via codegen has_many     │ load/save via codegen has_many
+       ▼                                    │
+┌──────────────────────────────┐            │
+│  ores.synthetic domain       │            │
+│  ir_curve_generation_config  │            │
+│    .process_type = "TFG"     │            │
+│    .parameters = [           │            │
+│      {name:"kappa_x", 0.1},  │ ───────────┘
+│      {name:"kappa_y", 0.05}, │
+│      {name:"rho", -0.5}, …   │
+│    ]                         │
+└──────────┬───────────────────┘
+           │
+           │  mapping layer (hand-written, ores.synthetic)
+           │  → extracts named values from the vector
+           │  → builds the strongly-typed struct
+           │  → validates: unknown name → throw, missing param → throw
+           │  → dispatches on process_type (lowercased)
+           │
+           ▼
+┌──────────────────────────────┐
+│  ores.analytics.quant        │
+│  two_factor_gaussian_params  │   ← hand-written struct, beside the
+│    .kappa_x = 0.1            │     process header; no DB table
+│    .kappa_y = 0.05           │
+│    .rho = -0.5               │
+│    …                         │
+│       │                      │
+│       ▼                      │
+│  two_factor_gaussian_process(│
+│    params, seed, dt)         │   ← takes the typed struct
+│    → IYieldCurveProcess      │
+└──────────────────────────────┘
+#+end_example
+
+** Steps
+
+*** 1. Strongly-typed parameter structs (hand-written)
+
+New structs in =ores.analytics.quant=, one per process type, living beside their process headers:
+
+- =two_factor_gaussian_params=: =kappa_x=, =kappa_y=, =theta=, =sigma_x=, =sigma_y=, =rho=, =initial_rate= (all
+  =double=). Lives at =ores.analytics.quant/include/ores.analytics.quant/service/processes/two_factor_gaussian_params.hpp=.
+- For the existing 1-factor models, group their params into structs too so the mapping layer can target them uniformly:
+  - =vasicek_params=: =kappa=, =theta=, =sigma=, =initial_rate=
+  - =cox_ingersoll_ross_params=: =kappa=, =theta=, =sigma=, =initial_rate=
+  - =hull_white_params=: =kappa=, =theta=, =sigma=, =initial_rate=
+- Each process header gains a constructor taking the params struct (or a new constructor overload).
+- No DB tables, no codegen — just plain C++ structs.
+
+*** 2. New codegen entity: =yield_curve_process_parameter_definition=
+
+Full codegen entity (via =compass add entity=) scoped to =ores.synthetic=:
+
+- **Domain struct**: =yield_curve_process_parameter_definition= with =process_type_code= (FK to
+  =yield_curve_process_types.code=), =parameter_name=, =description= (rich user-facing text), =data_type= (always
+  ="double"= for now), =default_value=, =min_value=, =max_value=, =display_order=, plus standard provenance columns.
+  Unique key on =(process_type_code, parameter_name)=.
+- **DB table** + **notify trigger**: standard codegen output.
+- **Read-only** (=is_readonly: true= in the codegen model) — managed via seed data only, not user-editable through the UI.
+- **Seed data**: rows for all 4 process types (see step 5).
+- **Codegen layers**: domain struct, DB schema, CRUD repository, NATS eventing, Qt MDI window + detail dialog (read-only).
+
+*** 3. Codegen child entity on the config: =ir_curve_generation_config_process_parameter_value=
+
+Added as a =has_many= child of =ir_curve_generation_config= (same pattern as =gmm_component= on
+=fx_spot_generation_config=):
+
+- **Domain struct**: =ir_curve_generation_config_process_parameter_value= with =config_id= (FK to
+  =ir_curve_generation_config=), =parameter_definition_id= (FK to definitions), =parameter_value= (double). Unique key
+  on =(config_id, parameter_definition_id)=.
+- **DB trigger**: validates that the definition's =process_type_code= matches the config's =process_type=.
+- **Config domain struct**: =ir_curve_generation_config= gains =std::vector<…> parameters= (replacing the flat =kappa=,
+  =theta=, =sigma=, =initial_rate= fields). The codegen =has_many= handles child save/load in the repository.
+- **Codegen layers**: domain struct, DB schema with FK trigger, CRUD, NATS eventing.
+
+*** 4. Mapping layer (hand-written paste block)
+
+New file: =ores.synthetic.api/include/ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp=
+
+#+begin_src cpp
+// Pure function: parameter rows → strongly-typed process.
+// Dispatches on process_type (lowercased).
+// Throws std::invalid_argument if:
+//   - any required parameter is missing from the rows
+//   - any row has a parameter name not declared for this process_type
+//   - any value is outside the definition's [min_value, max_value]
+std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+map_parameters_to_yield_curve_process(
+    const std::string& process_type,
+    const std::vector<
+        ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>& parameters,
+    std::uint32_t seed,
+    double dt);
+#+end_src
+
+Implementation: for each known =process_type=, build a =std::map<string, double>= from the rows, validate that the set
+of keys exactly matches the expected set for that type (no missing, no unexpected), extract each named value, construct
+the appropriate typed-params struct, and construct the process.
+
+*** 5. Seed data
+
+=synthetic_yield_curve_process_types_populate.sql=: add =TWO_FACTOR_GAUSSIAN= row.
+
+New =synthetic_yield_curve_process_parameter_definitions_populate.sql=: one row per parameter per process type:
+
+- **Vasicek** (4): =kappa=, =theta=, =sigma=, =initial_rate=
+- **Cox-Ingersoll-Ross** (4): =kappa=, =theta=, =sigma=, =initial_rate= (=initial_rate= min=0)
+- **Hull-White** (4): =kappa=, =theta=, =sigma=, =initial_rate=
+- **Two-Factor Gaussian** (7): =kappa_x= (κ ≥ 0), =kappa_y= (κ ≥ 0), =theta=, =sigma_x= (≥ 0), =sigma_y= (≥ 0), =rho=
+  ([-1,1]), =initial_rate=
+
+Each row has a rich =description= field explaining what the parameter means — this is the text users see in the UI.
+
+*** 6. Data migration
+
+One-shot SQL script:
+
+1. For every existing =ir_curve_generation_config= row, insert parameter-value rows for =kappa=, =theta=, =sigma=,
+   =initial_rate=, referencing the corresponding parameter definitions.
+2. Drop the flat columns from =ores_synthetic_ir_curve_generation_configs_tbl=.
+3. Drop the now-superseded CHECK constraints (=initial_rate >= 0= for CIR, =sigma >= 0=).
+
+*** 7. Update factory consumers
+
+- =ir_curve_feed.cpp= (line 276): replace the =make_yield_curve_process(cfg.process_type, cfg.kappa, …, cfg.sigma,
+  cfg.initial_rate, …)= call with =map_parameters_to_yield_curve_process(cfg.process_type, cfg.parameters, seed, dt)=.
+- =ir_curve_preview_handler.hpp= (lines 114, 189): same replacement.
+- =simulate_handler.hpp= (line 134): same replacement.
+- =simulate_ir_curve_paths_protocol.hpp=: replace flat =kappa=/=theta=/=sigma=/=initial_rate= fields with a
+  =std::vector<parameter_spec>= where =parameter_spec= = ={parameter_name, parameter_value}=.
+- =preview_ir_curve_shape_protocol.hpp=: same treatment.
+
+*** 8. Qt dialog rewrite
+
+=IrCurveGenerationConfigDetailDialog=:
+
+- Remove =kappaEdit=/=thetaEdit=/=sigmaEdit=/=initialRateEdit= from the =.ui= file and =.cpp=.
+- Add a =QTableWidget= with columns: Parameter (read-only, from definition's description), Value (=QDoubleSpinBox=).
+- When =process_type= changes: clear table, fetch definitions for the new type, add rows with =default_value= and
+  =min=/=max= from the definition.
+- =updateUiFromConfig()=: populate table from =config.parameters=.
+- =updateConfigFromUi()=: read values back from table into =config.parameters=.
+- Validation: per-row min/max enforced by the spin boxes + a summary check on save.
+
+** Acceptance criteria mapping
+
+| Criterion                                                                  | How                                                                                                                                     |
+|----------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------|
+| Seed data row → G2 in process type combo                                   | =TWO_FACTOR_GAUSSIAN= row in process types seed data; Qt combo reads from that table                                                    |
+| =make_g2(g2_parameters)= constructs a working engine                       | Mapping layer extracts named values, builds =two_factor_gaussian_params=, calls =two_factor_gaussian_process{…}=                        |
+| G2 params persist to/load from child table                                 | =config_process_parameter_value= rows; =has_many= codegen handles save/load with the config                                              |
+| Dialog shows G2 fields when G2 is selected                                 | Parameter table repopulates from definitions for the selected process type                                                               |
+| Existing Vasicek/CIR/HW configs unaffected                                 | Migration converts flat columns to equivalent parameter rows; same values, same dispatch                                                  |
+
+** Files to modify (representative)
+
+| File                                                                                          | Change                                                                                                            |
+|------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------|
+| =projects/ores.analytics.quant/include/…/processes/=                                           | New: =two_factor_gaussian_params.hpp=, =vasicek_params.hpp=, =cox_ingersoll_ross_params.hpp=, =hull_white_params.hpp= |
+| =projects/ores.synthetic/api/include/…/domain/=                                                | New (codegen): =yield_curve_process_parameter_definition.hpp=, =ir_curve_generation_config_process_parameter_value.hpp=; new (hand): =yield_curve_process_parameter_mapping.hpp=; modify: =ir_curve_generation_config.hpp= |
+| =projects/ores.synthetic/api/include/…/messaging/=                                              | Modify: =simulate_ir_curve_paths_protocol.hpp=, =preview_ir_curve_shape_protocol.hpp=                              |
+| =projects/ores.synthetic/api/src/domain/=                                                      | New (hand): =yield_curve_process_parameter_mapping.cpp=                                                             |
+| =projects/ores.synthetic/service/src/=                                                         | Modify: =ir_curve_feed.cpp=, =ir_curve_preview_handler.hpp=, =simulate_handler.hpp=                                  |
+| =projects/ores.sql/create/synthetic/=                                                          | New (codegen): =*_parameter_definitions_create.sql=, =*_parameter_values_create.sql=; modify: =*_ir_curve_generation_configs_create.sql= |
+| =projects/ores.sql/populate/synthetic/=                                                        | New: =*_parameter_definitions_populate.sql=; modify: =*_process_types_populate.sql= + existing config seed scripts  |
+| =projects/ores.sql/migration/=                                                                 | New: migration script (flat columns → parameter rows + drop columns)                                                 |
+| =projects/ores.qt/synthetic/ui/=                                                               | Modify: =IrCurveGenerationConfigDetailDialog.ui=                                                                    |
+| =projects/ores.qt/synthetic/src/=                                                              | Modify: =IrCurveGenerationConfigDetailDialog.cpp=; new (codegen): definition + value MDI/dialog files               |
+
+** Verification
+
+1. **Build**: =compass build= — zero errors, all targets.
+2. **Quant tests**: =ores.analytics.quant.tests= — 251 cases pass (includes renamed =two_factor_gaussian_process= tests).
+3. **DB recreate**: =compass db recreate -y -k= — new tables + seed data deploy cleanly, migration script runs.
+4. **Synthetic tests**: =ores.synthetic.api.tests= + =ores.synthetic.core.tests= + =ores.synthetic.service.tests= — updated for new protocol/domain shapes.
+5. **Provisioning**: =compass shell -f …acme_corporation_holding_group.ores= — seed data + parameter definitions load, provisioning completes.
+6. **Manual Qt**: open IR Curve Generation Config dialog, switch process type to =TWO_FACTOR_GAUSSIAN= — 7 parameter rows appear with correct descriptions, min/max constraints, and default values. Enter values, save, reload — values round-trip. Switch to Vasicek — 4 rows. Existing Vasicek configs load with their migrated values.
+7. **Preview**: send =simulate_ir_curve_paths_request= with G2 params via Qt preview — paths generate without error.
 
 * Notes
 
@@ -64,7 +285,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1926][#1926]] | [ores.codegen] Fix PostgreSQL 63-byte identifier truncation: compute sql_name_base with safety net |
 
 * Review
 
@@ -73,3 +294,66 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 8 planned steps implemented across 12 commits on
+=feature/wire-g2-into-system-infra=, plus 2 bonus fixes discovered
+during implementation:
+
+1. =[ores.analytics.quant]= Strongly-typed parameter structs
+   (=two_factor_gaussian_params=, =vasicek_params=,
+   =cox_ingersoll_ross_params=, =hull_white_params=) with struct
+   constructors on each process; renamed =g2pp_process= to
+   =two_factor_gaussian_process=.
+
+2. =[ores.synthetic]= Codegen entity
+   =yield_curve_process_parameter_definition= — read-only reference
+   table with =process_type_code=, =parameter_name=, =description=,
+   =default_value=, =min_value=, =max_value=, =display_order=.
+
+3. =[ores.synthetic]= Codegen child entity
+   =ir_curve_generation_config_process_parameter_value= — =has_many=
+   child of the config with =config_id=, =parameter_definition_id=,
+   =parameter_value=; FK trigger validates definition's
+   =process_type_code= matches config's =process_type=.
+
+4. =[ores.synthetic]= Mapping layer:
+   =map_parameters_to_yield_curve_process()= — EAV rows →
+   strongly-typed struct by named-parameter extraction, dispatches on
+   =process_type=; validates unknown/missing/out-of-range parameters.
+
+5. =[ores.sql]= Seed data: =TWO_FACTOR_GAUSSIAN= row in process types
+   + 19 parameter definition rows (4 each for Vasicek/CIR/HW, 7 for
+   G2) with user-facing descriptions, model-required bounds, and
+   defaults matching quant test values.
+
+6. =[ores.synthetic]= Data migration: one-shot SQL converts every
+   existing config's flat =kappa=/=theta=/=sigma=/=initial_rate=
+   columns into equivalent parameter-value rows, then drops the flat
+   columns and superseded CHECK constraints.
+
+7. =[ores.synthetic]= Updated factory consumers:
+   =ir_curve_feed.cpp=, =ir_curve_preview_handler.hpp=,
+   =simulate_handler.hpp= all switched to
+   =map_parameters_to_yield_curve_process()=; simulate/preview
+   protocols replaced flat parameter fields with
+   =std::vector<parameter_spec>=.
+
+8. =[ores.qt]= Rewrote =IrCurveEditor= around the
+   parameter-definitions table: one row per definition with
+   =QDoubleSpinBox= clamped to min/max; fetches definitions + value
+   rows async; save writes one value row per parameter.
+
+Bonus: =[ores.codegen]= Qt model/dialog: handle =optional<double>=
+columns (discovered when codegen regenerated the value entity's
+=parameter_value= column).
+
+Bonus: =[ores.codegen]= PostgreSQL 63-byte identifier truncation fix:
+   computed =sql_name_base= from =:tablename:= with truncation safety
+   net in =core.py=; shortened the entity's =:tablename:= from 72 to
+   50 chars (=ores_synthetic_config_process_parameter_values_tbl=);
+   updated all templates, generated SQL, C++ header, and channel names
+   (PR #1926).
+
+Verification: full build passes, quant tests (251 cases), all 3
+synthetic test suites (api/core/service), DB recreate clean with all
+new objects, services start (22/22), provisioning completes.

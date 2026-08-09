@@ -174,15 +174,12 @@ void IrCurveGenerationConfigController::onShowHistory(
     showHistoryWindow(ir_curve_generation_config);
 }
 
-void IrCurveGenerationConfigController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IR curve generation config";
-
-    auto* detailDialog = new IrCurveGenerationConfigDetailDialog(mainWindow_);
+void IrCurveGenerationConfigController::wireDetailDialogCommon(
+    IrCurveGenerationConfigDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &IrCurveGenerationConfigDetailDialog::statusMessage,
@@ -192,6 +189,15 @@ void IrCurveGenerationConfigController::showAddWindow() {
             &IrCurveGenerationConfigDetailDialog::errorMessage,
             this,
             &IrCurveGenerationConfigController::errorMessage);
+}
+
+void IrCurveGenerationConfigController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IR curve generation config";
+
+    auto* detailDialog = new IrCurveGenerationConfigDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &IrCurveGenerationConfigDetailDialog::ir_curve_generation_configSaved,
             this,
@@ -232,21 +238,10 @@ void IrCurveGenerationConfigController::showDetailWindow(
                                << boost::uuids::to_string(ir_curve_generation_config.id);
 
     auto* detailDialog = new IrCurveGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConfig(ir_curve_generation_config);
 
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::statusMessage,
-            this,
-            &IrCurveGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::errorMessage,
-            this,
-            &IrCurveGenerationConfigController::errorMessage);
     connect(detailDialog,
             &IrCurveGenerationConfigDetailDialog::ir_curve_generation_configSaved,
             this,
@@ -398,29 +393,9 @@ void IrCurveGenerationConfigController::onOpenVersion(
     }
 
     auto* detailDialog = new IrCurveGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConfig(ir_curve_generation_config);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::statusMessage,
-            this,
-            [self = QPointer<IrCurveGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::errorMessage,
-            this,
-            [self = QPointer<IrCurveGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -546,24 +521,13 @@ void IrCurveGenerationConfigController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new IrCurveGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_ir_curve_generation_config = ir_curve_generation_config;
     reverted_ir_curve_generation_config.version = 0;
     detailDialog->setConfig(reverted_ir_curve_generation_config);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::statusMessage,
-            this,
-            &IrCurveGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &IrCurveGenerationConfigDetailDialog::errorMessage,
-            this,
-            &IrCurveGenerationConfigController::errorMessage);
     connect(detailDialog,
             &IrCurveGenerationConfigDetailDialog::ir_curve_generation_configSaved,
             this,

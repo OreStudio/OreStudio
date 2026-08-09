@@ -30,8 +30,8 @@ The full template source. Edit here and re-tangle with
 {{{sql_license}}}
 {{#domain_entity}}
 
-drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_notify_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
-drop function if exists {{product}}_{{component}}_{{entity_plural}}_notify_fn;
+drop trigger if exists {{sql_name_base}}_notify_trg on "{{sql_name_base}}_tbl";
+drop function if exists {{sql_name_base}}_notify_fn;
 {{/domain_entity}}
 #+end_src
 

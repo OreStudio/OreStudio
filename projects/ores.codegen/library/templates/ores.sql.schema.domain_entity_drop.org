@@ -31,16 +31,16 @@ The full template source. Edit here and re-tangle with
 {{#domain_entity}}
 
 {{#sql.bitemporal_soft_update}}
-drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_delete_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
-drop function if exists {{product}}_{{component}}_{{entity_plural}}_delete_fn;
+drop trigger if exists {{sql_name_base}}_delete_trg on "{{sql_name_base}}_tbl";
+drop function if exists {{sql_name_base}}_delete_fn;
 {{/sql.bitemporal_soft_update}}
 {{^sql.bitemporal_soft_update}}
-drop rule if exists {{product}}_{{component}}_{{entity_plural}}_delete_rule on "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop rule if exists {{sql_name_base}}_delete_rule on "{{sql_name_base}}_tbl";
 {{/sql.bitemporal_soft_update}}
-drop trigger if exists {{product}}_{{component}}_{{entity_plural}}_insert_trg on "{{product}}_{{component}}_{{entity_plural}}_tbl";
-drop function if exists {{product}}_{{component}}_{{entity_plural}}_insert_fn;
+drop trigger if exists {{sql_name_base}}_insert_trg on "{{sql_name_base}}_tbl";
+drop function if exists {{sql_name_base}}_insert_fn;
 <<paste:5E47F108-1350-4540-B3C2-E83DD5379B2D>>
-drop table if exists "{{product}}_{{component}}_{{entity_plural}}_tbl";
+drop table if exists "{{sql_name_base}}_tbl";
 <<paste:0A8B6774-1112-4C01-997B-8D1AA708C955>>
 {{/domain_entity}}
 #+end_src

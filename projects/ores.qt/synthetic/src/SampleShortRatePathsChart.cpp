@@ -144,12 +144,10 @@ void SampleShortRatePathsChart::setBusy(bool busy) {
 }
 
 void SampleShortRatePathsChart::setParameters(
-    const std::string& processType, double kappa, double theta, double sigma, double initialRate) {
+    const std::string& processType,
+    const std::vector<ores::synthetic::messaging::parameter_spec>& parameters) {
     processType_ = processType;
-    kappa_ = kappa;
-    theta_ = theta;
-    sigma_ = sigma;
-    initialRate_ = initialRate;
+    parameters_ = parameters;
 }
 
 void SampleShortRatePathsChart::scheduleRefresh() {
@@ -172,10 +170,7 @@ void SampleShortRatePathsChart::doRefresh() {
     namespace m = synthetic::messaging;
     m::simulate_ir_curve_paths_request req;
     req.process_type = processType_;
-    req.kappa = kappa_;
-    req.theta = theta_;
-    req.sigma = sigma_;
-    req.initial_rate = initialRate_;
+    req.parameters = parameters_;
     req.num_ticks =
         std::clamp(ticksSpin_->value(), 10, m::simulate_ir_curve_paths_request::max_num_ticks);
     req.num_paths =

@@ -93,14 +93,6 @@ QVariant ClientIrCurveGenerationConfigModel::data(const QModelIndex& index, int 
                 return QString::fromStdString(ir_curve_generation_config.role);
             case ProcessType:
                 return QString::fromStdString(ir_curve_generation_config.process_type);
-            case Kappa:
-                return ir_curve_generation_config.kappa;
-            case Theta:
-                return ir_curve_generation_config.theta;
-            case Sigma:
-                return ir_curve_generation_config.sigma;
-            case InitialRate:
-                return ir_curve_generation_config.initial_rate;
             case TicksPerHour:
                 return static_cast<qlonglong>(ir_curve_generation_config.ticks_per_hour);
             case FixedLegPaymentFrequencyCode:
@@ -158,14 +150,6 @@ QVariant ClientIrCurveGenerationConfigModel::headerData(int section,
             return tr("Role");
         case ProcessType:
             return tr("Process Type");
-        case Kappa:
-            return tr("Kappa");
-        case Theta:
-            return tr("Theta");
-        case Sigma:
-            return tr("Sigma");
-        case InitialRate:
-            return tr("Initial Rate");
         case TicksPerHour:
             return tr("Ticks/Hr");
         case FixedLegPaymentFrequencyCode:

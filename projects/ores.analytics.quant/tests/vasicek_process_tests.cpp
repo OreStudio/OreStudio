@@ -128,3 +128,22 @@ TEST_CASE("vasicek_process default dt is exactly today's un-scaled behaviour",
     for (int i = 0; i < 20; ++i)
         CHECK(implicit.next() == explicit_default.next());
 }
+
+TEST_CASE("vasicek_process struct constructor matches flat constructor",
+          "[vasicek_process][params]") {
+    using ores::analytics::quant::service::vasicek_params;
+    using ores::analytics::quant::service::vasicek_process;
+
+    const vasicek_params params{.kappa = 0.3, .theta = 0.04, .sigma = 0.02, .initial_rate = 0.05};
+    const std::uint32_t seed = 7;
+    const double dt = 0.5;
+
+    vasicek_process from_struct(params, seed, dt);
+    vasicek_process from_flat(params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt);
+
+    for (int i = 0; i < 20; ++i) {
+        CHECK(from_struct.next() == from_flat.next());
+        CHECK(from_struct.current() == from_flat.current());
+    }
+    CHECK(from_struct.discount_factor(10) == from_flat.discount_factor(10));
+}

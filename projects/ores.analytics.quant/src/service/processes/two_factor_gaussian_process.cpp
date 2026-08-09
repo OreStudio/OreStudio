@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.quant/service/processes/g2pp_process.hpp"
+#include "ores.analytics.quant/service/processes/two_factor_gaussian_process.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -55,7 +55,7 @@ double ou_decay(double kappa, double dt) {
 
 } // anonymous namespace
 
-g2pp_process::g2pp_process(double kappa_x,
+two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
                            double kappa_y,
                            double sigma_x,
                            double sigma_y,
@@ -75,16 +75,27 @@ g2pp_process::g2pp_process(double kappa_x,
     , normal_(0.0, 1.0) {
 
     if (kappa_x_ < 0.0 || kappa_y_ < 0.0)
-        throw std::invalid_argument("g2pp_process: kappas must be non-negative");
+        throw std::invalid_argument("two_factor_gaussian_process: kappas must be non-negative");
     if (sigma_x_ < 0.0 || sigma_y_ < 0.0)
-        throw std::invalid_argument("g2pp_process: sigmas must be non-negative");
+        throw std::invalid_argument("two_factor_gaussian_process: sigmas must be non-negative");
     if (rho_ < -1.0 || rho_ > 1.0)
-        throw std::invalid_argument("g2pp_process: rho must be in [-1, 1]");
+        throw std::invalid_argument("two_factor_gaussian_process: rho must be in [-1, 1]");
     if (dt_ <= 0.0)
-        throw std::invalid_argument("g2pp_process: dt must be strictly positive");
+        throw std::invalid_argument("two_factor_gaussian_process: dt must be strictly positive");
 }
 
-double g2pp_process::next() {
+two_factor_gaussian_process::two_factor_gaussian_process(
+    const two_factor_gaussian_params& params, std::uint32_t seed, double dt)
+    : two_factor_gaussian_process(params.kappa_x,
+                                  params.kappa_y,
+                                  params.sigma_x,
+                                  params.sigma_y,
+                                  params.rho,
+                                  params.initial_rate,
+                                  seed,
+                                  dt) {}
+
+double two_factor_gaussian_process::next() {
     // Correlated normals via Cholesky: Z_x = U1, Z_y = rho*U1 + sqrt(1-rho^2)*U2
     const double u1 = normal_(rng_);
     const double u2 = normal_(rng_);
@@ -106,11 +117,11 @@ double g2pp_process::next() {
     return current();
 }
 
-double g2pp_process::current() const {
+double two_factor_gaussian_process::current() const {
     return factor_x_ + factor_y_;
 }
 
-double g2pp_process::discount_factor(std::size_t ticks_ahead) const {
+double two_factor_gaussian_process::discount_factor(std::size_t ticks_ahead) const {
     // Backward recursion for the two-factor affine bond price:
     //   P = exp(A - B_x * x - B_y * y)
     // Start at maturity (B_x = B_y = A = 0) and step back to now.

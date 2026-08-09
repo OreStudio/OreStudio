@@ -100,6 +100,22 @@ void IrCurveGenerationConfigDetailDialog::setupCombos() {
     ui_->indexFamilyCombo->addItem(tr("estr"), QString("estr"));
     ui_->indexFamilyCombo->addItem(tr("sonia"), QString("sonia"));
     ui_->indexFamilyCombo->addItem(tr("tona"), QString("tona"));
+    ui_->indexFamilyCombo->addItem(tr("saron"), QString("saron"));
+    ui_->indexFamilyCombo->addItem(tr("aonia"), QString("aonia"));
+    ui_->indexFamilyCombo->addItem(tr("corra"), QString("corra"));
+    ui_->indexFamilyCombo->addItem(tr("honia"), QString("honia"));
+    ui_->indexFamilyCombo->addItem(tr("sora"), QString("sora"));
+    ui_->indexFamilyCombo->addItem(tr("swestr"), QString("swestr"));
+    ui_->indexFamilyCombo->addItem(tr("nowa"), QString("nowa"));
+    ui_->indexFamilyCombo->addItem(tr("kofr"), QString("kofr"));
+    ui_->indexFamilyCombo->addItem(tr("mibor"), QString("mibor"));
+    ui_->indexFamilyCombo->addItem(tr("zaronia"), QString("zaronia"));
+    ui_->indexFamilyCombo->addItem(tr("destr"), QString("destr"));
+    ui_->indexFamilyCombo->addItem(tr("polonia"), QString("polonia"));
+    ui_->indexFamilyCombo->addItem(tr("nzonia"), QString("nzonia"));
+    ui_->indexFamilyCombo->addItem(tr("shibor"), QString("shibor"));
+    ui_->indexFamilyCombo->addItem(tr("tiie"), QString("tiie"));
+    ui_->indexFamilyCombo->addItem(tr("taibor"), QString("taibor"));
     ui_->roleCombo->clear();
     ui_->roleCombo->addItem(tr("discount"), QString("discount"));
     ui_->roleCombo->addItem(tr("projection"), QString("projection"));
@@ -128,10 +144,6 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             &QComboBox::currentIndexChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->indexFamilyCombo,
-            &QComboBox::currentIndexChanged,
-            this,
-            &IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily);
     connect(ui_->tenorCombo,
             &QComboBox::currentIndexChanged,
             this,
@@ -141,22 +153,6 @@ void IrCurveGenerationConfigDetailDialog::setupConnections() {
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->processTypeEdit,
-            &QLineEdit::textChanged,
-            this,
-            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->kappaEdit,
-            &QLineEdit::textChanged,
-            this,
-            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->thetaEdit,
-            &QLineEdit::textChanged,
-            this,
-            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->sigmaEdit,
-            &QLineEdit::textChanged,
-            this,
-            &IrCurveGenerationConfigDetailDialog::onFieldChanged);
-    connect(ui_->initialRateEdit,
             &QLineEdit::textChanged,
             this,
             &IrCurveGenerationConfigDetailDialog::onFieldChanged);
@@ -231,13 +227,9 @@ void IrCurveGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->currencyEdit->setReadOnly(readOnly);
     ui_->indexFamilyCombo->setEnabled(!readOnly);
-    updateTenorComboForIndexFamily();
+    ui_->tenorCombo->setEnabled(!readOnly);
     ui_->roleCombo->setEnabled(!readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
-    ui_->kappaEdit->setReadOnly(readOnly);
-    ui_->thetaEdit->setReadOnly(readOnly);
-    ui_->sigmaEdit->setReadOnly(readOnly);
-    ui_->initialRateEdit->setReadOnly(readOnly);
     ui_->fixedLegPaymentFrequencyEdit->setReadOnly(readOnly);
     ui_->enabledCheck->setEnabled(!readOnly);
     ui_->autoStartCheck->setEnabled(!readOnly);
@@ -269,24 +261,7 @@ void IrCurveGenerationConfigDetailDialog::populateTenor() {
         QObject::tr("Failed to load"),
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto&) { return false; },
-        tr("(None)"));
-}
-
-// index_family is a term family (libor/euribor) iff tenor is required (non-empty); the SQL
-// check constraint enforces this at save time, but the combo must also let the user represent
-// (and default to) an empty tenor for the overnight families -- otherwise every save of an
-// overnight-family curve would send whatever tenor code happened to be selected, violating the
-// constraint. Mirrors IrCurveEditor.cpp's splitIndexFamilyAndTenor(), which produces an empty
-// tenor for a suffix with no '-'.
-void IrCurveGenerationConfigDetailDialog::updateTenorComboForIndexFamily() {
-    const auto family = ui_->indexFamilyCombo->currentData().toString().toStdString();
-    const bool is_term_family = family == "libor" || family == "euribor";
-    ui_->tenorCombo->setEnabled(is_term_family && !readOnly_);
-    if (!is_term_family) {
-        const int blank_idx = ui_->tenorCombo->findData(QString());
-        if (blank_idx >= 0)
-            ui_->tenorCombo->setCurrentIndex(blank_idx);
-    }
+        QString{});
 }
 void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->currencyEdit->setText(QString::fromStdString(ir_curve_generation_config_.currency_code));
@@ -296,7 +271,6 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
         if (idx >= 0)
             ui_->indexFamilyCombo->setCurrentIndex(idx);
     }
-    updateTenorComboForIndexFamily();
     {
         const auto val = QString::fromStdString(ir_curve_generation_config_.tenor);
         const int idx = ui_->tenorCombo->findData(val);
@@ -310,10 +284,6 @@ void IrCurveGenerationConfigDetailDialog::updateUiFromConfig() {
             ui_->roleCombo->setCurrentIndex(idx);
     }
     ui_->processTypeEdit->setText(QString::fromStdString(ir_curve_generation_config_.process_type));
-    ui_->kappaEdit->setText(QString::number(ir_curve_generation_config_.kappa));
-    ui_->thetaEdit->setText(QString::number(ir_curve_generation_config_.theta));
-    ui_->sigmaEdit->setText(QString::number(ir_curve_generation_config_.sigma));
-    ui_->initialRateEdit->setText(QString::number(ir_curve_generation_config_.initial_rate));
     ui_->ticksPerHourEdit->setValue(ir_curve_generation_config_.ticks_per_hour);
     ui_->fixedLegPaymentFrequencyEdit->setText(
         QString::fromStdString(ir_curve_generation_config_.fixed_leg_payment_frequency_code));
@@ -341,13 +311,9 @@ void IrCurveGenerationConfigDetailDialog::updateConfigFromUi() {
     ir_curve_generation_config_.currency_code = ui_->currencyEdit->text().trimmed().toStdString();
     ir_curve_generation_config_.index_family =
         ui_->indexFamilyCombo->currentData().toString().toStdString();
-    ir_curve_generation_config_.tenor = ui_->tenorCombo->currentData().toString().toStdString();
+    ir_curve_generation_config_.tenor = ui_->tenorCombo->currentText().toStdString();
     ir_curve_generation_config_.role = ui_->roleCombo->currentData().toString().toStdString();
     ir_curve_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
-    ir_curve_generation_config_.kappa = ui_->kappaEdit->text().trimmed().toDouble();
-    ir_curve_generation_config_.theta = ui_->thetaEdit->text().trimmed().toDouble();
-    ir_curve_generation_config_.sigma = ui_->sigmaEdit->text().trimmed().toDouble();
-    ir_curve_generation_config_.initial_rate = ui_->initialRateEdit->text().trimmed().toDouble();
     ir_curve_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
     ir_curve_generation_config_.fixed_leg_payment_frequency_code =
         ui_->fixedLegPaymentFrequencyEdit->text().trimmed().toStdString();
@@ -376,10 +342,6 @@ void IrCurveGenerationConfigDetailDialog::updateSaveButtonState() {
 bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const QString currency_code_val = ui_->currencyEdit->text().trimmed();
     const QString process_type_val = ui_->processTypeEdit->text().trimmed();
-    const QString kappa_val = ui_->kappaEdit->text().trimmed();
-    const QString theta_val = ui_->thetaEdit->text().trimmed();
-    const QString sigma_val = ui_->sigmaEdit->text().trimmed();
-    const QString initial_rate_val = ui_->initialRateEdit->text().trimmed();
     const QString fixed_leg_payment_frequency_code_val =
         ui_->fixedLegPaymentFrequencyEdit->text().trimmed();
     const QString price_source_val = ui_->priceSourceEdit->text().trimmed();
@@ -387,9 +349,8 @@ bool IrCurveGenerationConfigDetailDialog::validateInput() {
     const bool role_selected = ui_->roleCombo->currentIndex() >= 0;
 
     return true && !currency_code_val.isEmpty() && !process_type_val.isEmpty() &&
-           !kappa_val.isEmpty() && !theta_val.isEmpty() && !sigma_val.isEmpty() &&
-           !initial_rate_val.isEmpty() && !fixed_leg_payment_frequency_code_val.isEmpty() &&
-           !price_source_val.isEmpty() && index_family_selected && role_selected;
+           !fixed_leg_payment_frequency_code_val.isEmpty() && !price_source_val.isEmpty() &&
+           index_family_selected && role_selected;
 }
 
 void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
@@ -445,25 +406,28 @@ void IrCurveGenerationConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "IR Curve Generation Config saved successfully";
-            QString code = QString::fromStdString(
-                boost::uuids::to_string(self->ir_curve_generation_config_.id));
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->ir_curve_generation_configSaved(code);
-            self->notifySaveSuccess(tr("IR Curve Generation Config '%1' saved").arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "IR Curve Generation Config saved successfully";
+                    QString code = QString::fromStdString(
+                        boost::uuids::to_string(self->ir_curve_generation_config_.id));
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->ir_curve_generation_configSaved(code);
+                    self->notifySaveSuccess(tr("IR Curve Generation Config '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
 
     QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);

@@ -222,3 +222,56 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Yield curve process parameter definitions (system-tenant reference data;
+-- tenant isolation only, same shape as yield_curve_process_types)
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_yield_curve_process_parameter_definitions_tbl enable row level security;
+
+create policy yield_curve_process_parameter_definitions_tenant_isolation_policy
+on ores_synthetic_yield_curve_process_parameter_definitions_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- IR curve generation config process parameter values (dual RLS: tenant +
+-- party isolation). The row carries no party_id of its own -- its scope
+-- comes from its parent config, exactly as the config's own party policy
+-- works: reads and writes require the parent config to be visible to /
+-- owned by the current party.
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_config_process_parameter_values_tbl enable row level security;
+
+create policy ir_curve_generation_config_process_parameter_values_tenant_isolation_policy
+on ores_synthetic_config_process_parameter_values_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ir_curve_generation_config_process_parameter_values_party_isolation_policy
+on ores_synthetic_config_process_parameter_values_tbl
+as restrictive
+for all using (
+    exists (
+        select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
+        where c.id = config_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.party_id = ores_iam_current_party_id_fn()
+    )
+)
+with check (
+    exists (
+        select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
+        where c.id = config_id
+          and c.valid_to = ores_utility_infinity_timestamp_fn()
+          and c.party_id = ores_iam_current_party_id_fn()
+    )
+);

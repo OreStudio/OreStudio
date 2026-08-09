@@ -38,8 +38,10 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
+#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
@@ -582,6 +584,9 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::ir_curve_generation_config> irCurves;
         std::vector<synthetic::domain::gmm_component> components;
         std::vector<synthetic::domain::ir_curve_template_entry> irCurveEntries;
+        std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>
+            irCurveValues;
+        std::vector<synthetic::domain::yield_curve_process_parameter_definition> parameterDefinitions;
         std::vector<synthetic::domain::folder> folders;
         std::unordered_map<std::string, std::string> currencyNames;
         std::vector<std::string> runningSourceNames;
@@ -635,6 +640,23 @@ void MarketSimulatorWindow::reload() {
             return r;
         }
         r.irCurveEntries = std::move(irEntriesResp->ir_curve_template_entries);
+
+        auto irValuesResp = cm->process_authenticated_request(
+            m::get_ir_curve_generation_config_process_parameter_values_request{.offset = 0,
+                                                                               .limit = 1000});
+        if (!irValuesResp) {
+            r.error = QString::fromStdString(irValuesResp.error());
+            return r;
+        }
+        r.irCurveValues = std::move(irValuesResp->process_parameter_values);
+
+        auto defsResp = cm->process_authenticated_request(
+            m::get_yield_curve_process_parameter_definitions_request{.offset = 0, .limit = 1000});
+        if (!defsResp) {
+            r.error = QString::fromStdString(defsResp.error());
+            return r;
+        }
+        r.parameterDefinitions = std::move(defsResp->parameter_definitions);
 
         auto folderResp =
             cm->process_authenticated_request(m::get_folders_request{.offset = 0, .limit = 1000});
@@ -696,6 +718,8 @@ void MarketSimulatorWindow::reload() {
         self->irCurves_.clear();
         self->components_.clear();
         self->irCurveEntries_.clear();
+        self->irCurveValuesByConfig_.clear();
+        self->parameterDefinitions_ = std::move(result.parameterDefinitions);
         self->folders_.clear();
         self->currencyNames_ = std::move(result.currencyNames);
         self->runningSourceNames_ = {result.runningSourceNames.begin(),
@@ -712,6 +736,8 @@ void MarketSimulatorWindow::reload() {
             self->components_[boost::uuids::to_string(c.id)] = std::move(c);
         for (auto& e : result.irCurveEntries)
             self->irCurveEntries_[boost::uuids::to_string(e.id)] = std::move(e);
+        for (auto& v : result.irCurveValues)
+            self->irCurveValuesByConfig_[boost::uuids::to_string(v.config_id)].push_back(std::move(v));
         for (auto& f : result.folders)
             self->folders_[boost::uuids::to_string(f.id)] = std::move(f);
 
@@ -1555,11 +1581,23 @@ void MarketSimulatorWindow::showIrCurveSummary(
 
     summaryForm_->addRow(tr("Process"),
                          new QLabel(QString::fromStdString(ir.process_type), summaryPage_));
-    summaryForm_->addRow(tr("Kappa"), new QLabel(QString::number(ir.kappa), summaryPage_));
-    summaryForm_->addRow(tr("Theta"), new QLabel(QString::number(ir.theta), summaryPage_));
-    summaryForm_->addRow(tr("Sigma"), new QLabel(QString::number(ir.sigma), summaryPage_));
-    summaryForm_->addRow(tr("Initial rate"),
-                         new QLabel(QString::number(ir.initial_rate), summaryPage_));
+    // Row-based process parameters: one name/value row per parameter, joined onto the
+    // system-tenant definitions catalogue (loaded in reload()) to display the parameter name.
+    if (const auto it = irCurveValuesByConfig_.find(boost::uuids::to_string(ir.id));
+        it != irCurveValuesByConfig_.end()) {
+        std::map<std::string, double> params; // definition id -> value, sorted by uuid for stability
+        for (const auto& v : it->second)
+            params[boost::uuids::to_string(v.parameter_definition_id)] = v.parameter_value;
+        for (const auto& d : parameterDefinitions_) {
+            if (d.process_type_code != ir.process_type)
+                continue;
+            const auto vit = params.find(boost::uuids::to_string(d.id));
+            if (vit != params.end())
+                summaryForm_->addRow(
+                    QString::fromStdString(d.parameter_name),
+                    new QLabel(QString::number(vit->second, 'g', 8), summaryPage_));
+        }
+    }
     summaryForm_->addRow(
         tr("Fixed leg frequency"),
         new QLabel(QString::fromStdString(ir.fixed_leg_payment_frequency_code), summaryPage_));

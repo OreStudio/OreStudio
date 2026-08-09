@@ -38,7 +38,7 @@ The full template source. Edit here and re-tangle with
  * {{{domain_entity.description_formatted}}}
  */
 
-create table if not exists "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (
+create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{#domain_entity.primary_key.columns}}
     "{{column}}" {{type}} not null,
 {{/domain_entity.primary_key.columns}}
@@ -126,12 +126,12 @@ create table if not exists "{{domain_entity.product}}_{{domain_entity.component}
 -- Composite natural key: unique combination for active records
 {{#domain_entity.has_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.natural_keys_composite_columns}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{^domain_entity.has_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.natural_keys_composite_name}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
+on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.natural_keys_composite_columns}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_id}}
 {{/domain_entity.sql.suppress_nk_index}}
@@ -142,12 +142,12 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- Unique {{column}} for active records
 {{#domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix_columns}}{{/prefix_columns}}, {{column}})
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id{{#prefix_columns}}, {{prefix_columns}}{{/prefix_columns}}, {{column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{column}})
+on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_in_pk}}
 {{/domain_entity.natural_keys}}
@@ -159,46 +159,46 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 {{#domain_entity.has_tenant_in_pk}}
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}}, version)
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.primary_key.is_uuid}}
 {{^domain_entity.primary_key.is_uuid}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_{{domain_entity.primary_key.index_suffix}}_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.primary_key.is_uuid}}
 
 create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_tenant_in_pk}}
 {{^domain_entity.has_tenant_in_pk}}
 {{#domain_entity.has_audit_columns}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_version_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column_list}}, version)
+on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.primary_key.column_list}}, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_audit_columns}}
 
 {{#domain_entity.sql.nullable_tenant_id}}
 create unique index if not exists {{domain_entity.index_name_prefix}}_id_uniq_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{domain_entity.primary_key.column_list}})
+on "{{domain_entity.sql_name_base}}_tbl" ({{domain_entity.primary_key.column_list}})
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists {{domain_entity.index_name_prefix}}_tenant_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (tenant_id)
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.has_tenant_in_pk}}
 {{#domain_entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" ({{{columns}}}){{#current_only}}
+on "{{domain_entity.sql_name_base}}_tbl" ({{{columns}}}){{#current_only}}
 where valid_to = ores_utility_infinity_timestamp_fn(){{#where_extra}}
   and {{{where_extra}}}{{/where_extra}}{{/current_only}}{{^current_only}}{{#where_extra}}
 where {{{where_extra}}}{{/where_extra}}{{/current_only}};
@@ -206,7 +206,7 @@ where {{{where_extra}}}{{/where_extra}}{{/current_only}};
 {{#domain_entity.has_workspace_id}}
 
 create index if not exists {{domain_entity.index_name_prefix}}_workspace_idx
-on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" (workspace_id)
+on "{{domain_entity.sql_name_base}}_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.has_workspace_id}}
 
@@ -243,7 +243,7 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- the child's own row); p_child_entity distinguishes which child
 -- triggered the bump in the free-text commentary.
 -- =============================================================================
-create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_touch_version_fn(
+create or replace function {{domain_entity.sql_name_base}}_touch_version_fn(
     p_tenant_id uuid,
     p_id {{domain_entity.primary_key.type}},
     p_reason_code text,
@@ -253,7 +253,7 @@ create or replace function {{domain_entity.product}}_{{domain_entity.component}}
     p_child_entity text
 ) returns void as $$
 declare
-    rec {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl%rowtype;
+    rec {{domain_entity.sql_name_base}}_tbl%rowtype;
 begin
     -- for update: takes the same row lock the parent's own insert
     -- trigger takes, so the snapshot in rec can't be based on a
@@ -263,7 +263,7 @@ begin
     -- "Temporal composite entity versioning" architecture doc,
     -- Concurrency section.
     select * into rec
-    from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    from "{{domain_entity.sql_name_base}}_tbl"
     where tenant_id = p_tenant_id
       and {{domain_entity.primary_key.column}} = p_id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -279,7 +279,7 @@ begin
     rec.change_reason_code := p_reason_code;
     rec.change_commentary := format('Bumped by child %s: %s', p_child_entity, coalesce(p_commentary, ''));
 
-    insert into "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    insert into "{{domain_entity.sql_name_base}}_tbl"
     select (rec).*;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
@@ -287,12 +287,12 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 {{/domain_entity.generate_touch_function}}
 {{/domain_entity.has_tenant_id}}
 {{#domain_entity.sql.bitemporal_soft_update}}
-create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+create or replace function {{domain_entity.sql_name_base}}_insert_fn()
 returns trigger as $$
 begin
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
 
-    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = current_timestamp
     where tenant_id = new.tenant_id
 {{#domain_entity.sql.bitemporal_natural_keys}}
@@ -312,14 +312,14 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
-before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+create or replace trigger {{domain_entity.sql_name_base}}_insert_trg
+before insert on "{{domain_entity.sql_name_base}}_tbl"
+for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 
-create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_fn()
+create or replace function {{domain_entity.sql_name_base}}_delete_fn()
 returns trigger as $$
 begin
-    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = current_timestamp
     where tenant_id = old.tenant_id
 {{#domain_entity.sql.bitemporal_natural_keys}}
@@ -335,12 +335,12 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_trg
-before delete on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_fn();
+create or replace trigger {{domain_entity.sql_name_base}}_delete_trg
+before delete on "{{domain_entity.sql_name_base}}_tbl"
+for each row execute function {{domain_entity.sql_name_base}}_delete_fn();
 {{/domain_entity.sql.bitemporal_soft_update}}
 {{^domain_entity.sql.bitemporal_soft_update}}
-create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn()
+create or replace function {{domain_entity.sql_name_base}}_insert_fn()
 returns trigger as $$
 declare
 {{#domain_entity.has_audit_columns}}
@@ -554,7 +554,7 @@ begin
 
     if v_max_cardinality is not null then
         select count(*) into v_current_count
-        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        from "{{domain_entity.sql_name_base}}_tbl"
         where {{#domain_entity.has_tenant_id}}tenant_id = NEW.tenant_id
           and {{/domain_entity.has_tenant_id}}{{cardinality_scope_column}} = NEW.{{cardinality_scope_column}}
           and {{column}} = NEW.{{column}}
@@ -617,7 +617,7 @@ begin
 {{#domain_entity.has_audit_columns}}
     -- Version management
     select version into current_version
-    from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    from "{{domain_entity.sql_name_base}}_tbl"
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
       and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
       and {{/domain_entity.sql.nullable_tenant_id}}{{{domain_entity.primary_key.where_new}}}
@@ -637,7 +637,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+        update "{{domain_entity.sql_name_base}}_tbl"
         set valid_to = clock_timestamp()
         where {{#domain_entity.has_tenant_in_pk}}tenant_id = NEW.tenant_id
           and {{/domain_entity.has_tenant_in_pk}}{{#domain_entity.sql.nullable_tenant_id}}(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
@@ -651,7 +651,7 @@ begin
 {{/domain_entity.has_audit_columns}}
 {{^domain_entity.has_audit_columns}}
     -- Close the current active row before inserting the new one
-    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+    update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = clock_timestamp()
     where {{{domain_entity.primary_key.where_new}}}
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -669,13 +669,13 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_trg
-before insert on "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
-for each row execute function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_insert_fn();
+create or replace trigger {{domain_entity.sql_name_base}}_insert_trg
+before insert on "{{domain_entity.sql_name_base}}_tbl"
+for each row execute function {{domain_entity.sql_name_base}}_insert_fn();
 
-create or replace rule {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_delete_rule as
-on delete to "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" do instead (
-    update "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"
+create or replace rule {{domain_entity.sql_name_base}}_delete_rule as
+on delete to "{{domain_entity.sql_name_base}}_tbl" do instead (
+    update "{{domain_entity.sql_name_base}}_tbl"
     set valid_to = clock_timestamp(){{#domain_entity.sql.extra_delete_sets}},
         {{{.}}}{{/domain_entity.sql.extra_delete_sets}}
     where {{#domain_entity.has_tenant_in_pk}}tenant_id = OLD.tenant_id
@@ -741,7 +741,7 @@ begin
 {{#domain_entity.validation_fn.scope_system}}
     -- Allow pass-through during bootstrap (no active rows for system tenant).
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -750,14 +750,14 @@ begin
 
     -- Validate against reference data
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and {{domain_entity.primary_key.column}} = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
             select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
-            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            from {{domain_entity.sql_name_base}}_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
@@ -767,7 +767,7 @@ begin
     -- Allow pass-through if neither this tenant nor the system tenant has
     -- seeded active {{domain_entity.entity_plural}} yet (freshly provisioned tenant).
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -776,14 +776,14 @@ begin
 
     -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and {{domain_entity.primary_key.column}} = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
             select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
-            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            from {{domain_entity.sql_name_base}}_tbl
             where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
@@ -792,7 +792,7 @@ begin
 {{#domain_entity.validation_fn.scope_tenant}}
     -- Allow pass-through if this tenant has no active {{domain_entity.entity_plural}} yet.
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id = p_tenant_id
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -801,14 +801,14 @@ begin
 
     -- Validate against this tenant's values.
     if not exists (
-        select 1 from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+        select 1 from {{domain_entity.sql_name_base}}_tbl
         where tenant_id = p_tenant_id
           and {{domain_entity.primary_key.column}} = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid {{domain_entity.entity_singular}}: %. Must be one of: %', p_value, (
             select string_agg({{domain_entity.primary_key.column}}::text, ', ' order by {{domain_entity.validation_fn.order_by}})
-            from {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl
+            from {{domain_entity.sql_name_base}}_tbl
             where tenant_id = p_tenant_id
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
@@ -830,7 +830,7 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- ultimate ancestor (parent_id is null) and recurses down from there instead,
 -- returning the whole tenant tree the given node belongs to.
 -- =============================================================================
-create or replace function {{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_hierarchy_fn(
+create or replace function {{domain_entity.sql_name_base}}_hierarchy_fn(
     p_tenant_id uuid,
     p_root_id uuid,
     p_from_root boolean default false
@@ -843,13 +843,13 @@ begin
     if p_from_root then
         with recursive ancestors as (
             select t.id, t.{{domain_entity.parent_id_column}} as parent_id
-            from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+            from "{{domain_entity.sql_name_base}}_tbl" t
             where t.tenant_id = p_tenant_id
               and t.id = p_root_id
               and t.valid_to = ores_utility_infinity_timestamp_fn()
             union all
             select t.id, t.{{domain_entity.parent_id_column}} as parent_id
-            from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+            from "{{domain_entity.sql_name_base}}_tbl" t
             join ancestors a on t.id = a.parent_id
             where t.tenant_id = p_tenant_id
               and t.valid_to = ores_utility_infinity_timestamp_fn()
@@ -868,14 +868,14 @@ begin
     with recursive descendants as (
         select t.id, t.{{domain_entity.parent_id_column}} as parent_id,
                t.{{domain_entity.hierarchy_name_field}}::text as name
-        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+        from "{{domain_entity.sql_name_base}}_tbl" t
         where t.tenant_id = p_tenant_id
           and t.id = v_root_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
         union all
         select t.id, t.{{domain_entity.parent_id_column}} as parent_id,
                t.{{domain_entity.hierarchy_name_field}}::text as name
-        from "{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl" t
+        from "{{domain_entity.sql_name_base}}_tbl" t
         join descendants d on t.{{domain_entity.parent_id_column}} = d.id
         where t.tenant_id = p_tenant_id
           and t.valid_to = ores_utility_infinity_timestamp_fn()
@@ -897,7 +897,7 @@ begin
         raise notice 'TimescaleDB detected - creating hypertable ({{domain_entity.sql.hypertable_chunk_interval}} chunks)';
 
         perform public.create_hypertable(
-            '"{{domain_entity.product}}_{{domain_entity.component}}_{{domain_entity.entity_plural}}_tbl"',
+            '"{{domain_entity.sql_name_base}}_tbl"',
             '{{domain_entity.sql.hypertable_partition_column}}',
             chunk_time_interval => interval '{{domain_entity.sql.hypertable_chunk_interval}}',
             if_not_exists => true

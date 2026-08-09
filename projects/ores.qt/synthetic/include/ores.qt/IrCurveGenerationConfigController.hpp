@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class IrCurveGenerationConfigMdiWindow;
+class IrCurveGenerationConfigDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -94,6 +95,14 @@ private:
     void showAddWindow();
     void showDetailWindow(
         const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * IrCurveGenerationConfigDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(IrCurveGenerationConfigDetailDialog* detailDialog);
     void showHistoryWindow(
         const synthetic::domain::ir_curve_generation_config& ir_curve_generation_config);
 

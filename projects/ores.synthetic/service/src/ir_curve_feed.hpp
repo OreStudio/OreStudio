@@ -25,6 +25,8 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
+#include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
@@ -133,18 +135,25 @@ private:
  * two paths can never drift (e.g. one lowercasing process_type and the other not) -- including
  * vintage resolution below, which both paths now go through identically.
  *
+ * The process is built from the config's row-based parameters: @p values carries the config's
+ * {parameter_definition_id, value} rows (all rows for this config, grouped by the caller) and
+ * @p definitions the system-tenant parameter-definitions catalogue; the two are joined and
+ * validated by map_parameters_to_yield_curve_process(), which throws a clear message on
+ * missing/unexpected/out-of-bounds parameters.
+ *
  * When cfg.price_source is "vintage", the process's initial_rate is resolved from a real
- * market_observation instead of cfg.initial_rate: the resolved entries' shortest-tenor DEPOSIT
- * entry is looked up in market_observation by (cfg.vintage_source, cfg.vintage_date, that entry's
- * point_id), via a market_data_client delegated with @p caller_bearer_token so the lookup runs in
- * the caller's own tenant/party context (market_observation is tenant-scoped under RLS; this
- * service's own service-account token is bound to the system tenant). An empty
- * caller_bearer_token falls back to @p auth_nats's own (undelegated) identity -- e.g. auto-start,
- * which has no end-user session. When cfg.price_source is "fixed" (the default), @p auth_nats and
- * @p caller_bearer_token are unused and cfg.initial_rate is used as-is.
+ * market_observation instead of the initial_rate parameter value: the resolved entries'
+ * shortest-tenor DEPOSIT entry is looked up in market_observation by (cfg.vintage_source,
+ * cfg.vintage_date, that entry's point_id), via a market_data_client delegated with @p
+ * caller_bearer_token so the lookup runs in the caller's own tenant/party context
+ * (market_observation is tenant-scoped under RLS; this service's own service-account token is
+ * bound to the system tenant). An empty caller_bearer_token falls back to @p auth_nats's own
+ * (undelegated) identity -- e.g. auto-start, which has no end-user session. When cfg.price_source
+ * is "fixed" (the default), @p auth_nats and @p caller_bearer_token are unused and the
+ * initial_rate parameter value is used as-is.
  *
  * @throws std::invalid_argument if process_type/curve_role/tenor data is invalid (see resolve()
- * and process_factory::make_yield_curve_process()).
+ * and map_parameters_to_yield_curve_process()).
  * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
  * is found (or the config has no DEPOSIT entry to anchor on).
  */
@@ -153,6 +162,11 @@ make_ir_curve_feed(ores::nats::service::client& nats,
                    ores::nats::service::nats_client& auth_nats,
                    const ores::synthetic::domain::ir_curve_generation_config& cfg,
                    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+                   const std::vector<
+                       ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
+                       values,
+                   const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
+                       definitions,
                    const ir_curve_refdata_context& refctx,
                    const std::string& caller_bearer_token = {});
 

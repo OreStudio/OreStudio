@@ -2287,6 +2287,39 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         sql_section['bitemporal_soft_update'] = (
             sql_section.get('bitemporal_trigger', '') == 'soft_update_delete'
         )
+        # Compute the base name every SQL identifier for this entity is composed
+        # from (table, insert/notify/delete functions, triggers, delete rule).
+        # PostgreSQL silently truncates identifiers to 63 bytes, so a base
+        # longer than 63 - longest_suffix makes several derived identifiers
+        # collapse onto one identical truncated string: the 66-char base of
+        # ores.synthetic's ir_curve_generation_config_process_parameter_value
+        # entity made its table, insert/notify functions and triggers all
+        # truncate to the same name, so the last `create or replace` silently
+        # replaced the earlier ones and the insert trigger that fills
+        # valid_from/valid_to no longer existed. The entity model's
+        # :tablename: (minus the trailing _tbl) is the explicit base when set
+        # -- the documented contract for the generated table's name, which the
+        # C++ sqlgen entity template already honours via {{sql.tablename}} --
+        # with the conventional composition as fallback; the truncation
+        # safety net below applies in both cases so a suffix always survives.
+        base_candidates = [4, 10, 11, 9, 12]  # _tbl, _insert_fn, _insert_trg, _delete_fn, _delete_rule
+        if domain_entity.get('generate_touch_function'):
+            base_candidates.append(17)  # _touch_version_fn
+        if domain_entity.get('has_parent_id'):
+            base_candidates.append(13)  # _hierarchy_fn
+        longest_suffix = max(base_candidates)
+        table_name = sql_section.get('tablename', '')
+        if table_name.endswith('_tbl'):
+            sql_name_base = table_name[:-4]
+        else:
+            sql_name_base = table_name or (
+                f"{domain_entity.get('product', 'ores')}_"
+                f"{domain_entity.get('component', 'unknown')}_"
+                f"{domain_entity.get('entity_plural', 'unknown')}"
+            )
+        if len(sql_name_base) + longest_suffix > 63:
+            sql_name_base = sql_name_base[:63 - longest_suffix]
+        domain_entity['sql_name_base'] = sql_name_base
         # GIST exclusion: suppressed for hypertables (incompatible); active otherwise
         # for standard temporal entities with has_tenant_id.
         domain_entity['has_gist_exclusion'] = (
@@ -2567,6 +2600,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if qt_col.get('is_int') and cpp_type.startswith('std::optional<'):
                         qt_col['is_optional_int'] = True
                         qt_col['is_int'] = False
+                    if qt_col.get('is_double') and cpp_type.startswith('std::optional<'):
+                        qt_col['is_optional_double'] = True
+                        qt_col['is_double'] = False
                     # Auto-assign column index for badge resolver calls
                     qt_col.setdefault('column_index', idx)
                     # Default column_style when not specified. self_colour
@@ -2783,6 +2819,14 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 f['is_double'] = (
                     f['is_line_edit']
                     and field_cpp in ('double', 'float')
+                )
+                # Nullable double edits with an optional<double> field:
+                # empty text reads back as nullopt, non-empty as the
+                # parsed value (mirrors is_nullable_int's spin-box
+                # sentinel).
+                f['is_optional_double'] = (
+                    f['is_line_edit']
+                    and field_cpp == 'std::optional<double>'
                 )
                 # A plain QLineEdit editing an ISO-8601 date
                 # ("YYYY-MM-DD"), converted to/from

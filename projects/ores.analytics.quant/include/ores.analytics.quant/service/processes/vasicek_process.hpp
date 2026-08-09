@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_process.hpp"
+#include "ores.analytics.quant/service/processes/vasicek_params.hpp"
 #include <cstdint>
 
 namespace ores::analytics::quant::service {
@@ -47,6 +48,18 @@ public:
                     double initial_rate,
                     std::uint32_t seed = 42,
                     double dt = 1.0);
+
+    /**
+     * @brief Construct from the strongly-typed parameter struct.
+     *
+     * The row-based parameter architecture (ores.synthetic) stores
+     * parameters as {name, value} pairs; the mapping layer materialises
+     * this struct from those rows and constructs the process through this
+     * overload.
+     */
+    explicit vasicek_process(const vasicek_params& params,
+                             std::uint32_t seed = 42,
+                             double dt = 1.0);
 
     double next() override;
     double current() const override;

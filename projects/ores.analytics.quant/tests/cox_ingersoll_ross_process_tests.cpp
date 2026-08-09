@@ -273,3 +273,24 @@ TEST_CASE("cox_ingersoll_ross_process rejects non-positive dt",
     CHECK_THROWS_AS(cox_ingersoll_ross_process(0.3, 0.03, 0.05, 0.03, 42, -1.0),
                     std::invalid_argument);
 }
+
+TEST_CASE("cox_ingersoll_ross_process struct constructor matches flat constructor",
+          "[cox_ingersoll_ross_process][params]") {
+    using ores::analytics::quant::service::cox_ingersoll_ross_params;
+    using ores::analytics::quant::service::cox_ingersoll_ross_process;
+
+    const cox_ingersoll_ross_params params{
+        .kappa = 0.3, .theta = 0.03, .sigma = 0.05, .initial_rate = 0.03};
+    const std::uint32_t seed = 42;
+    const double dt = 0.25;
+
+    cox_ingersoll_ross_process from_struct(params, seed, dt);
+    cox_ingersoll_ross_process from_flat(
+        params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt);
+
+    for (int i = 0; i < 20; ++i) {
+        CHECK(from_struct.next() == from_flat.next());
+        CHECK(from_struct.current() == from_flat.current());
+    }
+    CHECK(from_struct.discount_factor(10) == from_flat.discount_factor(10));
+}

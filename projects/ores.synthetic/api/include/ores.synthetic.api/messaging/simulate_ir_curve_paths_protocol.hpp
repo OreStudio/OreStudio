@@ -27,12 +27,25 @@
 namespace ores::synthetic::messaging {
 
 /**
+ * @brief One named process parameter, as edited in the IR curve editor's parameter table.
+ *
+ * The wire-shaped analogue of a {parameter_definition_id, value} row: the row-based store joins
+ * values onto the system-tenant parameter definitions catalogue, but a stateless preview request
+ * carries the name itself (the UI has the definitions on screen already) and lets the handler
+ * re-materialise the catalogue entry on the fly.
+ */
+struct parameter_spec {
+    std::string parameter_name;
+    double parameter_value = 0.0;
+};
+
+/**
  * @brief Request a batch (dry-run) simulation of short-rate sample paths.
  *
  * The IR curve analogue of simulate_fx_spot_paths_request: builds the real short-rate process
- * (Vasicek/Cox-Ingersoll-Ross/Hull-White) and steps it to generate the whole batch in one response,
- * so an IR curve editor can preview the configured process behaviour before persisting or starting
- * a feed. Stateless: nothing is persisted or published.
+ * (Vasicek/Cox-Ingersoll-Ross/Hull-White/Two-Factor Gaussian) and steps it to generate the whole
+ * batch in one response, so an IR curve editor can preview the configured process behaviour before
+ * persisting or starting a feed. Stateless: nothing is persisted or published.
  */
 struct simulate_ir_curve_paths_request {
     using response_type = struct simulate_ir_curve_paths_response;
@@ -42,20 +55,12 @@ struct simulate_ir_curve_paths_request {
     static constexpr int max_num_ticks = 5000;
     static constexpr int max_num_paths = 50;
 
-    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", or "hull_white". */
+    /** @brief Short-rate process engine: "vasicek", "cox_ingersoll_ross", "hull_white", or
+     * "two_factor_gaussian". */
     std::string process_type = "vasicek";
 
-    /** @brief Mean-reversion speed. */
-    double kappa = 0.0;
-
-    /** @brief Constant mean-reversion target level. */
-    double theta = 0.0;
-
-    /** @brief Volatility. */
-    double sigma = 0.0;
-
-    /** @brief Starting short rate. */
-    double initial_rate = 0.0;
+    /** @brief The process's named parameters (one entry per parameter). */
+    std::vector<parameter_spec> parameters;
 
     /** @brief Number of ticks (steps) to generate per path. */
     int num_ticks = 100;

@@ -71,7 +71,6 @@ public:
     std::vector<domain::ir_curve_generation_config> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all IR curve generation configs, possibly filtered by primary key.
      */

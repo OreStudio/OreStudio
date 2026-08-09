@@ -32,9 +32,12 @@
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/payment_frequency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
+#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include <QButtonGroup>
+#include <QDoubleSpinBox>
 #include <QComboBox>
 #include <QCompleter>
 #include <QDialog>
@@ -51,9 +54,7 @@
 #include <QPushButton>
 #include <QRadioButton>
 #include <QSizePolicy>
-#include <QSlider>
 #include <QSplitter>
-#include <QStackedWidget>
 #include <QTableWidget>
 #include <QTimer>
 #include <QtConcurrent>
@@ -86,6 +87,7 @@ constexpr EngineInfo kEngines[] = {
     {"VASICEK", QT_TR_NOOP("Vasicek")},
     {"COX_INGERSOLL_ROSS", QT_TR_NOOP("Cox-Ingersoll-Ross")},
     {"HULL_WHITE", QT_TR_NOOP("Hull-White")},
+    {"TWO_FACTOR_GAUSSIAN", QT_TR_NOOP("Two-Factor Gaussian")},
 };
 
 // indexNameCombo_ still lists the floating_index_type suffix shape this editor has
@@ -134,14 +136,11 @@ IrCurveEditor::IrCurveEditor(ClientManager* cm,
     ir_.id = boost::uuids::random_generator()();
     ir_.config_id = parentFeedId;
     ir_.process_type = "VASICEK";
-    // Plain, real annualised defaults matching the seeded Barclays curves' magnitude --
-    // process_factory threads dt (1/365 for this feed's day-per-tick convention) through
-    // separately now, so kappa/theta/sigma/initial_rate are never pre-scaled here; see the
-    // Process tab's own slider-range comment.
-    ir_.kappa = 0.35;
-    ir_.theta = 0.03;
-    ir_.sigma = 0.01;
-    ir_.initial_rate = 0.03;
+    // No parameter defaults here -- they come from the yield_curve_process_parameter_definition
+    // catalogue, fetched (with the value rows, edit mode) by populateParameterRows() when the
+    // Process tab is built. Values are plain, real annualised numbers matching the seeded
+    // Barclays curves' magnitude; the mapping layer threads dt (1/365 for this feed's
+    // day-per-tick convention) through separately.
     ir_.ticks_per_hour = 3600;
     ir_.enabled = true;
     ir_.fixed_leg_payment_frequency_code = "Annual";
@@ -326,7 +325,7 @@ void IrCurveEditor::buildInstrumentTab() {
     // Price source: mirrors FxSpotRateEditor::buildInstrumentTab()'s own layout (two radio-headed
     // groups, checking one disables the other) -- the field this gates (r0) lives on the Process
     // tab rather than here, unlike FX's Initial price, so vintage mode instead disables that
-    // tab's initialRateSlider_/Spin_/advancedTable_ cell (see updatePriceSourceEnablement below).
+    // tab's initial-rate parameter row's spin box (see updatePriceSourceEnablement()).
     auto* priceSourceIntro =
         new QLabel(tr("Where this curve's starting rate (r0) comes from — pick one."), tab);
     priceSourceIntro->setStyleSheet("color: gray; font-style: italic;");
@@ -369,34 +368,18 @@ void IrCurveEditor::buildInstrumentTab() {
 
     const bool vintageMode = ir_.price_source == "vintage";
     (vintageMode ? vintageRadio_ : fixedRadio_)->setChecked(true);
-    const auto updatePriceSourceEnablement = [this]() {
-        const bool vintage = priceSourceGroup_->checkedId() == 1;
-        BOOST_LOG_SEV(lg(), debug)
-            << "updatePriceSourceEnablement: checkedId=" << priceSourceGroup_->checkedId()
-            << ", vintage=" << vintage;
-        vintageSourceEdit_->setEnabled(vintage);
-        vintageDateEdit_->setEnabled(vintage);
-        browseVintageButton_->setEnabled(vintage);
-        // Simple-page controls only -- the Advanced table's r0 cell stays editable regardless
-        // (its edits still just flow into initialRateSpin_, see the itemChanged handler above),
-        // since disabling individual QTableWidgetItem flags doesn't survive
-        // onProcessFieldChanged()'s per-edit item replacement. Harmless either way: the server
-        // ignores initial_rate entirely when price_source is "vintage".
-        if (initialRateSlider_)
-            initialRateSlider_->setEnabled(!vintage);
-        if (initialRateSpin_)
-            initialRateSpin_->setEnabled(!vintage);
-    };
     connect(priceSourceGroup_,
             &QButtonGroup::idClicked,
             this,
-            [this, updatePriceSourceEnablement](int id) {
+            [this](int id) {
                 BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
                 updatePriceSourceEnablement();
             });
-    // buildProcessTab() runs after this method returns, so initialRateSlider_/Spin_/advancedTable_
-    // don't exist yet -- defer the first enablement sync to the next event loop turn.
-    QTimer::singleShot(0, this, updatePriceSourceEnablement);
+    // buildProcessTab() runs after this method returns, so parameterTable_/initialRateSpin_ don't
+    // exist yet (and are only populated once populateParameterRows()'s async fetch lands) --
+    // rebuildParameterTable() re-runs this after every population, so no deferred call needed
+    // here.
+    updatePriceSourceEnablement();
 
     connect(currencyCombo_, &QComboBox::currentTextChanged, this, [this](const QString&) {
         populateIndexNameCombo();
@@ -451,6 +434,11 @@ void IrCurveEditor::buildProcessTab() {
             {QStringLiteral("HULL_WHITE"),
              tr("Hull-White: like Vasicek, but supports a piecewise-constant mean level over "
                 "time (a single constant level θ here, same as Vasicek's).")},
+            {QStringLiteral("TWO_FACTOR_GAUSSIAN"),
+             tr("Two-Factor Gaussian (G2++): r = x + y + θ, a sum of two correlated mean-reverting "
+                "Ornstein-Uhlenbeck factors. Richer curve shapes (humps, inversions) than any "
+                "single-factor model, at the cost of two reversion speeds and volatilities plus "
+                "their correlation.")},
         };
         auto it = descriptions.find(engineCombo_->currentData().toString());
         engineCombo_->setToolTip(it != descriptions.end() ? it->second : QString());
@@ -458,191 +446,42 @@ void IrCurveEditor::buildProcessTab() {
     updateEngineTooltip(engineCombo_->currentIndex());
     connect(engineCombo_, &QComboBox::currentIndexChanged, this, updateEngineTooltip);
     headerRow->addWidget(engineCombo_);
+    // The parameter table below is the single editing surface (precise entry included), so there
+    // is no Simple/Advanced toggle to lay out here -- FX's split exists because its slider set
+    // targets a fixed 4-scalar shape, which the row-based architecture replaces with
+    // definitions-driven rows of any count.
     headerRow->addStretch(1);
-
-    auto* simpleBtn = new QPushButton(tr("Simple"), tab);
-    simpleBtn->setToolTip(tr("Slider-driven, quick exploration -- values snap to the slider's "
-                             "granularity, not for precise entry."));
-    auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
-    advancedBtn->setToolTip(tr("Directly-editable table for typing exact parameter values."));
-    const QColor accent = palette().color(QPalette::Highlight);
-    const QColor accentText = palette().color(QPalette::HighlightedText);
-    const QString segStyle =
-        QStringLiteral("QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
-                       "padding: 4px 16px; border: 1px solid %1; }"
-                       "QPushButton:checked { background: %1; color: %2; }")
-            .arg(accent.name(), accentText.name());
-    simpleBtn->setStyleSheet(
-        segStyle + "QPushButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }");
-    advancedBtn->setStyleSheet(
-        segStyle + "QPushButton { border-top-left-radius: 0; border-bottom-left-radius: 0; "
-                   "border-left: none; }");
-    for (auto* b : {simpleBtn, advancedBtn}) {
-        b->setCheckable(true);
-        b->setAutoExclusive(true);
-        b->setCursor(Qt::PointingHandCursor);
-    }
-    simpleBtn->setChecked(true);
-    modeGroup_ = new QButtonGroup(tab);
-    modeGroup_->setExclusive(true);
-    modeGroup_->addButton(simpleBtn, 0);
-    modeGroup_->addButton(advancedBtn, 1);
-    auto* segRow = new QHBoxLayout();
-    segRow->setSpacing(0);
-    segRow->addWidget(simpleBtn);
-    segRow->addWidget(advancedBtn);
-    headerRow->addLayout(segRow);
     layout->addLayout(headerRow);
 
-    // ===== 2. Mode stack: Simple (slider-only, value echoed in a label -- precise entry is
-    // Advanced-only, same philosophy as FX) vs Advanced (directly-editable table). kappa/sigma
-    // are plain, real annualised values -- process_factory's own dt parameter (1/365 for this
-    // feed's day-per-tick convention, see ir_curve_template_resolver's own doc) handles the
-    // tick-granularity scaling now, not a caller-side pre-scale, so ranges are sized to real
-    // annualised magnitudes: the seeded Barclays curves run kappa ~0.2-0.55, sigma ~0.006-0.022
-    // (e.g. USD-SOFR: kappa=0.55, sigma=0.008).
-    modeStack_ = new QStackedWidget(tab);
+    // ===== 2. Parameter table: one row per yield_curve_process_parameter_definition for the
+    // selected engine (4 for the one-factor engines, 7 for Two-Factor Gaussian) -- read-only
+    // parameter cell (the definition's description as tooltip) + QDoubleSpinBox per value, its
+    // range clamped to the definition's min/max (NULL = unbounded) and seeded from the config's
+    // value row (edit mode) or the definition's default_value. Rows are rebuilt by
+    // populateParameterRows() whenever the engine changes; values are plain, real annualised
+    // numbers -- the mapping layer threads dt (1/365 for this feed's day-per-tick convention, see
+    // ir_curve_template_resolver's own doc) through separately, so nothing here is pre-scaled.
+    // This single table is the one editing surface (precise entry included) -- there is no
+    // Simple/Advanced split to keep in sync with a dynamic parameter set.
+    parameterTable_ = new QTableWidget(0, 2, tab);
+    parameterTable_->setHorizontalHeaderLabels({tr("Parameter"), tr("Value")});
+    parameterTable_->verticalHeader()->setVisible(false);
+    parameterTable_->verticalHeader()->setDefaultSectionSize(38);
+    parameterTable_->horizontalHeader()->setStretchLastSection(true);
+    parametersLoadingLabel_ = new QLabel(tr("Loading parameters…"), tab);
+    parametersLoadingLabel_->setStyleSheet("color: gray; font-style: italic;");
 
-    auto* simplePage = new QWidget(modeStack_);
-    auto* simpleLayout = new QVBoxLayout(simplePage);
-    auto addParamRow = [&](const QString& labelText,
-                           const QString& tip,
-                           QSlider*& slider,
-                           QDoubleSpinBox*& spin, // hidden value model, not shown -- see below
-                           double minV,
-                           double maxV,
-                           double initial,
-                           double step) {
-        auto* header = new QHBoxLayout();
-        auto* titleLabel = new QLabel(labelText, simplePage);
-        titleLabel->setToolTip(tip);
-        header->addWidget(titleLabel);
-        header->addStretch(1);
-        auto* valueLabel = new QLabel(simplePage);
-        valueLabel->setStyleSheet("color: gray;");
-        header->addWidget(valueLabel);
-        simpleLayout->addLayout(header);
-
-        slider = new QSlider(Qt::Horizontal, simplePage);
-        slider->setRange(0, 1000);
-        slider->setToolTip(tip);
-        simpleLayout->addWidget(slider);
-
-        // Spin box is the value model (read by save/charts/Advanced-table sync) but is never
-        // added to a layout -- Simple mode is deliberately imprecise, matching FX's own Simple
-        // page (a value label, not a spinbox, next to the slider).
-        spin = new QDoubleSpinBox(simplePage);
-        spin->setRange(minV, maxV);
-        spin->setDecimals(6);
-        spin->setSingleStep(step);
-        spin->setValue(initial);
-        spin->setVisible(false);
-        slider->setValue(static_cast<int>(std::lround((initial - minV) / (maxV - minV) * 1000)));
-        valueLabel->setText(QString::number(initial, 'g', 6));
-
-        connect(slider, &QSlider::valueChanged, this, [spin, minV, maxV](int v) {
-            const QSignalBlocker blocker(spin);
-            spin->setValue(minV + (maxV - minV) * v / 1000.0);
-        });
-        connect(spin,
-                qOverload<double>(&QDoubleSpinBox::valueChanged),
-                this,
-                [slider, valueLabel, minV, maxV](double v) {
-                    const QSignalBlocker blocker(slider);
-                    slider->setValue(
-                        static_cast<int>(std::lround((v - minV) / (maxV - minV) * 1000)));
-                    valueLabel->setText(QString::number(v, 'g', 6));
-                });
-        connect(spin,
-                qOverload<double>(&QDoubleSpinBox::valueChanged),
-                this,
-                &IrCurveEditor::onProcessFieldChanged);
-    };
-    addParamRow(tr("Initial rate r0"),
-                tr("The starting short rate the process simulates from -- where the curve begins."),
-                initialRateSlider_,
-                initialRateSpin_,
-                -0.02,
-                0.15,
-                ir_.initial_rate,
-                0.0001);
-    addParamRow(tr("Mean level θ"),
-                tr("The long-run level the short rate reverts toward. With κ=0 the rate never "
-                   "reverts and just diffuses freely."),
-                thetaSlider_,
-                thetaSpin_,
-                -0.02,
-                0.15,
-                ir_.theta,
-                0.0001);
-    addParamRow(tr("Reversion κ"),
-                tr("Annualised mean-reversion speed. Larger κ pulls the rate back toward θ faster. "
-                   "Real seeded curves run κ ≈ 0.2-0.55."),
-                kappaSlider_,
-                kappaSpin_,
-                0.0,
-                2.0,
-                ir_.kappa,
-                0.001);
-    addParamRow(tr("Volatility σ"),
-                tr("Annualised volatility of the short rate. Real seeded curves run σ ≈ "
-                   "0.006-0.022."),
-                sigmaSlider_,
-                sigmaSpin_,
-                0.0,
-                0.05,
-                ir_.sigma,
-                0.0001);
-    simpleLayout->addStretch(1);
-    modeStack_->addWidget(simplePage);
-
-    // Advanced page: same four values, one row of directly-editable, unclamped-precision cells --
-    // for typing exact numbers a slider's granularity can't reach. The only precise-entry
-    // surface, matching FX's Advanced component table's role.
-    auto* advancedPage = new QWidget(modeStack_);
-    auto* advancedLayout = new QVBoxLayout(advancedPage);
-    advancedTable_ = new QTableWidget(1, 4, advancedPage);
-    advancedTable_->setHorizontalHeaderLabels({tr("r0"), tr("θ"), tr("κ"), tr("σ")});
-    advancedTable_->verticalHeader()->setVisible(false);
-    advancedTable_->verticalHeader()->setDefaultSectionSize(38);
-    advancedTable_->horizontalHeader()->setStretchLastSection(true);
-    advancedLayout->addWidget(advancedTable_);
-    modeStack_->addWidget(advancedPage);
-
-    connect(advancedTable_, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* item) {
-        bool ok = false;
-        const double v = item->text().toDouble(&ok);
-        if (!ok)
-            return;
-        QDoubleSpinBox* target = nullptr;
-        switch (item->column()) {
-            case 0:
-                target = initialRateSpin_;
-                break;
-            case 1:
-                target = thetaSpin_;
-                break;
-            case 2:
-                target = kappaSpin_;
-                break;
-            case 3:
-                target = sigmaSpin_;
-                break;
-        }
-        if (target)
-            target->setValue(v); // propagates to slider + label + charts via its own valueChanged
-    });
-
-    connect(modeGroup_, &QButtonGroup::idClicked, this, &IrCurveEditor::onModeChanged);
-
-    // ===== 3. Middle row: mode stack (left, compact -- engine params need only enough room for
-    // four sliders) | curve-shape chart (right, dominant -- a full LIBOR-style Curve Template can
-    // carry 10-12 tenor points now, e.g. legacy USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid,
-    // and needs real horizontal room for its tenor-axis labels not to overlap).
+    // ===== 3. Middle row: parameter table (left, compact) | curve-shape chart (right, dominant
+    // -- a full LIBOR-style Curve Template can carry 10-12 tenor points now, e.g. legacy
+    // USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid, and needs real horizontal room for its
+    // tenor-axis labels not to overlap).
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
-    modeStack_->setMaximumWidth(340);
-    middleRow->addWidget(modeStack_, 0);
+    auto* paramColumn = new QVBoxLayout();
+    paramColumn->addWidget(parameterTable_, 1);
+    paramColumn->addWidget(parametersLoadingLabel_);
+    middleRow->addLayout(paramColumn, 0);
+    parameterTable_->setMaximumWidth(400);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
     shapeBox->setMinimumWidth(480);
@@ -662,10 +501,13 @@ void IrCurveEditor::buildProcessTab() {
     pathsBoxLayout->addWidget(pathsChart_);
     layout->addWidget(pathsBox, 1);
 
-    connect(
-        engineCombo_, &QComboBox::currentIndexChanged, this, &IrCurveEditor::onProcessFieldChanged);
+    connect(engineCombo_, &QComboBox::currentIndexChanged, this, [this]() {
+        populateParameterRows();
+    });
 
     tabWidget_->addTab(tab, tr("Process"));
+
+    populateParameterRows();
 }
 
 void IrCurveEditor::buildCurveTemplateTab() {
@@ -970,25 +812,171 @@ void IrCurveEditor::recomputeDefaultSourceName() {
 
 void IrCurveEditor::onProcessFieldChanged() {
     refreshCharts();
-    // Keep the Advanced table's display in sync whenever a spin value changes, regardless of
-    // which page is currently visible (e.g. programmatic updates while on the Simple page).
-    if (!syncing_ && advancedTable_) {
-        const QSignalBlocker blocker(advancedTable_);
-        advancedTable_->setItem(
-            0, 0, new QTableWidgetItem(QString::number(initialRateSpin_->value(), 'g', 8)));
-        advancedTable_->setItem(
-            0, 1, new QTableWidgetItem(QString::number(thetaSpin_->value(), 'g', 8)));
-        advancedTable_->setItem(
-            0, 2, new QTableWidgetItem(QString::number(kappaSpin_->value(), 'g', 8)));
-        advancedTable_->setItem(
-            0, 3, new QTableWidgetItem(QString::number(sigmaSpin_->value(), 'g', 8)));
-    }
 }
 
-void IrCurveEditor::onModeChanged() {
-    modeStack_->setCurrentIndex(modeGroup_->checkedId());
-    if (modeGroup_->checkedId() == 1)
-        onProcessFieldChanged(); // populate the Advanced table from the current spin values
+QDoubleSpinBox* IrCurveEditor::valueSpinAt(int row) const {
+    return qobject_cast<QDoubleSpinBox*>(parameterTable_->cellWidget(row, 1));
+}
+
+void IrCurveEditor::updatePriceSourceEnablement() {
+    const bool vintage = priceSourceGroup_ && priceSourceGroup_->checkedId() == 1;
+    BOOST_LOG_SEV(lg(), debug)
+        << "updatePriceSourceEnablement: checkedId="
+        << (priceSourceGroup_ ? priceSourceGroup_->checkedId() : -1) << ", vintage=" << vintage;
+    if (vintageSourceEdit_)
+        vintageSourceEdit_->setEnabled(vintage);
+    if (vintageDateEdit_)
+        vintageDateEdit_->setEnabled(vintage);
+    if (browseVintageButton_)
+        browseVintageButton_->setEnabled(vintage);
+    // The server resolves the initial_rate parameter from a real observation when price_source
+    // is "vintage" (see ir_curve_generation_config.price_source), so its row's spin box is
+    // read-only then; every other parameter stays editable. rebuildParameterTable() re-runs this
+    // after each population, so the spin may not exist yet on the earliest calls.
+    if (initialRateSpin_)
+        initialRateSpin_->setEnabled(!vintage);
+}
+
+void IrCurveEditor::populateParameterRows() {
+    const auto engine = engineCombo_->currentData().toString().toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "populateParameterRows: engine='" << engine << "'";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        parametersLoadingLabel_->setText(tr("Parameters unavailable — not connected."));
+        return;
+    }
+
+    QPointer<IrCurveEditor> self = this;
+    auto* cm = clientManager_;
+
+    struct FetchResult {
+        bool success = false;
+        std::vector<synthetic::domain::yield_curve_process_parameter_definition> definitions;
+        std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
+        QString error;
+    };
+
+    auto task = [cm, engine, configId = boost::uuids::to_string(ir_.id),
+                 isNew = isNew_]() -> FetchResult {
+        namespace m = synthetic::messaging;
+        FetchResult r;
+
+        auto defsResp = cm->process_authenticated_request(
+            m::get_yield_curve_process_parameter_definitions_request{.offset = 0, .limit = 1000});
+        if (!defsResp) {
+            r.error = QString::fromStdString(defsResp.error());
+            return r;
+        }
+        for (auto& d : defsResp->parameter_definitions) {
+            auto code = d.process_type_code;
+            std::transform(code.begin(), code.end(), code.begin(), [](unsigned char c) {
+                return static_cast<char>(std::toupper(c));
+            });
+            if (code == engine)
+                r.definitions.push_back(std::move(d));
+        }
+        std::sort(r.definitions.begin(), r.definitions.end(), [](const auto& a, const auto& b) {
+            return a.display_order < b.display_order;
+        });
+
+        // Only an existing config has stored value rows; a new one starts from the definitions'
+        // default_value.
+        if (!isNew) {
+            auto valuesResp = cm->process_authenticated_request(
+                m::get_ir_curve_generation_config_process_parameter_values_request{.offset = 0,
+                                                                                   .limit = 1000});
+            if (!valuesResp) {
+                r.error = QString::fromStdString(valuesResp.error());
+                return r;
+            }
+            for (auto& v : valuesResp->process_parameter_values)
+                if (boost::uuids::to_string(v.config_id) == configId)
+                    r.values.push_back(std::move(v));
+        }
+        r.success = true;
+        return r;
+    };
+
+    parametersLoadingLabel_->setVisible(true);
+    parametersLoadingLabel_->setText(tr("Loading parameters…"));
+    parameterTable_->setEnabled(false);
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, engine]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
+        self->parameterTable_->setEnabled(true);
+        if (!result.success) {
+            self->parametersLoadingLabel_->setText(
+                self->tr("Failed to load parameters: %1").arg(result.error));
+            return;
+        }
+        self->parameterDefinitions_ = std::move(result.definitions);
+        self->valueRows_ = std::move(result.values);
+        self->rebuildParameterTable();
+        if (self->parameterDefinitions_.empty()) {
+            self->parametersLoadingLabel_->setVisible(true);
+            self->parametersLoadingLabel_->setText(
+                self->tr("No parameter definitions for engine '%1'.")
+                    .arg(QString::fromStdString(engine)));
+        } else {
+            self->parametersLoadingLabel_->setVisible(false);
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void IrCurveEditor::rebuildParameterTable() {
+    std::map<boost::uuids::uuid, double> valuesByDefinition;
+    for (const auto& v : valueRows_)
+        valuesByDefinition[v.parameter_definition_id] = v.parameter_value;
+
+    const QSignalBlocker blocker(parameterTable_);
+    parameterTable_->setRowCount(0);
+    initialRateSpin_ = nullptr;
+    for (const auto& d : parameterDefinitions_) {
+        const int row = parameterTable_->rowCount();
+        parameterTable_->insertRow(row);
+
+        auto* nameItem = new QTableWidgetItem(QString::fromStdString(d.parameter_name));
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        nameItem->setToolTip(QString::fromStdString(d.description));
+        parameterTable_->setItem(row, 0, nameItem);
+
+        auto* spin = new QDoubleSpinBox(parameterTable_);
+        spin->setDecimals(6);
+        // Definitions carry min/max as optional bounds (NULL = unbounded); a generous ±1e6
+        // fallback keeps the spin usable for genuinely unbounded parameters (e.g. a mean level).
+        spin->setMinimum(d.min_value ? *d.min_value : -1e6);
+        spin->setMaximum(d.max_value ? *d.max_value : 1e6);
+        const auto vit = valuesByDefinition.find(d.id);
+        spin->setValue(vit != valuesByDefinition.end() ? vit->second : d.default_value);
+        spin->setToolTip(QString::fromStdString(d.description));
+        parameterTable_->setCellWidget(row, 1, spin);
+        connect(spin,
+                qOverload<double>(&QDoubleSpinBox::valueChanged),
+                this,
+                &IrCurveEditor::onProcessFieldChanged);
+        if (d.parameter_name == "initial_rate")
+            initialRateSpin_ = spin;
+    }
+    updatePriceSourceEnablement();
+    refreshCharts();
+}
+
+std::vector<ores::synthetic::messaging::parameter_spec>
+IrCurveEditor::currentParameters() const {
+    std::vector<ores::synthetic::messaging::parameter_spec> params;
+    params.reserve(parameterDefinitions_.size());
+    for (int row = 0; row < parameterTable_->rowCount() &&
+                        row < static_cast<int>(parameterDefinitions_.size());
+         ++row) {
+        if (auto* spin = valueSpinAt(row))
+            params.push_back({parameterDefinitions_[row].parameter_name, spin->value()});
+    }
+    return params;
 }
 
 void IrCurveEditor::onTemplateChanged() {
@@ -999,13 +987,15 @@ void IrCurveEditor::onTemplateChanged() {
 void IrCurveEditor::refreshCharts() {
     if (syncing_)
         return;
+    // populateParameterRows() is still in flight (engine change) -- the fetch's landing
+    // rebuilds the table and calls this again with the new engine's parameters, so skip the
+    // stale ones rather than previewing the previous engine's rows under the new selection.
+    if (parameterDefinitions_.empty())
+        return;
     const auto engine = engineCombo_->currentData().toString().toStdString();
-    const auto kappa = kappaSpin_->value();
-    const auto theta = thetaSpin_->value();
-    const auto sigma = sigmaSpin_->value();
-    const auto r0 = initialRateSpin_->value();
+    const auto params = currentParameters();
 
-    pathsChart_->setParameters(engine, kappa, theta, sigma, r0);
+    pathsChart_->setParameters(engine, params);
     pathsChart_->scheduleRefresh();
 
     std::vector<CurveShapePreviewChart::TemplateRow> rows;
@@ -1015,10 +1005,7 @@ void IrCurveEditor::refreshCharts() {
             seq++, e.start_tenor_code, e.end_tenor_code, e.instrument_code});
     }
     shapeChart_->setParameters(engine,
-                               kappa,
-                               theta,
-                               sigma,
-                               r0,
+                               params,
                                fixedLegFrequencyCombo_->currentText().toStdString(),
                                rows);
     shapeChart_->scheduleRefresh();
@@ -1318,10 +1305,6 @@ void IrCurveEditor::onSaveClicked() {
     std::tie(ir.index_family, ir.tenor) = splitIndexFamilyAndTenor(idx);
     ir.role = roleCombo_->currentData().toString().toStdString();
     ir.process_type = engineCombo_->currentData().toString().toStdString();
-    ir.kappa = kappaSpin_->value();
-    ir.theta = thetaSpin_->value();
-    ir.sigma = sigmaSpin_->value();
-    ir.initial_rate = initialRateSpin_->value();
     ir.fixed_leg_payment_frequency_code = fixedLegFrequencyCombo_->currentText().toStdString();
     if (vintageMode) {
         ir.price_source = "vintage";
@@ -1382,10 +1365,56 @@ void IrCurveEditor::onSaveClicked() {
             toDelete.push_back(origId);
     }
 
+    // Row-based process parameters: one value row per parameter-table row, keyed onto its
+    // definition; existing rows keep their id (stale ones are deleted below, mirroring the
+    // entries flow). Only parameters actually present in the definitions catalogue are saved.
+    std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
+    std::vector<std::string> keptValueIds;
+    for (int row = 0; row < parameterTable_->rowCount() &&
+                        row < static_cast<int>(parameterDefinitions_.size());
+         ++row) {
+        auto* spin = valueSpinAt(row);
+        if (!spin)
+            continue;
+        const auto& def = parameterDefinitions_[row];
+        synthetic::domain::ir_curve_generation_config_process_parameter_value v;
+        bool rowIsNew = true;
+        const auto existingIt = std::find_if(
+            valueRows_.begin(), valueRows_.end(), [&def](const auto& x) {
+                return x.parameter_definition_id == def.id;
+            });
+        if (existingIt != valueRows_.end()) {
+            v.id = existingIt->id;
+            keptValueIds.push_back(boost::uuids::to_string(existingIt->id));
+            rowIsNew = false;
+        } else {
+            v.id = boost::uuids::random_generator()();
+        }
+        v.config_id = ir.id;
+        v.parameter_definition_id = def.id;
+        v.parameter_value = spin->value();
+        v.modified_by = username_.toStdString();
+        namespace reason = ores::dq::domain::change_reason_constants::codes;
+        v.change_reason_code =
+            rowIsNew ? std::string(reason::new_record) : std::string(reason::non_material_update);
+        v.change_commentary = "Authored via Market Simulator";
+        v.version = 0;
+        values.push_back(std::move(v));
+    }
+
+    std::vector<std::string> staleValueIds;
+    for (const auto& existing : valueRows_) {
+        const auto id = boost::uuids::to_string(existing.id);
+        if (std::find(keptValueIds.begin(), keptValueIds.end(), id) == keptValueIds.end())
+            staleValueIds.push_back(id);
+    }
+
     const std::string irId = boost::uuids::to_string(ir.id);
     BOOST_LOG_SEV(lg(), info) << "Saving IR curve " << irId << " (" << ccy << " " << idx
                               << ", new=" << isNew_ << ") with " << entries.size()
-                              << " Curve Template entries, deleting " << toDelete.size() << ".";
+                              << " Curve Template entries, deleting " << toDelete.size() << ", and "
+                              << values.size() << " parameter value rows, deleting "
+                              << staleValueIds.size() << ".";
 
     QPointer<IrCurveEditor> self = this;
     auto* cm = clientManager_;
@@ -1395,7 +1424,7 @@ void IrCurveEditor::onSaveClicked() {
         QString message;
     };
 
-    auto task = [cm, ir, entries, toDelete]() -> SaveResult {
+    auto task = [cm, ir, entries, toDelete, values, staleValueIds]() -> SaveResult {
         namespace m = synthetic::messaging;
 
         auto irResp =
@@ -1421,6 +1450,25 @@ void IrCurveEditor::onSaveClicked() {
                 return {false, QString::fromStdString(eResp.error())};
             if (!eResp->success)
                 return {false, QString::fromStdString(eResp->message)};
+        }
+
+        if (!staleValueIds.empty()) {
+            auto vdResp = cm->process_authenticated_request(
+                m::delete_ir_curve_generation_config_process_parameter_value_request{
+                    .ids = staleValueIds});
+            if (!vdResp)
+                return {false, QString::fromStdString(vdResp.error())};
+            if (!vdResp->success)
+                return {false, QString::fromStdString(vdResp->message)};
+        }
+
+        for (const auto& v : values) {
+            auto vResp = cm->process_authenticated_request(
+                m::save_ir_curve_generation_config_process_parameter_value_request::from(v));
+            if (!vResp)
+                return {false, QString::fromStdString(vResp.error())};
+            if (!vResp->success)
+                return {false, QString::fromStdString(vResp->message)};
         }
 
         return {true, {}};

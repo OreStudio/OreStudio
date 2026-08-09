@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 165E5F12-FB8A-41FD-9137-1C1159170A14
+:END:
+#+title: ores.synthetic.ir_curve_generation_config_process_parameter_value
+#+description: Codegen entity model for the synthetic ir_curve_generation_config_process_parameter_value table; one named process-parameter value of an IR curve generation config, referencing its parameter definition.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: ir_curve_generation_config_process_parameter_value
+#+entity_plural: ir_curve_generation_config_process_parameter_values
+#+entity_title: IR Curve Generation Config Process Parameter Value
+#+brief: One named process-parameter value of an IR curve generation config.
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+One named process-parameter value of an =ir_curve_generation_config=,
+referencing its =yield_curve_process_parameter_definition=. This is the
+"value" half of the row-based parameter architecture: an IR curve
+generation config stores its process parameters as one row per
+parameter (kappa=0.1, rho=-0.5, ...), the parameter
+=definition= supplies the vocabulary (name, description, bounds), and
+the mapping layer materialises these rows into the strongly-typed
+process-parameter structs of =ores.analytics.quant=
+(=two_factor_gaussian_params=, =vasicek_params=, ...).
+
+The =(config_id, parameter_definition_id)= pair is unique: each
+parameter appears at most once per config. A hand-written DB trigger
+(not the codegen single-argument Validations mechanism, which cannot
+express a two-column lookup) enforces that the definition's
+=process_type_code= matches the config's =process_type= -- a config
+driven by =TWO_FACTOR_GAUSSIAN= may only carry values whose definitions
+belong to =TWO_FACTOR_GAUSSIAN=. Both soft FKs are additionally
+validated at insert time by the generated validation functions. No
+standalone Qt layer: value rows are edited from inside the IR curve
+generation config detail dialog, which reads definitions and value
+rows via the normal codegen repositories.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: synthetic
+:has_tenant_id:    true
+:has_workspace_id: false
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this parameter value row.
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+Parent =ir_curve_generation_config= this parameter value belongs to
+(soft FK to =ores_synthetic_ir_curve_generation_configs_tbl=,
+validated via the generated validation function).
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** parameter_definition_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The =yield_curve_process_parameter_definition= this value instantiates
+(soft FK to =ores_synthetic_yield_curve_process_parameter_definitions_tbl=,
+validated via the generated validation function). The definition
+supplies the parameter's name, description and validation bounds; only
+the value itself lives here.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** parameter_value
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+The value of this parameter for this config, in the definition's
+=data_type= ("double" for all current process parameters). Must lie
+within the definition's =min_value=/=max_value= range (NULL =
+unbounded); the Qt dialog's spin boxes enforce this on entry and the
+mapping layer re-checks it before constructing the process.
+
+#+begin_src cpp :name generator
+faker::number::decimal(0.0, 0.1)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_config_process_parameter_values_tbl
+:END:
+
+The =:tablename:= is the base every SQL object name for this entity is
+composed from (table, insert/notify/delete functions, triggers, delete
+rule). It deliberately drops the =ir_curve_generation_config_= prefix
+(the parent already scopes the rows): the conventional
+=ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl=
+is 72 characters, and PostgreSQL truncates identifiers to 63 bytes —
+table, functions and triggers would all collapse onto one identical
+63-character name, so the last =create or replace= silently replaces
+the earlier objects (the insert trigger that fills =valid_from= /
+=valid_to= is the one that gets lost). See the SQL naming
+conventions doc for the codegen-side rule.
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_ir_curve_generation_configs_tbl
+:error_message: Invalid config_id: %. No active ir_curve_generation_config found with this id.
+:nullable:      false
+:END:
+
+** parameter_definition_id
+:PROPERTIES:
+:table:         ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:error_message: Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id.
+:nullable:      false
+:END:
+
+* Insert trigger
+** Validations
+
+| column                  | validation_function                                       |
+|-------------------------+-----------------------------------------------------------|
+| config_id               | ores_synthetic_validate_ir_curve_generation_config_fn     |
+| parameter_definition_id | ores_synthetic_validate_yield_curve_process_parameter_definition_fn |
+| change_reason_code      | ores_dq_validate_change_reason_fn                         |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: process_parameter_value
+:entity_plural_short:   process_parameter_values
+:entity_singular_words: IR curve generation config process parameter value
+:entity_plural_words:   IR curve generation config process parameter values
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: pv
+:END:
+
+* See also
+
+- [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][IR Curve Generation Config]] -- the config whose parameters these values are.
+- [[id:5F5B8448-ADA9-4424-8A5D-91B30A200DAA][Yield Curve Process Parameter Definition]] -- the vocabulary each value instantiates.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] -- component group overview.

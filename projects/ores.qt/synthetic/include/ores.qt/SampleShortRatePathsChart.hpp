@@ -21,6 +21,7 @@
 #define ORES_QT_SAMPLE_SHORT_RATE_PATHS_CHART_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include <QWidget>
 #include <cstdint>
 #include <string>
@@ -59,11 +60,9 @@ public:
     ~SampleShortRatePathsChart() override = default;
 
     /** @brief Update the model inputs (does not refresh immediately). */
-    void setParameters(const std::string& processType,
-                       double kappa,
-                       double theta,
-                       double sigma,
-                       double initialRate);
+    void setParameters(
+        const std::string& processType,
+        const std::vector<ores::synthetic::messaging::parameter_spec>& parameters);
 
     /** @brief Schedule a debounced refresh (~400 ms after the last call). */
     void scheduleRefresh();
@@ -90,10 +89,7 @@ private:
     class QTimer* debounce_;
 
     std::string processType_{"vasicek"};
-    double kappa_{0.0};
-    double theta_{0.0};
-    double sigma_{0.0};
-    double initialRate_{0.0};
+    std::vector<ores::synthetic::messaging::parameter_spec> parameters_;
     std::uint32_t seed_{1};
     bool inFlight_{false};
     bool pending_{false};

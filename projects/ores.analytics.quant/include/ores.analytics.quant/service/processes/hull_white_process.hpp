@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/service/processes/hull_white_params.hpp"
 #include <cstdint>
 #include <random>
 #include <vector>
@@ -95,6 +96,21 @@ public:
                        double initial_rate,
                        std::uint32_t seed = 42,
                        double dt = 1.0);
+
+    /**
+     * @brief Construct from the strongly-typed parameter struct.
+     *
+     * The row-based parameter architecture (ores.synthetic) stores
+     * parameters as {name, value} pairs; the mapping layer materialises
+     * this struct from those rows and constructs the process through this
+     * overload. The struct holds a single scalar theta, materialised here
+     * as a one-element theta_path -- exactly the constant-theta (Vasicek)
+     * case. Fitting a time-varying theta(t) to an observed market curve
+     * remains out of scope of the row-based architecture.
+     */
+    explicit hull_white_process(const hull_white_params& params,
+                                std::uint32_t seed = 42,
+                                double dt = 1.0);
 
     double next() override;
     double current() const override;

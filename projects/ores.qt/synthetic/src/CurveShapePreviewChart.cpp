@@ -111,18 +111,13 @@ void CurveShapePreviewChart::setBusy(bool busy) {
     statusLabel_->setVisible(true);
 }
 
-void CurveShapePreviewChart::setParameters(const std::string& processType,
-                                           double kappa,
-                                           double theta,
-                                           double sigma,
-                                           double initialRate,
-                                           const std::string& fixedLegPaymentFrequencyCode,
-                                           const std::vector<TemplateRow>& entries) {
+void CurveShapePreviewChart::setParameters(
+    const std::string& processType,
+    const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+    const std::string& fixedLegPaymentFrequencyCode,
+    const std::vector<TemplateRow>& entries) {
     processType_ = processType;
-    kappa_ = kappa;
-    theta_ = theta;
-    sigma_ = sigma;
-    initialRate_ = initialRate;
+    parameters_ = parameters;
     fixedLegPaymentFrequencyCode_ = fixedLegPaymentFrequencyCode;
     entries_ = entries;
 }
@@ -146,10 +141,7 @@ void CurveShapePreviewChart::doRefresh() {
     namespace m = synthetic::messaging;
     m::preview_ir_curve_shape_request req;
     req.process_type = processType_;
-    req.kappa = kappa_;
-    req.theta = theta_;
-    req.sigma = sigma_;
-    req.initial_rate = initialRate_;
+    req.parameters = parameters_;
     req.fixed_leg_payment_frequency_code = fixedLegPaymentFrequencyCode_;
     for (const auto& e : entries_) {
         m::preview_ir_curve_template_row row;

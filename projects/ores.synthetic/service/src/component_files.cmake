@@ -30,8 +30,10 @@ set(files
     "messaging/fx_spot_generation_config_event_registrar.cpp"
     "messaging/gmm_component_event_registrar.cpp"
     "messaging/ir_curve_generation_config_event_registrar.cpp"
+    "messaging/ir_curve_generation_config_process_parameter_value_event_registrar.cpp"
     "messaging/ir_curve_template_entry_event_registrar.cpp"
     "messaging/market_data_generation_config_event_registrar.cpp"
+    "messaging/yield_curve_process_parameter_definition_event_registrar.cpp"
     "messaging/yield_curve_process_type_event_registrar.cpp"
     "registrar.cpp"
 )
@@ -50,8 +52,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/fx_spot_generation_config_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/ir_curve_generation_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/ir_curve_generation_config_process_parameter_value_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/ir_curve_template_entry_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/market_data_generation_config_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/yield_curve_process_parameter_definition_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/messaging/yield_curve_process_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.service/ores.synthetic.service.hpp"
 )

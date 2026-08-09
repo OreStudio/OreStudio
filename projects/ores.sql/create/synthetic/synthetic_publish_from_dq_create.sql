@@ -604,7 +604,7 @@ begin
             insert into ores_synthetic_ir_curve_generation_configs_tbl (
                 tenant_id, id, version, party_id, config_id, folder_id,
                 currency_code, index_family, tenor, role, process_type,
-                kappa, theta, sigma, initial_rate, ticks_per_hour, enabled,
+                ticks_per_hour, enabled,
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
                 price_source, vintage_source, vintage_date,
@@ -616,7 +616,7 @@ begin
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_ir_folder_id,
                 r.currency_code, r.index_family, r.tenor, 'self_discounting', r.process_type,
-                r.kappa, r.theta, r.sigma, r.initial_rate, r.ticks_per_hour,
+                r.ticks_per_hour,
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),
                 r.description,
@@ -646,6 +646,57 @@ begin
             else
                 v_updated := v_updated + 1;
             end if;
+
+            -- Process parameters are a complete set per (curve, process type):
+            -- materialise the artefact's flat columns onto the row-based
+            -- store. The artefact snapshot predates the row-based
+            -- architecture, so it is fixed-shape (the four 1-factor
+            -- parameters); multi-parameter models like TWO_FACTOR_GAUSSIAN
+            -- are created directly against the live table, not via a DQ
+            -- artefact, and a mis-targeted artefact fails loudly in the
+            -- mapping layer (missing required parameters).
+            update ores_synthetic_config_process_parameter_values_tbl existing
+            set valid_to = current_timestamp
+            where existing.tenant_id = p_target_tenant_id
+              and existing.config_id = v_ir_config_id
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and existing.parameter_definition_id not in (
+                  select d.id
+                  from (values ('kappa'), ('theta'), ('sigma'), ('initial_rate')) as p(parameter_name)
+                  join ores_synthetic_yield_curve_process_parameter_definitions_tbl d
+                    on d.tenant_id = ores_utility_system_tenant_id_fn()
+                   and d.process_type_code = r.process_type
+                   and d.parameter_name = p.parameter_name
+                   and d.valid_to = ores_utility_infinity_timestamp_fn()
+              );
+
+            insert into ores_synthetic_config_process_parameter_values_tbl (
+                tenant_id, id, version, config_id, parameter_definition_id, parameter_value,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            select
+                p_target_tenant_id,
+                coalesce(existing_p.id, gen_random_uuid()),
+                coalesce(existing_p.version, 0),
+                v_ir_config_id, d.id, p.parameter_value,
+                coalesce(ores_iam_current_service_fn(), current_user), current_user,
+                'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
+            from (values
+                ('kappa', r.kappa),
+                ('theta', r.theta),
+                ('sigma', r.sigma),
+                ('initial_rate', r.initial_rate)
+            ) as p(parameter_name, parameter_value)
+            join ores_synthetic_yield_curve_process_parameter_definitions_tbl d
+                on d.tenant_id = ores_utility_system_tenant_id_fn()
+               and d.process_type_code = r.process_type
+               and d.parameter_name = p.parameter_name
+               and d.valid_to = ores_utility_infinity_timestamp_fn()
+            left join ores_synthetic_config_process_parameter_values_tbl existing_p
+                on existing_p.tenant_id = p_target_tenant_id
+               and existing_p.config_id = v_ir_config_id
+               and existing_p.parameter_definition_id = d.id
+               and existing_p.valid_to = ores_utility_infinity_timestamp_fn();
 
             -- Curve Template entries are a complete set per (curve, dataset),
             -- not a sparse independently-upserted list: void any existing entry

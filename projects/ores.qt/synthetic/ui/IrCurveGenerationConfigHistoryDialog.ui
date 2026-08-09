@@ -192,139 +192,83 @@
                 </widget>
                </item>
                <item row="3" column="0">
-                <widget class="QLabel" name="kappaLabel">
-                 <property name="text">
-                  <string>Kappa:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLabel" name="kappaValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="thetaLabel">
-                 <property name="text">
-                  <string>Theta:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QLabel" name="thetaValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="sigmaLabel">
-                 <property name="text">
-                  <string>Sigma:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QLabel" name="sigmaValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="initial_rateLabel">
-                 <property name="text">
-                  <string>Initial Rate:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QLabel" name="initialRateValue">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
                 <widget class="QLabel" name="ticks_per_hourLabel">
                  <property name="text">
                   <string>Ticks per Hour:</string>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="3" column="1">
                 <widget class="QLabel" name="ticksPerHourValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="enabledLabel">
                  <property name="text">
                   <string>Enabled:</string>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="4" column="1">
                 <widget class="QLabel" name="enabledCheck">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="versionNumberLabel">
                  <property name="text">
                   <string>Version:</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="versionNumberValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="modifiedByLabel">
                  <property name="text">
                   <string>Modified By:</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="modifiedByValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="recordedAtLabel">
                  <property name="text">
                   <string>Recorded At:</string>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="1">
+               <item row="7" column="1">
                 <widget class="QLabel" name="recordedAtValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="changeCommentaryLabel">
                  <property name="text">
                   <string>Change Commentary:</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="1">
+               <item row="8" column="1">
                 <widget class="QLabel" name="changeCommentaryValue">
                  <property name="text">
                   <string/>

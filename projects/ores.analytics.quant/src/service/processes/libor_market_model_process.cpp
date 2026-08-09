@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/libor_market_model_process.hpp"
+#include "ores.analytics.quant/math/psd_matrix.hpp"
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -37,12 +38,14 @@ namespace {
  *
  * The rates themselves are deliberately not required to keep
  * L_i + s_i positive: the drift formula is well defined for any rates
- * away from the denominator pole L_i = -1/tau_i, and the plain
- * rate-Euler discretisation can step outside the log domain under a
- * high volatility -- a documented discretisation artifact, not a
- * reason to abort a simulation. The positive log domain is the model's
- * support and is enforced on the initial rates by the process
- * constructor only.
+ * with 1 + tau_i * L_i > 0, and the plain rate-Euler discretisation
+ * can step outside the log domain under a high volatility -- a
+ * documented discretisation artifact, not a reason to abort a
+ * simulation. Only the numeraire pole L_i = -1/tau_i itself is a hard
+ * error: the drift crosses it only by sign-flipping the weight on a
+ * negative growth factor, which the drift function rejects. The
+ * positive log domain is the model's support and is enforced on the
+ * initial rates by the process constructor only.
  */
 void validate_grid(const Eigen::VectorXd& forward_rates,
                    const Eigen::VectorXd& displacements,
@@ -109,11 +112,20 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
 
     // The weight rate j puts on the money-market numeraire over its
     // accrual period: tau_j * (L_j + s_j) / (1 + tau_j * L_j), exactly
-    // the tmp vector of QuantLib's LMMDriftCalculator.
+    // the tmp vector of QuantLib's LMMDriftCalculator. The denominator
+    // is the numeraire's own growth factor over the period: it must
+    // stay positive, so a rate that crossed the pole L_j = -1/tau_j is
+    // a hard error, not a silently sign-flipped weight.
     Eigen::VectorXd weights(num_rates);
-    for (std::size_t j = 0; j < num_rates; ++j)
-        weights[j] = tenor_spacings[j] * (forward_rates[j] + displacements[j]) /
-                     (1.0 + tenor_spacings[j] * forward_rates[j]);
+    for (std::size_t j = 0; j < num_rates; ++j) {
+        const double denominator = 1.0 + tenor_spacings[j] * forward_rates[j];
+        if (!(denominator > 0.0))
+            throw std::invalid_argument("lmm_spot_measure_drift: the numeraire growth "
+                                        "factor 1 + tau_j * L_j is not positive at rate " +
+                                        std::to_string(j) + ": got " +
+                                        std::to_string(denominator));
+        weights[j] = tenor_spacings[j] * (forward_rates[j] + displacements[j]) / denominator;
+    }
 
     // The spot-measure drift of rate i sums the covariance with each
     // rate j <= i times that rate's numeraire weight (LMMDriftCalculator
@@ -201,26 +213,12 @@ libor_market_model_process::libor_market_model_process(
 
     // The instantaneous covariance C = diag(sigma) * rho * diag(sigma)
     // and the root of the correlation for the correlated draws. The
-    // correlation must be positive semidefinite; the eigen-decomposition
+    // correlation must be positive semidefinite; the helper's eigen
     // fallback also accepts the singular limit rho = 1 (the one-factor
     // model) that a Cholesky alone would reject.
     covariance_ = volatilities.asDiagonal() * correlation * volatilities.asDiagonal();
-    Eigen::LLT<Eigen::MatrixXd> llt(correlation);
-    if (llt.info() != Eigen::Success) {
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(correlation);
-        if (solver.info() != Eigen::Success)
-            throw std::invalid_argument("libor_market_model_process: correlation must be "
-                                        "positive semidefinite");
-        const double largest = solver.eigenvalues().maxCoeff();
-        const double tolerance = -1e-10 * std::max(1.0, std::abs(largest));
-        if (!(solver.eigenvalues().minCoeff() >= tolerance))
-            throw std::invalid_argument("libor_market_model_process: correlation must be "
-                                        "positive semidefinite");
-        cholesky_ = solver.eigenvectors() *
-                    solver.eigenvalues().cwiseMax(0.0).cwiseSqrt().asDiagonal();
-    } else {
-        cholesky_ = llt.matrixL();
-    }
+    cholesky_ = math::psd_matrix_square_root(
+        correlation, "libor_market_model_process: correlation must be positive semidefinite");
 
     vol_sqrt_dt_ = volatilities * std::sqrt(dt_);
     z_.resize(num_rates);
@@ -267,10 +265,20 @@ double libor_market_model_process::discount_factor(std::size_t ticks_ahead) cons
 
     // The rolled money-market account over the ticks ahead, priced
     // from the current forward curve: each rate L_k discounts its
-    // period by 1 / (1 + tau_k * L_k).
+    // period by 1 / (1 + tau_k * L_k). A growth factor that crossed
+    // the pole L_k = -1/tau_k would flip the discount negative -- an
+    // arbitrage -- so it is rejected rather than priced silently.
     double result = 1.0;
-    for (std::size_t k = 0; k < ticks_ahead; ++k)
-        result /= 1.0 + tenor_spacings_[k] * forward_rates_[k];
+    for (std::size_t k = 0; k < ticks_ahead; ++k) {
+        const double denominator = 1.0 + tenor_spacings_[k] * forward_rates_[k];
+        if (!(denominator > 0.0))
+            throw std::runtime_error("libor_market_model_process: discount_factor: the "
+                                     "numeraire growth factor 1 + tau_k * L_k is not "
+                                     "positive at rate " +
+                                     std::to_string(k) + ": got " +
+                                     std::to_string(denominator));
+        result /= denominator;
+    }
     return result;
 }
 
@@ -278,4 +286,4 @@ const Eigen::VectorXd& libor_market_model_process::forward_rates() const {
     return forward_rates_;
 }
 
-} // namespace ores::analytics.quant::service
+} // namespace ores::analytics::quant::service

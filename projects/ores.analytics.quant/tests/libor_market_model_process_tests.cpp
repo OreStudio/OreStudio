@@ -565,3 +565,24 @@ TEST_CASE("lmm spot-measure drift validates its inputs",
                                              covariance),
                       std::invalid_argument);
 }
+
+TEST_CASE("lmm spot-measure drift rejects rates at the numeraire pole",
+          "[libor_market_model_process]") {
+    const Eigen::VectorXd displacements = vector({0.0});
+    const Eigen::VectorXd spacings = vector({1.0});
+    const Eigen::MatrixXd covariance = matrix({{0.04}});
+
+    // The pole L_0 = -1/tau_0: the growth factor 1 + tau*L vanishes and
+    // the numeraire weight would flip sign.
+    REQUIRE_THROWS_AS(lmm_spot_measure_drift(vector({-1.0}), displacements, spacings,
+                                             covariance),
+                      std::invalid_argument);
+    // Rates below the pole are equally rejected.
+    REQUIRE_THROWS_AS(lmm_spot_measure_drift(vector({-2.0}), displacements, spacings,
+                                             covariance),
+                      std::invalid_argument);
+    // Any rate above the pole is accepted, even with L + s <= 0: the
+    // drift deliberately survives the log-domain artifact.
+    REQUIRE_NOTHROW(lmm_spot_measure_drift(vector({-0.9}), displacements, spacings,
+                                           covariance));
+}

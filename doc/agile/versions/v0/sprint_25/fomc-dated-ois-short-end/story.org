@@ -250,6 +250,89 @@ and the raw grid carrying quotes at the FOMC point ids.
 
 * Decisions
 
+** D1 — One event store, typed entries: calendar_event + diary_entry_type
+
+Decided 2026-08-09 by the analysis task. FOMC dates are events of a
+given type on a currency calendar: one table for all event kinds,
+never a table per calendar or per type.
+
+- New =calendar_event= entity (ores.refdata, codegen'd, bitemporal,
+  sibling of =calendar_rules=/=calendar_exceptions=): =id= (uuid),
+  =calendar_code= → =calendars=, =event_date= (date), =diary_entry_type=
+  → new =diary_entry_types= vocabulary, =name=, =description=
+  (nullable), =source= (nullable provenance, e.g.
+  ='federalreserve.gov'=), plus the standard audit/temporal columns.
+- New =diary_entry_types= enumeration (code/name/description/
+  display_order), seeded =holiday=, =central_bank_meeting=,
+  =data_release=, =other= — open-ended; a future kind costs one row.
+- The FOMC calendar is a row in the existing =calendars= table:
+  code =US.FOMC=, =calendar_type='central_bank_meeting'=,
+  =country_code='US'=, =source='federalreserve.gov'=, =is_editable=
+  true. The =calendar_types= vocabulary already seeds
+  =central_bank_meeting= and =data_release=, so the calendar
+  vocabulary exists — no new table.
+- Holidays keep their existing machinery (=calendar_rules=,
+  =calendar_exceptions=, =calendar_date=); =calendar_event= holds the
+  non-holiday kinds. The =holiday= entry type stays in the vocabulary
+  so the whole classification lives in one place.
+- Template/Instance recurrence: an event row is an *instance*; its
+  template is the (calendar, diary_entry_type, name) triple. FOMC
+  meetings are entered as a short run of instances — the Calendar
+  Events doc's textbook case. Formulaic recurrence generation (e.g.
+  Non-Farm Payrolls, first Friday) is deferred; =calendar_rules='s
+  grammar can later feed a template link if a consumer needs it.
+- =currency_calendars= links =USD= ↔ =US.FOMC= so the meeting calendar
+  is discoverable per currency.
+
+** D2 — Unified tenor resolution: SCHEDULE_STEP + a schedule vocabulary
+
+A tenor resolves as *anchor + n steps along an axis*. Two axes:
+calendar arithmetic (=ANCHOR_OFFSET=, unchanged) and a named schedule
+(new). IMM and FOMC are the same mechanism; they differ only in where
+the schedule comes from.
+
+- New =tenor_schedules= vocabulary (code/name/description/
+  display_order/schedule_source/calendar_code/diary_entry_type):
+  =ROLL_QUARTER= (CLOSED_FORM — the IMM rule, 20th + business-day
+  adjustment, stays code-side as the derivable schedule) and
+  =FOMC_MEETING= (EVENT_LOOKUP on =US.FOMC= / =central_bank_meeting=
+  — the externally-announced schedule, data not formula).
+- =tenor_convention_resolutions= gains nullable =schedule_code= and
+  =schedule_step_count= (required when the convention's algorithm is
+  =SCHEDULE_STEP=). The offset columns stay the calendar-axis offset;
+  the schedule columns are the schedule axis. Resolved date =
+  walk(anchor + calendar offset, schedule, steps).
+- =tenor_resolution_algorithms= gains =SCHEDULE_STEP=. =IMM_ROLL= is
+  superseded: =CREDIT_CDS_IMM= migrates to (=SCHEDULE_STEP=,
+  =ROLL_QUARTER=) with resolution rows carrying offset (YEAR × 1) +
+  schedule (ROLL_QUARTER, 1 step) — one mechanism for IMM and FOMC,
+  not two special cases. The =IMM_ROLL= algorithm row is removed from
+  populate once no convention references it; the =IMM_ROLL= *anchor*
+  (measured_from) stays.
+- FOMC notation: tenors =1F=, =2F=, ..., =nF= (kind =SPECIAL=,
+  unit =NONE=, multiplier =n= — mirroring =O/N='s SPECIAL/NONE shape);
+  convention =RATES_SPOT_FOMC= (measured_from =SPOT=, algorithm
+  =SCHEDULE_STEP=, schedule =FOMC_MEETING=); resolution rows =1F=..=nF=
+  with =schedule_step_count= = n → the n-th meeting on-or-after spot.
+
+** D3 — FOMC segment as one config
+
+Pillars =SPOT→1F=, =1F→2F=, ..., =nF→split= under the existing
+=ir_curve_bootstrap_configs= schema: =interpolation_method=
+=FLAT_FORWARD_THEN_LOG_LINEAR= covers the segment, =split_tenor_code=
+marks the boundary, and the end-tenor code doubles as the point id
+into the =market_observations= raw grid — the republish resolver's
+lookup and the engine both work unchanged. No engine change; no
+schema change beyond D1/D2.
+
+** D4 — Seeding
+
+Seed a 2025–2027 window of FOMC meeting dates transcribed from
+[[https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm][federalreserve.gov/monetarypolicy/fomccalendars.htm]] as
+=calendar_event= rows (=central_bank_meeting=) on =US.FOMC=,
+=source='federalreserve.gov'=. No formal feed exists (per Calendar
+Events) — transcription with the citable source.
+
 * Out of scope
 
 - Dual-curve discounting math (PROJECTION curves discounted off a

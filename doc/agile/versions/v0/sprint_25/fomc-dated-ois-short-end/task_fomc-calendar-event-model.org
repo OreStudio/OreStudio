@@ -57,9 +57,9 @@ and distil the decision into the story's =* Decisions=.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Not yet started.                       |
+| Now          | Decision written to the story's * Decisions (D1–D4); update the domain docs next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Update the domain docs; then close.    |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -68,11 +68,28 @@ and distil the decision into the story's =* Decisions=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Establish the current state — the bootstrap chain, tenor
+   resolution, and the calendar cluster — from the story's =* Analysis=
+   and the schema (done, 2026-08-09).
+2. Decide the calendar-event entity shape: one =calendar_event= table
+   with a =diary_entry_type= vocabulary, anchored to a calendar — no
+   table per calendar or per type (user directive).
+3. Decide the unified tenor model: a =SCHEDULE_STEP= algorithm plus a
+   =tenor_schedules= vocabulary (=ROLL_QUARTER= closed-form,
+   =FOMC_MEETING= event-lookup); =IMM_ROLL= migrates onto it; FOMC
+   tenors =1F=..=nF=.
+4. Decide the FOMC segment config semantics (split tenor, point id)
+   and the Fed seeding source.
+5. Land the decision in the story's =* Decisions=; update the domain
+   docs; close.
 
 * Notes
+
+- 2026-08-09 — Decision landed in the story's =* Decisions= (D1–D4):
+  one =calendar_event= store with =diary_entry_type=; unified
+  =SCHEDULE_STEP= resolution with a =tenor_schedules= vocabulary;
+  FOMC tenors =nF=; split-tenor config semantics; Fed seeding. Domain
+  doc updates pending.
 
 * Test Scenarios
 

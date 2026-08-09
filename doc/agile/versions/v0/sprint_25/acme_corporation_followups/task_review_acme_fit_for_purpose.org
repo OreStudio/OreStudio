@@ -40,6 +40,8 @@ A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff,
 - Staff artefacts hold together: locale-matched names, per-country email domains, profile photos, and the org chart.
 - Simulated market data holds together: synthetic themes generate and publish FX ticks, IR curves, and CRM cross-rates; the Market Simulator shows the consolidated tenant-level configs; bound-feed resolution excludes sandboxed output.
 - Holding-company visibility holds: the holding party sees subsidiary FX/CRM data and the Group Treasury book.
+- ACME setup creates no other demo entities: after provisioning, the only tenant is Acme Corporation and the only parties are its four holding-group companies -- Barclays, Lloyds, NatWest, etc. exist neither as tenants nor as parties.
+- GLEIF counterparty import lands only as counterparty reference data: real-world names (including banks) appear as counterparties, never as tenants or parties.
 - Every issue found during the review is recorded in the task notes with its fix.
 
 * Plan

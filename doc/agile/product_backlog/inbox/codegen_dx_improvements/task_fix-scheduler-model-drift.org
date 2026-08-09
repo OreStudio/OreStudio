@@ -8,7 +8,7 @@
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
 #+branch: feature/fix-scheduler-model-drift
-#+pr:
+#+pr: 1934
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1934][#1934]] | [agile,scheduler] Record scheduler drift task close on inbox story |
 
 * Review
 

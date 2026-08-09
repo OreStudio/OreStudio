@@ -16,6 +16,38 @@
 Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
 cron expression, SQL command, target database, and active state.
 
+DO NOT regenerate this entity at all -- every facet is out of sync with
+the hand-maintained C++ (the model's own =tenant_id=/=schedule_expression=/
+=is_active= column shapes don't match the hand-written =job_definition=
+struct's =utility::uuid::tenant_id=/=cron_expression=/=bool= types, so
+even the "safe" domain/repository-entity/mapper facets would regenerate
+*wrong types*, not just wrong formatting) on top of the deeper
+repository/service/messaging divergence below:
+- =job_definition_repository.hpp= hand-implements =read_all_active=
+  (used by =scheduler_loop= to load every job it needs to fire,
+  regardless of tenant) and =find_by_name= x2 (used by
+  =save_definition='s name-collision dedup so an existing job updates
+  in-place instead of hitting a unique-constraint violation).
+- =job_definition_handler.hpp= hand-implements =schedule=/
+  =schedule_batch=/=unschedule= (domain-named, permission-gated
+  wrappers with custom NATS subjects and a batch-save operation with
+  partial-failure reporting) and a custom =history= whose request/
+  response shape differs from the generic one and would collide by
+  name if paste-blocked in alongside it. Their protocol structs live
+  in the separate, hand-maintained =scheduler_protocol.hpp=, consumed
+  not just by this component's own Qt UI (=JobDefinitionController=/
+  =JobDefinitionMdiWindow=/=JobDefinitionDetailDialog=/
+  =JobDefinitionAuditDialog=) and =registrar.cpp=, but cross-component
+  by =ores.reporting='s =report_scheduling_service=.
+None of this is modeled here yet; regenerating clobbers it with a
+generic CRUD-only stack (and silently wrong column types) that breaks
+all of the above. This model needs a proper resync -- correcting the
+column shapes to match the hand-written struct, then re-adding
+repository/messaging support for the four hand-written operations --
+before any facet of it can be regenerated safely. Mirrors =party='s
+hand-maintained-SQL treatment in the refdata drift-fix task, but wider
+in scope (no facet is currently safe, not just SQL).
+
 * Flags
 :PROPERTIES:
 :schema:        public
@@ -24,19 +56,17 @@ cron expression, SQL command, target database, and active state.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:        id
-:type:          uuid
-:cpp_type:      boost::uuids::uuid
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
 :uuid_check_fn: ores_utility_nil_uuid_fn()
+:primary_key: true
 :END:
 
 UUID primary key for the job definition.
-
-* Natural keys
-
-* Columns
 
 ** party_id
 :PROPERTIES:

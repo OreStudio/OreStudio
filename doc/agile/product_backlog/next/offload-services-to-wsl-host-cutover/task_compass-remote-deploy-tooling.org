@@ -59,11 +59,110 @@ tribal.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Command family: ~compass env deploy~
+
+- ~compass env deploy <host>~ — runtime role, full cycle: stage →
+  build → transfer → remote up (idempotent re-run).
+- ~compass env deploy <host> --role compute~ — partial environment:
+  wrapper image + certs + serving-environment config only.
+- ~compass env deploy <host> --stop~ — tear down the remote pod
+  (role-appropriate).
+- ~compass env deploy list~ — list known host profiles.
+
+** Host registry: named env files, ~.env.<host>~ at the repo root
+
+Reuses the host-registry concept compass already has — named env
+files (the sprint-24 follow-up ~how-do-i-use-named-env-files~:
+~compass ... --env <host>~ resolves to ~.env.<host>~), rather than
+inventing a new one. If the profile is missing, deploy generates it
+from ~docker/.env~ (itself derived from ~.env~) via the session's sed
+rewrites (~_DB_PORT=5432~ → remote port, ~$PROJECT_ROOT~ paths →
+remote root), writes it for the user to inspect/tweak, then proceeds
+— the same file then serves ~compass db recreate -y -k --env <host>~
+etc. ~.env.*~ is gitignored (it carries the same secrets as ~.env~).
+Remote configuration lives in the same file, all optional:
+
+- ~ORES_REMOTE_HOST~ — ssh target (default: the profile alias itself;
+  add e.g. ~marco@192.168.1.22~ if the alias isn't resolvable).
+- ~ORES_REMOTE_ROOT~ — remote deploy root (default ~~/ores-deploy~,
+  expanded against the remote ~HOME~ and pinned back into the profile
+  on first deploy; files mirror the local layout under it:
+  ~build/keys/...~, ~build/config/...~, ~docker/.env~).
+- ~ORES_REMOTE_DB_PORT~ (default 5433), ~ORES_REMOTE_USER~/
+  ~ORES_REMOTE_GROUP~ (default: queried from the host via ~id -u~/
+  ~id -g~ — the uid that must own the staged certs).
+- Compute role: ~ORES_COMPUTE_HOST_ID~, ~ORES_COMPUTE_TENANT_ID~,
+  ~ORES_COMPUTE_NATS_URL~, ~ORES_COMPUTE_NATS_SUBJECT_PREFIX~,
+  ~ORES_COMPUTE_NATS_WIRE_FORMAT~, ~ORES_COMPUTE_NATS_TLS_CA/CERT/KEY~
+  (local paths in the serving environment's checkout — copied and
+  path-rewritten), ~ORES_COMPUTE_HTTP_BASE_URL~ (optional).
+
+** Networking model: ~--network=host~ (the Newton-proven pattern)
+
+Postgres is native on the WSL host (localhost:5433), unreachable
+through a pod's slirp4netns — so both containers run with
+~--network=host~, no pod object, no ~-p~ mappings, and the services
+container passes ~--user <uid>:<gid>~ explicitly (no pod to carry
+~--userns=keep-id~). The remote-side run/stop logic lives in new
+checked-in scripts ~docker/remote-run.sh~/~docker/remote-stop.sh~,
+env-driven off the transferred ~docker/.env~ and mirroring the
+existing ~run-pod.sh~/~stop-pod.sh~ conventions — NATS client certs
+staged into a podman-managed volume (the bind-mount TLS quirk),
+server certs/conf/store bind-mounted, JWT key passed via ~--env~ from
+the real PEM file.
+
+** Transfer mechanics
+
+- Images: ~podman save ... | gzip -1 | ssh <host> podman load~.
+- Files: fresh-rendered NATS conf + certs + IAM PEM + per-host env,
+  path-rewritten, ~scp~'d to ~$REMOTE_ROOT~ under the mirrored layout.
+- Idempotency: containers ~rm -f~'d before recreate, files
+  overwritten, volumes recreated ~|| true~.
+
+** Compute role
+
+~docker/stage-runtime.sh --service ores.compute.wrapper~ + the
+Dockerfile's existing ~SERVICE_NAME~ arg produce
+~localhost/ores-compute-wrapper:local~. The node env is an
+~ORES_COMPUTE_WRAPPER_NATS_*~ block (app-prefixed — the TLS trio is
+deliberately not in the shared-domain fallback), the required argv
+pair ~--host-id~/~--tenant-id~ comes from the profile, and client
+certs go through a volume like the runtime role. No NATS sidecar, no
+Postgres, no service set.
+
+** Recipe
+
+~doc/recipes/compass/how_do_i_deploy_the_service_runtime_to_a_remote_wsl_host.org~,
+covering both roles plus the one-time host setup (podman, linger,
+dbus.socket) as ~--setup-host~.
 
 * Notes
+
+** Design driver: two separate deployment use cases
+
+Product-owner input: the WSL boxes serve *two separate use cases*,
+both first-class — (1) running a full environment (service/DB runtime
+as this task's acceptance describes), and (2) running a *partial*
+environment with just compute nodes. The deploy tooling is role-based,
+not a single hardcoded "runtime pod" shape:
+
+- *Runtime role* (default): the full service-runtime + NATS pod as
+  this task's acceptance describes.
+- *Compute role*: a partial environment — just the
+  =ores.compute.wrapper= compute node, connecting outward to the
+  serving environment's =ores.compute.core= over NATS. The wrapper is
+  deliberately NATS/TLS-only with no DB credentials (=env_init.py='s
+  client-apps note: NATS-only clients must not get =*_DB_*= vars, or
+  the parser rejects them), so a compute node needs no Postgres, no
+  NATS server, and no service set. Its config surface is the serving
+  environment's NATS URL/subject-prefix/wire-format, its TLS client
+  cert trio (app-prefixed =ORES_COMPUTE_WRAPPER_NATS_TLS_*= — the TLS
+  trio is deliberately excluded from the shared-domain fallback, see
+  nats_wire_format.org), and the required argv pair =--host-id= (from
+  the serving environment's =compute.hosts= table) and =--tenant-id=.
+
+The role is a first-class parameter of the deploy command family, and
+the recipe documents both shapes.
 
 * Test Scenarios
 

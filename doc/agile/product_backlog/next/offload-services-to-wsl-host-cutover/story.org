@@ -52,6 +52,13 @@ Same word ("deploy"), different problem.
 
 * Decisions
 
+- *WSL boxes are multi-role hosts, not single-purpose runtime hosts.*
+  Product-owner constraint: the WSL boxes must also run compute nodes
+  (=ores.compute.wrapper=) for other environments. Deploy tooling is
+  role-based — full service/DB runtime host, or compute-node-only
+  (wrapper + certs, connecting outward to the serving environment's
+  NATS core with its =--host-id=; NATS/TLS only, no DB access).
+
 * Out of scope
 
 -

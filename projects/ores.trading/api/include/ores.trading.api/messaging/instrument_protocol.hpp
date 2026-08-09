@@ -28,7 +28,6 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
@@ -150,20 +149,6 @@ struct get_credit_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::credit_instrument> history;
-};
-
-// ---- Typed equity instrument protocol ----
-
-struct save_equity_digital_option_instrument_request {
-    using response_type = struct save_equity_digital_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_digital_option_instruments.save";
-    ores::trading::domain::equity_digital_option_instrument data;
-};
-
-struct save_equity_digital_option_instrument_response {
-    bool success = false;
-    std::string message;
 };
 
 // ---- Commodity instrument protocol ----

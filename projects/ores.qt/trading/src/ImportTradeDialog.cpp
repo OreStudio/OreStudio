@@ -26,6 +26,7 @@
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/equity_digital_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"

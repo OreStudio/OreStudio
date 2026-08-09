@@ -17,20 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_TABLE_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_TABLE_HPP
 
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Dumps the equity_digital_option_instrument to a stream in JSON format.
+ * @brief Converts equity_digital_option_instruments to the table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const equity_digital_option_instrument& v);
+ORES_TRADING_API_EXPORT std::string
+convert_to_table(const std::vector<equity_digital_option_instrument>& v);
 
 }
 

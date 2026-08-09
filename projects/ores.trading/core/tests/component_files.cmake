@@ -20,6 +20,7 @@ set(files
     "equity_accumulator_instrument_eventing_integration_tests.cpp"
     "equity_asian_option_instrument_eventing_integration_tests.cpp"
     "equity_barrier_option_instrument_eventing_integration_tests.cpp"
+    "equity_digital_option_instrument_eventing_integration_tests.cpp"
     "equity_forward_instrument_eventing_integration_tests.cpp"
     "equity_option_instrument_eventing_integration_tests.cpp"
     "equity_position_instrument_eventing_integration_tests.cpp"

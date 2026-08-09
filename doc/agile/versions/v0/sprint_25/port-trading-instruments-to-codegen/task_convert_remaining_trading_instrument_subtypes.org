@@ -38,9 +38,9 @@ pilot did) is a prerequisite for each one individually.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 14/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument. |
+| Now          | 15/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument, equity_digital_option_instrument. |
 | Waiting on   | Nothing.                               |
-| Next         | Convert the next flat instrument (equity_digital_option). |
+| Next         | Convert the next flat instrument (bond_instrument). |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -580,6 +580,52 @@ Zero-diff verified via a second regeneration pass. Build green;
 =ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
 77 cases incl. the new
 =write_equity_asian_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_digital_option_instrument (converted 2026-08-09)
+
+Flat instrument, no leg children, eventing facet enabled, bound to the
+trading-instrument variability profile. Routes TWO ORE product types
+(EquityDigitalOption, EquityTouchOption) -- the =trade_type_code= check
+is the 2-value in-list plus an XOR cross-column check tying
+=option_type/=strike= non-null to EquityDigitalOption and
+=barrier_level/=barrier_type= non-null to EquityTouchOption (each
+family must have its fields, and only its fields). The XOR is satisfied
+by the default row: =option_type= carries the generator block
+(=std::string("Call")=, so it maps to SQL 'Call' not NULL) and =strike=
+carries =std::make_optional(3300.0)= (the first family model with a
+generator block on an optional member; the block is emitted verbatim as
+the RHS, per the generator template), while =barrier_level= and
+=barrier_type= have no blocks (=std::nullopt= and "" mapped to SQL
+NULL). =payout_amount= is likewise =std::optional<double>= with no
+block. =notional= preserves the hand-crafted 0.0 initializer via
+=:default_value: 0.0=; =expiry_date= is a =date=-typed column modelled
+as =std::string= (ISO 8601), per family precedent.
+
+THE LAST typed-equity entity: the "Typed equity instrument protocol"
+section of =instrument_protocol.hpp= is deleted outright (the file
+survives -- bond/credit/commodity/composite/scripted/fra/swap-family
+typed protocols remain), and =typed_equity_instrument_handler.hpp= is
+deleted as a file, having held only =save_digital_option()=. The typed
+subscription in =registrar_equity.cpp= is replaced with
+=register_equity_digital_option_instrument_handlers= (alphabetical
+between barrier and forward); the three consumers include the generated
+=equity_digital_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_digital_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_digital_option, per the
+equity-family follow-up note above. The generated event registrar is
+exercised by the eventing integration test; per the accumulator/asian
+precedent, =application.cpp= is not wired with the new event mapping in
+this commit.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+78 cases incl. the new
+=write_equity_digital_option_instrument_publishes_nats_changed_event=;
 service: 10 cases); consumer libs =ores.ore.service.lib= and
 =ores.qt.trading.lib= green.
 

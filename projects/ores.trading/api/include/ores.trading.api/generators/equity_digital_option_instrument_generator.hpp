@@ -17,20 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_API_GENERATORS_EQUITY_DIGITAL_OPTION_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_EQUITY_DIGITAL_OPTION_INSTRUMENT_GENERATOR_HPP
 
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::generators {
 
 /**
- * @brief Dumps the equity_digital_option_instrument to a stream in JSON format.
+ * @brief Generates a synthetic equity_digital_option_instrument.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const equity_digital_option_instrument& v);
+ORES_TRADING_API_EXPORT domain::equity_digital_option_instrument
+generate_synthetic_equity_digital_option_instrument(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic equity_digital_option_instruments.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::equity_digital_option_instrument>
+generate_synthetic_equity_digital_option_instruments(std::size_t n,
+                                                     utility::generation::generation_context& ctx);
 
 }
 

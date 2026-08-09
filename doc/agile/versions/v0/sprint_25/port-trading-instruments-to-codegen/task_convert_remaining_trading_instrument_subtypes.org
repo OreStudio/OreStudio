@@ -169,13 +169,15 @@ identity note lists are both non-zero-diff here: renaming the DB column
 changes =create.sql=, and dropping the identity group changes the
 domain shape and its consumers.
 
-Decision: defer all four to a follow-up once the codegen domain
-template gains nested-group support (beyond the fixed identity/audit
-groups) and a column-name-to-group-field mapping -- the same class of
-deferral as composite/fra/swap-legs above, and the same reasoning:
-don't force a hand-patch or a shape change that would recreate the
-silent-drift problem this task exists to eliminate. The task is
-complete at 15/19; the remaining four are feature-gated, not
+Decision: defer all four to the follow-up task
+[[id:2548EE95-7C62-4C48-BA11-2146604B2082][Resolve codegen feature gaps
+blocking the remaining trading instrument conversions]] once the
+codegen domain template gains nested-group support (beyond the fixed
+identity/audit groups) and a column-name-to-group-field mapping -- the
+same class of deferral as composite/fra/swap-legs above, and the same
+reasoning: don't force a hand-patch or a shape change that would
+recreate the silent-drift problem this task exists to eliminate. The
+task is complete at 15/19; the remaining four are feature-gated, not
 effort-gated.
 
 ** equity_variance_swap_instrument (converted 2026-08-05)

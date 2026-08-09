@@ -68,6 +68,7 @@ producing only cosmetic / additive diffs.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Org/mustache drift: parent_required_fks blocks missing from the org source; a re-tangle would silently drop grandparent seeding | ores.cpp.eventing-integration-test.nats_integration_test.org | Fixed | Both blocks ported into the org; re-tangled mustache is byte-identical to the committed one; the CI tangle-drift check passes locally |
+| 2 | Duplicate include/comment blocks when two FKs share a parent table (currency_pair base/quote -> currency) | cpp_nats_integration_test.cpp.mustache | Declined | Cosmetic (header guards); per-column blocks document each FK leg; keep the round minimal; follow-up candidate |
 
 * Result

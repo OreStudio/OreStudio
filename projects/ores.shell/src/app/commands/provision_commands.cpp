@@ -350,54 +350,43 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     }
 
-    // Resolve the bundle: explicit --bundle, else the first available,
-    // which is the wizard's default selection.
-    auto bundle_code = parsed->flag("bundle");
-    if (bundle_code.empty()) {
-        dq::messaging::get_dataset_bundles_request bundles_req;
-        auto bundles = do_request(out, session, bundles_req, std::chrono::seconds(30), true);
-        if (!bundles)
+    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: source " << source;
+
+    // Phase 1: publish the tenant-scoped 'base' bundle (countries,
+    // currencies, business centres, calendars, fpml codes, GLEIF
+    // entities, etc. — everything synthetic generation needs).
+    // The old "first available" heuristic picked a party-scoped
+    // marketdata bundle that requires party_id, which doesn't exist
+    // yet at tenant-provisioning time; "base" is always tenant-scoped
+    // and the correct first step.
+    {
+        out << "[1/4] Publishing base reference data bundle..." << std::endl;
+        dq::messaging::publish_bundle_request publish_req;
+        publish_req.bundle_code = "base";
+        publish_req.mode = dq::domain::publication_mode::upsert;
+        publish_req.published_by = username;
+        publish_req.atomic = true;
+        // opted_in_datasets: same subset the --source acme flow
+        // publishes — gleif.lei_counterparties.small avoids the
+        // ~500k-row large counterparty import.
+        publish_req.params_json = R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})";
+        auto published = do_request(out, session, publish_req, publish_timeout, true);
+        if (!published)
             return;
-        if (bundles->bundles.empty()) {
-            fail(out) << "No dataset bundles are available to publish." << std::endl;
+        if (!published->success) {
+            fail(out) << "Failed to publish base bundle: " << published->error_message << std::endl;
             return;
         }
-        bundle_code = bundles->bundles.front().code;
-        out << "Using bundle '" << bundle_code << "' (first available)." << std::endl;
+        out << "  Dispatched " << published->datasets_dispatched
+            << " dataset(s); workflow instance: " << published->instance_id << std::endl;
+        if (!workflow_commands::wait_for_instance(
+                out,
+                session,
+                published->instance_id,
+                *wait_timeout,
+                static_cast<std::size_t>(published->datasets_dispatched)))
+            return;
     }
-
-    BOOST_LOG_SEV(lg(), info) << "Provisioning tenant: bundle " << bundle_code << ", source "
-                              << source;
-
-    // Phase 1: publish the bundle and wait on its workflow.
-    out << "[1/4] Publishing bundle '" << bundle_code << "'..." << std::endl;
-    dq::messaging::publish_bundle_request publish_req;
-    publish_req.bundle_code = bundle_code;
-    publish_req.mode = dq::domain::publication_mode::upsert;
-    publish_req.published_by = username;
-    publish_req.atomic = true;
-    if (!parsed->flag("root-lei").empty()) {
-        dq::messaging::publish_bundle_params params;
-        params.lei_parties =
-            dq::messaging::lei_parties_params{.root_lei = parsed->flag("root-lei")};
-        publish_req.params_json = dq::messaging::build_params_json(params);
-    }
-    auto published = do_request(out, session, publish_req, publish_timeout, true);
-    if (!published)
-        return;
-    if (!published->success) {
-        fail(out) << "Failed to publish bundle: " << published->error_message << std::endl;
-        return;
-    }
-    out << "  Dispatched " << published->datasets_dispatched
-        << " dataset(s); workflow instance: " << published->instance_id << std::endl;
-    if (!workflow_commands::wait_for_instance(
-            out,
-            session,
-            published->instance_id,
-            *wait_timeout,
-            static_cast<std::size_t>(published->datasets_dispatched)))
-        return;
 
     // Phase 2: synthetic generation, when selected.
     if (source == "synthetic") {

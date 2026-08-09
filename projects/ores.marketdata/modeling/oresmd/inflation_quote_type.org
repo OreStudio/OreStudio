@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41
+:END:
+#+title: Inflation oresmd quote type family
+#+description: Quote types for inflation: ZC swap, YY swap, seasonality.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: inflation
+#+authority: inflation
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:inflation:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
+|-----------+----------+------------+-----------------+-----------------|
+| zc_swap | ZC_INFLATIONSWAP | RATE | tenor | simple |
+| yy_swap | YY_INFLATIONSWAP | RATE | tenor | simple |
+| seasonality | SEASONALITY | RATE | tenor | mult_literal |
+
+* Fields
+
+| name | cpp_type | mandatory | query_key |
+|------+----------+-----------+-----------|
+| index_code | std::string | yes | |
+| quote_type | std::optional<inflation_quote_type> | no | quote |
+| point | std::optional<std::string> | no | point |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| role |
+| metric |

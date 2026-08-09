@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: E601B0F2-4C3D-5E6F-9A8B-0C1D2E3F4A5B
+:END:
+#+title: IR oresmd quote type family
+#+description: oresmd quote type specification for the IR asset class: 12 quote types across yield, fra, basis, xccy, and vol families.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: ir
+#+authority: ir
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:ir:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+* Quote types
+
+| enum_name           | ore_type          | ore_metric      | point_semantics | qualifier_shape         | notes |
+|---------------------+-------------------+-----------------+-----------------+-------------------------+-------|
+| ir_swap             | IR_SWAP           | RATE            | tenor           | includes_index_2d       | 6-segment: IR_SWAP/RATE/CCY/2D/TENOR/POINT |
+| discount            | DISCOUNT          | RATE            | tenor           | curve_id                | 5-segment: DISCOUNT/RATE/CCY/CURVE_ID/POINT |
+| mm                  | MM                | RATE            | tenor           | includes_index          | 6-segment: MM/RATE/CCY/INDEX/TENOR/POINT |
+| fra                 | FRA               | RATE            | tenor           | includes_index          | 6-segment: FRA/RATE/CCY/INDEX/TENOR/POINT |
+| imm_fra             | IMM_FRA           | RATE            | tenor           | includes_index          | 6-segment: IMM_FRA/RATE/CCY/INDEX/TENOR/POINT |
+| basis_swap          | BASIS_SWAP        | BASIS_SPREAD    | tenor           | includes_index          | 6-segment: BASIS_SWAP/BASIS_SPREAD/CCY/INDEX/TENOR/POINT |
+| bma_swap            | BMA_SWAP          | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT |
+| cc_basis_swap       | CC_BASIS_SWAP     | BASIS_SPREAD    | tenor           | no_index                | 5-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY/TENOR/POINT |
+| cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | RATE            | tenor           | no_index                | 5-segment: CC_FIX_FLOAT_SWAP/RATE/CCY/TENOR/POINT |
+| zero                | ZERO              | RATE            | tenor           | includes_index          | 6-segment: ZERO/RATE/CCY/INDEX/TENOR/POINT |
+| mm_future           | MM_FUTURE         | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT |
+| oi_future           | OI_FUTURE         | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT |
+
+* Fields
+
+| name       | cpp_type                        | mandatory | query_key |
+|------------+---------------------------------+-----------+-----------|
+| ccy        | std::string                     | yes       |           |
+| type       | instrument_type                 | yes       | type      |
+| index      | std::optional<index_family>     | no        | index     |
+| tenor      | std::optional<std::string>      | no        | tenor     |
+| role       | std::optional<curve_role>       | no        | role      |
+| metric     | std::optional<metric>           | no        | metric    |
+| quote_type | std::optional<ir_quote_type>    | no        | quote     |
+| point      | std::optional<std::string>      | no        | point     |
+| vol        | std::optional<volatility_surface_point> | no  |           |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+
+* Notes
+
+IR has the most complex qualifier shape variants:
+- =includes_index_2d=: qualifier is CCY/2D/TENOR (ir_swap only — the 2D is settlement lag)
+- =curve_id=: qualifier is CCY/CURVE_ID where CURVE_ID = CCY+TENOR stripped (discount only)
+- =includes_index=: qualifier is CCY/INDEX/TENOR (most types)
+- =no_index=: qualifier is CCY/TENOR (xccy and BMA types — no index dimension)
+
+=type=vol= handled separately via =volatility_surface_point= struct.
+=type=fixing= produces index_name and curve_key via separate projection paths.
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key |
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m | DISCOUNT/RATE/USD/USD3M/6M | discount_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m | FRA/RATE/EUR/EURIBOR/3M/6M | ir_fra_rate_quote_key |
+| oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y | IMM_FRA/RATE/USD/LIBOR/3M/5Y | ir_imm_fra_rate_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_spread_quote_key |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
+| oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y | ir_cc_basis_swap_spread_quote_key |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y | ir_cc_fix_float_swap_rate_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y | ZERO/RATE/EUR/EURIBOR/3M/5Y | ir_zero_rate_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y | ir_zero_yield_spread_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_price_quote_key |
+| oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
+| oresmd://ir/eur?type=vol&point=5y,2y,atm | SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM | swaption_vol_quote_key |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_metric_defaulted |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_metric_defaulted |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_metric_defaulted |
+| oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&point=5y | nullopt | ir_quote_key_requires_quote_type |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | round_trip_ir_mm_rate |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | round_trip_ir_basis_swap_spread |
+| oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | round_trip_ir_cc_basis_swap_no_index |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | round_trip_ir_mm_future_price |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | round_trip_ir_zero_yield_spread |
+| oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | round_trip_ir_oi_future_price |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate | reject_ir_metric_present_when_type_is_not_quote |
+| oresmd://ir/usd?index=libor&tenor=3m&type=fixing&quote=ir_swap | reject_ir_quote_present_when_type_is_not_quote |

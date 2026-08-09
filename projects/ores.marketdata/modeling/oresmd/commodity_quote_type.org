@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: C9C888AB-473D-4C91-BC30-9470E4080C5A
+:END:
+#+title: Commodity oresmd quote type family
+#+description: Quote types for commodity: spot, forward, CPR.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: commodity
+#+authority: commodity
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:commodity:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
+|-----------+----------+------------+-----------------+-----------------|
+| spot | COMMODITY | PRICE | scalar | with_ccy |
+| fwd | COMMODITY_FWD | PRICE | tenor | with_ccy |
+| cpr | CPR | RATE | tenor | with_ccy |
+
+* Fields
+
+| name | cpp_type | mandatory | query_key |
+|------+----------+-----------+-----------|
+| commodity_code | std::string | yes | |
+| ccy | std::string | yes | ccy |
+| quote_type | std::optional<commodity_quote_type> | no | quote |
+| point | std::optional<std::string> | no | point |
+| vol | std::optional<volatility_surface_point> | no | |
+
+* Reject keys
+
+| key |
+|-----|
+| index |
+| tenor |
+| role |
+| metric |

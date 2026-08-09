@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: D7FC7525-5532-4498-8B7B-5F14215C99FD
+:END:
+#+title: Credit oresmd quote type family
+#+description: Quote types for credit: CDS, hazard rate, recovery rate, index/tranche base correlation.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: credit
+#+authority: credit
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:credit:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape |
+|-----------+----------+------------+-----------------+-----------------|
+| cds | CDS | CREDIT_SPREAD | composite | with_ccy |
+| hazard_rate | HAZARD_RATE | RATE | composite | with_ccy |
+| recovery_rate | RECOVERY_RATE | RATE | single | with_ccy |
+| cds_index | CDS_INDEX | BASE_CORRELATION | composite | no_ccy |
+| index_cds_tranche | INDEX_CDS_TRANCHE | BASE_CORRELATION | composite | no_ccy |
+
+* Fields
+
+| name | cpp_type | mandatory | query_key |
+|------+----------+-----------+-----------|
+| reference_entity | std::string | yes | |
+| ccy | std::string | yes | ccy |
+| quote_type | std::optional<credit_quote_type> | no | quote |
+| point | std::optional<std::string> | no | point |
+| vol | std::optional<volatility_surface_point> | no | |
+
+* Reject keys
+
+| key |
+|-----|
+| index |
+| tenor |
+| role |
+| metric |

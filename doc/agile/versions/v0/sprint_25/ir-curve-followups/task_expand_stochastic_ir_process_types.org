@@ -46,11 +46,11 @@ variant we don't distinguish from G2++/the general 2-factor case).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-06                               |
 
 * Acceptance
@@ -403,6 +403,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The expansion landed as six engine tasks, each with its own commit and
+task doc (all DONE):
+
+| Process | File | Tests |
+|---------+------+-------|
+| Black-Karasinski | =black_karasinski_process= | 24 |
+| Black-Derman-Toy | =black_derman_toy_process= | 17 |
+| Multi-factor affine | =affine_term_structure_process= | 11 |
+| Heath-Jarrow-Morton | =heath_jarrow_morton_process= | 10 |
+| LIBOR Market Model | =libor_market_model_process= | 15 |
+| Quadratic Gaussian | =quadratic_gaussian_process= | 9 |
+
+Shared foundations: the =eigen3= dependency (vcpkg, header-only) for all
+matrix math, and the generic =rate_tree= lattice (12 tests) walked by BDT
+(binomial) and BK (centered adaptive trinomial). The affine and QG
+processes anchor to each other by design: at Gamma == 0 the QG bond-price
+recursion reduces to the affine recursion bit-for-bit, and the affine
+engine reproduces Vasicek, Hull-White and the G2 engine exactly. QG's
+exponential-quadratic recursion was validated against 300k-path Monte
+Carlo with no systematic bias. SABR and the multi-curve forms of HJM/LMM
+are documented out of scope; CIR stays a separate process (square-root
+factors do not fit Gaussian OU dynamics).
+
+All 368 =ores.analytics.quant= tests (2,104,403 assertions) pass on
+Linux. None of the six processes is wired into =process_factory= yet --
+system-infra wiring is PR 2, following the G2 precedent.
 
 * Promoted from capture
 

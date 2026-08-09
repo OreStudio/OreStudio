@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-07
 #+updated: 2026-08-09
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Add a working Black-Karasinski engine to process_factory with Catch2 tests cover
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-07                               |
 
 * Acceptance
@@ -71,3 +71,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented =black_karasinski_process=: a one-factor log-normal short-rate
+engine. =ln r= follows an Ornstein-Uhlenbeck process with the exact one-step
+Gaussian transition, so the rate stays positive for all time. There is no
+closed-form bond price under a log-normal short rate, so =discount_factor()=
+builds per call a centered adaptive trinomial lattice of =ln r= and
+propagates state prices through the generic =rate_tree= utility;
+=sigma == 0= short-circuits to the deterministic closed form along the
+mean-reversion path. 24 Catch2 tests covering Gaussian-OU moment checks
+(statistical), tree-vs-Monte-Carlo agreement, dt convergence, zero-vol
+closed form, deep-tree validity, seed determinism and validation.
+Registered in =component_files.cmake=.
+
+All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
+=process_factory= (deferred to PR 2: system infra wiring).

@@ -417,3 +417,41 @@ class TestRemoteScript:
             "REMOTE_ROOT=/home/marco/ores-deploy ROLE=compute bash -s"
         assert captured["input"] == "echo hi"
         assert captured["check"] is True
+
+    def test_stop_script_removes_per_service_containers(self, monkeypatch):
+        captured = {}
+
+        def fake_ssh(host, command, input_text=None, check=False, **kwargs):
+            captured["input"] = input_text
+            return subprocess.CompletedProcess([], 0)
+        monkeypatch.setattr(env_deploy, "_ssh", fake_ssh)
+
+        repo_root = Path(__file__).resolve().parents[3]
+        env_deploy._stop(repo_root, "newton",
+                         {"ORES_CHECKOUT_LABEL": "brave_hopper"},
+                         "/home/marco/ores-deploy", "runtime", purge=False)
+
+        script = captured["input"]
+        # remote-run.sh starts one container per service
+        # (ores-<svc dotted-to-dashed>-<label>); the old single-pod name
+        # ores-services-<label> is never created, so its removal must be
+        # the label-scoped name filter, not fixed names.
+        assert "ores-services-" not in script
+        assert '--filter "name=ores-.*-${label}"' in script
+
+    def test_setup_host_script_escapes_backticks(self, monkeypatch):
+        captured = {}
+
+        def fake_ssh(host, command, input_text=None, check=False, **kwargs):
+            captured["input"] = input_text
+            return subprocess.CompletedProcess([], 0)
+        monkeypatch.setattr(env_deploy, "_ssh", fake_ssh)
+
+        repo_root = Path(__file__).resolve().parents[3]
+        env_deploy._setup_host(repo_root, "newton")
+
+        script = captured["input"]
+        # The "Done" echo runs inside `ssh host bash -s`: unescaped
+        # backticks would execute `compass env deploy <host>` as command
+        # substitution on the remote (with <host> read as a redirect).
+        assert "\\`compass env deploy <host>\\`" in script

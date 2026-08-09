@@ -32,7 +32,12 @@ else
     fi
     label="${ORES_CHECKOUT_LABEL:-ores}"
     echo "=== Stopping NATS + services containers (label '$label') ==="
-    podman rm -f "ores-nats-${label}" "ores-services-${label}" >/dev/null 2>&1 || true
+    # remote-run.sh names containers "ores-nats-<label>" and
+    # "ores-<service-dotted-to-dashes>-<label>" -- remove them all, scoped
+    # to this label so other environments' containers are left alone.
+    for c in $(podman ps -aq --filter "name=ores-.*-${label}" 2>/dev/null); do
+        podman rm -f "$c" >/dev/null 2>&1 || true
+    done
 fi
 
 if [[ -n "$PURGE" ]]; then

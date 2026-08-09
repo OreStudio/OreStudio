@@ -361,6 +361,17 @@ TEST_CASE("affine rejects invalid parameters", "[affine_term_structure_process]"
                                                     two_theta, 0.0, two_deltas, two_factors, 42,
                                                     1.0),
                       std::invalid_argument); // indefinite sigma
+    // Indefinite sigma is rejected on the raw input even when the
+    // kappa-dependent per-tick Gram factor would damp it into a
+    // positive-definite covariance: with kappas [0.01, 10] and dt 1 the
+    // Gram entries differ by a factor of ~20, and the Hadamard product
+    // turns sigma = [[1, 2], [2, 1]] (eigenvalues 3 and -1) positive
+    // definite -- the per-tick check alone would let it through.
+    REQUIRE_THROWS_AS(affine_term_structure_process(vector({0.01, 10.0}),
+                                                    matrix({{1.0, 2.0}, {2.0, 1.0}}),
+                                                    two_theta, 0.0, two_deltas, two_factors, 42,
+                                                    1.0),
+                      std::invalid_argument); // indefinite sigma, damped per-tick
     REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
                                                     two_deltas, two_factors, 42, 0.0),
                       std::invalid_argument); // zero dt

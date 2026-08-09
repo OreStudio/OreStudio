@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/service/processes/affine_term_structure_process.hpp"
+#include "ores.analytics.quant/math/psd_matrix.hpp"
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -73,6 +74,15 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
             if (!(sigma(i, j) == sigma(j, i)))
                 throw std::invalid_argument("affine_term_structure_process: sigma must be "
                                             "symmetric");
+    // Validate the raw factor covariance itself, not the derived
+    // per-tick product: sigma_dt_ is the Hadamard product of sigma with
+    // a kappa-dependent Gram factor, and an indefinite sigma can damp
+    // into a positive-definite sigma_dt_ when the kappas differ -- the
+    // raw input is the documented contract, so it is what gets checked.
+    // The singular limit sigma == 0 (deterministic factors) is a
+    // legitimate degenerate input and is accepted by the helper.
+    math::psd_matrix_square_root(
+        sigma, "affine_term_structure_process: sigma must be positive semidefinite");
     if (!(dt_ > 0.0))
         throw std::invalid_argument("affine_term_structure_process: dt must be strictly positive");
 
@@ -99,32 +109,15 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
             sigma_dt_(i, j) = sigma(i, j) * factor;
         }
 
-    // The Cholesky factor of the per-tick covariance realises the
-    // correlated shocks. LLT requires strict positive definiteness; a
-    // singular but positive-semidefinite covariance (sigma == 0, or a
-    // rank-deficient correlation) is a legitimate degenerate input --
-    // the factors then move deterministically -- so on an LLT failure
-    // the eigen decomposition distinguishes it from an indefinite
-    // sigma, which is rejected.
-    Eigen::LLT<Eigen::MatrixXd> llt(sigma_dt_);
-    if (llt.info() != Eigen::Success) {
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver(sigma_dt_);
-        if (solver.info() != Eigen::Success)
-            throw std::invalid_argument("affine_term_structure_process: sigma must be positive "
-                                        "definite: its per-tick covariance is not");
-        const double largest = solver.eigenvalues().maxCoeff();
-        const double tolerance = -1e-10 * std::max(1.0, std::abs(largest));
-        if (!(solver.eigenvalues().minCoeff() >= tolerance))
-            throw std::invalid_argument("affine_term_structure_process: sigma must be positive "
-                                        "definite: its per-tick covariance is not");
-        // A symmetric root: V * sqrt(D) * V' == sigma_dt. It is not the
-        // lower-triangular Cholesky factor, but any root realises the
-        // same correlated-shock distribution.
-        cholesky_ = solver.eigenvectors() *
-                    solver.eigenvalues().cwiseMax(0.0).cwiseSqrt().asDiagonal();
-    } else {
-        cholesky_ = llt.matrixL();
-    }
+    // The root of the per-tick covariance realises the correlated
+    // shocks: the Cholesky factor when it is positive definite, the
+    // symmetric eigen root for the singular but positive-semidefinite
+    // limit. The raw-sigma check above already guarantees the
+    // semidefiniteness of the Hadamard product, so this call can only
+    // reject a numerical rounding failure.
+    cholesky_ = math::psd_matrix_square_root(
+        sigma_dt_, "affine_term_structure_process: sigma must be positive semidefinite: "
+                   "its per-tick covariance is not");
 
     // Scratch for the standard-normal shocks: allocated once per
     // construction, reused by every next() call.

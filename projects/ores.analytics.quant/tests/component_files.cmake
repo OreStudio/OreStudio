@@ -18,6 +18,7 @@
 #
 set(files
     "arithmetic_gaussian_mixture_model_process_tests.cpp"
+    "black_karasinski_process_tests.cpp"
     "business_day_calendar_set_tests.cpp"
     "calendar_rule_engine_tests.cpp"
     "cox_ingersoll_ross_process_tests.cpp"

@@ -125,6 +125,12 @@ mkdir -p "$log_dir"
 # the writable storage dir is host-owned and bind-mounted, like /app/log.
 storage_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/storage"
 mkdir -p "$storage_dir"
+# ORE service per-import work dir — same host-owned pattern; the env
+# profile points ORES_ORE_SERVICE_WORK_DIR at ../var/ore-service/work
+# (resolved against WORKDIR /app/bin → /app/var/ore-service/work), and
+# that path does not exist writable in the image, so mount it here.
+ore_work_dir="$REMOTE_ROOT/build/output/$ORES_PRESET/publish/ore-service-work"
+mkdir -p "$ore_work_dir"
 
 if [[ ! -f "$nats_config" ]]; then
     echo "Error: $nats_config not found on remote" >&2
@@ -186,6 +192,7 @@ for svc in $SERVICES; do
         -v "$certs_volume:$keys_dir:ro" \
         -v "$log_dir:/app/log:rw" \
         -v "$storage_dir:/app/storage:rw" \
+        -v "$ore_work_dir:/app/var/ore-service/work:rw" \
         "$image" \
         --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
         --nats-tls-ca "$keys_dir/ca.crt" \

@@ -29,9 +29,9 @@
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cctype>
 #include <chrono>
 #include <cli/cli.h>
@@ -248,8 +248,7 @@ match_folder_path(const std::map<std::string, synthetic::domain::folder>& by_id,
                 if (slugify(f.name) != component)
                     continue;
                 const auto is_self = id == cur;
-                const auto is_child =
-                    f.parent_id && boost::uuids::to_string(*f.parent_id) == cur;
+                const auto is_child = f.parent_id && boost::uuids::to_string(*f.parent_id) == cur;
                 if (is_self || is_child)
                     next.push_back(id);
             }
@@ -276,8 +275,8 @@ match_folders(const std::map<std::string, synthetic::domain::folder>& by_id,
             matched.push_back(id);
     if (!matched.empty())
         return matched;
-    return token.find('/') == std::string::npos ? match_codename(by_id, token)
-                                                : match_folder_path(by_id, token);
+    return token.find('/') == std::string::npos ? match_codename(by_id, token) :
+                                                  match_folder_path(by_id, token);
 }
 
 // Resolve a folder token -- UUID, exact name or standard codename path

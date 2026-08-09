@@ -29,13 +29,14 @@ namespace {
 static constexpr std::string_view queue_group = "ores.reporting.service";
 } // namespace
 
-std::vector<ores::nats::service::subscription> register_report_definition_handlers(
-    ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    ores::nats::service::nats_client& svc_nats) {
+std::vector<ores::nats::service::subscription>
+register_report_definition_handlers(ores::nats::service::client& nats,
+                                    ores::database::context ctx,
+                                    std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                                    ores::nats::service::nats_client& svc_nats) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<report_definition_handler>(nats, std::move(ctx), std::move(verifier), svc_nats);
+    auto h = std::make_shared<report_definition_handler>(
+        nats, std::move(ctx), std::move(verifier), svc_nats);
     subs.push_back(nats.queue_subscribe(get_report_definitions_request::nats_subject,
                                         queue_group,
                                         [h](ores::nats::message msg) { h->list(std::move(msg)); }));

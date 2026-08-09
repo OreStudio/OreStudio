@@ -169,7 +169,8 @@ TEST_CASE("round_trip_fx", tags) {
 }
 
 TEST_CASE("round_trip_fx_fwd", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -232,19 +233,22 @@ TEST_CASE("round_trip_cds_index", tags) {
 }
 
 TEST_CASE("round_trip_commodity", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=spot"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
 
 TEST_CASE("round_trip_commodity_fwd", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
 
 TEST_CASE("round_trip_commodity_cpr", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
@@ -386,20 +390,23 @@ TEST_CASE("reject_credit_uri_missing_mandatory_ccy", tags) {
 }
 
 TEST_CASE("parse_correlation_pairwise", tags) {
-    const auto id = oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
     const auto& cr = std::get<correlation_market_data_identifier>(id);
     REQUIRE(cr.factor_pair == "CCY-EUR-USD");
     REQUIRE(cr.quote_type == correlation_quote_type::pairwise);
 }
 
 TEST_CASE("round_trip_correlation", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
 
 TEST_CASE("parse_inflation_zc_swap", tags) {
-    const auto id = oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
     const auto& inf = std::get<inflation_market_data_identifier>(id);
     REQUIRE(inf.index_code == "UKRPI");
     REQUIRE(inf.quote_type == inflation_quote_type::zc_swap);
@@ -407,13 +414,15 @@ TEST_CASE("parse_inflation_zc_swap", tags) {
 }
 
 TEST_CASE("round_trip_inflation", tags) {
-    const auto original = oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
+    const auto original =
+        oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
     const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
     REQUIRE(original == roundtripped);
 }
 
 TEST_CASE("parse_commodity_fwd_quote", tags) {
-    const auto id = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=fwd&point=6m"));
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=fwd&point=6m"));
     const auto& co = std::get<commodity_market_data_identifier>(id);
     REQUIRE(co.quote_type == commodity_quote_type::fwd);
     REQUIRE(co.point == "6m");
@@ -464,9 +473,8 @@ TEST_CASE("reject_unrecognised_query_key", tags) {
 }
 
 TEST_CASE("reject_fx_quote_when_type_not_quote", tags) {
-    REQUIRE_THROWS_AS(
-        oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&quote=spot")),
-        oresmd_exception);
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&quote=spot")),
+                      oresmd_exception);
 }
 
 TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {

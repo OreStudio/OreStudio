@@ -34,9 +34,9 @@
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <rfl/enums.hpp>
 
 namespace ores::qt {
@@ -72,8 +72,8 @@ const QStringList& subclass_names() {
 }
 
 MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
-                                                    QWidget* parent,
-                                                    const Options& options)
+                                                   QWidget* parent,
+                                                   const Options& options)
     : QDialog(parent)
     , clientManager_(clientManager)
     , options_(options) {
@@ -101,8 +101,7 @@ MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
 
     auto* buttonsRow = new QHBoxLayout();
     selectButton_ = new QPushButton(tr("Select"), this);
-    connect(
-        selectButton_, &QPushButton::clicked, this, &MarketSeriesPickerDialog::onSelectClicked);
+    connect(selectButton_, &QPushButton::clicked, this, &MarketSeriesPickerDialog::onSelectClicked);
     auto* cancelButton = new QPushButton(tr("Cancel"), this);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
     buttonsRow->addStretch();
@@ -133,8 +132,8 @@ QWidget* MarketSeriesPickerDialog::buildCreatePanel() {
     auto* panel = new QWidget(this);
     auto* outer = new QVBoxLayout(panel);
     outer->setContentsMargins(0, 8, 0, 0);
-    outer->addWidget(new QLabel(tr("New series (when the one you need doesn't exist yet):"),
-                                panel));
+    outer->addWidget(
+        new QLabel(tr("New series (when the one you need doesn't exist yet):"), panel));
 
     auto* row = new QHBoxLayout();
     // Defaults (RATES/YIELD, or whatever the call site's Options::defaultSeriesType/defaultMetric
@@ -222,9 +221,9 @@ void MarketSeriesPickerDialog::populateTable() {
             boost::uuids::to_string(s.id) == options_.excludeSeriesId.toStdString())
             continue;
         if (!filter.isEmpty()) {
-            const QString haystack = QString::fromStdString(s.series_type + " " + s.metric + " " +
-                                                             s.qualifier)
-                                          .toLower();
+            const QString haystack =
+                QString::fromStdString(s.series_type + " " + s.metric + " " + s.qualifier)
+                    .toLower();
             if (!haystack.contains(filter))
                 continue;
         }
@@ -233,11 +232,12 @@ void MarketSeriesPickerDialog::populateTable() {
         table_->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(s.series_type)));
         table_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(s.metric)));
         table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(s.qualifier)));
-        table_->setItem(row,
-                        3,
-                        new QTableWidgetItem(
-                            QString::fromStdString(rfl::enum_to_string(s.series_subclass))));
-        table_->item(row, 0)->setData(Qt::UserRole, QString::fromStdString(boost::uuids::to_string(s.id)));
+        table_->setItem(
+            row,
+            3,
+            new QTableWidgetItem(QString::fromStdString(rfl::enum_to_string(s.series_subclass))));
+        table_->item(row, 0)->setData(Qt::UserRole,
+                                      QString::fromStdString(boost::uuids::to_string(s.id)));
     }
 }
 
@@ -283,13 +283,12 @@ void MarketSeriesPickerDialog::onCreateClicked() {
     series.series_type = seriesType.toStdString();
     series.metric = metric.toStdString();
     series.qualifier = newQualifierEdit_->text().trimmed().toStdString();
-    series.asset_class =
-        rfl::string_to_enum<md::domain::asset_class>(newAssetClassCombo_->currentText().toStdString())
-            .value();
-    series.series_subclass =
-        rfl::string_to_enum<md::domain::series_subclass>(
-            newSubclassCombo_->currentText().toStdString())
-            .value();
+    series.asset_class = rfl::string_to_enum<md::domain::asset_class>(
+                             newAssetClassCombo_->currentText().toStdString())
+                             .value();
+    series.series_subclass = rfl::string_to_enum<md::domain::series_subclass>(
+                                 newSubclassCombo_->currentText().toStdString())
+                                 .value();
     series.is_scalar = false;
     series.derivation_kind = "OBSERVED";
 
@@ -297,8 +296,9 @@ void MarketSeriesPickerDialog::onCreateClicked() {
     QPointer<MarketSeriesPickerDialog> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
     auto future =
-        QtConcurrent::run([clientManager, request, series]()
-                              -> std::expected<marketdata::domain::market_series, QString> {
+        QtConcurrent::run([clientManager,
+                           request,
+                           series]() -> std::expected<marketdata::domain::market_series, QString> {
             auto result = clientManager->process_authenticated_request(request);
             if (!result)
                 return std::unexpected(QString::fromStdString(result.error()));
@@ -326,8 +326,8 @@ void MarketSeriesPickerDialog::onCreateClicked() {
         refetch.limit = 1000;
         QPointer<ClientManager> clientManager2 = self->clientManager_;
         auto future2 = QtConcurrent::run(
-            [clientManager2, refetch]()
-                -> std::expected<md::messaging::get_market_series_response, QString> {
+            [clientManager2,
+             refetch]() -> std::expected<md::messaging::get_market_series_response, QString> {
                 auto r = clientManager2->process_authenticated_request(refetch);
                 if (!r)
                     return std::unexpected(QString::fromStdString(r.error()));
@@ -337,26 +337,27 @@ void MarketSeriesPickerDialog::onCreateClicked() {
             });
         using RefetchResult = std::expected<md::messaging::get_market_series_response, QString>;
         auto* watcher2 = new QFutureWatcher<RefetchResult>(self);
-        connect(watcher2, &QFutureWatcher<RefetchResult>::finished, self, [self, watcher2, created]() {
-            auto r = watcher2->result();
-            watcher2->deleteLater();
-            if (!self)
-                return;
-            if (!r) {
-                self->showError(self->tr("Series created, but reloading the list failed."),
-                                r.error());
-                return;
-            }
-            self->rows_ = std::move(r->market_series);
-            self->populateTable();
-            const auto it = std::find_if(self->rows_.begin(), self->rows_.end(), [&](const auto& s) {
-                return s.id == created.id;
+        connect(
+            watcher2, &QFutureWatcher<RefetchResult>::finished, self, [self, watcher2, created]() {
+                auto r = watcher2->result();
+                watcher2->deleteLater();
+                if (!self)
+                    return;
+                if (!r) {
+                    self->showError(self->tr("Series created, but reloading the list failed."),
+                                    r.error());
+                    return;
+                }
+                self->rows_ = std::move(r->market_series);
+                self->populateTable();
+                const auto it = std::find_if(self->rows_.begin(),
+                                             self->rows_.end(),
+                                             [&](const auto& s) { return s.id == created.id; });
+                if (it != self->rows_.end()) {
+                    self->selected_ = *it;
+                    self->accept();
+                }
             });
-            if (it != self->rows_.end()) {
-                self->selected_ = *it;
-                self->accept();
-            }
-        });
         watcher2->setFuture(future2);
     });
     watcher->setFuture(future);

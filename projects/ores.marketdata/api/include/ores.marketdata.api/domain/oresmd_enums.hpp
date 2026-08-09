@@ -116,9 +116,9 @@ enum class equity_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class commodity_quote_type {
-    spot,   ///< COMMODITY/PRICE (spot price, the default).
-    fwd,    ///< COMMODITY_FWD/PRICE (commodity forward price).
-    cpr     ///< CPR/RATE (conditional prepayment rate).
+    spot, ///< COMMODITY/PRICE (spot price, the default).
+    fwd,  ///< COMMODITY_FWD/PRICE (commodity forward price).
+    cpr   ///< CPR/RATE (conditional prepayment rate).
 };
 
 /**
@@ -135,8 +135,8 @@ enum class fx_quote_type {
  * only meaningful when `type=quote`.
  */
 enum class inflation_quote_type {
-    zc_swap,  ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
-    yy_swap,  ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
+    zc_swap,    ///< ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate).
+    yy_swap,    ///< YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate).
     seasonality ///< SEASONALITY/RATE (seasonality adjustment factor).
 };
 

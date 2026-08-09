@@ -174,7 +174,7 @@ void IrCurveBootstrapConfigController::onShowHistory(
 }
 
 void IrCurveBootstrapConfigController::wireWorkbenchCommon(CurveBuilderWorkbench* workbench,
-                                                            DetachableMdiSubWindow* window) {
+                                                           DetachableMdiSubWindow* window) {
     workbench->setClientManager(clientManager_);
     workbench->setImageCache(imageCache());
     workbench->setChangeReasonCache(changeReasonCache_);

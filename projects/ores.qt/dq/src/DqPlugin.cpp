@@ -98,13 +98,12 @@ void DqPlugin::on_login(const plugin_context& ctx) {
                                                                    this);
     connectControllerSignals(codeDomainController_.get());
 
-    artefactTypeController_ =
-        std::make_unique<ArtefactTypeController>(ctx_.main_window,
-                                                  ctx_.mdi_area,
-                                                  ctx_.client_manager,
-                                                  ctx_.change_reason_cache,
-                                                  ctx_.username,
-                                                  this);
+    artefactTypeController_ = std::make_unique<ArtefactTypeController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(artefactTypeController_.get());
 
     // BadgeDefinitionController cross-domain relays: toolbar buttons on
@@ -285,14 +284,13 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
             if (codeDomainController_)
                 codeDomainController_->showListWindow();
         });
-        auto* actCodingSchemes =
-            classifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
+        auto* actCodingSchemes = classifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
         connect(actCodingSchemes, &QAction::triggered, this, [this]() {
             if (codingSchemeController_)
                 codingSchemeController_->showListWindow();
         });
-        auto* actCodingSchemeAuthorityTypes = classifications->addAction(
-            ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
+        auto* actCodingSchemeAuthorityTypes =
+            classifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
         connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
             if (codingSchemeAuthorityTypeController_)
                 codingSchemeAuthorityTypeController_->showListWindow();
@@ -319,8 +317,7 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
         if (changeReasonCategoryController_)
             changeReasonCategoryController_->showListWindow();
     });
-    auto* actChangeReasons =
-        menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
+    auto* actChangeReasons = menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
     connect(actChangeReasons, &QAction::triggered, this, [this]() {
         if (changeReasonController_)
             changeReasonController_->showListWindow();
@@ -331,8 +328,7 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
     // ---- Data Quality > Data Catalogue (moved in from data_management) ----
     auto* menuCatalogue = dq->addMenu(tr("Data Ca&talogue"));
 
-    auto* actArtefactTypes =
-        menuCatalogue->addAction(ico(Icon::Table), tr("&Artefact Types"));
+    auto* actArtefactTypes = menuCatalogue->addAction(ico(Icon::Table), tr("&Artefact Types"));
     connect(actArtefactTypes, &QAction::triggered, this, [this]() {
         if (artefactTypeController_)
             artefactTypeController_->showListWindow();
@@ -362,8 +358,7 @@ void DqPlugin::setup_menus(const shared_menus_context& smc) {
             datasetController_->showListWindow();
     });
 
-    auto* actDatasetBundles =
-        menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
+    auto* actDatasetBundles = menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
     connect(actDatasetBundles, &QAction::triggered, this, [this]() {
         if (datasetBundleController_)
             datasetBundleController_->showListWindow();

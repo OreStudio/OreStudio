@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/leg_type.hpp"
 #include "ores.refdata.api/domain/leg_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/leg_type_changed_event.hpp"
-#include "ores.refdata.api/generators/leg_type_generator.hpp"
+#include "ores.refdata.api/generator/leg_type_generator.hpp"
 #include "ores.refdata.core/repository/leg_type_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"

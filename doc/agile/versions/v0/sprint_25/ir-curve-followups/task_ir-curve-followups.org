@@ -26,12 +26,12 @@ Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
@@ -109,3 +109,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Follow-up #1 fixed: =enum class index_family= in oresmd_enums.hpp now
+mirrors the 22-family CHECK constraint on
+=ores_synthetic_ir_curve_generation_configs_tbl= exactly, and
+=is_overnight()= matches the SQL tenor rule (only libor/euribor are term;
+all 20 other families are overnight-style). The realistic-2026 seed's
+families now round-trip through oresmd: =parse_enum<index_family>= accepts
+them and fixing identifiers without a tenor no longer trip the
+tenor-required validation, so provisioning a party from realistic-2026
+seed data no longer fails.
+
+Test coverage added: a parser test that all 16 new RFR/IBOR families parse
+as fixing without a tenor, and a projections test that a new family's
+index name drops the tenor suffix (CHF-SARON). The full
+=ores.marketdata.core= suite passes (147 test cases, 310 assertions).
+
+Follow-up #2 verified already resolved on main: commit b36839fd0 (Aug 8)
+added the 16 new families to IrCurveGenerationConfigDetailDialog's index
+family combo; nothing to do. The combo remains hand-patched, mirroring
+the same 22-family SQL CHECK the enum now uses.
+
+Verification: =compass build ores.marketdata.core.tests= clean
+(linux-clang-debug-make); ctest 1/1 passed.

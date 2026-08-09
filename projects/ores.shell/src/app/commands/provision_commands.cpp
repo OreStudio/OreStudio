@@ -468,6 +468,9 @@ void provision_commands::process_tenant(std::ostream& out,
         return;
     }
 
+    // Phase 1 publishes the 'base' bundle explicitly; echo that code
+    // in the completion message.
+    const std::string bundle_code = "base";
     out << "✓ Tenant provisioned: bundle '" << bundle_code << "', " << linked << " part"
         << (linked == 1 ? "y" : "ies") << " associated." << std::endl;
     out << "Next: logout, then log back in — the party setup is per party; run "

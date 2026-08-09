@@ -30,6 +30,7 @@ set(files
     "day_count_calculator_tests.cpp"
     "forward_rate_calculator_tests.cpp"
     "gaussian_mixture_model_process_tests.cpp"
+    "heath_jarrow_morton_process_tests.cpp"
     "hull_white_process_tests.cpp"
     "main.cpp"
     "ornstein_uhlenbeck_process_tests.cpp"

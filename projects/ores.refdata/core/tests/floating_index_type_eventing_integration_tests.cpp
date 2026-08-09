@@ -74,7 +74,7 @@ ores::nats::config::nats_options test_nats_options() {
 
 }
 
-using namespace ores::refdata::generators;
+using namespace ores::refdata::generator;
 using ores::refdata::domain::floating_index_type;
 using ores::refdata::repository::floating_index_type_repository;
 using ores::testing::scoped_database_helper;

@@ -65,6 +65,16 @@ BEGIN
         'Internal Use Only',
         'currency_pair_conventions'
     );
+
+    -- Dependency edge: the conventions insert validates pair_code against
+    -- published refdata currency pairs (soft FK), so refdata.currency_pairs
+    -- must publish first; without this edge dependency-graph resolution may
+    -- order conventions either way.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_pair_conventions',
+        'refdata.currency_pairs',
+        'currency_pair_reference'
+    );
 END $$;
 
 -- =============================================================================

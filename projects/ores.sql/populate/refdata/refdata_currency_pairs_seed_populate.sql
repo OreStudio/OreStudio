@@ -73,6 +73,16 @@ BEGIN
         'Internal Use Only',
         'currency_pairs'
     );
+
+    -- Dependency edge: the currency_pairs insert validates base/quote
+    -- currency against published refdata currencies (soft FK), so
+    -- iso.currencies must publish first; without this edge dependency-graph
+    -- resolution may order currency_pairs either way.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_pairs',
+        'iso.currencies',
+        'currency_reference'
+    );
 END $$;
 
 -- =============================================================================

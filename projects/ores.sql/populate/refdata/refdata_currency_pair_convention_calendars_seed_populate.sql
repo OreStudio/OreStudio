@@ -62,6 +62,22 @@ BEGIN
         'Internal Use Only',
         'currency_pair_convention_calendars'
     );
+
+    -- Dependency edges: convention-calendar rows reference published
+    -- currency pair conventions and calendars, so both must publish first;
+    -- without these edges dependency-graph resolution may order
+    -- convention-calendars either way.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_pair_convention_calendars',
+        'refdata.currency_pair_conventions',
+        'currency_pair_reference'
+    );
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_pair_convention_calendars',
+        'refdata.calendars',
+        'calendar_reference'
+    );
 END $$;
 
 -- =============================================================================

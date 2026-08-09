@@ -58,7 +58,7 @@ Extend [[id:3ECC4BA8-6ACA-4028-9E42-AE7F25FC3B98][IR Rates synthetic data genera
 | [[id:77EA3EA9-BA68-4FDA-9762-958F367CD16C][Unify synthetic config/binding topology: single cross-asset-class query with a real kind discriminator]] | BACKLOG | | | Synthetic config/binding is siloed per asset class with no unified topology query: each asset class has its own request/response message pair and domain config shape, so any cross-asset-class consumer (SyntheticBindingDialog, grids, CRM screens) must know every asset class ahead of time, fire one request per kind, and manually merge/hand-tag results client-side. feed_binding itself has no kind/product-type field, so consumers fetching all bindings can't filter by kind (symptom: FxSpotGridWindow renders IR bindings as FX pairs). Replace the per-asset-class fan-out with a single query returning all asset classes' configs together with an explicit, wire-carried and persisted kind discriminator, so adding a new asset class doesn't require every cross-cutting consumer to learn a new message type. |
 | [[id:27A81240-4458-4D33-9EE6-C623FE64D320][Improve Market Simulator status icons: clearer running/stopped and an auto_start=false indicator]] | BACKLOG | | | The Market Simulator tree's blue/yellow icons for feed running/stopped state are not visually distinct enough -- surfaced during manual QA of the merged-theme Start-at-Root flow, where a curve (2026 Realistic PLN-POLONIA) that backend logs confirm started and is publishing ticks fine looked, at a glance, like it hadn't started. There is also no visual indicator at all for auto_start=false feeds (e.g. Uniform Volatility Demo's IR curves, which deliberately don't bulk-start due to tenor collisions with 2026 Realistic) -- a tester has no way to tell, without checking the config, why a feed didn't start along with its theme. Design and implement clearer status iconography for both dimensions. |
 | [[id:C80D94BB-DA80-4871-AAF0-D4F852F58831][Fix realistic_2026 IR curve seed data / index_family enum mismatch]] | DONE | 2026-07-30 | 2026-07-30 | Fixes the index_name/index_family regression left by df398d5f1 that currently blocks IR curve theme provisioning. |
-| [[id:86CA88E8-E054-488B-B548-2AC4F9801D15][Fix missing dataset dependency edges for currency refdata datasets]] | STARTED | 2026-08-09 | | Fresh db recreate + Acme provisioning aborts the base refdata publish at step 0: publication_service::resolve_publication_order() topologically sorts bundle members, and datasets with no declared dependency edges become sinks that float to the front. refdata.currency_pairs has no edge to iso.currencies, so it publishes before any currencies exist (error: Invalid base_currency EUR, no active currency found), the 38-step workflow aborts, and nothing else in the base bundle publishes, which cascades into the acme_lei_import failing on missing business centres (error: Invalid business_centre GBLO, must be one of WRLD). Same bug class fixed for refdata.calendars depending on iso.countries in commit 9527e7590; the currency siblings were never given edges. |
+| [[id:86CA88E8-E054-488B-B548-2AC4F9801D15][Fix missing dataset dependency edges for currency refdata datasets]] | DONE | 2026-08-09 | 2026-08-09 | Fresh db recreate + Acme provisioning aborts the base refdata publish at step 0: publication_service::resolve_publication_order() topologically sorts bundle members, and datasets with no declared dependency edges become sinks that float to the front. refdata.currency_pairs has no edge to iso.currencies, so it publishes before any currencies exist (error: Invalid base_currency EUR, no active currency found), the 38-step workflow aborts, and nothing else in the base bundle publishes, which cascades into the acme_lei_import failing on missing business centres (error: Invalid business_centre GBLO, must be one of WRLD). Same bug class fixed for refdata.calendars depending on iso.countries in commit 9527e7590; the currency siblings were never given edges. |
 
 * Decisions
 
@@ -144,6 +144,27 @@ database is rebuilt from scratch via =db recreate= (no live data to
 migrate), this needed no migration script — just updated SQL check
 constraints, the =yield_curve_process_types= catalogue row, and every
 C++/Qt string literal comparing against these codes.
+
+** Base-bundle datasets must declare their refdata soft-FK dependencies
+
+[[id:86CA88E8-E054-488B-B548-2AC4F9801D15][The dependency-edge fix
+task]] codified the rule [[id:31C868B9-306E-4282-BA8C-07E647021B34][the
+calendars fix]] (commit 9527e7590) applied to one dataset: any DQ
+dataset whose publish-time insert validates values against another
+dataset's published rows (a soft FK, enforced by the insert
+trigger) must declare that dependency via
+=ores_dq_dataset_dependencies_upsert_fn= in its seed script.
+=publication_service::resolve_publication_order()= topologically
+sorts bundle members and floats edge-less sinks to the front, so a
+missing edge silently reorders the publish — with no error until the
+trigger hard-raises and aborts the whole workflow (the base bundle
+aborted at step 0 on =refdata.currency_pairs=, cascading into the
+LEI import). The currency refdata family now declares its edges
+(currency_pairs→iso.currencies, pair_conventions→currency_pairs,
+currency_calendars→refdata.calendars+iso.currencies,
+currency_countries→iso.countries+iso.currencies,
+conv_calendars→pair_conventions+refdata.calendars) with roles naming
+the reference kind; new datasets must follow suit.
 
 * Out of scope
 

@@ -8,7 +8,7 @@
 #+filetags: :fomc:calendar:tenors:analysis:sprint_25:v0:fomc-dated-ois-short-end:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1933
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1933][#1933]] | [agile] Abandon premature FOMC task; add FOMC calendar-event model story and analysis task |
 
 * Review
 

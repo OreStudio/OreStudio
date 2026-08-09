@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :synthetic:market_data:architecture:acme:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-08
+#+updated: 2026-08-09
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,12 +21,12 @@ Give synthetic market data generation two orthogonal primitives -- scope (system
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                   |
+| State         | DONE                                   |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Scope/binding axes live on configs; sandboxed feeds run under a distinct namespace; ACME consolidated to one tenant-level bound reality; Market Simulator tree RLS-filtered by viewer scope; scriptable shell commands (list folders/configs, start/stop folder/feed, validate-vintage) added and verified. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing -- story complete. Follow-on work continues in the folder-code-identifier task, re-scoped to derive folder codename identifiers at resolve time (no stored code column). |
-| Last touched  | 2026-08-08                             |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-09                             |
 
 * Acceptance
 

@@ -11,7 +11,7 @@ class Component:
     name: str
     # Legacy JSON discovery root. "" (empty, not None) for org-only
     # components like refdata, which have no legacy JSON path at all.
-    models_dir: str
+    models_dir: str = ""
     # Either a single glob pattern or a tuple of patterns (the regenerate
     # driver unions the matches). Tuple form supports the org-mode model
     # POC (=*_entity.org=) alongside the legacy JSON models.
@@ -80,7 +80,7 @@ def _load_components() -> Dict[str, "Component"]:
         exclude_org_types = entry.get("exclude_org_types") or ""
         result[name] = Component(
             name=name,
-            models_dir=entry["models_dir"],
+            models_dir=entry.get("models_dir") or "",
             entity_glob=entry.get("entity_glob") or "*_entity.json",
             exclude_suffix=entry.get("exclude_suffix") or None,
             modeling_dir=entry.get("modeling_dir") or None,

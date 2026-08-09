@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: F5F1A9E0-D309-46F7-9EFE-E519170F24A9
+:END:
+#+title: Task: Fix provisioning: publish base bundle instead of first-available
+#+description: Replace the first-available bundle heuristic in process_tenant with an explicit publish of the tenant-scoped base bundle, which seeds all reference data without requiring party_id.
+#+type: task
+#+level: s1
+#+filetags: :hotfix:sprint_25:v0:fix_provisioning_base_bundle:
+#+owner: marco
+#+branch: hotfix/provisioning-tenant-bundle
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:149FB6E6-F13E-4886-94C3-A3E2A79521BD][Hotfix: provision tenant publishes party-scoped bundle without party_id]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore provisioning end-to-end
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:149FB6E6-F13E-4886-94C3-A3E2A79521BD][Hotfix: provision tenant publishes party-scoped bundle without party_id]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- provision tenant --source synthetic --seed 42 succeeds
+- acme_system_provision.ores completes without error
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

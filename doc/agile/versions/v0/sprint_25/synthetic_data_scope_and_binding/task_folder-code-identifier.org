@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/folder-code-identifier
-#+pr: 1923
+#+pr: 1924
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -81,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1924][#1924]] | [agile] Close folder-code-identifier task and synthetic story |
 | [[https://github.com/OreStudio/OreStudio/pull/1923][#1923]] | [ores.shell] Resolve market simulator folders by codename path |
 
 * Review

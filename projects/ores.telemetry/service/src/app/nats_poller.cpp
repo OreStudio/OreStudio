@@ -35,7 +35,6 @@
 #include <boost/beast/http/write.hpp>
 #include <boost/system/system_error.hpp>
 #include <chrono>
-#include <optional>
 #include <rfl/json.hpp>
 #include <stdexcept>
 
@@ -71,17 +70,25 @@ struct jsz_stream_state {
     int consumer_count{0};
 };
 
-struct jsz_stream_config {
+/**
+ * @brief One entry of the per-account "stream_detail" list.
+ *
+ * In nats-server v2.14 the /jsz "streams" field is the stream *count*
+ * (an int), not the stream list — the details live under
+ * account_details[].stream_detail[], and each entry is flat (name at
+ * top level, not under config).
+ */
+struct jsz_stream_detail {
     std::string name;
-};
-
-struct jsz_stream_info {
-    jsz_stream_config config;
     jsz_stream_state state;
 };
 
+struct jsz_account_detail {
+    std::vector<jsz_stream_detail> stream_detail;
+};
+
 struct jsz_response {
-    std::optional<std::vector<jsz_stream_info>> streams;
+    std::vector<jsz_account_detail> account_details;
 };
 
 } // namespace
@@ -179,23 +186,23 @@ void nats_poller::poll_streams() {
         return;
     }
 
-    if (!parsed->streams || parsed->streams->empty()) {
-        BOOST_LOG_SEV(lg(), trace) << "No JetStream streams found";
-        return;
-    }
-
     const auto now = std::chrono::system_clock::now();
     std::vector<domain::nats_stream_sample> samples;
-    samples.reserve(parsed->streams->size());
+    for (const auto& account : parsed->account_details) {
+        for (const auto& stream : account.stream_detail) {
+            domain::nats_stream_sample s;
+            s.sampled_at = now;
+            s.stream_name = stream.name;
+            s.messages = stream.state.messages;
+            s.bytes = stream.state.bytes;
+            s.consumer_count = stream.state.consumer_count;
+            samples.push_back(std::move(s));
+        }
+    }
 
-    for (const auto& stream : *parsed->streams) {
-        domain::nats_stream_sample s;
-        s.sampled_at = now;
-        s.stream_name = stream.config.name;
-        s.messages = stream.state.messages;
-        s.bytes = stream.state.bytes;
-        s.consumer_count = stream.state.consumer_count;
-        samples.push_back(std::move(s));
+    if (samples.empty()) {
+        BOOST_LOG_SEV(lg(), trace) << "No JetStream streams found";
+        return;
     }
 
     repo_.insert_stream_samples(ctx_, samples);

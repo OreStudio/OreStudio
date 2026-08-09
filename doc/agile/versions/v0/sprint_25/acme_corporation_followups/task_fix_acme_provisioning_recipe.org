@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: CA9CB414-9F61-4395-8183-A134BE9A2B9B
+:END:
+#+title: Task: Fix ACME provisioning recipe to be deterministic, curated, and self-contained
+#+description: The acme_system_provision.ores recipe uses --source synthetic which creates random UK financial firms and picks one at random to activate. It must instead produce the carefully curated ACME holding group exactly: Acme Corporation Plc plus its three offices (UK, US, HK), each with their defined staff, book structure, business units, CRM topology, and market data — identically every run.
+#+type: task
+#+level: s1
+#+filetags: :acme:sprint_25:v0:acme_corporation_followups:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One recipe, one command, deterministic ACME group every time: holding company + 3 offices (UK, US, HK) with curated staff, books, BUs, CRM, and market data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- acme_system_provision.ores produces exactly the same 4-party ACME hierarchy every run
+- All ACME staff accounts are present with correct per-office roles
+- Book and business-unit structure matches the curated ACME definition
+- CRM topology and market data are active for all 3 offices
+- No random/synthetic firm names appear (only ACME + GLEIF counterparties)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

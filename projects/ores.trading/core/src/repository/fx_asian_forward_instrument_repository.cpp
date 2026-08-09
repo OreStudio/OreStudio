@@ -136,9 +136,10 @@ fx_asian_forward_instrument_repository::read_at_version(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading FX Asian Forward instrument at version. "
                                << "instrument_id: " << instrument_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "version"_c == version) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities =

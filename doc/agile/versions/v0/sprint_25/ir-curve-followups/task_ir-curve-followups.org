@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
+#+updated: 2026-08-10
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,15 +35,55 @@ Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompati
 
 * Acceptance
 
--
+- =index_family= enum accepts all 22 families the SQL CHECK allows
+- =is_overnight()= matches the SQL tenor rule: only libor/euribor are term
+- Provision of a party with realistic-2026 seed data no longer fails
+- Dialog index family combo lists all 22 families
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow-up #2 (dialog combo) is already resolved on main: commit b36839fd0
+(Aug 8) added the 16 new families to the combo. Verify and record; nothing
+to do.
+
+Follow-up #1 (enum vs seed) is a ores.marketdata enum mismatch. Ground
+truth is the SQL CHECK at
+=projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=:
+22 families, of which only libor/euribor require a non-empty tenor; all
+20 others are overnight-style (tenor = ''). The realistic-2026 seed uses
+20 RFR families with empty tenor.
+
+The oresmd side has only 6 values, so the seed breaks provisioning at the
+oresmd identifier round-trip: =parse_enum<index_family>= throws
+"Unrecognised index value" for the 16 new families, and =is_overnight()=
+misclassifies them as term, which trips the parser's "term index fixing
+requires a tenor" validation.
+
+Fix:
+
+1. Extend =enum class index_family= in oresmd_enums.hpp to the 22 SQL
+   CHECK values (libor, euribor, sofr, estr, sonia, tona, saron, aonia,
+   corra, honia, sora, swestr, nowa, kofr, mibor, zaronia, destr,
+   polonia, nzonia, shibor, tiie, taibor), docstring cites the CHECK.
+2. =is_overnight()= in oresmd_index_family_utils.hpp: true for every
+   family except libor/euribor, matching the SQL tenor rule.
+3. Tests: parser coverage that all 16 new families parse as fixing
+   without tenor (overnight classification, behavioral); a projection
+   test that the index name drops the tenor suffix for a new family;
+   reject_unrecognised_index_family_value stays green (bogus is not
+   among the 22).
+
+No changes needed on the synthetic side: config index_family is a plain
+lower-case token there, and the SQL already accepts all 22.
 
 * Notes
+
+Follow-up #2 (dialog combo) verified resolved on main at HEAD: commit
+b36839fd0 (Aug 8) added the 16 new families to
+IrCurveGenerationConfigDetailDialog's index family combo (all 22 listed,
+including libor/euribor). Nothing to do for this follow-up; noted for the
+close-out. The combo remains hand-patched — it mirrors the 22-family SQL
+CHECK, same source of truth the extended =index_family= enum now uses.
 
 * Test Scenarios
 

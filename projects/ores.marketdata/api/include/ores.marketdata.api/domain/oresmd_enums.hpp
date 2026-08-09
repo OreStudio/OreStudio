@@ -83,8 +83,16 @@ enum class ir_quote_type {
 /**
  * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
  * not free text -- closes the gap-analysis's "index_name is free text" finding.
+ *
+ * The 22 values mirror the CHECK constraint on ores_synthetic_ir_curve_generation_configs_tbl
+ * (synthetic_ir_curve_generation_configs_create.sql) exactly: libor and euribor are the only
+ * term families (they require a tenor); all others are overnight-style families. See
+ * oresmd_index_family_utils's is_overnight() for the tenor rule.
  */
-enum class index_family { libor, euribor, sofr, estr, sonia, tona };
+enum class index_family {
+    libor, euribor, sofr, estr, sonia, tona, saron, aonia, corra, honia, sora,
+    swestr, nowa, kofr, mibor, zaronia, destr, polonia, nzonia, shibor, tiie, taibor
+};
 
 /**
  * @brief The `quote` query key for credit instruments — the ORE TYPE, independent of the

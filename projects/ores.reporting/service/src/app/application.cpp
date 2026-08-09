@@ -30,11 +30,11 @@
 #include "ores.reporting.api/eventing/report_instance_changed_event.hpp"
 #include "ores.reporting.api/eventing/report_type_changed_event.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
+#include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.reporting.service/messaging/concurrency_policy_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_definition_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_instance_event_registrar.hpp"
 #include "ores.reporting.service/messaging/report_type_event_registrar.hpp"
-#include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -122,9 +122,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto ri_changed_sub =
         ores::reporting::service::messaging::register_report_instance_event_mapping(
             event_source, event_bus, nats);
-    auto rt_changed_sub =
-        ores::reporting::service::messaging::register_report_type_event_mapping(
-            event_source, event_bus, nats);
+    auto rt_changed_sub = ores::reporting::service::messaging::register_report_type_event_mapping(
+        event_source, event_bus, nats);
 
     event_source.start();
 

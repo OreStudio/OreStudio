@@ -56,32 +56,48 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    pricingEngineTypeController_ = std::make_unique<PricingEngineTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    pricingEngineTypeController_ =
+        std::make_unique<PricingEngineTypeController>(ctx_.main_window,
+                                                      ctx_.mdi_area,
+                                                      ctx_.client_manager,
+                                                      ctx_.change_reason_cache,
+                                                      ctx_.username,
+                                                      this);
     connectControllerSignals(pricingEngineTypeController_.get());
 
-    pricingModelConfigController_ = std::make_unique<PricingModelConfigController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    pricingModelConfigController_ =
+        std::make_unique<PricingModelConfigController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(pricingModelConfigController_.get());
 
-    pricingModelProductController_ = std::make_unique<PricingModelProductController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    pricingModelProductController_ =
+        std::make_unique<PricingModelProductController>(ctx_.main_window,
+                                                        ctx_.mdi_area,
+                                                        ctx_.client_manager,
+                                                        ctx_.change_reason_cache,
+                                                        ctx_.username,
+                                                        this);
     connectControllerSignals(pricingModelProductController_.get());
 
     pricingModelProductParameterController_ =
-        std::make_unique<PricingModelProductParameterController>(
-            ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-            ctx_.change_reason_cache, ctx_.username, this);
+        std::make_unique<PricingModelProductParameterController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(pricingModelProductParameterController_.get());
 }
 
 void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " reporting=" << (smc.reporting_menu ? "ok" : "null")
-                               << " pricing_config=" << (smc.pricing_configuration_menu ? "ok" : "null");
+                               << " pricing_config="
+                               << (smc.pricing_configuration_menu ? "ok" : "null");
     if (!smc.reporting_menu || !smc.pricing_configuration_menu)
         return;
 
@@ -102,8 +118,8 @@ void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
             pricingModelProductController_->showListWindow();
     });
 
-    auto* actModelProductParameters =
-        pricing_configuration_menu_->addAction(ico(Icon::Settings), tr("Model Product &Parameters"));
+    auto* actModelProductParameters = pricing_configuration_menu_->addAction(
+        ico(Icon::Settings), tr("Model Product &Parameters"));
     connect(actModelProductParameters, &QAction::triggered, this, [this]() {
         if (pricingModelProductParameterController_)
             pricingModelProductParameterController_->showListWindow();

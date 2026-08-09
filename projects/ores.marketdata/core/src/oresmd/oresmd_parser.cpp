@@ -258,8 +258,8 @@ market_data_identifier parse_correlation(const boost::urls::url_view& u, const q
     id.type = parse_type(qp);
     if (qp.quote) {
         if (id.type != instrument_type::quote)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception("oresmd://correlation/... 'quote' is only meaningful when type=quote."));
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://correlation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<correlation_quote_type>("quote", *qp.quote);
     }
     return id;
@@ -277,8 +277,8 @@ market_data_identifier parse_inflation(const boost::urls::url_view& u, const que
     id.type = parse_type(qp);
     if (qp.quote) {
         if (id.type != instrument_type::quote)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception("oresmd://inflation/... 'quote' is only meaningful when type=quote."));
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://inflation/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<inflation_quote_type>("quote", *qp.quote);
     }
     if (qp.point)
@@ -296,8 +296,8 @@ market_data_identifier parse_commodity(const boost::urls::url_view& u, const que
     id.type = parse_type(qp);
     if (qp.quote) {
         if (id.type != instrument_type::quote)
-            BOOST_THROW_EXCEPTION(
-                oresmd_exception("oresmd://commodity/... 'quote' is only meaningful when type=quote."));
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://commodity/... 'quote' is only meaningful when type=quote."));
         id.quote_type = parse_enum<commodity_quote_type>("quote", *qp.quote);
     }
     if (qp.point)

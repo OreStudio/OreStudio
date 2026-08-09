@@ -153,11 +153,16 @@ bool qualifier_includes_index(ir_quote_type qt) {
 
 std::string_view ore_vol_model(volatility_model_subtype m) {
     switch (m) {
-    case volatility_model_subtype::rate_lnvol:  return "RATE_LNVOL";
-    case volatility_model_subtype::rate_nvol:   return "RATE_NVOL";
-    case volatility_model_subtype::rate_slnvol: return "RATE_SLNVOL";
-    case volatility_model_subtype::shift:       return "SHIFT";
-    case volatility_model_subtype::price:       return "PRICE";
+        case volatility_model_subtype::rate_lnvol:
+            return "RATE_LNVOL";
+        case volatility_model_subtype::rate_nvol:
+            return "RATE_NVOL";
+        case volatility_model_subtype::rate_slnvol:
+            return "RATE_SLNVOL";
+        case volatility_model_subtype::shift:
+            return "SHIFT";
+        case volatility_model_subtype::price:
+            return "PRICE";
     }
     return "RATE_LNVOL";
 }
@@ -167,8 +172,12 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
         // Use typed vol struct if available, else fall back to point composite.
         if (id.vol && id.tenor) {
             const auto& v = *id.vol;
-            return std::format("SWAPTION/{}/{}/{}/{}/{}", ore_vol_model(v.model_subtype),
-                               id.ccy, to_upper(v.expiry), to_upper(*id.tenor), to_upper(v.strike));
+            return std::format("SWAPTION/{}/{}/{}/{}/{}",
+                               ore_vol_model(v.model_subtype),
+                               id.ccy,
+                               to_upper(v.expiry),
+                               to_upper(*id.tenor),
+                               to_upper(v.strike));
         }
         if (!id.point)
             return std::nullopt;
@@ -207,16 +216,19 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
 
 std::string_view ore_type(fx_quote_type qt) {
     switch (qt) {
-    case fx_quote_type::spot: return "FX";
-    case fx_quote_type::fwd:  return "FXFWD";
+        case fx_quote_type::spot:
+            return "FX";
+        case fx_quote_type::fwd:
+            return "FXFWD";
     }
     return "FX";
 }
 
 std::string_view ore_fx_metric(fx_quote_type qt) {
     switch (qt) {
-    case fx_quote_type::spot:
-    case fx_quote_type::fwd: return "RATE";
+        case fx_quote_type::spot:
+        case fx_quote_type::fwd:
+            return "RATE";
     }
     return "RATE";
 }
@@ -227,13 +239,20 @@ std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
     const auto qt = id.quote_type.value_or(fx_quote_type::spot);
     // spot: TYPE/METRIC/CCY1/CCY2 (scalar).
     if (qt == fx_quote_type::spot)
-        return std::format("{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt),
-                           id.pair.substr(0, 3), id.pair.substr(3, 3));
+        return std::format("{}/{}/{}/{}",
+                           ore_type(qt),
+                           ore_fx_metric(qt),
+                           id.pair.substr(0, 3),
+                           id.pair.substr(3, 3));
     // fwd: TYPE/METRIC/CCY1/CCY2/TENOR — forward curve, needs point for tenor.
     if (!id.point)
         return std::nullopt;
-    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_fx_metric(qt),
-                       id.pair.substr(0, 3), id.pair.substr(3, 3), to_upper(*id.point));
+    return std::format("{}/{}/{}/{}/{}",
+                       ore_type(qt),
+                       ore_fx_metric(qt),
+                       id.pair.substr(0, 3),
+                       id.pair.substr(3, 3),
+                       to_upper(*id.point));
 }
 
 std::string_view ore_type(equity_quote_type qt) {
@@ -346,42 +365,51 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
 
 std::string_view ore_type(commodity_quote_type qt) {
     switch (qt) {
-    case commodity_quote_type::spot: return "COMMODITY";
-    case commodity_quote_type::fwd:  return "COMMODITY_FWD";
-    // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
-    // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
-    // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
-    // commodity_market_data_identifier is a deliberate simplification since
-    // ORE Studio has no security-level identifier yet; the key emitted here
-    // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
-    case commodity_quote_type::cpr:  return "CPR";
+        case commodity_quote_type::spot:
+            return "COMMODITY";
+        case commodity_quote_type::fwd:
+            return "COMMODITY_FWD";
+        // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
+        // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
+        // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
+        // commodity_market_data_identifier is a deliberate simplification since
+        // ORE Studio has no security-level identifier yet; the key emitted here
+        // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
+        case commodity_quote_type::cpr:
+            return "CPR";
     }
     return "COMMODITY";
 }
 
 std::string_view ore_commodity_metric(commodity_quote_type qt) {
     switch (qt) {
-    case commodity_quote_type::spot:
-    case commodity_quote_type::fwd: return "PRICE";
-    case commodity_quote_type::cpr: return "RATE";
+        case commodity_quote_type::spot:
+        case commodity_quote_type::fwd:
+            return "PRICE";
+        case commodity_quote_type::cpr:
+            return "RATE";
     }
     return "PRICE";
 }
 
 std::string_view ore_type(inflation_quote_type qt) {
     switch (qt) {
-    case inflation_quote_type::zc_swap:     return "ZC_INFLATIONSWAP";
-    case inflation_quote_type::yy_swap:     return "YY_INFLATIONSWAP";
-    case inflation_quote_type::seasonality: return "SEASONALITY";
+        case inflation_quote_type::zc_swap:
+            return "ZC_INFLATIONSWAP";
+        case inflation_quote_type::yy_swap:
+            return "YY_INFLATIONSWAP";
+        case inflation_quote_type::seasonality:
+            return "SEASONALITY";
     }
     return "ZC_INFLATIONSWAP";
 }
 
 std::string_view ore_inflation_metric(inflation_quote_type qt) {
     switch (qt) {
-    case inflation_quote_type::zc_swap:
-    case inflation_quote_type::yy_swap:
-    case inflation_quote_type::seasonality: return "RATE";
+        case inflation_quote_type::zc_swap:
+        case inflation_quote_type::yy_swap:
+        case inflation_quote_type::seasonality:
+            return "RATE";
     }
     return "RATE";
 }
@@ -392,10 +420,13 @@ std::optional<std::string> quote_key_inflation(const inflation_market_data_ident
     const auto qt = *id.quote_type;
     // SEASONALITY/RATE/MULT/<INDEX>/<POINT> — 5-segment key with literal MULT.
     if (qt == inflation_quote_type::seasonality)
-        return std::format("{}/{}/MULT/{}/{}", ore_type(qt), ore_inflation_metric(qt),
-                           id.index_code, to_upper(*id.point));
-    return std::format("{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt),
-                       id.index_code, to_upper(*id.point));
+        return std::format("{}/{}/MULT/{}/{}",
+                           ore_type(qt),
+                           ore_inflation_metric(qt),
+                           id.index_code,
+                           to_upper(*id.point));
+    return std::format(
+        "{}/{}/{}/{}", ore_type(qt), ore_inflation_metric(qt), id.index_code, to_upper(*id.point));
 }
 
 std::optional<std::string> quote_key_correlation(const correlation_market_data_identifier& id) {
@@ -410,13 +441,17 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
     const auto qt = id.quote_type.value_or(commodity_quote_type::spot);
     // spot: COMMODITY/PRICE/CODE/CCY (scalar).
     if (qt == commodity_quote_type::spot)
-        return std::format("{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt),
-                           id.commodity_code, id.ccy);
+        return std::format(
+            "{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt), id.commodity_code, id.ccy);
     // fwd/cpr: TYPE/METRIC/CODE/CCY/TENOR — curves, need point for the tenor.
     if (!id.point)
         return std::nullopt;
-    return std::format("{}/{}/{}/{}/{}", ore_type(qt), ore_commodity_metric(qt),
-                       id.commodity_code, id.ccy, to_upper(*id.point));
+    return std::format("{}/{}/{}/{}/{}",
+                       ore_type(qt),
+                       ore_commodity_metric(qt),
+                       id.commodity_code,
+                       id.ccy,
+                       to_upper(*id.point));
 }
 
 }

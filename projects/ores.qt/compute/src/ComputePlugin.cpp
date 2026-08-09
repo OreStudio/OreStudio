@@ -177,8 +177,10 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
                                << " reporting=" << (smc.reporting_menu ? "ok" : "null")
-                               << " report_config=" << (smc.report_configuration_menu ? "ok" : "null")
-                               << " compute_config=" << (smc.compute_configuration_menu ? "ok" : "null")
+                               << " report_config="
+                               << (smc.report_configuration_menu ? "ok" : "null")
+                               << " compute_config="
+                               << (smc.compute_configuration_menu ? "ok" : "null")
                                << " message_queue=" << (smc.message_queue_menu ? "ok" : "null");
 
     // ---- Reporting menu: compute infrastructure (how) ------------------
@@ -192,8 +194,7 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
                 computeConsoleController_->showConsole();
         });
 
-        auto* actDashboard =
-            reporting_menu_->addAction(ico(Icon::Chart), tr("Compute &Dashboard"));
+        auto* actDashboard = reporting_menu_->addAction(ico(Icon::Chart), tr("Compute &Dashboard"));
         connect(actDashboard, &QAction::triggered, this, [this]() {
             if (computeDashboardController_)
                 computeDashboardController_->showDashboard();
@@ -239,8 +240,7 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
                 appVersionController_->showListWindow();
         });
 
-        auto* actApps =
-            smc.compute_configuration_menu->addAction(ico(Icon::TasksApp), tr("&Apps"));
+        auto* actApps = smc.compute_configuration_menu->addAction(ico(Icon::TasksApp), tr("&Apps"));
         connect(actApps, &QAction::triggered, this, [this]() {
             if (appController_)
                 appController_->showListWindow();
@@ -249,8 +249,8 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 
     // ---- Report Configuration submenu: report types + concurrency policies
     if (smc.report_configuration_menu) {
-        auto* actConcurrencyPolicies =
-            smc.report_configuration_menu->addAction(ico(Icon::Settings), tr("&Concurrency Policies"));
+        auto* actConcurrencyPolicies = smc.report_configuration_menu->addAction(
+            ico(Icon::Settings), tr("&Concurrency Policies"));
         connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
             if (concurrencyPolicyController_)
                 concurrencyPolicyController_->showListWindow();

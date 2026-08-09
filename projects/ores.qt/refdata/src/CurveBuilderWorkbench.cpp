@@ -116,8 +116,8 @@ void CurveBuilderWorkbench::loadFloatingIndexTypes() {
     QPointer<CurveBuilderWorkbench> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
     auto future = QtConcurrent::run(
-        [clientManager,
-         request]() -> std::expected<refdata::messaging::get_floating_index_types_response, QString> {
+        [clientManager, request]()
+            -> std::expected<refdata::messaging::get_floating_index_types_response, QString> {
             auto result = clientManager->process_authenticated_request(request);
             if (!result)
                 return std::unexpected(QString::fromStdString(result.error()));
@@ -146,8 +146,7 @@ void CurveBuilderWorkbench::loadTenors() {
 
     QPointer<CurveBuilderWorkbench> self = this;
     QPointer<ClientManager> clientManager = clientManager_;
-    auto future = QtConcurrent::run(
-        [clientManager]() { return fetch_tenors(clientManager); });
+    auto future = QtConcurrent::run([clientManager]() { return fetch_tenors(clientManager); });
 
     using ResultType = std::expected<std::vector<refdata::domain::tenor>, QString>;
     auto* watcher = new QFutureWatcher<ResultType>(this);
@@ -539,14 +538,14 @@ void CurveBuilderWorkbench::loadConfigIntoUi() {
     // fetch); a fresh pick via Browse... below sets a friendly "type / metric / qualifier" label
     // instead. Either way the id itself lives only in config_, never re-parsed from this text.
     const auto nilSourceId = boost::uuids::nil_uuid();
-    sourceSeriesIdEdit_->setText(config_.source_series_id == nilSourceId ?
-                                     QString() :
-                                     QString::fromStdString(
-                                         boost::uuids::to_string(config_.source_series_id)));
-    outputSeriesIdEdit_->setText(config_.output_series_id == nilSourceId ?
-                                     QString() :
-                                     QString::fromStdString(
-                                         boost::uuids::to_string(config_.output_series_id)));
+    sourceSeriesIdEdit_->setText(
+        config_.source_series_id == nilSourceId ?
+            QString() :
+            QString::fromStdString(boost::uuids::to_string(config_.source_series_id)));
+    outputSeriesIdEdit_->setText(
+        config_.output_series_id == nilSourceId ?
+            QString() :
+            QString::fromStdString(boost::uuids::to_string(config_.output_series_id)));
     curveFamilyRoleCombo_->setCurrentText(QString::fromStdString(
         config_.curve_family_role.empty() ? "FUNDING" : config_.curve_family_role));
     discountCurveConfigIdEdit_->setText(
@@ -816,8 +815,7 @@ void CurveBuilderWorkbench::collectPillarsFromTable() {
     std::stable_sort(collected.begin(), collected.end(), [this](const auto& a, const auto& b) {
         const auto sortOrder = [this](const std::string& code) {
             const auto it = tenorSortOrderByCode_.find(code);
-            return it != tenorSortOrderByCode_.end() ? it->second :
-                                                        std::numeric_limits<int>::max();
+            return it != tenorSortOrderByCode_.end() ? it->second : std::numeric_limits<int>::max();
         };
         return sortOrder(a.end_tenor_code) < sortOrder(b.end_tenor_code);
     });
@@ -854,9 +852,8 @@ bool CurveBuilderWorkbench::promptAndStashChangeReason() {
         showBanner(tr("Change reasons not loaded. Please try again."), true);
         return false;
     }
-    const auto opType =
-        createMode_ ? ChangeReasonDialog::OperationType::Create :
-                      ChangeReasonDialog::OperationType::Amend;
+    const auto opType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                      ChangeReasonDialog::OperationType::Amend;
     const std::string category = createMode_ ? "system" : "common";
     std::vector<dq::domain::change_reason> reasons;
     switch (opType) {
@@ -908,9 +905,9 @@ void CurveBuilderWorkbench::onSaveClicked() {
             showBanner(tr("Pillar '%1' is a DEPOSIT starting at %2, not SPOT -- DEPOSIT pillars "
                           "must start today. For a forward-starting instrument, change its Curve "
                           "Role to FRA or SWAP instead.")
-                          .arg(QString::fromStdString(p.end_tenor_code))
-                          .arg(QString::fromStdString(p.start_tenor_code)),
-                      true);
+                           .arg(QString::fromStdString(p.end_tenor_code))
+                           .arg(QString::fromStdString(p.start_tenor_code)),
+                       true);
             return;
         }
     }
@@ -929,15 +926,15 @@ void CurveBuilderWorkbench::onSaveClicked() {
         if (config_.split_tenor_code.empty()) {
             showBanner(tr("Split Tenor Code is required -- for %1, enter the curve's own split "
                           "point (the knot tenor between its two interpolation segments).")
-                          .arg(QString::fromStdString(config_.interpolation_method)),
-                      true);
+                           .arg(QString::fromStdString(config_.interpolation_method)),
+                       true);
             return;
         }
     }
     if (!(config_.source_series_id == boost::uuids::nil_uuid()) &&
         config_.source_series_id == config_.output_series_id) {
         showBanner(tr("Source and Output series must be different (server also rejects this)."),
-                  true);
+                   true);
         return;
     }
     if (!promptAndStashChangeReason())
@@ -1134,8 +1131,8 @@ void CurveBuilderWorkbench::renderBootstrapResults(
         } catch (const std::exception& e) {
             showBanner(tr("Bootstrap succeeded, but instantaneous forward rates could not be "
                           "computed: %1")
-                          .arg(QString::fromStdString(e.what())),
-                      true);
+                           .arg(QString::fromStdString(e.what())),
+                       true);
         }
     }
 
@@ -1179,9 +1176,10 @@ void CurveBuilderWorkbench::renderBootstrapResults(
     healthFindingsList_->clear();
 
     if (!haveDayCountConvention) {
-        healthFindingsList_->addItem(tr("Could not run diagnostics: invalid day count "
-                                        "convention '%1'.")
-                                         .arg(QString::fromStdString(config_.day_count_convention)));
+        healthFindingsList_->addItem(
+            tr("Could not run diagnostics: invalid day count "
+               "convention '%1'.")
+                .arg(QString::fromStdString(config_.day_count_convention)));
         return;
     }
 

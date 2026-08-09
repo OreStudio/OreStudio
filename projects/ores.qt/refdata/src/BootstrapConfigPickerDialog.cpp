@@ -32,9 +32,9 @@
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <unordered_map>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -43,9 +43,9 @@ namespace rd = ores::refdata;
 }
 
 BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientManager,
-                                                          QWidget* parent,
-                                                          const QString& currencyFilter,
-                                                          const QString& roleFilter)
+                                                         QWidget* parent,
+                                                         const QString& currencyFilter,
+                                                         const QString& roleFilter)
     : QDialog(parent)
     , clientManager_(clientManager)
     , currencyFilter_(currencyFilter)
@@ -55,13 +55,13 @@ BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientMa
     resize(640, 420);
 
     auto* layout = new QVBoxLayout(this);
-    const QString roleLabel = roleFilter_.isEmpty() ? tr("Existing") : tr("Existing %1-role")
-                                                                          .arg(roleFilter_);
-    layout->addWidget(new QLabel(
-        currencyFilter_.isEmpty() ?
-            tr("%1 bootstrap configs:").arg(roleLabel) :
-            tr("%1 %2 bootstrap configs:").arg(roleLabel).arg(currencyFilter_),
-        this));
+    const QString roleLabel =
+        roleFilter_.isEmpty() ? tr("Existing") : tr("Existing %1-role").arg(roleFilter_);
+    layout->addWidget(
+        new QLabel(currencyFilter_.isEmpty() ?
+                       tr("%1 bootstrap configs:").arg(roleLabel) :
+                       tr("%1 %2 bootstrap configs:").arg(roleLabel).arg(currencyFilter_),
+                   this));
 
     table_ = new QTableWidget(0, 4, this);
     table_->setHorizontalHeaderLabels(
@@ -77,10 +77,8 @@ BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientMa
 
     auto* buttonsRow = new QHBoxLayout();
     selectButton_ = new QPushButton(tr("Select"), this);
-    connect(selectButton_,
-            &QPushButton::clicked,
-            this,
-            &BootstrapConfigPickerDialog::onSelectClicked);
+    connect(
+        selectButton_, &QPushButton::clicked, this, &BootstrapConfigPickerDialog::onSelectClicked);
     auto* cancelButton = new QPushButton(tr("Cancel"), this);
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
     buttonsRow->addStretch();
@@ -180,10 +178,10 @@ void BootstrapConfigPickerDialog::reload() {
             self->table_->setItem(
                 row,
                 0,
-                new QTableWidgetItem(qualifiers[i].isEmpty() ?
-                                         QString::fromStdString(
-                                             boost::uuids::to_string(c.output_series_id)) :
-                                         qualifiers[i]));
+                new QTableWidgetItem(
+                    qualifiers[i].isEmpty() ?
+                        QString::fromStdString(boost::uuids::to_string(c.output_series_id)) :
+                        qualifiers[i]));
             self->table_->setItem(
                 row, 1, new QTableWidgetItem(QString::fromStdString(c.interpolation_method)));
             self->table_->setItem(

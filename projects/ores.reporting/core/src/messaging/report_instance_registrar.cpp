@@ -34,7 +34,8 @@ register_report_instance_handlers(ores::nats::service::client& nats,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                   ores::workflow::service::fsm_state_map instance_states) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<report_instance_handler>(nats, std::move(ctx), std::move(verifier), std::move(instance_states));
+    auto h = std::make_shared<report_instance_handler>(
+        nats, std::move(ctx), std::move(verifier), std::move(instance_states));
     subs.push_back(nats.queue_subscribe(get_report_instances_request::nats_subject,
                                         queue_group,
                                         [h](ores::nats::message msg) { h->list(std::move(msg)); }));

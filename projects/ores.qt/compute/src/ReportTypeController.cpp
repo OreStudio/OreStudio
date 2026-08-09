@@ -60,7 +60,8 @@ ReportTypeController::ReportTypeController(QMainWindow* mainWindow,
                 &ReportTypeController::onNotificationReceived);
 
         auto subscribeAll = [self = QPointer<ReportTypeController>(this)]() {
-            if (!self) return;
+            if (!self)
+                return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to report type change events";
             self->clientManager_->subscribeToEvent(std::string{report_type_event_name});
         };
@@ -460,9 +461,9 @@ EntityListMdiWindow* ReportTypeController::listWindow() const {
 }
 
 void ReportTypeController::onNotificationReceived(const QString& eventType,
-                                                   const QDateTime& timestamp,
-                                                   const QStringList& entityIds,
-                                                   const QString& /*tenantId*/) {
+                                                  const QDateTime& timestamp,
+                                                  const QStringList& entityIds,
+                                                  const QString& /*tenantId*/) {
     if (eventType.toStdString() != report_type_event_name)
         return;
 

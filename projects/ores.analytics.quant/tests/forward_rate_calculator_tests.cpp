@@ -109,8 +109,7 @@ TEST_CASE("calculate is sensitive to the day-count convention", tags) {
 TEST_CASE("calculate rejects a pair that does not strictly increase in date", tags) {
     const auto d = 2026y / January / 1d;
     std::vector<bootstrapped_point> points{
-        make_point("a", d, 0.99),
-        make_point("b", d, 0.98), // same date -- zero-length interval
+        make_point("a", d, 0.99), make_point("b", d, 0.98), // same date -- zero-length interval
     };
 
     CHECK_THROWS_AS(forward_rate_calculator::calculate(points, A365), std::invalid_argument);

@@ -60,7 +60,8 @@ ReportInstanceController::ReportInstanceController(QMainWindow* mainWindow,
                 &ReportInstanceController::onNotificationReceived);
 
         auto subscribeAll = [self = QPointer<ReportInstanceController>(this)]() {
-            if (!self) return;
+            if (!self)
+                return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to report instance change events";
             self->clientManager_->subscribeToEvent(std::string{report_instance_event_name});
         };
@@ -464,9 +465,9 @@ EntityListMdiWindow* ReportInstanceController::listWindow() const {
 }
 
 void ReportInstanceController::onNotificationReceived(const QString& eventType,
-                                                       const QDateTime& timestamp,
-                                                       const QStringList& entityIds,
-                                                       const QString& /*tenantId*/) {
+                                                      const QDateTime& timestamp,
+                                                      const QStringList& entityIds,
+                                                      const QString& /*tenantId*/) {
     if (eventType.toStdString() != report_instance_event_name)
         return;
 

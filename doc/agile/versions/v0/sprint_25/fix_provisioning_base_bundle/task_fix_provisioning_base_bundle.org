@@ -8,7 +8,7 @@
 #+filetags: :hotfix:sprint_25:v0:fix_provisioning_base_bundle:
 #+owner: marco
 #+branch: hotfix/provisioning-tenant-bundle
-#+pr:
+#+pr: 1929
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
@@ -61,7 +61,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1929][#1929]] | [ores.shell] Fix provisioning: publish base bundle instead of first-available |
 
 * Review
 

@@ -50,6 +50,10 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         immer
         magic_enum::magic_enum
+    PUBLIC
+        # Eigen types appear in public headers (the process params
+        # structs); on a shared build a PRIVATE link would hide its
+        # include directories from consumers.
         Eigen3::Eigen)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

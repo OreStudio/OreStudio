@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: B3776F91-B146-47DA-B76E-7C79FBD2E342
-:profile: simple-lookup, artefact-staging-only
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.qt.detail_dialog_header.enabled: false
 :ores.cpp.qt.detail_dialog_impl.enabled: false
@@ -28,6 +27,7 @@ GLEIF LEI corporate hierarchy relationships from RR golden copy files
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   simple-lookup, artefact-staging-only
 :END:
 
 

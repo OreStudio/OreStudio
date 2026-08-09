@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: B6E4D3E4-1257-40F8-982D-F92C4CAC74D2
-:profile: simple-lookup
 :END:
 #+title: ores.dq.data_domain
 #+description: Codegen entity model for the dq =data_domain= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -25,6 +24,7 @@ source).
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   simple-lookup
 :END:
 
 * Columns

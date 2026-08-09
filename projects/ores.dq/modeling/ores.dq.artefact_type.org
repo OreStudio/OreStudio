@@ -1,6 +1,5 @@
 :PROPERTIES:
 :ID: 6D8510CF-B977-4126-9051-5BFA9DE929B3
-:profile: simple-lookup
 :END:
 #+title: ores.dq.artefact_type
 #+description: Codegen entity model for the dq =artefact_type= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
@@ -28,6 +27,7 @@ an external source).
 :schema:    public
 :product:   ores
 :component: dq
+:profile:   simple-lookup
 :END:
 
 * Columns

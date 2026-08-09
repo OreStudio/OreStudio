@@ -109,24 +109,22 @@ def test_profile_qt_default_feeds_derived_qt_flag():
     assert de["qt"]["has_toolbar"] is True
 
 
-def _junction_header(profile: str | None = None) -> str:
-    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:)
-    # for every metatype -- resolve_targets() needs it there before any
-    # model-specific parsing; junction used to read #+profile: frontmatter
-    # instead, but that was too late for a profile's own physical-space
-    # table (see read_physical_space_overrides) to gate archetype selection.
-    profile_line = f":profile: {profile}\n" if profile else ""
+def _junction_header(profile: str | None = None, extra_frontmatter: str = "") -> str:
+    # :profile: binds in the * Flags section -- the single canonical binding
+    # point for every metatype (see read_physical_space_overrides); the
+    # file-level :PROPERTIES: drawer is rejected.
+    flags = f"* Flags\n:PROPERTIES:\n:profile: {profile}\n:END:\n\n" if profile else ""
     return f"""
 :PROPERTIES:
 :ID: TEST0001-0000-0000-0000-000000000000
-{profile_line}:END:
+:END:
 #+title: ores.refdata.thing_other_thing
 #+type: ores.codegen.junction
 #+component: refdata
 #+name: thing_other_things
 #+name_singular: thing_other_thing
 #+name_title: Thing Other Thing
-"""
+{extra_frontmatter}{flags}"""
 
 
 def test_junction_profile_supplies_root_level_default(tmp_path):
@@ -142,7 +140,10 @@ def test_junction_profile_supplies_root_level_default(tmp_path):
 def test_junction_explicit_value_overrides_profile_default(tmp_path):
     p = tmp_path / "thing.org"
     p.write_text(
-        _junction_header("tenant-scoped-junction") + "#+has_tenant_id: false\n",
+        _junction_header(
+            "tenant-scoped-junction",
+            extra_frontmatter="#+has_tenant_id: false\n",
+        ),
         encoding="utf-8",
     )
     j = load_org_junction_model(p)["junction"]
@@ -170,14 +171,14 @@ def test_junction_profile_qt_default_feeds_derived_qt_flag(tmp_path):
 
 
 def _file_header(profile: str, extra_properties: str = "") -> str:
-    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:)
-    # -- the convention every real model in the repo now follows, and the
-    # only place read_physical_space_overrides can see it before any
-    # model-specific parsing.
+    # :profile: binds in the * Flags section -- the single canonical binding
+    # point (see read_physical_space_overrides); the file-level
+    # :PROPERTIES: drawer is rejected.
     return (
-        ":PROPERTIES:\n:ID: TEST0000-0000-0000-0000-000000000000\n"
-        f":profile: {profile}\n{extra_properties}:END:\n"
+        ":PROPERTIES:\n:ID: TEST0000-0000-0000-0000-000000000000\n:END:\n"
         "#+entity_plural: things\n\n"
+        "* Flags\n:PROPERTIES:\n"
+        f":profile: {profile}\n{extra_properties}:END:\n"
     )
 
 
@@ -194,9 +195,9 @@ def test_parse_profile_list_splits_comma_separated():
 def test_multiple_profiles_compose_orthogonal_traits():
     # simple-lookup (feature shape) + artefact-staging-only (enablement-only,
     # zero feature Assignments) must not conflict -- genuinely orthogonal.
-    text = (
-        _file_header("simple-lookup, artefact-staging-only")
-        + "* Flags\n:PROPERTIES:\n:schema: public\n:product: ores\n:component: dq\n:END:\n"
+    text = _file_header(
+        "simple-lookup, artefact-staging-only",
+        ":schema: public\n:product: ores\n:component: dq\n",
     )
     de = org_document_to_model(parse_org(text))["domain_entity"]
     assert de["has_tenant_id"] is True  # from simple-lookup
@@ -208,9 +209,9 @@ def test_conflicting_profiles_raise():
 
     # simple-lookup fixes has_workspace_id=false; workspace-scoped-lookup
     # fixes it true -- a genuine disagreement between two real profiles.
-    text = (
-        _file_header("simple-lookup, workspace-scoped-lookup")
-        + "* Flags\n:PROPERTIES:\n:schema: public\n:product: ores\n:component: dq\n:END:\n"
+    text = _file_header(
+        "simple-lookup, workspace-scoped-lookup",
+        ":schema: public\n:product: ores\n:component: dq\n",
     )
     with pytest.raises(ValueError, match="conflicting profiles"):
         org_document_to_model(parse_org(text))
@@ -253,3 +254,29 @@ def test_entity_physical_space_table_wins_over_profile():
     assert overrides["ores.sql.schema.domain_entity_create.enabled"] is True
     # Untouched by the entity's own table, still inherited from the profile.
     assert overrides["ores.sql.schema.notify_trigger.enabled"] is False
+
+
+def test_file_level_profile_rejected_in_all_readers(tmp_path):
+    # The single canonical binding point is * Flags; a file-level
+    # :profile: must fail loudly on every read path, never be silently
+    # accepted.
+    import pytest
+
+    entity = parse_org(
+        ":PROPERTIES:\n:ID: TEST0000-0000-0000-0000-000000000000\n"
+        ":profile: simple-lookup\n:END:\n#+entity_plural: things\n\n"
+    )
+    with pytest.raises(ValueError, match="file-level"):
+        org_document_to_model(entity)
+    with pytest.raises(ValueError, match="file-level"):
+        read_physical_space_overrides(entity)
+
+    p = tmp_path / "j.org"
+    p.write_text(
+        ":PROPERTIES:\n:ID: TEST0001-0000-0000-0000-000000000000\n"
+        ":profile: tenant-scoped-junction\n:END:\n"
+        "#+type: ores.codegen.junction\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="file-level"):
+        load_org_junction_model(p)

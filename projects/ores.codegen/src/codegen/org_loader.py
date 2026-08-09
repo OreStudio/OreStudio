@@ -168,6 +168,21 @@ def _load_profile_address_overrides(slug: str) -> tuple[tuple[str, bool], ...]:
     return tuple(_parse_physical_space_table(doc.root).items())
 
 
+def _ensure_profile_binding(doc: "OrgDocument") -> None:
+    """Reject :profile: outside the * Flags section -- the single canonical
+    binding point for profiles.
+
+    Two binding points with different behaviour is a footgun -- a single,
+    canonical place is simpler and already the convention every entity
+    model follows. Every reader calls this so a file-level :profile: fails
+    loudly on all paths, not just the physical-space override pass."""
+    if "profile" in doc.file_properties:
+        raise ValueError(
+            ":profile: found in file-level :PROPERTIES: drawer — "
+            "move it to the * Flags section's :PROPERTIES: drawer instead. "
+            "Only * Flags is the canonical binding point for profiles.")
+
+
 def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
     """An entity doc's effective ``ores.*.enabled`` overrides from the
     ``* Physical space`` table mechanism: its bound profile's table (if any)
@@ -178,15 +193,7 @@ def read_physical_space_overrides(doc: "OrgDocument") -> dict[str, bool]:
     which archetypes are even attempted, so this must run *before* any
     model-specific parsing (see the call site in generate.py's
     ``_read_drawer_properties``)."""
-    # Profile must only be declared in * Flags, never in the file-level
-    # :PROPERTIES: drawer. Two binding points with different behaviour is a
-    # footgun — a single, canonical place is simpler and already the
-    # convention every entity model follows.
-    if "profile" in doc.file_properties:
-        raise ValueError(
-            ":profile: found in file-level :PROPERTIES: drawer — "
-            "move it to the * Flags section's :PROPERTIES: drawer instead. "
-            "Only * Flags is the canonical binding point for profiles.")
+    _ensure_profile_binding(doc)
 
     merged: dict[str, bool] = {}
     sources: dict[str, str] = {}
@@ -971,6 +978,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     The output mirrors the JSON ``_domain_entity.json`` shape so the rest
     of codegen can consume it unchanged.
     """
+    _ensure_profile_binding(doc)
     de: dict[str, Any] = {}
 
     # Frontmatter contains entity-wide string keys.
@@ -1000,14 +1008,6 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # File-level properties at the top of the file (if any) contribute too.
     if doc.root.org_id:
         de["entity_org_id"] = doc.root.org_id
-    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:)
-    # for every metatype -- the one place resolve_targets()'s
-    # _read_drawer_properties() reads before any model-specific parsing, so
-    # a bound profile's own physical-space table (see _load_profile_
-    # address_overrides) can gate which archetypes are even attempted, not
-    # just the render context of whichever archetype already got selected.
-    if "profile" in doc.file_properties:
-        de["profile"] = _parse_profile_list(doc.file_properties["profile"])
 
     # Top-level sections.
     flags = _section(doc.root, "Flags")
@@ -1514,6 +1514,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
     shape that ``sql_schema_junction_create.mustache`` consumes."""
     text = Path(path).read_text(encoding="utf-8")
     doc = parse_org(text)
+    _ensure_profile_binding(doc)
     fm = doc.frontmatter
 
     j: dict[str, Any] = {}
@@ -1523,12 +1524,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             j[key] = fm[key]
     if "has_tenant_id" in fm:
         j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
-    # :profile: lives in the file-level :PROPERTIES: drawer (alongside :ID:),
-    # not #+profile: frontmatter -- see the equivalent comment in
-    # org_document_to_model for why (resolve_targets() needs it before any
-    # frontmatter/section-specific parsing happens).
-    if "profile" in doc.file_properties:
-        j["profile"] = _parse_profile_list(doc.file_properties["profile"])
+    # Top-level * Flags section -- the single canonical binding point for
+    # :profile: (and any other root-level flags), mirroring
+    # org_document_to_model's domain_entity handling.
+    flags = _section(doc.root, "Flags")
+    if flags:
+        for k, v in flags.properties.items():
+            j[k.lower()] = _parse_typed(v)
 
     body = _strip_body(doc.root)
     if body:

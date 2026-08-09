@@ -9,7 +9,7 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-08-07
-#+updated: 2026-08-07
+#+updated: 2026-08-09
 
 Write an entity via its repository, assert the resulting NATS
 entity-changed notification is observed on the wire.
@@ -46,6 +46,26 @@ The full template source. Edit here and re-tangle with
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 {{/sql.party_id_from_session}}
+{{#seed_party}}
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+{{/seed_party}}
+{{#foreign_keys}}
+{{^nullable}}
+{{#parent_entity_singular}}
+{{^parent_is_party}}
+// Soft-FK parent seeding ({{table}}): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.{{component_include}}/{{parent_generator_facet_name}}/{{parent_entity_singular}}_generator.hpp"
+#include "ores.{{component_core}}/repository/{{parent_entity_singular}}_repository.hpp"
+{{/parent_is_party}}
+{{/parent_entity_singular}}
+{{/nullable}}
+{{/foreign_keys}}
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -190,6 +210,53 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     v.party_id = *party_ctx.party_id();
 {{/has_identity_group}}
 {{/sql.party_id_from_session}}
+{{#foreign_keys}}
+{{^nullable}}
+{{#parent_entity_singular}}
+    // Seed the active {{parent_entity_singular}} row {{table}} references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto {{column}}_parent = ores::{{component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
+{{#parent_has_audit_group}}
+    {{column}}_parent.audit.change_reason_code = "system.test";
+{{/parent_has_audit_group}}
+{{^parent_has_audit_group}}
+    {{column}}_parent.change_reason_code = "system.test";
+{{/parent_has_audit_group}}
+{{#parent_requires_party}}
+    // {{parent_entity_singular}}'s own mandatory party_id FK (session-set in
+    // production) needs an active party too: seed one, attached under the
+    // tenant's root party like the direct-party branch below.
+    auto {{column}}_party = ores::{{component}}::generators::generate_synthetic_party(ctx);
+    {{column}}_party.change_reason_code = "system.test";
+    auto {{column}}_party_existing = ores::{{component}}::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : {{column}}_party_existing) {
+        if (e.tenant_id == {{column}}_party.tenant_id) {
+            {{column}}_party.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::{{component}}::repository::party_repository {{column}}_party_repo;
+    {{column}}_party_repo.write(party_ctx, {{column}}_party);
+    {{column}}_parent.{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}party_id = {{column}}_party.id;
+{{/parent_requires_party}}
+{{#parent_is_party}}
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto {{column}}_existing = ores::{{component}}::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : {{column}}_existing) {
+        if (e.tenant_id == {{column}}_parent.tenant_id) {
+            {{column}}_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+{{/parent_is_party}}
+    ores::{{component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
+    {{column}}_repo.write(party_ctx, {{column}}_parent);
+    v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{column}}_parent.{{target_column}};
+{{/parent_entity_singular}}
+{{/nullable}}
+{{/foreign_keys}}
 {{#has_identity_group}}
 {{#primary_key.is_uuid}}
     const auto id_str = boost::uuids::to_string(v.identity.{{primary_key.column}});

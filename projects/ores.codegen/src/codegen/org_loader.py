@@ -814,6 +814,48 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     return out
 
 
+# --------------------------------------------------------------------------
+# Soft-FK parent resolution (eventing-integration-test seeding)
+#
+# An eventing integration test writes a child row whose mandatory soft FK
+# references another entity; the child's insert trigger rejects a synthetic
+# key that matches no active parent row, so the test must write an active
+# parent first. generate_from_model (core.py) resolves each FK's :table: to
+# the parent entity's modeling org via this scan, then loads the parent's
+# raw model to learn its generator facet, audit-group status and its own
+# mandatory-FK needs (e.g. portfolio's mandatory party_id, which the
+# template seeds before the portfolio seed).
+
+@lru_cache(maxsize=None)
+def _entity_org_by_table(projects_dir: Path) -> dict[str, dict[str, Any]]:
+    """Map every SQL ``:tablename:`` to its entity's modeling org.
+
+    Raw-text scan (no org parse), cached per process: only the SQL Flags
+    drawer's ``:tablename:`` and the frontmatter ``#+entity_singular:`` are
+    read from each file under ``projects_dir/*/modeling/``. Called from
+    generate_from_model's FK enrichment, which runs once per rendered
+    unit, so the whole-tree scan must stay cheap.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    for org in sorted(projects_dir.glob("*/modeling/*.org")):
+        text = org.read_text(encoding="utf-8", errors="replace")
+        # Only entity models count as FK parents: documentation orgs (e.g.
+        # the meta-model's knowledge doc) mention :tablename: in prose and
+        # in examples -- a doc's example would shadow the real entity's
+        # mapping and silently disable seeding for it. The frontmatter
+        # entity_singular is the entity marker; the tablename must be a
+        # plain lowercase identifier (the =:tablename:= org-emphasis form
+        # in prose is not).
+        sm = re.search(r"^#\+entity_singular:\s*(\S+)", text, re.M)
+        if not sm:
+            continue
+        m = re.search(r":tablename:\s+([a-z][a-z0-9_]*_tbl)", text)
+        if not m:
+            continue
+        out[m.group(1)] = {"org": org, "entity_singular": sm.group(1)}
+    return out
+
+
 def _table_display(node: OrgNode) -> list[dict[str, str]]:
     if not node.tables:
         return []

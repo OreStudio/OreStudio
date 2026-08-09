@@ -2,6 +2,7 @@
 Simple code generator that loads data and applies templates.
 """
 import copy
+import functools
 import json
 import re
 import os
@@ -1384,6 +1385,44 @@ def validate_parent_scoped_list(domain_entity):
             f"qt.parent_key_field and qt.parent_key_param")
 
 
+def _projects_dir_from(model_path: Path) -> Path:
+    """The ``projects/`` directory that owns the given entity model org."""
+    for parent in Path(model_path).resolve().parents:
+        if parent.name == 'projects':
+            return parent
+    return Path(model_path).resolve().parent
+
+
+@functools.lru_cache(maxsize=None)
+def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
+    """Raw model metadata of a soft-FK parent entity (no enrichment).
+
+    Loaded once per parent org per process (cached): the eventing-test
+    template's per-FK seeding blocks need the parent's entity name,
+    generator facet, audit-group status, component and mandatory-FK
+    list. Returns None when the org cannot be loaded (cross-component or
+    non-codegen tables resolve to no modeling org and are skipped by the
+    caller).
+    """
+    if org_path is None:
+        return None
+    try:
+        raw = load_model(str(org_path))
+    except Exception:
+        return None
+    de = raw.get('domain_entity') or {}
+    return {
+        'entity_singular': de.get('entity_singular'),
+        'generator_facet_name': de.get('generator_facet_name'),
+        'has_audit_group': bool(de.get('domain_audit_group')),
+        'has_identity_group': bool(de.get('domain_identity_group')),
+        'component': de.get('component'),
+        'mandatory_fks': [
+            f for f in de.get('foreign_keys') or [] if not f.get('nullable', False)
+        ],
+    }
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2267,6 +2306,89 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             fk['list_by_order_column'] = order_by_spec[0]
             fk['list_by_order_desc'] = (
                 len(order_by_spec) > 1 and order_by_spec[1].lower() == 'desc')
+        # Soft-FK parent resolution for eventing-integration-test seeding: a
+        # child write whose mandatory soft FK references another entity is
+        # rejected by the parent's existence-check trigger unless an active
+        # parent row already exists, so the integration test must seed one
+        # (see the eventing-integration-test archetype template). Resolve
+        # each FK's :table: to the parent entity's model metadata -- RAW
+        # load_model() output, not this enrichment -- so the template can
+        # emit per-FK seeding code. Skipped for: nullable FKs (their
+        # generators emit nullopt, which the trigger's check skips), tables
+        # with no modeling org (cross-component or non-codegen tables), and
+        # cross-component parents (the template's includes assume a
+        # same-component parent).
+        fks = domain_entity.get('foreign_keys') or []
+        if fks:
+            from .org_loader import _entity_org_by_table
+            org_by_table = _entity_org_by_table(_projects_dir_from(model_path))
+            for fk in fks:
+                if fk.get('nullable'):
+                    continue
+                parent = _parent_entity_info(
+                    (org_by_table.get(fk.get('table')) or {}).get('org'))
+                if not parent or not parent['entity_singular']:
+                    continue
+                if parent['component'] != domain_entity.get('component'):
+                    continue
+                fk['parent_entity_singular'] = parent['entity_singular']
+                fk['parent_generator_facet_name'] = (
+                    parent['generator_facet_name'] or 'generators')
+                fk['parent_is_party'] = parent['entity_singular'] == 'party'
+                fk['parent_has_audit_group'] = parent['has_audit_group']
+                fk['parent_has_identity_group'] = parent['has_identity_group']
+                # The parent may itself have a mandatory party_id FK (e.g.
+                # portfolio -- session-set in production): the template then
+                # seeds a party too, so the parent's own insert passes its
+                # trigger. The party table is resolved via the same table
+                # scan (its entity_singular is 'party').
+                fk['parent_requires_party'] = any(
+                    not mfk.get('nullable')
+                    and (org_by_table.get(mfk.get('table')) or {}).get(
+                        'entity_singular') == 'party'
+                    for mfk in parent['mandatory_fks'])
+                # The parent may itself have mandatory soft-FK parents of
+                # its own (e.g. currency_pair's base/quote legs ->
+                # currency): the child's eventing test must seed those too,
+                # or the parent's own insert fails its existence check
+                # before the child is even written. Party is excluded: the
+                # parent_requires_party branch above already seeds it, so
+                # exactly one mechanism emits the party. Cross-component
+                # and unresolvable parents are skipped like the level
+                # above. One level of depth covers every current model
+                # (currency has no mandatory FKs of its own).
+                fk['parent_required_fks'] = []
+                for mfk in parent['mandatory_fks']:
+                    grandparent = _parent_entity_info(
+                        (org_by_table.get(mfk.get('table')) or {}).get('org'))
+                    if not grandparent or not grandparent['entity_singular']:
+                        continue
+                    if grandparent['entity_singular'] == 'party':
+                        continue
+                    if grandparent['component'] != domain_entity.get('component'):
+                        continue
+                    fk['parent_required_fks'].append({
+                        'var': mfk['column'] + '_parent',
+                        'column': mfk['column'],
+                        'table': mfk['table'],
+                        'parent_var': fk['column'] + '_parent',
+                        'parent_entity_singular': grandparent['entity_singular'],
+                        'parent_generator_facet_name': (
+                            grandparent['generator_facet_name'] or 'generators'),
+                        'target_column': mfk.get('target_column'),
+                        'parent_has_audit_group': grandparent['has_audit_group'],
+                    })
+                # Whether the FK column sits inside the child's identity
+                # group (trading entities) or is a flat domain field
+                # (refdata) -- set here, after the columns loop above has
+                # stamped is_identity_group_column on every column.
+                fk['is_identity_group_column'] = any(
+                    c.get('name') == fk.get('column')
+                    and c.get('is_identity_group_column', False)
+                    for c in domain_entity.get('columns', []) or [])
+            domain_entity['seed_party'] = any(
+                fk.get('parent_is_party') or fk.get('parent_requires_party')
+                for fk in fks)
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(

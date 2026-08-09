@@ -8,7 +8,7 @@
 #+filetags: :synthetic_data_scope_and_binding:sprint_25:v0:
 #+owner: marco
 #+branch: feature/folder-code-identifier
-#+pr: 1923
+#+pr: 1924
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -26,11 +26,11 @@ Market simulator folders currently have only a human-readable name (multi-word, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9DEED9D1-680C-4B87-A7DF-2B9AA9ED7277][Synthetic data scope and binding: system/tenant/party levels, bound vs sandboxed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Implement codename resolution in ores.shell: uuid -> exact name -> codename path (component-wise walk from the tree root). |
+| Next         | Nothing. |
 | Last touched | 2026-08-08                               |
 
 * Acceptance
@@ -81,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1924][#1924]] | [agile] Close folder-code-identifier task and synthetic story |
 | [[https://github.com/OreStudio/OreStudio/pull/1923][#1923]] | [ores.shell] Resolve market simulator folders by codename path |
 
 * Review
@@ -90,3 +91,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Market simulator folders now resolve by a derived slug identifier —
+no schema change. ores.shell synthetic command folder tokens resolve
+as uuid, then exact name, then codename path:
+
+- Each folder's codename is its =source_name=-style slug
+  (=lower(replace(name, ' ', ''))=): "2026 Realistic" ->
+  =2026realistic=, a pure function applied at resolve time.
+- Codename paths are standard, filesystem-style paths walked
+  component-by-component from the tree root:
+  =2026realistic/fx=, =synthetic/2026realistic/fx= and
+  =/synthetic/2026realistic/fx= all resolve to the same folder.
+  Components tolerate case and spaces (="2026 Realistic/FX"= works);
+  at each step the component matches the folder itself or a child, so
+  the root may be part of the path.
+- A bare codename (=fx=) matches at any depth; when it matches
+  folders in more than one collection the token reports ambiguous and
+  lists each candidate's codename path, copy-pasteable as a token
+  (=Ambiguous folder token 'fx' matches 2 entries:
+  synthetic/2016oresamples/fx synthetic/2026realistic/fx=).
+- Ambiguity and no-match messages show codename paths.
+
+Implemented in =synthetic_commands.cpp= (slugify, match_codename,
+match_folder_path, match_folders, folder_slug_path, resolve_folder_id;
+--name subtree selection uses the same resolver). The ' > '-joined
+display-path token form (="2026 Realistic > FX"=) was rejected by
+review as messy and untypable and is not supported.
+
+Verified end-to-end against prime_origin (tenant_admin): bare codename,
+case-tolerant tokens, exact names, relative/absolute/human-component
+paths and collection paths all resolve; start/stop folder show A/B
+symmetry (slug 13/13, exact name 13/13, codename path 13/13, uuid
+13/13); ambiguity reports both candidate paths; negatives rejected
+(substring, partial codename, underscore, unknown token, the old
+' > ' form, overlong path). All 8 CI checks pass on PR #1923.

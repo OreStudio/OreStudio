@@ -32,6 +32,8 @@
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
+#include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
+#include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <memory>
@@ -84,9 +86,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              [rth](ores::nats::message msg) { rth->history(std::move(msg)); }));
 
     // ----------------------------------------------------------------
-    // Report definitions
+    // Report definitions (generated CRUD handler — clean, zero-diff)
     // ----------------------------------------------------------------
-    auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier, svc_nats);
+    auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier);
     subs.push_back(
         nats.queue_subscribe(get_report_definitions_request::nats_subject,
                              "ores.reporting.service",
@@ -103,19 +105,26 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats.queue_subscribe(get_report_definition_history_request::nats_subject,
                              "ores.reporting.service",
                              [rdh](ores::nats::message msg) { rdh->history(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(schedule_report_definitions_request::nats_subject,
-                             "ores.reporting.service",
-                             [rdh](ores::nats::message msg) { rdh->schedule(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(unschedule_report_definitions_request::nats_subject,
-                             "ores.reporting.service",
-                             [rdh](ores::nats::message msg) { rdh->unschedule(std::move(msg)); }));
 
     // ----------------------------------------------------------------
-    // Report instances
+    // Report definition scheduling (hand-crafted handler — not codegen)
     // ----------------------------------------------------------------
-    auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier, instance_states);
+    {
+        auto rsh = std::make_shared<report_scheduling_handler>(nats, ctx, verifier, svc_nats);
+        subs.push_back(
+            nats.queue_subscribe(schedule_report_definitions_request::nats_subject,
+                                 "ores.reporting.service",
+                                 [rsh](ores::nats::message msg) { rsh->schedule(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(unschedule_report_definitions_request::nats_subject,
+                                 "ores.reporting.service",
+                                 [rsh](ores::nats::message msg) { rsh->unschedule(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Report instances (generated CRUD handler — clean, zero-diff)
+    // ----------------------------------------------------------------
+    auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier);
     subs.push_back(
         nats.queue_subscribe(get_report_instances_request::nats_subject,
                              "ores.reporting.service",
@@ -132,10 +141,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats.queue_subscribe(get_report_instance_history_request::nats_subject,
                              "ores.reporting.service",
                              [rih](ores::nats::message msg) { rih->history(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(trigger_report_instance_message::nats_subject,
-                             "ores.reporting.service",
-                             [rih](ores::nats::message msg) { rih->trigger(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Report instance trigger (hand-crafted handler — not codegen)
+    // ----------------------------------------------------------------
+    {
+        auto rith = std::make_shared<report_instance_trigger_handler>(
+            nats, ctx, verifier, instance_states);
+        subs.push_back(
+            nats.queue_subscribe(trigger_report_instance_message::nats_subject,
+                                 "ores.reporting.service",
+                                 [rith](ores::nats::message msg) { rith->trigger(std::move(msg)); }));
+    }
 
     // ----------------------------------------------------------------
     // Concurrency policies

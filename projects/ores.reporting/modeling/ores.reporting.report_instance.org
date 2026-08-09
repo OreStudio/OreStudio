@@ -28,6 +28,7 @@ begins. completed_at is NULL while running or in a terminal-before-start state.
 :product:       ores
 :component:     reporting
 :has_tenant_id: true
+:profile:           fk-scoped-child
 :END:
 
 * Columns

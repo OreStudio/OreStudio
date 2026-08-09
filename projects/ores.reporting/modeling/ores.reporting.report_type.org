@@ -26,6 +26,7 @@ configuration block is used when creating a report definition.
 :component:     reporting
 :has_tenant_id:            true
 :system_tenant_validation: true
+:profile:                  simple-lookup
 :END:
 
 * Columns

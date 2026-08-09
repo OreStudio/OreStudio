@@ -31,6 +31,7 @@ It is cleared when the definition is suspended or archived.
 :component:        reporting
 :has_tenant_id:    true
 :has_workspace_id: true
+:profile:           uuid-identified-lookup
 :END:
 
 * Columns

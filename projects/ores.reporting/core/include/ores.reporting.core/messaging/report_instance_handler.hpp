@@ -23,25 +23,13 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
-#include "ores.reporting.api/messaging/report_scheduling_protocol.hpp"
-#include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.core/service/fsm_state_map.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::reporting::messaging {
 
@@ -66,12 +54,10 @@ class report_instance_handler {
 public:
     report_instance_handler(ores::nats::service::client& nats,
                             ores::database::context ctx,
-                            std::optional<ores::security::jwt::jwt_authenticator> verifier,
-                            ores::workflow::service::fsm_state_map instance_states)
+                            std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , instance_states_(std::move(instance_states)) {}
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
@@ -199,95 +185,10 @@ public:
         }
     }
 
-    void trigger(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (auto trigger_msg = decode<trigger_report_instance_message>(msg)) {
-            try {
-                service::report_definition_service def_svc(req_ctx);
-                const auto def = def_svc.get_definition(trigger_msg->report_definition_id);
-                if (!def) {
-                    BOOST_LOG_SEV(report_instance_handler_lg(), warn)
-                        << "Definition not found: " << trigger_msg->report_definition_id;
-                    return;
-                }
-                service::report_instance_service inst_svc(req_ctx);
-                const auto active = inst_svc.list_instances(0, 1);
-                const bool has_active = !active.empty();
-                const auto pending_id = instance_states_.require("pending");
-                boost::uuids::uuid initial_state = pending_id;
-                bool should_dispatch = true;
-                if (!has_active) {
-                    initial_state = pending_id;
-                    should_dispatch = true;
-                } else if (def->concurrency_policy == "queue") {
-                    initial_state = instance_states_.require("queued");
-                    should_dispatch = false;
-                } else if (def->concurrency_policy == "skip") {
-                    initial_state = instance_states_.require("skipped");
-                    should_dispatch = false;
-                } else {
-                    initial_state = instance_states_.require("failed");
-                    should_dispatch = false;
-                }
-                boost::uuids::random_generator rg;
-                domain::report_instance inst;
-                inst.id = rg();
-                inst.tenant_id = def->tenant_id;
-                inst.party_id = def->party_id;
-                inst.definition_id = def->id;
-                inst.name = def->name;
-                inst.description = def->description;
-                inst.fsm_state_id = initial_state;
-                inst.trigger_run_id = trigger_msg->job_instance_id;
-                inst.started_at = std::chrono::system_clock::now();
-                inst.modified_by = ctx_.service_account();
-                inst.performed_by = ctx_.service_account();
-                inst.change_reason_code = "system.scheduler_trigger";
-                inst.change_commentary = "Created by scheduler trigger";
-                inst_svc.save_instance(inst);
-                const auto inst_id_str = boost::uuids::to_string(inst.id);
-                BOOST_LOG_SEV(report_instance_handler_lg(), info)
-                    << "Created report instance " << inst_id_str;
-                if (should_dispatch) {
-                    const auto wf_instance_id = boost::uuids::to_string(rg());
-                    report_execution_request exec_req{.report_instance_id = inst_id_str,
-                                                      .definition_id =
-                                                          trigger_msg->report_definition_id,
-                                                      .tenant_id = trigger_msg->tenant_id,
-                                                      .correlation_id = inst_id_str};
-                    ores::workflow::messaging::start_workflow_message swm{
-                        .type = "report_execution_workflow",
-                        .tenant_id = trigger_msg->tenant_id,
-                        .request_json = rfl::json::write(exec_req),
-                        .correlation_id = inst_id_str,
-                        .instance_id = wf_instance_id};
-                    nats_.js_publish(
-                        ores::workflow::messaging::start_workflow_message::nats_subject,
-                        ores::nats::default_wire_codec().encode(swm));
-                    BOOST_LOG_SEV(report_instance_handler_lg(), info)
-                        << "Dispatched workflow for instance " << inst_id_str;
-                }
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(report_instance_handler_lg(), error)
-                    << "Trigger failed: " << e.what();
-            }
-        } else {
-            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-        }
-    }
-
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
-    ores::workflow::service::fsm_state_map instance_states_;
 };
 
 } // namespace ores::reporting::messaging

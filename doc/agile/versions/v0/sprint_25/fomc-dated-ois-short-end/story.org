@@ -1,0 +1,260 @@
+:PROPERTIES:
+:ID: 23A30224-3C59-44CA-BBF9-5CA875578F65
+:END:
+#+title: Story: FOMC-dated OIS short end: calendar-event model and flat-forward pillars
+#+description: Decide and implement how FOMC meeting dates enter the model: FOMC dates as typed events on a currency calendar, a unified FOMC/IMM/tenor resolution model, then bootstrap the SOFR OIS short end off FOMC-dated pillars with flat-forward interpolation.
+#+type: story
+#+level: s2
+#+filetags: :market_data:synthetic:rates:curves:fomc:calendar:tenors:sprint_25:v0:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Decide and implement the FOMC-dated short end of the USD SOFR curve.
+The implementation task from the IR curve bootstrapping story was
+abandoned (2026-08-09) because it was premature: two model questions
+must be answered first, and both are design decisions, not
+implementation details.
+
+1. *The unified tenor-resolution model.* FOMC-dated pillars, IMM
+   tenors (CDS) and ordinary anchor-offset tenors (rates) are three
+   resolutions of the same abstraction. The model must cover all
+   three cleanly — one mechanism, not three special cases.
+
+2. *The calendar model.* FOMC meeting dates are events of a given
+   type on a currency calendar, not a new table per calendar. A
+   central calendar per currency must hold events of different types
+   (central-bank meetings, data releases, ...) alongside holidays.
+
+Once the model is decided and documented, this story re-scopes and
+implements the abandoned task: bootstrap the SOFR OIS short end off
+consecutive FOMC-meeting-dated pillars with flat-forward (step)
+interpolation, transitioning to a continuous method (log-linear or
+spline) at the long-end swap pillars, split at a defined tenor.
+
+The analysis in this story is the deliverable of the first task; the
+decision lands in =* Decisions= below when the analysis completes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Analysis task: complete the model decision. |
+| Last touched  | 2026-08-09                               |
+
+* Analysis
+
+This section records the analysis carried out so far (2026-08-09,
+when the story was created from the abandoned task). It is the input
+to the analysis task; the task completes it and distils the decision
+into =* Decisions=.
+
+** The bootstrap chain today: how a tenor becomes a pillar date
+
+A bootstrap config (=ir_curve_bootstrap_configs=) names its pillar
+list in =ir_curve_bootstrap_pillars=: one row per pillar, holding
+=start_tenor_code=, =end_tenor_code=, =curve_role_code=
+(DEPOSIT/FRA/SWAP) and =sequence_index=.
+
+The =curve_republish_resolver= (ores.marketdata service) sorts the
+pillars and, for each, resolves both tenor codes to dates and looks
+up the observed rate. Two facts matter here:
+
+- The end tenor code doubles as the *point id* into the raw grid
+  (=market_observations=, published by the IR Rates synthetic feed).
+  A pillar whose end code has no observed quote fails loudly.
+- A SWAP pillar's fixed-leg dates are the end dates of all prior
+  pillars plus its own end date — so pillar order IS the fixed-leg
+  schedule, and consecutive FOMC pillars would give exactly the
+  FOMC-to-FOMC fixing schedule a short-end OIS needs.
+
+The =curve_bootstrap_engine= (PR #1863) then solves tenor-by-tenor
+for discount factors, honouring the config's
+=interpolation_method= and =day_count_convention=. The engine
+already accepts =FLAT_FORWARD_THEN_LOG_LINEAR= (equivalence-tested
+against log-linear for local interpolation) and =CUBIC_SPLINE=
+throws — so the flat-forward short end / continuous long end split
+the FOMC task needs is already one configuration of the engine, not
+engine work.
+
+** Tenor resolution today: one algorithm implemented
+
+=ores.refdata.api/tenor_resolution.cpp= resolves a tenor code to a
+date under a =tenor_convention=:
+
+- =tenors= (refdata) is a label catalog: =code=, =kind=
+  (PERIOD/SPECIAL), =unit=, =multiplier=. Identity only.
+- =tenor_conventions= picks a =measured_from= anchor and a
+  =resolution_algorithm=. Seeded: =RATES_SPOT_FORWARD=
+  (ANCHOR_OFFSET), =FX_SWAP_NEAR_LEG= (ANCHOR_OFFSET),
+  =CREDIT_CDS_IMM= (IMM_ROLL — seeded, never resolvable).
+- =tenor_convention_resolutions= carries per-tenor =anchor_override=,
+  =offset_unit=, =offset_multiplier=.
+- =tenor_resolution_algorithms= defines the vocabulary:
+  =ANCHOR_OFFSET= (anchor + DAY/WEEK/MONTH/YEAR offset) and
+  =IMM_ROLL= (step through the IMM quarterly roll schedule).
+
+Runtime state: =ANCHOR_OFFSET= is implemented; =IMM_ROLL= throws
+=std::logic_error("IMM_ROLL resolution is not yet implemented")=.
+The =ROLL_QUARTER= unit exists in the offset vocabulary and also
+throws. The populate scripts document the IMM_ROLL gap explicitly:
+the algorithm row and the CREDIT_CDS_IMM convention are seeded so the
+model already accommodates a roll schedule, with no schema change
+needed later — "see the runtime resolver's documented gap and the
+corresponding capture".
+
+** Question 1: the unified FOMC/IMM/tenor model
+
+Three resolution families exist or are needed:
+
+- =ANCHOR_OFFSET= (implemented): tenor = anchor + n x unit. Covers
+  O/N, 1M, 1Y, ... — pure calendar arithmetic.
+- =IMM_ROLL= (seeded, unimplemented): tenor = the n-th IMM roll
+  date. IMM dates are the first business day after 20 Mar/Jun/Sep/
+  Dec — exchange-fixed, four per year, and *closed-form*: they are
+  derivable by rule, not looked up. CDS tenors resolve to the first
+  business day following the appropriate roll date (disambiguated as
+  "1Y 1RQ" — one year, one roll quarter).
+- FOMC (proposed): tenor = the n-th FOMC meeting date. FOMC dates
+  are ~8 per year, published by the Fed years in advance, and are
+  *not* closed-form — the exact dates shift year to year for
+  scheduling reasons. They are a pure lookup into a fixed set.
+
+The clean unification: a tenor resolves as "anchor + a count of
+steps along an axis". The axis is either calendar arithmetic
+(unit = DAY/WEEK/MONTH/YEAR) or a named *schedule of dates*
+(ROLL_QUARTER = the IMM roll schedule; a meeting axis = the FOMC
+schedule). The tenor row already has the (kind, unit, multiplier)
+shape; only new units and a schedule source are missing.
+
+The sibling relationship is documented: FOMC Dates is "the same
+'fixed schedule, not a horizon-relative offset' shape as IMM dates,
+but a different underlying calendar and a different purpose". The
+model must keep the schedule source general — IMM is derivable,
+FOMC must be data.
+
+** Question 2: the calendar model
+
+The calendar cluster docs (Calendars/Holidays/Events hub,
+Diary/Effects model, Calendar Events, Holiday Administration)
+already prescribe the shape the user demands:
+
+- The calendar is a *diary*: a validated, named enumeration of bare
+  time points, semantics-free. "A currency, or any other entity, can
+  need more than one calendar at once" — the currency-calendar
+  junction (=refdata_currency_calendars=) exists.
+- *Events* are first-class diary entries distinct from holidays,
+  anchored to a time point, touching one or more currencies, and
+  carrying a =diary_entry_type=: =holiday=, =central_bank_meeting=,
+  =data_release=, =other=. The Calendar Events doc is explicit that
+  central-bank meetings (FOMC, ECB Governing Council, BoE MPC, ...)
+  are exactly this: recurring, dated, well-known fixtures entered as
+  a short run of instances against a lightweight "FOMC meeting"
+  template — "rather than computed from a formula".
+- Template/Instance recurrence applies to holidays and events alike.
+- Effects (typed downstream impact) are deliberately separate,
+  attached by reference, so the calendar and calendar-event schema
+  stay stable "regardless of how many kinds of effect are later
+  modelled".
+
+What exists in the schema today: =calendars=, =calendar_types=,
+=calendar_rules=, =calendar_exceptions=, =calendar_date=,
+=currency_calendars=, =currency_pair_convention_calendar= — the
+holiday/business-day machinery. There is *no* calendar-event table
+and no =diary_entry_type= vocabulary. The documented diary model is
+ahead of the implementation.
+
+FOMC dates therefore belong on a USD calendar as
+=central_bank_meeting= events — the same single table that will hold
+data releases and any other event type, not a new table per
+calendar, and not a hardcoded resolution rule.
+
+** The connection: what the two questions share
+
+FOMC_ROLL and IMM_ROLL are the same mechanism — "the n-th date in a
+schedule, on or after the anchor". They differ only in where the
+schedule comes from:
+
+- IMM: closed-form rule (20th + business-day adjustment) — could be
+  computed, or seeded as events; a design choice.
+- FOMC: externally-announced data — *must* be events on a calendar.
+
+So the resolution algorithm and the calendar-event store are the two
+halves of one design: a roll algorithm walks a named schedule, and a
+schedule is a typed event set on a calendar. The FOMC flat-forward
+pillar list then falls out: pillars = (SPOT -> 1F), (1F -> 2F), ...,
+(nF -> split tenor), with =split_tenor_code= marking the boundary,
+and the raw grid carrying quotes at the FOMC point ids.
+
+** Open design points (the analysis task decides these)
+
+- The calendar-event entity: columns, whether events share the diary
+  with holidays (one =calendar_event= table with =diary_entry_type=)
+  or sit beside =calendar_exceptions=, and how Template/Instance
+  recurrence lands for events.
+- The schedule source for roll algorithms: direct SQL lookup of
+  events by (calendar, type) vs. a materialised schedule view.
+- Whether IMM_ROLL migrates to the same event mechanism (IMM roll
+  dates seeded as events) or stays on its closed-form path — the
+  unified model should decide one way, not both ad hoc.
+- Tenor notation for FOMC pillars (1F/2F vs. FOMC1 vs. MEETING1)
+  and the =ROLL_QUARTER=-style unit name for the meeting axis.
+- The =measured_from= anchor and =split_tenor_code= semantics for
+  the FOMC segment under the existing config schema.
+- Seeding: the Fed's published FOMC calendar (federalreserve.gov)
+  for a real data window; the Calendar Events doc surveys the G10
+  sources.
+- The synthetic feed side: template entries must generate raw-grid
+  quotes at the FOMC point ids (the old task's acceptance says
+  "generated/bootstrapped off consecutive FOMC dates" — generation
+  is in scope).
+
+* Acceptance
+
+- A documented model decision in =* Decisions= covering: FOMC dates
+  as typed events on a currency calendar (one calendar-event table
+  for all event types — no table per calendar); and a unified tenor
+  resolution model that covers =ANCHOR_OFFSET=, =IMM_ROLL= and
+  FOMC-roll without special-casing.
+- Domain docs (FOMC Dates, Interpolation, Tenor, IMM Dates, Calendar
+  Events, Calendars/Holidays/Events) reflect the decided model —
+  updating them if the implementation diverges from what is
+  documented up front.
+- The USD SOFR curve's OIS short end is bootstrapped off consecutive
+  FOMC-meeting-dated pillars, not the ordinary tenor grid.
+- The short-end interpolation between FOMC-dated pillars is a
+  flat-forward step, distinct from the generic log-linear default;
+  beyond the FOMC segment the curve transitions to a continuous
+  non-local method at a defined split tenor.
+- The raw grid (synthetic feed) carries observations at the FOMC
+  pillar point ids, so the republish resolver's point-id lookup
+  succeeds.
+- The implementation is provable as one configuration of the
+  existing =curve_bootstrap_engine= and config schema — not
+  special-cased in engine code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D547A088-310F-427B-9C32-A526110E706F][FOMC/IMM/tenor resolution + calendar events: model analysis and decision]] | BACKLOG | | | Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs. |
+
+* Decisions
+
+* Out of scope
+
+- Dual-curve discounting math (PROJECTION curves discounted off a
+  separate FUNDING curve) — tracked on the generation side already.
+- The Effects half of the Diary/Effects model (vol variance weights,
+  deliverability restrictions, P&L attribution).
+- Reconciliation of the bootstrap engine against QuantLib's own
+  implementation.

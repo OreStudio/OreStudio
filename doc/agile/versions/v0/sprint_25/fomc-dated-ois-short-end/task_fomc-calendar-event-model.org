@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: D547A088-310F-427B-9C32-A526110E706F
+:END:
+#+title: Task: FOMC/IMM/tenor resolution + calendar events: model analysis and decision
+#+description: Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs.
+#+type: task
+#+level: s1
+#+filetags: :fomc:calendar:tenors:analysis:sprint_25:v0:fomc-dated-ois-short-end:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the model decision the FOMC story is blocked on, so the
+re-scoped implementation task can start. The story's =* Analysis=
+section (written at story creation) records the current state and the
+open design points; this task completes that analysis and lands the
+decision.
+
+Decisions this task must make and document:
+
+- The calendar-event entity shape: one =calendar_event= table with a
+  =diary_entry_type= vocabulary (holiday, central_bank_meeting,
+  data_release, other), anchoring events to a calendar and the
+  currencies they touch — no table per calendar. How events sit
+  beside the existing holiday machinery (=calendar_rules=,
+  =calendar_exceptions=, =calendar_date=) and how Template/Instance
+  recurrence applies to events.
+- The schedule source for roll algorithms (FOMC_ROLL, and the seeded
+  but unimplemented IMM_ROLL): direct lookup of typed events vs. a
+  materialised schedule view.
+- Whether IMM_ROLL migrates to the same event mechanism or stays on
+  its closed-form path — the unified model decides one way.
+- FOMC tenor notation (e.g. 1F/2F) and the meeting-axis unit, so
+  =ir_curve_bootstrap_pillars= rows can express consecutive FOMC
+  pillars under the existing config schema, with =split_tenor_code=
+  marking the segment boundary.
+- Seeding a real FOMC calendar window from the Fed's published
+  schedule (federalreserve.gov).
+
+Update the domain docs (FOMC Dates, Interpolation, Tenor, IMM Dates,
+Calendar Events, Calendars/Holidays/Events) to match the decision,
+and distil the decision into the story's =* Decisions=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

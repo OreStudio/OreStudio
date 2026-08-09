@@ -31,6 +31,7 @@
         "boost-url",
         "jwt-cpp",
         "cli",
+        "eigen3",
         "faker-cxx",
         "catch2",
         "libfort",

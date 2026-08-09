@@ -18,6 +18,7 @@
 #
 find_package(Immer CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 
 set(name "ores.analytics.quant")
 set(lib_binary_name ${name})
@@ -48,6 +49,7 @@ target_link_libraries(${lib_target_name}
         Boost::graph
     PRIVATE
         immer
-        magic_enum::magic_enum)
+        magic_enum::magic_enum
+        Eigen3::Eigen)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

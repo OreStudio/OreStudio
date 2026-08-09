@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fomc:calendar:tenors:analysis:sprint_25:v0:fomc-dated-ois-short-end:
 #+owner: marco
-#+branch:
+#+branch: feature/fomc-calendar-event-model
 #+pr: 1933
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
 #+updated: 2026-08-09
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -55,7 +55,7 @@ and distil the decision into the story's =* Decisions=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

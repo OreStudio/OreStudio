@@ -8,7 +8,7 @@
 #+filetags: :market_data:synthetic:rates:curves:fomc:calendar:tenors:sprint_25:v0:
 #+created: 2026-08-09
 #+updated: 2026-08-09
-#+environment:
+#+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -44,7 +44,7 @@ decision lands in =* Decisions= below when the analysis completes.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -246,7 +246,7 @@ and the raw grid carrying quotes at the FOMC point ids.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D547A088-310F-427B-9C32-A526110E706F][FOMC/IMM/tenor resolution + calendar events: model analysis and decision]] | BACKLOG | | | Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs. |
+| [[id:D547A088-310F-427B-9C32-A526110E706F][FOMC/IMM/tenor resolution + calendar events: model analysis and decision]] | STARTED | 2026-08-09 | | Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs. |
 
 * Decisions
 

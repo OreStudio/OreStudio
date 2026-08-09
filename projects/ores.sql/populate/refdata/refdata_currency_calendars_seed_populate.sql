@@ -83,6 +83,22 @@ BEGIN
         'Internal Use Only',
         'currency_calendars'
     );
+
+    -- Dependency edges: currency_calendars rows reference published
+    -- currencies and calendars, so iso.currencies and refdata.calendars must
+    -- publish first; without these edges dependency-graph resolution may
+    -- order currency_calendars either way.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_calendars',
+        'refdata.calendars',
+        'calendar_reference'
+    );
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_calendars',
+        'iso.currencies',
+        'currency_reference'
+    );
 END $$;
 
 -- =============================================================================

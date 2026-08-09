@@ -59,6 +59,22 @@ BEGIN
         'Internal Use Only',
         'currency_countries'
     );
+
+    -- Dependency edges: currency_countries rows reference published
+    -- currencies and countries, so iso.currencies and iso.countries must
+    -- publish first; without these edges dependency-graph resolution may
+    -- order currency_countries either way.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_countries',
+        'iso.countries',
+        'country_reference'
+    );
+
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.currency_countries',
+        'iso.currencies',
+        'currency_reference'
+    );
 END $$;
 
 -- =============================================================================

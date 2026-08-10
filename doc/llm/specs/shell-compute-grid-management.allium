@@ -77,8 +77,10 @@ value Job {
     label: String
 }
 
--- The shared input bundle of a batch, uploaded once at dispatch.
-value InputBundle {
+-- One storage bundle: the shared input bundle of a batch, uploaded
+-- once at dispatch, or the output bundle a node uploaded with a
+-- result.
+value Bundle {
     uri: String
 }
 
@@ -106,7 +108,7 @@ entity Batch {
     is_smoke_test: Boolean
     jobs: List<Job>
     -- The shared input bundle, uploaded once at dispatch.
-    input_bundle: InputBundle?
+    input_bundle: Bundle?
 
     workunits: Workunit with batch = this
 
@@ -151,8 +153,8 @@ entity Result {
 -- ------------------------------------------------------------
 
 contract BundleTransfer {
-    fetch_input: (workunit: Workunit) -> InputBundle
-    fetch_output: (result: Result) -> InputBundle
+    fetch_input: (workunit: Workunit) -> Bundle
+    fetch_output: (result: Result) -> Bundle
 
     @invariant UploadedBundleIsFetchable
         -- Whatever the node uploaded is exactly what the download
@@ -234,10 +236,16 @@ rule RecordResult {
         ensures: workunit.status = failed
 }
 
--- The batch drains when every workunit reached a terminal state.
+-- The batch drains when every workunit reached a terminal state. For
+-- a smoke batch, draining is also the "did all engines kick in"
+-- check: every host online at the drain transition must have at
+-- least one result in the batch, or the batch cannot drain. A host
+-- that comes back online after the run does not trip this check.
 rule BatchDrains {
     when: batch: Batch.all_terminal
     requires: batch.status = dispatched
+    for h in ComputeHosts where batch.is_smoke_test and h.online:
+        requires: (Result where workunit.batch = batch and host = h).count >= 1
     ensures: batch.status = drained
 }
 
@@ -259,6 +267,17 @@ rule FetchInputBundle {
     )
 }
 
+-- Downloads fetch the result's output bundle from compute storage.
+rule FetchOutputBundle {
+    when: OperatorDownloadsOutput(operator, result)
+    requires: result.output_uri != null
+    ensures: OutputBundleFetched(
+        operator: operator,
+        result: result,
+        bundle: BundleTransfer.fetch_output(result)
+    )
+}
+
 -- ------------------------------------------------------------
 -- Invariants
 -- ------------------------------------------------------------
@@ -268,14 +287,6 @@ invariant SmokeBatchSizeInRange {
     for b in Batches where b.is_smoke_test:
         b.jobs.count >= config.smoke_min_jobs
         and b.jobs.count <= config.smoke_max_jobs
-}
-
--- The "did all engines kick in" property: when a smoke batch drains,
--- every host that is online has at least one result in that batch.
-invariant SmokeTestExercisesEveryOnlineNode {
-    for b in Batches where b.is_smoke_test and b.status = drained:
-        for h in ComputeHosts where h.online:
-            (Result where workunit.batch = b and host = h).count >= 1
 }
 
 -- A drained smoke batch reports only successful outcomes.
@@ -338,6 +349,7 @@ surface ComputeGridShell {
         OperatorDispatchesBatch(operator, batch, input_bundle)
         OperatorDeletesHost(operator, host)
         OperatorDownloadsInput(operator, workunit)
+        OperatorDownloadsOutput(operator, result)
         ResultSubmitted(workunit, host, outcome, output_uri?)
         HostHeartbeatReceived(host, timestamp)
         WorkunitStarted(workunit, host)
@@ -353,11 +365,13 @@ surface ComputeGridShell {
 }
 
 -- Decisions (2026-08-10), answering the story's design points:
---   Q1 "did all engines kick in": captured as the two smoke-test
---     invariants -- every online node has at least one result in a
---     drained smoke batch, and all of its outcomes are success. The
---     smoke script polls grid stats until the batch drains, then the
---     invariants are the assertion.
+--   Q1 "did all engines kick in": captured as a drain-time check on
+--     BatchDrains -- a smoke batch cannot drain while a host online
+--     at the drain transition has no result in the batch -- plus the
+--     SmokeTestAllOutcomesSuccess invariant. The smoke script polls
+--     grid stats until the batch drains, then the property is the
+--     assertion. The check runs at the drain transition, so a host
+--     that comes back online after the run does not trip it.
 --   Q2 shared vs per-job inputs: one shared input bundle per batch,
 --     uploaded once at dispatch. Per-job inputs add no coverage value
 --     to the smoke test and multiply storage traffic.

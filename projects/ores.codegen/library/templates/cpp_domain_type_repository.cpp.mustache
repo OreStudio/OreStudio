@@ -701,7 +701,7 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 
     const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
     const auto root_str = boost::uuids::to_string(root_id);
-    const std::string sql = "SELECT * FROM {{product}}_{{component}}_{{entity_plural}}_hierarchy_fn('" +
+    const std::string sql = "SELECT * FROM {{sql_name_base}}_hierarchy_fn('" +
                             tenant_str + "'::uuid, '" + root_str + "'::uuid, " +
                             (from_root ? "true" : "false") + ")";
 

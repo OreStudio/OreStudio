@@ -59,7 +59,7 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('{{product}}_{{component}}_{{entity_plural}}', notification_payload::text);
+    perform pg_notify('{{sql_name_base}}', notification_payload::text);
 
     return null;
 end;

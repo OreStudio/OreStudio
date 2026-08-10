@@ -182,7 +182,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         });
 
     event_source.register_mapping<ores::{{component}}::eventing::{{entity_singular}}_changed_event>(
-        "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+        "ores.{{component}}.{{entity_singular}}", "{{sql_name_base}}");
 
     // 2. Subscribe as an external observer would, on the relative subject --
     // client::subscribe() prepends the subject_prefix itself.

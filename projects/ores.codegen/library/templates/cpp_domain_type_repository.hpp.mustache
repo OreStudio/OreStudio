@@ -184,7 +184,7 @@ public:
 
     /**
      * @brief Reads the {{entity_singular}} hierarchy as a flat set of {id,
-     * parent_id, name} rows, via {{product}}_{{component}}_{{entity_plural}}_hierarchy_fn.
+     * parent_id, name} rows, via {{sql_name_base}}_hierarchy_fn.
      *
      * @param ctx Repository context with database connection (tenant is
      * derived from ctx.tenant_id()).

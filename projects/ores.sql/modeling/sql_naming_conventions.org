@@ -36,6 +36,14 @@ words; the parent scope usually names them). The codegen computes
 =sql_name_base= from =:tablename:= and applies a truncation safety net
 as a backstop, so a suffix always survives.
 
+The =pg_notify= channel is not an identifier, but PostgreSQL enforces
+the same 63-byte limit on channel names at runtime (longer ones raise
+=channel name too long=), so every template derives the channel from
+=sql_name_base= too — never from the full
+=<product>_<component>_<entity_plural>= composition, which can exceed
+the limit (e.g. ores.synthetic's process-parameter-value entity, whose
+66-char conventional name fits neither an identifier nor a channel).
+
 * Detail
 
 ** Skeleton

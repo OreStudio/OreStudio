@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 3EA23D13-8892-46C3-9B73-D511847E5536
+:END:
+#+title: Story: Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests
+#+description: CDash dynamic analysis flags 21 still-reachable leak records on three components (ores.trading.core.tests, ores.reporting.core.tests, ores.refdata.core.tests), all from the NATS C library one-time global init (nats_openLib) reached via the eventing client connect. Add narrow suppressions to build/valgrind/custom.supp and create a valgrind recipe.
+#+type: story
+#+level: s2
+#+filetags: :valgrind:nats:ci:testing:sprint_25:v0:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The nightly CDash dynamic analysis goes green on the trading,
+reporting and refdata components: the 21 still-reachable blocks from
+the NATS C library's one-time global init are suppressed, so real
+valgrind defects stand out. The handling procedure is documented in a
+recipe so the next occurrence is a five-minute fix.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-10                               |
+
+* Acceptance
+
+- The three failing components (ores.trading.core.tests,
+  ores.reporting.core.tests, ores.refdata.core.tests) run clean under
+  valgrind with the committed suppression file.
+- Each suppression entry names the library and the cause; entries are
+  anchored on the NATS library init so no real leak is masked.
+- A recipe documents the suppression file path and the triage
+  procedure (fix real bugs in code, suppress third-party one-time
+  init).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F7CADB2C-0009-497B-AA43-60A2AF83399D][Scaffold story: Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] | DONE | 2026-08-10 | 2026-08-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1F6B70B5-B7CF-4C2C-B950-34AB21525600][Fix valgrind failures on eventing integration tests]] | DONE | 2026-08-10 | 2026-08-10 | Initial task for: Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests |
+
+* Decisions
+
+- CDash dynamic analysis flags the NATS C library's one-time global
+  init (=nats_openLib=) blocks as still reachable because CTest.cmake
+  passes =--show-reachable=yes=. The blocks are not leaks: the library
+  keeps them for the process lifetime and frees them only in
+  =nats_library_cleanup()=, which the client layer must not call
+  (global teardown is unsafe while other subsystems may still use
+  NATS).
+- Treatment: narrow suppressions anchored on the library init, not
+  code changes; no RAII primitive for the library-global init —
+  connection-level RAII already exists in =client::disconnect()=.
+
+* Out of scope
+
+-

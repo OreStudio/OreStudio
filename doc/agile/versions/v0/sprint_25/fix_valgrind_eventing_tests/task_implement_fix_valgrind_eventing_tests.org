@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 1F6B70B5-B7CF-4C2C-B950-34AB21525600
+:END:
+#+title: Task: Suppress NATS library one-time init blocks flagged by valgrind
+#+description: Add narrow suppressions to build/valgrind/custom.supp for the NATS C library one-time global init (nats_openLib) blocks flagged as still reachable on the trading, reporting and refdata eventing tests; create a valgrind recipe.
+#+type: task
+#+level: s1
+#+filetags: :fix_valgrind_eventing_tests:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/fix-valgrind-eventing-tests
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nightly CDash dynamic analysis stops flagging the NATS C library's
+one-time global init blocks (still reachable) on the trading,
+reporting and refdata eventing tests, so real valgrind defects stand
+out. The triage procedure is captured in a recipe.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] |
+| Now          | Suppressions written; verifying under valgrind.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, close, PR.                  |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- The three failing components (ores.trading.core.tests,
+  ores.reporting.core.tests, ores.refdata.core.tests) run clean under
+  valgrind with the committed suppression file.
+- Each suppression entry names the library and the cause; entries are
+  anchored on the NATS library init so no real leak is masked.
+- A recipe documents the suppression file path and the triage
+  procedure.
+
+* Plan
+
+1. Classify the CDash dynamic analysis failures: all 54 records (21
+   per component) are still-reachable blocks from the NATS C library's
+   one-time global init (nats_openLib: dispatcher pool, mutexes,
+   conditions, thread structs), reached via
+   =ores::nats::service::client::connect()=. Not a leak: the library
+   holds live pointers and frees them only in =nats_library_cleanup=,
+   which the client layer must not call (global teardown is unsafe
+   while other subsystems may still use NATS). CDash flags them only
+   because CTest.cmake passes =--show-reachable=yes=.
+2. Add one suppression per allocation site to
+   =build/valgrind/custom.supp=, =match-leak-kinds: reachable=,
+   anchored on =fun:nats_openLib= so any real leak through another
+   call path still surfaces. Intermediate frames use =...= (the local
+   run showed three stack shapes: allocator direct under
+   =nats_openLib=, allocator via =nats_initDispatcherPool=, and pool
+   growth via =_growPool=).
+3. Create the =How do I fix valgrind errors?= recipe with compass add,
+   listing the suppression file path and the triage procedure.
+4. Verify locally: run the three failing eventing test cases under
+   valgrind with the nightly's exact options and the suppression file,
+   NATS server running (port 20605); confirm zero remaining records.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -8,7 +8,7 @@
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/oresmd-codegen
-#+pr:
+#+pr: 1945
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
@@ -235,6 +235,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1945][#1945]] | [ores.marketdata] Adopt oresmd quote-type codegen as canonical source |
 | [[https://github.com/OreStudio/OreStudio/pull/1936][#1936]] | [codegen] Add oresmd quote-type codegen: metatype, facet, archetypes, templates |
 
 * Review

@@ -191,6 +191,10 @@ via its "Verifies task" field.
 | 5234144676 | docker/.env.* ignore pattern redundant — bare =.env.*= already matches at any depth | .gitignore | Fixed | Removed both =docker/.env= patterns (=docker/.env= is also covered by the bare =.env=, verified with =git check-ignore=); Newton-session comment preserved. |
 | 5234144357 | IAM JWT private key passed via =--env= on the =podman run= command line, visible via =/proc/<pid>/cmdline= | remote-run.sh | Declined | Single-tenant WSL host; same pattern the replaced run-pod.sh used; =--env-file=/=--secret= add complexity for no threat-model benefit. |
 | 5234144676 | nats_poller.cpp =/jsz= response reshape has no fixture test pinning the new parsing | nats_poller.cpp | Declined | Pre-existing gap (reviewer confirms not a regression); merits a fixture-test task of its own. |
+| 5234399723 | remote-run.sh:153 pre-deploy cleanup removes every label's containers on a shared host | remote-run.sh | Fixed | Label-scoped filter (=ores-.*-<label>=), same as the fixed remote-stop.sh. |
+| 5234399723 | image_build.py =--base-tag= parsed but never used; =--overlays-only= always builds FROM the auto-detected tag | image_build.py | Fixed | Threaded into =build_overlays= as the =BASE_TAG= build arg (FROM resolution), defaulting to the overlay tag. |
+| 5234399723 | nats_poller.cpp =account_details= is a required vector but nats-server omits it (=omitempty=) with no JetStream accounts, failing every parse | nats_poller.cpp | Fixed | Restored =std::optional= + =value_or=, matching the old =streams= field's tolerance. |
+| 5234399723 | library_partition.py:110 string-substring containment misclassifies sibling dirs sharing the path as a prefix (=.../lib-old=) | library_partition.py | Fixed | =Path.is_relative_to=; regression test added. |
 
 * Result
 

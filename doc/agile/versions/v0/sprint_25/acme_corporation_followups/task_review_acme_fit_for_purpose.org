@@ -28,9 +28,9 @@ A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Shell leg run on a fresh DB: provisioning fails (F10, F11 recorded in * Notes). F10 fixed; re-running the shell leg on a fresh DB. |
-| Waiting on   | Nothing.                               |
-| Next         | Re-run shell leg; then the wizard leg on a second fresh DB. |
+| Now          | Shell leg re-run on a fresh DB: fully verified -- F8, F6, staff org chart, email domains, cross-entity access all green (see * Notes). Remaining failures all cascade from F12 (theme publish), fix captured as a task under the IR Rates story; the office photo attach and synthetic feeds are skipped by the theme failure. |
+| Waiting on   | F12 fix to land (task under the IR Rates synthetic data story, PR path). |
+| Next         | Wizard leg on a second fresh DB (scenario B296624F): reproduce the same findings through the wizard path, or full-green once the F12 fix lands. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -88,14 +88,14 @@ Target shape (the review's fixes):
 | F2 | =report_definitions= rides in the demo-org =risk_management= bundle; all members non-optional, so reports cannot publish alone -- forces the step 6/7 split | confirmed by code |
 | F3 | Recipe has a relogin and two provisioning commands; a single command is achievable via the existing impersonation machinery | confirmed by code |
 | F4 | Tier default =common,regulatory,strategic,trading= publishes Strategic (holding-only) reports to every party | confirmed by code |
-| F5 | FX vintage: the plan includes =marketdata.reference_vintage_2026_05_05=; open task 094075A2 claims only =2016_02_05= is published. Hotfix #1929 shows the old first-available heuristic picked the 2026 vintage for tenant provisioning and it failed (party-scoped, no party_id). Whether the 2026 vintage lands per-party now is a live check | blocked on F10 (market plan never ran) |
+| F5 | FX vintage: the plan includes =marketdata.reference_vintage_2026_05_05=; open task 094075A2 claims only =2016_02_05= is published. Hotfix #1929 shows the old first-available heuristic picked the 2026 vintage for tenant provisioning and it failed (party-scoped, no party_id). Whether the 2026 vintage lands per-party now is a live check | partially verified live: =marketdata.fx_driver_rates_2026= configs land per party (4x); themes/vintages (and the Market Simulator's consolidated configs) still blocked on F12 |
 | F6 | Step 7 root-party publish may insert demo-org business units/portfolios/books into the holding party unless the publish guards skip them | blocked on F10 (step 7 no-op'd: no root party existed) |
 | F7 | Wizard scenario B296624F is titled "Acme Bank wizard path" though the tenant is Acme Corporation | confirmed by code (title drift) |
 | F8 | No-other-entities invariant: after provisioning, exactly one tenant and four parties; GLEIF names appear only as counterparties | partially verified: no extra entities (nothing provisioned at all); recheck after F10 fix |
 | F9 | Stale second provisioning path: =acme_system_provision.org= provisions tenant "Acme Corp" (=--source synthetic --seed 42=, random UK firms) and explicitly creates a "Lloyds Wealth Management Ltd" party -- the exact other-entity anti-pattern. Fix tracked as BACKLOG task CA9CB414 in this story | confirmed by code |
 | F10 | Fresh-DB base bundle ordering breaks: =refdata.*= datasets declare no dataset dependencies (only iso and lei have dependency populate files), so =resolve_publication_order='s topological sort is unconstrained and emitted =refdata.currency_pairs= as workflow step 0, before =iso.currencies=; the insert trigger (=refdata_currency_pairs_create.sql:88=, "Invalid base_currency: EUR. No active currency found") aborted the base workflow (0/38 members). Cascade: =acme_lei_import= then failed ("Invalid business_centre: GBLO. Must be one of: WRLD" -- only the system WRLD centre exists; the rest arrive via the =fpml.business_center= publish, which never ran). Result: only the System party, 0 currencies, 0 parties/staff/reports. Previously masked: provisioning was only tested against restored DBs with pre-existing reference data | confirmed live -- fixed (see * Notes) |
 | F11 | Provisioning reports success despite internal failure: =tenant_handler.hpp:295-296= sets =resp.success = true= up front and the abort paths (lines 396, 438) reply with it, so the shell printed "✓ Acme Corporation holding group provisioned" after both steps failed. Same family: =bundles publish risk_management --wait= reported "✓ All 4 step(s) completed" while inserting 0 rows (no root party exists to publish for) | confirmed live -- fix recorded (see * Notes); still open on main (line 296 unchanged after rebase) |
-| F12 | =synthetic.themes.realistic_2026= fails for every party (holding group + UK/US/HK): =marketdata.fx_driver_rates_2026= completes, then the theme publish hard-raises "Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id." Root cause (traced with the IR Rates story owner): tenant-scoping bug in =ores_synthetic_config_process_parameter_values_insert_fn= -- the publish path resolves each config parameter's definition id from the *system-tenant* catalogue (=synthetic_publish_from_dq_create.sql:690= joins on =ores_utility_system_tenant_id_fn()=), but the values-table trigger validates the soft FK scoped to =NEW.tenant_id= (the acme tenant, which has no definitions), while the sibling validate function =ores_synthetic_validate_yield_curve_process_parameter_definition_fn= (=synthetic_yield_curve_process_parameter_definitions_create.sql:170=) correctly uses the system tenant. Deterministic on fresh DBs in all four groups; masked before this review only because the base publish aborted before theme steps ever ran. Fix (SQL-only, aligned with the dependency-edge PR's shape): scope the trigger's soft-FK check to the system tenant -- captured as a task under the IR Rates synthetic data story, PR path. Stable identifiers: definition ids are =gen_random_uuid()= (unstable across reprovisionings), but nothing references them raw -- the publish resolves by the enforced composite natural key =(process_type_code, parameter_name)= from the system tenant, and the fix must keep that shape (the ids differ between runs for the same parameter precisely because each DB regenerates them; the trigger bug is the only consumer-facing break) | confirmed live (4x) -- fix captured upstream |
+| F12 | =synthetic.themes.realistic_2026= fails for every party (holding group + UK/US/HK): =marketdata.fx_driver_rates_2026= completes, then the theme publish hard-raises "Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id." Root cause (traced with the IR Rates story owner): tenant-scoping bug in =ores_synthetic_config_process_parameter_values_insert_fn= -- the publish path resolves each config parameter's definition id from the *system-tenant* catalogue (=synthetic_publish_from_dq_create.sql:690= joins on =ores_utility_system_tenant_id_fn()=), but the values-table trigger validates the soft FK scoped to =NEW.tenant_id= (the acme tenant, which has no definitions), while the sibling validate function =ores_synthetic_validate_yield_curve_process_parameter_definition_fn= (=synthetic_yield_curve_process_parameter_definitions_create.sql:170=) correctly uses the system tenant. Deterministic on fresh DBs in all four groups; masked before this review only because the base publish aborted before theme steps ever ran. Fix (SQL-only, aligned with the dependency-edge PR's shape): scope the trigger's soft-FK check to the system tenant -- captured as a task under the IR Rates synthetic data story, PR path. Stable identifiers: definition ids are =gen_random_uuid()= (unstable across reprovisionings), but nothing references them raw -- the publish resolves by the enforced composite natural key =(process_type_code, parameter_name)= from the system tenant, and the fix must keep that shape (the ids differ between runs for the same parameter precisely because each DB regenerates them; the trigger bug is the only consumer-facing break). Cascade (verified live): the office loop runs the market plan before =attach_staff_photos= (=tenant_handler.hpp:559-604=); the theme failure makes the workflow wait fail and the loop =continue=s, so the office photo attach and =start_synthetic_theme_feeds= never run. Only the holding photo landed, because the group attach (lines 442-445) runs before the group's market plan. All 58 staff rows carry =photo_key=; only adrian.vance has an =image_id=. Fixing F12 makes all 58 photos and the office feeds land | confirmed live (4x) -- fix captured upstream; cascade on photos/feeds recorded |
 
 ** Execution legs
 
@@ -154,6 +154,49 @@ tenant holds only its System party: 0 parties, 0 staff, 0 currencies,
   restored databases whose reference data pre-existed, so the
   ordering bug never surfaced; pre-#1929 the first-available-heuristic
   failure masked it differently.
+
+** Shell leg re-run on a fresh DB (post-rebase): verification results
+
+Ran the current recipe on a fresh database with main's fixes (PR #1935
+dependency edges + PR #1932 IR processes). Base bundle 38/38 members in
+dependency order (F10 fix verified a second time); LEI import, holding
+group, all three offices, staff accounts, step-7 cross-entity access,
+and the =risk_management= publish all landed. The synthetic theme
+publish failed 4x (F12, recorded above). Verified:
+
+- F8 fully green: exactly 4 ACME parties + 2 System parties, 2
+  tenants; Barclays/Lloyds/NatWest/HSBC exist only as counterparties
+  (12,959 GLEIF counterparty rows total).
+- F6 green: the step-7 =risk_management= publish landed only
+  =ore.report_definitions= (31 rows, all on Acme Corporation Plc); the
+  =testdata.*= members no-op'd through the per-party idempotency
+  guards -- no demo-org business units/portfolios/books on the holding.
+- Staff: 59 acme-tenant accounts = 58 staff + =tenant_admin=, all
+  linked via =ores_iam_account_parties_tbl= (=default_party_id= is
+  NULL for every staff account -- the party link table is the real
+  membership). 26 accounts per subsidiary (25 staff +
+  =tenant_admin='s cross-entity membership); the holding carries
+  =adrian.vance= (the one group-level staff row) + =tenant_admin=.
+  Emails locale-matched per the story's fix: 20x =acmecorp.com= (US),
+  19x =acmecorp.co.uk= (UK), 19x =acmecorp.hk= (HK); =
+  super_admin= is =@localhost.com=, =tenant_admin= is
+  =admin@acme_corporation.com=.
+- Org chart: every office staff member has a manager (75
+  =reports_to_account_id= links, 0 dangling); =adrian.vance= is the
+  holding's top of tree (no manager).
+- Cross-entity (step 7, "follow the sun"): 9 executives (Desk Heads
+  on IR Swaps and FX Rates + Market Risk staff, per
+  =doc/knowledge/domains/acme_corporation_setup.org=) hold memberships
+  in all three subsidiaries; =tenant_admin= sees all 4 parties plus
+  the System party. Credit Trading and Middle Office are local-only,
+  as designed.
+- Photos (F12 cascade, recorded in the F12 row): all 58 staff rows in
+  the accounts datasets carry =photo_key=; only =adrian.vance= has an
+  =image_id=. Deterministic: fix F12 and all 58 photos plus the
+  office synthetic feeds land.
+- F5 live check: =marketdata.fx_driver_rates_2026= configs landed per
+  party (4x); themes/vintages and the Market Simulator's consolidated
+  configs remain blocked on F12.
 
 * Test Scenarios
 

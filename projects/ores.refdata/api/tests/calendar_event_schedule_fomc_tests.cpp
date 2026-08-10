@@ -49,6 +49,10 @@
 //   - entity-optional.TenorResolution.anchor_override (the migrated CDS rows
 //     override the convention's NONE anchor with SPOT; see the
 //     anchor_override test)
+//   - entity-optional.TenorResolution.offset_unit /
+//     entity-optional.TenorResolution.offset_multiplier (a null pair on the
+//     PERIOD rows, a set pair on the SPECIAL rows; see the anchor_override
+//     and fields tests)
 //   - enum-comparable.TenorAnchor (measured_from and anchor_override speak
 //     the same seeded tenor_anchor vocabulary; see the anchor_override test)
 //   - entity-fields.TenorConvention (measured_from + resolution_algorithm

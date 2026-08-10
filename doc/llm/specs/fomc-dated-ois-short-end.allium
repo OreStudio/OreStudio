@@ -1,0 +1,285 @@
+-- allium: 3
+-- fomc-dated-ois-short-end.allium
+
+-- Scope: the FOMC-dated short end of the USD SOFR OIS curve.
+-- Includes:
+--   - FOMC meeting dates as typed events on the US.FOMC calendar
+--   - Unified tenor resolution: anchor + calendar offset + n steps
+--     along a named schedule axis (FOMC_MEETING, ROLL_QUARTER)
+--   - The FOMC bootstrap segment: pillars SPOT -> 1F .. nF -> split,
+--     flat-forward between meetings, continuous beyond the split.
+-- Excludes:
+--   - Holiday machinery (calendar_rules, calendar_exceptions,
+--     calendar_date) -- existing behavior, unchanged
+--   - The raw-grid quote generation mechanics (the synthetic feed)
+--   - The bootstrapping numeric solve (the engine's math)
+--   - Dual-curve discounting, the Effects model, QuantLib reconciliation.
+-- External inputs: the Fed's published meeting calendar (transcribed
+-- data), the raw-grid observations at the FOMC point ids (market data).
+
+config {
+    -- Decisions (2026-08-10):
+    --   Split tenor: 1Y -- the codegen default for
+    --     ir_curve_bootstrap_configs.split_tenor_code; the FOMC segment
+    --     ends where the Fixed-vs-Compounded-SOFR swap grid begins.
+    --   Pillar count: 8 -- eight meetings span ~one year, matching the
+    --     split at 1Y; the 2025-2027 window resolves 8F for any 2026
+    --     spot date.
+    split_tenor_code: String = "1Y"
+    fomc_pillar_count: Integer = 8
+}
+
+given {
+    us_fomc: Calendar
+}
+
+entity Calendar {
+    code: String
+    calendar_type: public_holiday | central_bank_meeting | data_release | financial_centre | other
+    country_code: String
+    source: String?
+    is_editable: Boolean
+
+    events: CalendarEvent with calendar = this
+    meeting_events: events where diary_entry_type = central_bank_meeting
+}
+
+entity CalendarEvent {
+    calendar: Calendar
+    -- Decision (2026-08-10): the event date is the second day of the
+    -- meeting -- the statement/decision day, usually a Wednesday. One
+    -- event per meeting; the Fed publishes each meeting as a two-day
+    -- range ("Jan 28-29"), and the policy decision lands on day two.
+    event_date: Timestamp
+    diary_entry_type: holiday | central_bank_meeting | data_release | other
+    name: String
+    description: String?
+    source: String?
+}
+
+entity Tenor {
+    code: String
+    kind: period | special
+    unit: day | week | month | year | none
+    multiplier: Integer
+
+    is_fomc: kind = special and unit = none and multiplier >= 1
+}
+
+entity TenorSchedule {
+    code: roll_quarter | fomc_meeting
+    schedule_source: closed_form | event_lookup
+    calendar: Calendar?
+    diary_entry_type: holiday | central_bank_meeting | data_release | other?
+}
+
+entity TenorConvention {
+    code: String
+    measured_from: spot | today | tomorrow | near_leg | imm_roll | none
+    algorithm: anchor_offset | schedule_step
+    schedule: TenorSchedule?
+}
+
+entity TenorResolution {
+    tenor: Tenor
+    convention: TenorConvention
+    offset_unit: day | week | month | year | none
+    offset_multiplier: Integer
+    schedule_step_count: Integer?
+}
+
+entity CurveBootstrapConfig {
+    code: String
+    interpolation: flat_forward_then_log_linear | log_linear | cubic_spline
+    split_tenor: Tenor
+
+    pillars: Pillar with config = this
+}
+
+entity Pillar {
+    config: CurveBootstrapConfig
+    start_tenor: Tenor
+    end_tenor: Tenor
+    role: deposit | fra | swap
+    sequence_index: Integer
+    start_date: Timestamp   -- set by resolution, consumed by the bootstrap
+    end_date: Timestamp
+}
+
+entity Observation {
+    point_id: String
+    curve_code: String
+    observation_date: Timestamp
+    rate: Decimal?   -- populated by the quote machinery, not by rules here
+}
+
+contract ScheduleWalk {
+    nth: (resolution: TenorResolution, anchor_date: Timestamp) -> Timestamp
+
+    @invariant NthOnOrAfter
+        -- The result is a date from the schedule's date set. Exactly
+        -- schedule_step_count dates of the set lie in the interval
+        -- [anchor + calendar offset, result]. The calendar offset is
+        -- the resolution's offset_unit/offset_multiplier.
+}
+
+contract OffsetApply {
+    shift: (resolution: TenorResolution, anchor_date: Timestamp) -> Timestamp
+
+    @invariant AnchorPlusOffset
+        -- The result is the anchor shifted by the resolution's
+        -- offset_unit x offset_multiplier, adjusted to a business day
+        -- on the currency calendar. Existing ANCHOR_OFFSET behavior.
+}
+
+-- The happy path: enter the Fed's meetings, resolve FOMC tenors off
+-- them, and bootstrap the short end as flat-forward segments.
+
+rule EnterFomcMeeting {
+    when: meeting: CalendarEvent.created
+    requires: meeting.diary_entry_type = central_bank_meeting
+        and meeting.calendar = us_fomc
+        and meeting.calendar.calendar_type = central_bank_meeting
+        and meeting.calendar.country_code = "US"
+        and meeting.calendar.is_editable
+    ensures: meeting.source = "federalreserve.gov"
+}
+
+rule ResolveAnchorOffset {
+    when: TenorResolutionRequested(resolution, anchor_date)
+    requires: resolution.convention.algorithm = anchor_offset
+    ensures: TenorResolved(
+        resolution: resolution,
+        anchor_date: anchor_date,
+        resolved_date: OffsetApply.shift(resolution, anchor_date)
+    )
+}
+
+rule ResolveScheduleStep {
+    when: TenorResolutionRequested(resolution, anchor_date)
+    requires: resolution.convention.algorithm = schedule_step
+    ensures: TenorResolved(
+        resolution: resolution,
+        anchor_date: anchor_date,
+        resolved_date: ScheduleWalk.nth(resolution, anchor_date)
+    )
+}
+
+rule ResolutionRejectedWhenScheduleExhausted {
+    when: TenorResolutionRequested(resolution, anchor_date)
+    requires: resolution.convention.algorithm = schedule_step
+        and resolution.convention.schedule.schedule_source = event_lookup
+        and (resolution.convention.schedule.calendar.meeting_events
+            where event_date >= anchor_date).count < resolution.schedule_step_count
+    ensures: ResolutionRejected(resolution: resolution, anchor_date: anchor_date)
+}
+
+rule ResolvePillarDates {
+    when: TenorResolved(resolution, anchor_date, resolved_date)
+    for p in Pillars where p.end_tenor = resolution.tenor:
+        ensures: p.end_date = resolved_date
+    for p in Pillars where p.start_tenor = resolution.tenor and p.sequence_index > 0:
+        ensures: p.start_date = resolved_date
+}
+
+rule PublishFomcPointQuotes {
+    when: cfg: CurveBootstrapConfig.created
+    for p in cfg.pillars where p.end_tenor.is_fomc:
+        ensures: Observation.created(
+            point_id: p.end_tenor.code,
+            curve_code: cfg.code,
+            observation_date: p.end_date
+        )
+}
+
+invariant NoMeetingStrictlyBetweenFomcPillars {
+    -- Consecutive FOMC pillars span exactly one meeting interval.
+    for p in Pillars where p.role = swap and p.start_tenor.code != "SPOT":
+        (CalendarEvent where
+            diary_entry_type = central_bank_meeting
+            and calendar = us_fomc
+            and event_date > p.start_date
+            and event_date < p.end_date).count = 0
+}
+
+invariant PillarDatesFollowSequence {
+    -- Pillar order in the config is date order of the resolved end dates.
+    for a in Pillars:
+        for b in Pillars where b.sequence_index > a.sequence_index:
+            b.end_date > a.end_date
+}
+
+invariant FomcSchedulePointsAtMeetingEvents {
+    for s in TenorSchedule where s.code = fomc_meeting:
+        s.schedule_source = event_lookup
+        and s.calendar = us_fomc
+        and s.diary_entry_type = central_bank_meeting
+}
+
+invariant SplitTenorIsConfigured {
+    for c in CurveBootstrapConfig:
+        c.split_tenor.code = config.split_tenor_code
+}
+
+invariant FomcConfigUsesFlatForward {
+    -- The short end is flat-forward; the boundary is the split tenor.
+    for c in CurveBootstrapConfig where c.split_tenor.code = config.split_tenor_code:
+        c.interpolation = flat_forward_then_log_linear
+}
+
+invariant FomcPillarCount {
+    for c in CurveBootstrapConfig:
+        (c.pillars where end_tenor.is_fomc).count = config.fomc_pillar_count
+}
+
+entity MarketDataConsumer {
+    code: String
+    preferred_curve: CurveBootstrapConfig
+}
+
+surface CurveRepublish {
+    facing consumer: MarketDataConsumer
+
+    context cfg: CurveBootstrapConfig where cfg = consumer.preferred_curve
+
+    contracts:
+        demands ScheduleWalk
+        demands OffsetApply
+
+    exposes:
+        cfg.code
+        cfg.split_tenor.code
+        for p in cfg.pillars:
+            p.start_tenor.code
+            p.end_tenor.code
+            p.start_date
+            p.end_date
+
+    provides:
+        TenorResolutionRequested(resolution, anchor_date)
+
+    @guarantee FlatBetweenMeetings
+        -- Between two consecutive FOMC pillar dates, the published
+        -- forward rate is constant (flat forward).
+
+    @guarantee ContinuousBeyondSplit
+        -- At and beyond the split tenor, the published forward rate
+        -- is continuous.
+
+    @guarantee PointIdsHaveQuotes
+        -- Every FOMC pillar's end-tenor code has an observation in
+        -- the raw grid.
+}
+
+-- Decisions (2026-08-10), answering the draft's open questions:
+--   Q1 meeting date: the second day -- the statement/decision day
+--     (Wednesday). Market convention; the Fed publishes two-day ranges
+--     and the decision lands at 2pm ET on day two. One event per
+--     meeting.
+--   Q2 unscheduled meetings: any central_bank_meeting event on US.FOMC
+--     is a step in the schedule -- the schedule is data, not formula.
+--     The 2025-2027 window contains only the 8 scheduled meetings per
+--     year, so the seed never exercises this.
+--   Q3 2027 window: complete. The Fed published the full 2027
+--     schedule on 2025-09-05, including the first 2028 meeting
+--     (Jan 25-26). All three years seed 8 meetings each.

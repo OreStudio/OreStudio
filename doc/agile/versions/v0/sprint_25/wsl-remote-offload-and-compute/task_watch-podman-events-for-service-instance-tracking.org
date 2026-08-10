@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: 34E28952-57DD-446F-91B3-1ED02E3B7F7B
-#+blocked_since: 2026-07-31
+#+branch: feature/watch-podman-events-for-service-instance-tracking
+#+pr: 1943
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-08-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ Newton).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]] landing -- nothing to watch until remote hosts actually run Quadlet-managed podman containers. |
-| Next         | Begin implementation once the Quadlet generator lands. |
-| Last touched | 2026-07-31                               |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
@@ -56,10 +56,6 @@ Newton).
   unaffected -- this watcher never runs there.
 
 * Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
@@ -78,12 +74,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1943][#1943]] | [agile] Abandon task watch-podman-events-for-service-instance-tracking |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review round 1 (2 bot reviews). First: no findings — every claim fact-checked against the tree, all consistent. Second: (a) "schema already removed from ores.sql" vs "drop capture remains the successor work" reads self-contradictory — the capture's referenced file paths no longer exist; (b) Plan placeholder removed, unlike a sibling never-started task | task_watch-podman-events-for-service-instance-tracking.org, story.org | Accepted / Declined | (a) Accepted: Result and story Decisions now say the capture was written before the schema removal, resolving the contradiction. (b) Declined: the close-task recipe (how_do_i_work_a_task.org) prescribes clearing * Plan at close. |
 
 * Result
+
+Abandoned: the task's premise no longer holds. It assumed
+~process_supervisor~ still wrote the ~service_instance~/
+~service_event~ audit trail and that the tables were live. Both are
+gone: ~ores.controller.service~/~process_supervisor~ was
+decommissioned in sprint 24; the sprint-25 controller-tables audit
+(2026-08-04) found the instances/events tables have zero readers or
+writers; the controller SQL schema was removed from ~ores.sql~; and
+the backlog capture ~drop_dead_controller_instances_events_tables~,
+written before that removal, documents dropping the tables as the
+successor work. systemd owns
+service lifecycle state everywhere now -- native units locally,
+Quadlet units on remote hosts -- with unit state and the journal as
+the audit trail. Building the watcher would resurrect dead tables
+that nothing consumes. The task was clocked on and unblocked before
+the contradiction was found; this branch records that, and the
+abandonment.

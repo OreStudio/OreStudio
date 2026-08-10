@@ -34,10 +34,10 @@ implementation.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | Analysis complete; spec model design underway. |
+| Now          | PR 1 (infrastructure) merged: metatype, loader, facet, 8 archetypes, enums zero-diff verified. PR 2 (adoption) pending. |
 | Waiting on   | Nothing.                               |
-| Next         | Design the spec org-model format; implement the profile. |
-| Last touched | 2026-08-08                               |
+| Next         | Raise PR 2: wire the remaining 7 archetypes, loader-side guard population and spec =type= rows, zero-diff verification, =cmake-sources-drift=. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 

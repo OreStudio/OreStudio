@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: CBE53221-9F38-4C94-8AE5-AA86867965C8
+:END:
+#+title: Task: Add code-review-comments skill
+#+description: New Claude Code skill that reviews and cleans code comments, wired into CLAUDE.md so it applies to all code we create or edit. Based on two prior-art sources with attribution.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch: feature/code-review-comments
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the repo one consistent rule set for code comments: sparse, durable, above-the-code, no edit-history narration. The rules come from two prior-art sources, both attributed: the comment-cleanup skill (motlin/claude-code-plugins, Apache-2.0) and the clean-code-comments skill (mcpmarket.com).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Skill doc exists at doc/llm/skills/code-review-comments/SKILL.org with the comment rules, a reference file, and worked examples.
+- Prior art attributed: LICENSE.txt carries Apache-2.0 with the motlin source named; both upstreams linked from the Reference section.
+- CLAUDE.md carries a standing rule so the comment rules apply to every comment in code we create or edit.
+- Skill cross-referenced from the S1 Agent function doc and the skills catalogue.
+- Skills bundle rebuilds clean and the skill appears in the Claude Code skill selector.
+- Site build is clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

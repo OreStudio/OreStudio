@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 95D4148C-45C3-4DAE-B672-F910E47FEF54
+:END:
+#+title: How do I list compute workunits from the shell?
+#+description: List the workunits of the compute grid as a table, optionally filtered to one batch by external reference.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:workunits:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I list compute workunits from the shell?
+
+* Answer
+
+Log in as the system super admin, then run =compute list-workunits= to print every workunit as a table: id, batch id, app version id, input uri, priority, target redundancy, modified by, recorded at. Pass =--batch= with the batch external reference to filter to one batch.
+
+#+name: list-compute-workunits
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute list-workunits
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<list-compute-workunits>>
+EOF
+#+end_src
+
+Pass =--batch= with the batch external reference to filter to one
+batch.
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_list_compute_workunits_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_list_compute_workunits_from_the_shell.ores= against a live serving environment.
+
+* See also
+
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]]
+- [[id:A5E76D14-5E3D-482D-9E2C-10DE2B28539C][How do I list compute results from the shell?]]
+- [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]

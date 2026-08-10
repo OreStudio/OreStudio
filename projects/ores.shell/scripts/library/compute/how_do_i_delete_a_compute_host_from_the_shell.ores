@@ -1,0 +1,10 @@
+# How do I delete a compute host from the shell?
+# Remove a compute host row by id; the command refuses to delete a host that is online.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_delete_a_compute_host_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute delete-host $HOST_ID
+logout

@@ -41,8 +41,8 @@ the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
 
 * Compute
 
-Read-only compute grid verbs, speaking to =ores.compute= over NATS.
-Each is tangled into the runnable script library
+Compute grid verbs, speaking to =ores.compute= over NATS. Each is
+tangled into the runnable script library
 (=projects/ores.shell/scripts/library/compute/=).
 
 - [[id:D3E963FF-767E-4626-8145-9AEE846F9AA3][How do I list compute apps from the shell?]]
@@ -50,6 +50,15 @@ Each is tangled into the runnable script library
 - [[id:9CF4FA67-3F04-4F02-B135-4B5966C4CE35][How do I list compute platforms from the shell?]]
 - [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]
 - [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]]
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]]
+- [[id:95D4148C-45C3-4DAE-B672-F910E47FEF54][How do I list compute workunits from the shell?]]
+- [[id:A5E76D14-5E3D-482D-9E2C-10DE2B28539C][How do I list compute results from the shell?]]
+- [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]]
+- [[id:714B212F-3EF9-4F8B-A7FB-867F2B47951E][How do I delete a compute host from the shell?]]
+- [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]]
+- [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]]
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]]
 
 * Accounts
 

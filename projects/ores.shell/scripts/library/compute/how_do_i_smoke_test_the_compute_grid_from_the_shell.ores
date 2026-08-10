@@ -1,0 +1,12 @@
+# How do I smoke test the compute grid from the shell?
+# Drive the whole compute grid from one library script: add a batch, dispatch 10 to 20 consecutive jobs, watch it drain, and assert every online node was exercised and every result succeeded.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_smoke_test_the_compute_grid_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute add-batch smoke-$SMOKE_REF 15 --smoke
+compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_DIR
+compute grid-stats --watch smoke-$SMOKE_REF --smoke
+logout

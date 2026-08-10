@@ -1,0 +1,10 @@
+# How do I view compute grid stats from the shell?
+# Render the compute grid telemetry summary and per-node rows; --watch polls a batch until it drains, --smoke asserts every online host was exercised and every result succeeded.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_view_compute_grid_stats_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute grid-stats
+logout

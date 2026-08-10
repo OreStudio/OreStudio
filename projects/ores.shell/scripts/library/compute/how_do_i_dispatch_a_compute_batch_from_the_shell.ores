@@ -1,0 +1,10 @@
+# How do I dispatch a compute batch from the shell?
+# Pack an input directory, upload it once as the batch input bundle, and dispatch one job per job count from the shell.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_dispatch_a_compute_batch_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_DIR
+logout

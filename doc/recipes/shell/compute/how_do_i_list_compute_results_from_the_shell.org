@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: A5E76D14-5E3D-482D-9E2C-10DE2B28539C
+:END:
+#+title: How do I list compute results from the shell?
+#+description: List the submitted compute results as a table with outcome and host, optionally filtered to one batch by external reference.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:results:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I list compute results from the shell?
+
+* Answer
+
+Log in as the system super admin, then run =compute list-results= to print every submitted result as a table: id, workunit id, host id, server state, outcome, output uri, error message, received at, modified by, recorded at. Pass =--batch= with the batch external reference to filter to one batch.
+
+#+name: list-compute-results
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute list-results
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<list-compute-results>>
+EOF
+#+end_src
+
+Pass =--batch= with the batch external reference to filter to one
+batch.
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_list_compute_results_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_list_compute_results_from_the_shell.ores= against a live serving environment.
+
+* See also
+
+- [[id:95D4148C-45C3-4DAE-B672-F910E47FEF54][How do I list compute workunits from the shell?]]
+- [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]]
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]]

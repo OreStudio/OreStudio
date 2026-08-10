@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: E75065F1-5B56-4027-8454-9226E102E725
+:END:
+#+title: How do I view compute grid stats from the shell?
+#+description: Render the compute grid telemetry summary and per-node rows; --watch polls a batch until it drains, --smoke asserts every online host was exercised and every result succeeded.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:telemetry:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I view compute grid stats from the shell?
+
+* Answer
+
+Log in as the system super admin, then run =compute grid-stats= to print the grid summary: host count and online count, result and workunit counts, outcome counts, and the per-node rows. Pass =--watch= with a batch external reference to poll every 10 seconds until the batch drains, then render the final snapshot. Pass =--smoke= with =--watch= to additionally assert the smoke guarantees on the drained batch: every result has outcome Success and every host online at the drain transition has at least one result in the batch. The command fails if either check does not hold. Pass =--timeout= to bound the wait in seconds (default 300).
+
+#+name: view-compute-grid-stats
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute grid-stats
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<view-compute-grid-stats>>
+EOF
+#+end_src
+
+The per-node rows render the node telemetry stored by the ~ores.compute~
+core; empty rows mean no node samples were recorded for the grid yet.
+The =--watch= and =--smoke= switches make the command the assert engine
+of the [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][grid smoke test]].
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_view_compute_grid_stats_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_view_compute_grid_stats_from_the_shell.ores= against a live serving environment.
+
+* See also
+
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]]
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]]
+- [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]

@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 64816867-0D2E-4A9D-A90C-ADD70F3C9B3B
+:END:
+#+title: How do I smoke test the compute grid from the shell?
+#+description: Drive the whole compute grid from one library script: add a batch, dispatch 10 to 20 consecutive jobs, watch it drain, and assert every online node was exercised and every result succeeded.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:smoke-test:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I smoke test the compute grid from the shell?
+
+* Answer
+
+Run the library script =ores.shell/scripts/library/compute/how_do_i_smoke_test_the_compute_grid_from_the_shell.ores= against a live serving environment. It adds a batch with 10 to 20 jobs, dispatches them to the target app version, watches =compute grid-stats --watch --smoke= until the batch drains, and asserts every online host was exercised and every result has outcome Success. The script fails if either assert does not hold.
+
+#+name: smoke-test-compute-grid
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute add-batch smoke-$SMOKE_REF 15 --smoke
+compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_DIR
+compute grid-stats --watch smoke-$SMOKE_REF --smoke
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<smoke-test-compute-grid>>
+EOF
+#+end_src
+
+The batch external reference is =smoke-$SMOKE_REF=; set =SMOKE_REF= to
+anything unique. The job count is 15; the =--smoke= switch bounds it
+to the 10 to 20 range. =grid-stats --watch --smoke= polls every 10
+seconds until the batch drains, then asserts every host online at the
+drain transition was exercised and every result has outcome Success.
+The script fails if either check does not hold.
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_smoke_test_the_compute_grid_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Live proof against brave_hopper on 2026-08-11: 10 jobs drained in
+seconds with all results Success; the smoke assert then correctly
+FAILED on the phantom host =clever-echidna= (online, zero results),
+aborting the script as designed. The script cannot pass while that
+host heartbeats without pulling work.
+
+* See also
+
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]]
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]]
+- [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]]

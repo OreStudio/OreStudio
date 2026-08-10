@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 92E51A3E-935B-49AE-8429-B36181FB9AFA
+:END:
+#+title: How do I download a compute result output from the shell?
+#+description: Fetch a result output bundle from compute storage and unpack the tar.gz into a target directory.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:storage:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I download a compute result output from the shell?
+
+* Answer
+
+Log in as the system super admin, then run =compute download-output= with the result id and a destination directory. The command fetches the output bundle the node uploaded with the result from compute storage and unpacks the tar.gz into the destination.
+
+#+name: download-compute-result-output
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute download-output $RESULT_ID $DEST_DIR
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<download-compute-result-output>>
+EOF
+#+end_src
+
+The result id comes from =compute list-results=; find the batch
+external reference first, then the result within it.
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_download_a_compute_result_output_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_download_a_compute_result_output_from_the_shell.ores= against a live serving environment.
+
+* See also
+
+- [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]]
+- [[id:A5E76D14-5E3D-482D-9E2C-10DE2B28539C][How do I list compute results from the shell?]]

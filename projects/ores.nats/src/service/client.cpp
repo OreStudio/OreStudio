@@ -133,14 +133,24 @@ namespace {
 // NATS async error handler: forwards connection/subscription errors to
 // Boost.Log instead of the library's default stderr print.
 // NATS_CONNECTION_CLOSED is expected during orderly drain — suppress it.
-void on_conn_error(natsConnection* /*nc*/,
+void on_conn_error(natsConnection* nc,
                    natsSubscription* /*sub*/,
                    natsStatus err,
                    void* /*closure*/) {
     if (err == NATS_CONNECTION_CLOSED)
         return;
     try {
-        BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
+        // The live connection's last-error detail (e.g. a certificate-
+        // verify reason after a reconnect attempt) beats the coarse
+        // natsStatus_GetText category alone.
+        char detail[256] = {0};
+        if (nc != nullptr)
+            natsConnection_ReadLastError(nc, detail, sizeof(detail));
+        if (detail[0] != '\0')
+            BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err)
+                                      << " (" << detail << ")";
+        else
+            BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
     } catch (...) {
         // Boost.Log may already be torn down on a NATS internal thread.
     }
@@ -427,8 +437,17 @@ void client::connect() {
                 kind = nats_error_kind::other;
                 break;
         }
-        throw nats_connect_error(kind,
-                                 std::string("NATS connect failed: ") + natsStatus_GetText(s));
+        // natsStatus_GetText only yields the coarse category ("SSL Error").
+        // The thread-local last error carries nats.c's fine-grained detail
+        // (e.g. the OpenSSL certificate-verify reason with the peer cert
+        // subject), which is what makes a failed handshake diagnosable.
+        std::string detail;
+        if (const char* last = nats_GetLastError(nullptr))
+            detail = last;
+        throw nats_connect_error(
+            kind, std::string("NATS connect failed: ") + natsStatus_GetText(s) +
+                      (detail.empty() ? std::string()
+                                      : std::string(" (") + detail + ")"));
     }
 
     // Note: natsConnection_JetStream(jsCtx**, natsConnection*, jsOptions*)

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: CBAD58B1-26F3-405E-9155-EF039B429B30
+:END:
+#+title: Task: Scaffold story: Hotfix: macOS CI fails to start NATS server, nats-server not installed
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :fix_macos_ci_nats_server_not_found:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/fix-macos-ci-nats-server-not-found
+#+pr: 1944
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1944][#1944]] | [ci] Run the vendored nats-server binary on all CI platforms |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story scaffolding shipped in commit 955562d76: story.org, the scaffold
+and implement task docs, and the sprint.org wiring row. The implement
+task's fix rides the same PR (the story's first PR), per the hotfix's
+one-line scope.

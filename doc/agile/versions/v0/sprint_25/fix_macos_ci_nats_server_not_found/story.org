@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 69D2C83C-F79B-4B52-98B9-F3A8664B0BD8
+:END:
+#+title: Story: Hotfix: macOS CI fails to start NATS server, nats-server not installed
+#+description: Continuous MacOS CI aborts at the Start NATS server step: the nats-server binary is only installed inside the Run CTest workflow step (brew install autoconf automake libtool autoconf-archive nats-server), which runs after the step that launches it, so the launch emits command not found and the 30s readiness poll fails. Linux CI installs it via compass env install-packages and Windows CI downloads a GitHub release (v2.10.24) -- three platforms, three sources, three versions. Introduced by commit 41a07950e which added the Start NATS server step to all four workflows. Fix: every CI workflow gets an identical Setup NATS server step running the shared build/scripts/setup_nats_server.sh (PowerShell equivalent setup_nats_server.ps1 on Windows), which unpacks the vendored nats-server v2.14.3 release (external/nats/packages) and puts it on PATH -- one pinned binary on every platform instead of apt/brew/GitHub-download.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every CI platform (Linux, macOS, Windows) must launch NATS from the same pinned nats-server binary -- the vendored v2.14.3 release under external/nats/packages -- installed by an identical Setup NATS server step before the Start NATS server step, so the macOS command-not-found failure is fixed and every platform exercises the same version.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-10                               |
+
+* Acceptance
+
+- Every CI workflow (continuous-linux, continuous-macos, continuous-windows, nightly-linux) has a Setup NATS server step before the Start NATS server step
+- The step unpacks the vendored nats-server v2.14.3 release for the platform and puts it on PATH (setup_nats_server.sh; setup_nats_server.ps1 on Windows)
+- The platform-specific NATS installs are gone: nats-server removed from the macOS CTest step brew list, the GitHub-release download removed from Windows CI
+- The Start NATS server step resolves the binary without command not found
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CBAD58B1-26F3-405E-9155-EF039B429B30][Scaffold story: Hotfix: macOS CI fails to start NATS server, nats-server not installed]] | DONE | 2026-08-10 | 2026-08-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:34F2B433-39D6-40CD-AE54-EA7E969646E6][Run the vendored nats-server binary on all CI platforms]] | DONE | | 2026-08-10 | Initial task for: Hotfix: macOS CI fails to start NATS server, nats-server not installed |
+
+* Decisions
+
+- CI runs the vendored nats-server binary (external/nats/packages, pinned v2.14.3) via a shared Setup NATS server step on every platform; local dev keeps its distro package (apt) because systemd runs the upstream unit shipped by it.
+
+* Out of scope
+
+-

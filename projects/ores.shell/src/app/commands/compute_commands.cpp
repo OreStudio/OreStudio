@@ -41,7 +41,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cli/cli.h>
-#include <iomanip>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -374,13 +373,12 @@ void compute_commands::process_list_platforms(std::ostream& out, nats_client& se
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->platforms.size()
                               << " platforms.";
 
-    out << std::endl
-        << std::left << std::setw(38) << "ID" << std::setw(14) << "Code" << std::setw(36)
-        << "Display Name" << std::setw(10) << "OS" << std::setw(10) << "CPU Arch" << std::endl;
+    // Provisional output: raw rows until the drift task generates the
+    // platform table_io. The reconciliation task replaces this loop
+    // with `out << resp->platforms`.
     for (const auto& p : resp->platforms) {
-        out << std::left << std::setw(38) << boost::uuids::to_string(p.id) << std::setw(14)
-            << p.code << std::setw(36) << p.display_name << std::setw(10) << p.os_family
-            << std::setw(10) << p.cpu_arch << std::endl;
+        out << boost::uuids::to_string(p.id) << ' ' << p.code << ' ' << p.display_name
+            << ' ' << p.os_family << ' ' << p.cpu_arch << std::endl;
     }
     out << std::endl;
 }

@@ -76,6 +76,12 @@ LDD_NO_LIBS_PATH = """\
 	libores.foo.so.0 => /other/path/lib/libores.foo.so.0 (0x7f0000000000)
 """
 
+# Sibling of lib_dir sharing its path as a string prefix — the old
+# str(lib_dir) in str(resolved) check misclassified this as inside lib_dir.
+LDD_SIBLING_PREFIX = """\
+	libores.foo.so.0 => /tmp/stage/lib-old/libores.foo.so.0 (0x7f0000000000)
+"""
+
 
 class TestLddLibs:
     def test_extracts_ores_libs_only(self, monkeypatch):
@@ -118,6 +124,18 @@ class TestLddLibs:
         def fake_run(cmd, capture_output, text, env):
             return subprocess.CompletedProcess(
                 args=cmd, returncode=0, stdout=LDD_NO_LIBS_PATH, stderr="")
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        libs = _ldd_libs(Path("/tmp/stage/bin/svc"), Path("/tmp/stage/lib"))
+        assert libs == set()
+
+    def test_excludes_libs_in_sibling_dir_sharing_path_prefix(self,
+                                                             monkeypatch):
+        """A sibling dir sharing lib_dir's path as a string prefix
+        (e.g. .../lib-old) is outside lib_dir and must not match."""
+        def fake_run(cmd, capture_output, text, env):
+            return subprocess.CompletedProcess(
+                args=cmd, returncode=0, stdout=LDD_SIBLING_PREFIX, stderr="")
 
         monkeypatch.setattr(subprocess, "run", fake_run)
         libs = _ldd_libs(Path("/tmp/stage/bin/svc"), Path("/tmp/stage/lib"))

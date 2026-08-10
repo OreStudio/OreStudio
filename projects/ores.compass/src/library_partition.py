@@ -102,12 +102,14 @@ def _ldd_libs(binary: Path, lib_dir: Path) -> set[str]:
         # Only include libs that live inside our staged lib directory
         # (or the publish directory — same content).  This naturally
         # filters out libc, libm, libstdc++, libgcc_s, libpthread, …
+        # Path containment, not string containment: a sibling dir that
+        # shares the path as a prefix (e.g. .../lib-old) must not match.
         try:
             resolved = Path(path).resolve()
         except OSError:
             continue
 
-        if str(lib_dir.resolve()) in str(resolved):
+        if resolved.is_relative_to(lib_dir.resolve()):
             libs.add(soname)
 
     return libs

@@ -24,7 +24,11 @@ os="$(uname -s)"
 arch="$(uname -m)"
 case "${os}" in
     Linux*)
-        pkg="linux-amd64"
+        if [[ "${arch}" == "arm64" ]]; then
+            pkg="linux-arm64"
+        else
+            pkg="linux-amd64"
+        fi
         ;;
     Darwin*)
         if [[ "${arch}" == "arm64" ]]; then
@@ -38,6 +42,12 @@ case "${os}" in
         exit 1
         ;;
 esac
+
+archive="${PACKAGES_DIR}/nats-server-${VERSION}-${pkg}.tar.gz"
+if [[ ! -f "${archive}" ]]; then
+    echo "error: no vendored nats-server archive for ${os}-${arch}: ${archive}" >&2
+    exit 1
+fi
 
 dest="${CHECKOUT_ROOT}/build/nats/vendored/${pkg}"
 bin=""

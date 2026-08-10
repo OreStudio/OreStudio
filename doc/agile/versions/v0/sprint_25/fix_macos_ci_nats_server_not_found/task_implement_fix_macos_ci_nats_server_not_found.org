@@ -68,9 +68,16 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1 — 2026-08-10 (three bot comments on PR #1944):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Linux arch hardcoded to amd64; an arm64 runner would silently PATH the wrong binary | build/scripts/setup_nats_server.sh | Fixed | Linux branch now checks arm64 like the Darwin branch; added a missing-archive guard so an unsupported combo fails with a clear diagnostic at setup time |
+| 2 | nats-server still in env_packages.py _BASELINE; apt install now redundant on Linux CI | projects/ores.compass/src/env_packages.py | Not changed | Local dev systemd unit ExecStart=/usr/sbin/nats-server requires the apt package; install-packages is shared between local dev and Linux CI; GITHUB_PATH prepend makes the vendored binary win on CI anyway. Unify local dev on the vendored binary is a follow-up. |
+| 3 | Add-Content -Encoding utf8 can write a BOM under Windows PowerShell 5.1 | build/scripts/setup_nats_server.ps1 | Fixed | Changed to -Encoding utf8NoBOM |
+| 4 | Idempotency skip branch is dead code in CI | build/scripts/setup_nats_server.sh | Not changed | Deliberate guard for local/self-hosted reuse; no caching wired up by design |
+| 5 | Doc commit SHA should be a4932994, not a49329949 | task_implement_fix_macos_ci_nats_server_not_found.org | Not changed | Reviewer claim wrong: git rev-parse --short=11 a49329949 gives a49329949bb |
+| 6 | Step duplicated across four workflows; shared composite action as follow-up | .github/workflows/*.yml | Not changed | Out of hotfix scope; noted as follow-up |
 
 * Result
 

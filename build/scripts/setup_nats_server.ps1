@@ -38,5 +38,5 @@ if (-not $env:GITHUB_PATH) {
     Write-Warning "GITHUB_PATH is not set; $dest is not on PATH"
 }
 else {
-    Add-Content -Path $env:GITHUB_PATH -Value $dest -Encoding utf8
+    Add-Content -Path $env:GITHUB_PATH -Value $dest -Encoding utf8NoBOM
 }

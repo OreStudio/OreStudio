@@ -581,9 +581,13 @@ def _section(node: OrgNode, title: str) -> OrgNode | None:
     return None
 
 
-# org verbatim markup is single-line: an unpaired ``=`` in prose (e.g.
-# "asset_class=ir") must not span across newlines to a later ``=``.
-_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=\n]*?)=")
+# org verbatim markup is single-line by spec, but _strip_body's default
+# keeps the historical cross-line matching: entity/model prose uses
+# multi-line ``=...=`` spans and the generated files encode that
+# behaviour. Callers that strip prose containing unpaired ``=`` (e.g.
+# "asset_class=ir") pass per_line=True instead, so a bare ``=`` never
+# pairs with a later one across a newline.
+_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=]*?)=")
 
 
 def _strip_org_markup(text: str) -> str:
@@ -595,14 +599,21 @@ def _strip_org_markup(text: str) -> str:
     return _ORG_VERBATIM_RE.sub(r"\1", text)
 
 
-def _strip_body(node: OrgNode) -> str:
+def _strip_body(node: OrgNode, per_line: bool = False) -> str:
     """Return the prose body of a node, trimmed of leading/trailing blank
-    lines and with org-mode verbatim markup stripped."""
+    lines and with org-mode verbatim markup stripped.
+
+    per_line strips the markup line-by-line: an unpaired ``=`` in prose
+    (e.g. "asset_class=ir") must not pair with a later ``=`` on a
+    different line. The default keeps the historical cross-line matching
+    (see _ORG_VERBATIM_RE)."""
     lines = node.body_lines
     while lines and not lines[0].strip():
         lines = lines[1:]
     while lines and not lines[-1].strip():
         lines = lines[:-1]
+    if per_line:
+        return "\n".join(_strip_org_markup(line) for line in lines)
     return _strip_org_markup("\n".join(lines))
 
 
@@ -2294,7 +2305,7 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                        ("requirement_brief", "Requirement brief")):
         brief_section = _section(doc.root, title)
         if brief_section:
-            brief = _strip_body(brief_section)
+            brief = _strip_body(brief_section, per_line=True)
             if brief:
                 lines = brief.splitlines()
                 continuation = [lines[0]]

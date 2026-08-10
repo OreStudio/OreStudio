@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 36E9BEDD-4804-4822-AFD8-8AF961978398
+:END:
+#+title: Story: Manage the compute grid from the shell
+#+description: Comprehensive ores.shell compute verbs so compute-grid tests run without a UI: add and list apps, app versions, platforms, hosts and batches; add batches and dispatch jobs; download job inputs and outputs; monitor grid health per node; plus a smoke-test script that dispatches 10-20 consecutive jobs and asserts every online node was exercised.
+#+type: story
+#+level: s2
+#+filetags: :compute:shell:cli:tooling:sprint_25:v0:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.shell gains a comprehensive ~compute~ command set so the compute
+grid can be driven entirely from the shell, with no UI:
+
+- Read the grid: list apps, app versions, platforms, hosts and
+  batches.
+- Drive jobs: add a batch, dispatch N consecutive jobs from it, list
+  its workunits and results.
+- Fetch artifacts: download a job's input bundle and a result's output
+  bundle from compute storage.
+- Observe the grid: ~grid-stats~ renders the telemetry summary as a
+  per-node table (host, heartbeat age, tasks completed, bytes moved);
+  ~delete-host~ removes a host row.
+- Prove the grid: a library script dispatches 10-20 consecutive jobs
+  and asserts every online node was exercised and every result
+  succeeded — the "did all engines kick in" test, runnable without a
+  UI.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Story scaffolded; all five tasks defined. |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the read-verbs task when work begins. |
+| Last touched  | 2026-08-10                               |
+
+* Acceptance
+
+- Every verb above exists in the shell's compute menu and works
+  against a live serving environment.
+- A script can add a batch, dispatch 10-20 consecutive jobs, poll
+  ~grid-stats~ until the batch drains, and assert every online node
+  was exercised and every result has outcome Success.
+- The smoke-test script is proven live against brave_hopper with the
+  Newton compute node online; per-node task counts show jobs spread
+  across the grid, not all on one host.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AB9F96EB-69A5-4D40-9DBB-8D2B60D8039F][Scaffold story: Manage the compute grid from the shell]] | STARTED | 2026-08-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7FB32716-261C-45D9-A5C9-6A43FF2AD6F5][Add compute read verbs to the shell: list apps, app versions, platforms, hosts and batches]] | BACKLOG | | | Read-only verbs over the compute domain: list apps, app versions, platforms, hosts and batches, with the fields a script needs. |
+| [[id:05D09703-6899-43A1-A9F8-997AE79D6436][Add job lifecycle verbs to the shell: add-batch, dispatch-batch with a job-count loop, list-workunits and list-results]] | BACKLOG | | | Shell verbs to drive the compute job lifecycle end-to-end without a UI: create a batch, dispatch N consecutive jobs from it (pack and upload the input bundle once, then loop N saves), list the workunits of a batch, and list the results with their outcome and host. |
+| [[id:90383934-D78D-41A2-88C3-FF369CB01830][Add grid monitoring verbs to the shell: grid-stats with per-node detail and delete-host]] | BACKLOG | | | Shell verbs to observe the compute grid: grid-stats fetches the telemetry grid summary and renders a per-node table (host, heartbeat age, tasks completed, input/output bytes), so a test can verify every online node was exercised; delete-host removes a host row by id. |
+| [[id:5908A274-E089-4D2B-9982-68ED6F779B9B][Add artifact download verbs to the shell: download job inputs and outputs]] | BACKLOG | | | Shell verbs to fetch a job's input bundle and a result's output bundle from compute storage (ores.storage.net.storage_transfer is already linked into the shell via package_publisher): download-input and download-output, taking the workunit id or result id and unpacking the tar.gz into a target directory. |
+| [[id:292AB16F-3785-4D1F-AEAC-BF6B59390078][Add a compute grid smoke-test script and prove it live]] | BACKLOG | | | Library .ores script that exercises the whole grid from the shell: add a batch, dispatch 10-20 consecutive jobs, poll grid-stats until the batch drains, then assert every online node was exercised and every result has outcome Success. Prove it live against brave_hopper with the Newton node online, and record the proof in the task result. |
+
+* Decisions
+
+* Out of scope
+
+- Backend changes to the compute service: it already exposes every
+  required API subject; this story is the shell verb layer only.
+- Desktop client UI: the shell is the delivery vehicle here.
+- Process-workflow verbs: the shell ~workflow~ menu already covers
+  that domain; this story is compute jobs.

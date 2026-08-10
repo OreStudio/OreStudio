@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/presentation/feed_binding_history_field_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/enums.hpp>
 
 namespace ores::marketdata::presentation {
 
@@ -32,6 +33,7 @@ render_feed_binding_fields(const domain::feed_binding& v) {
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Ore Key", .value = v.ore_key});
     fields.push_back({.name = "Source Name", .value = v.source_name});
+    fields.push_back({.name = "Asset Class", .value = rfl::enum_to_string(v.asset_class)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Modified By", .value = v.modified_by});
     fields.push_back({.name = "Performed By", .value = v.performed_by});

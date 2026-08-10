@@ -71,7 +71,6 @@ public:
     std::vector<domain::market_fixing> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all market fixings, possibly filtered by primary key.
      */

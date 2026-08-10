@@ -71,7 +71,6 @@ public:
     std::vector<domain::observation_lineage> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all observation lineages, possibly filtered by primary key.
      */

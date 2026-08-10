@@ -38,6 +38,7 @@
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_role_protocol.hpp"
+#include "ores.refdata.api/messaging/diary_entry_type_protocol.hpp"
 #include "ores.refdata.api/messaging/instrument_code_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
@@ -359,6 +360,18 @@ fetch_party_types(ClientManager* cm) {
     if (!response)
         return std::unexpected(QString::fromStdString(response.error()));
     return std::move(response->types);
+}
+
+std::expected<std::vector<refdata::domain::diary_entry_type>, QString>
+fetch_diary_entry_types(ClientManager* cm) {
+    if (!cm)
+        return std::unexpected(QStringLiteral("Not connected to server."));
+
+    refdata::messaging::get_diary_entry_types_request request;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (!response)
+        return std::unexpected(QString::fromStdString(response.error()));
+    return std::move(response->entry_types);
 }
 
 std::expected<std::vector<refdata::domain::party_status>, QString>

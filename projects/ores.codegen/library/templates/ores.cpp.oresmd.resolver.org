@@ -2,7 +2,7 @@
 :ID: D6F7A8B9-C0D1-E2F3-A4B5-C6D7E8F9A0B1
 :END:
 #+title: ores.cpp.oresmd.resolver
-#+description: resolve_* functions and std::visit dispatch.
+#+description: resolve_* functions merging a requirement with defaults.
 #+type: archetype
 #+output: projects/ores.marketdata/core/src/oresmd/oresmd_resolver.cpp
 #+facet: ores.cpp.oresmd
@@ -11,9 +11,105 @@
 #+created: 2026-08-09
 #+updated: 2026-08-09
 
+The resolver: one =resolve_<asset_class>= function per class, generated from
+the spec's Fields table. The fill strategy per field is structural: a field
+with a default resolves via =pick= (requirement wins, then the default, else
+throw), a mandatory string resolves via =pick_mandatory_string= (empty
+string treated as absent), everything else via =pick_optional=. The =vol=
+field is skipped. The function definitions follow the manifest's
+=parse_order=; the dispatch in =oresmd_resolver::resolve= follows
+=variant_order=.
+
 * Template
 
 #+begin_src mustache :tangle oresmd_resolver.cpp.mustache
-{{! GENERATED FILE — tangled from ores.cpp.oresmd.resolver.org. }}
-// oresmd_resolver.cpp — generated from oresmd model specs.
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.resolver.org. Edit the org source. }}
+{{{cpp_license}}}
+#include "ores.marketdata.core/oresmd/oresmd_resolver.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include <boost/throw_exception.hpp>
+#include <format>
+
+namespace {
+
+using namespace ores::marketdata::domain;
+using ores::marketdata::core::oresmd_exception;
+
+template <typename T>
+T pick(const std::optional<T>& required, const std::optional<T>& fallback, std::string_view field) {
+    if (required)
+        return *required;
+    if (fallback)
+        return *fallback;
+    BOOST_THROW_EXCEPTION(
+        oresmd_exception(std::format("oresmd resolve: '{}' is unresolved.", field)));
+}
+
+template <typename T>
+std::optional<T> pick_optional(const std::optional<T>& required, const std::optional<T>& fallback) {
+    return required ? required : fallback;
+}
+
+/**
+ * @brief Like pick(), but for the mandatory string fields (pair/ccy/ticker/...) that have
+ * no sensible non-empty default -- an identifier struct's mandatory std::string members
+ * are never themselves optional, so a caller passing an unfilled `defaults` identifier
+ * has that field default-constructed to "", not "absent". Treating "" as absent here,
+ * on both the requirement and the fallback, is what lets resolve() actually detect an
+ * unresolved mandatory field instead of silently resolving it to an empty string.
+ */
+std::string pick_mandatory_string(const std::optional<std::string>& required,
+                                  const std::string& fallback,
+                                  std::string_view field) {
+    if (required && !required->empty())
+        return *required;
+    if (!fallback.empty())
+        return fallback;
+    BOOST_THROW_EXCEPTION(
+        oresmd_exception(std::format("oresmd resolve: '{}' is unresolved.", field)));
+}
+
+{{#oresmd_parse_specs}}
+market_data_identifier resolve_{{asset_class}}(const {{asset_class}}_market_data_requirement& req,
+    const market_data_identifier& defaults) {
+    const auto* d = std::get_if<{{asset_class}}_market_data_identifier>(&defaults);
+    {{asset_class}}_market_data_identifier id;
+{{#fields}}
+{{^resolver_skip}}
+{{#default}}
+    id.{{name}} = pick(req.{{name}}, d ? std::optional(d->{{name}}) : std::nullopt, "{{name}}");
+{{/default}}
+{{^default}}
+{{#is_mandatory_string}}
+    id.{{name}} = pick_mandatory_string(req.{{name}}, d ? d->{{name}} : std::string{}, "{{name}}");
+{{/is_mandatory_string}}
+{{^is_mandatory_string}}
+    id.{{name}} = pick_optional(req.{{name}}, d ? d->{{name}} : std::nullopt);
+{{/is_mandatory_string}}
+{{/default}}
+{{/resolver_skip}}
+{{/fields}}
+    return id;
+}
+
+{{/oresmd_parse_specs}}
+}
+
+namespace ores::marketdata::core {
+
+domain::market_data_identifier
+oresmd_resolver::resolve(const domain::market_data_requirement& requirement,
+                         const domain::market_data_identifier& defaults) {
+    return std::visit(
+        [&defaults](const auto& req) -> domain::market_data_identifier {
+            using T = std::decay_t<decltype(req)>;
+{{#oresmd_variant_specs}}
+{{#variant_first}}            if constexpr{{/variant_first}}{{^variant_first}}            else if constexpr{{/variant_first}} (std::is_same_v<T, {{asset_class}}_market_data_requirement>)
+                return resolve_{{asset_class}}(req, defaults);
+{{/oresmd_variant_specs}}
+        },
+        requirement);
+}
+
+}
 #+end_src

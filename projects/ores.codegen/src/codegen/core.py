@@ -1681,7 +1681,67 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 variant_specs.append(s)
         if variant_specs:
             _mark_last_item(variant_specs)
+            # variant_first: the to_uri()/std::visit branches open with
+            # `if constexpr` on the variant-ordered list's first member and
+            # `} else if constexpr` on the rest (first_asset_class marks
+            # the manifest-ordered list, ir first, for the enums).
+            variant_specs[0]['variant_first'] = True
         data['oresmd_variant_specs'] = variant_specs
+        # Parser/projections/resolver shaping. The parser template keys
+        # per-class specials off the spec's own asset class name
+        # ({{#fx}}, {{#ir}}); the projections template renders each class's
+        # ore_type/ore_<ac>_metric switches from the quote types table (the
+        # ore_metric cases grouped by metric preserving first-appearance
+        # order -- the hand-crafted switches group e.g. spot/fwd under
+        # PRICE before dividend under RATE); the resolver derives each
+        # field's fill strategy from the Fields table.
+        for s in specs:
+            ac = s['asset_class']
+            s[ac] = True
+            v = s.get('validate', '')
+            s['validate_function_call'] = v in ('function', 'delegate_function')
+            s['validate_inline_delegate'] = v == 'inline_delegate'
+            s['validate_inline'] = v == 'inline'
+            qts = s.get('quote_types') or []
+            groups: list[dict[str, Any]] = []
+            first_seen: dict[str, int] = {}
+            for row in qts:
+                m = row.get('ore_metric', '')
+                if m not in first_seen:
+                    first_seen[m] = len(groups)
+                    groups.append({'metric': m, 'names': []})
+                groups[first_seen[m]]['names'].append(row['enum_name'])
+            data[f'{ac}_ore'] = {
+                'asset_class': ac,
+                'quote_types': qts,
+                'metric_groups': groups,
+                'ore_type_default': qts[0].get('ore_type', '') if qts else '',
+                'ore_metric_default': qts[0].get('ore_metric', '') if qts else '',
+            }
+        # Parse/resolve function definitions run in the hand-crafted files'
+        # own order (fx, ir, equity, credit, correlation, inflation,
+        # commodity), which differs from variant order -- declared per spec
+        # via the manifest's parse_order column. Specs without one (single-
+        # spec runs) keep manifest order.
+        parse_specs = [s for s in specs if s.get('parse_order') is not None]
+        parse_specs.sort(key=lambda s: s['parse_order'])
+        for s in specs:
+            if s.get('parse_order') is None:
+                parse_specs.append(s)
+        if parse_specs:
+            data['oresmd_parse_specs'] = parse_specs
+        # The validate_<ac>() functions bracket the static
+        # validate_no_ir_only_keys() helper in the hand-crafted file:
+        # the explicit-reject validators (fx, ir) precede it, the
+        # delegating validator (equity) follows it.
+        if any(s.get('validate') == 'function' for s in parse_specs):
+            data['oresmd_validate_pre'] = [
+                s for s in parse_specs if s.get('validate') == 'function'
+            ]
+        if any(s.get('validate') == 'delegate_function' for s in parse_specs):
+            data['oresmd_validate_post'] = [
+                s for s in parse_specs if s.get('validate') == 'delegate_function'
+            ]
         # Per-class test lists: the test templates render each asset class's
         # Test cases rows at fixed positions in file order (the hand-crafted
         # files interleave classes and comment blocks), so every table
@@ -1690,6 +1750,36 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         for s in specs:
             for kind, rows in s.get('test_cases', {}).items():
                 data[f"{s['asset_class']}_{kind}"] = rows
+        # The hand-crafted test files interleave static content between
+        # rows of a single spec table; split those lists so the templates
+        # can emit each run at its fixed position. ir's Projections table
+        # holds the design-doc worked examples (first three rows) and then
+        # the story's new quote types, with a section comment between them
+        # in the projections tests file. equity's Rejection rows bracket
+        # the static parse_equity_with_point test in the parser tests file.
+        ir_proj = data.get('ir_projections', [])
+        if len(ir_proj) > 3:
+            data['ir_projections_worked_examples'] = ir_proj[:3]
+            data['ir_projections_new_quote_types'] = ir_proj[3:]
+        eq_rej = data.get('equity_rejection', [])
+        if len(eq_rej) > 1:
+            data['equity_rejection'] = eq_rej[:1]
+            data['equity_rejection_tail'] = eq_rej[1:]
+        # The hand-crafted projections tests file wraps the discount worked
+        # example's long URI as two string literals on the parse() line.
+        # clang-format's canonical re-break of the unbroken line differs
+        # (break after parse(), string split at "oresmd://ir/"), so emit the
+        # two pieces and let clang-format keep the manual wrap -- both lines
+        # fit within the column limit, so the file is a format fixed point.
+        for row in data.get('ir_projections_worked_examples', []):
+            if row.get('description') == 'discount_quote_key_matches_worked_example':
+                head, rest = row['uri'].split('&quote=', 1)
+                # The split consumed '&quote='; re-attach the '&' to the head
+                # and 'quote=' to the tail so the two literals concatenate
+                # back to the exact URI.
+                row['uri_head'] = head + '&'
+                row['uri_tail'] = 'quote=' + rest
+                row['uri_split'] = True
 
     # For manifest.json, copy methodologies to top level for template access
     if model_key == 'manifest' and isinstance(data[model_key], dict):

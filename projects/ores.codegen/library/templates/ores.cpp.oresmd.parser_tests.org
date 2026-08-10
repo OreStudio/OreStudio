@@ -9,11 +9,398 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-08-09
-#+updated: 2026-08-09
+#+updated: 2026-08-10
+
+The Catch2 tests for the oresmd parser: the design doc's worked examples (static),
+then the spec tables -- Round-trip and Round-trip (extended) rows become round-trip
+tests, Rejection rows become REQUIRE_THROWS_AS tests. The worked-example tests and
+the per-class specials (the ir metric-default test, the equity point test, the
+correlation/inflation/commodity parse tests) are static; everything table-driven
+is generated in the file's exact order, with the equity Rejection rows split around
+the static =parse_equity_with_point= test.
 
 * Template
 
 #+begin_src mustache :tangle oresmd_parser_tests.cpp.mustache
-{{! GENERATED FILE — tangled from ores.cpp.oresmd.parser_tests.org. }}
-// oresmd_parser_tests.cpp — generated from oresmd model specs.
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.parser_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <utility>
+#include <vector>
+
+namespace {
+
+using namespace ores::marketdata::domain;
+using ores::marketdata::core::oresmd_exception;
+using ores::marketdata::core::oresmd_parser;
+
+const std::string tags("[oresmd][parser]");
+
+oresmd_uri uri(std::string_view s) {
+    return oresmd_uri{std::string(s)};
+}
+
+}
+
+/*
+ * One test per worked example in id:C3E053CA-0D4B-480B-9119-E11530160EC1's
+ * "Worked examples" section, matching that doc's tables exactly.
+ */
+
+TEST_CASE("parse_fx_spot_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote"));
+    const auto& fx = std::get<fx_market_data_identifier>(id);
+    REQUIRE(fx.pair == "EURUSD");
+    REQUIRE(fx.type == instrument_type::quote);
+}
+
+TEST_CASE("parse_ir_usd_libor_3m_fixing", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.ccy == "USD");
+    REQUIRE(ir.type == instrument_type::fixing);
+    REQUIRE(ir.index == index_family::libor);
+    REQUIRE(ir.tenor == "3m");
+    REQUIRE(ir.role == curve_role::projection);
+}
+
+TEST_CASE("parse_ir_usd_libor_6m_fixing_is_structurally_distinct_from_3m", tags) {
+    const auto id3 = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing"));
+    const auto id6 = oresmd_parser::parse(
+        uri("oresmd://ir/usd?index=libor&tenor=6m&role=projection&type=fixing"));
+    REQUIRE(std::get<ir_market_data_identifier>(id3).tenor !=
+            std::get<ir_market_data_identifier>(id6).tenor);
+}
+
+TEST_CASE("parse_ir_usd_sofr_discount_fixing", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=fixing"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.ccy == "USD");
+    REQUIRE(ir.index == index_family::sofr);
+    REQUIRE(ir.role == curve_role::discount);
+}
+
+TEST_CASE("parse_ir_eur_euribor_6m_fixing", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://ir/eur?index=euribor&tenor=6m&role=projection&type=fixing"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.ccy == "EUR");
+    REQUIRE(ir.index == index_family::euribor);
+}
+
+TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.ccy == "EUR");
+    REQUIRE(ir.index == index_family::estr);
+    REQUIRE(ir.role == curve_role::discount);
+}
+
+TEST_CASE("parse_ir_new_rfr_families_fixing_without_tenor", tags) {
+    // The 16 RFR/IBOR families the SQL CHECK allows beyond the original 6
+    // (synthetic_ir_curve_generation_configs_create.sql): all overnight-style, so a fixing
+    // without a tenor must parse. Previously the enum lacked them, so parse_enum threw
+    // "Unrecognised index value" and provisioning a party from realistic-2026 seed data failed.
+    const std::vector<std::pair<std::string, index_family>> new_families{
+        {"saron", index_family::saron},
+        {"aonia", index_family::aonia},
+        {"corra", index_family::corra},
+        {"honia", index_family::honia},
+        {"sora", index_family::sora},
+        {"swestr", index_family::swestr},
+        {"nowa", index_family::nowa},
+        {"kofr", index_family::kofr},
+        {"mibor", index_family::mibor},
+        {"zaronia", index_family::zaronia},
+        {"destr", index_family::destr},
+        {"polonia", index_family::polonia},
+        {"nzonia", index_family::nzonia},
+        {"shibor", index_family::shibor},
+        {"tiie", index_family::tiie},
+        {"taibor", index_family::taibor}};
+    for (const auto& [name, expected] : new_families) {
+        const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing"));
+        const auto& ir = std::get<ir_market_data_identifier>(id);
+        REQUIRE(ir.type == instrument_type::fixing);
+        REQUIRE(ir.index == expected);
+        REQUIRE_FALSE(ir.tenor.has_value());
+    }
+}
+
+TEST_CASE("parse_ir_swap_quote", tags) {
+    const auto id = oresmd_parser::parse(uri(
+        "oresmd://ir/"
+        "usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.type == instrument_type::quote);
+    REQUIRE(ir.quote_type == ir_quote_type::ir_swap);
+    REQUIRE(ir.metric == metric::rate);
+    REQUIRE(ir.point == "5y");
+}
+
+TEST_CASE("parse_discount_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&role=projection&"
+                                             "type=quote&quote=discount&metric=rate&point=6m"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.quote_type == ir_quote_type::discount);
+    REQUIRE(ir.metric == metric::rate);
+    REQUIRE(ir.point == "6m");
+}
+
+TEST_CASE("parse_swaption_vol_populates_tenor_and_vol_struct", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.ccy == "EUR");
+    REQUIRE(ir.type == instrument_type::vol);
+    REQUIRE_FALSE(ir.index.has_value());
+    REQUIRE(ir.tenor == "2y");
+    REQUIRE_FALSE(ir.role.has_value());
+    REQUIRE(ir.vol.has_value());
+    REQUIRE(ir.vol->expiry == "5Y");
+    REQUIRE(ir.vol->strike == "ATM");
+}
+
+TEST_CASE("parse_equity_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote"));
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    REQUIRE(eq.ticker == "AAPL");
+    REQUIRE(eq.ccy == "USD");
+}
+
+TEST_CASE("parse_credit_cds_quote", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y"));
+    const auto& cr = std::get<credit_market_data_identifier>(id);
+    REQUIRE(cr.reference_entity == "ITRAXX-EUROPE");
+    REQUIRE(cr.ccy == "EUR");
+    REQUIRE(cr.quote_type == credit_quote_type::cds);
+    REQUIRE(cr.point == "sr,5y");
+}
+
+TEST_CASE("parse_credit_hazard_rate", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y"));
+    const auto& cr = std::get<credit_market_data_identifier>(id);
+    REQUIRE(cr.quote_type == credit_quote_type::hazard_rate);
+    REQUIRE(cr.point == "sr,5y");
+}
+
+TEST_CASE("parse_commodity_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote"));
+    const auto& co = std::get<commodity_market_data_identifier>(id);
+    REQUIRE(co.commodity_code == "GOLD");
+    REQUIRE(co.ccy == "USD");
+}
+
+/*
+ * Round-trips: to_uri(parse(uri)) reparses to an identical identifier.
+ */
+
+{{#fx_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/fx_round_trip}}
+{{#ir_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/ir_round_trip}}
+{{#equity_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/equity_round_trip}}
+{{#credit_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/credit_round_trip}}
+{{#commodity_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/commodity_round_trip}}
+/*
+ * Round-trip tests for new IR quote types (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+{{#ir_round_trip_extended}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/ir_round_trip_extended}}
+/*
+ * Invalid cases: a field that belongs to a different asset class must be rejected,
+ * not silently ignored -- see id:C3E053CA-0D4B-480B-9119-E11530160EC1's
+ * per-asset-class conditionality.
+ */
+
+{{#fx_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/fx_rejection}}
+{{#ir_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/ir_rejection}}
+TEST_CASE("parse_ir_metric_present_when_type_is_omitted_defaults_to_quote", tags) {
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenor=3m&metric=rate"));
+    const auto& ir = std::get<ir_market_data_identifier>(id);
+    REQUIRE(ir.type == instrument_type::quote);
+    REQUIRE(ir.metric == metric::rate);
+}
+
+TEST_CASE("parse_equity_dividend_quote", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend"));
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    REQUIRE(eq.quote_type == equity_quote_type::dividend);
+}
+
+{{#equity_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/equity_rejection}}
+TEST_CASE("parse_equity_with_point", tags) {
+    const auto id = oresmd_parser::parse(
+        uri("oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y"));
+    const auto& eq = std::get<equity_market_data_identifier>(id);
+    REQUIRE(eq.quote_type == equity_quote_type::dividend);
+    REQUIRE(eq.point == "1y");
+}
+
+{{#equity_rejection_tail}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/equity_rejection_tail}}
+{{#credit_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/credit_rejection}}
+TEST_CASE("parse_correlation_pairwise", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto& cr = std::get<correlation_market_data_identifier>(id);
+    REQUIRE(cr.factor_pair == "CCY-EUR-USD");
+    REQUIRE(cr.quote_type == correlation_quote_type::pairwise);
+}
+
+{{#correlation_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/correlation_round_trip}}
+TEST_CASE("parse_inflation_zc_swap", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y"));
+    const auto& inf = std::get<inflation_market_data_identifier>(id);
+    REQUIRE(inf.index_code == "UKRPI");
+    REQUIRE(inf.quote_type == inflation_quote_type::zc_swap);
+    REQUIRE(inf.point == "5y");
+}
+
+{{#inflation_round_trip}}
+TEST_CASE("{{description}}", tags) {
+    const auto original = oresmd_parser::parse(uri("{{{uri}}}"));
+    const auto roundtripped = oresmd_parser::parse(oresmd_parser::to_uri(original));
+    REQUIRE(original == roundtripped);
+}
+
+{{/inflation_round_trip}}
+TEST_CASE("parse_commodity_fwd_quote", tags) {
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://commodity/gold?ccy=usd&type=quote&quote=fwd&point=6m"));
+    const auto& co = std::get<commodity_market_data_identifier>(id);
+    REQUIRE(co.quote_type == commodity_quote_type::fwd);
+    REQUIRE(co.point == "6m");
+}
+
+{{#commodity_rejection}}
+TEST_CASE("{{description}}", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("{{{uri}}}")), oresmd_exception);
+}
+
+{{/commodity_rejection}}
+TEST_CASE("reject_unrecognised_scheme", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("https://fx/eurusd?type=quote")), oresmd_exception);
+}
+
+TEST_CASE("reject_unrecognised_asset_class", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://bogus/eurusd?type=quote")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_unrecognised_index_family_value", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=bogus&tenor=3m&type=fixing")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_unrecognised_instrument_type_value", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=bogus")), oresmd_exception);
+}
+
+TEST_CASE("reject_malformed_uri", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("not a uri at all")), oresmd_exception);
+}
+
+TEST_CASE("reject_unrecognised_query_key", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&tenr=3m&type=fixing")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_fx_quote_when_type_not_quote", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eurusd?type=fixing&quote=spot")),
+                      oresmd_exception);
+}
+
+TEST_CASE("reject_fx_entity_that_is_not_a_six_letter_pair", tags) {
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://fx/eur?type=quote")), oresmd_exception);
+}
+
+TEST_CASE("reject_ir_term_index_fixing_without_a_tenor", tags) {
+    // A term index (libor/euribor) needs a tenor to disambiguate which point on the
+    // curve it fixes at; an overnight index (sofr/estr/...) does not have this
+    // requirement -- see parse_ir_usd_sofr_discount_fixing above, which omits it too
+    // (its tenor is supplied for the curve key, but the check below is term-index-only).
+    REQUIRE_THROWS_AS(oresmd_parser::parse(uri("oresmd://ir/usd?index=libor&type=fixing")),
+                      oresmd_exception);
+}
 #+end_src

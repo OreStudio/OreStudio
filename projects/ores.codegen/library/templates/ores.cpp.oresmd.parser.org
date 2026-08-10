@@ -11,10 +11,317 @@
 #+created: 2026-08-09
 #+updated: 2026-08-09
 
+The parser for oresmd URIs: one =parse_<asset_class>= function per class,
+generated from the spec's Fields table (entity field, ccy requirement,
+quote/point handling), the Reject keys table (the =validate_*= functions and
+the inline rejects), and the Type-gated keys table (ir). =to_uri= serializes
+the query keys in the spec's URI order. Asset-class-keyed sections (fx, ir,
+...) hold the genuinely per-class specials; the two per-class orders come
+from the manifest's variant_order and parse_order columns.
+
 * Template
 
 #+begin_src mustache :tangle oresmd_parser.cpp.mustache
-{{! GENERATED FILE — tangled from ores.cpp.oresmd.parser.org. }}
-// oresmd_parser.cpp — generated from oresmd model specs.
-// See projects/ores.marketdata/modeling/oresmd/ for the source models.
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.parser.org. Edit the org source. }}
+{{{cpp_license}}}
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
+#include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include <boost/throw_exception.hpp>
+#include <boost/url.hpp>
+#include <algorithm>
+#include <cctype>
+#include <format>
+#include <magic_enum/magic_enum.hpp>
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace {
+
+using namespace ores::marketdata::domain;
+using ores::marketdata::core::oresmd_exception;
+using ores::marketdata::core::detail::is_overnight;
+using ores::marketdata::core::detail::to_lower;
+using ores::marketdata::core::detail::to_upper;
+
+/**
+ * @brief Query parameters of an oresmd URI, decoded once and indexed by key -- every
+ * asset class reads a subset of these, none needs the raw params_view.
+ */
+struct query_params final {
+    std::optional<std::string> ccy;
+    std::optional<std::string> index;
+    std::optional<std::string> tenor;
+    std::optional<std::string> role;
+    std::optional<std::string> type;
+    std::optional<std::string> metric;
+    std::optional<std::string> quote;
+    std::optional<std::string> model;
+    std::optional<std::string> point;
+
+    static query_params from(const boost::urls::url_view& u) {
+        query_params qp;
+        for (const auto& p : u.params()) {
+            if (p.key == "ccy")
+                qp.ccy = p.value;
+            else if (p.key == "index")
+                qp.index = p.value;
+            else if (p.key == "tenor")
+                qp.tenor = p.value;
+            else if (p.key == "role")
+                qp.role = p.value;
+            else if (p.key == "type")
+                qp.type = p.value;
+            else if (p.key == "metric")
+                qp.metric = p.value;
+            else if (p.key == "quote")
+                qp.quote = p.value;
+            else if (p.key == "model")
+                qp.model = p.value;
+            else if (p.key == "point")
+                qp.point = p.value;
+            else
+                BOOST_THROW_EXCEPTION(
+                    oresmd_exception(std::format("Unrecognised oresmd query key: '{}'.", p.key)));
+        }
+        return qp;
+    }
+};
+
+template <typename Enum>
+Enum parse_enum(std::string_view field, std::string_view value) {
+    const auto e = magic_enum::enum_cast<Enum>(value);
+    if (!e)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception(std::format("Unrecognised {} value: {}", field, value)));
+    return *e;
+}
+
+instrument_type parse_type(const query_params& qp) {
+    if (!qp.type)
+        return instrument_type::quote;
+    return parse_enum<instrument_type>("type", *qp.type);
+}
+
+/**
+ * @brief Throws if @p value is present -- used to reject a query key another asset class
+ * uses but this one does not (e.g. =tenor= on an FX URI), rather than silently ignoring
+ * it. Every asset class's allowed key set is documented in the design doc's "Grammar"
+ * section; anything outside it for a given =asset_class= is a genuine input error, not
+ * forward-compatible noise.
+ */
+void reject_if_present(std::string_view asset_class,
+                       std::string_view key,
+                       const std::optional<std::string>& value) {
+    if (value)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://{}/... does not support the '{}' query key.", asset_class, key)));
+}
+
+{{#oresmd_validate_pre}}
+void validate_{{asset_class}}(const query_params& qp) {
+{{#reject_keys}}
+    reject_if_present("{{asset_class}}", "{{.}}", qp.{{.}});
+{{/reject_keys}}
+{{#type_gated_keys}}
+    if (qp.{{.}} && parse_type(qp) != instrument_type::quote)
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception("oresmd://{{asset_class}}/... '{{.}}' is only meaningful when type=quote."));
+{{/type_gated_keys}}
+}
+
+{{/oresmd_validate_pre}}
+void validate_no_ir_only_keys(std::string_view asset_class, const query_params& qp) {
+    reject_if_present(asset_class, "index", qp.index);
+    reject_if_present(asset_class, "tenor", qp.tenor);
+    reject_if_present(asset_class, "role", qp.role);
+    reject_if_present(asset_class, "metric", qp.metric);
+}
+
+{{#oresmd_validate_post}}
+void validate_{{asset_class}}(const query_params& qp) {
+    validate_no_ir_only_keys("{{asset_class}}", qp);
+}
+
+{{/oresmd_validate_post}}
+std::string first_segment(const boost::urls::url_view& u) {
+    for (const auto seg : u.segments()) {
+        if (!seg.empty())
+            return std::string(seg);
+    }
+    BOOST_THROW_EXCEPTION(oresmd_exception("oresmd URI is missing its entity path segment."));
+}
+
+{{#oresmd_parse_specs}}
+{{#ir}}
+market_data_identifier parse_ir(const boost::urls::url_view& u, const query_params& qp) {
+    validate_ir(qp);
+    ir_market_data_identifier id;
+    id.ccy = to_upper(first_segment(u));
+    id.type = parse_type(qp);
+    if (qp.index)
+        id.index = parse_enum<index_family>("index", *qp.index);
+    if (qp.tenor)
+        id.tenor = to_lower(*qp.tenor);
+    if (qp.role)
+        id.role = parse_enum<curve_role>("role", *qp.role);
+    if (qp.metric)
+        id.metric = parse_enum<metric>("metric", *qp.metric);
+    if (qp.quote)
+        id.quote_type = parse_enum<ir_quote_type>("quote", *qp.quote);
+    if (qp.point) {
+        id.point = to_lower(*qp.point);
+        if (id.type == instrument_type::vol) {
+            std::vector<std::string> parts;
+            std::stringstream ss(*id.point);
+            std::string part;
+            while (std::getline(ss, part, ','))
+                parts.push_back(to_upper(part));
+            if (parts.size() == 3) {
+                volatility_surface_point v;
+                v.expiry = parts[0];
+                if (!id.tenor)
+                    id.tenor = to_lower(parts[1]);
+                v.strike = parts[2];
+                id.vol = std::move(v);
+            }
+        }
+    }
+    if (qp.model && id.type == instrument_type::vol && id.vol)
+        id.vol->model_subtype = parse_enum<volatility_model_subtype>("model", *qp.model);
+    if (id.type == instrument_type::fixing && id.index && !is_overnight(*id.index) && !id.tenor)
+        BOOST_THROW_EXCEPTION(oresmd_exception(
+            std::format("oresmd://ir/... a term index ('{}') fixing requires a tenor.",
+                        magic_enum::enum_name(*id.index))));
+    return id;
+}
+
+{{/ir}}
+{{^ir}}
+market_data_identifier parse_{{asset_class}}(const boost::urls::url_view& u, const query_params& qp) {
+{{#validate_function_call}}
+    validate_{{asset_class}}(qp);
+{{/validate_function_call}}
+{{#validate_inline_delegate}}
+    validate_no_ir_only_keys("{{asset_class}}", qp);
+{{/validate_inline_delegate}}
+{{#validate_inline}}
+{{#inflation}}
+    // Validation: only quote, type, and point are meaningful for inflation.
+{{/inflation}}
+{{#reject_keys}}
+    reject_if_present("{{asset_class}}", "{{.}}", qp.{{.}});
+{{/reject_keys}}
+{{/validate_inline}}
+    {{asset_class}}_market_data_identifier id;
+    id.{{entity_field}} = to_upper(first_segment(u));
+{{#fx}}
+    if (id.pair.size() != 6 ||
+        !std::ranges::all_of(id.pair, [](unsigned char c) { return std::isalpha(c); }))
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "oresmd://fx/... entity must be a 6-letter currency pair, got: '{}'.", id.pair)));
+{{/fx}}
+{{#requires_ccy}}
+    if (!qp.ccy)
+        BOOST_THROW_EXCEPTION(oresmd_exception("oresmd://{{asset_class}}/... requires a ccy query key."));
+    id.ccy = to_upper(*qp.ccy);
+{{/requires_ccy}}
+    id.type = parse_type(qp);
+{{#has_quote_type}}
+{{#quote_type_checked}}
+    if (qp.quote) {
+        if (id.type != instrument_type::quote)
+            BOOST_THROW_EXCEPTION(oresmd_exception(
+                "oresmd://{{asset_class}}/... 'quote' is only meaningful when type=quote."));
+        id.quote_type = parse_enum<{{asset_class}}_quote_type>("quote", *qp.quote);
+    }
+{{/quote_type_checked}}
+{{^quote_type_checked}}
+    if (qp.quote)
+        id.quote_type = parse_enum<{{asset_class}}_quote_type>("quote", *qp.quote);
+{{/quote_type_checked}}
+{{/has_quote_type}}
+{{#has_point}}
+    if (qp.point)
+        id.point = to_lower(*qp.point);
+{{/has_point}}
+    return id;
+}
+
+{{/ir}}
+{{/oresmd_parse_specs}}
+void append_if(boost::urls::url& u, std::string_view key, const std::optional<std::string>& v) {
+    if (v)
+        u.params().append({key, *v});
+}
+
+template <typename Enum>
+void append_enum_if(boost::urls::url& u, std::string_view key, const std::optional<Enum>& v) {
+    if (v)
+        u.params().append({key, std::string(magic_enum::enum_name(*v))});
+}
+
+}
+
+namespace ores::marketdata::core {
+
+market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
+    const auto r = boost::urls::parse_uri(uri.value);
+    if (r.has_error())
+        BOOST_THROW_EXCEPTION(
+            oresmd_exception(std::format("Failed to parse oresmd URI: {}", uri.value)));
+
+    const auto& u = r.value();
+    if (u.scheme() != domain::oresmd_scheme)
+        BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+            "Unrecognised URI scheme: {} (expected {})", u.scheme(), domain::oresmd_scheme)));
+
+    const auto asset_token = to_lower(u.host());
+    const auto qp = query_params::from(u);
+
+{{#oresmd_variant_specs}}
+    if (asset_token == "{{asset_class}}")
+        return parse_{{asset_class}}(u, qp);
+{{/oresmd_variant_specs}}
+
+    BOOST_THROW_EXCEPTION(
+        oresmd_exception(std::format("Unrecognised oresmd asset class: {}", asset_token)));
+}
+
+domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& identifier) {
+    boost::urls::url u;
+    u.set_scheme(domain::oresmd_scheme);
+
+    std::visit(
+        [&u](const auto& id) {
+            using T = std::decay_t<decltype(id)>;
+{{#oresmd_variant_specs}}
+{{#variant_first}}            if constexpr{{/variant_first}}{{^variant_first}}            } else if constexpr{{/variant_first}} (std::is_same_v<T, {{asset_class}}_market_data_identifier>) {
+                u.set_host("{{asset_class}}");
+                u.segments().push_back(to_lower(id.{{entity_field}}));
+{{#uri_order}}
+{{#is_type}}
+                u.params().append({"type", std::string(magic_enum::enum_name(id.type))});
+{{/is_type}}
+{{#is_ccy}}
+                u.params().append({"ccy", to_lower(id.ccy)});
+{{/is_ccy}}
+{{#is_enum}}
+                append_enum_if(u, "{{key}}", id.{{name}});
+{{/is_enum}}
+{{#is_string}}
+                append_if(u, "{{key}}", id.{{name}});
+{{/is_string}}
+{{/uri_order}}
+{{/oresmd_variant_specs}}
+            }
+        },
+        identifier);
+
+    return domain::oresmd_uri{u.buffer()};
+}
+
+}
 #+end_src

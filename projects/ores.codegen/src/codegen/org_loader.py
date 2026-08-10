@@ -2138,10 +2138,14 @@ def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
                 if spec:
                     # variant_order drives the header templates' struct/variant
                     # ordering (fx-first), which differs from the enum
-                    # generation order above.
+                    # generation order above; parse_order drives the
+                    # parse_*()/resolve_*() definition order.
                     vo = row.get("variant_order")
                     if vo:
                         spec["variant_order"] = int(vo)
+                    po = row.get("parse_order")
+                    if po:
+                        spec["parse_order"] = int(po)
                     specs.append(spec)
                     seen.add(fname)
         for sibling in sorted(p.parent.glob("*_quote_type.org")):
@@ -2173,6 +2177,19 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     result["asset_class"] = asset_class
     result["authority"]   = fm.get("authority", "")
     result["component"]   = fm.get("component", "ores.marketdata")
+
+    # --- Parser template directives ---
+    # validate: how the parser rejects an asset class's disallowed query
+    # keys -- function (own validate_<ac>() with explicit reject calls, and
+    # any type-gated checks), delegate_function (own validate_<ac>() that
+    # delegates to validate_no_ir_only_keys()), inline_delegate (inline
+    # validate_no_ir_only_keys() call inside parse_<ac>()), or inline
+    # (explicit reject calls inside parse_<ac>(), with the rejects emitted
+    # from the Reject keys table). quote_type_checked: whether parse_<ac>()
+    # enforces "quote only meaningful when type=quote" (false for credit,
+    # whose hand-crafted parser has no such check).
+    result["validate"] = fm.get("validate", "")
+    result["quote_type_checked"] = fm.get("quote_type_checked", "true") != "false"
 
     # --- Quote types table ---
     qt_section = _section(doc.root, "Quote types")
@@ -2243,6 +2260,17 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 field["parse_transform"] = "lower"
             else:
                 field["parse_transform"] = "none"
+            # The resolver template picks a fill strategy per field:
+            # mandatory string (pair/ccy/...) -> pick_mandatory_string,
+            # defaulted (type) -> pick, everything optional -> pick_optional.
+            field["is_mandatory_string"] = (
+                field.get("kind") == "string"
+                and field.get("mandatory") == "yes"
+                and not field.get("default")
+            )
+            # vol is derived from `point` during parsing, never resolved.
+            if name == "vol":
+                field["resolver_skip"] = True
             fields.append(field)
         for field in fields:
             if field["kind"] == "string" and field.get("mandatory") == "yes":
@@ -2298,6 +2326,56 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
                 reject_keys.append(row["key"])
     result["reject_keys"] = reject_keys
 
+    # --- Type-gated keys (ir only): query keys that are only meaningful
+    # when type=quote; the parser's validate_<ac>() emits one check per key
+    # ("'<key>' is only meaningful when type=quote"). ---
+    tgs_section = _section(doc.root, "Type-gated keys")
+    if tgs_section:
+        result["type_gated_keys"] = [
+            r.get("key", "") for r in _parse_org_table_rows(tgs_section) if r.get("key")
+        ]
+
+    # --- URI order: the to_uri() serialization order of the query keys.
+    # Defaults to [ccy] + [type] + the remaining query-key fields in table
+    # order; the ir spec overrides with an explicit "* URI order" section
+    # because its `type` key serializes after `role` in the hand-crafted
+    # to_uri branch, which no field-table ordering can express. Each entry
+    # resolves the emission form: type (always appended), ccy (mandatory,
+    # lowercased), or the owning field's kind (enum -> append_enum_if,
+    # string -> append_if). ---
+    uri_section = _section(doc.root, "URI order")
+    if uri_section:
+        uri_keys = [
+            r.get("key", "") for r in _parse_org_table_rows(uri_section) if r.get("key")
+        ]
+    else:
+        uri_keys = []
+        if result.get("requires_ccy"):
+            uri_keys.append("ccy")
+        uri_keys.append("type")
+        uri_keys.extend(
+            f["query_key"] for f in fields
+            if f.get("query_key") and f["query_key"] not in ("ccy", "type")
+        )
+    uri_order: list[dict[str, Any]] = []
+    for k in uri_keys:
+        if k == "type":
+            entry: dict[str, Any] = {"key": k, "kind": "type"}
+        elif k == "ccy":
+            entry = {"key": k, "kind": "ccy"}
+        else:
+            f = next((x for x in fields if x.get("query_key") == k), None)
+            if not f:
+                continue
+            entry = {"key": k, "kind": f["kind"], "name": f["name"]}
+        # Boolean kind marker so the template can branch on the emission
+        # form ({{#is_type}}, {{#is_enum}}, ...) -- mustache sections test
+        # for key presence, and the kind value ("type", "enum", ...) is
+        # not itself a key of the entry.
+        entry[f"is_{entry['kind']}"] = True
+        uri_order.append(entry)
+    result["uri_order"] = uri_order
+
     # --- Test cases ---
     tests: dict[str, list[dict[str, str]]] = {}
     tc_section = _section(doc.root, "Test cases")
@@ -2309,7 +2387,14 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             kind = re.sub(r"[^a-z0-9]+", "_", child.title.lower()).strip("_")
             cases: list[dict[str, str]] = []
             for row in _parse_org_table_rows(child):
-                cases.append({k: v for k, v in row.items()})
+                row = {k: v for k, v in row.items()}
+                # Projection rows with expected=nullopt are negative tests
+                # (the projection returns no key); the templates branch on
+                # this flag to emit REQUIRE_FALSE instead of the equality
+                # check.
+                if row.get("expected") == "nullopt":
+                    row["nullopt"] = True
+                cases.append(row)
             tests[kind] = cases
     result["test_cases"] = tests
 

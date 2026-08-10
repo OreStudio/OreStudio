@@ -154,7 +154,7 @@ select
     ores_utility_system_tenant_id_fn(),
     app_version_id.id,
     p.id,
-    '/api/v1/storage/compute/packages/ore/1.8.16.0-4-g3b62ba248/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz',
+    '/api/v1/storage/compute/packages/ORE/1.8.16.0-4-g3b62ba248/ORE-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz',
     '9288aecdcbe17f93c48998d9b8e441eebed0668beee6fb9281a1c6ed4af25513',
     current_user,
     current_user,

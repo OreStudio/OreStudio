@@ -39,11 +39,11 @@ work:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Consolidated: the arc's closed work is recorded in the sprint-24 story; this story carries the compass remote-deploy tooling task and the remote compute-node join. The podman-events watcher was abandoned -- its premise died with the controller decommission. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Prove the remote compute-node join end-to-end. |
+| Next          | Nothing. |
 | Last touched  | 2026-08-10                               |
 
 * Acceptance
@@ -65,7 +65,7 @@ work:
 | [[id:F406897B-DC1A-4D80-A269-F4EE5ABA8B28][Consolidate the WSL offload story arc into sprint 25]] | DONE | 2026-08-10 | 2026-08-10 | Initial task for: Remote WSL offload and compute nodes |
 | [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | DONE | 2026-08-08 | 2026-08-09 | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
 | [[id:F4BD29A9-0DAE-4662-B381-CCAD9122AFA7][Mirror podman events into service_instance/service_event tables]] | ABANDONED | 2026-08-10 | 2026-08-10 | A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working on remote/Quadlet podman hosts (local dev now runs native systemd units, no podman involved). Depends on the Quadlet generator task landing first. Abandoned: process_supervisor and the tables are gone; systemd journal is the audit trail. |
-| [[id:96C880AE-0E06-416F-A719-89F27F2FCF9F][Prove and polish the remote compute-node join]] | BACKLOG | | | Deploy the compute wrapper (ores.compute.wrapper) to a remote box via compass env deploy <host> --role compute and prove it joins the serving environment's compute core over NATS end-to-end: the remote node registers as a compute node of the serving environment, receives work, and reports results. Register the remote host in the serving environment's compute.hosts table (ORES_GRID_NODE_*_HOST_ID ids, kept in sync by compass db recreate per env_init.py). Fix any ergonomics gaps found in registration, docs, or the deploy flow. |
+| [[id:96C880AE-0E06-416F-A719-89F27F2FCF9F][Prove and polish the remote compute-node join]] | DONE | 2026-08-10 | 2026-08-10 | Deploy the compute wrapper (ores.compute.wrapper) to a remote box via compass env deploy <host> --role compute and prove it joins the serving environment's compute core over NATS end-to-end: the remote node registers as a compute node of the serving environment, receives work, and reports results. Register the remote host in the serving environment's compute.hosts table (ORES_GRID_NODE_*_HOST_ID ids, kept in sync by compass db recreate per env_init.py). Fix any ergonomics gaps found in registration, docs, or the deploy flow. |
 
 * Decisions
 
@@ -73,8 +73,37 @@ work:
 - The product-backlog homes are closed as superseded: [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] and [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]; their tasks were moved into this story.
 - Consolidation rule (2026-08-10): backlog tasks whose work completed in sprint 24 are recorded in the sprint-24 story; open backlog tasks and work done in sprint 25 live in this story.
 - The podman-events watcher task was abandoned (2026-08-10). Its premise -- preserve the ~process_supervisor~ audit trail by mirroring podman events into ~service_instance~/~service_event~ -- was invalidated by the controller decommission: ~process_supervisor~ is gone, the tables have zero readers/writers (sprint-25 audit, 2026-08-04), and the controller SQL schema is removed from ~ores.sql~. systemd owns lifecycle state on remote Quadlet hosts too, via unit state and the journal. The backlog capture ~drop_dead_controller_instances_events_tables~, written before that removal, remains the successor work.
+- Remote compute joins need IP SANs (2026-08-10, compute-node proof): the NATS broker cert must carry the serving host's non-loopback IPv4 addresses as "IP Address" SAN entries -- remote clients (a compute node on another box) connect by IP, and RFC 6125 requires the connecting address to be an IP SAN, never a DNS SAN. ~nats_certs.py~ now discovers the host's addresses via ~ip~ and adds them.
+- The CLI is the only sanctioned way to register a dispatchable app version (2026-08-10): the wrapper hard-fails assignments whose ~package_sha256~ is empty, so ~app-versions add~ gained a repeatable ~--package-sha256 '<platform-code>=<hex>'~ option; the seed data's ORE package URI was also fixed to match the publish-package storage layout.
 
 * Out of scope
 
 - Per-service container rollout via podman pods (ABANDONED — superseded by the Quadlet generator task, which was moved here).
 - The sprint-24 archived record — untouched history.
+
+* Result
+
+Arc complete on 2026-08-10. The sprint-24 history (containerize the
+service runtime, verify on Newton) stays archived in sprint 24. This
+story delivered and proved the ~compass env deploy~ command family:
+
+- ~compass env deploy <host>~ deploys the containerized service
+  runtime to a named remote WSL host (task 2F7CE8B5, DONE).
+- ~compass env deploy <host> --role compute~ deploys
+  ~ores.compute.wrapper~ as a compute node. Proved live end-to-end
+  (task 96C880AE, DONE): the Newton wrapper joined the brave_hopper
+  serving environment's compute core over NATS mTLS, registered as
+  compute host 1cefaf85-e89a-4126-b5af-3548c4e5bef9, received a
+  workunit assignment via the compute_assignments JetStream stream,
+  downloaded and verified the package, executed the engine, uploaded
+  the output, and reported the result (outcome=1). Ergonomics gaps
+  fixed during the proof: NATS cert IP SANs, compute-keys staging,
+  wrapper package download streaming, NATS error detail, CLI
+  ~--package-sha256~, seed package URI.
+- The podman-events watcher (F4BD29A9) was abandoned — its premise
+  died with the controller decommission.
+
+Known follow-ups, tracked as captures: normalise the compute
+service's assignment replies in ~report_submit_handler~ (placeholder
+platform triplet / app_version_id); include the compute image in the
+build_all set.

@@ -272,8 +272,11 @@ def _write_compute_env(project_root, profile_env, label, remote_root):
     stage = project_root / "build" / "docker-stage"
     stage.mkdir(parents=True, exist_ok=True)
 
-    keys_stage = stage / "compute-keys"
-    keys_stage.mkdir(exist_ok=True)
+    # Named compute/keys (not compute-keys) so a recursive scp of the
+    # stage dir into the remote compute/ parent creates exactly the
+    # compute/keys path that compute.env and remote-run.sh reference.
+    keys_stage = stage / "compute" / "keys"
+    keys_stage.mkdir(parents=True, exist_ok=True)
     tls_bases = {}
     for tls in ("CA", "CERT", "KEY"):
         src = Path(profile_env[f"ORES_COMPUTE_NATS_TLS_{tls}"])
@@ -493,9 +496,13 @@ def _transfer_runtime(project_root, host, remote_root, profile_path,
 
 def _transfer_compute(project_root, host, remote_root, env_path, keys_stage):
     print("=== Transferring to the remote host ===")
-    _ssh(host, f"mkdir -p {shlex.quote(remote_root)}/compute/keys",
-         check=True)
-    _scp(project_root, host, keys_stage, f"{remote_root}/compute/keys/",
+    # scp -r <dir> <existing-target> creates <target>/<dir> (nesting) rather
+    # than merging contents — the same trap _transfer_runtime avoids. Remove
+    # the remote compute/keys directory and let scp re-create it by targeting
+    # its parent (compute.env references compute/keys/<file> directly).
+    _ssh(host, f"rm -rf {shlex.quote(remote_root)}/compute/keys "
+               f"&& mkdir -p {shlex.quote(remote_root)}/compute", check=True)
+    _scp(project_root, host, keys_stage, f"{remote_root}/compute/",
          recursive=True)
     _scp(project_root, host, env_path, f"{remote_root}/compute/compute.env")
 

@@ -27,6 +27,7 @@
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <algorithm>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -68,6 +69,12 @@ options_description make_add_compute_app_version_options_description() {
         "Per-platform package as '<platform-code>=<package-uri>' "
         "(required; repeatable). Platform codes match vcpkg triplets "
         "(x64-linux, arm64-osx, x64-windows, ...).")(
+        "package-sha256",
+        value<std::vector<std::string>>()->multitoken(),
+        "Per-platform package checksum as '<platform-code>=<sha256-hex>' "
+        "(repeatable). The compute wrapper verifies the downloaded package "
+        "against this before running the engine; without it the workunit "
+        "cannot be dispatched.")(
         "min-ram-mb", value<int>()->default_value(0), "Minimum RAM in MB required")(
         "modified-by", value<std::string>(), "Username of modifier (required)");
 
@@ -112,7 +119,39 @@ read_add_compute_app_version_options(const variables_map& vm) {
             BOOST_THROW_EXCEPTION(parser_exception(
                 "--platform-package must be '<platform-code>=<package-uri>': " + raw));
         }
-        r.platform_packages.push_back({raw.substr(0, eq), raw.substr(eq + 1)});
+        r.platform_packages.push_back({raw.substr(0, eq), raw.substr(eq + 1), ""});
+    }
+
+    // Attach the per-platform checksums (if any) to their package by code.
+    if (vm.count("package-sha256") != 0) {
+        for (const auto& raw : vm["package-sha256"].as<std::vector<std::string>>()) {
+            const auto eq = raw.find('=');
+            if (eq == std::string::npos || eq == 0 || eq == raw.size() - 1) {
+                BOOST_THROW_EXCEPTION(parser_exception(
+                    "--package-sha256 must be '<platform-code>=<sha256-hex>': " + raw));
+            }
+            const auto code = raw.substr(0, eq);
+            const auto hex = raw.substr(eq + 1);
+            // The wrapper compares its computed digest against this verbatim,
+            // and digest tools emit lowercase hex, so require exactly that
+            // shape here -- a typo surfaces at parse time, not at dispatch.
+            const auto is_lower_hex = [](const char c) {
+                return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+            };
+            if (hex.size() != 64 || !std::ranges::all_of(hex, is_lower_hex)) {
+                BOOST_THROW_EXCEPTION(parser_exception(
+                    "--package-sha256 must be 64 lowercase hex characters: " + raw));
+            }
+            auto it = std::ranges::find_if(r.platform_packages, [&](const auto& pp) {
+                return pp.platform_code == code;
+            });
+            if (it == r.platform_packages.end()) {
+                BOOST_THROW_EXCEPTION(parser_exception(
+                    "--package-sha256 refers to an unknown platform code: " + code +
+                    " (must match a --platform-package entry)"));
+            }
+            it->sha256 = hex;
+        }
     }
 
     if (vm.count("min-ram-mb") != 0)

@@ -20,6 +20,7 @@ set(files
     "csv_exporter_tests.cpp"
     "domain_currency_tests.cpp"
     "domain_entity_type_tests.cpp"
+    "domain_tenor_resolution_fomc_tests.cpp"
     "domain_tenor_resolution_tests.cpp"
     "generators_country_generator_tests.cpp"
     "generators_currency_generator_tests.cpp"

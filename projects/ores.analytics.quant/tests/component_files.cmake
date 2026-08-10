@@ -24,6 +24,7 @@ set(files
     "business_day_calendar_set_tests.cpp"
     "calendar_rule_engine_tests.cpp"
     "cox_ingersoll_ross_process_tests.cpp"
+    "curve_bootstrap_engine_fomc_tests.cpp"
     "curve_bootstrap_engine_tests.cpp"
     "curve_health_checker_tests.cpp"
     "curve_instrument_pricer_tests.cpp"

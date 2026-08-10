@@ -102,6 +102,11 @@ std::chrono::year_month_day walk_roll_quarter(std::chrono::year_month_day anchor
 
 // The n-th date of an event-lookup schedule's set on-or-after the anchor, or
 // nullopt when the set is exhausted (fewer than n dates qualify).
+//
+// Requires `dates` sorted ascending: the set is walked with find_if from the
+// anchor, so an unsorted vector silently yields a wrong "n-th meeting" rather
+// than an error. Callers read from calendar_event ordered by event_date, which
+// satisfies this.
 std::optional<std::chrono::year_month_day> nth_on_or_after(
     const std::vector<std::chrono::year_month_day>& dates,
     std::chrono::year_month_day anchor,

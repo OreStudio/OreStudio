@@ -29,6 +29,9 @@
 //   - contract-signature.ScheduleWalk.nth       (the walk, made executable)
 //   - rule-success.ResolveScheduleStep          (1F, 8F resolve on-or-after spot)
 //   - rule-success.ResolutionRejectedWhenScheduleExhausted (9F > 8 meetings)
+//   - rule-failure.ResolveScheduleStep.* (the three resolution-row/data
+//     guards: missing schedule_code, missing schedule_step_count, and
+//     missing/empty event-lookup dates all reject as std::logic_error)
 //   - rule-failure.ResolveScheduleStep.1        (algorithm != schedule_step:
 //     the rule does not fire -- covered by the ANCHOR_OFFSET tests in
 //     domain_tenor_resolution_tests.cpp, referenced, not duplicated)
@@ -167,5 +170,73 @@ TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", tag
                                      horizon,
                                      spot,
                                      meetings),
+                    std::logic_error);
+}
+
+TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row", tags) {
+    using namespace std::chrono;
+
+    const auto horizon = year(2026) / month(1) / day(1);
+    const auto spot = year(2026) / month(1) / day(2);
+
+    // A resolution row that names the walk but not the schedule axis it
+    // walks: the step count alone cannot drive a walk, so the resolution
+    // rejects -- a configuration error, reported as std::logic_error.
+    auto resolution = make_fomc_resolution(1);
+    resolution.schedule_code = std::nullopt;
+
+    CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),
+                                     make_fomc_convention(),
+                                     resolution,
+                                     horizon,
+                                     spot,
+                                     fomc_2026_meeting_dates()),
+                    std::logic_error);
+}
+
+TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_step_count in the row", tags) {
+    using namespace std::chrono;
+
+    const auto horizon = year(2026) / month(1) / day(1);
+    const auto spot = year(2026) / month(1) / day(2);
+
+    // A resolution row that names the schedule axis but not how many steps
+    // to take along it: the walk has no length, so the resolution rejects
+    // -- a configuration error, reported as std::logic_error.
+    auto resolution = make_fomc_resolution(1);
+    resolution.schedule_step_count = std::nullopt;
+
+    CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),
+                                     make_fomc_convention(),
+                                     resolution,
+                                     horizon,
+                                     spot,
+                                     fomc_2026_meeting_dates()),
+                    std::logic_error);
+}
+
+TEST_CASE("SCHEDULE_STEP rejects resolution with no event-lookup dates supplied", tags) {
+    using namespace std::chrono;
+
+    const auto horizon = year(2026) / month(1) / day(1);
+    const auto spot = year(2026) / month(1) / day(2);
+
+    // An event-lookup walk with no dates to walk: neither the defaulted
+    // nullopt nor an explicitly empty set is walkable. The dates are caller
+    // data, so this is a data error, reported as std::logic_error.
+    CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),
+                                     make_fomc_convention(),
+                                     make_fomc_resolution(1),
+                                     horizon,
+                                     spot),
+                    std::logic_error);
+
+    const std::vector<std::chrono::year_month_day> no_meetings{};
+    CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),
+                                     make_fomc_convention(),
+                                     make_fomc_resolution(1),
+                                     horizon,
+                                     spot,
+                                     no_meetings),
                     std::logic_error);
 }

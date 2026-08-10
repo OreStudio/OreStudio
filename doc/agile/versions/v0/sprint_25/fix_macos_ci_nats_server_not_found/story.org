@@ -21,11 +21,11 @@ Every CI platform (Linux, macOS, Windows) must launch NATS from the same pinned 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-08-10                               |
 
 * Acceptance
@@ -39,10 +39,12 @@ Every CI platform (Linux, macOS, Windows) must launch NATS from the same pinned 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CBAD58B1-26F3-405E-9155-EF039B429B30][Scaffold story: Hotfix: macOS CI fails to start NATS server, nats-server not installed]] | STARTED | 2026-08-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:34F2B433-39D6-40CD-AE54-EA7E969646E6][Run the vendored nats-server binary on all CI platforms]] | BACKLOG | | | Initial task for: Hotfix: macOS CI fails to start NATS server, nats-server not installed |
+| [[id:CBAD58B1-26F3-405E-9155-EF039B429B30][Scaffold story: Hotfix: macOS CI fails to start NATS server, nats-server not installed]] | DONE | 2026-08-10 | 2026-08-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:34F2B433-39D6-40CD-AE54-EA7E969646E6][Run the vendored nats-server binary on all CI platforms]] | DONE | | 2026-08-10 | Initial task for: Hotfix: macOS CI fails to start NATS server, nats-server not installed |
 
 * Decisions
+
+- CI runs the vendored nats-server binary (external/nats/packages, pinned v2.14.3) via a shared Setup NATS server step on every platform; local dev keeps its distro package (apt) because systemd runs the upstream unit shipped by it.
 
 * Out of scope
 

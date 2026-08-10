@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-10
 #+updated: 2026-08-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every CI platform must launch NATS from the same pinned nats-server binary -- th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -73,3 +73,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four acceptance points shipped in commit a49329949:
+
+- Every CI workflow — continuous-linux, continuous-macos,
+  continuous-windows, nightly-linux — has an identical Setup NATS
+  server step before the Start NATS server step.
+- The step runs build/scripts/setup_nats_server.sh (Linux/macOS) or
+  the PowerShell equivalent build/scripts/setup_nats_server.ps1
+  (Windows), which unpacks the vendored nats-server v2.14.3 release
+  (external/nats/packages/) into build/nats/vendored/<pkg>/ and
+  prepends it to PATH via GITHUB_PATH.
+- The platform-specific NATS installs are gone: nats-server removed
+  from the macOS CTest step's brew list, and the Windows CI
+  GitHub-release download (pinned v2.10.24) replaced by the vendored
+  archive.
+
+Verification: bash -n on the script; functional smoke tests of both
+scripts on this host (unpack + binary present, nats-server reports
+v2.14.3, second run idempotent); yamllint and YAML parse clean on all
+four workflows. None of the four workflows run on PRs (schedule/tags
+only), so the next scheduled runs are the on-runner validation.
+

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :market-data:identifiers:oresmd:sprint_25:v0:
 #+created: 2026-07-30
-#+updated: 2026-08-07
+#+updated: 2026-08-10
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ oresmd already represents).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | Split into per-family tasks; none started yet. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with IR (largest single gap: 10 of 12 catalogued types unrepresented). |
-| Last touched  | 2026-08-07                               |
+| Next          | Nothing. |
+| Last touched  | 2026-08-10                               |
 
 * Acceptance
 
@@ -66,7 +66,7 @@ oresmd already represents).
 | [[id:DD35387F-D84B-4392-9C07-8F6F7F2FFF8F][Add oresmd inflation asset class: ZC/YoY swap rate, seasonality]] | DONE | 2026-08-08 | 2026-08-08 | oresmd has no inflation asset class at all today. Add inflation_market_data_identifier covering the 3 catalogued inflation quote types: ZC_INFLATIONSWAP/RATE, YY_INFLATIONSWAP/RATE, SEASONALITY/RATE. |
 | [[id:B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41][Design and add oresmd volatility-surface sub-schema]] | DONE | 2026-08-08 | 2026-08-08 | oresmd only represents swaption RATE_LNVOL today. Design one shared strike/expiry/model-subtype sub-schema and apply it across all 8 catalogued vol sub-families: swaption, cap/floor, FX option, equity option, commodity option, bond option, inflation cap/floor, credit index option (12 quote types total). |
 | [[id:6D1CA504-D70A-4ACB-9560-3C124162FC80][Add oresmd correlation asset class: pairwise factor correlation]] | DONE | 2026-08-08 | 2026-08-08 | oresmd has no correlation asset class at all today. Add correlation_market_data_identifier covering CORRELATION/RATE (pairwise correlation between two risk factors, e.g. CCY-CMS-TENOR, FX-FIX-CCY1-CCY2, EQ-TICKER). |
-| [[id:602454B1-2D6E-4E40-BBD0-DA3F6446A569][Codegen oresmd quote types]] | STARTED | 2026-08-10 | | Add codegen support for oresmd quote types: define a new entity type that generates the enum, struct fields, parser branches, projection functions, resolver wiring, and tests from a compact specification, producing zero diffs against the hand-crafted implementation. |
+| [[id:602454B1-2D6E-4E40-BBD0-DA3F6446A569][Codegen oresmd quote types]] | DONE | 2026-08-10 | 2026-08-10 | Add codegen support for oresmd quote types: define a new entity type that generates the enum, struct fields, parser branches, projection functions, resolver wiring, and tests from a compact specification, producing zero diffs against the hand-crafted implementation. |
 
 * Decisions
 
@@ -86,6 +86,14 @@ oresmd already represents).
   dimension, and a model-subtype (=RATE_LNVOL=/=RATE_NVOL=/=RATE_SLNVOL=/=SHIFT=/=PRICE=)
   -- so the schema design happens once, in its own task, rather than
   being rediscovered independently per sub-family.
+- *oresmd codegen replaces the hand-crafted files wholesale, and
+  byte-identical output is the acceptance gate*: the org spec files are
+  the canonical source for the enum, structs, parser, projections,
+  resolver, and tests; codegen generates complete replacement files
+  (framework code included), and adoption required each generated file
+  to match the hand-crafted original exactly (=git diff= empty after
+  regeneration), enforced thereafter by the CI =codegen-drift= gate
+  now covering =ores.marketdata=.
 
 * Out of scope
 

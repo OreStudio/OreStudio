@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -72,3 +72,18 @@ via its "Verifies task" field.
 | 4 | FOMC spec convention not visible on main | PR description | Declined | The convention lives on the unmerged branch feature/fomc-calendar-event-model; this PR mirrors it so both land consistently. |
 
 * Result
+
+The scaffold is merged. It contains:
+
+- Story scaffold: goal, acceptance and out-of-scope prose for
+  "Manage the compute grid from the shell"; the scaffolding task plus
+  the five real tasks (read verbs, job lifecycle, grid monitoring,
+  artifact downloads, smoke-test script); the sprint 25 row wired to
+  STARTED.
+- The Allium spec (doc/llm/specs/shell-compute-grid-management.allium),
+  following the FOMC convention. allium check clean; allium plan
+  derives 59 test obligations.
+- PR #1947: raised, reviewed, one review round addressed (output-
+  download rule and trigger added, smoke coverage scoped to the drain
+  transition, task file renamed to task_read-verbs.org; the FOMC
+  convention note declined as accurate), and merged.

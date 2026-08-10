@@ -20,8 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Move the WSL remote-host arc's product-backlog tasks into this
-sprint-25 story, so no arc work lives outside the current sprint:
+Move the WSL remote-host arc's product-backlog tasks into their
+correct sprint homes, so no arc work lives outside the current
+sprint:
 
 - Nine tasks move via ~compass task move~: the compass remote-deploy
   tooling task (~compass env deploy~, PR #1937) from
@@ -30,8 +31,12 @@ sprint-25 story, so no arc work lives outside the current sprint:
   quadlet generator, controller decommission, re-scope, rollout,
   podman-events watcher) from
   ~product_backlog/inbox/split-services-into-per-service-containers/~.
+- Seven of the split-services tasks (their work completed in sprint
+  24, 2026-07-29..08-02) are then routed into the sprint-24 story as
+  history. This story keeps the tooling task, the podman-events
+  watcher, and the new remote compute-node join task.
 - The emptied backlog stories are closed as superseded; the sprint-24
-  story keeps its six DONE tasks as history.
+  story gains a provenance note.
 - The story is wired into sprint 25 (~sprint.org~, under Product).
 
 * Status
@@ -40,17 +45,19 @@ sprint-25 story, so no arc work lives outside the current sprint:
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Scaffolding the story and moving the nine backlog tasks. |
+| Now          | Moved the nine backlog tasks; routed the seven sprint-24-completed ones into the sprint-24 story. |
 | Waiting on   | Nothing.                               |
-| Next         | Move the nine tasks; close the emptied stories. |
+| Next         | Close this task once the PR merges.    |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
 
-- The story's ~* Tasks~ table lists all nine moved tasks with their
-  states preserved (7 DONE, 1 ABANDONED, 1 BLOCKED).
+- Tasks sit in their correct homes: the seven closed split-services
+  tasks in the sprint-24 story, the tooling task and the podman-events
+  watcher in this story, states preserved (7 DONE, 1 ABANDONED, 1
+  BLOCKED).
 - ~product_backlog~ stories carry superseded notes; the sprint-24
-  story is unchanged.
+  story carries a provenance note.
 - ~sprint.org~ lists the story under Product, state STARTED.
 
 * Plan

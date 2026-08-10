@@ -5,7 +5,7 @@
 #+description: Extend the systemd-units generator (systemd_generate.py) with a second renderer that reads the same service_definition/service_dependency tables and emits Quadlet .container units for podman/remote hosts (e.g. Newton), reusing the After=/Requires= ordering already derived for the plain-systemd path -- one source of truth, two renderers. Wrap the units in a per-environment .target the same way. Add bash+SSH tooling to render and copy the units to the remote host's ~/.config/containers/systemd/ and run systemctl --user daemon-reload && start there. The podman side's --sdnotify=healthy reuses the HEALTHCHECK from the IAM pilot task (PR #1787). Depends on the plain-systemd generator work landing first.
 #+type: task
 #+level: s1
-#+filetags: :systemd:podman:wsl-remote-offload-and-compute:sprint_25:v0:
+#+filetags: :systemd:podman:offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generate-quadlet-podman-units
 #+pr: 1802
@@ -16,7 +16,7 @@
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -60,7 +60,7 @@ machinery.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

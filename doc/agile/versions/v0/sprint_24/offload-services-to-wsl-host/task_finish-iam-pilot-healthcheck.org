@@ -5,7 +5,7 @@
 #+description: The per-service container pilot for IAM got past a rootless-podman uid-remapping issue (fixed, needs --userns=keep-id) and connects to NATS successfully standalone, but does not yet reach a fully healthy end-to-end state: a distinct, not-yet-root-caused JWT token signing failure (in-memory PEM parsing, bio read failed) surfaces afterward. Root-cause and fix that, then add the HEALTHCHECK probe (tailing IAM's own log for Service ready.) and confirm IAM reaches podman ps healthy end-to-end.
 #+type: task
 #+level: s1
-#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/finish-iam-pilot-healthcheck
 #+pr: 1787
@@ -16,7 +16,7 @@
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -35,7 +35,7 @@ as a container-native probe) and confirm IAM reaches ~podman ps~
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

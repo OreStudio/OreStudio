@@ -7,43 +7,90 @@
 #+level: s1
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-verbs
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: A97F58CC-6C2D-4138-AE4C-60D8C53B88A7
+#+blocked_since: 2026-08-10
 #+created: 2026-08-10
 #+updated: 2026-08-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shell's ~compute~ menu gains five read-only verbs: ~list-apps~,
+~list-app-versions~, ~list-platforms~, ~list-hosts~ and
+~list-batches~. Each verb renders the domain rows as a table with the
+fields a script needs — ids, names, versions, status — so the grid
+can be inspected from the shell with no UI.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | All five verbs verified live against brave_hopper; five shell recipes added, tangled and wired into the inventory. ~list-platforms~ still renders its table by hand (see Notes). |
+| Waiting on   | [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] |
+| Next         | Resume once the drift task models ~compute_platform~: swap the hand-rolled render for the generated table_io (~out << resp->platforms~), re-verify live, commit, open the PR. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
 
--
+- ~compute list-apps~ lists the app catalogue (id, name, description).
+- ~compute list-app-versions~ lists app versions (app id, wrapper and
+  engine version, min RAM).
+- ~compute list-platforms~ lists platform triplets (id, code, display
+  name, OS, CPU arch).
+- ~compute list-hosts~ lists grid nodes (id, external id, display
+  name, hardware, last RPC time, credit).
+- ~compute list-batches~ lists batches (id, external ref, status).
+- Every verb works against a live serving environment; empty domains
+  render a header-only table, not an error.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+All five verbs reuse existing NATS subjects and the codegen table
+renderers in ~ores.compute.api~ (~*_table_io.hpp~); no backend or
+codegen changes. Implementation lives in the existing
+~compute_commands.{hpp,cpp}~ next to ~publish-package~, following its
+shape: require a login, send the list request authenticated, log the
+row count, print the table. ~compute_platform~ has no table renderer
+(it is hand-written, not model-owned), so ~list-platforms~ renders a
+small aligned table with ~<iomanip>~ directly in the shell.
 
 * Notes
+
+- Live proof (2026-08-10): scripted session against brave_hopper with
+  all 23 services up. ~compute list-apps~ returned the ORE and hello
+  apps; ~list-app-versions~ two versions; ~list-platforms~ six triplets
+  (hand-rolled table; display-name column widened to 36 chars after a
+  live alignment check); ~list-hosts~ six registered nodes; ~list-batches~
+  the remote-compute-node-join-proof batch (closed).
+- The compute grid is controlled by the system super admin, not by a
+  tenant; the ~.env~ auto-login defaults (~tenant_admin@acme_corporation~)
+  fail against this environment ("Auto-login failed", empty message),
+  so the recipes and the live proof log in as ~super_admin@localhost~.
+  All five library scripts run as authored against the current
+  environment: connect, login, verb, logout — each renders its table
+  with live data (2 apps, 2 app versions, 6 platforms, 6 hosts, 1
+  batch).
+- Recipes live in =doc/recipes/shell/compute/= (one per verb), tangled
+  into =projects/ores.shell/scripts/library/compute/=, indexed under the
+  new =Compute= section of =doc/recipes/shell/shell.org=.
+- BLOCKED (2026-08-10): ~compute_platform~ is the one hand-written
+  island in an otherwise codegen-owned component — every other compute
+  entity is generated from a model org (~ores.compute.modeling~:
+  domain type, ~*_table_io~, protocol, repository, SQL), but platform
+  predates the model migration and has no org and no table renderer.
+  That drift is the subject of the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift
+  baseline: ores.compute]] story; its task
+  ([[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]])
+  will model the platform entity and generate its table_io. On
+  resume, ~list-platforms~ streams ~out << resp->platforms~ like the
+  other four verbs, and the ~<iomanip>~ render leaves the shell.
 
 * Test Scenarios
 

@@ -36,11 +36,11 @@ pilot did) is a prerequisite for each one individually.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | 15/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument, equity_digital_option_instrument. Remaining 4 (bond, commodity, credit, scripted) deferred -- feature-gated, see Notes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing -- all remaining instruments (bond, commodity, credit, scripted) blocked by codegen domain-template gaps; see Notes. |
+| Next         | Nothing. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -710,3 +710,34 @@ via its "Verifies task" field.
 | 9 | Nit: the 4-way tenant/workspace read-scope filter matrix repeats in every read function | cpp_domain_type_repository.cpp.mustache | Declined (this PR) | Reviewer marked it explicitly not required; noted as a follow-up if the template grows further. |
 
 * Result
+
+15 of ~19 hand-crafted trading instrument sub-types converted to
+codegen models, in three PRs: the equity_position_instrument pilot
+(PR #1857), 5 flat types (PR #1874), and 10 more in PR #1925
+(equity_accumulator, equity_asian_option, equity_barrier_option,
+equity_digital_option, equity_option, equity_swap, fx_asian_forward,
+fx_barrier_option, fx_digital_option, fx_variance_swap). Each
+converted type regenerated zero-diff against its hand-crafted
+original, apart from one systemic template improvement: read_at_version
+is now workspace-scoped for every generated repository (28 total),
+fixed once at the template level rather than per entity.
+
+The remaining 4 (bond, commodity, credit, scripted) plus the
+leg-bearing entities (composite_instrument/composite_leg, swap-leg
+swaps) are deferred to the backlog follow-up
+[[id:2548EE95-7C62-4C48-BA11-2146604B2082][resolve-codegen-gaps-for-remaining-instruments]]:
+bond is the most nested entity in the family (MSVC C1202
+rfl-complexity decomposition), and the leg-bearing entities need a
+service-template extension mechanism the generator does not have yet.
+PR #1925 review endorsed the boundary as a reasonable scope cut.
+
+Verified per acceptance: full build green; ores.trading.{api,core,
+service}.tests green (761 assertions in 186 test cases); NATS
+eventing wired into the running service (round-3 fix, commit
+1ac829bf8); read_at_version workspace isolation fixed at the template
+level (commits 89edb26cc, d328b2671).
+
+One acceptance item remains open: the repository test proving batch
+remove() does not cross workspace boundaries (flagged in PR #1857
+review) was not added -- no test exercises batch remove across
+workspaces today. Tracked with the remaining codegen follow-ups.

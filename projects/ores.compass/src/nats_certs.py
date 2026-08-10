@@ -139,7 +139,11 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
         except ValueError:
             extra_san = f"DNS:{hostname}"
         san_entries = ["DNS:localhost", extra_san, "IP:127.0.0.1"]
-        for ip in _local_ipv4_addresses():
+        # Resolve once: the SAN list and the log line below must show the
+        # same address set -- a second subprocess call could race a DHCP
+        # renewal and print a different set than went into the cert.
+        local_ips = _local_ipv4_addresses()
+        for ip in local_ips:
             entry = f"IP:{ip}"
             if entry not in san_entries:
                 san_entries.append(entry)
@@ -162,7 +166,7 @@ def generate(checkout_root: Path, *, force: bool = False, hostname: str = "local
                 san_file.unlink(missing_ok=True)
             server_csr.unlink(missing_ok=True)
         print(f"  Generated: {server_crt} "
-              f"(SAN: localhost, {hostname}, {', '.join(_local_ipv4_addresses())})")
+              f"(SAN: localhost, {hostname}, {', '.join(local_ips)})")
 
     # --- Service client certificates ---
     print("==> Service client certificates")

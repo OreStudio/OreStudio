@@ -87,11 +87,11 @@ Recipes, knowledge, manual, memory, diagrams, search.
 | [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
 | [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
 | [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
-| [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] | Doc Review Ste100 | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
+| [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] | Review and rewrite agent output using ASD-STE100 Simplified Technical English | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
+| [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
 | [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show one document by UUID or prefix: metadata, blurb, incoming and outgoing links. |
 | [[id:4A986B6B-1678-453E-8357-C086E78C0698][doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
 | [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
-| [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots via the QA Validati... |
 | [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
 
 * Hand-written code (=code-=)
@@ -103,11 +103,11 @@ Build, tests, review, investigation — code written by hand.
 | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]] | Code Add Domain Type | Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen. |
 | [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] | Code Add Tests | Generate Catch2 unit tests for ORE Studio components — domain, repository, messaging, generators, service,... |
 | [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] | Code Investigate Test Failure | Investigate unit test failures by enabling logging, running the failing suite, parsing the result XML, and... |
+| [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] | Review and clean code comments | Review and clean code comments — remove clutter, keep necessary explanations, place comments above the code... |
 | [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] | Code Review Component Skill | Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and conven... |
 | [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] | Code Review PR Skill | Review changes in a pull request against the ORE Studio code-review checklist; produce findings bucketed by... |
-| [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] | Code Review Comments | Review and clean code comments — remove clutter, keep necessary explanations, place comments above the code. |
 | [[id:654D4A70-E63D-4C18-B5A5-886066E36314][code-run-build]] | Code Run Build | Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML... |
-| [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] | Code Run Feature Test | Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, prov... |
+| [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] | Code Run Feature Test | Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provi... |
 | [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][code-start-branch]] | Code Start Branch | Create a clean branch off main for out-of-band work with no task attached; task-shaped work uses agile-star... |
 
 * Generated code (=codegen-=)
@@ -124,7 +124,7 @@ Entities, components, and schemas produced by ores.codegen.
 | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] | Codegen Add Shell Entity | Create shell commands for domain entities in ores.shell including list, add, history, and other operations. |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
 | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] | Codegen Add WT Entity | Create Wt web UI components for domain entities including list widgets, detail dialogs, and application int... |
-| [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] | Codegen Sync CMake Sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after a rebase/merge lands files from another branch. |
+| [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] | codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
 
 * DevOps (=devops-=)
 
@@ -139,7 +139,7 @@ Environment, database, services, shell, client, site.
 | [[id:3A869409-B8E7-420B-9BFA-0BAC9E9F804F][devops-deprovision-environment]] | Deprovision a named environment | Use compass env deprovision to remove a named worktree and its directory. |
 | [[id:AA14F8A0-F037-4303-88D9-059771BD764D][devops-provision-environment]] | Provision a new named environment | Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env. |
 | [[id:435BD960-CA83-4B1A-829D-F345181206B2][devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
-| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour and instance name for parallel runs. |
+| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour for parallel runs. |
 | [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, provision... |
 | [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
 | [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |

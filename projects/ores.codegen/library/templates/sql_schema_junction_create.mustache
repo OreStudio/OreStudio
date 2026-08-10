@@ -120,6 +120,36 @@ begin
 
     new.change_reason_code := ores_dq_validate_change_reason_fn({{#junction.has_tenant_id}}new.tenant_id, {{/junction.has_tenant_id}}new.change_reason_code);
 
+{{#junction.foreign_keys}}
+{{#nullable}}
+    -- Validate {{column}} (optional soft FK to {{table}})
+    if new.{{column}} is not null then
+        if not exists (
+            select 1 from {{table}}
+            where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+              and {{/junction.has_tenant_id}}{{target_column}} = new.{{column}}
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception '{{error_message}}', new.{{column}}
+                using errcode = '23503';
+        end if;
+    end if;
+
+{{/nullable}}
+{{^nullable}}
+    -- Validate {{column}} (soft FK to {{table}})
+    if not exists (
+        select 1 from {{table}}
+        where {{#junction.has_tenant_id}}tenant_id = new.tenant_id
+          and {{/junction.has_tenant_id}}{{target_column}} = new.{{column}}
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception '{{error_message}}', new.{{column}}
+            using errcode = '23503';
+    end if;
+
+{{/nullable}}
+{{/junction.foreign_keys}}
     return new;
 end;
 $$ language plpgsql;

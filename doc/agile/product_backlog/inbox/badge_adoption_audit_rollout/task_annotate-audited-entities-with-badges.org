@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :badge_adoption_audit_rollout:sprint_24:v0:
 #+owner: marco
-#+branch: feature/badge-batch1-remaining-entities
+#+branch: feature/badge-batch2-trading
 #+pr: 1784
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-15
-#+updated: 2026-07-30
-#+environment: eager_maxwell
+#+updated: 2026-08-10
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +31,12 @@ own, independently reviewable unit of work.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6AC16489-70F6-4F95-A5FA-0D561FF151A3][Classify and roll out badge/image/plain-text rendering across domain entities]] |
-| Now          | Batch 1 fully done (all 11 entities self-badged, built, tested). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Batch 2 (cross-component, same data-authoring approach); Batch 3 (plain-text documentation) after. |
-| Last touched | 2026-07-30                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
@@ -197,7 +197,7 @@ via its "Verifies task" field.
 
 * Result
 
-Batch 1 fully shipped: all 11 refdata entities
+Batch 1 shipped (PR #1784): all 11 refdata entities
 (=calendar_type=, =currency_market_tier=, =monetary_nature=,
 =book_purpose_type=, =business_unit_type=, =contact_type=,
 =ledger_feed_type=, =leg_type=, =purpose_type=, =rounding_type=,
@@ -206,17 +206,34 @@ Batch 1 fully shipped: all 11 refdata entities
 =code_domain=/=badge_definition=/=badge_mapping= data authored first
 (46 values, colour-mapped per ux_language.org's RAG/gray rules) --
 authored in both the runtime seed and its artefact-catalogue mirror.
-Regenerated, built, tested throughout. Task stays STARTED -- Batch 2
-(cross-component, same pattern) and Batch 3 (plain-text
-documentation) remain.
+Regenerated, built, tested throughout.
 
-As a side effect, fixed a standing codegen gap: there was no way to
-add a custom signal to a generated Qt detail dialog (or relay it
-through its controller) without hand-editing generated code, and the
-four per-window call sites that wire a detail dialog's caches were
-duplicated verbatim. Both fixed with two new paste seams and a shared
-=wireDetailDialogCommon()= helper in the =ores.cpp.qt= templates --
-see Plan for detail. Only the 5 touched entities were regenerated
-against the refactored templates; the rest of the codebase's detail
-dialogs still use the old (functionally equivalent) generated
-pattern until next touched.
+Batch 2 shipped as the trading slice. The cross-component rollout
+(=feature/badge-batch2-cross-component=) decomposed at close: the
+other components' content is superseded on main or deleted surface,
+leaving trading as the substantive remainder. =party_role_type= and
+=trade_type= were migrated to the full entity shape (primary key
+folded into =Columns=, =Table display= section) and regenerated --
+generators now use tenant-scoped generation
+(=generation_keys::tenant_id=, thread-safe counter) and emit
+=version = 0= per the current codegen template; the generated table,
+eventing, messaging, presentation, repository, and service files
+absent on main were ported. Their generator tests were updated to the
+current codegen's =version = 0= convention -- the same
+stale-expectation fix already applied to the refdata generators
+(main's trading generators predate the template change and were
+never regenerated).
+
+Batch 3 (plain-text documentation) is tracked as capture
+[[id:B2FDEACD-C4D5-4651-91CF-73CBE26B713A][Batch 3 of the badge/image/plain-text rendering rollout]].
+
+Side effect, fixed during batch 1: a standing codegen gap -- there
+was no way to add a custom signal to a generated Qt detail dialog (or
+relay it through its controller) without hand-editing generated code,
+and the four per-window call sites that wire a detail dialog's caches
+were duplicated verbatim. Both fixed with two new paste seams and a
+shared =wireDetailDialogCommon()= helper in the =ores.cpp.qt=
+templates -- see Plan for detail. Only the 5 touched entities were
+regenerated against the refactored templates; the rest of the
+codebase's detail dialogs still use the old (functionally
+equivalent) generated pattern until next touched.

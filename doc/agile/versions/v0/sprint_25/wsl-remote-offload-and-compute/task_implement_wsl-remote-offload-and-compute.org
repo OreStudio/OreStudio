@@ -8,7 +8,7 @@
 #+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-wsl-remote-offload-and-compute
-#+pr:
+#+pr: 1940
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1940][#1940]] | [agile] Consolidate the WSL offload story arc into sprint 25 |
 
 * Review
 

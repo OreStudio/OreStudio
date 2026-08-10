@@ -74,6 +74,46 @@ public:
     static void process_publish_package(std::ostream& out,
                                         ores::nats::service::nats_client& session,
                                         const std::vector<std::string>& args);
+
+    /**
+     * @brief List compute apps: compute list-apps
+     *
+     * Renders the app catalogue (id, name, description) as a table.
+     */
+    static void process_list_apps(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute app versions: compute list-app-versions
+     *
+     * Renders the registered app versions (wrapper/engine version,
+     * min RAM) as a table.
+     */
+    static void process_list_app_versions(std::ostream& out,
+                                          ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute platforms: compute list-platforms
+     *
+     * Renders the known platform triplets (code, display name, OS,
+     * CPU arch) as a table.
+     */
+    static void process_list_platforms(std::ostream& out,
+                                       ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute hosts: compute list-hosts
+     *
+     * Renders the registered grid nodes (id, display name, hardware,
+     * last RPC time, credit) as a table.
+     */
+    static void process_list_hosts(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute batches: compute list-batches
+     *
+     * Renders the batches (id, external ref, status) as a table.
+     */
+    static void process_list_batches(std::ostream& out, ores::nats::service::nats_client& session);
 };
 
 }

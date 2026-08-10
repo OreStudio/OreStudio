@@ -19,10 +19,16 @@
  */
 #include "ores.shell/app/commands/compute_commands.hpp"
 #include "ores.compute.api/domain/app.hpp"
+#include "ores.compute.api/domain/app_table_io.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
+#include "ores.compute.api/domain/app_version_table_io.hpp"
+#include "ores.compute.api/domain/batch_table_io.hpp"
+#include "ores.compute.api/domain/host_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
+#include "ores.compute.api/messaging/batch_protocol.hpp"
+#include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
@@ -35,6 +41,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cli/cli.h>
+#include <iomanip>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -123,6 +130,41 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
                          "Publish a compute engine package (app/version/platform/binary)",
                          {"app_name engine_version platform_code [--file <path>] "
                           "[--wrapper-version <v>] [--min-ram-mb <n>] [--http-base-url <url>]"});
+
+    compute_menu->Insert(
+        "list-apps",
+        [&session](std::ostream& out) {
+            process_list_apps(std::ref(out), std::ref(session));
+        },
+        "List compute apps");
+
+    compute_menu->Insert(
+        "list-app-versions",
+        [&session](std::ostream& out) {
+            process_list_app_versions(std::ref(out), std::ref(session));
+        },
+        "List compute app versions");
+
+    compute_menu->Insert(
+        "list-platforms",
+        [&session](std::ostream& out) {
+            process_list_platforms(std::ref(out), std::ref(session));
+        },
+        "List compute platforms");
+
+    compute_menu->Insert(
+        "list-hosts",
+        [&session](std::ostream& out) {
+            process_list_hosts(std::ref(out), std::ref(session));
+        },
+        "List compute hosts");
+
+    compute_menu->Insert(
+        "list-batches",
+        [&session](std::ostream& out) {
+            process_list_batches(std::ref(out), std::ref(session));
+        },
+        "List compute batches");
 
     root_menu.Insert(std::move(compute_menu));
 }
@@ -277,6 +319,102 @@ void compute_commands::process_publish_package(std::ostream& out,
 
     out << "Published " << app_name << " " << engine_version << " (" << platform_code
         << ") successfully." << std::endl;
+}
+
+void compute_commands::process_list_apps(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    compute::messaging::list_apps_request req;
+    req.limit = 1000;
+    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
+    if (!resp)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->apps.size() << " apps.";
+    out << resp->apps << std::endl;
+}
+
+void compute_commands::process_list_app_versions(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    compute::messaging::list_app_versions_request req;
+    req.limit = 1000;
+    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
+    if (!resp)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->app_versions.size()
+                              << " app versions.";
+    out << resp->app_versions << std::endl;
+}
+
+void compute_commands::process_list_platforms(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    compute::messaging::list_platforms_request req;
+    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
+    if (!resp)
+        return;
+    if (!resp->success) {
+        const auto& msg = resp->message.empty() ? "Failed to list platforms." : resp->message;
+        BOOST_LOG_SEV(lg(), warn) << msg;
+        fail(out) << msg << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->platforms.size()
+                              << " platforms.";
+
+    out << std::endl
+        << std::left << std::setw(38) << "ID" << std::setw(14) << "Code" << std::setw(36)
+        << "Display Name" << std::setw(10) << "OS" << std::setw(10) << "CPU Arch" << std::endl;
+    for (const auto& p : resp->platforms) {
+        out << std::left << std::setw(38) << boost::uuids::to_string(p.id) << std::setw(14)
+            << p.code << std::setw(36) << p.display_name << std::setw(10) << p.os_family
+            << std::setw(10) << p.cpu_arch << std::endl;
+    }
+    out << std::endl;
+}
+
+void compute_commands::process_list_hosts(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    compute::messaging::list_hosts_request req;
+    req.limit = 1000;
+    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
+    if (!resp)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->hosts.size() << " hosts.";
+    out << resp->hosts << std::endl;
+}
+
+void compute_commands::process_list_batches(std::ostream& out, nats_client& session) {
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    compute::messaging::list_batches_request req;
+    req.limit = 1000;
+    auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
+    if (!resp)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << resp->batches.size() << " batches.";
+    out << resp->batches << std::endl;
 }
 
 }

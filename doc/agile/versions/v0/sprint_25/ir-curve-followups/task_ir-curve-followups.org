@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ir-curve-followups
+#+pr: 1939
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
-#+environment:
+#+updated: 2026-08-10
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,24 +26,64 @@ Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompati
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
--
+- =index_family= enum accepts all 22 families the SQL CHECK allows
+- =is_overnight()= matches the SQL tenor rule: only libor/euribor are term
+- Provision of a party with realistic-2026 seed data no longer fails
+- Dialog index family combo lists all 22 families
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow-up #2 (dialog combo) is already resolved on main: commit b36839fd0
+(Aug 8) added the 16 new families to the combo. Verify and record; nothing
+to do.
+
+Follow-up #1 (enum vs seed) is a ores.marketdata enum mismatch. Ground
+truth is the SQL CHECK at
+=projects/ores.sql/create/synthetic/synthetic_ir_curve_generation_configs_create.sql=:
+22 families, of which only libor/euribor require a non-empty tenor; all
+20 others are overnight-style (tenor = ''). The realistic-2026 seed uses
+20 RFR families with empty tenor.
+
+The oresmd side has only 6 values, so the seed breaks provisioning at the
+oresmd identifier round-trip: =parse_enum<index_family>= throws
+"Unrecognised index value" for the 16 new families, and =is_overnight()=
+misclassifies them as term, which trips the parser's "term index fixing
+requires a tenor" validation.
+
+Fix:
+
+1. Extend =enum class index_family= in oresmd_enums.hpp to the 22 SQL
+   CHECK values (libor, euribor, sofr, estr, sonia, tona, saron, aonia,
+   corra, honia, sora, swestr, nowa, kofr, mibor, zaronia, destr,
+   polonia, nzonia, shibor, tiie, taibor), docstring cites the CHECK.
+2. =is_overnight()= in oresmd_index_family_utils.hpp: true for every
+   family except libor/euribor, matching the SQL tenor rule.
+3. Tests: parser coverage that all 16 new families parse as fixing
+   without tenor (overnight classification, behavioral); a projection
+   test that the index name drops the tenor suffix for a new family;
+   reject_unrecognised_index_family_value stays green (bogus is not
+   among the 22).
+
+No changes needed on the synthetic side: config index_family is a plain
+lower-case token there, and the SQL already accepts all 22.
 
 * Notes
+
+Follow-up #2 (dialog combo) verified resolved on main at HEAD: commit
+b36839fd0 (Aug 8) added the 16 new families to
+IrCurveGenerationConfigDetailDialog's index family combo (all 22 listed,
+including libor/euribor). Nothing to do for this follow-up; noted for the
+close-out. The combo remains hand-patched — it mirrors the 22-family SQL
+CHECK, same source of truth the extended =index_family= enum now uses.
 
 * Test Scenarios
 
@@ -60,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1939][#1939]] | [ores.marketdata] Extend index_family enum to the 22 SQL CHECK families |
 
 * Review
 
@@ -69,3 +109,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Follow-up #1 fixed: =enum class index_family= in oresmd_enums.hpp now
+mirrors the 22-family CHECK constraint on
+=ores_synthetic_ir_curve_generation_configs_tbl= exactly, and
+=is_overnight()= matches the SQL tenor rule (only libor/euribor are term;
+all 20 other families are overnight-style). The realistic-2026 seed's
+families now round-trip through oresmd: =parse_enum<index_family>= accepts
+them and fixing identifiers without a tenor no longer trip the
+tenor-required validation, so provisioning a party from realistic-2026
+seed data no longer fails.
+
+Test coverage added: a parser test that all 16 new RFR/IBOR families parse
+as fixing without a tenor, and a projections test that a new family's
+index name drops the tenor suffix (CHF-SARON). The full
+=ores.marketdata.core= suite passes (147 test cases, 310 assertions).
+
+Follow-up #2 verified already resolved on main: commit b36839fd0 (Aug 8)
+added the 16 new families to IrCurveGenerationConfigDetailDialog's index
+family combo; nothing to do. The combo remains hand-patched, mirroring
+the same 22-family SQL CHECK the enum now uses.
+
+Verification: =compass build ores.marketdata.core.tests= clean
+(linux-clang-debug-make); ctest 1/1 passed.

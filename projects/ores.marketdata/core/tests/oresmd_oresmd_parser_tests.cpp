@@ -20,6 +20,8 @@
 #include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <utility>
+#include <vector>
 
 namespace {
 
@@ -91,6 +93,30 @@ TEST_CASE("parse_ir_eur_estr_discount_fixing", tags) {
     REQUIRE(ir.ccy == "EUR");
     REQUIRE(ir.index == index_family::estr);
     REQUIRE(ir.role == curve_role::discount);
+}
+
+TEST_CASE("parse_ir_new_rfr_families_fixing_without_tenor", tags) {
+    // The 16 RFR/IBOR families the SQL CHECK allows beyond the original 6
+    // (synthetic_ir_curve_generation_configs_create.sql): all overnight-style, so a fixing
+    // without a tenor must parse. Previously the enum lacked them, so parse_enum threw
+    // "Unrecognised index value" and provisioning a party from realistic-2026 seed data failed.
+    const std::vector<std::pair<std::string, index_family>> new_families{
+        {"saron", index_family::saron},   {"aonia", index_family::aonia},
+        {"corra", index_family::corra},   {"honia", index_family::honia},
+        {"sora", index_family::sora},     {"swestr", index_family::swestr},
+        {"nowa", index_family::nowa},     {"kofr", index_family::kofr},
+        {"mibor", index_family::mibor},   {"zaronia", index_family::zaronia},
+        {"destr", index_family::destr},   {"polonia", index_family::polonia},
+        {"nzonia", index_family::nzonia}, {"shibor", index_family::shibor},
+        {"tiie", index_family::tiie},     {"taibor", index_family::taibor}};
+    for (const auto& [name, expected] : new_families) {
+        const auto id =
+            oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing"));
+        const auto& ir = std::get<ir_market_data_identifier>(id);
+        REQUIRE(ir.type == instrument_type::fixing);
+        REQUIRE(ir.index == expected);
+        REQUIRE_FALSE(ir.tenor.has_value());
+    }
 }
 
 TEST_CASE("parse_ir_swap_quote", tags) {

@@ -29,10 +29,14 @@ namespace ores::marketdata::core::detail {
  * e.g. "USD-SOFR"), false for term benchmarks that require one (e.g. "USD-LIBOR-3M").
  * Shared by oresmd_parser (tenor-required validation) and oresmd_projections (index-name
  * projection), so the two classifications can't drift apart.
+ *
+ * Mirrors the tenor rule of the CHECK constraint on
+ * ores_synthetic_ir_curve_generation_configs_tbl (synthetic_ir_curve_generation_configs_create.sql):
+ * libor and euribor are the only term families (tenor <> ''); all 20 others are
+ * overnight-style (tenor = '').
  */
 inline bool is_overnight(domain::index_family f) {
-    return f == domain::index_family::sofr || f == domain::index_family::estr ||
-           f == domain::index_family::sonia || f == domain::index_family::tona;
+    return f != domain::index_family::libor && f != domain::index_family::euribor;
 }
 
 }

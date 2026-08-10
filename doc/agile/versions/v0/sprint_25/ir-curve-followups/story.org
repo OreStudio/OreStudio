@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:003B3504-8F6F-406F-A94B-A3119DE51962][IR curve follow-ups]] | BACKLOG | | | Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompatible with index_family enum (provision party fails), and IrCurveGenerationConfigDetailDialog's hand-patched index family combo doesn't list the 16 new RFR/IBOR families. |
+| [[id:003B3504-8F6F-406F-A94B-A3119DE51962][IR curve follow-ups]] | DONE | 2026-08-10 | 2026-08-10 | Two follow-ups surfaced during IR curve work: realistic-2026 seed data incompatible with index_family enum (provision party fails), and IrCurveGenerationConfigDetailDialog's hand-patched index family combo doesn't list the 16 new RFR/IBOR families. |
 | [[id:8656F506-A3A8-4498-9F34-4A47F32F78A6][Expand synthetic IR stochastic process types beyond Vasicek/CIR/Hull-White]] | DONE | 2026-08-07 | 2026-08-09 | Add support for further stochastic interest-rate models (BDT, Black-Karasinski, HJM, LMM, SABR, G2++, affine/QG term-structure) to ores.synthetic's yield curve process types, currently limited to Vasicek, CIR, and Hull-White. |
 | [[id:2F793500-FBD1-4E4F-8B6E-15D03337FBD2][Investigate tenant_type model/table drift on has_tenant_id]] | BACKLOG | | | tenant_type's codegen model has no :has_tenant_id: flag, meaning current codegen would drop the tenant_id column entirely, yet the live table still has it -- likely stale drift, not a clean pattern to copy. |
 | [[id:0A9B3E56-231D-467C-9146-14386A9DA9FF][Implement G2++ two-factor Gaussian short-rate process]] | DONE | | 2026-08-07 | Implement a two-factor Gaussian short-rate engine following the data-oriented pattern of the existing hull_white_process. The second factor adds kappa2, sigma2, and correlation rho. discount_factor() has a closed-form two-factor affine bond price. Reference: QuantLib G2 class. |
@@ -76,6 +76,16 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
   transition. Documented as a future extension.
 - Engine work only: none of the six processes is wired into
   =process_factory= yet. System-infra wiring is PR 2 (the G2 precedent).
+- =oresmd::index_family= mirrors the SQL CHECK constraint on
+  =ores_synthetic_ir_curve_generation_configs_tbl= (22 families) as the
+  single source of truth, and =is_overnight()= encodes its tenor rule
+  (only libor/euribor are term). The seed/config side stays a plain
+  lower-case token; the enum mismatch that broke party provisioning from
+  realistic-2026 seed data is resolved on the oresmd side.
+- The dialog's index family combo stays hand-patched (all 22 families,
+  b36839fd0) rather than enum-driven: ores.qt/synthetic already links
+  ores.marketdata.api, but the combo lists user-facing labels that would
+  not gain from magic_enum round-trips; both sides cite the same CHECK.
 
 * Out of scope
 

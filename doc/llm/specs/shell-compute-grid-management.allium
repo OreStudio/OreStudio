@@ -1,0 +1,366 @@
+-- allium: 3
+-- shell-compute-grid-management.allium
+
+-- Scope: manage the compute grid from the ores.shell command line.
+-- Includes:
+--   - Read verbs: list apps, app versions, platforms, hosts and
+--     batches
+--   - Job lifecycle: add a batch, dispatch its jobs (one shared
+--     input bundle per batch), list workunits and results
+--   - Grid monitoring: per-node grid stats, delete a host
+--   - Artifact access: download a job's input bundle and a result's
+--     output bundle
+--   - The grid smoke test: dispatch 10-20 consecutive jobs and
+--     verify every online node was exercised with all outcomes
+--     successful
+-- Excludes:
+--   - The compute service internals: assignment, result submission
+--     handling, storage layout -- existing behavior, unchanged
+--   - The wrapper's package download and execution (ores.compute.wrapper)
+--   - App and app-version registration: publish-package already
+--     covers it -- the verbs here only list
+--   - The desktop client and process-workflow verbs (the shell
+--     workflow menu is a separate domain)
+-- External inputs: grid state produced by the compute service and the
+-- wrappers (host heartbeats, result submissions, storage bundles).
+
+config {
+    -- Decisions (2026-08-10):
+    --   Smoke size: 10-20 jobs. Ten consecutive jobs exceed the six
+    --     online nodes of the brave_hopper grid, so a drained smoke
+    --     batch cannot pass by luck of a single node.
+    --   Offline threshold: 90s. The wrapper heartbeats every 30s;
+    --     three missed beats declare a host offline.
+    smoke_min_jobs: Integer = 10
+    smoke_max_jobs: Integer = 20
+    heartbeat_timeout: Duration = 90.seconds
+}
+
+-- The operator drives the grid from the shell. The operator has no
+-- fields of its own: identity lives in the IAM session, which is
+-- outside this spec.
+entity GridOperator {
+    name: String
+}
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- The app catalogue. Registered by publish-package, outside this
+-- spec's rules; the shell only lists it.
+entity ComputeApp {
+    code: String
+    name: String
+
+    versions: ComputeAppVersion with app = this
+}
+
+entity ComputeAppVersion {
+    app: ComputeApp
+    platform: Platform
+    package_sha256: String
+    package_uri: String
+}
+
+entity Platform {
+    code: String
+}
+
+-- ------------------------------------------------------------
+-- Value Types
+-- ------------------------------------------------------------
+
+-- One unit of dispatchable work inside a batch. The batch carries a
+-- list of jobs; each job becomes one workunit when dispatched.
+value Job {
+    label: String
+}
+
+-- The shared input bundle of a batch, uploaded once at dispatch.
+value InputBundle {
+    uri: String
+}
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- A compute node of the grid: a wrapper registered with the serving
+-- environment, heartbeating over NATS.
+entity ComputeHost {
+    id: String
+    name: String
+    platform: Platform
+    online: Boolean
+    last_heartbeat_at: Timestamp
+    tasks_completed: Integer
+    input_bytes_fetched: Integer
+    output_bytes_uploaded: Integer
+}
+
+-- A collection of jobs dispatched together from the shell.
+entity Batch {
+    id: String
+    status: created | dispatched | drained
+    is_smoke_test: Boolean
+    jobs: List<Job>
+    -- The shared input bundle, uploaded once at dispatch.
+    input_bundle: InputBundle?
+
+    workunits: Workunit with batch = this
+
+    -- Every workunit reached a terminal state.
+    all_terminal: workunits.all(w => w.status = done or w.status = failed)
+
+    transitions status {
+        created -> dispatched
+        dispatched -> drained
+        terminal: drained
+    }
+}
+
+-- One unit of work dispatched to the grid.
+entity Workunit {
+    id: String
+    batch: Batch
+    label: String
+    input_uri: String
+    status: pending | in_progress | done | failed
+    host: ComputeHost?
+
+    transitions status {
+        pending -> in_progress
+        in_progress -> done
+        in_progress -> failed
+        terminal: done, failed
+    }
+}
+
+-- The outcome of one workunit, submitted by the node that ran it.
+entity Result {
+    id: String
+    workunit: Workunit
+    host: ComputeHost
+    outcome: success | client_error | no_reply
+    output_uri: String?
+}
+
+-- ------------------------------------------------------------
+-- Contracts
+-- ------------------------------------------------------------
+
+contract BundleTransfer {
+    fetch_input: (workunit: Workunit) -> InputBundle
+    fetch_output: (result: Result) -> InputBundle
+
+    @invariant UploadedBundleIsFetchable
+        -- Whatever the node uploaded is exactly what the download
+        -- returns: fetch_output(result) yields the same bytes as the
+        -- node's output upload, and fetch_input(workunit) yields the
+        -- batch's dispatch bundle.
+}
+
+-- ------------------------------------------------------------
+-- Rules
+-- ------------------------------------------------------------
+
+-- The operator creates a batch of jobs, optionally as a smoke test.
+rule AddBatch {
+    when: OperatorAddsBatch(operator, id, jobs, is_smoke_test)
+    requires: jobs.count >= 1
+    ensures: Batch.created(
+        id: id,
+        jobs: jobs,
+        is_smoke_test: is_smoke_test,
+        status: created
+    )
+}
+
+-- Dispatch uploads one input bundle for the whole batch, then creates
+-- one workunit per job. Every workunit shares the bundle URI.
+rule DispatchBatch {
+    when: OperatorDispatchesBatch(operator, batch, input_bundle)
+    requires: batch.status = created
+    ensures: batch.status = dispatched
+    ensures: batch.input_bundle = input_bundle
+    for job in batch.jobs:
+        ensures: Workunit.created(
+            batch: batch,
+            label: job.label,
+            input_uri: input_bundle.uri,
+            status: pending
+        )
+}
+
+-- A node heartbeats; the grid records it online.
+rule RecordHeartbeat {
+    when: HostHeartbeatReceived(host, timestamp)
+    ensures: host.last_heartbeat_at = timestamp
+    ensures: host.online = true
+}
+
+-- A node pulls an assignment: the workunit goes in progress on that
+-- host.
+rule WorkunitPickedUp {
+    when: WorkunitStarted(workunit, host)
+    requires: workunit.status = pending
+    ensures: workunit.status = in_progress
+    ensures: workunit.host = host
+}
+
+-- Silence beyond the threshold declares the host offline.
+rule HostGoesOffline {
+    when: host: ComputeHost.last_heartbeat_at <= now - config.heartbeat_timeout
+    requires: host.online
+    ensures: host.online = false
+}
+
+-- A node reports the outcome of a workunit it ran. Success completes
+-- the workunit; a client error fails it. The result row records the
+-- outcome and the output bundle, if one was uploaded.
+rule RecordResult {
+    when: ResultSubmitted(workunit, host, outcome, output_uri?)
+    requires: workunit.status = in_progress
+    ensures: Result.created(
+        workunit: workunit,
+        host: host,
+        outcome: outcome,
+        output_uri: output_uri
+    )
+    if outcome = success:
+        ensures: workunit.status = done
+    else:
+        ensures: workunit.status = failed
+}
+
+-- The batch drains when every workunit reached a terminal state.
+rule BatchDrains {
+    when: batch: Batch.all_terminal
+    requires: batch.status = dispatched
+    ensures: batch.status = drained
+}
+
+-- An offline host can be removed from the grid.
+rule RemoveHost {
+    when: OperatorDeletesHost(operator, host)
+    requires: host.online = false
+    ensures: not exists host
+}
+
+-- Downloads fetch the batch's shared input bundle for a workunit.
+rule FetchInputBundle {
+    when: OperatorDownloadsInput(operator, workunit)
+    requires: workunit.input_uri != ""
+    ensures: InputBundleFetched(
+        operator: operator,
+        workunit: workunit,
+        bundle: BundleTransfer.fetch_input(workunit)
+    )
+}
+
+-- ------------------------------------------------------------
+-- Invariants
+-- ------------------------------------------------------------
+
+-- A smoke batch carries between the configured bounds of jobs.
+invariant SmokeBatchSizeInRange {
+    for b in Batches where b.is_smoke_test:
+        b.jobs.count >= config.smoke_min_jobs
+        and b.jobs.count <= config.smoke_max_jobs
+}
+
+-- The "did all engines kick in" property: when a smoke batch drains,
+-- every host that is online has at least one result in that batch.
+invariant SmokeTestExercisesEveryOnlineNode {
+    for b in Batches where b.is_smoke_test and b.status = drained:
+        for h in ComputeHosts where h.online:
+            (Result where workunit.batch = b and host = h).count >= 1
+}
+
+-- A drained smoke batch reports only successful outcomes.
+invariant SmokeTestAllOutcomesSuccess {
+    for b in Batches where b.is_smoke_test and b.status = drained:
+        (Result where workunit.batch = b).all(r => r.outcome = success)
+}
+
+-- ------------------------------------------------------------
+-- Surfaces
+-- ------------------------------------------------------------
+
+surface ComputeGridShell {
+    facing operator: GridOperator
+
+    contracts:
+        demands BundleTransfer
+
+    exposes:
+        for app in ComputeApps:
+            app.code
+            app.name
+            for v in app.versions:
+                v.app.code
+                v.platform.code
+                v.package_sha256
+                v.package_uri
+        for p in Platforms:
+            p.code
+        for h in ComputeHosts:
+            h.id
+            h.name
+            h.platform.code
+            h.online
+            h.last_heartbeat_at
+            h.tasks_completed
+            h.input_bytes_fetched
+            h.output_bytes_uploaded
+        for b in Batches:
+            b.id
+            b.status
+            b.is_smoke_test
+            b.jobs.count
+        for w in Workunits:
+            w.id
+            w.batch.id
+            w.label
+            w.status
+            w.input_uri
+            w.host.id
+        for r in Results:
+            r.id
+            r.workunit.id
+            r.host.id
+            r.outcome
+            r.output_uri
+
+    provides:
+        OperatorAddsBatch(operator, id, jobs, is_smoke_test)
+        OperatorDispatchesBatch(operator, batch, input_bundle)
+        OperatorDeletesHost(operator, host)
+        OperatorDownloadsInput(operator, workunit)
+        ResultSubmitted(workunit, host, outcome, output_uri?)
+        HostHeartbeatReceived(host, timestamp)
+        WorkunitStarted(workunit, host)
+
+    @guarantee ReadVerbsAreNonDestructive
+        -- The list verbs never change grid state: apps, app versions,
+        -- platforms, hosts, batches, workunits and results are
+        -- presented as stored.
+
+    @guarantee DispatchSharesOneInputBundle
+        -- All workunits of a dispatched batch reference the same
+        -- input bundle URI, uploaded once at dispatch.
+}
+
+-- Decisions (2026-08-10), answering the story's design points:
+--   Q1 "did all engines kick in": captured as the two smoke-test
+--     invariants -- every online node has at least one result in a
+--     drained smoke batch, and all of its outcomes are success. The
+--     smoke script polls grid stats until the batch drains, then the
+--     invariants are the assertion.
+--   Q2 shared vs per-job inputs: one shared input bundle per batch,
+--     uploaded once at dispatch. Per-job inputs add no coverage value
+--     to the smoke test and multiply storage traffic.
+--   Q3 offline threshold: 90s, three missed 30s heartbeats.
+--   Q4 smoke size: 10-20 jobs -- config bounds, enforced by the
+--     SmokeBatchSizeInRange invariant.

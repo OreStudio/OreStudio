@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: F406897B-DC1A-4D80-A269-F4EE5ABA8B28
+:END:
+#+title: Task: Consolidate the WSL offload story arc into sprint 25
+#+description: Initial task for: Remote WSL offload and compute nodes
+#+type: task
+#+level: s1
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-wsl-remote-offload-and-compute
+#+pr: 1940
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the WSL remote-host arc's product-backlog tasks into their
+correct sprint homes, so no arc work lives outside the current
+sprint:
+
+- Nine tasks move via ~compass task move~: the compass remote-deploy
+  tooling task (~compass env deploy~, PR #1937) from
+  ~product_backlog/next/offload-services-to-wsl-host-cutover/~ and the
+  eight split-services tasks (container pilot, IAM healthcheck,
+  orchestration spec, quadlet generator, controller decommission,
+  re-scope, rollout, podman-events watcher) from
+  ~product_backlog/inbox/split-services-into-per-service-containers/~.
+- Seven of the split-services tasks (their work completed in sprint
+  24, 2026-07-29..08-02) are then routed into the sprint-24 story as
+  history. This story keeps the tooling task, the podman-events
+  watcher, and the new remote compute-node join task.
+- The emptied backlog stories are closed as superseded; the sprint-24
+  story gains a provenance note.
+- The story is wired into sprint 25 (~sprint.org~, under Product).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- Tasks sit in their correct homes: the seven closed split-services
+  tasks in the sprint-24 story, the tooling task and the podman-events
+  watcher in this story, states preserved (7 DONE, 1 ABANDONED, 1
+  BLOCKED).
+- ~product_backlog~ stories carry superseded notes; the sprint-24
+  story carries a provenance note.
+- ~sprint.org~ lists the story under Product, state STARTED.
+
+* Plan
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1940][#1940]] | [agile] Consolidate the WSL offload story arc into sprint 25 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Review round 1 (3 bot reviews, 5 findings): orphaned scenario doc + screenshot follow their task into the sprint-24 story; #+updated bumps on the two superseded backlog stories; stale Next on the split-services story; scaffold task still unfilled boilerplate; IAM healthcheck missing from the Goal's task list | scenario_verify_controller_decommission.org, both backlog story.orgs, task_scaffold_*, task_implement_* | Fixed | All five fixed in one commit; replies posted and threads resolved. |
+
+* Result
+
+Nine product-backlog tasks moved into their correct sprint homes. The
+seven closed split-services tasks are recorded in the sprint-24 story,
+because their work completed in sprint 24. The sprint-24 story carries
+a provenance note. The compass remote-deploy tooling task and the
+podman-events watcher live in this story. Both product-backlog stories
+are closed as superseded; each carries a note pointing at this story.
+The remote compute-node join task was scaffolded and wired into sprint
+25. Task states were preserved through the moves: 7 DONE, 1 ABANDONED,
+1 BLOCKED. The org-roam index was resynced. The site build verified
+the doc links.

@@ -5,18 +5,18 @@
 #+description: Work out how startup ordering, readiness gating, and the DB-backed service_instance/phase tracking currently owned by process_supervisor should move to the orchestration layer (podman pod/compose) once each service is its own container's PID 1 rather than a child process the controller execs. Prove the design on one real service end-to-end (IAM is the natural pilot: it is the dependency every other service waits on) before rolling out to the remaining 17.
 #+type: task
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/design-pilot-per-service-container
 #+pr: 1752
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-08-10
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -42,7 +42,7 @@ too, it's a separate, real bug worth its own task.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

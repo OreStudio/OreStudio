@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: F4BD29A9-0DAE-4662-B381-CCAD9122AFA7
+:END:
+#+title: Task: Mirror podman events into service_instance/service_event tables
+#+description: A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working on remote/Quadlet podman hosts (local dev now runs native systemd units with no podman involved at all). Depends on the Quadlet generator task landing first.
+#+type: task
+#+level: s1
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
+#+owner: marco
+#+branch: feature/watch-podman-events-for-service-instance-tracking
+#+pr: 1943
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-07-31
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build a thin watcher process consuming ~podman events --format json~
+and mirroring container start/stop/health-status transitions into the
+existing ~service_instance~/~service_event~ DB tables, so today's
+audit trail (currently written by ~process_supervisor~ itself on every
+launch/exit) keeps working on remote/Quadlet podman hosts, where
+containers -- not ~process_supervisor~ -- own the actual process
+lifecycle. Local dev machines run native systemd units (see the
+dependency-graph-generator task) with no podman involved at all, so
+this watcher only applies to remote/Quadlet-managed hosts (e.g.
+Newton).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- Starting/stopping a per-service container on a remote/Quadlet host
+  (e.g. Newton) updates ~service_instance~'s phase/pid accordingly,
+  with no ~process_supervisor~ involvement.
+- ~service_event~ gains a start/stop/exit row for every observed
+  transition on those hosts, matching today's granularity.
+- The watcher survives its own restart without losing or duplicating
+  events (idempotent on replay of any events it may have already
+  processed).
+- Local dev environments (native systemd units, no podman) are
+  unaffected -- this watcher never runs there.
+
+* Plan
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1943][#1943]] | [agile] Abandon task watch-podman-events-for-service-instance-tracking |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Review round 1 (2 bot reviews). First: no findings — every claim fact-checked against the tree, all consistent. Second: (a) "schema already removed from ores.sql" vs "drop capture remains the successor work" reads self-contradictory — the capture's referenced file paths no longer exist; (b) Plan placeholder removed, unlike a sibling never-started task | task_watch-podman-events-for-service-instance-tracking.org, story.org | Accepted / Declined | (a) Accepted: Result and story Decisions now say the capture was written before the schema removal, resolving the contradiction. (b) Declined: the close-task recipe (how_do_i_work_a_task.org) prescribes clearing * Plan at close. |
+
+* Result
+
+Abandoned: the task's premise no longer holds. It assumed
+~process_supervisor~ still wrote the ~service_instance~/
+~service_event~ audit trail and that the tables were live. Both are
+gone: ~ores.controller.service~/~process_supervisor~ was
+decommissioned in sprint 24; the sprint-25 controller-tables audit
+(2026-08-04) found the instances/events tables have zero readers or
+writers; the controller SQL schema was removed from ~ores.sql~; and
+the backlog capture ~drop_dead_controller_instances_events_tables~,
+written before that removal, documents dropping the tables as the
+successor work. systemd owns
+service lifecycle state everywhere now -- native units locally,
+Quadlet units on remote hosts -- with unit state and the journal as
+the audit trail. Building the watcher would resurrect dead tables
+that nothing consumes. The task was clocked on and unblocked before
+the contradiction was found; this branch records that, and the
+abandonment.

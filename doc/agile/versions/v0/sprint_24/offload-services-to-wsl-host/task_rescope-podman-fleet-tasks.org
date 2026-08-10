@@ -5,18 +5,18 @@
 #+description: Roll out per-service containers to the remaining 17 services and Mirror podman events both predate the story's pivot to systemd (native + Quadlet) as the single orchestration substrate; abandon the rollout task (superseded by the Quadlet generator task) and narrow the podman-events watcher to remote/Quadlet hosts only, blocked on the Quadlet generator landing.
 #+type: task
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/rescope-podman-fleet-tasks
 #+pr: 1798
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-10
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -43,7 +43,7 @@ work that's already superseded or whose scope has narrowed:
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

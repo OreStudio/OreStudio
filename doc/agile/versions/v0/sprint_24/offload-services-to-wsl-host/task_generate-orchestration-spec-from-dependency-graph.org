@@ -5,18 +5,18 @@
 #+description: A generator that reads the DB-driven service_definition/service_dependency tables and emits concrete, per-environment systemd units (native binaries, --user scope, EnvironmentFile pointing at that environment's .env) for local dev machines, with After=/Requires= for ordering and a per-environment .target aggregating NATS + every service so a whole environment starts/stops as one unit (e.g. `systemctl --user start ores-swift_curie.target`). Deliberately not systemd *template* units ('%i') -- an earlier design using '%i' hit a real systemd specifier-expansion bug when resolving a compound-instance dependency; see the task's Notes. Scope narrowed to the local/plain-systemd path only: Quadlet (podman/remote) rendering is tracked separately as "Generate Quadlet (podman) units for remote hosts", and decommissioning process_supervisor/ores.controller.service as "Decommission ores.controller.service and process_supervisor" -- both follow once this lands.
 #+type: task
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+owner: marco
 #+branch: feature/generate-orchestration-spec-from-dependency-graph
 #+pr: 1793
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-10
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -69,7 +69,7 @@ deployment mode (Quadlet/podman for remote hosts and decommissioning
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |

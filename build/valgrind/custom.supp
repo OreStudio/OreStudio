@@ -2053,3 +2053,62 @@
    ...
 }
 
+#
+#  NATS C client library - one-time global init (nats_openLib)
+#
+#  The first nats_Open() (reached here via natsOptions_Create() in
+#  ores::nats::service::client::connect()) triggers the library's
+#  one-time process-global initialisation: nats_openLib() allocates the
+#  dispatcher thread pool, a fixed set of internal mutexes, conditions
+#  and thread structs. The library keeps this state for the process
+#  lifetime and frees it only in nats_library_cleanup(), which the
+#  client layer deliberately does not call (global teardown while other
+#  subsystems may still use NATS is unsafe). Every block is classified
+#  "still reachable" - not lost - and the set is fixed regardless of how
+#  many connections a process makes. 21 such records were flagged on
+#  the 2026-08-10 nightly for the trading, reporting and refdata
+#  eventing integration tests. Suppressed one entry per allocation
+#  site, all anchored on the nats_openLib frame so any real leak
+#  through a different call path still surfaces.
+#
+{
+   NATS C Library One-Time Init - Dispatcher Pool
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   fun:nats_initDispatcherPool
+   ...
+   fun:nats_openLib
+   ...
+}
+{
+   NATS C Library One-Time Init - Mutex
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:natsMutex_Create
+   ...
+   fun:nats_openLib
+   ...
+}
+{
+   NATS C Library One-Time Init - Condition
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:natsCondition_Create
+   ...
+   fun:nats_openLib
+   ...
+}
+{
+   NATS C Library One-Time Init - Thread
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:natsThread_Create
+   ...
+   fun:nats_openLib
+   ...
+}

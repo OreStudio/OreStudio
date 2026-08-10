@@ -8,7 +8,7 @@
 #+filetags: :market-data:identifiers:oresmd:oresmd-full-quote-type-coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/oresmd-bookkeeping-loose-ends
-#+pr:
+#+pr: 1948
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1948][#1948]] | [agile,ores.marketdata] Close out oresmd story loose ends |
 
 * Review
 

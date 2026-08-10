@@ -35,11 +35,11 @@ Newton).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | ABANDONED                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Unblocked: the Quadlet generator task (the dependency) is DONE; beginning implementation. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the watcher: consume podman events --format json and mirror container start/stop/health transitions into service_instance/service_event. |
+| Next         | Nothing.                               |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -56,10 +56,6 @@ Newton).
   unaffected -- this watcher never runs there.
 
 * Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
@@ -87,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned: the task's premise no longer holds. It assumed
+~process_supervisor~ still wrote the ~service_instance~/
+~service_event~ audit trail and that the tables were live. Both are
+gone: ~ores.controller.service~/~process_supervisor~ was
+decommissioned in sprint 24; the sprint-25 controller-tables audit
+(2026-08-04) found the instances/events tables have zero readers or
+writers; the controller SQL schema was removed from ~ores.sql~; and
+the backlog capture ~drop_dead_controller_instances_events_tables~
+documents dropping the tables as the successor work. systemd owns
+service lifecycle state everywhere now -- native units locally,
+Quadlet units on remote hosts -- with unit state and the journal as
+the audit trail. Building the watcher would resurrect dead tables
+that nothing consumes. The task was clocked on and unblocked before
+the contradiction was found; this branch records that, and the
+abandonment.

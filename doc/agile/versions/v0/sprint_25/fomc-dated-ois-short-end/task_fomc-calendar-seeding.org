@@ -26,11 +26,11 @@ Seed a real 2025-2027 window of FOMC meeting dates as calendar_event rows (diary
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Not yet started.                       |
+| Now          | 24 calendar_event rows seeded (2025/2026/2027, 8 per year), dated the second day of each published two-day range, source federalreserve.gov; SQL schema validation passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Loop step: re-run allium plan; the calendar_event and schedule obligations become mappable. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -49,6 +49,23 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- The August 2025 one-day notation vote is not a two-day meeting and is
+  deliberately not seeded (it has no statement day on the two-day
+  convention).
+- RLS gap found while validating: calendar_events, diary_entry_types
+  (D1) and tenor_schedules (D2) lacked row-level-security blocks in
+  refdata_rls_policies_create.sql (hand-maintained file; codegen does
+  not emit RLS). Three blocks added; validate_schemas.sh now reports
+  zero warnings. The fix rides in this commit because the validator is
+  the gate for the populate script's table.
+- DB-based verification (apply create + populate to a scratch
+  database) was not possible in this environment: the postgres
+  superuser password is not in .env and peer auth fails, so the
+  recreate-from-scratch flow cannot run. Verification is static: dates
+  transcribed from the Fed's published calendar page (fetched 2026-08-10),
+  the 2026 second days match the committed D2 test dates exactly, every
+  second day is a Wednesday, and validate_schemas.sh passes.
 
 * Test Scenarios
 
@@ -74,3 +91,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. refdata_calendar_events_populate.sql seeds the 2025-2027 window:
+24 rows on US.FOMC (diary_entry_type central_bank_meeting), one per
+meeting dated the second day of the Fed's published two-day range
+(statement day, a Wednesday in every case), each carrying
+source='federalreserve.gov' and a description quoting the full
+published range. The insert is idempotent on the natural key
+(tenant, calendar, date, entry type) and the script's summary section
+reports per-year counts (8 each). The script is wired into
+foundation_populate.sql after refdata_calendars_populate.sql, matching
+D1's placement of US.FOMC itself.
+
+Dates transcribed from the Fed's published meeting calendar: 2025
+(29 Jan, 19 Mar, 7 May, 18 Jun, 30 Jul, 17 Sep, 29 Oct, 10 Dec), 2026
+(28 Jan, 18 Mar, 29 Apr, 17 Jun, 29 Jul, 16 Sep, 28 Oct, 9 Dec -- the
+same dates the D2 tests resolve against), 2027 (27 Jan, 17 Mar, 28
+Apr, 9 Jun, 28 Jul, 15 Sep, 27 Oct, 8 Dec).

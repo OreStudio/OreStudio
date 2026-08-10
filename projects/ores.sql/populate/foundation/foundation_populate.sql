@@ -116,6 +116,7 @@
 \ir ../refdata/refdata_calendar_types_populate.sql
 \ir ../refdata/refdata_diary_entry_types_populate.sql
 \ir ../refdata/refdata_calendars_populate.sql
+\ir ../refdata/refdata_calendar_events_populate.sql
 \ir ../refdata/refdata_overnight_index_conventions_populate.sql
 \ir ../refdata/refdata_ibor_index_conventions_populate.sql
 \ir ../refdata/refdata_currency_countries_populate.sql

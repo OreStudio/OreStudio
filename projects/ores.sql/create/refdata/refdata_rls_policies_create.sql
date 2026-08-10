@@ -782,6 +782,32 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- Diary Entry Types (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_diary_entry_types_tbl enable row level security;
+
+create policy diary_entry_types_tenant_isolation_policy on ores_refdata_diary_entry_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Calendar Events (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_calendar_events_tbl enable row level security;
+
+create policy calendar_events_tenant_isolation_policy on ores_refdata_calendar_events_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Currency Countries
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_currency_countries_tbl enable row level security;
@@ -984,6 +1010,19 @@ alter table ores_refdata_payment_frequencies_tbl enable row level security;
 
 create policy payment_frequencies_tbl_tenant_isolation_policy
 on ores_refdata_payment_frequencies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Tenor Schedules (codegen-generated table)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_tenor_schedules_tbl enable row level security;
+
+create policy tenor_schedules_tenant_isolation_policy on ores_refdata_tenor_schedules_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

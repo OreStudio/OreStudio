@@ -160,6 +160,18 @@ via its "Verifies task" field.
 | 1 | Empty * Decisions / * Acceptance sections (informational) | story.org; task_fomc-calendar-event-model.org | Declined | Superseded: Decisions D1-D4 and the acceptance verification landed with the analysis task close (2026-08-09); refdata api suite green 85/85 |
 | 2 | Status-table cell padding uneven (cosmetic) | story.org; task_fomc-calendar-event-model.org | Applied | org-table-align pass on both * Status tables |
 | 3 | Reserved branch feature/fomc-dated-ois-short-end possibly unused | task_fomc-dated-ois-short-end.org | Declined | No such remote branch exists; the record was superseded by the re-scope and is gone from the branch |
+| 4 | Populate script ordering breaks DB seeding (blocking) | foundation_populate.sql | Applied | tenor_schedules populate moved after diary_entry_types/calendars; tenor_convention_resolutions after schedules |
+| 5 | New entities not wired into production NATS routing/eventing (blocking) | registrar.cpp; event_registrar.cpp | Applied | register_*_handlers, history providers, and event mappings wired for calendar_event, diary_entry_type, tenor_schedule |
+| 6 | tenor_schedule.hpp uses optional without #include <optional> | tenor_schedule.org; tenor_schedule.hpp | Applied | include added to org snippet + regenerated |
+| 7 | SCHEDULE_STEP logic_error guards lack tests | domain_tenor_resolution_fomc_tests.cpp | Applied | 3 guard tests added: missing schedule_code, missing schedule_step_count, missing/empty schedule_dates |
+| 8 | nth_on_or_after assumes sorted input, undocumented | tenor_resolution.cpp | Applied | requires-sorted comment added; production callers read ordered by event_date |
+| 9 | Stray = markup in tenor_convention_resolution.hpp | tenor_convention_resolution.org | Applied | prose cleaned in org + regenerated |
+| 10 | Dropped docstring in refdata_tenor_convention_resolution_create.sql | tenor_convention_resolution.org | Applied | table docstring restored via org prose + regenerated |
+| 11 | schedule_code has no soft-FK validation | sql_schema_junction_create.mustache; org_loader.py; tenor_convention_resolution.org | Applied | junction soft-FK machinery added to codegen; schedule_code FK section modelled + regenerated |
+| 12 | Republish split-tenor assertion is tautological | curve_republish_resolver_fomc_tests.cpp | Applied | split-tenor end_date pinned to explicit 2027-01-02 |
+| 13 | Bootstrap continuity assertion is tautological | curve_bootstrap_engine_fomc_tests.cpp | Applied | asserted against the log-linear constant forward pinned by boundary/end discount factors |
+| 14 | No calendar_event eventing integration test | calendar_event.org; calendar_event_eventing_integration_tests.cpp | Applied | codegen facet enabled; generated test + component_files.cmake registration |
+| 15 | TenorScheduleDetailDialog free-text fields vs validated combos in CalendarEventDetailDialog | TenorScheduleDetailDialog | Declined | Intentional: both fields nullable and only meaningful for EVENT_LOOKUP schedules; the insert trigger enforces the soft-FK on write |
 
 * Result
 

@@ -30,13 +30,6 @@
 #include "ores.refdata.api/domain/portfolio_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
-// Currency seeds (mandatory aggregation-currency soft FK): the
-// portfolio generator hardcodes the synthetic currency generator's
-// first code, so the currency row must be active in the test tenant
-// before the portfolio write. Sibling tests seed their parents the
-// same way (write_synthetic_pairs stamps X-0/X-1 explicitly).
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
@@ -44,6 +37,14 @@
 // refdata paths.
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+// Aggregation-currency seed (Portfolio's insert trigger validates
+// aggregation_ccy against the active currencies for the write tenant,
+// and the synthetic currency generator's first code -- X-0 -- is the
+// code the portfolio generator hardcodes): like the party
+// seeds, the currency generator and repository are used regardless of
+// the child's generator facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -164,19 +165,17 @@ TEST_CASE("write_portfolio_publishes_nats_changed_event", tags) {
     v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Portfolio: " << v;
-
-    portfolio_repository repo;
-
-    // Seed the active aggregation-currency row ores_refdata_portfolios_tbl
-    // references: the insert trigger's currency check is strict and
-    // tenant-scoped, and this process's currency counter has moved past
-    // the X-0 code the portfolio generator hardcodes -- so stamp it
-    // explicitly, mirroring write_synthetic_pairs' pattern.
+    // Seed the active aggregation-currency row the insert trigger
+    // references: the currency check is strict and tenant-scoped, and
+    // this process's synthetic-currency counter has moved past the
+    // X-0 code the portfolio generator hardcodes -- so stamp
+    // it explicitly, mirroring write_synthetic_pairs' pattern.
     auto aggregation_ccy = generate_synthetic_currency(ctx);
     aggregation_ccy.iso_code = "X-0";
     currency_repository ccy_repo;
     ccy_repo.write(party_ctx, {aggregation_ccy});
 
+    portfolio_repository repo;
     repo.write(party_ctx, v);
 
     // 4. Poll the observer's buffer for the notification. Generous

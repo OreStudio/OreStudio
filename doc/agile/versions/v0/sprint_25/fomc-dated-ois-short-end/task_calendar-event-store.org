@@ -26,12 +26,12 @@ Implement the decided event-store model from the FOMC analysis (story * Decision
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Not yet started.                       |
+| Now          | calendar_event + diary_entry_type modelled (uuid-surrogate-lookup / simple-lookup profiles), codegen'd, SQL wired; vocabulary, US.FOMC row and USD link seeded. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-09                               |
+| Next         | D2 (unified tenor resolution): the two red SCHEDULE_STEP tests are this task's contract. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
@@ -43,11 +43,30 @@ Implement the decided event-store model from the FOMC analysis (story * Decision
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Model =ores.refdata.calendar_event= (bitemporal domain entity,
+   profile uuid-surrogate-lookup) + =ores.refdata.diary_entry_type=
+   (simple-lookup vocabulary), both scaffolded via =compass add
+   entity_org= and written in the unified column format.
+2. Codegen both; wire =refdata_create.sql= / =refdata_drop.sql=
+   =\\ir= manifests (diary_entry_types before calendar_events in
+   create; reverse in drop); regenerate the five component file lists.
+3. Populate: =refdata_diary_entry_types_populate.sql= (new),
+   =US.FOMC= row in =refdata_calendars_populate.sql= (ORE-native
+   section, source federalreserve.gov, is_editable true),
+   =USD -> US.FOMC= link in =refdata_currency_calendars_populate.sql=.
+   calendar_types needed no change (all five values already seeded).
 
 * Notes
+
+- The refdata suite stays at its committed baseline: 71/73 pass, the
+  two red tests are D2's SCHEDULE_STEP contract, not this task's.
+
+* Result
+
+Done. The store exists end to end: models, generated C++/SQL, seeded
+reference data. Holidays untouched. D4 seeds the FOMC meeting dates
+onto the store; D2 consumes =central_bank_meeting= events via the
+=US.FOMC= calendar's FOMC_MEETING schedule.
 
 * Test Scenarios
 

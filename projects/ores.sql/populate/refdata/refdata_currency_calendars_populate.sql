@@ -39,6 +39,8 @@ insert into ores_refdata_currency_calendars_tbl (
 values
     (ores_utility_system_tenant_id_fn(), 'USD', 0, 'UnitedStates.Settlement',
      current_user, current_user, 'system.initial_load', 'Currency spot/settlement calendar reference data'),
+    (ores_utility_system_tenant_id_fn(), 'USD', 0, 'US.FOMC',
+     current_user, current_user, 'system.initial_load', 'USD FOMC meeting calendar (story: FOMC-dated OIS short end)'),
     (ores_utility_system_tenant_id_fn(), 'CAD', 0, 'Canada.Settlement',
      current_user, current_user, 'system.initial_load', 'Currency spot/settlement calendar reference data'),
     (ores_utility_system_tenant_id_fn(), 'MXN', 0, 'Mexico',

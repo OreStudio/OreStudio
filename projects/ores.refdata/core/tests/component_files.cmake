@@ -48,6 +48,7 @@ set(files
     "day_count_fraction_type_eventing_integration_tests.cpp"
     "deposit_convention_eventing_integration_tests.cpp"
     "derivation_kind_eventing_integration_tests.cpp"
+    "diary_entry_type_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"
     "ibor_index_convention_eventing_integration_tests.cpp"

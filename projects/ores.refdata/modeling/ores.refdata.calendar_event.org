@@ -1,0 +1,307 @@
+:PROPERTIES:
+:ID: B20050A5-1245-4944-A328-2A0893C92AEC
+:END:
+#+title: ores.refdata.calendar_event
+#+description: A dated diary entry on a calendar: a central-bank meeting, a scheduled data release, or an open-ended other event, carrying a name, optional description, and optional provenance.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: calendar_event
+#+entity_plural: calendar_events
+#+entity_title: Calendar Event
+#+brief: A dated diary entry on a calendar.
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+One row per dated diary entry on a
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]: a
+central-bank meeting, a scheduled data release, or an open-ended
+=other= event. One table for all event kinds -- never a table per
+calendar or per type (settled 2026-08-09, story Decision D1; see
+[[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]). The
+=diary_entry_type= column classifies the entry via the open-ended
+[[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][diary_entry_type]]
+vocabulary (=holiday=, =central_bank_meeting=, =data_release=,
+=other=). Holidays themselves keep their existing machinery
+(=calendar_rules=, =calendar_exceptions=, =calendar_date=) -- the
+=holiday= type stays in the vocabulary so the whole classification
+lives in one place, even though its physical home is elsewhere.
+
+Template/Instance: an event row is an *instance*; its template is the
+=(calendar, diary_entry_type, name)= triple. A worked case: the FOMC's
+eight regularly scheduled meetings per year are entered as a short run
+of =central_bank_meeting= instances on the =US.FOMC= calendar,
+transcribed from the Fed's published calendar with
+=source='federalreserve.gov'=. Formulaic recurrence generation is
+deferred; =calendar_rules='s grammar can later feed a template link
+if a consumer needs it.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-surrogate-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this event row.
+
+Surrogate key -- a calendar can have many events, so there is no
+single natural key column.
+
+** calendar_code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The calendar this event belongs to.
+
+References [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores_refdata_calendars_tbl.code]] (soft FK).
+
+#+begin_src cpp :name generator
+std::string("TARGET")
+#+end_src
+
+** event_date
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::chrono::year_month_day
+:natural_key: true
+:END:
+
+The specific date this event occurs on.
+
+One event of a given =diary_entry_type= per (calendar, date) pair.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
+#+end_src
+
+** diary_entry_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+What kind of entry this is: =holiday=, =central_bank_meeting=,
+=data_release=, or =other= (open-ended).
+
+References
+[[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][ores_refdata_diary_entry_types_tbl.code]] (soft FK).
+
+#+begin_src cpp :name generator
+std::string("holiday")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Human-readable event name (e.g. "FOMC meeting").
+
+Part of the row's template triple, =(calendar, diary_entry_type,
+name)=, not of its unique identity: two instances of one template
+differ by =event_date=, not by name.
+
+#+begin_src cpp :name generator
+std::string("Test event")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Free-text note about the event (e.g. the decision time, or a link to
+the statement).
+
+Purely informational; never interpreted by the resolution engine.
+
+#+begin_src cpp :name generator
+std::string("Test event description")
+#+end_src
+
+** source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Provenance of this row's date, when transcribed from a published
+source (e.g. =federalreserve.gov=).
+
+Null for locally-authored events with no external source.
+
+#+begin_src cpp :name generator
+std::string("federalreserve.gov")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_calendar_events_tbl
+:END:
+
+* Foreign keys
+
+** calendar_code
+:PROPERTIES:
+:table:              ores_refdata_calendars_tbl
+:target_column:      code
+:nullable:           false
+:error_message:      Invalid calendar_code: %. No active calendar found with this code.
+:list_by:            true
+:list_by_as_of:      true
+:END:
+
+** diary_entry_type
+:PROPERTIES:
+:table:              ores_refdata_diary_entry_types_tbl
+:target_column:      code
+:nullable:           false
+:error_message:      Invalid diary_entry_type: %. No active diary entry type found with this code.
+:list_by:            true
+:list_by_as_of:      true
+:END:
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: calendar_event
+:entity_plural_short:   calendar_events
+:entity_singular_words: calendar event
+:entity_plural_words:   calendar events
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: evt
+:END:
+
+** Table display
+
+| column           | header        |
+|------------------+---------------|
+| calendar_code    | Calendar      |
+| event_date       | Date          |
+| diary_entry_type | Diary Entry   |
+| name             | Name          |
+| source           | Source        |
+| modified_by      | Modified By   |
+| version          | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/calendar_event.hpp
+:domain_class:                refdata::domain::calendar_event
+:protocol_include:            ores.refdata.api/messaging/calendar_event_protocol.hpp
+:collection_name:             calendar_events
+:item_var:                    evt
+:key_field:                   id
+:has_uuid_primary_key:        true
+:has_pagination:              true
+:has_export_macro:            true
+:get_request_class:           refdata::messaging::get_calendar_events_request
+:get_response_class:          refdata::messaging::get_calendar_events_response
+:get_message_type:            get_calendar_events_request
+:save_request_class:          refdata::messaging::save_calendar_event_request
+:save_response_class:         refdata::messaging::save_calendar_event_response
+:save_message_type:           save_calendar_event_request
+:save_request_item_field:     data
+:delete_request_class:        refdata::messaging::delete_calendar_event_request
+:delete_response_class:       refdata::messaging::delete_calendar_event_response
+:delete_message_type:         delete_calendar_event_request
+:history_request_class:       refdata::messaging::get_calendar_event_history_request
+:history_response_class:      refdata::messaging::get_calendar_event_history_response
+:history_message_type:        get_calendar_event_history_request
+:settings_group:               CalendarEventListWindow
+:window_title:                Calendar Events
+:icon:                         CalendarClock
+:changed_event_class:         refdata::eventing::calendar_event_changed_event
+:changed_event_include:       ores.refdata.api/eventing/calendar_event_changed_event.hpp
+:END:
+
+*** Detail fields
+
+| field             | label         | widget              | type      | is_key | is_required | immutable | placeholder               | combo_fetch_fn        | combo_fetch_include        | combo_allow_blank | combo_domain_type                  | combo_display_field | combo_code_field | combo_tooltip_field | combo_sort_field | combo_watcher_name            | combo_label      |
+|-------------------+---------------+---------------------+-----------+--------+-------------+-----------+---------------------------+-----------------------+-----------------------------+--------------------+------------------------------------+-----------------------+--------------------+------------------------+--------------------+-------------------------------+------------------|
+| id                | Id            | idEdit              | line_edit | true   | true        |           | Calendar event id         |                       |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
+| calendar_code     | Calendar      | calendarCombo       | dynamic_combo |    | true        | true      |                           | fetch_calendars        | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::calendar         | name                  | code               | code                   | version            | calendarEventCalendarWatcher    | calendars        |
+| event_date        | Date          | eventDateEdit       | line_edit |        | true        | true      | YYYY-MM-DD                |                       |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
+| diary_entry_type | Diary Entry   | diaryEntryTypeCombo | dynamic_combo |    | true        | true      |                           | fetch_diary_entry_types | ores.qt/LookupFetcher.hpp   |                    | refdata::domain::diary_entry_type | name                  | code               | code                   | display_order     | calendarEventDiaryWatcher       | diary entry types|
+| name              | Name          | nameEdit            | line_edit |        | true        |           | Enter event name          |                       |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
+| description       | Description   | descriptionEdit    | text_edit |        |             |           | Optional note             |                       |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
+| source            | Source        | sourceEdit          | line_edit |        |             |           | Provenance, e.g. federalreserve.gov |                |                             |                    |                                    |                       |                    |                        |                    |                               |                  |
+
+*** Columns (Qt model)
+
+| enum_name      | field             | header        | type   | width | hidden_by_default |
+|----------------+-------------------+---------------+--------+-------+--------------------|
+| CalendarCode   | calendar_code     | Calendar      | string | 100   |                    |
+| EventDate      | event_date        | Date          | date   | 100   |                    |
+| DiaryEntryType | diary_entry_type  | Diary Entry   | string | 140   |                    |
+| Name           | name              | Name          | string | auto  |                    |
+| Description    | description       | Description   | string | auto  | true               |
+| Source         | source            | Source        | string | 120   | true               |
+| Version        | version           | Version       | int    | 70    |                    |
+| ModifiedBy     | modified_by       | Modified By   | string | auto  |                    |
+
+** Paste blocks
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores.refdata.calendar]] — the calendar this event belongs to.
+- [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][ores.refdata.diary_entry_type]] — the open-ended vocabulary classifying this entry.
+- [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]] — the domain model grounding this entity.
+- [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][ores.refdata.calendar_rule]] and [[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][ores.refdata.calendar_exception]] — the holiday machinery this entity deliberately leaves untouched.

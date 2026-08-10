@@ -113,6 +113,7 @@
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
 \ir ../refdata/refdata_countries_populate.sql
 \ir ../refdata/refdata_calendar_types_populate.sql
+\ir ../refdata/refdata_diary_entry_types_populate.sql
 \ir ../refdata/refdata_calendars_populate.sql
 \ir ../refdata/refdata_overnight_index_conventions_populate.sql
 \ir ../refdata/refdata_ibor_index_conventions_populate.sql

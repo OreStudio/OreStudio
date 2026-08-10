@@ -52,6 +52,10 @@
 \ir ./refdata_calendar_rules_notify_trigger_create.sql
 \ir ./refdata_calendar_exceptions_create.sql
 \ir ./refdata_calendar_exceptions_notify_trigger_create.sql
+\ir ./refdata_diary_entry_types_create.sql
+\ir ./refdata_diary_entry_types_notify_trigger_create.sql
+\ir ./refdata_calendar_events_create.sql
+\ir ./refdata_calendar_events_notify_trigger_create.sql
 
 -- Calendar-date materialisation (depends on calendars)
 \ir ./refdata_calendar_date_create.sql

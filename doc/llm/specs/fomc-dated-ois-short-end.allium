@@ -89,8 +89,10 @@ entity TenorResolution {
     tenor: Tenor
     convention: TenorConvention
     anchor_override: TenorAnchor?
-    offset_unit: `DAY` | `WEEK` | `MONTH` | `YEAR` | `NONE`
-    offset_multiplier: Integer
+    -- The calendar-axis offset: a null pair when the referenced tenor is
+    -- PERIOD (its own unit/multiplier applies); set for SPECIAL tenors.
+    offset_unit: `DAY` | `WEEK` | `MONTH` | `YEAR`?
+    offset_multiplier: Integer?
     schedule: TenorSchedule?
     schedule_step_count: Integer?
 }

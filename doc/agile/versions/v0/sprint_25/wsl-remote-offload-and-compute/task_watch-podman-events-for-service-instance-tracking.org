@@ -8,7 +8,7 @@
 #+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch: feature/watch-podman-events-for-service-instance-tracking
-#+pr:
+#+pr: 1943
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1943][#1943]] | [agile] Abandon task watch-podman-events-for-service-instance-tracking |
 
 * Review
 

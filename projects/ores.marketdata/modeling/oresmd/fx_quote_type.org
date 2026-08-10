@@ -24,13 +24,32 @@
 The `quote` query key for FX instruments — the ORE TYPE. FX-only;
 only meaningful when `type=quote`.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for an FX pair (asset_class=fx).
+
+`pair` is the 6-character currency pair carried in the URI's `entity` path segment
+(e.g. "EURUSD"); there is no `ccy`/`index`/`tenor`/`role` member at all, mirroring the
+query-parameter grammar's own per-asset-class conditionality at the type level -- see
+id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for an FX pair.
+
+Every field is optional here (unlike fx_market_data_identifier, where `pair` is
+mandatory) -- a requirement is a symbolic description that may still need resolving,
+per the "Logical vs. physical" section of id:C3E053CA-0D4B-480B-9119-E11530160EC1.
+
 * Fields
 
-| name  | cpp_type        | mandatory | query_key |
-|-------+-----------------+-----------+-----------|
-| pair  | std::string     | yes       |           |
-| quote_type | std::optional<fx_quote_type> | no | quote |
-| point | std::optional<std::string> | no | point |
+| name  | cpp_type        | mandatory | query_key | default                |
+|-------+-----------------+-----------+-----------+------------------------|
+| pair  | std::string     | yes       |           |                        |
+| type  | instrument_type | yes       | type      | instrument_type::quote |
+| quote_type | std::optional<fx_quote_type> | no | quote |                    |
+| point | std::optional<std::string> | no | point     |                        |
+| vol   | std::optional<volatility_surface_point> | no |           |                        |
 
 * Reject keys
 
@@ -47,9 +66,9 @@ only meaningful when `type=quote`.
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://fx/eurusd?type=quote&quote=spot | FX/RATE/EUR/USD | fx_spot_quote_key |
 | oresmd://fx/eurusd?type=quote | FX/RATE/EUR/USD | fx_quote_key_defaults_to_spot |
 | oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | FXFWD/RATE/EUR/USD/6M | fx_fwd_quote_key |
+| oresmd://fx/eurusd?type=quote&quote=fwd | nullopt | fx_fwd_requires_point |
 
 ** Round-trip
 
@@ -62,4 +81,7 @@ only meaningful when `type=quote`.
 
 | uri | description |
 |-----+-------------|
-| oresmd://fx/eurusd?type=fixing&quote=spot | reject_fx_quote_when_type_not_quote |
+| oresmd://fx/eurusd?type=quote&tenor=3m | reject_fx_uri_with_ir_only_tenor_field |
+| oresmd://fx/eurusd?type=quote&role=discount | reject_fx_uri_with_ir_only_role_field |
+| oresmd://fx/eurusd?type=quote&index=libor | reject_fx_uri_with_ir_only_index_field |
+| oresmd://fx/eurusd?type=quote&ccy=usd | reject_fx_uri_with_ccy_query_key |

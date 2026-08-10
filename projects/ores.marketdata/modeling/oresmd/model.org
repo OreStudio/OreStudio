@@ -19,12 +19,16 @@ generate <name>= — when loaded, it scans the directory for all sibling
 
 * Spec files
 
-| file | asset_class |
-|------+-------------|
-| ir_quote_type.org | ir |
-| credit_quote_type.org | credit |
-| equity_quote_type.org | equity |
-| commodity_quote_type.org | commodity |
-| fx_quote_type.org | fx |
-| inflation_quote_type.org | inflation |
-| correlation_quote_type.org | correlation |
+The =variant_order= column controls the struct/variant ordering in the header
+output files (fx-first), which differs from this table's manifest order (ir-first,
+used for the enum output file).
+
+| file | asset_class | variant_order |
+|------+-------------+---------------|
+| ir_quote_type.org | ir | 2 |
+| credit_quote_type.org | credit | 4 |
+| equity_quote_type.org | equity | 3 |
+| commodity_quote_type.org | commodity | 5 |
+| fx_quote_type.org | fx | 1 |
+| inflation_quote_type.org | inflation | 6 |
+| correlation_quote_type.org | correlation | 7 |

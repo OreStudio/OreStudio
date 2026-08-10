@@ -1656,6 +1656,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             specs = [model['oresmd_quote_type']]
         for spec in specs:
             _mark_last_item(spec.get('quote_types') or [])
+            _mark_last_item(spec.get('index_family') or [])
         # first_asset_class: marks the leading spec so the template can emit
         # one-time content after the first per-class enum (the shared
         # index_family enum sits between ir and credit in the hand-crafted
@@ -1668,6 +1669,27 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _mark_last_item(specs)
         data['oresmd_quote_types'] = specs
         data['oresmd_quote_type'] = {'first_asset_class': True}
+        # Variant-ordered list for the header templates: the hand-crafted
+        # market_data_identifier.hpp/market_data_requirement.hpp list their
+        # structs fx-first, which differs from the enum generation order
+        # (ir first) declared by the manifest's Spec files table. Specs
+        # without a variant_order (single-spec runs) keep manifest order.
+        variant_specs = [s for s in specs if s.get('variant_order') is not None]
+        variant_specs.sort(key=lambda s: s['variant_order'])
+        for s in specs:
+            if s.get('variant_order') is None:
+                variant_specs.append(s)
+        if variant_specs:
+            _mark_last_item(variant_specs)
+        data['oresmd_variant_specs'] = variant_specs
+        # Per-class test lists: the test templates render each asset class's
+        # Test cases rows at fixed positions in file order (the hand-crafted
+        # files interleave classes and comment blocks), so every table
+        # becomes a top-level list named <asset_class>_<table>, e.g.
+        # ir_round_trip, fx_rejection, equity_projections.
+        for s in specs:
+            for kind, rows in s.get('test_cases', {}).items():
+                data[f"{s['asset_class']}_{kind}"] = rows
 
     # For manifest.json, copy methodologies to top level for template access
     if model_key == 'manifest' and isinstance(data[model_key], dict):

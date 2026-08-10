@@ -25,15 +25,27 @@
 The `quote` query key for equity instruments — the ORE TYPE. Equity-only;
 only meaningful when `type=quote`.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for an equity/index instrument (asset_class=equity).
+
+`ccy` is required here (unlike IR, where `entity` already is the currency) since an
+equity's `entity` is a ticker -- the quote currency is independent information.
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for an equity/index instrument.
+
 * Fields
 
-| name | cpp_type | mandatory | query_key |
-|------+----------+-----------+-----------|
-| ticker | std::string | yes | |
-| ccy | std::string | yes | ccy |
-| quote_type | std::optional<equity_quote_type> | no | quote |
-| point | std::optional<std::string> | no | point |
-| vol | std::optional<volatility_surface_point> | no | |
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| ticker | std::string | yes | | |
+| ccy | std::string | yes | ccy | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<equity_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
+| vol | std::optional<volatility_surface_point> | no | | |
 
 * Reject keys
 
@@ -43,3 +55,30 @@ only meaningful when `type=quote`.
 | tenor |
 | role |
 | metric |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=spot | EQUITY/PRICE/AAPL/USD | equity_spot_quote_key_matches_worked_example |
+| oresmd://equity/aapl?ccy=usd&type=quote | EQUITY/PRICE/AAPL/USD | equity_quote_key_defaults_to_spot |
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | EQUITY_DIVIDEND/RATE/AAPL/USD/1Y | equity_dividend_quote_key |
+| oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m | EQUITY_FWD/PRICE/LUFTHANSA/EUR/6M | equity_fwd_quote_key |
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend | nullopt | equity_dividend_requires_point |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=spot | round_trip_equity |
+| oresmd://equity/aapl?ccy=usd&type=quote&quote=dividend&point=1y | round_trip_equity_dividend |
+| oresmd://equity/lufthansa?ccy=eur&type=quote&quote=fwd&point=6m | round_trip_equity_fwd |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://equity/aapl?ccy=usd&type=quote&tenor=3m | reject_equity_uri_with_ir_only_tenor_field |
+| oresmd://equity/aapl?ccy=usd&type=fixing&quote=dividend | reject_equity_quote_when_type_not_quote |
+| oresmd://equity/aapl?type=quote | reject_equity_uri_missing_mandatory_ccy |

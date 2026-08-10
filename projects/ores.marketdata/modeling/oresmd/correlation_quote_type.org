@@ -23,12 +23,21 @@
 The `quote` query key for correlation instruments — the ORE TYPE. Correlation-only;
 only meaningful when `type=quote`.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for a pairwise correlation (asset_class=correlation).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a correlation instrument.
+
 * Fields
 
-| name | cpp_type | mandatory | query_key |
-|------+----------+-----------+-----------|
-| factor_pair | std::string | yes | |
-| quote_type | std::optional<correlation_quote_type> | no | quote |
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| factor_pair | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<correlation_quote_type> | no | quote | |
 
 * Reject keys
 
@@ -40,3 +49,16 @@ only meaningful when `type=quote`.
 | role |
 | metric |
 | point |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise | CORRELATION/RATE/CCY-EUR-USD | correlation_pairwise_quote_key |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise | round_trip_correlation |

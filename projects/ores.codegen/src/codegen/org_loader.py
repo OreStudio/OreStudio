@@ -581,7 +581,9 @@ def _section(node: OrgNode, title: str) -> OrgNode | None:
     return None
 
 
-_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=]*?)=")
+# org verbatim markup is single-line: an unpaired ``=`` in prose (e.g.
+# "asset_class=ir") must not span across newlines to a later ``=``.
+_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=\n]*?)=")
 
 
 def _strip_org_markup(text: str) -> str:
@@ -2092,6 +2094,17 @@ def load_org_component_model(path: Path | str) -> dict[str, Any]:
     return {"component": c}
 
 
+# Fields whose lines are emitted by the header templates' guard slots
+# (has_quote_type/has_point/has_vol) rather than the verbatim field loop.
+_ORESMD_GENERATED_FIELDS = ("quote_type", "point", "vol")
+
+# Hand-crafted parse-time case mapping: entity fields and ccy are upper-
+# cased, tenor/point lower-cased, everything else passes through raw.
+_ORESMD_UPPER_FIELDS = {"pair", "ccy", "ticker", "reference_entity",
+                        "commodity_code", "index_code", "factor_pair"}
+_ORESMD_LOWER_FIELDS = {"tenor", "point"}
+
+
 def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
     """Load an oresmd quote-type org model into a dict.
 
@@ -2123,6 +2136,12 @@ def load_org_oresmd_quote_type_model(path: Path | str) -> dict[str, Any]:
                     continue
                 spec = _load_single_oresmd_spec(p.parent / fname)
                 if spec:
+                    # variant_order drives the header templates' struct/variant
+                    # ordering (fx-first), which differs from the enum
+                    # generation order above.
+                    vo = row.get("variant_order")
+                    if vo:
+                        spec["variant_order"] = int(vo)
                     specs.append(spec)
                     seen.add(fname)
         for sibling in sorted(p.parent.glob("*_quote_type.org")):
@@ -2187,12 +2206,88 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
             )
 
     # --- Fields table ---
+    # Each row is enriched for the templates: kind (string vs enum) and the
+    # unqualified enum type name; the generated rows (quote_type/point/vol)
+    # are marked and mirrored as has_* guards so the header templates can
+    # skip them in the verbatim loop and emit them in their guard slots;
+    # parse_transform captures the hand-crafted case mapping (entity fields
+    # and ccy are upper-cased, tenor/point lower-cased, enums untyped); the
+    # first mandatory string field is the URI entity segment.
     fields_section = _section(doc.root, "Fields")
     fields: list[dict[str, Any]] = []
     if fields_section:
         for row in _parse_org_table_rows(fields_section):
-            fields.append({k: v for k, v in row.items()})
+            field: dict[str, Any] = {k: v for k, v in row.items()}
+            name = field.get("name", "")
+            field["kind"] = "string" if "string" in field.get("cpp_type", "") else "enum"
+            # The requirement structs wrap every field in std::optional --
+            # including the mandatory ones the identifiers leave plain -- so
+            # the requirement template renders the inner type and re-wraps;
+            # mandatory cells (std::string, instrument_type) pass through
+            # unchanged.
+            field["cpp_type_inner"] = re.sub(r"^std::optional<", "", field["cpp_type"]).removesuffix(">")
+            if name in _ORESMD_GENERATED_FIELDS:
+                field["generated"] = True
+                result[f"has_{name}"] = True
+            if name == "quote_type":
+                result["quote_type_cpp"] = field["cpp_type"]
+                result["quote_type_cpp_inner"] = field["cpp_type_inner"]
+            if field["kind"] == "enum":
+                # std::optional<domain::ir_quote_type> -> ir_quote_type
+                enum_type = re.sub(r"^std::optional<", "", field["cpp_type"])
+                enum_type = enum_type.replace("domain::", "").removesuffix(">")
+                field["enum_type"] = enum_type
+            if name in _ORESMD_UPPER_FIELDS:
+                field["parse_transform"] = "upper"
+            elif name in _ORESMD_LOWER_FIELDS:
+                field["parse_transform"] = "lower"
+            else:
+                field["parse_transform"] = "none"
+            fields.append(field)
+        for field in fields:
+            if field["kind"] == "string" and field.get("mandatory") == "yes":
+                field["is_entity_field"] = True
+                result["entity_field"] = field["name"]
+                break
+        for field in fields:
+            if (field.get("name") == "ccy" and field.get("mandatory") == "yes"
+                    and not field.get("is_entity_field")):
+                result["requires_ccy"] = True
     result["fields"] = fields
+
+    # --- Per-struct doc comments: identifier/requirement briefs, in the
+    # same " * " continuation scheme as the enum brief (the header
+    # templates render them inside /** ... */ blocks; line breaks are
+    # significant -- clang-format does not reflow comment prose). Blank
+    # lines become bare " *" lines; the requirement template needs the
+    # multiline flag because the hand-crafted file uses the single-line
+    # "/** @brief ... */" form for every requirement except fx's. ---
+    for key, title in (("identifier_brief", "Identifier brief"),
+                       ("requirement_brief", "Requirement brief")):
+        brief_section = _section(doc.root, title)
+        if brief_section:
+            brief = _strip_body(brief_section)
+            if brief:
+                lines = brief.splitlines()
+                continuation = [lines[0]]
+                continuation.extend(
+                    " *" if not line.strip() else f" * {line}"
+                    for line in lines[1:]
+                )
+                result[key] = "\n".join(continuation)
+                if key == "requirement_brief" and len(lines) > 1:
+                    result["requirement_brief_multiline"] = True
+
+    # --- Index family (ir only): the shared benchmark-family enum values.
+    # Emitted as dicts so core's _mark_last_item() (dict-only) can flag the
+    # final value and the template can omit its trailing comma. ---
+    if_section = _section(doc.root, "Index family")
+    if if_section:
+        result["index_family"] = [
+            {"value": v}
+            for v in (r.get("value", "") for r in _parse_org_table_rows(if_section))
+            if v
+        ]
 
     # --- Reject keys table ---
     reject_section = _section(doc.root, "Reject keys")
@@ -2208,7 +2303,10 @@ def _load_single_oresmd_spec(path: Path) -> dict[str, Any] | None:
     tc_section = _section(doc.root, "Test cases")
     if tc_section:
         for child in tc_section.children:
-            kind = child.title.lower()
+            # Subsection titles become list keys, e.g. "Projections" ->
+            # "projections", "Round-trip (extended)" -> "round_trip_extended";
+            # core.py then names the per-class lists from these keys.
+            kind = re.sub(r"[^a-z0-9]+", "_", child.title.lower()).strip("_")
             cases: list[dict[str, str]] = []
             for row in _parse_org_table_rows(child):
                 cases.append({k: v for k, v in row.items()})

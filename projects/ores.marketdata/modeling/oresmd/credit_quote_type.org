@@ -33,15 +33,27 @@ METRIC column. Credit-only; only meaningful when `type=quote`.
 // fields the current credit_market_data_identifier has no equivalent for; tracked for
 // its own task.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for a credit instrument (asset_class=credit).
+
+`point` carries both the seniority and tenor dimensions (e.g. "sr,5y"), since credit's
+quote-key shape has one more dimension than IR's.
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a credit instrument.
+
 * Fields
 
-| name | cpp_type | mandatory | query_key |
-|------+----------+-----------+-----------|
-| reference_entity | std::string | yes | |
-| ccy | std::string | yes | ccy |
-| quote_type | std::optional<credit_quote_type> | no | quote |
-| point | std::optional<std::string> | no | point |
-| vol | std::optional<volatility_surface_point> | no | |
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| reference_entity | std::string | yes | | |
+| ccy | std::string | yes | ccy | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<credit_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
+| vol | std::optional<volatility_surface_point> | no | | |
 
 * Reject keys
 
@@ -51,3 +63,31 @@ METRIC column. Credit-only; only meaningful when `type=quote`.
 | tenor |
 | role |
 | metric |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_matches_worked_example |
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&point=sr,5y | CDS/CREDIT_SPREAD/ITRAXX-EUROPE/SR/EUR/5Y | cds_quote_key_defaults_when_quote_absent |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | HAZARD_RATE/RATE/VOD/SR/EUR/5Y | hazard_rate_quote_key_matches_ore_format_6_segments |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | RECOVERY_RATE/RATE/VOD/SR/EUR | recovery_rate_quote_key |
+| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | CDS_INDEX/BASE_CORRELATION/CDX-NA-IG/5Y/0.1 | cds_index_base_correlation_quote_key_no_ccy |
+| oresmd://credit/2i65byeg6?ccy=usd&type=quote&quote=index_cds_tranche&point=5y,0.07 | INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07 | index_cds_tranche_base_correlation_quote_key_no_ccy |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y | round_trip_credit |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=hazard_rate&point=sr,5y | round_trip_hazard_rate |
+| oresmd://credit/vod?ccy=eur&type=quote&quote=recovery_rate&point=sr | round_trip_recovery_rate |
+| oresmd://credit/cdx-na-ig?ccy=usd&type=quote&quote=cds_index&point=5y,0.1 | round_trip_cds_index |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://credit/itraxx-europe?ccy=eur&type=quote&index=libor | reject_credit_uri_with_ir_only_index_field |
+| oresmd://credit/itraxx-europe?type=quote&point=sr,5y | reject_credit_uri_missing_mandatory_ccy |

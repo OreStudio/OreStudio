@@ -22,12 +22,22 @@ struct volatility_surface_point final {
     bool operator==(const volatility_surface_point&) const = default;
 };
 
-{{#oresmd_quote_types}}
+{{#oresmd_variant_specs}}
+{{#identifier_brief}}
+/**
+ * @brief {{{identifier_brief}}}
+ */
+{{/identifier_brief}}
 struct {{asset_class}}_market_data_identifier final {
 {{#fields}}
+{{#default}}
+    {{{cpp_type}}} {{name}} = {{default}};
+{{/default}}
+{{^default}}
 {{^generated}}
     {{{cpp_type}}} {{name}};
 {{/generated}}
+{{/default}}
 {{/fields}}
 {{#has_quote_type}}
     std::optional<domain::{{asset_class}}_quote_type> quote_type;
@@ -42,13 +52,22 @@ struct {{asset_class}}_market_data_identifier final {
     bool operator==(const {{asset_class}}_market_data_identifier&) const = default;
 };
 
-{{/oresmd_quote_types}}
+{{/oresmd_variant_specs}}
+/**
+ * @brief Tagged union of the seven per-asset-class identifier structs.
+ *
+ * Deliberately *not* a common base class with virtual dispatch: the URI's `asset_class`
+ * authority component already tells a consumer which concrete struct applies, and
+ * reflection-based serialisation (`rfl`/reflect-cpp) handles plain structs and
+ * `std::variant` well but not polymorphic hierarchies -- see
+ * id:C3E053CA-0D4B-480B-9119-E11530160EC1, "Data model".
+ */
 using market_data_identifier = std::variant<
-{{#oresmd_quote_types}}
+{{#oresmd_variant_specs}}
     {{asset_class}}_market_data_identifier{{^last}},{{/last}}
-{{/oresmd_quote_types}}
+{{/oresmd_variant_specs}}
 >;
 
-}  // namespace ores::marketdata::domain
+}
 
 #endif

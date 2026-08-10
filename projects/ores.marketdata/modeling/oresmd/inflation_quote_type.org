@@ -25,13 +25,22 @@
 The `quote` query key for inflation instruments — the ORE TYPE. Inflation-only;
 only meaningful when `type=quote`.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for an inflation instrument (asset_class=inflation).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for an inflation instrument.
+
 * Fields
 
-| name | cpp_type | mandatory | query_key |
-|------+----------+-----------+-----------|
-| index_code | std::string | yes | |
-| quote_type | std::optional<inflation_quote_type> | no | quote |
-| point | std::optional<std::string> | no | point |
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| index_code | std::string | yes | | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<inflation_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
 
 * Reject keys
 
@@ -42,3 +51,18 @@ only meaningful when `type=quote`.
 | tenor |
 | role |
 | metric |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | ZC_INFLATIONSWAP/RATE/UKRPI/5Y | zc_inflation_swap_quote_key |
+| oresmd://inflation/ukrpi?type=quote&quote=yy_swap&point=5y | YY_INFLATIONSWAP/RATE/UKRPI/5Y | yy_inflation_swap_quote_key |
+| oresmd://inflation/ukrpi?type=quote&quote=seasonality&point=jan | SEASONALITY/RATE/MULT/UKRPI/JAN | seasonality_quote_key |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://inflation/ukrpi?type=quote&quote=zc_swap&point=5y | round_trip_inflation |

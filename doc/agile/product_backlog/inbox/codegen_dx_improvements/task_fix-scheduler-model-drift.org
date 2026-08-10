@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen_dx_improvements:sprint_24:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-scheduler-model-drift
+#+pr: 1934
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-30
 #+updated: 2026-07-30
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -40,11 +40,11 @@ default database actually seeds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A083FE26-521D-4046-9E58-AFB901B28809][Codegen developer experience improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-30                               |
 
 * Acceptance
@@ -68,9 +68,24 @@ default database actually seeds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Audited every ores.scheduler =domain_entity=/=junction= model against
+current codegen templates and the hand-written C++ it maps to.
+=job_definition= turned out fully hand-diverged: the model's
+=tenant_id=/=schedule_expression=/=is_active= column shapes don't
+match the hand-written =job_definition= struct's actual types
+(=std::optional<boost::uuids::uuid>=/=cron_expression=/=bool=), so even the
+"safe" domain/repository-entity/mapper facets would regenerate wrong
+types, not just wrong formatting. On top of that, repository
+(=read_all_active=, =find_by_name= x2) and messaging
+(=schedule=/=schedule_batch=/=unschedule=, custom =history=, protocol
+structs in =scheduler_protocol.hpp= consumed cross-component by
+=ores.reporting=) are hand-maintained with no generic equivalent.
+Mirrored =party='s hand-maintained-SQL treatment from the refdata
+drift-fix task, but wider in scope: excluded the whole entity from
+regeneration (no facet is currently safe) and recorded the exclusion
+and the reasons in the model file itself, migrating it to the current
+=* Columns=/=:primary_key:= property format along the way. No
+generated code was touched. Confirmed with a full =compass build=.
 
 * Notes
 
@@ -89,12 +104,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1934][#1934]] | [agile,scheduler] Record scheduler drift task close on inbox story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | "DO NOT regenerate" note attributes =utility::uuid::tenant_id= to the hand-written struct; actual field type is =std::optional<boost::uuids::uuid>= (the wrapper is what codegen =has_tenant_id= would emit) | ores.scheduler.job_definition.org + task * Plan + story * Decisions | Accepted | Reworded in all three files; model file now also states codegen would emit the wrapper |
+| 2 | Hand-maintained repository/messaging operations described as intro prose, not under the schema's =** Custom repository methods= freeform heading | ores.scheduler.job_definition.org | Accepted | Moved the operation bullets under the existing =** Custom repository methods= section |
+| 3 | Qt facet exclusion not explicitly stated | ores.scheduler.job_definition.org | Accepted | Added one sentence to the exclusion rationale |
+| 4 | =#+updated= / Last touched (2026-07-30) behind the story's close date (2026-07-31) | task_fix-scheduler-model-drift.org | Declined | Matches sibling precedent (=task_fix-refdata-model-drift.org=: created 07-29 vs story End 07-30); the dates record the work period, not the close record; no convention bumps them on close |
+| 5 | =database_name= in Qt tables missing from =* Columns= | ores.scheduler.job_definition.org | Declined | Pre-existing on main (confirmed by the reviewer), out of scope for this bookkeeping PR |
 
 * Result
+
+=job_definition= is fully hand-diverged (domain, repository, and
+messaging layers all hand-maintained with no safe facet to
+regenerate), so no regeneration was possible or attempted. Migrated
+the model to the current format/property conventions and documented
+the exclusion and its reasons directly in the model file, mirroring
+=party='s hand-maintained-SQL treatment from the refdata drift-fix
+task. No generated code changed. =compass build= passes clean.

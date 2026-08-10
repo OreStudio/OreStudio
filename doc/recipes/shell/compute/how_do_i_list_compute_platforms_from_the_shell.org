@@ -21,9 +21,10 @@ How do I list compute platforms from the shell?
 
 Log in as the system super admin (principals are
 =username@hostname=), then =compute list-platforms=: the shell prints
-the platform triplets as a table — id, code, display name, OS, CPU
-arch. The table is empty until a platform exists (e.g. after =compute
-publish-package=).
+the platform rows — id, code, display name, OS, CPU arch, one platform
+per line. No rows print until a platform exists (e.g. after =compute
+publish-package=). The output is provisional: the generated table
+renderer replaces it once the ores.compute drift work lands.
 
 #+name: list-compute-platforms
 #+begin_src ores-shell :exports none

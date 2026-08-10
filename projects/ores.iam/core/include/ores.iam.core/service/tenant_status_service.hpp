@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_TENANT_STATUS_SERVICE_HPP
-#define ORES_IAM_SERVICE_TENANT_STATUS_SERVICE_HPP
+#ifndef ORES_IAM_CORE_SERVICE_TENANT_STATUS_SERVICE_HPP
+#define ORES_IAM_CORE_SERVICE_TENANT_STATUS_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::iam::service {
 
 /**
  * @brief Service for managing tenant statuses.
+ *
+ * Provides a higher-level interface for tenant status operations,
+ * wrapping the underlying repository.
  */
 class ORES_IAM_CORE_EXPORT tenant_status_service {
 private:
@@ -47,17 +52,78 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a tenant_status_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit tenant_status_service(context ctx);
 
-    std::vector<domain::tenant_status> list_statuses();
+    /**
+     * @brief Lists tenant statuses with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of tenant statuses for the requested page.
+     */
+    std::vector<domain::tenant_status> list_statuses(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active tenant statuses.
+     *
+     * @return Total number of active tenant statuses.
+     */
+    std::uint32_t count_statuses();
+
+
+    /**
+     * @brief Retrieves a single tenant status as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The tenant status at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::tenant_status> get_status_at_version(const std::string& status,
+                                                               std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single tenant status by its primary key.
+     *
+     * @return The tenant status if found, std::nullopt otherwise.
+     */
     std::optional<domain::tenant_status> find_status(const std::string& status);
 
+    /**
+     * @brief Saves a tenant status (creates or updates).
+     *
+     * @param status The tenant status to save.
+     * @throws std::exception on failure.
+     */
     void save_status(const domain::tenant_status& status);
 
-    void remove_status(const std::string& status);
-    void remove_statuses(const std::vector<std::string>& statuses);
+    /**
+     * @brief Saves a batch of tenant statuses.
+     *
+     * @param statuses The tenant statuses to save.
+     * @throws std::exception on failure.
+     */
+    void save_statuses(const std::vector<domain::tenant_status>& statuses);
 
+    /**
+     * @brief Deletes a tenant status by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_status(const std::string& status);
+
+    /**
+     * @brief Deletes tenant statuses by their primary keys.
+     */
+    void delete_statuses(const std::vector<std::string>& statuss);
+
+    /**
+     * @brief Retrieves all historical versions of a tenant status.
+     */
     std::vector<domain::tenant_status> get_status_history(const std::string& status);
 
 private:

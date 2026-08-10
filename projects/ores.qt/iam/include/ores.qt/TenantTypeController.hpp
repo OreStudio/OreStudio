@@ -27,10 +27,14 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class TenantTypeMdiWindow;
+class TenantTypeDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -64,12 +68,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const iam::domain::tenant_type& tenant_type);
@@ -77,13 +83,37 @@ private slots:
     void onShowHistory(const iam::domain::tenant_type& tenant_type);
     void onRevertVersion(const iam::domain::tenant_type& tenant_type);
     void onOpenVersion(const iam::domain::tenant_type& tenant_type, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const iam::domain::tenant_type& tenant_type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * TenantTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(TenantTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    /**
+     * @brief Fetches the full typed tenant type history (the
+     * existing per-entity iam::messaging::get_tenant_type_history_request/
+     * iam::messaging::get_tenant_type_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenant type, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenantTypeHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<iam::domain::tenant_type>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     TenantTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

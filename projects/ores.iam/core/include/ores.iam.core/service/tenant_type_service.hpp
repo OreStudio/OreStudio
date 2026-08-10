@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_SERVICE_TENANT_TYPE_SERVICE_HPP
-#define ORES_IAM_SERVICE_TENANT_TYPE_SERVICE_HPP
+#ifndef ORES_IAM_CORE_SERVICE_TENANT_TYPE_SERVICE_HPP
+#define ORES_IAM_CORE_SERVICE_TENANT_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/tenant_type_repository.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::iam::service {
 
 /**
  * @brief Service for managing tenant types.
+ *
+ * Provides a higher-level interface for tenant type operations,
+ * wrapping the underlying repository.
  */
 class ORES_IAM_CORE_EXPORT tenant_type_service {
 private:
@@ -47,17 +52,78 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a tenant_type_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit tenant_type_service(context ctx);
 
-    std::vector<domain::tenant_type> list_types();
+    /**
+     * @brief Lists tenant types with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of tenant types for the requested page.
+     */
+    std::vector<domain::tenant_type> list_types(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active tenant types.
+     *
+     * @return Total number of active tenant types.
+     */
+    std::uint32_t count_types();
+
+
+    /**
+     * @brief Retrieves a single tenant type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The tenant type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::tenant_type> get_type_at_version(const std::string& type,
+                                                           std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single tenant type by its primary key.
+     *
+     * @return The tenant type if found, std::nullopt otherwise.
+     */
     std::optional<domain::tenant_type> find_type(const std::string& type);
 
+    /**
+     * @brief Saves a tenant type (creates or updates).
+     *
+     * @param type The tenant type to save.
+     * @throws std::exception on failure.
+     */
     void save_type(const domain::tenant_type& type);
 
-    void remove_type(const std::string& type);
-    void remove_types(const std::vector<std::string>& types);
+    /**
+     * @brief Saves a batch of tenant types.
+     *
+     * @param types The tenant types to save.
+     * @throws std::exception on failure.
+     */
+    void save_types(const std::vector<domain::tenant_type>& types);
 
+    /**
+     * @brief Deletes a tenant type by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_type(const std::string& type);
+
+    /**
+     * @brief Deletes tenant types by their primary keys.
+     */
+    void delete_types(const std::vector<std::string>& types);
+
+    /**
+     * @brief Retrieves all historical versions of a tenant type.
+     */
     std::vector<domain::tenant_type> get_type_history(const std::string& type);
 
 private:

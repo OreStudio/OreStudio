@@ -18,19 +18,31 @@
  *
  */
 #include "ores.qt/TenantTypeController.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.iam.api/eventing/tenant_type_changed_event.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TenantTypeDetailDialog.hpp"
-#include "ores.qt/TenantTypeHistoryDialog.hpp"
 #include "ores.qt/TenantTypeMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view tenant_type_event_name =
+    eventing::domain::event_traits<iam::eventing::tenant_type_changed_event>::name;
+}
 
 TenantTypeController::TenantTypeController(QMainWindow* mainWindow,
                                            QMdiArea* mdiArea,
@@ -38,7 +50,7 @@ TenantTypeController::TenantTypeController(QMainWindow* mainWindow,
                                            ChangeReasonCache* changeReasonCache,
                                            const QString& username,
                                            QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, tenant_type_event_name, parent)
     , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
@@ -95,6 +107,8 @@ void TenantTypeController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -143,20 +157,17 @@ void TenantTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void TenantTypeController::onShowHistory(const iam::domain::tenant_type& tenant_type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << tenant_type.type;
     showHistoryWindow(QString::fromStdString(tenant_type.type));
 }
 
-void TenantTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenant type";
-
-    auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+void TenantTypeController::wireDetailDialogCommon(TenantTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &TenantTypeDetailDialog::statusMessage,
@@ -166,6 +177,15 @@ void TenantTypeController::showAddWindow() {
             &TenantTypeDetailDialog::errorMessage,
             this,
             &TenantTypeController::errorMessage);
+}
+
+void TenantTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenant type";
+
+    auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &TenantTypeDetailDialog::tenant_typeSaved,
             this,
@@ -202,21 +222,10 @@ void TenantTypeController::showDetailWindow(const iam::domain::tenant_type& tena
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenant_type.type;
 
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(tenant_type);
 
-    connect(detailDialog,
-            &TenantTypeDetailDialog::statusMessage,
-            this,
-            &TenantTypeController::statusMessage);
-    connect(detailDialog,
-            &TenantTypeDetailDialog::errorMessage,
-            this,
-            &TenantTypeController::errorMessage);
     connect(detailDialog,
             &TenantTypeDetailDialog::tenant_typeSaved,
             this,
@@ -246,6 +255,7 @@ void TenantTypeController::showDetailWindow(const iam::domain::tenant_type& tena
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<TenantTypeController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -271,10 +281,13 @@ void TenantTypeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new TenantTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog = new HistoryDialog(std::string(entity_type_of(iam::domain::tenant_type{})),
+                                            code.toStdString(),
+                                            clientManager_,
+                                            mainWindow_);
 
     connect(historyDialog,
-            &TenantTypeHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<TenantTypeController>(this)](const QString& message) {
                 if (!self)
@@ -282,7 +295,7 @@ void TenantTypeController::showHistoryWindow(const QString& code) {
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &TenantTypeHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<TenantTypeController>(this)](const QString& message) {
                 if (!self)
@@ -290,13 +303,23 @@ void TenantTypeController::showHistoryWindow(const QString& code) {
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &TenantTypeHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &TenantTypeController::onRevertVersion);
+            [self = QPointer<TenantTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &TenantTypeHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &TenantTypeController::onOpenVersion);
+            [self = QPointer<TenantTypeController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -307,10 +330,12 @@ void TenantTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setWindowTitle(QString("Tenant Type History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<TenantTypeController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -338,29 +363,9 @@ void TenantTypeController::onOpenVersion(const iam::domain::tenant_type& tenant_
     }
 
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(tenant_type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &TenantTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<TenantTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &TenantTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<TenantTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -384,26 +389,107 @@ void TenantTypeController::onOpenVersion(const iam::domain::tenant_type& tenant_
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void TenantTypeController::fetchTenantTypeHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<iam::domain::tenant_type>, QString>)> callback) {
+    iam::messaging::get_tenant_type_history_request request;
+    request.type = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<iam::domain::tenant_type>, QString>;
+
+    QPointer<TenantTypeController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void TenantTypeController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenantTypeController> self = this;
+    fetchTenantTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<iam::domain::tenant_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void TenantTypeController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<TenantTypeController> self = this;
+    fetchTenantTypeHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<iam::domain::tenant_type>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void TenantTypeController::onRevertVersion(const iam::domain::tenant_type& tenant_type) {
     BOOST_LOG_SEV(lg(), info) << "Reverting tenant type to version: " << tenant_type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setType(tenant_type);
+    wireDetailDialogCommon(detailDialog);
+    auto reverted_tenant_type = tenant_type;
+    reverted_tenant_type.version = 0;
+    detailDialog->setType(reverted_tenant_type);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &TenantTypeDetailDialog::statusMessage,
-            this,
-            &TenantTypeController::statusMessage);
-    connect(detailDialog,
-            &TenantTypeDetailDialog::errorMessage,
-            this,
-            &TenantTypeController::errorMessage);
     connect(detailDialog,
             &TenantTypeDetailDialog::tenant_typeSaved,
             this,
@@ -432,6 +518,28 @@ void TenantTypeController::onRevertVersion(const iam::domain::tenant_type& tenan
 
 EntityListMdiWindow* TenantTypeController::listWindow() const {
     return listWindow_;
+}
+
+void TenantTypeController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,17 +49,68 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(context ctx, const domain::tenant_type& type);
-    void write(context ctx, const std::vector<domain::tenant_type>& types);
+    /**
+     * @brief Writes tenant types to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::tenant_type& v);
+    void write(context ctx, const std::vector<domain::tenant_type>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest tenant types, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::tenant_type> read_latest(context ctx);
     std::vector<domain::tenant_type> read_latest(context ctx, const std::string& type);
+    /**@}*/
 
+    /**
+     * @brief Reads all tenant types, possibly filtered by primary key.
+     */
     std::vector<domain::tenant_type> read_all(context ctx, const std::string& type);
 
+    /**
+     * @brief Reads a single tenant type as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::tenant_type>
+    read_at_version(context ctx, const std::string& type, std::uint32_t version);
+
+    /**
+     * @brief Reads latest tenant types with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::tenant_type>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenant types.
+     * @param ctx Repository context with database connection
+     * @return Total number of active tenant types
+     */
+    std::uint32_t get_total_type_count(context ctx);
+
+    /**
+     * @brief Deletes a tenant type by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& type);
+
+    /**
+     * @brief Deletes tenant types by closing their temporal validity.
+     */
     void remove(context ctx, const std::vector<std::string>& types);
 };
 

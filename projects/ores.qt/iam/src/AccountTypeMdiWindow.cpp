@@ -1,0 +1,373 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/AccountTypeMdiWindow.hpp"
+#include "ores.iam.api/messaging/account_type_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+AccountTypeMdiWindow::AccountTypeMdiWindow(ClientManager* clientManager,
+                                           const QString& username,
+                                           QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
+
+    setupUi();
+    setupConnections();
+    reload();
+}
+
+void AccountTypeMdiWindow::setupUi() {
+    auto* layout = new QVBoxLayout(this);
+
+    setupToolbar();
+    layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
+
+    setupTable();
+    layout->addWidget(tableView_);
+
+    paginationWidget_ = new PaginationWidget(this);
+    layout->addWidget(paginationWidget_);
+}
+
+void AccountTypeMdiWindow::setupToolbar() {
+    toolbar_ = new QToolBar(this);
+    toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    toolbar_->setIconSize(QSize(20, 20));
+
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        tr("Reload"));
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    addAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
+    addAction_->setToolTip(tr("Add new account type"));
+    connect(addAction_, &QAction::triggered, this, &AccountTypeMdiWindow::addNew);
+
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected account type"));
+    editAction_->setEnabled(false);
+    connect(editAction_, &QAction::triggered, this, &AccountTypeMdiWindow::editSelected);
+
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected account type"));
+    deleteAction_->setEnabled(false);
+    connect(deleteAction_, &QAction::triggered, this, &AccountTypeMdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
+    historyAction_->setToolTip(tr("View account type history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this, &AccountTypeMdiWindow::viewHistorySelected);
+}
+
+void AccountTypeMdiWindow::setupTable() {
+    model_ = new ClientAccountTypeModel(clientManager_, this);
+    proxyModel_ = new QSortFilterProxyModel(this);
+    proxyModel_->setSourceModel(model_);
+    proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
+
+    tableView_ = new QTableView(this);
+    tableView_->setModel(proxyModel_);
+    tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSortingEnabled(true);
+    tableView_->setAlternatingRowColors(true);
+    tableView_->verticalHeader()->setVisible(false);
+
+
+    initializeTableSettings(tableView_,
+                            model_,
+                            "AccountTypeListWindow",
+                            {
+                                ClientAccountTypeModel::Description,
+                            },
+                            {900, 400},
+                            1);
+}
+
+void AccountTypeMdiWindow::setupConnections() {
+    connect(model_, &ClientAccountTypeModel::dataLoaded, this, &AccountTypeMdiWindow::onDataLoaded);
+    connect(model_, &ClientAccountTypeModel::loadError, this, &AccountTypeMdiWindow::onLoadError);
+
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &AccountTypeMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &AccountTypeMdiWindow::onDoubleClicked);
+
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
+
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            paginationWidget_->reset_page();
+            model_->refresh();
+        }
+    });
+
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
+}
+
+void AccountTypeMdiWindow::doReload() {
+    BOOST_LOG_SEV(lg(), debug) << "Reloading account types";
+    clearStaleIndicator();
+    emit statusChanged(tr("Loading account types..."));
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
+}
+
+void AccountTypeMdiWindow::onDataLoaded() {
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    emit statusChanged(tr("Loaded %1 of %2 account types").arg(loaded).arg(total));
+
+    paginationWidget_->update_state(loaded, total);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
+}
+
+void AccountTypeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void AccountTypeMdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void AccountTypeMdiWindow::onDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid())
+        return;
+
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* account_type = model_->getType(sourceIndex.row())) {
+        emit showTypeDetails(*account_type);
+    }
+}
+
+void AccountTypeMdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
+}
+
+void AccountTypeMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), debug) << "Add new account type requested";
+    emit addNewRequested();
+}
+
+void AccountTypeMdiWindow::editSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* account_type = model_->getType(sourceIndex.row())) {
+        emit showTypeDetails(*account_type);
+    }
+}
+
+void AccountTypeMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* account_type = model_->getType(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: " << account_type->type;
+        emit showTypeHistory(*account_type);
+    }
+}
+
+void AccountTypeMdiWindow::deleteSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete account type while disconnected.");
+        return;
+    }
+
+    std::vector<std::string> codes;
+    for (const auto& index : selected) {
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* account_type = model_->getType(sourceIndex.row())) {
+            codes.push_back(account_type->type);
+        }
+    }
+
+    if (codes.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid account types to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " account types";
+
+    QString confirmMessage;
+    if (codes.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete account type '%1'?")
+                             .arg(QString::fromStdString(codes.front()));
+    } else {
+        confirmMessage =
+            QString("Are you sure you want to delete %1 account types?").arg(codes.size());
+    }
+
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Account Type", confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
+        return;
+    }
+
+    QPointer<AccountTypeMdiWindow> self = this;
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+
+    auto task = [self, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self)
+            return {};
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making delete request for " << codes.size() << " account types";
+
+        iam::messaging::delete_account_type_request request;
+        request.types = codes;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
+
+        for (const auto& code : codes) {
+            results.push_back({code, {response_result->success, response_result->message}});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [code, result] : results) {
+            if (result.first) {
+                BOOST_LOG_SEV(lg(), debug) << "Account Type deleted: " << code;
+                success_count++;
+                emit self->account_typeDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Account Type deletion failed: " << code << " - " << result.second;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(result.second);
+                }
+            }
+        }
+
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 account type" :
+                              QString("Successfully deleted %1 account types").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account type" : "account types")
+                              .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+
+}

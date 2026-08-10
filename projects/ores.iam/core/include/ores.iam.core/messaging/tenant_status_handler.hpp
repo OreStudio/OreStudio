@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_TENANT_STATUS_HANDLER_HPP
-#define ORES_IAM_MESSAGING_TENANT_STATUS_HANDLER_HPP
+#ifndef ORES_IAM_CORE_MESSAGING_TENANT_STATUS_HANDLER_HPP
+#define ORES_IAM_CORE_MESSAGING_TENANT_STATUS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
@@ -29,142 +29,162 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <stdexcept>
+#include <optional>
 
 namespace ores::iam::messaging {
 
 namespace {
-
 inline auto& tenant_status_handler_lg() {
     static auto instance = ores::logging::make_logger("ores.iam.messaging.tenant_status_handler");
     return instance;
 }
-
 } // namespace
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
+/**
+ * @brief NATS message handler for tenant status operations.
+ */
 class tenant_status_handler {
 public:
     tenant_status_handler(ores::nats::service::client& nats,
                           ores::database::context ctx,
-                          ores::security::jwt::jwt_authenticator signer)
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_status_handler_lg(), msg);
-        try {
-            service::tenant_status_service svc(ctx_);
-            BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, get_tenant_statuses_response{.statuses = svc.list_statuses()});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_tenant_statuses_response{});
+        BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
         }
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenant_status_service svc(req_ctx);
+        get_tenant_statuses_response resp;
+        if (auto req = decode<get_tenant_statuses_request>(msg)) {
+            try {
+                resp.statuses = svc.list_statuses(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_statuses());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenant_status_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_status_handler_lg(), msg);
-        auto req = decode<save_tenant_status_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        try {
-            auto ctx_expected = ores::service::service::make_request_context(
-                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            if (!ctx_expected) {
-                error_reply(nats_, msg, ctx_expected.error());
-                return;
-            }
-            const auto& ctx = *ctx_expected;
-            if (!has_permission(ctx, "iam::tenants:create")) {
-                error_reply(nats_, msg, ores::service::error_code::forbidden);
-                return;
-            }
-            service::tenant_status_service svc(ctx);
-            stamp(req->data, ctx);
-            svc.save_status(req->data);
-            BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, save_tenant_status_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_tenant_status_response{.success = false, .message = e.what()});
-        }
-    }
-
-    void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_status_handler_lg(), msg);
-        auto req = decode<delete_tenant_status_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-            return;
-        }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "iam::tenants:delete")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenant_statuses:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        try {
-            service::tenant_status_service svc(ctx);
-            svc.remove_status(req->status);
-            BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, delete_tenant_status_response{.success = true});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_tenant_status_response{.success = false, .message = e.what()});
+        service::tenant_status_service svc(req_ctx);
+        if (auto req = decode<save_tenant_status_request>(msg)) {
+            try {
+                svc.save_status(req->data);
+                BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_tenant_status_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenant_status_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, save_tenant_status_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_status_handler_lg(), msg);
-        auto req = decode<get_tenant_status_history_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        try {
-            service::tenant_status_service svc(ctx_);
-            auto hist = svc.get_status_history(req->status);
-            BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_,
-                  msg,
-                  get_tenant_status_history_response{.success = true, .history = std::move(hist)});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_status_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_,
-                  msg,
-                  get_tenant_status_history_response{.success = false, .message = e.what()});
+        const auto& req_ctx = *req_ctx_expected;
+        service::tenant_status_service svc(req_ctx);
+        if (auto req = decode<get_tenant_status_history_request>(msg)) {
+            try {
+                auto hist = svc.get_status_history(req->status);
+                BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_tenant_status_history_response{.history = std::move(hist),
+                                                         .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenant_status_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_tenant_status_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "iam::tenant_statuses:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::tenant_status_service svc(req_ctx);
+        if (auto req = decode<delete_tenant_status_request>(msg)) {
+            try {
+                svc.delete_statuses(req->statuss);
+                BOOST_LOG_SEV(tenant_status_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_tenant_status_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenant_status_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_tenant_status_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(tenant_status_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
-    ores::security::jwt::jwt_authenticator signer_;
+    std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 
 } // namespace ores::iam::messaging
+
 #endif

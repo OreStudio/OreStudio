@@ -217,6 +217,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <optional>
 #include <string>
 #+end_src
 
@@ -268,7 +269,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 :history_message_type:   get_tenor_schedule_history_request
 :settings_group:         TenorScheduleListWindow
 :window_title:           Tenor Schedules
-:icon:                   Timeline
+:icon:                   CalendarClock
 :has_export_macro:       true
 :END:
 

@@ -97,7 +97,7 @@ void TenorScheduleController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Tenor Schedules");
     listMdiSubWindow_->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Timeline, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -201,7 +201,7 @@ void TenorScheduleController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Tenor Schedule");
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Timeline, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -250,7 +250,7 @@ void TenorScheduleController::showDetailWindow(const refdata::domain::tenor_sche
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Tenor Schedule: %1").arg(identifier));
     detailWindow->setWindowIcon(
-        IconUtils::createRecoloredIcon(Icon::Timeline, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

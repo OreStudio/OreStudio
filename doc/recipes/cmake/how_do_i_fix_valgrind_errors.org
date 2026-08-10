@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: D8BC250F-8314-4446-81D8-310105E8B5E9
+:END:
+#+title: How do I fix valgrind errors?
+#+description: Classify a valgrind failure from CDash or a local run: real bugs are fixed in code, third-party one-time allocations are suppressed in build/valgrind/custom.supp.
+#+type: recipe
+#+level: cross
+#+filetags: :valgrind:testing:ci:cmake:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+Valgrind runs under the nightly CDash submission, configured in
+=CTest.cmake=. The suppression file lives at
+=build/valgrind/custom.supp=. For how the nightly runs, see
+[[id:7C44751E-54C0-4CB7-B489-1D3EC609A4E3][How do I configure the project?]]
+and [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]].
+
+* Question
+
+How do I fix a valgrind failure on the nightly or on CDash?
+
+* Answer
+
+1. /Classify the failure/ on the CDash dynamic analysis page. The page
+   is per build and per component, e.g.
+   =https://my.cdash.org/builds/<buildid>/dynamic_analysis/<component>=.
+   The memcheck configuration lives in =CTest.cmake=:
+   =CTEST_MEMORYCHECK_COMMAND_OPTIONS= and
+   =CTEST_MEMORYCHECK_SUPPRESSIONS_FILE=.
+
+2. /Fix real bugs in code/. The following are defects in our code, and
+   must be fixed, not suppressed:
+   - Invalid read or write of size N.
+   - Use of an uninitialised value.
+   - Definitely lost or indirectly lost blocks.
+   - Mismatched free or delete.
+
+3. /Suppress third-party noise/. A block reported as /still reachable/
+   (or /possibly lost/ from a library's one-time global init) is not a
+   leak in our code: the pointer is still reachable in the library's
+   own state, and the library frees it only at process exit (or via
+   its cleanup API, e.g. =nats_library_cleanup= for the NATS C
+   client). Suppress it in =build/valgrind/custom.supp=:
+   - One entry per allocation site.
+   - =match-leak-kinds: reachable= (add =possible= only when the
+     record needs it).
+   - List the =fun:= frames from the allocating function up to the
+     library's init entry point; =...= matches any middle frames.
+   - Add a comment naming the library and the cause, e.g. the NATS C
+     library's =nats_openLib= one-time init (threads, mutexes,
+     conditions) reached from the first =client::connect()=.
+   - Keep entries narrow. A broad suppression hides real bugs; see the
+     sprint_02 =Add Valgrind suppressions= task.
+
+4. /Re-run under valgrind/ with the same options the nightly uses,
+   pointing at the suppression file, until =ERROR SUMMARY= is clean:
+
+   #+begin_src sh :results verbatim
+   valgrind --tool=memcheck --leak-check=full --show-reachable=yes \
+       --num-callers=50 --demangle=yes \
+       --suppressions=build/valgrind/custom.supp <test-binary>
+   #+end_src
+
+5. /Confirm on CDash/ on the next nightly run. The workflows that
+   submit dynamic analysis run on schedule, not on PRs.
+
+* Script
+
+=build/valgrind/custom.supp= — the suppression file, committed and
+shipped with the repo. =CTest.cmake= — the nightly memcheck invocation
+and suppression wiring. The failing tests and their valgrind output
+appear on CDash under /Dynamic Analysis/ for the build.
+
+* Tested by
+
+The three components that failed on the 2026-08-10 nightly
+(ores.trading.core.tests, ores.reporting.core.tests,
+ores.refdata.core.tests) ran clean under valgrind with the suppression
+file after the hotfix.
+
+* See also
+
+- [[id:13B90143-AAFD-4381-9E9D-3BCCB88B8D3B][Add Valgrind suppressions]] — the sprint_02 task that created the suppression file and its narrowness rule.

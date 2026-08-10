@@ -26,6 +26,7 @@ a single how-do-I question with executable steps.
 - [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
 - [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]]
 - [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]]
+- [[id:D8BC250F-8314-4446-81D8-310105E8B5E9][How do I fix valgrind errors?]]
 - [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
 - [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]]
 - [[id:B8B13087-1F32-405D-8A7B-39648BA1106F][How do I add a new source file to a component?]]

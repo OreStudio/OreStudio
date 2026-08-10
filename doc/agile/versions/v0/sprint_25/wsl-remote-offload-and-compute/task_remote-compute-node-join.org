@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 96C880AE-0E06-416F-A719-89F27F2FCF9F
+:END:
+#+title: Task: Prove and polish the remote compute-node join
+#+description: Deploy the compute wrapper (ores.compute.wrapper) to a remote box via compass env deploy <host> --role compute and prove it joins the serving environment's compute core over NATS end-to-end: the remote node registers as a compute node of the serving environment, receives work, and reports results. Register the remote host in the serving environment's compute.hosts table (ORES_GRID_NODE_*_HOST_ID ids, kept in sync by compass db recreate per env_init.py). Fix any ergonomics gaps found in registration, docs, or the deploy flow.
+#+type: task
+#+level: s1
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prove the compute role of ~compass env deploy~ (PR #1937) live,
+end-to-end, against a real serving environment:
+
+- Deploy ~ores.compute.wrapper~ to a remote box with ~compass env
+  deploy <host> --role compute~. The wrapper joins the serving
+  environment's compute core over NATS: it registers as a compute node
+  of that environment, receives work, and reports results.
+- Register the remote host in the serving environment's ~compute.hosts~
+  table. The host IDs come from the ~ORES_GRID_NODE_*_HOST_ID~ ids in
+  the environment's generated ~.env~; keep them in sync with ~compass
+  db recreate~ (~env_init.py~).
+- Fix any ergonomics gaps the live run exposes: registration flow,
+  docs, or the deploy command itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- A compute node deployed with ~compass env deploy <host> --role
+  compute~ joins the serving environment end-to-end: it appears in the
+  environment's compute topology, receives and executes work, and its
+  results are visible in the serving environment.
+- The remote host is registered in the serving environment's
+  ~compute.hosts~ table with IDs matching the environment's generated
+  ~ORES_GRID_NODE_*_HOST_ID~ values.
+- Any ergonomics gaps found during the live proof are fixed or tracked
+  as follow-up work in this story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

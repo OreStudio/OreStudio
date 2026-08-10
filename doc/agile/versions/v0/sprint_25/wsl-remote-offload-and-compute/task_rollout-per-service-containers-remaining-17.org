@@ -5,18 +5,18 @@
 #+description: Apply the proven IAM pilot pattern (parameterised Dockerfile + stage-runtime.sh --service + HEALTHCHECK) to the other 17 service binaries, replace the single-container fleet with one podman pod/compose spec running 18 per-service containers, and verify the full fleet reaches steady state end-to-end (the story's own acceptance: full fleet starts, survives killing/restarting one service container without taking down the others).
 #+type: task
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-10
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -34,7 +34,7 @@ criterion.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
 | Now          | Superseded -- see Notes.                |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing -- superseded.                 |

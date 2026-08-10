@@ -5,18 +5,18 @@
 #+description: A thin watcher process consuming 'podman events --format json' and mirroring container start/stop/health transitions into the existing service_instance/service_event DB tables, so the audit trail process_supervisor currently writes on every launch/exit keeps working on remote/Quadlet podman hosts (local dev now runs native systemd units with no podman involved at all). Depends on the Quadlet generator task landing first.
 #+type: task
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on: 34E28952-57DD-446F-91B3-1ED02E3B7F7B
 #+blocked_since: 2026-07-31
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-10
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -36,7 +36,7 @@ Newton).
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BLOCKED                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]] landing -- nothing to watch until remote hosts actually run Quadlet-managed podman containers. |
 | Next         | Begin implementation once the Quadlet generator lands. |

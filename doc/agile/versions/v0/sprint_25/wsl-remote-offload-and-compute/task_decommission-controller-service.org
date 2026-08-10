@@ -5,18 +5,18 @@
 #+description: Remove ores.controller.service and process_supervisor from the build and deploy path entirely, now that systemd's own concrete units (plain systemd locally, Quadlet on remote/podman hosts) supersede its process-supervision responsibilities. Confirmed the controller has no NATS handlers or responsibilities beyond process supervision, so nothing else needs preserving. Delete the component's source, its CMake wiring, and any deploy-time references; update docs that mention it. Depends on both the plain-systemd generator and the Quadlet generator landing and being verified first.
 #+type: task
 #+level: s1
-#+filetags: :systemd:split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :systemd:wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch: feature/decommission-controller-service
 #+pr: 1806
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-08-10
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -39,7 +39,7 @@ move too, with explicit user sign-off given the blast radius (breaks
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | DONE                              |
-| Parent story | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]] |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | CI site job failed: broken org-roam links to deleted ores.controller docs | projects/modeling/system_model_application.org, projects/ores.qt/iam/modeling/component_overview.org, doc/knowledge/architecture/anatomy_of_a_service.org | Fixed | Removed the dead ores.controller subsection/bullets; updated anatomy_of_a_service.org's service-launch-list paragraph to describe the current systemd_generate.py-driven reality instead of the deleted controller. Verified locally: compass build --direct deploy_site succeeds with no unresolved-link errors. |
-| 2 | Manual QA run found two real issues: (a) two duplicate Test Scenario Runner windows on launch, (b) Step 1 asked the tester to run terminal commands instead of testing through the client | doc/agile/.../scenario_verify_controller_decommission.org | Fixed | (a) traced to a stale libores.qt.admin.so build artifact left behind by an incremental (non-clean) build after the source component was deleted/merged into ores.qt.iam's AdminPlugin -- not a code bug; removed it and did a full clean rebuild to confirm. (b) removed the CLI-only step from the scenario; the fleet lifecycle is now something the implementer verifies before handoff, noted in Before you start instead. |
+| 2 | Manual QA run found two real issues: (a) two duplicate Test Scenario Runner windows on launch, (b) Step 1 asked the tester to run terminal commands instead of testing through the client | [[id:69C1426F-A151-44FD-AB87-DE2305B65083][scenario_verify_controller_decommission.org]] | Fixed | (a) traced to a stale libores.qt.admin.so build artifact left behind by an incremental (non-clean) build after the source component was deleted/merged into ores.qt.iam's AdminPlugin -- not a code bug; removed it and did a full clean rebuild to confirm. (b) removed the CLI-only step from the scenario; the fleet lifecycle is now something the implementer verifies before handoff, noted in Before you start instead. |
 
 * Result
 

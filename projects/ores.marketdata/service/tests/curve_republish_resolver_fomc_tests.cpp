@@ -58,7 +58,6 @@ const std::string tags("[curve_republish_resolver][fomc]");
 using namespace std::chrono;
 using ores::marketdata::service::curve_republish_refdata_context;
 using ores::marketdata::service::resolve_bootstrap_pillars;
-using ores::marketdata::service::resolve_tenor_date;
 using ores::refdata::domain::ir_curve_bootstrap_pillar;
 using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention_resolution;
@@ -172,8 +171,12 @@ TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the mee
         CHECK(resolved[n - 1].end_date == meetings[n - 1]);
     }
     // 8F->1Y: the final pillar ends at the split tenor (spot + 1 year).
+    // The date is pinned explicitly -- the PERIOD/YEAR-1 split tenor from
+    // the SPOT anchor (horizon = 2026-01-02), offset DAY x 0 -- rather than
+    // re-derived through the same resolve_tenor_date the pillar loop used,
+    // which could not catch a systematically wrong date.
     CHECK(resolved[meeting_count].point_id == split_code);
-    CHECK(resolved[meeting_count].end_date == resolve_tenor_date(ctx, split_code));
+    CHECK(resolved[meeting_count].end_date == 2027y / January / 2d);
 }
 
 TEST_CASE("resolve_bootstrap_pillars chains each FOMC pillar's start date onto the previous "

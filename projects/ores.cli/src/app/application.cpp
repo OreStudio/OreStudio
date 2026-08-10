@@ -1492,6 +1492,7 @@ void application::add_compute_app_version(
         avp.platform_id = it->second;
         avp.platform_code = it->first;
         avp.package_uri = pp.package_uri;
+        avp.sha256 = pp.sha256;
         junction_rows.push_back(std::move(avp));
     }
 

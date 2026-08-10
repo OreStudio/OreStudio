@@ -35,10 +35,16 @@ struct add_compute_app_version_options final {
     /**
      * @brief One (platform_code, package_uri) pair per supported target
      * triplet, e.g. {"x64-linux", "s3://.../ore-1.8.15.0-x64-linux.tar.gz"}.
+     *
+     * @c sha256 is the package bundle's checksum, verified by the compute
+     * wrapper before it runs the engine. Empty when the operator did not
+     * supply one -- dispatches then fail verification, so callers should
+     * always pass --package-sha256.
      */
     struct platform_package {
         std::string platform_code;
         std::string package_uri;
+        std::string sha256;
     };
 
     std::string app_id;

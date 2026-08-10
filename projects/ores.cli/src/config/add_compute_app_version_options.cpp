@@ -31,7 +31,9 @@ std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options&
              v.platform_packages.end(),
              std::string{},
              [](const std::string& a, const add_compute_app_version_options::platform_package& b) {
-                 const auto item = b.platform_code + "=" + b.package_uri;
+                 auto item = b.platform_code + "=" + b.package_uri;
+                 if (!b.sha256.empty())
+                     item += "#" + b.sha256.substr(0, 12);
                  return a.empty() ? item : a + ", " + item;
              })
       << "]" << ", modified_by: " << v.modified_by;

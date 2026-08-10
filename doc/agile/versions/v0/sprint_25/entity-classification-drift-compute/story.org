@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Bring ores.compute to the same proven state as the ores.refdata pilot: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -41,7 +41,7 @@ Bring ores.compute to the same proven state as the ores.refdata pilot: every cod
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the compute-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: heaviest exclusion catalogue of any component -- 6 service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), 2 repositories (system_tenant union filter). |
+| [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] | STARTED | 2026-08-10 | | Implement profile binding for the compute-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: heaviest exclusion catalogue of any component -- 6 service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), 2 repositories (system_tenant union filter). |
 
 * Decisions
 

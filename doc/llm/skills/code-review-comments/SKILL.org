@@ -8,13 +8,13 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:code:comments:
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-08-11
 
 #+begin_export markdown
 ---
 name: code-review-comments
 description: Review and clean code comments — remove clutter, keep necessary explanations, place comments above the code. Use when adding, editing, reviewing, or removing comments; after code changes; before committing; or when asked to clean comments in a diff or across the repository.
-license: Apache-2.0
+license: Complete terms in LICENSE.txt
 ---
 #+end_export
 
@@ -33,21 +33,11 @@ license: Apache-2.0
    the user explicitly asks for it; otherwise unchanged comments in a
    file are out of scope.
 
-2. *Apply the comment rules* from [[file:comment-rules.md][the comment rules
-   reference]]:
-   - Use comments sparingly. Prefer clear names over explanatory
-     comments.
-   - Do not comment out code — remove it instead.
-   - Do not add comments that describe the process of changing code.
-   - Do not add comments that include past-tense verbs like added,
-     removed, or changed. Example of a bad comment:
-     =this.timeout(10_000); // Increase timeout for API calls= — a
-     reader does not know what the timeout was increased from and
-     does not care about the old behavior.
-   - Do not add comments that emphasize different versions of the
-     code, like "this code now handles".
-   - Do not use end-of-line comments.
-   - Place comments above the code they describe.
+2. *Apply the comment rules* from [[file:comment-rules.md][the comment
+   rules reference]]. In one line: comments are sparse, above the code,
+   never narrated as edit history, never end-of-line — except Doxygen
+   =///<= trailing comments, the codebase convention for documenting
+   public API (see the [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][code review checklist]]).
 
 3. *Remove comment clutter:* commented-out code; comments that merely
    restate the code or the method name; edit-history narration.
@@ -67,7 +57,8 @@ license: Apache-2.0
 
 * Recipes
 
--
+- [[id:DE7C2BC5-3C21-4A8F-8C2A-7A8800F1FCF2][How do I clean code comments?]] — the
+  cleanup pass in full procedural detail.
 
 * Reference
 
@@ -81,6 +72,8 @@ license: Apache-2.0
 - [[https://mcpmarket.com/tools/skills/clean-code-comments][clean-code-comments skill]] — on mcpmarket.com; the Comment
   Guidelines list is adapted from that page (transcribed by the ORE
   Studio user; the page declares no license).
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — the
+  Doxygen-on-public-API convention that defines the =///<= exception.
 
 * Artefacts                                                        :noexport:
 
@@ -344,7 +337,9 @@ It merges two prior-art sources:
   increased from, and does not care about the old behavior.
 - Do not add comments that emphasize different versions of the code,
   like "this code now handles".
-- Do not use end-of-line comments.
+- Do not use end-of-line comments, except Doxygen `///<` trailing
+  comments, the established convention for documenting public API (see
+  the [code review checklist](../../../doc/knowledge/architecture/code_review_checklist.org)).
 - Place comments above the code they describe.
 
 ## Remove comment clutter
@@ -363,12 +358,15 @@ It merges two prior-art sources:
   directives.
 - Preserve non-obvious reasoning and business rules.
 - Preserve pre-existing comments during diff-only cleanup.
-- Do not remove a comment when doing so would leave an invalid or
-  empty required scope.
+- Do not remove a comment that a convention or tooling requires to
+  stay — for example a Doxygen documentation block or an enclosing
+  scope marker such as `#region` / `#endregion`; removing it would
+  leave the API undocumented or the scope empty.
 
 ## Place comments cleanly
 
-- Do not use end-of-line comments.
+- Do not use end-of-line comments, except Doxygen `///<` trailing
+  comments, the established convention for documenting public API.
 - Move a necessary end-of-line comment to its own line immediately
   above the code it describes, using the same indentation.
 
@@ -397,12 +395,14 @@ They are illustrations, not quotes from any real codebase.
 | End-of-line comment | `foo(); // Syncs the database` | Move above: `// Syncs the database.` then `foo();` — or remove it if the function name already says it | End-of-line comments break scanability; comments belong above the code at the same indentation. |
 | Redundant restatement | `// Sort the list` above `list.sort()` | Remove the comment | The code restates the method name. |
 | Necessary comment kept | `// Prices are quoted per 1M notional — divide by 1e6 before comparing` | Keep as is | It explains non-obvious business logic the reader cannot recover from the code. |
+| Doxygen exception | `int x; ///< pixel x-coordinate` | Keep as is | Doxygen `///<` trailing comments are the codebase convention for documenting public API. |
 
 ## How to read these examples
 
-The first six rows show comments removed or moved. The last row shows
-the case the rules protect: a comment that carries a business rule no
-amount of renaming can recover. The test for any comment is: if the
-code changed tomorrow, would this comment still be true and still be
+The first six rows show comments removed or moved. The last two rows
+show the cases the rules protect: a comment that carries a business
+rule no amount of renaming can recover, and the Doxygen `///<`
+convention for public API. The test for any comment is: if the code
+changed tomorrow, would this comment still be true and still be
 needed? If not, remove it.
 #+END_SRC

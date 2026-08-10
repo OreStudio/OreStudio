@@ -8,7 +8,7 @@
 #+filetags: :fix_macos_ci_nats_server_not_found:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/fix-macos-ci-nats-server-not-found
-#+pr:
+#+pr: 1944
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1944][#1944]] | [ci] Run the vendored nats-server binary on all CI platforms |
 
 * Review
 

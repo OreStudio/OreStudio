@@ -29,11 +29,11 @@ task moves.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Scaffold complete: story + sprint row raised in PR #1940. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Close this task when the PR merges.    |
+| Next         | Nothing.                               |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -43,10 +43,6 @@ task moves.
 - The consolidation PR is raised and recorded on the task.
 
 * Plan
-
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
@@ -74,3 +70,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The sprint-25 story Remote WSL offload and compute nodes was
+scaffolded: story doc with goal, acceptance, decisions, and
+out-of-scope; the sprint.org row under Product, state STARTED. The
+consolidation PR carries the story and the task moves. Review round
+1's five findings were all fixed and recorded in the task's Review
+table.

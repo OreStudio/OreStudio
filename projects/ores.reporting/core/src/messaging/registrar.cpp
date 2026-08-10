@@ -111,14 +111,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     {
         auto rsh = std::make_shared<report_scheduling_handler>(nats, ctx, verifier, svc_nats);
-        subs.push_back(
-            nats.queue_subscribe(schedule_report_definitions_request::nats_subject,
-                                 "ores.reporting.service",
-                                 [rsh](ores::nats::message msg) { rsh->schedule(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe(unschedule_report_definitions_request::nats_subject,
-                                 "ores.reporting.service",
-                                 [rsh](ores::nats::message msg) { rsh->unschedule(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            schedule_report_definitions_request::nats_subject,
+            "ores.reporting.service",
+            [rsh](ores::nats::message msg) { rsh->schedule(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            unschedule_report_definitions_request::nats_subject,
+            "ores.reporting.service",
+            [rsh](ores::nats::message msg) { rsh->unschedule(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -146,12 +146,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report instance trigger (hand-crafted handler — not codegen)
     // ----------------------------------------------------------------
     {
-        auto rith = std::make_shared<report_instance_trigger_handler>(
-            nats, ctx, verifier, instance_states);
-        subs.push_back(
-            nats.queue_subscribe(trigger_report_instance_message::nats_subject,
-                                 "ores.reporting.service",
-                                 [rith](ores::nats::message msg) { rith->trigger(std::move(msg)); }));
+        auto rith =
+            std::make_shared<report_instance_trigger_handler>(nats, ctx, verifier, instance_states);
+        subs.push_back(nats.queue_subscribe(
+            trigger_report_instance_message::nats_subject,
+            "ores.reporting.service",
+            [rith](ores::nats::message msg) { rith->trigger(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------

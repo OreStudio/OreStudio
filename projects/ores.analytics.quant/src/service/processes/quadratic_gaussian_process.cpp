@@ -58,8 +58,9 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
         throw std::invalid_argument("quadratic_gaussian_process: kappas must not be empty");
     if (theta.size() != num_factors || deltas.size() != num_factors ||
         initial_factors.size() != num_factors)
-        throw std::invalid_argument("quadratic_gaussian_process: theta, deltas and "
-                                    "initial_factors must each have one entry per factor in kappas");
+        throw std::invalid_argument(
+            "quadratic_gaussian_process: theta, deltas and "
+            "initial_factors must each have one entry per factor in kappas");
     if (sigma.rows() != num_factors || sigma.cols() != num_factors)
         throw std::invalid_argument("quadratic_gaussian_process: sigma must be square with one "
                                     "row and column per factor in kappas");
@@ -69,8 +70,9 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     for (std::size_t i = 0; i < num_factors; ++i) {
         if (!(kappas[i] >= 0.0))
             throw std::invalid_argument("quadratic_gaussian_process: kappas must be "
-                                        "non-negative, got " + std::to_string(kappas[i]) +
-                                        " at index " + std::to_string(i));
+                                        "non-negative, got " +
+                                        std::to_string(kappas[i]) + " at index " +
+                                        std::to_string(i));
     }
     // The diagonal participates in the symmetry check: a NaN diagonal
     // entry fails the self-comparison and is rejected here.
@@ -87,8 +89,7 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     // The short rate is bounded below exactly when gamma is positive
     // semidefinite; the eigen decomposition on the symmetrised matrix
     // (identical to gamma after the symmetry check) decides.
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> gamma_solver(
-        0.5 * (gamma + gamma.transpose()));
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> gamma_solver(0.5 * (gamma + gamma.transpose()));
     if (gamma_solver.info() != Eigen::Success)
         throw std::invalid_argument("quadratic_gaussian_process: gamma must be positive "
                                     "semidefinite");
@@ -103,8 +104,8 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     // kappa-dependent Gram factor, and an indefinite sigma can damp
     // into a positive-definite sigma_dt_ when the kappas differ. The
     // singular limit sigma == 0 (deterministic factors) is accepted.
-    math::psd_matrix_square_root(
-        sigma, "quadratic_gaussian_process: sigma must be positive semidefinite");
+    math::psd_matrix_square_root(sigma,
+                                 "quadratic_gaussian_process: sigma must be positive semidefinite");
     if (!(dt_ > 0.0))
         throw std::invalid_argument("quadratic_gaussian_process: dt must be strictly positive");
 
@@ -127,9 +128,9 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     for (std::size_t i = 0; i < num_factors; ++i)
         for (std::size_t j = 0; j < num_factors; ++j) {
             const double kappa_sum = kappas[i] + kappas[j];
-            const double factor = (kappa_sum > small_kappa_threshold)
-                ? (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum
-                : dt_;
+            const double factor = (kappa_sum > small_kappa_threshold) ?
+                                      (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum :
+                                      dt_;
             sigma_dt_(i, j) = sigma(i, j) * factor;
         }
 
@@ -141,16 +142,18 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     // product, so this call can only reject a numerical rounding
     // failure.
     cholesky_ = math::psd_matrix_square_root(
-        sigma_dt_, "quadratic_gaussian_process: sigma must be positive semidefinite: "
-                   "its per-tick covariance is not");
+        sigma_dt_,
+        "quadratic_gaussian_process: sigma must be positive semidefinite: "
+        "its per-tick covariance is not");
 
     // Scratch for the standard-normal shocks: allocated once per
     // construction, reused by every next() call.
     z_.resize(num_factors);
 }
 
-quadratic_gaussian_process::quadratic_gaussian_process(
-    const quadratic_gaussian_params& params, std::uint32_t seed, double dt)
+quadratic_gaussian_process::quadratic_gaussian_process(const quadratic_gaussian_params& params,
+                                                       std::uint32_t seed,
+                                                       double dt)
     : quadratic_gaussian_process(params.kappas,
                                  params.sigma,
                                  params.theta,
@@ -222,16 +225,15 @@ double quadratic_gaussian_process::discount_factor(std::size_t ticks_ahead) cons
         const Eigen::VectorXd c_theta = c * theta_shift_;
         const Eigen::VectorXd quadratic_arg = 2.0 * c_theta + b;
         const double log_det = 0.5 * std::log(determinant);
-        a += -delta_0_ * dt_ - theta_shift_.dot(c_theta) - b.dot(theta_shift_)
-             + 0.5 * quadratic_arg.dot(p * quadratic_arg) - log_det;
+        a += -delta_0_ * dt_ - theta_shift_.dot(c_theta) - b.dot(theta_shift_) +
+             0.5 * quadratic_arg.dot(p * quadratic_arg) - log_det;
 
         // The coefficient recursions: the quadratic rate piece enters C
         // with both factor-decay dressings, and the linear piece enters
         // B through the mean shift and the covariance dressing of the
         // shock.
         c = gamma_dt_ + lambda_.asDiagonal() * c_tilde * lambda_.asDiagonal();
-        b = deltas_dt_ + lambda_.cwiseProduct(b + 2.0 * c_tilde *
-                                                   (theta_shift_ - sigma_dt_ * b));
+        b = deltas_dt_ + lambda_.cwiseProduct(b + 2.0 * c_tilde * (theta_shift_ - sigma_dt_ * b));
     }
     return std::exp(a - b.dot(factors_) - factors_.dot(c * factors_));
 }

@@ -88,13 +88,8 @@ namespace ores::analytics::quant::service {
  * @return The lattice, ready for the rate_tree walk and state-price
  *         propagation.
  */
-ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree
-build_black_karasinski_tree(double log_rate,
-                            double kappa,
-                            double theta,
-                            double sigma,
-                            double dt,
-                            std::size_t steps);
+ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree build_black_karasinski_tree(
+    double log_rate, double kappa, double theta, double sigma, double dt, std::size_t steps);
 
 /**
  * @brief One-factor Black-Karasinski short-rate process: the logarithm

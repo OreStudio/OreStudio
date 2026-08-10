@@ -118,8 +118,7 @@ TEST_CASE("rate_tree next_tree_node walks a trinomial the same way", "[rate_tree
     }
 }
 
-TEST_CASE("rate_tree propagation without discounting conserves probability",
-          "[rate_tree]") {
+TEST_CASE("rate_tree propagation without discounting conserves probability", "[rate_tree]") {
     // With dt == 0 the state prices are plain path probabilities: their
     // sum at any level must be exactly 1. Five ticks from the root land
     // on the last of the six stored levels.
@@ -131,8 +130,7 @@ TEST_CASE("rate_tree propagation without discounting conserves probability",
     CHECK(sum == Catch::Approx(1.0).epsilon(1e-12));
 }
 
-TEST_CASE("rate_tree propagation from a mid-tree node conserves probability",
-          "[rate_tree]") {
+TEST_CASE("rate_tree propagation from a mid-tree node conserves probability", "[rate_tree]") {
     // The propagation must work from any stored node, not just the root:
     // a unit state price at a mid-tree node spreads to the nodes
     // reachable from it.
@@ -144,8 +142,7 @@ TEST_CASE("rate_tree propagation from a mid-tree node conserves probability",
     CHECK(sum == Catch::Approx(1.0).epsilon(1e-12));
 }
 
-TEST_CASE("rate_tree one-tick bond price is exp(-r*dt) from any node",
-          "[rate_tree]") {
+TEST_CASE("rate_tree one-tick bond price is exp(-r*dt) from any node", "[rate_tree]") {
     // A single propagation step discounts the unit state price by the
     // node's own rate regardless of the branching probabilities -- the
     // tree's bond price over one tick is exactly the deposit factor.
@@ -160,8 +157,7 @@ TEST_CASE("rate_tree one-tick bond price is exp(-r*dt) from any node",
     }
 }
 
-TEST_CASE("rate_tree multi-step propagation matches hand-computed state prices",
-          "[rate_tree]") {
+TEST_CASE("rate_tree multi-step propagation matches hand-computed state prices", "[rate_tree]") {
     // Two-tick binomial: from the root, the state price at each level-2
     // node is the path probability times the path discount factors.
     const double r0 = 0.05, r1_down = 0.04, r1_up = 0.06;
@@ -186,8 +182,7 @@ TEST_CASE("rate_tree multi-step propagation matches hand-computed state prices",
           Catch::Approx(d0 * (0.5 * dd + 0.5 * du)).epsilon(1e-12));
 }
 
-TEST_CASE("rate_tree propagation with zero steps returns the unit state price",
-          "[rate_tree]") {
+TEST_CASE("rate_tree propagation with zero steps returns the unit state price", "[rate_tree]") {
     const rate_tree tree = build_binomial_tree(3, std::log(0.04), 0.05);
     const auto prices = propagate_state_prices(tree, {2, 1}, 0, 1.0);
     REQUIRE(prices.size() == 3);
@@ -211,15 +206,13 @@ TEST_CASE("rate_tree rejects out-of-range nodes", "[rate_tree]") {
     CHECK_THROWS_AS(propagate_state_prices(tree, {3, 0}, 1, 1.0), std::invalid_argument);
 }
 
-TEST_CASE("rate_tree rejects walking from the last level of the tree",
-          "[rate_tree]") {
+TEST_CASE("rate_tree rejects walking from the last level of the tree", "[rate_tree]") {
     const rate_tree tree = build_binomial_tree(2, std::log(0.04), 0.05);
     std::mt19937 rng(1);
     CHECK_THROWS_AS(next_tree_node(tree, {1, 0}, rng), std::invalid_argument);
 }
 
-TEST_CASE("rate_tree rejects propagation beyond the stored levels",
-          "[rate_tree]") {
+TEST_CASE("rate_tree rejects propagation beyond the stored levels", "[rate_tree]") {
     const rate_tree tree = build_binomial_tree(3, std::log(0.04), 0.05);
     // From the root, 2 ticks reach the last stored level (valid); 3 ticks
     // would need a level that is not stored.

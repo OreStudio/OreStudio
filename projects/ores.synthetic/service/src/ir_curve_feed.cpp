@@ -259,18 +259,17 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
 
 }
 
-std::shared_ptr<ir_curve_feed>
-make_ir_curve_feed(ores::nats::service::client& nats,
-                   ores::nats::service::nats_client& auth_nats,
-                   const ores::synthetic::domain::ir_curve_generation_config& cfg,
-                   const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-                   const std::vector<
-                       ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
-                       values,
-                   const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
-                       definitions,
-                   const ir_curve_refdata_context& refctx,
-                   const std::string& caller_bearer_token) {
+std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
+    ores::nats::service::client& nats,
+    ores::nats::service::nats_client& auth_nats,
+    const ores::synthetic::domain::ir_curve_generation_config& cfg,
+    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+    const std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
+        values,
+    const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
+        definitions,
+    const ir_curve_refdata_context& refctx,
+    const std::string& caller_bearer_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -280,14 +279,14 @@ make_ir_curve_feed(ores::nats::service::client& nats,
     if (cfg.price_source == "vintage") {
         const auto initial_rate =
             resolve_vintage_initial_rate(auth_nats, cfg, resolved, caller_bearer_token);
-        const auto def_it = std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
-            return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&
-                   d.parameter_name == "initial_rate";
-        });
+        const auto def_it =
+            std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
+                return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&
+                       d.parameter_name == "initial_rate";
+            });
         if (def_it == definitions.end())
-            throw std::invalid_argument(
-                "make_ir_curve_feed: process type '" + cfg.process_type +
-                "' has no parameter definition for 'initial_rate'");
+            throw std::invalid_argument("make_ir_curve_feed: process type '" + cfg.process_type +
+                                        "' has no parameter definition for 'initial_rate'");
         for (auto& v : cfg_values) {
             if (v.parameter_definition_id == def_it->id) {
                 v.parameter_value = initial_rate;

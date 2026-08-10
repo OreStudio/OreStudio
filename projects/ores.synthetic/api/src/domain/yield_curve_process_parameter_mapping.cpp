@@ -18,7 +18,6 @@
  *
  */
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
-
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_params.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_params.hpp"
@@ -110,8 +109,10 @@ map_parameters_to_yield_curve_process(
     for (const auto& v : values) {
         const auto def_it = definitions_by_id.find(v.parameter_definition_id);
         if (def_it == definitions_by_id.end()) {
-            const auto all_it = std::find_if(definitions.begin(), definitions.end(),
-                [&](const auto& d) { return d.id == v.parameter_definition_id; });
+            const auto all_it =
+                std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
+                    return d.id == v.parameter_definition_id;
+                });
             if (all_it != definitions.end())
                 throw std::invalid_argument(
                     "map_parameters_to_yield_curve_process: parameter value references "
@@ -140,9 +141,9 @@ map_parameters_to_yield_curve_process(
             missing.push_back(name);
     }
     if (!missing.empty())
-        throw std::invalid_argument(
-            "map_parameters_to_yield_curve_process: process type '" + process_type +
-            "' is missing required parameter(s): " + join_quoted(missing));
+        throw std::invalid_argument("map_parameters_to_yield_curve_process: process type '" +
+                                    process_type +
+                                    "' is missing required parameter(s): " + join_quoted(missing));
 
     std::vector<std::string> unexpected;
     for (const auto& [name, entry] : named) {
@@ -151,26 +152,28 @@ map_parameters_to_yield_curve_process(
             unexpected.push_back(name);
     }
     if (!unexpected.empty())
-        throw std::invalid_argument(
-            "map_parameters_to_yield_curve_process: process type '" + process_type +
-            "' has unexpected parameter(s): " + join_quoted(unexpected));
+        throw std::invalid_argument("map_parameters_to_yield_curve_process: process type '" +
+                                    process_type +
+                                    "' has unexpected parameter(s): " + join_quoted(unexpected));
 
     // Range-check each value against its definition's bounds.
     for (const auto& [name, entry] : named) {
         const auto& def = *entry.definition;
         if (def.min_value && entry.value < *def.min_value)
-            throw std::invalid_argument(
-                "map_parameters_to_yield_curve_process: parameter '" + name + "' of process type '" +
-                process_type + "' has value " + std::to_string(entry.value) +
-                ", below its minimum " + std::to_string(*def.min_value));
+            throw std::invalid_argument("map_parameters_to_yield_curve_process: parameter '" +
+                                        name + "' of process type '" + process_type +
+                                        "' has value " + std::to_string(entry.value) +
+                                        ", below its minimum " + std::to_string(*def.min_value));
         if (def.max_value && entry.value > *def.max_value)
-            throw std::invalid_argument(
-                "map_parameters_to_yield_curve_process: parameter '" + name + "' of process type '" +
-                process_type + "' has value " + std::to_string(entry.value) +
-                ", above its maximum " + std::to_string(*def.max_value));
+            throw std::invalid_argument("map_parameters_to_yield_curve_process: parameter '" +
+                                        name + "' of process type '" + process_type +
+                                        "' has value " + std::to_string(entry.value) +
+                                        ", above its maximum " + std::to_string(*def.max_value));
     }
 
-    const auto value = [&](const std::string& name) { return named.at(name).value; };
+    const auto value = [&](const std::string& name) {
+        return named.at(name).value;
+    };
 
     if (type == "two_factor_gaussian") {
         two_factor_gaussian_params p;

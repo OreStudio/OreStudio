@@ -32,8 +32,8 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -54,10 +54,10 @@ inline auto& ir_curve_preview_handler_lg() {
 // re-materialise the {definition, value} shape the mapping layer consumes on the fly -- with no
 // min/max bounds, which only the UI spin boxes enforce in this path. The mapping layer handles the
 // uppercase-to-lowercase dispatch and throws a clear message on missing/unexpected parameters.
-inline std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess> make_preview_process(
-    const std::string& process_type,
-    const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
-    std::uint32_t seed) {
+inline std::unique_ptr<ores::analytics::quant::domain::IYieldCurveProcess>
+make_preview_process(const std::string& process_type,
+                     const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+                     std::uint32_t seed) {
     using namespace ores::synthetic::domain;
     std::vector<yield_curve_process_parameter_definition> definitions;
     std::vector<ir_curve_generation_config_process_parameter_value> values;
@@ -131,9 +131,7 @@ public:
         try {
             for (int p = 0; p < num_paths; ++p) {
                 auto process = make_preview_process(
-                    req->process_type,
-                    req->parameters,
-                    req->seed + static_cast<std::uint32_t>(p));
+                    req->process_type, req->parameters, req->seed + static_cast<std::uint32_t>(p));
                 std::vector<double> path;
                 path.reserve(static_cast<std::size_t>(num_ticks));
                 for (int t = 0; t < num_ticks; ++t)

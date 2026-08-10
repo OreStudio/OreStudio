@@ -37,11 +37,11 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include <QButtonGroup>
-#include <QDoubleSpinBox>
 #include <QComboBox>
 #include <QCompleter>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QFutureWatcher>
 #include <QGroupBox>
@@ -368,13 +368,10 @@ void IrCurveEditor::buildInstrumentTab() {
 
     const bool vintageMode = ir_.price_source == "vintage";
     (vintageMode ? vintageRadio_ : fixedRadio_)->setChecked(true);
-    connect(priceSourceGroup_,
-            &QButtonGroup::idClicked,
-            this,
-            [this](int id) {
-                BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
-                updatePriceSourceEnablement();
-            });
+    connect(priceSourceGroup_, &QButtonGroup::idClicked, this, [this](int id) {
+        BOOST_LOG_SEV(lg(), debug) << "priceSourceGroup_ idClicked: id=" << id;
+        updatePriceSourceEnablement();
+    });
     // buildProcessTab() runs after this method returns, so parameterTable_/initialRateSpin_ don't
     // exist yet (and are only populated once populateParameterRows()'s async fetch lands) --
     // rebuildParameterTable() re-runs this after every population, so no deferred call needed
@@ -501,9 +498,8 @@ void IrCurveEditor::buildProcessTab() {
     pathsBoxLayout->addWidget(pathsChart_);
     layout->addWidget(pathsBox, 1);
 
-    connect(engineCombo_, &QComboBox::currentIndexChanged, this, [this]() {
-        populateParameterRows();
-    });
+    connect(
+        engineCombo_, &QComboBox::currentIndexChanged, this, [this]() { populateParameterRows(); });
 
     tabWidget_->addTab(tab, tr("Process"));
 
@@ -820,9 +816,9 @@ QDoubleSpinBox* IrCurveEditor::valueSpinAt(int row) const {
 
 void IrCurveEditor::updatePriceSourceEnablement() {
     const bool vintage = priceSourceGroup_ && priceSourceGroup_->checkedId() == 1;
-    BOOST_LOG_SEV(lg(), debug)
-        << "updatePriceSourceEnablement: checkedId="
-        << (priceSourceGroup_ ? priceSourceGroup_->checkedId() : -1) << ", vintage=" << vintage;
+    BOOST_LOG_SEV(lg(), debug) << "updatePriceSourceEnablement: checkedId="
+                               << (priceSourceGroup_ ? priceSourceGroup_->checkedId() : -1)
+                               << ", vintage=" << vintage;
     if (vintageSourceEdit_)
         vintageSourceEdit_->setEnabled(vintage);
     if (vintageDateEdit_)
@@ -856,8 +852,8 @@ void IrCurveEditor::populateParameterRows() {
         QString error;
     };
 
-    auto task = [cm, engine, configId = boost::uuids::to_string(ir_.id),
-                 isNew = isNew_]() -> FetchResult {
+    auto task =
+        [cm, engine, configId = boost::uuids::to_string(ir_.id), isNew = isNew_]() -> FetchResult {
         namespace m = synthetic::messaging;
         FetchResult r;
 
@@ -966,12 +962,11 @@ void IrCurveEditor::rebuildParameterTable() {
     refreshCharts();
 }
 
-std::vector<ores::synthetic::messaging::parameter_spec>
-IrCurveEditor::currentParameters() const {
+std::vector<ores::synthetic::messaging::parameter_spec> IrCurveEditor::currentParameters() const {
     std::vector<ores::synthetic::messaging::parameter_spec> params;
     params.reserve(parameterDefinitions_.size());
-    for (int row = 0; row < parameterTable_->rowCount() &&
-                        row < static_cast<int>(parameterDefinitions_.size());
+    for (int row = 0;
+         row < parameterTable_->rowCount() && row < static_cast<int>(parameterDefinitions_.size());
          ++row) {
         if (auto* spin = valueSpinAt(row))
             params.push_back({parameterDefinitions_[row].parameter_name, spin->value()});
@@ -1004,10 +999,8 @@ void IrCurveEditor::refreshCharts() {
         rows.push_back(CurveShapePreviewChart::TemplateRow{
             seq++, e.start_tenor_code, e.end_tenor_code, e.instrument_code});
     }
-    shapeChart_->setParameters(engine,
-                               params,
-                               fixedLegFrequencyCombo_->currentText().toStdString(),
-                               rows);
+    shapeChart_->setParameters(
+        engine, params, fixedLegFrequencyCombo_->currentText().toStdString(), rows);
     shapeChart_->scheduleRefresh();
 }
 
@@ -1370,8 +1363,8 @@ void IrCurveEditor::onSaveClicked() {
     // entries flow). Only parameters actually present in the definitions catalogue are saved.
     std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value> values;
     std::vector<std::string> keptValueIds;
-    for (int row = 0; row < parameterTable_->rowCount() &&
-                        row < static_cast<int>(parameterDefinitions_.size());
+    for (int row = 0;
+         row < parameterTable_->rowCount() && row < static_cast<int>(parameterDefinitions_.size());
          ++row) {
         auto* spin = valueSpinAt(row);
         if (!spin)
@@ -1379,8 +1372,8 @@ void IrCurveEditor::onSaveClicked() {
         const auto& def = parameterDefinitions_[row];
         synthetic::domain::ir_curve_generation_config_process_parameter_value v;
         bool rowIsNew = true;
-        const auto existingIt = std::find_if(
-            valueRows_.begin(), valueRows_.end(), [&def](const auto& x) {
+        const auto existingIt =
+            std::find_if(valueRows_.begin(), valueRows_.end(), [&def](const auto& x) {
                 return x.parameter_definition_id == def.id;
             });
         if (existingIt != valueRows_.end()) {

@@ -68,11 +68,11 @@ namespace ores::analytics::quant::service {
  *        per-rate volatilities sigma and correlation rho.
  * @return The drift vector mu, one entry per rate.
  */
-ORES_ANALYTICS_QUANT_EXPORT Eigen::VectorXd lmm_spot_measure_drift(
-    const Eigen::VectorXd& forward_rates,
-    const Eigen::VectorXd& displacements,
-    const Eigen::VectorXd& tenor_spacings,
-    const Eigen::MatrixXd& covariance);
+ORES_ANALYTICS_QUANT_EXPORT Eigen::VectorXd
+lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
+                       const Eigen::VectorXd& displacements,
+                       const Eigen::VectorXd& tenor_spacings,
+                       const Eigen::MatrixXd& covariance);
 
 /**
  * @brief Displaced-lognormal LIBOR market model under the spot

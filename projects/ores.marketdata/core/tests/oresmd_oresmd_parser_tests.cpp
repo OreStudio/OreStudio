@@ -101,17 +101,24 @@ TEST_CASE("parse_ir_new_rfr_families_fixing_without_tenor", tags) {
     // without a tenor must parse. Previously the enum lacked them, so parse_enum threw
     // "Unrecognised index value" and provisioning a party from realistic-2026 seed data failed.
     const std::vector<std::pair<std::string, index_family>> new_families{
-        {"saron", index_family::saron},   {"aonia", index_family::aonia},
-        {"corra", index_family::corra},   {"honia", index_family::honia},
-        {"sora", index_family::sora},     {"swestr", index_family::swestr},
-        {"nowa", index_family::nowa},     {"kofr", index_family::kofr},
-        {"mibor", index_family::mibor},   {"zaronia", index_family::zaronia},
-        {"destr", index_family::destr},   {"polonia", index_family::polonia},
-        {"nzonia", index_family::nzonia}, {"shibor", index_family::shibor},
-        {"tiie", index_family::tiie},     {"taibor", index_family::taibor}};
+        {"saron", index_family::saron},
+        {"aonia", index_family::aonia},
+        {"corra", index_family::corra},
+        {"honia", index_family::honia},
+        {"sora", index_family::sora},
+        {"swestr", index_family::swestr},
+        {"nowa", index_family::nowa},
+        {"kofr", index_family::kofr},
+        {"mibor", index_family::mibor},
+        {"zaronia", index_family::zaronia},
+        {"destr", index_family::destr},
+        {"polonia", index_family::polonia},
+        {"nzonia", index_family::nzonia},
+        {"shibor", index_family::shibor},
+        {"tiie", index_family::tiie},
+        {"taibor", index_family::taibor}};
     for (const auto& [name, expected] : new_families) {
-        const auto id =
-            oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing"));
+        const auto id = oresmd_parser::parse(uri("oresmd://ir/usd?index=" + name + "&type=fixing"));
         const auto& ir = std::get<ir_market_data_identifier>(id);
         REQUIRE(ir.type == instrument_type::fixing);
         REQUIRE(ir.index == expected);

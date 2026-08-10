@@ -23,8 +23,9 @@
 
 namespace ores::analytics::quant::service {
 
-cox_ingersoll_ross_process::cox_ingersoll_ross_process(
-    const cox_ingersoll_ross_params& params, std::uint32_t seed, double dt)
+cox_ingersoll_ross_process::cox_ingersoll_ross_process(const cox_ingersoll_ross_params& params,
+                                                       std::uint32_t seed,
+                                                       double dt)
     : cox_ingersoll_ross_process(
           params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
 

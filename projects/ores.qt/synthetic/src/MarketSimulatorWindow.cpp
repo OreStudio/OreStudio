@@ -41,8 +41,8 @@
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
-#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QColor>
 #include <QComboBox>
@@ -586,7 +586,8 @@ void MarketSimulatorWindow::reload() {
         std::vector<synthetic::domain::ir_curve_template_entry> irCurveEntries;
         std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>
             irCurveValues;
-        std::vector<synthetic::domain::yield_curve_process_parameter_definition> parameterDefinitions;
+        std::vector<synthetic::domain::yield_curve_process_parameter_definition>
+            parameterDefinitions;
         std::vector<synthetic::domain::folder> folders;
         std::unordered_map<std::string, std::string> currencyNames;
         std::vector<std::string> runningSourceNames;
@@ -737,7 +738,8 @@ void MarketSimulatorWindow::reload() {
         for (auto& e : result.irCurveEntries)
             self->irCurveEntries_[boost::uuids::to_string(e.id)] = std::move(e);
         for (auto& v : result.irCurveValues)
-            self->irCurveValuesByConfig_[boost::uuids::to_string(v.config_id)].push_back(std::move(v));
+            self->irCurveValuesByConfig_[boost::uuids::to_string(v.config_id)].push_back(
+                std::move(v));
         for (auto& f : result.folders)
             self->folders_[boost::uuids::to_string(f.id)] = std::move(f);
 
@@ -1585,7 +1587,8 @@ void MarketSimulatorWindow::showIrCurveSummary(
     // system-tenant definitions catalogue (loaded in reload()) to display the parameter name.
     if (const auto it = irCurveValuesByConfig_.find(boost::uuids::to_string(ir.id));
         it != irCurveValuesByConfig_.end()) {
-        std::map<std::string, double> params; // definition id -> value, sorted by uuid for stability
+        std::map<std::string, double>
+            params; // definition id -> value, sorted by uuid for stability
         for (const auto& v : it->second)
             params[boost::uuids::to_string(v.parameter_definition_id)] = v.parameter_value;
         for (const auto& d : parameterDefinitions_) {

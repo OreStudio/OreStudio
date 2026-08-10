@@ -53,27 +53,23 @@ void validate_grid(const Eigen::VectorXd& forward_rates,
                    const char* prefix) {
     const std::size_t num_rates = forward_rates.size();
     if (num_rates == 0)
-        throw std::invalid_argument(std::string(prefix) +
-                                    ": forward_rates must not be empty");
+        throw std::invalid_argument(std::string(prefix) + ": forward_rates must not be empty");
     if (displacements.size() != num_rates)
-        throw std::invalid_argument(std::string(prefix) +
-                                    ": displacements must have one entry per "
-                                    "forward_rates entry");
+        throw std::invalid_argument(std::string(prefix) + ": displacements must have one entry per "
+                                                          "forward_rates entry");
     if (tenor_spacings.size() != num_rates)
         throw std::invalid_argument(std::string(prefix) +
                                     ": tenor_spacings must have one entry per "
                                     "forward_rates entry");
     for (std::size_t i = 0; i < num_rates; ++i) {
         if (!(displacements[i] >= 0.0))
-            throw std::invalid_argument(std::string(prefix) +
-                                        ": displacements must be non-negative, got " +
-                                        std::to_string(displacements[i]) + " at index " +
-                                        std::to_string(i));
+            throw std::invalid_argument(
+                std::string(prefix) + ": displacements must be non-negative, got " +
+                std::to_string(displacements[i]) + " at index " + std::to_string(i));
         if (!(tenor_spacings[i] > 0.0))
-            throw std::invalid_argument(std::string(prefix) +
-                                        ": tenor_spacings must be strictly positive, got " +
-                                        std::to_string(tenor_spacings[i]) + " at index " +
-                                        std::to_string(i));
+            throw std::invalid_argument(
+                std::string(prefix) + ": tenor_spacings must be strictly positive, got " +
+                std::to_string(tenor_spacings[i]) + " at index " + std::to_string(i));
     }
 }
 
@@ -83,8 +79,7 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
                                        const Eigen::VectorXd& displacements,
                                        const Eigen::VectorXd& tenor_spacings,
                                        const Eigen::MatrixXd& covariance) {
-    validate_grid(forward_rates, displacements, tenor_spacings,
-                  "lmm_spot_measure_drift");
+    validate_grid(forward_rates, displacements, tenor_spacings, "lmm_spot_measure_drift");
     const std::size_t num_rates = forward_rates.size();
     if (covariance.rows() != num_rates || covariance.cols() != num_rates)
         throw std::invalid_argument("lmm_spot_measure_drift: covariance must be square "
@@ -97,16 +92,14 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
     for (std::size_t i = 0; i < num_rates; ++i) {
         for (std::size_t j = i + 1; j < num_rates; ++j) {
             const double difference = std::abs(covariance(i, j) - covariance(j, i));
-            const double tolerance =
-                1e-12 * std::max(1.0, std::abs(covariance(i, j)));
+            const double tolerance = 1e-12 * std::max(1.0, std::abs(covariance(i, j)));
             if (!(difference <= tolerance))
                 throw std::invalid_argument("lmm_spot_measure_drift: covariance must be "
                                             "symmetric, got " +
                                             std::to_string(covariance(i, j)) + " at (" +
                                             std::to_string(i) + ", " + std::to_string(j) +
-                                            ") and " + std::to_string(covariance(j, i)) +
-                                            " at (" + std::to_string(j) + ", " +
-                                            std::to_string(i) + ")");
+                                            ") and " + std::to_string(covariance(j, i)) + " at (" +
+                                            std::to_string(j) + ", " + std::to_string(i) + ")");
         }
     }
 
@@ -122,8 +115,7 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
         if (!(denominator > 0.0))
             throw std::invalid_argument("lmm_spot_measure_drift: the numeraire growth "
                                         "factor 1 + tau_j * L_j is not positive at rate " +
-                                        std::to_string(j) + ": got " +
-                                        std::to_string(denominator));
+                                        std::to_string(j) + ": got " + std::to_string(denominator));
         weights[j] = tenor_spacings[j] * (forward_rates[j] + displacements[j]) / denominator;
     }
 
@@ -141,14 +133,13 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
     return drift;
 }
 
-libor_market_model_process::libor_market_model_process(
-    Eigen::VectorXd initial_forward_rates,
-    Eigen::VectorXd volatilities,
-    Eigen::MatrixXd correlation,
-    Eigen::VectorXd displacements,
-    Eigen::VectorXd tenor_spacings,
-    std::uint32_t seed,
-    double dt)
+libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_forward_rates,
+                                                       Eigen::VectorXd volatilities,
+                                                       Eigen::MatrixXd correlation,
+                                                       Eigen::VectorXd displacements,
+                                                       Eigen::VectorXd tenor_spacings,
+                                                       std::uint32_t seed,
+                                                       double dt)
     : dt_(dt)
     , rng_(seed) {
 
@@ -189,8 +180,8 @@ libor_market_model_process::libor_market_model_process(
                                             std::to_string(i) + ", " + std::to_string(j) + ")");
         }
     }
-    validate_grid(initial_forward_rates, displacements, tenor_spacings,
-                  "libor_market_model_process");
+    validate_grid(
+        initial_forward_rates, displacements, tenor_spacings, "libor_market_model_process");
 
     // The model's support: the volatility applies to L_i + s_i, so the
     // simulation starts inside the positive log domain. (The drift
@@ -199,12 +190,12 @@ libor_market_model_process::libor_market_model_process(
     // the simulation survives.)
     for (std::size_t i = 0; i < num_rates; ++i) {
         if (!(initial_forward_rates[i] + displacements[i] > 0.0))
-            throw std::invalid_argument("libor_market_model_process: "
-                                        "initial_forward_rates[i] + displacements[i] must "
-                                        "be positive, got " +
-                                        std::to_string(initial_forward_rates[i] +
-                                                       displacements[i]) +
-                                        " at index " + std::to_string(i));
+            throw std::invalid_argument(
+                "libor_market_model_process: "
+                "initial_forward_rates[i] + displacements[i] must "
+                "be positive, got " +
+                std::to_string(initial_forward_rates[i] + displacements[i]) + " at index " +
+                std::to_string(i));
     }
 
     forward_rates_ = std::move(initial_forward_rates);
@@ -225,8 +216,9 @@ libor_market_model_process::libor_market_model_process(
     correlated_.resize(num_rates);
 }
 
-libor_market_model_process::libor_market_model_process(
-    const libor_market_model_params& params, std::uint32_t seed, double dt)
+libor_market_model_process::libor_market_model_process(const libor_market_model_params& params,
+                                                       std::uint32_t seed,
+                                                       double dt)
     : libor_market_model_process(params.initial_forward_rates,
                                  params.volatilities,
                                  params.correlation,
@@ -245,8 +237,9 @@ double libor_market_model_process::next() {
         z_[i] = normal_(rng_);
     correlated_ = cholesky_ * z_;
     for (std::size_t i = 0; i < forward_rates_.size(); ++i)
-        forward_rates_[i] += drift[i] * dt_ +
-            vol_sqrt_dt_[i] * (forward_rates_[i] + displacements_[i]) * correlated_[i];
+        forward_rates_[i] += drift[i] * dt_ + vol_sqrt_dt_[i] *
+                                                  (forward_rates_[i] + displacements_[i]) *
+                                                  correlated_[i];
     ++tick_;
     return current();
 }
@@ -275,8 +268,7 @@ double libor_market_model_process::discount_factor(std::size_t ticks_ahead) cons
             throw std::runtime_error("libor_market_model_process: discount_factor: the "
                                      "numeraire growth factor 1 + tau_k * L_k is not "
                                      "positive at rate " +
-                                     std::to_string(k) + ": got " +
-                                     std::to_string(denominator));
+                                     std::to_string(k) + ": got " + std::to_string(denominator));
         result /= denominator;
     }
     return result;

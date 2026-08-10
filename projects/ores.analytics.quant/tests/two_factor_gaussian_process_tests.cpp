@@ -60,65 +60,75 @@ struct correlated_params {
 
 TEST_CASE("two_factor_gaussian_process constructs with valid parameters", tags) {
     CHECK_NOTHROW(ores::analytics::quant::service::two_factor_gaussian_process(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        independent_params::seed, independent_params::dt));
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        independent_params::seed,
+        independent_params::dt));
 }
 
 TEST_CASE("two_factor_gaussian_process rejects negative kappa", tags) {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        -0.1, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                    std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, -0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        0.5, -0.3, 0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                    std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects negative sigma", tags) {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        0.5, 0.3, -0.01, 0.005, 0.0, 0.03, 42, 1.0),
+                    std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, 0.01, -0.005, 0.0, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        0.5, 0.3, 0.01, -0.005, 0.0, 0.03, 42, 1.0),
+                    std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects rho outside [-1, 1]", tags) {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        0.5, 0.3, 0.01, 0.005, 1.5, 0.03, 42, 1.0),
+                    std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, 0.01, 0.005, -1.5, 0.03, 42, 1.0),
-        std::invalid_argument);
+                        0.5, 0.3, 0.01, 0.005, -1.5, 0.03, 42, 1.0),
+                    std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process rejects non-positive dt", tags) {
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
-        std::invalid_argument);
+                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, 0.0),
+                    std::invalid_argument);
     CHECK_THROWS_AS(ores::analytics::quant::service::two_factor_gaussian_process(
-        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, -0.5),
-        std::invalid_argument);
+                        0.5, 0.3, 0.01, 0.005, 0.0, 0.03, 42, -0.5),
+                    std::invalid_argument);
 }
 
 TEST_CASE("two_factor_gaussian_process current returns initial_rate at construction", tags) {
-    ores::analytics::quant::service::two_factor_gaussian_process p(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        independent_params::seed, independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
+                                                                   independent_params::kappa_y,
+                                                                   independent_params::sigma_x,
+                                                                   independent_params::sigma_y,
+                                                                   independent_params::rho,
+                                                                   independent_params::initial_rate,
+                                                                   independent_params::seed,
+                                                                   independent_params::dt);
 
     // At construction, factor_x = initial_rate, factor_y = 0, so r = initial_rate.
     CHECK(p.current() == independent_params::initial_rate);
 }
 
 TEST_CASE("two_factor_gaussian_process next advances and current changes", tags) {
-    ores::analytics::quant::service::two_factor_gaussian_process p(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        independent_params::seed, independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
+                                                                   independent_params::kappa_y,
+                                                                   independent_params::sigma_x,
+                                                                   independent_params::sigma_y,
+                                                                   independent_params::rho,
+                                                                   independent_params::initial_rate,
+                                                                   independent_params::seed,
+                                                                   independent_params::dt);
 
     const double r0 = p.current();
     const double r1 = p.next();
@@ -129,25 +139,29 @@ TEST_CASE("two_factor_gaussian_process next advances and current changes", tags)
 }
 
 TEST_CASE("two_factor_gaussian_process discount_factor zero ticks ahead returns 1", tags) {
-    ores::analytics::quant::service::two_factor_gaussian_process p(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        independent_params::seed, independent_params::dt);
+    ores::analytics::quant::service::two_factor_gaussian_process p(independent_params::kappa_x,
+                                                                   independent_params::kappa_y,
+                                                                   independent_params::sigma_x,
+                                                                   independent_params::sigma_y,
+                                                                   independent_params::rho,
+                                                                   independent_params::initial_rate,
+                                                                   independent_params::seed,
+                                                                   independent_params::dt);
 
     // A bond maturing now is worth exactly 1.0.
     CHECK(p.discount_factor(0) == 1.0);
 }
 
-TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity for positive rates", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor decreases with maturity for positive rates",
+          tags) {
     // Use zero vol to keep the short rate deterministically positive
     // (it decays from initial_rate toward zero, never going negative).
     ores::analytics::quant::service::two_factor_gaussian_process p(
         0.5, 0.3, 0.0, 0.0, 0.0, 0.05, 42, 1.0);
 
     // With positive short rates, longer-maturity bonds should be cheaper.
-    const double df_short = p.discount_factor(2);   // 2 ticks ahead
-    const double df_long = p.discount_factor(20);    // 20 ticks ahead
+    const double df_short = p.discount_factor(2); // 2 ticks ahead
+    const double df_long = p.discount_factor(20); // 20 ticks ahead
     CHECK(df_long < df_short);
 }
 
@@ -172,7 +186,8 @@ TEST_CASE("two_factor_gaussian_process zero sigma means deterministic evolution"
     CHECK(std::abs(r_final) < 0.01);
 }
 
-TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches discrete recursion", tags) {
+TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches discrete recursion",
+          tags) {
     // Zero vol, zero correlation: the backward recursion is exact for the
     // discrete-time model. We compute the expected B_y factor analytically
     // from the geometric sum produced by the recursion and verify.
@@ -209,7 +224,8 @@ TEST_CASE("two_factor_gaussian_process deterministic discount_factor matches dis
     CHECK_THAT(actual, Catch::Matchers::WithinRel(expected, 1e-12));
 }
 
-TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous limit as dt shrinks", tags) {
+TEST_CASE("two_factor_gaussian_process discount_factor approaches continuous limit as dt shrinks",
+          tags) {
     // As dt -> 0, the discrete recursion should converge to the
     // continuous-time closed form. initial_rate goes into factor_x.
     const double kx = 0.5, ky = 0.3, rate = 0.04, T = 1.0;
@@ -274,10 +290,14 @@ TEST_CASE("two_factor_gaussian_process produces plausible short rate paths", tag
     double sum_rates = 0.0;
     for (int path = 0; path < num_paths; ++path) {
         ores::analytics::quant::service::two_factor_gaussian_process p(
-            correlated_params::kappa_x, correlated_params::kappa_y,
-            correlated_params::sigma_x, correlated_params::sigma_y,
-            correlated_params::rho, correlated_params::initial_rate,
-            correlated_params::seed + path, correlated_params::dt);
+            correlated_params::kappa_x,
+            correlated_params::kappa_y,
+            correlated_params::sigma_x,
+            correlated_params::sigma_y,
+            correlated_params::rho,
+            correlated_params::initial_rate,
+            correlated_params::seed + path,
+            correlated_params::dt);
 
         for (int i = 0; i < steps_per_path; ++i)
             p.next();
@@ -311,7 +331,8 @@ TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factor
     bool moved = false;
     for (int i = 0; i < 20; ++i) {
         const double r = p1.next();
-        if (r != prev_r) moved = true;
+        if (r != prev_r)
+            moved = true;
         prev_r = r;
     }
     CHECK(moved); // The process should have moved from its initial state.
@@ -319,16 +340,24 @@ TEST_CASE("two_factor_gaussian_process rho = 1 gives perfectly correlated factor
 
 TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", tags) {
     ores::analytics::quant::service::two_factor_gaussian_process p1(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        42, independent_params::dt);
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        42,
+        independent_params::dt);
 
     ores::analytics::quant::service::two_factor_gaussian_process p2(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        42, independent_params::dt);
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        42,
+        independent_params::dt);
 
     for (int i = 0; i < 50; ++i) {
         CHECK(p1.next() == p2.next());
@@ -337,16 +366,24 @@ TEST_CASE("two_factor_gaussian_process reproducibility: same seed same path", ta
 
 TEST_CASE("two_factor_gaussian_process different seeds give different paths", tags) {
     ores::analytics::quant::service::two_factor_gaussian_process p1(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        42, independent_params::dt);
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        42,
+        independent_params::dt);
 
     ores::analytics::quant::service::two_factor_gaussian_process p2(
-        independent_params::kappa_x, independent_params::kappa_y,
-        independent_params::sigma_x, independent_params::sigma_y,
-        independent_params::rho, independent_params::initial_rate,
-        99, independent_params::dt);
+        independent_params::kappa_x,
+        independent_params::kappa_y,
+        independent_params::sigma_x,
+        independent_params::sigma_y,
+        independent_params::rho,
+        independent_params::initial_rate,
+        99,
+        independent_params::dt);
 
     bool diverged = false;
     for (int i = 0; i < 100; ++i) {
@@ -369,10 +406,7 @@ double B(double kappa, double tau) {
     return (1.0 - std::exp(-kappa * tau)) / kappa;
 }
 
-double V(double t,
-         double a, double sigma,
-         double b, double eta,
-         double rho) {
+double V(double t, double a, double sigma, double b, double eta, double rho) {
     // Integrated variance of the two-factor model over [0, t].
     // From QuantLib G2::V(t), adapted to our parameter names.
     const double exp_a = std::exp(-a * t);
@@ -381,16 +415,13 @@ double V(double t,
     const double cy = eta / b;
     const double vx = cx * cx * (t + (2.0 * exp_a - 0.5 * exp_a * exp_a - 1.5) / a);
     const double vy = cy * cy * (t + (2.0 * exp_b - 0.5 * exp_b * exp_b - 1.5) / b);
-    const double vxy = 2.0 * rho * cx * cy *
-        (t + (exp_a - 1.0) / a + (exp_b - 1.0) / b
-         - (exp_a * exp_b - 1.0) / (a + b));
+    const double vxy =
+        2.0 * rho * cx * cy *
+        (t + (exp_a - 1.0) / a + (exp_b - 1.0) / b - (exp_a * exp_b - 1.0) / (a + b));
     return vx + vy + vxy;
 }
 
-double A(double t, double T,
-         double a, double sigma,
-         double b, double eta,
-         double rho) {
+double A(double t, double T, double a, double sigma, double b, double eta, double rho) {
     // Affine bond-price coefficient from QuantLib G2::A.
     // Requires a yield term structure. For zero vol / flat forward,
     // the discount-ratio factor is exp(-f * (T - t)).
@@ -398,26 +429,30 @@ double A(double t, double T,
     // we use a flat forward rate f = 0 (no drift).
     // A(t,T) = P^M(T)/P^M(t) * exp(0.5 * (V(T-t) - V(T) + V(t)))
     // With flat zero forward: P^M(T)/P^M(t) = 1.0
-    return std::exp(0.5 * (V(T - t, a, sigma, b, eta, rho)
-                           - V(T, a, sigma, b, eta, rho)
-                           + V(t, a, sigma, b, eta, rho)));
+    return std::exp(0.5 * (V(T - t, a, sigma, b, eta, rho) - V(T, a, sigma, b, eta, rho) +
+                           V(t, a, sigma, b, eta, rho)));
 }
 
-double discount_bond(double t, double T,
-                     double x, double y,
-                     double a, double sigma,
-                     double b, double eta,
+double discount_bond(double t,
+                     double T,
+                     double x,
+                     double y,
+                     double a,
+                     double sigma,
+                     double b,
+                     double eta,
                      double rho) {
     // QuantLib G2::discountBond(t, T, x, y):
     //   P(t,T) = A(t,T) * exp(-B(a,T-t)*x - B(b,T-t)*y)
     const double tau = T - t;
-    return A(t, T, a, sigma, b, eta, rho) *
-        std::exp(-B(a, tau) * x - B(b, tau) * y);
+    return A(t, T, a, sigma, b, eta, rho) * std::exp(-B(a, tau) * x - B(b, tau) * y);
 }
 
 } // namespace g2_closed_form
 
-TEST_CASE("two_factor_gaussian_process zero-vol discount_factor matches QuantLib closed-form bond price", tags) {
+TEST_CASE(
+    "two_factor_gaussian_process zero-vol discount_factor matches QuantLib closed-form bond price",
+    tags) {
     // With zero vol (sigma=eta=0), V(t) = 0 for all t, so A(t,T) = 1.
     // discountBond = exp(-B(a,τ)*x - B(b,τ)*y)
     // initial_rate goes into factor_x, factor_y starts at 0.
@@ -434,13 +469,14 @@ TEST_CASE("two_factor_gaussian_process zero-vol discount_factor matches QuantLib
     const double df_discrete = p.discount_factor(ticks);
 
     // factor_x = rate, factor_y = 0
-    const double df_closed = g2_closed_form::discount_bond(
-        0.0, T, rate, 0.0, a, 0.0, b, 0.0, 0.0);
+    const double df_closed = g2_closed_form::discount_bond(0.0, T, rate, 0.0, a, 0.0, b, 0.0, 0.0);
 
     CHECK_THAT(df_discrete, Catch::Matchers::WithinRel(df_closed, 2e-4));
 }
 
-TEST_CASE("two_factor_gaussian_process closed-form V(t) with non-zero vol is positive and monotonic", tags) {
+TEST_CASE(
+    "two_factor_gaussian_process closed-form V(t) with non-zero vol is positive and monotonic",
+    tags) {
     // The integrated variance V(t) should be positive for t > 0 and
     // increase with t. This catches transcription errors in the
     // correlation cross-term (the most error-prone part of V).
@@ -449,7 +485,7 @@ TEST_CASE("two_factor_gaussian_process closed-form V(t) with non-zero vol is pos
     const double rho = 0.5;
 
     const double v_short = g2_closed_form::V(0.5, a, sigma, b, eta, rho);
-    const double v_long  = g2_closed_form::V(2.0, a, sigma, b, eta, rho);
+    const double v_long = g2_closed_form::V(2.0, a, sigma, b, eta, rho);
 
     CHECK(v_short > 0.0);
     CHECK(v_long > v_short);
@@ -485,7 +521,9 @@ TEST_CASE("two_factor_gaussian_process zero-correlation bond price factorizes", 
     CHECK(df_actual < 1.0);
 }
 
-TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero sigma_y matches hull_white", tags) {
+TEST_CASE("two_factor_gaussian_process one-factor reduction: large kappa_y, zero sigma_y matches "
+          "hull_white",
+          tags) {
     // When sigma_y = 0 and kappa_y -> infinity, factor_y is pinned to zero
     // and G2 reduces to a one-factor Gaussian process for factor_x:
     //   r(t) = x(t), dx = -kappa_x * x * dt + sigma_x * dW
@@ -535,16 +573,25 @@ TEST_CASE("two_factor_gaussian_process struct constructor matches flat construct
     using ores::analytics::quant::service::two_factor_gaussian_params;
     using ores::analytics::quant::service::two_factor_gaussian_process;
 
-    const two_factor_gaussian_params params{
-        .kappa_x = 0.5, .kappa_y = 0.3, .theta = 0.04, .sigma_x = 0.01,
-        .sigma_y = 0.005, .rho = 0.6, .initial_rate = 0.03};
+    const two_factor_gaussian_params params{.kappa_x = 0.5,
+                                            .kappa_y = 0.3,
+                                            .theta = 0.04,
+                                            .sigma_x = 0.01,
+                                            .sigma_y = 0.005,
+                                            .rho = 0.6,
+                                            .initial_rate = 0.03};
     const std::uint32_t seed = 99;
     const double dt = 0.25;
 
     two_factor_gaussian_process from_struct(params, seed, dt);
-    two_factor_gaussian_process from_flat(
-        params.kappa_x, params.kappa_y, params.sigma_x, params.sigma_y,
-        params.rho, params.initial_rate, seed, dt);
+    two_factor_gaussian_process from_flat(params.kappa_x,
+                                          params.kappa_y,
+                                          params.sigma_x,
+                                          params.sigma_y,
+                                          params.rho,
+                                          params.initial_rate,
+                                          seed,
+                                          dt);
 
     for (int i = 0; i < 20; ++i) {
         CHECK(from_struct.next() == from_flat.next());

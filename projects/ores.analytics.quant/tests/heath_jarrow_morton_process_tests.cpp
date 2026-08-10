@@ -113,14 +113,12 @@ TEST_CASE("hjm zero-volatility curve is frozen", "[heath_jarrow_morton_process]"
         REQUIRE(p.discount_factor(0) == Catch::Approx(1.0).epsilon(1e-15));
 
         const std::vector<std::pair<double, double>> expectations =
-            dt == 1.0
-                ? std::vector<std::pair<double, double>>{
-                      {1.0, std::exp(-0.046875)}, {2.0, std::exp(-0.0925)}}
-                : std::vector<std::pair<double, double>>{
-                      {0.5, std::exp(-0.0225)},
-                      {1.0, std::exp(-0.046875)},
-                      {1.5, std::exp(-0.07)},
-                      {2.0, std::exp(-0.0925)}};
+            dt == 1.0 ? std::vector<std::pair<double, double>>{{1.0, std::exp(-0.046875)},
+                                                               {2.0, std::exp(-0.0925)}} :
+                        std::vector<std::pair<double, double>>{{0.5, std::exp(-0.0225)},
+                                                               {1.0, std::exp(-0.046875)},
+                                                               {1.5, std::exp(-0.07)},
+                                                               {2.0, std::exp(-0.0925)}};
         for (const auto& [horizon, expected] : expectations)
             REQUIRE(p.discount_factor(static_cast<std::size_t>(horizon / dt)) ==
                     Catch::Approx(expected).epsilon(1e-15));
@@ -134,13 +132,11 @@ TEST_CASE("hjm zero-volatility curve is frozen", "[heath_jarrow_morton_process]"
     // piece: horizon 0.25 cuts [0, 0.5] at the interpolated rate 0.045.
     heath_jarrow_morton_process partial(
         vector({0.04, 0.05, 0.045}), vector({0.0, 0.0, 0.0}), vector({0.5, 1.0}), 42, 0.25);
-    REQUIRE(partial.discount_factor(1) ==
-            Catch::Approx(std::exp(-0.010625)).epsilon(1e-15));
+    REQUIRE(partial.discount_factor(1) == Catch::Approx(std::exp(-0.010625)).epsilon(1e-15));
 }
 
 TEST_CASE("hjm single-rate grid is flat forever", "[heath_jarrow_morton_process]") {
-    heath_jarrow_morton_process p(
-        vector({0.04}), vector({0.0}), vector({}), 42, 0.25);
+    heath_jarrow_morton_process p(vector({0.04}), vector({0.0}), vector({}), 42, 0.25);
     REQUIRE(p.discount_factor(5) == Catch::Approx(std::exp(-0.04 * 5 * 0.25)).epsilon(1e-15));
     for (std::size_t t = 0; t < 3; ++t)
         REQUIRE(p.next() == Catch::Approx(0.04).epsilon(1e-15));
@@ -164,8 +160,7 @@ TEST_CASE("hjm no-arbitrage drift formula", "[heath_jarrow_morton_process]") {
     REQUIRE(drift_big[3] == Catch::Approx(0.5 * 0.85).epsilon(1e-15));
 }
 
-TEST_CASE("hjm drift matches the grid integral statistically",
-          "[heath_jarrow_morton_process]") {
+TEST_CASE("hjm drift matches the grid integral statistically", "[heath_jarrow_morton_process]") {
     // One tick of the linear transition: E[f(t+dt) - f(t)] = mu * dt
     // exactly, so the sample mean of the increment per unit time must
     // reproduce the hand-computed drift vector, and the front rate's
@@ -176,9 +171,11 @@ TEST_CASE("hjm drift matches the grid integral statistically",
     running_mean_variance front_increment;
 
     for (std::size_t i = 0; i < paths; ++i) {
-        heath_jarrow_morton_process p(
-            vector({0.04, 0.042, 0.041, 0.045}), vector({0.2, 0.3, 0.4, 0.5}),
-            vector({0.5, 0.5, 1.0}), static_cast<std::uint32_t>(42 + i), 0.25);
+        heath_jarrow_morton_process p(vector({0.04, 0.042, 0.041, 0.045}),
+                                      vector({0.2, 0.3, 0.4, 0.5}),
+                                      vector({0.5, 0.5, 1.0}),
+                                      static_cast<std::uint32_t>(42 + i),
+                                      0.25);
         const Eigen::VectorXd before = p.forward_rates();
         p.next();
         const Eigen::VectorXd after = p.forward_rates();
@@ -193,8 +190,7 @@ TEST_CASE("hjm drift matches the grid integral statistically",
     REQUIRE(mean[3] == Catch::Approx(0.425).margin(2e-3));
 
     REQUIRE(front_increment.mean == Catch::Approx(0.0).margin(2e-3));
-    REQUIRE(front_increment.sample_variance() ==
-            Catch::Approx(0.2 * 0.2 * 0.25).epsilon(1e-2));
+    REQUIRE(front_increment.sample_variance() == Catch::Approx(0.2 * 0.2 * 0.25).epsilon(1e-2));
 }
 
 TEST_CASE("hjm one-tick discounted bond ratio", "[heath_jarrow_morton_process]") {
@@ -206,9 +202,11 @@ TEST_CASE("hjm one-tick discounted bond ratio", "[heath_jarrow_morton_process]")
     running_mean_variance ratio;
 
     for (std::size_t i = 0; i < paths; ++i) {
-        heath_jarrow_morton_process p(
-            vector({0.05, 0.05, 0.05}), vector({0.3, 0.3, 0.3}),
-            vector({0.25, 0.25}), static_cast<std::uint32_t>(42 + i), 0.25);
+        heath_jarrow_morton_process p(vector({0.05, 0.05, 0.05}),
+                                      vector({0.3, 0.3, 0.3}),
+                                      vector({0.25, 0.25}),
+                                      static_cast<std::uint32_t>(42 + i),
+                                      0.25);
         const double price_now = p.discount_factor(1);
         const double r = p.current();
         p.next();
@@ -217,8 +215,7 @@ TEST_CASE("hjm one-tick discounted bond ratio", "[heath_jarrow_morton_process]")
     REQUIRE(ratio.mean == Catch::Approx(1.0).margin(3e-3));
 }
 
-TEST_CASE("hjm discounted bond prices are martingales",
-          "[heath_jarrow_morton_process]") {
+TEST_CASE("hjm discounted bond prices are martingales", "[heath_jarrow_morton_process]") {
     // The defining HJM property: with the no-arbitrage drift, the
     // money-market-rebased price of a fixed-maturity bond is a
     // martingale. The discretised model satisfies this only up to an
@@ -263,8 +260,8 @@ TEST_CASE("hjm discounted bond prices are martingales",
 
     std::vector<running_mean_variance> ratios(ticks - 1);
     for (std::size_t i = 0; i < paths; ++i) {
-        heath_jarrow_morton_process p(rates, vols, spacings,
-                                      static_cast<std::uint32_t>(42 + i), dt);
+        heath_jarrow_morton_process p(
+            rates, vols, spacings, static_cast<std::uint32_t>(42 + i), dt);
         for (std::size_t k = 0; k + 1 < ticks; ++k) {
             const double r = p.current();
             const double price_now = p.discount_factor(ticks - k);
@@ -277,17 +274,15 @@ TEST_CASE("hjm discounted bond prices are martingales",
     for (std::size_t k = 0; k + 1 < ticks; ++k) {
         const double h_k = (ticks - k) * dt;
         const double h_next = h_k - dt;
-        const double det = -f0 * dt + f0 * (h_k - h_next)
-            + dt * (static_cast<double>(k) * integral(drift, h_k)
-                    - static_cast<double>(k + 1) * integral(drift, h_next));
-        const double expected =
-            std::exp(det + sigma * sigma * dt * h_next * h_next / 2.0);
+        const double det = -f0 * dt + f0 * (h_k - h_next) +
+                           dt * (static_cast<double>(k) * integral(drift, h_k) -
+                                 static_cast<double>(k + 1) * integral(drift, h_next));
+        const double expected = std::exp(det + sigma * sigma * dt * h_next * h_next / 2.0);
         REQUIRE(ratios[k].mean == Catch::Approx(expected).margin(1e-2));
     }
 }
 
-TEST_CASE("hjm params struct equals scalar construction",
-          "[heath_jarrow_morton_process]") {
+TEST_CASE("hjm params struct equals scalar construction", "[heath_jarrow_morton_process]") {
     heath_jarrow_morton_params params;
     params.initial_forward_rates = vector({0.04, 0.042, 0.041});
     params.volatilities = vector({0.2, 0.3, 0.1});
@@ -305,8 +300,7 @@ TEST_CASE("hjm params struct equals scalar construction",
 TEST_CASE("hjm seeds determine the path", "[heath_jarrow_morton_process]") {
     const auto path = [](std::uint32_t seed) {
         heath_jarrow_morton_process p(
-            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, 1.0}),
-            seed, 0.5);
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, 1.0}), seed, 0.5);
         std::vector<double> rates;
         for (std::size_t t = 0; t < 5; ++t)
             rates.push_back(p.next());
@@ -323,43 +317,50 @@ TEST_CASE("hjm rejects invalid parameters", "[heath_jarrow_morton_process]") {
     REQUIRE_THROWS_AS(heath_jarrow_morton_process(
                           vector({}), vector({0.2, 0.3, 0.1}), vector({0.5, 1.0}), 42, 0.5),
                       std::invalid_argument); // empty initial_forward_rates
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3}),
-                          vector({0.5, 1.0}), 42, 0.5),
-                      std::invalid_argument); // volatilities size mismatch
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.5, 1.0, 0.5}), 42, 0.5),
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3}), vector({0.5, 1.0}), 42, 0.5),
+        std::invalid_argument); // volatilities size mismatch
+    REQUIRE_THROWS_AS(heath_jarrow_morton_process(vector({0.04, 0.042, 0.041}),
+                                                  vector({0.2, 0.3, 0.1}),
+                                                  vector({0.5, 1.0, 0.5}),
+                                                  42,
+                                                  0.5),
                       std::invalid_argument); // tenor_spacings size mismatch
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, -0.3, 0.1}),
-                          vector({0.5, 1.0}), 42, 0.5),
-                      std::invalid_argument); // negative vol
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}),
-                          vector({0.2, std::numeric_limits<double>::quiet_NaN(), 0.1}),
-                          vector({0.5, 1.0}), 42, 0.5),
-                      std::invalid_argument); // NaN vol
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.0, 1.0}), 42, 0.5),
-                      std::invalid_argument); // zero spacing
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.5, -1.0}), 42, 0.5),
-                      std::invalid_argument); // negative spacing
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.5, std::numeric_limits<double>::quiet_NaN()}), 42, 0.5),
-                      std::invalid_argument); // NaN spacing
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.5, 1.0}), 42, 0.0),
-                      std::invalid_argument); // zero dt
-    REQUIRE_THROWS_AS(heath_jarrow_morton_process(
-                          vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}),
-                          vector({0.5, 1.0}), 42, -1.0),
-                      std::invalid_argument); // negative dt
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, -0.3, 0.1}), vector({0.5, 1.0}), 42, 0.5),
+        std::invalid_argument); // negative vol
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(vector({0.04, 0.042, 0.041}),
+                                    vector({0.2, std::numeric_limits<double>::quiet_NaN(), 0.1}),
+                                    vector({0.5, 1.0}),
+                                    42,
+                                    0.5),
+        std::invalid_argument); // NaN vol
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.0, 1.0}), 42, 0.5),
+        std::invalid_argument); // zero spacing
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, -1.0}), 42, 0.5),
+        std::invalid_argument); // negative spacing
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(vector({0.04, 0.042, 0.041}),
+                                    vector({0.2, 0.3, 0.1}),
+                                    vector({0.5, std::numeric_limits<double>::quiet_NaN()}),
+                                    42,
+                                    0.5),
+        std::invalid_argument); // NaN spacing
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, 1.0}), 42, 0.0),
+        std::invalid_argument); // zero dt
+    REQUIRE_THROWS_AS(
+        heath_jarrow_morton_process(
+            vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, 1.0}), 42, -1.0),
+        std::invalid_argument); // negative dt
 
     // The rejections carry the process name, not a bare message.
     {
@@ -377,9 +378,11 @@ TEST_CASE("hjm rejects invalid parameters", "[heath_jarrow_morton_process]") {
     {
         bool caught = false;
         try {
-            heath_jarrow_morton_process p(
-                vector({0.04, 0.042, 0.041}), vector({0.2, 0.3, 0.1}), vector({0.5, -1.0}),
-                42, 0.5);
+            heath_jarrow_morton_process p(vector({0.04, 0.042, 0.041}),
+                                          vector({0.2, 0.3, 0.1}),
+                                          vector({0.5, -1.0}),
+                                          42,
+                                          0.5);
         } catch (const std::invalid_argument& e) {
             caught = true;
             REQUIRE(std::string(e.what()).find("heath_jarrow_morton_process:") !=

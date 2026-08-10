@@ -42,16 +42,20 @@ using ores::analytics::quant::service::build_black_derman_toy_tree;
 TEST_CASE("black_derman_toy_process: zero sigma reproduces the input curve exactly",
           "[black_derman_toy_process]") {
     // D(t_i) = exp(-0.04 * i): one level per tick.
-    const std::vector<double> curve = {0.9607894391523232, 0.9231163463866358, 0.8869204367151574,
-                                       0.8521437889662113, 0.8187307530779818, 0.7866278610665535,
-                                       0.7557837414687275, 0.7261490370736908};
+    const std::vector<double> curve = {0.9607894391523232,
+                                       0.9231163463866358,
+                                       0.8869204367151574,
+                                       0.8521437889662113,
+                                       0.8187307530779818,
+                                       0.7866278610665535,
+                                       0.7557837414687275,
+                                       0.7261490370736908};
     black_derman_toy_process p(curve, {0.0}, 42, 1.0);
     for (std::size_t n = 1; n <= curve.size(); ++n)
         REQUIRE(p.discount_factor(n) == Catch::Approx(curve[n - 1]).epsilon(1e-9));
 }
 
-TEST_CASE("black_derman_toy_process: zero sigma deterministic path",
-          "[black_derman_toy_process]") {
+TEST_CASE("black_derman_toy_process: zero sigma deterministic path", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.96, 0.92, 0.88, 0.84, 0.80};
     black_derman_toy_process p(curve, {0.0}, 42, 1.0);
     const auto tree = build_black_derman_toy_tree(curve, {0.0}, 1.0);
@@ -60,8 +64,8 @@ TEST_CASE("black_derman_toy_process: zero sigma deterministic path",
     // per-tick discount is D(t_{k+1}) / D(t_k), so
     // r_k = ln(D(t_k) / D(t_{k+1})) with D(t_0) = 1.
     for (std::size_t k = 0; k < curve.size(); ++k) {
-        const double expected_rate = (k == 0) ? -std::log(curve[0])
-                                              : std::log(curve[k - 1] / curve[k]);
+        const double expected_rate =
+            (k == 0) ? -std::log(curve[0]) : std::log(curve[k - 1] / curve[k]);
         const double expected_log_rate = std::log(expected_rate);
         for (std::size_t j = 0; j <= k; ++j)
             REQUIRE(tree.levels[k][j].log_rate == Catch::Approx(expected_log_rate).epsilon(1e-10));
@@ -75,8 +79,14 @@ TEST_CASE("black_derman_toy_process: positive sigma reproduces the input curve e
           "[black_derman_toy_process]") {
     // dt = 0.5 ticks: the curve values are D at 0.5-year spacings and
     // the reproduction must hold regardless of the tick size.
-    const std::vector<double> curve = {0.9801986733, 0.9607894392, 0.9417645336, 0.9231163464,
-                                       0.9048374180, 0.8869204367, 0.8693582354, 0.8521437890};
+    const std::vector<double> curve = {0.9801986733,
+                                       0.9607894392,
+                                       0.9417645336,
+                                       0.9231163464,
+                                       0.9048374180,
+                                       0.8869204367,
+                                       0.8693582354,
+                                       0.8521437890};
     const std::vector<double> sigma_path = {0.1, 0.2, 0.3, 0.15, 0.25, 0.2, 0.1, 0.3};
     black_derman_toy_process p(curve, sigma_path, 42, 0.5);
     for (std::size_t n = 1; n <= curve.size(); ++n)
@@ -212,9 +222,9 @@ TEST_CASE("black_derman_toy_process: extended tree honours the walked node",
         level.resize(k + 1);
         for (std::size_t j = 0; j <= k; ++j) {
             auto& n = level[j];
-            n.log_rate = (absolute_level < last_fitted)
-                ? tree.levels[absolute_level][node.index + j].log_rate
-                : a_last + (node.index + j) * b_last;
+            n.log_rate = (absolute_level < last_fitted) ?
+                             tree.levels[absolute_level][node.index + j].log_rate :
+                             a_last + (node.index + j) * b_last;
             if (k < ticks) {
                 n.child_indices = {j, j + 1};
                 n.child_probabilities = {0.5, 0.5};
@@ -259,8 +269,7 @@ TEST_CASE("black_derman_toy_process: seed determinism and distinct seeds differ"
     REQUIRE(differs);
 }
 
-TEST_CASE("black_derman_toy_process: params struct equivalence",
-          "[black_derman_toy_process]") {
+TEST_CASE("black_derman_toy_process: params struct equivalence", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91, 0.86, 0.80, 0.74};
     const std::vector<double> sigma_path = {0.2, 0.3, 0.1, 0.25, 0.15, 0.2};
     black_derman_toy_process a(curve, sigma_path, 42, 0.5);
@@ -271,8 +280,7 @@ TEST_CASE("black_derman_toy_process: params struct equivalence",
     }
 }
 
-TEST_CASE("black_derman_toy_process: zero-tick discount is one",
-          "[black_derman_toy_process]") {
+TEST_CASE("black_derman_toy_process: zero-tick discount is one", "[black_derman_toy_process]") {
     const std::vector<double> curve = {0.98, 0.95, 0.91};
     black_derman_toy_process p(curve, {0.2}, 42, 1.0);
     REQUIRE(p.discount_factor(0) == 1.0);
@@ -329,8 +337,7 @@ TEST_CASE("black_derman_toy_process: tree prices match Monte-Carlo path discount
     REQUIRE(mc_price == Catch::Approx(tree_price).epsilon(3e-3));
 }
 
-TEST_CASE("black_derman_toy_process: builder validation rejections",
-          "[black_derman_toy_process]") {
+TEST_CASE("black_derman_toy_process: builder validation rejections", "[black_derman_toy_process]") {
     const std::vector<double> good_curve = {0.98, 0.95, 0.91};
     const std::vector<double> good_sigma = {0.2};
     REQUIRE_NOTHROW(build_black_derman_toy_tree(good_curve, good_sigma, 1.0));
@@ -349,8 +356,7 @@ TEST_CASE("black_derman_toy_process: builder validation rejections",
                       std::invalid_argument);
     // Sigma path: empty, negative, NaN.
     REQUIRE_THROWS_AS(build_black_derman_toy_tree(good_curve, {}, 1.0), std::invalid_argument);
-    REQUIRE_THROWS_AS(build_black_derman_toy_tree(good_curve, {-0.1}, 1.0),
-                      std::invalid_argument);
+    REQUIRE_THROWS_AS(build_black_derman_toy_tree(good_curve, {-0.1}, 1.0), std::invalid_argument);
     REQUIRE_THROWS_AS(
         build_black_derman_toy_tree(good_curve, {std::numeric_limits<double>::quiet_NaN()}, 1.0),
         std::invalid_argument);
@@ -359,9 +365,9 @@ TEST_CASE("black_derman_toy_process: builder validation rejections",
                       std::invalid_argument);
     REQUIRE_THROWS_AS(build_black_derman_toy_tree(good_curve, good_sigma, -1.0),
                       std::invalid_argument);
-    REQUIRE_THROWS_AS(
-        build_black_derman_toy_tree(good_curve, good_sigma, std::numeric_limits<double>::quiet_NaN()),
-        std::invalid_argument);
+    REQUIRE_THROWS_AS(build_black_derman_toy_tree(
+                          good_curve, good_sigma, std::numeric_limits<double>::quiet_NaN()),
+                      std::invalid_argument);
 
     // The message names the entry point that rejected the input.
     try {
@@ -384,8 +390,7 @@ TEST_CASE("black_derman_toy_process: constructor validation rejections",
     REQUIRE_THROWS_AS(black_derman_toy_process({0.95, 0.98}, good_sigma, 42, 1.0),
                       std::invalid_argument);
     REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {}, 42, 1.0), std::invalid_argument);
-    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {-0.1}, 42, 1.0),
-                      std::invalid_argument);
+    REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, {-0.1}, 42, 1.0), std::invalid_argument);
     REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, 42, 0.0),
                       std::invalid_argument);
     REQUIRE_THROWS_AS(black_derman_toy_process(good_curve, good_sigma, 42, -1.0),

@@ -46,26 +46,23 @@ void validate_grid(const Eigen::VectorXd& initial_forward_rates,
         throw std::invalid_argument(std::string(prefix) +
                                     ": initial_forward_rates must not be empty");
     if (volatilities.size() != num_rates)
-        throw std::invalid_argument(std::string(prefix) +
-                                    ": volatilities must have one entry per "
-                                    "initial_forward_rates entry");
+        throw std::invalid_argument(std::string(prefix) + ": volatilities must have one entry per "
+                                                          "initial_forward_rates entry");
     if (tenor_spacings.size() != num_rates - 1)
         throw std::invalid_argument(std::string(prefix) +
                                     ": tenor_spacings must have one entry fewer than "
                                     "initial_forward_rates");
     for (std::size_t i = 0; i < volatilities.size(); ++i) {
         if (!(volatilities[i] >= 0.0))
-            throw std::invalid_argument(std::string(prefix) +
-                                        ": volatilities must be non-negative, got " +
-                                        std::to_string(volatilities[i]) + " at index " +
-                                        std::to_string(i));
+            throw std::invalid_argument(
+                std::string(prefix) + ": volatilities must be non-negative, got " +
+                std::to_string(volatilities[i]) + " at index " + std::to_string(i));
     }
     for (std::size_t i = 0; i < tenor_spacings.size(); ++i) {
         if (!(tenor_spacings[i] > 0.0))
-            throw std::invalid_argument(std::string(prefix) +
-                                        ": tenor_spacings must be strictly positive, got " +
-                                        std::to_string(tenor_spacings[i]) + " at index " +
-                                        std::to_string(i));
+            throw std::invalid_argument(
+                std::string(prefix) + ": tenor_spacings must be strictly positive, got " +
+                std::to_string(tenor_spacings[i]) + " at index " + std::to_string(i));
     }
     if (!(dt > 0.0))
         throw std::invalid_argument(std::string(prefix) + ": dt must be strictly positive");
@@ -84,8 +81,9 @@ Eigen::VectorXd hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities,
     for (std::size_t i = 0; i < num_rates; ++i) {
         if (!(volatilities[i] >= 0.0))
             throw std::invalid_argument("hjm_no_arbitrage_drift: volatilities must be "
-                                        "non-negative, got " + std::to_string(volatilities[i]) +
-                                        " at index " + std::to_string(i));
+                                        "non-negative, got " +
+                                        std::to_string(volatilities[i]) + " at index " +
+                                        std::to_string(i));
     }
     for (std::size_t i = 0; i < tenor_spacings.size(); ++i) {
         if (!(tenor_spacings[i] > 0.0))
@@ -111,25 +109,23 @@ Eigen::VectorXd hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities,
     return drift;
 }
 
-heath_jarrow_morton_process::heath_jarrow_morton_process(
-    Eigen::VectorXd initial_forward_rates,
-    Eigen::VectorXd volatilities,
-    Eigen::VectorXd tenor_spacings,
-    std::uint32_t seed,
-    double dt)
+heath_jarrow_morton_process::heath_jarrow_morton_process(Eigen::VectorXd initial_forward_rates,
+                                                         Eigen::VectorXd volatilities,
+                                                         Eigen::VectorXd tenor_spacings,
+                                                         std::uint32_t seed,
+                                                         double dt)
     : dt_(dt)
     , rng_(seed) {
 
     // The constructor rejects invalid input with its own prefix before
     // the drift core runs (its own checks can then never fire).
-    validate_grid(initial_forward_rates, volatilities, tenor_spacings, dt_,
-                  "heath_jarrow_morton_process");
+    validate_grid(
+        initial_forward_rates, volatilities, tenor_spacings, dt_, "heath_jarrow_morton_process");
     forward_rates_ = std::move(initial_forward_rates);
 
     // The drift and the volatility scale are time-homogeneous: both are
     // precomputed once, and next() is a single fused vector update.
-    const Eigen::VectorXd drift =
-        hjm_no_arbitrage_drift(volatilities, tenor_spacings);
+    const Eigen::VectorXd drift = hjm_no_arbitrage_drift(volatilities, tenor_spacings);
     drift_dt_ = drift * dt_;
     vol_sqrt_dt_ = volatilities * std::sqrt(dt_);
 
@@ -139,13 +135,11 @@ heath_jarrow_morton_process::heath_jarrow_morton_process(
         tenors_[i + 1] = tenors_[i] + tenor_spacings[i];
 }
 
-heath_jarrow_morton_process::heath_jarrow_morton_process(
-    const heath_jarrow_morton_params& params, std::uint32_t seed, double dt)
-    : heath_jarrow_morton_process(params.initial_forward_rates,
-                                  params.volatilities,
-                                  params.tenor_spacings,
-                                  seed,
-                                  dt) {}
+heath_jarrow_morton_process::heath_jarrow_morton_process(const heath_jarrow_morton_params& params,
+                                                         std::uint32_t seed,
+                                                         double dt)
+    : heath_jarrow_morton_process(
+          params.initial_forward_rates, params.volatilities, params.tenor_spacings, seed, dt) {}
 
 double heath_jarrow_morton_process::next() {
     // One shared shock moves every grid rate, exactly the single-factor
@@ -176,8 +170,8 @@ double heath_jarrow_morton_process::discount_factor(std::size_t ticks_ahead) con
         const double end = std::min(segment_end, horizon);
         const double length = end - tenors_[i];
         const double spacing = segment_end - tenors_[i];
-        const double f_end = forward_rates_[i] +
-            (forward_rates_[i + 1] - forward_rates_[i]) * (length / spacing);
+        const double f_end =
+            forward_rates_[i] + (forward_rates_[i + 1] - forward_rates_[i]) * (length / spacing);
         integral += 0.5 * (forward_rates_[i] + f_end) * length;
     }
     const double last_tenor = tenors_[num_rates - 1];

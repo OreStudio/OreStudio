@@ -193,8 +193,8 @@ void nats_poller::poll_streams() {
 
     const auto now = std::chrono::system_clock::now();
     std::vector<domain::nats_stream_sample> samples;
-    for (const auto& account : parsed->account_details.value_or(
-             std::vector<jsz_account_detail>{})) {
+    for (const auto& account :
+         parsed->account_details.value_or(std::vector<jsz_account_detail>{})) {
         for (const auto& stream : account.stream_detail) {
             domain::nats_stream_sample s;
             s.sampled_at = now;

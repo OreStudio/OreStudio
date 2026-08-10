@@ -95,9 +95,10 @@ TEST_CASE("ir_eur_estr_index_name_drops_tenor_suffix_for_overnight_index", tags)
 }
 
 TEST_CASE("ir_chf_saron_index_name_drops_tenor_suffix_for_new_rfr_family", tags) {
-    // A family added by the SQL CHECK beyond the original 6 (synthetic_ir_curve_generation_configs_create.sql):
-    // is_overnight() must classify it as overnight so the index name drops the tenor suffix,
-    // exactly as the original four overnight families do.
+    // A family added by the SQL CHECK beyond the original 6
+    // (synthetic_ir_curve_generation_configs_create.sql): is_overnight() must classify it as
+    // overnight so the index name drops the tenor suffix, exactly as the original four overnight
+    // families do.
     const auto id = parse("oresmd://ir/chf?index=saron&tenor=1d&role=discount&type=fixing");
     REQUIRE(oresmd_projections::to_index_name(id) == "CHF-SARON");
     REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/CHF/CHF1D");

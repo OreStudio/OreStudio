@@ -139,7 +139,8 @@ TEST_CASE("vasicek_process struct constructor matches flat constructor",
     const double dt = 0.5;
 
     vasicek_process from_struct(params, seed, dt);
-    vasicek_process from_flat(params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt);
+    vasicek_process from_flat(
+        params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt);
 
     for (int i = 0; i < 20; ++i) {
         CHECK(from_struct.next() == from_flat.next());

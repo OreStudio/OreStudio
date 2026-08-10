@@ -87,8 +87,13 @@ struct jsz_account_detail {
     std::vector<jsz_stream_detail> stream_detail;
 };
 
+// nats-server tags account_details `omitempty` in its Go struct, so the
+// field is absent from the JSON entirely when there are no JetStream
+// accounts/streams to report (e.g. right after NATS starts).  It must be
+// optional (as the old `streams` field was) or parsing fails every poll
+// cycle in that state.
 struct jsz_response {
-    std::vector<jsz_account_detail> account_details;
+    std::optional<std::vector<jsz_account_detail>> account_details;
 };
 
 } // namespace
@@ -188,7 +193,8 @@ void nats_poller::poll_streams() {
 
     const auto now = std::chrono::system_clock::now();
     std::vector<domain::nats_stream_sample> samples;
-    for (const auto& account : parsed->account_details) {
+    for (const auto& account : parsed->account_details.value_or(
+             std::vector<jsz_account_detail>{})) {
         for (const auto& stream : account.stream_detail) {
             domain::nats_stream_sample s;
             s.sampled_at = now;

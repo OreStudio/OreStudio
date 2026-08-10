@@ -38,7 +38,7 @@ Unique trade type code.
 Examples: 'Swap', 'FxForward', 'CapFloor', 'Swaption'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_trade_" + std::to_string(++counter)
+std::string(faker::word::noun()) + "_trade"
 #+end_src
 
 ** description
@@ -144,6 +144,7 @@ false
 |-------------+---------------|
 | code        | Code          |
 | description | Description   |
+| product_type | Product      |
 | has_options | Has Options   |
 | has_extension | Has Extension |
 | modified_by | Modified By   |

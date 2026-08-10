@@ -38,7 +38,7 @@ Unique party role type code.
 Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_role_" + std::to_string(++counter)
+std::string(faker::word::noun()) + "_role"
 #+end_src
 
 ** description

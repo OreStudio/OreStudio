@@ -40,8 +40,7 @@ domain::trade_type generate_synthetic_trade_type(utility::generation::generation
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string(faker::word::noun()) + "_trade_" + std::to_string(++counter) + "-" +
-             std::to_string(idx);
+    r.code = std::string(faker::word::noun()) + "_trade" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.product_type = ores::trading::domain::product_type::swap;
     r.has_options = false;

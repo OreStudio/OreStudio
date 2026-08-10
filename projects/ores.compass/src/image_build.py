@@ -75,22 +75,28 @@ def build_base(project_root: Path, tag: str | None = None) -> str:
 
 
 def build_overlays(project_root: Path, tag: str | None = None,
-                   services: list | None = None) -> str:
+                   services: list | None = None,
+                   base_tag: str | None = None) -> str:
     """Build per-service overlay images (one per enabled service).
 
     Requires the base image to already exist.
-    Returns the tag used.
+    *base_tag* is the tag of the base image to build FROM; it defaults to
+    *tag* (overlays are normally built on the base built in the same run).
+    Returns the tag used for the overlays themselves.
     """
     if tag is None:
         tag = _version_tag(project_root)
+    if base_tag is None:
+        base_tag = tag
     if services is None:
         services = _runtime_services(project_root)
-    print(f"=== Building {len(services)} per-service overlays ===")
+    print(f"=== Building {len(services)} per-service overlays "
+          f"(FROM {IMAGE_BASE}:{base_tag}) ===")
     for svc in services:
         image = f"localhost/{svc}"
         _run(["podman", "build", "--format", "docker",
               "--build-arg", f"SERVICE_NAME={svc}",
-              "--build-arg", f"BASE_TAG={tag}",
+              "--build-arg", f"BASE_TAG={base_tag}",
               "-t", f"{image}:local",
               "-t", f"{image}:{tag}",
               "-f", "docker/service-runtime.Dockerfile", "."],
@@ -255,7 +261,7 @@ def run(argv: list[str], project_root: Path) -> int:
 
     # --overlays-only requires the base to exist.
     if args.overlays_only:
-        build_overlays(project_root, tag)
+        build_overlays(project_root, tag, base_tag=args.base_tag)
         return 0
 
     # --base-only: stage + strip + build just the base.

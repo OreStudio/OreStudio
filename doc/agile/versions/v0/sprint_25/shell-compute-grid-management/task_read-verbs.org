@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/read-verbs
 #+pr:
-#+blocked_on: A97F58CC-6C2D-4138-AE4C-60D8C53B88A7
-#+blocked_since: 2026-08-10
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-08-10
 #+updated: 2026-08-10
 #+environment: brave_hopper
@@ -30,11 +30,11 @@ can be inspected from the shell with no UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | All five verbs verified live against brave_hopper; five shell recipes added, tangled and wired into the inventory. ~list-platforms~ still renders its table by hand (see Notes). |
-| Waiting on   | [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] |
-| Next         | Resume once the drift task models ~compute_platform~: swap the hand-rolled render for the generated table_io (~out << resp->platforms~), re-verify live, commit, open the PR. |
+| Now          | All five verbs verified live against brave_hopper; five shell recipes added, tangled and wired into the inventory. ~list-platforms~ streams raw rows pending the generated renderer (see Notes). |
+| Waiting on   | Nothing.                               |
+| Next         | Open the PR; the story's reconciliation task swaps the raw rows for the generated table_io. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -48,7 +48,8 @@ can be inspected from the shell with no UI.
   name, hardware, last RPC time, credit).
 - ~compute list-batches~ lists batches (id, external ref, status).
 - Every verb works against a live serving environment; empty domains
-  render a header-only table, not an error.
+  render a header-only table, not an error (~list-platforms~ prints no
+  rows until a platform exists).
 
 * Plan
 
@@ -80,17 +81,18 @@ small aligned table with ~<iomanip>~ directly in the shell.
 - Recipes live in =doc/recipes/shell/compute/= (one per verb), tangled
   into =projects/ores.shell/scripts/library/compute/=, indexed under the
   new =Compute= section of =doc/recipes/shell/shell.org=.
-- BLOCKED (2026-08-10): ~compute_platform~ is the one hand-written
-  island in an otherwise codegen-owned component — every other compute
-  entity is generated from a model org (~ores.compute.modeling~:
-  domain type, ~*_table_io~, protocol, repository, SQL), but platform
-  predates the model migration and has no org and no table renderer.
-  That drift is the subject of the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift
-  baseline: ores.compute]] story; its task
-  ([[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]])
-  will model the platform entity and generate its table_io. On
-  resume, ~list-platforms~ streams ~out << resp->platforms~ like the
-  other four verbs, and the ~<iomanip>~ render leaves the shell.
+- Provisional output (2026-08-10): ~compute_platform~ is the one
+  hand-written island in an otherwise codegen-owned component — every
+  other compute entity is generated from a model org
+  (~ores.compute.modeling~: domain type, ~*_table_io~, protocol,
+  repository, SQL), but platform predates the model migration and has
+  no org and no table renderer. Rather than block the verbs on that
+  drift, ~list-platforms~ prints raw rows (one platform per line,
+  space-separated fields, no table formatting) until the
+  [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] story
+  generates the renderer. The story's reconciliation task then swaps
+  the loop for ~out << resp->platforms~, matching the other four
+  verbs.
 
 * Test Scenarios
 

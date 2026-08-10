@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-compute:
 #+owner: marco
-#+branch:
+#+branch: feature/bind-compute-entities-to-profiles
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Survey every ores.compute entity against the profile catalogue, rebind matches, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

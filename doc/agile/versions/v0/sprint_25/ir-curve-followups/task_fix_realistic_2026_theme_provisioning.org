@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 718B2D01-3383-4DEA-80F5-5F30F300DB74
+:END:
+#+title: Task: Fix realistic_2026 theme provisioning: cross-tenant parameter_definition_id validation
+#+description: The realistic_2026 synthetic theme fails to publish in every Acme entity: the generated insert trigger on ores_synthetic_config_process_parameter_values_tbl validates parameter_definition_id under NEW.tenant_id, but the definitions are system-tenant reference data, so the cross-tenant reference from ores_synthetic_publish_theme_from_dq_fn is rejected (Invalid parameter_definition_id). Fix: :use_system_tenant: true on the FK; regenerate, rebuild, recreate DB, re-provision.
+#+type: task
+#+level: s1
+#+filetags: :ir-curve-followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-realistic-2026-theme-provisioning
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore end-to-end Acme provisioning: synthetic.themes.realistic_2026 publishes successfully in all four Acme entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- provision tenant --source acme completes with synthetic.themes.realistic_2026: completed (not failed) in acme_group/acme_uk/acme_us/acme_hk
+- the generated insert trigger on ores_synthetic_config_process_parameter_values_tbl validates parameter_definition_id under ores_utility_system_tenant_id_fn()
+- config_id validation still resolves under NEW.tenant_id (genuine tenant row)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

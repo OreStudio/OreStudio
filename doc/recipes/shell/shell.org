@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:index:knowledge:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-08-10
 
 Recipes related to *Shell recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
 
@@ -38,6 +38,18 @@ the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
 - [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]
 - [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
 - [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] (currently broken — see recipe)
+
+* Compute
+
+Read-only compute grid verbs, speaking to =ores.compute= over NATS.
+Each is tangled into the runnable script library
+(=projects/ores.shell/scripts/library/compute/=).
+
+- [[id:D3E963FF-767E-4626-8145-9AEE846F9AA3][How do I list compute apps from the shell?]]
+- [[id:7E0FA5FE-EA78-441B-955F-398BD3242F92][How do I list compute app versions from the shell?]]
+- [[id:9CF4FA67-3F04-4F02-B135-4B5966C4CE35][How do I list compute platforms from the shell?]]
+- [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]
+- [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]
 
 * Accounts
 

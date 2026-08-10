@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 9CF4FA67-3F04-4F02-B135-4B5966C4CE35
+:END:
+#+title: How do I list compute platforms from the shell?
+#+description: List the compute platform triplets (id, code, display name, OS, CPU arch) from the shell as a table.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:platforms:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+The compute grid verbs live in the shell's =compute= menu. They talk to
+the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I list compute platforms from the shell?
+
+* Answer
+
+Log in as the system super admin (principals are
+=username@hostname=), then =compute list-platforms=: the shell prints
+the platform triplets as a table — id, code, display name, OS, CPU
+arch. The table is empty until a platform exists (e.g. after =compute
+publish-package=).
+
+#+name: list-compute-platforms
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute list-platforms
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<list-compute-platforms>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_list_compute_platforms_from_the_shell.ores= — generated
+from this recipe by =compass build --direct tangle_shell_scripts= (do not
+edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_list_compute_platforms_from_the_shell.ores= against a live
+serving environment.
+
+* See also
+
+- [[id:D3E963FF-767E-4626-8145-9AEE846F9AA3][How do I list compute apps from the shell?]]
+- [[id:7E0FA5FE-EA78-441B-955F-398BD3242F92][How do I list compute app versions from the shell?]]
+- [[id:47A0DFBB-CD7F-44EC-A401-063F34013828][How do I list compute hosts from the shell?]]
+- [[id:15129FD7-9345-47E6-82D4-9895770465A0][How do I list compute batches from the shell?]]

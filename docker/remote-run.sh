@@ -150,7 +150,10 @@ chmod -R u+rwX,go-rwx "$volume_mountpoint"
 mkdir -p "$nats_store_dir"
 
 echo "=== Stopping old containers ==="
-for c in $(podman ps -aq --filter "name=ores-" 2>/dev/null); do
+# Scoped to this label (ores-nats-<label>, ores-<svc-dashed>-<label>) so a
+# shared host's other environments' containers are left alone -- same
+# filter as remote-stop.sh.
+for c in $(podman ps -aq --filter "name=ores-.*-${label}" 2>/dev/null); do
     podman rm -f "$c" >/dev/null 2>&1 || true
 done
 

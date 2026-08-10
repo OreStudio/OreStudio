@@ -102,6 +102,7 @@
 \ir ../refdata/refdata_tenor_units_populate.sql
 \ir ../refdata/refdata_tenor_anchors_populate.sql
 \ir ../refdata/refdata_tenor_resolution_algorithms_populate.sql
+\ir ../refdata/refdata_tenor_schedules_populate.sql
 \ir ../refdata/refdata_payment_frequencies_populate.sql
 \ir ../synthetic/synthetic_yield_curve_process_types_populate.sql
 \ir ../synthetic/synthetic_yield_curve_process_parameter_definitions_populate.sql

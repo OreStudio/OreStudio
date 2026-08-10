@@ -21,11 +21,12 @@
 /**
  * Tenor Conventions Population Script
  *
- * Seeds the three resolution schemes described in doc/knowledge/domain/
- * tenor.org's "Tenor conventions by curve type" section. CREDIT_CDS_IMM's
- * IMM_ROLL algorithm is not implemented yet (see the runtime resolver's
- * documented gap and the corresponding capture); the row is seeded here so
- * the model already accommodates it, with no schema change needed later.
+ * Seeds the resolution schemes described in doc/knowledge/domain/tenor.org's
+ * "Tenor conventions by curve type" section, plus the FOMC convention from
+ * story Decision D2. CREDIT_CDS_IMM migrated from the old IMM_ROLL algorithm
+ * to SCHEDULE_STEP over the ROLL_QUARTER schedule ('1Y 1RQ': the tenor's own
+ * period offset, then one roll-quarter step); its measured_from stays NONE,
+ * with the resolution rows anchoring at SPOT.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE.
  */
@@ -47,7 +48,11 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
     (ores_utility_system_tenant_id_fn(), 'CREDIT_CDS_IMM', 0,
      'Credit/CDS curves: tenors resolve to the first business day following the appropriate IMM roll date, not a fixed offset from an anchor.',
-     'NONE', 'IMM_ROLL',
+     'NONE', 'SCHEDULE_STEP',
+     current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions'),
+    (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FOMC', 0,
+     'FOMC-dated OIS curves: 1F..nF tenors resolve to the n-th FOMC meeting on-or-after spot, walking the FOMC_MEETING schedule (story: FOMC-dated OIS short end).',
+     'SPOT', 'SCHEDULE_STEP',
      current_user, current_user, 'system.initial_load', 'Initial population of tenor conventions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

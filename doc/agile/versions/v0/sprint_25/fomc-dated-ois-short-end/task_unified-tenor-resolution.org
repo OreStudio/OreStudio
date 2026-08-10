@@ -26,12 +26,12 @@ Implement the unified tenor resolution model from the FOMC analysis (story * Dec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Not yet started.                       |
+| Now          | tenor_schedules modelled and codegen'd; SCHEDULE_STEP walk implemented in tenor_resolution.cpp; RATES_SPOT_FOMC + 1F..8F and CREDIT_CDS_IMM migration seeded; all three suites green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-09                               |
+| Next         | D4 (calendar seeding): the 2025-2027 meeting dates land on the calendar_event store. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
@@ -49,6 +49,28 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- Junction codegen clobbering (2026-08-10): re-running =codegen entity
+  generate= on a junction model overwrites the hand-authored messaging
+  layer (protocol request structs, handler =list=, read-only service)
+  with template stubs and drops the tenant profile when =:profile:= is a
+  top-level keyword instead of a =* Flags= drawer property. Recovery
+  procedure used here: move the profile into the =* Flags= drawer,
+  regenerate, restore the four hand-authored files from HEAD, delete
+  the generated junction sub-registrar (unreferenced; the aggregate
+  registrar wires the junction inline per its own comment), and
+  re-run =regenerate_cmake_component_files.py= so the directory scan
+  drops the dead entries.
+
+- The exhaustion test (9F > 8 meetings) initially passed vacuously:
+  =std::invalid_argument= derives from =std::logic_error=, so
+  =CHECK_THROWS_AS= matched the wrong throw. The fixture fix
+  (SPECIAL offset columns on the FOMC rows) makes the walk genuinely
+  exercise the exhaustion path.
+
+- CREDIT_CDS_IMM '1Y 1RQ' semantics: this catalog's one-year label is
+  =12M= (MONTH x 12), not =1Y=; the migration rows use 12M, 2Y, 3Y,
+  5Y, 7Y, 10Y with =schedule_step_count = 1=.
 
 * Test Scenarios
 
@@ -74,3 +96,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. The unified resolution model is implemented end to end and all
+three suites are green:
+
+- =tenor_schedules= entity (code, name, description, display_order,
+  schedule_source, calendar_code, diary_entry_type) modelled via
+  =compass add entity_org=, codegen'd across api/core/service/qt/sql;
+  seeded =ROLL_QUARTER= (CLOSED_FORM) and =FOMC_MEETING= (EVENT_LOOKUP
+  on US.FOMC / central_bank_meeting).
+- =tenor_resolution_algorithms= gains =SCHEDULE_STEP=; the old
+  =IMM_ROLL= row is removed and the =ROLL_QUARTER= logic_error path in
+  =add_offset= is gone.
+- =tenor_resolution.cpp= implements the walk: anchor + calendar offset
+  + n steps. =ROLL_QUARTER= steps are closed-form IMM dates (first
+  business day on-or-after the 20th of Mar/Jun/Sep/Dec, code-side);
+  =FOMC_MEETING= steps walk caller-supplied event dates. Missing
+  schedule fields or exhaustion report as =std::logic_error=;
+  unrecognised algorithms as =std::invalid_argument=.
+- =resolve_end_date= gains a defaulted optional schedule-dates
+  parameter; all existing callers compile unchanged.
+- =tenor_convention_resolutions= gains nullable =schedule_code= /
+  =schedule_step_count=; =RATES_SPOT_FOMC= (SPOT, SCHEDULE_STEP,
+  FOMC_MEETING) seeds 1F..8F (SPECIAL, NONE x n, DAY x 0 offset, n
+  steps); =CREDIT_CDS_IMM= migrates to (SCHEDULE_STEP, ROLL_QUARTER)
+  with anchor_override SPOT and one roll-quarter step ('1Y 1RQ').
+- Test updates: the two red SCHEDULE_STEP dispatch tests and the
+  exhaustion test are green; a ROLL_QUARTER closed-form walk test and
+  the migrated-CDS pinned-date test are added (74/74 refdata, 369
+  assertions); marketdata 24/24 (164) and quant 372/372 (2.1M)
+  unaffected and green.
+- =tenor_convention_resolution.org= profile moved into the =* Flags=
+  drawer, restoring the tenant_id column to entity, SQL and
+  repository.

@@ -105,6 +105,7 @@ set(files
     "tenor_eventing_integration_tests.cpp"
     "tenor_kind_eventing_integration_tests.cpp"
     "tenor_resolution_algorithm_eventing_integration_tests.cpp"
+    "tenor_schedule_eventing_integration_tests.cpp"
     "tenor_unit_eventing_integration_tests.cpp"
     "zero_convention_eventing_integration_tests.cpp"
 )

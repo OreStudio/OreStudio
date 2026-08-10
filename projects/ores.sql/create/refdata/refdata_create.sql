@@ -220,6 +220,8 @@
 \ir ./refdata_tenor_anchors_notify_trigger_create.sql
 \ir ./refdata_tenor_resolution_algorithms_create.sql
 \ir ./refdata_tenor_resolution_algorithms_notify_trigger_create.sql
+\ir ./refdata_tenor_schedules_create.sql
+\ir ./refdata_tenor_schedules_notify_trigger_create.sql
 
 -- Payment frequency: ORE's canonical frequencyType codes (Annual,
 -- Semiannual, Quarterly...), reusing tenor_unit's period vocabulary.

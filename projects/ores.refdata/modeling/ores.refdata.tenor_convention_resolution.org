@@ -12,10 +12,17 @@
 #+brief: Joins a tenor convention to the tenors valid under it, with an optional per-tenor anchor override.
 #+product: ores
 #+schema: public
-#+profile: tenant-scoped-junction
 #+filetags: :model:junction:refdata:tenor:
 #+created: 2026-07-13
-#+updated: 2026-07-13
+#+updated: 2026-08-10
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   tenant-scoped-junction
+:END:
 
 A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
 same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
@@ -35,13 +42,17 @@ A =PERIOD= tenor's resolution never needs an offset override — its
 duration is fixed by its own =unit=/=multiplier= regardless of
 convention, so only the anchor itself (the convention's =measured_from=,
 or this row's =anchor_override=) can vary for those rows. For a
-convention whose =resolution_algorithm= is =IMM_ROLL= rather than
-=ANCHOR_OFFSET=, =offset_unit= is =ROLL_QUARTER= and =offset_multiplier=
-is the roll-quarter count (e.g. =1Y 1RQ=, per
-[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
-convention) — the same two columns, reused rather than requiring a
-separate schema for the different algorithm. The runtime resolver for
-=IMM_ROLL= rows is not implemented yet; see the capture referenced below.
+convention whose =resolution_algorithm= is =SCHEDULE_STEP= rather than
+=ANCHOR_OFFSET=, the row's =schedule_code= names the
+[[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis the
+tenor walks (=ROLL_QUARTER= for the IMM rule, =FOMC_MEETING= for the
+event-lookup schedule) and =schedule_step_count= is the number of steps
+to the resolution date (e.g. =1Y 1RQ= for the migrated =CREDIT_CDS_IMM=
+rows: one calendar year of offset from spot, then one roll-quarter) —
+a tenor resolves as anchor + calendar offset + n steps along the named
+schedule. The =offset_unit=/=offset_multiplier= columns stay the
+calendar-axis offset: their =ROLL_QUARTER= value is gone — the roll
+count lives in =schedule_step_count= now.
 
 * Left
 :PROPERTIES:
@@ -117,8 +128,40 @@ std::nullopt
 :END:
 
 The count paired with =offset_unit= (e.g. =1= day for =O/N= under
-spot/forward, =0= days for =O/N= under FX swap, =1= roll-quarter for a
-CDS =1Y 1RQ= tenor). Same nullability rule as =offset_unit=.
+spot/forward, =0= days for =O/N= under FX swap, =1= year for a CDS =1Y
+1RQ= tenor). Same nullability rule as =offset_unit=.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** schedule_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The schedule axis the tenor walks, for
+=resolution_algorithm = 'SCHEDULE_STEP'= rows.
+
+References [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule.code]].
+Null for =ANCHOR_OFFSET= rows (no schedule involved).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** schedule_step_count
+:PROPERTIES:
+:type:          integer
+:cpp_type:      std::optional<int>
+:nullable: true
+:END:
+
+Number of steps along =schedule_code='s= axis to the resolution date
+(e.g. =1= for a CDS =1Y 1RQ= tenor, =8= for the eighth FOMC meeting).
+Same nullability rule as =schedule_code=.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -170,13 +213,15 @@ std::nullopt
 
 ** Table display
 
-| column            | header            |
-|-------------------+-------------------|
-| convention_code   | Convention        |
-| tenor_code        | Tenor             |
-| anchor_override   | Anchor Override   |
-| offset_unit       | Offset Unit       |
-| offset_multiplier | Offset Multiplier |
+| column              | header              |
+|---------------------+---------------------|
+| convention_code     | Convention          |
+| tenor_code          | Tenor               |
+| anchor_override     | Anchor Override     |
+| offset_unit         | Offset Unit         |
+| offset_multiplier   | Offset Multiplier   |
+| schedule_code       | Schedule            |
+| schedule_step_count | Schedule Step Count |
 
 * See also
 

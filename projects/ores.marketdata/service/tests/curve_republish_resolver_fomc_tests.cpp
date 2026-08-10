@@ -38,8 +38,9 @@
 //     pillar order.
 //
 // The resolution rows here use ANCHOR_OFFSET day offsets that land on the
-// meeting dates. Task D2 re-expresses them as FOMC_MEETING schedule steps;
-// the expected dates are the same meeting dates either way. The SCHEDULE_STEP
+// meeting dates. ANCHOR_OFFSET remains a valid configuration -- this context
+// could equally express the pillars as FOMC_MEETING schedule steps, and the
+// expected dates are the same meeting dates either way. The SCHEDULE_STEP
 // walk itself is the contract of domain_tenor_resolution_fomc_tests.cpp
 // (ores.refdata.api).
 #include "../src/curve_republish_resolver.hpp"
@@ -127,8 +128,8 @@ curve_republish_refdata_context make_fomc_context() {
     for (int n = 1; n <= meeting_count; ++n) {
         const auto code = std::to_string(n) + "F";
         ctx.tenors_by_code.emplace(code, make_tenor(code, "SPECIAL", "NONE", n));
-        // ANCHOR_OFFSET day offsets landing on the meeting dates (D2 will
-        // re-express these as FOMC_MEETING schedule steps).
+        // ANCHOR_OFFSET day offsets landing on the meeting dates; the same
+        // pillar dates could equally be expressed as FOMC_MEETING steps.
         ctx.resolutions_by_tenor.emplace(
             code, make_resolution(code, (sys_days(meetings[n - 1]) - sys_days(ctx.horizon)).count()));
     }

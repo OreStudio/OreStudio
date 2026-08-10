@@ -84,6 +84,7 @@ set(files
     "messaging/tenor_event_registrar.cpp"
     "messaging/tenor_kind_event_registrar.cpp"
     "messaging/tenor_resolution_algorithm_event_registrar.cpp"
+    "messaging/tenor_schedule_event_registrar.cpp"
     "messaging/tenor_unit_event_registrar.cpp"
     "messaging/zero_convention_event_registrar.cpp"
 )
@@ -159,6 +160,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/tenor_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/tenor_kind_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/tenor_schedule_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/tenor_unit_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/zero_convention_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/ores.refdata.service.hpp"

@@ -19,10 +19,11 @@
  */
 // Test obligations propagated from doc/llm/specs/fomc-dated-ois-short-end.allium.
 //
-// Spec-first: the SCHEDULE_STEP branch of the resolver does not exist yet
-// (story Decision D2, task unified-tenor-resolution, BACKLOG). These tests
-// are the contract that branch must turn green; they fail today with
-// "Unrecognised resolution_algorithm: SCHEDULE_STEP".
+// The SCHEDULE_STEP branch of the resolver, added by story Decision D2 (task
+// unified-tenor-resolution): a tenor resolves as anchor + calendar offset +
+// n steps along the FOMC_MEETING schedule axis, walking the meeting events
+// supplied by the caller as data (the same dates task D4 seeds into
+// calendar_event from federalreserve.gov).
 //
 // Obligations covered here:
 //   - contract-signature.ScheduleWalk.nth       (the walk, made executable)
@@ -101,8 +102,13 @@ tenor_convention_resolution make_fomc_resolution(int n) {
     tenor_convention_resolution r;
     r.convention_code = "RATES_SPOT_FOMC";
     r.tenor_code = std::to_string(n) + "F";
-    // D2 adds schedule_code = "FOMC_MEETING" and schedule_step_count = n to
-    // this row; the walk reads the meeting events off US.FOMC.
+    // SPECIAL tenors carry the zero calendar-axis offset in the row; the
+    // walk reads the meeting events off US.FOMC (seeded by task D4) and
+    // takes n steps along them.
+    r.offset_unit = "DAY";
+    r.offset_multiplier = 0;
+    r.schedule_code = "FOMC_MEETING";
+    r.schedule_step_count = n;
     return r;
 }
 
@@ -119,7 +125,8 @@ TEST_CASE("SCHEDULE_STEP resolves 1F to the first FOMC meeting on-or-after spot"
                                       make_fomc_convention(),
                                       make_fomc_resolution(1),
                                       horizon,
-                                      spot);
+                                      spot,
+                                      meetings);
 
     CHECK(end == nth_on_or_after(meetings, spot, 1));
 }
@@ -137,7 +144,8 @@ TEST_CASE("SCHEDULE_STEP resolves 8F to the eighth FOMC meeting on-or-after spot
                                       make_fomc_convention(),
                                       make_fomc_resolution(8),
                                       horizon,
-                                      spot);
+                                      spot,
+                                      meetings);
 
     CHECK(end == nth_on_or_after(meetings, spot, 8));
 }
@@ -147,6 +155,7 @@ TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", tag
 
     const auto horizon = year(2026) / month(1) / day(1);
     const auto spot = year(2026) / month(1) / day(2);
+    const auto meetings = fomc_2026_meeting_dates();
 
     // Nine steps but only eight meetings in the window: the resolution must
     // fail rather than walk past the end of the schedule. Exhaustion is a
@@ -156,6 +165,7 @@ TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", tag
                                      make_fomc_convention(),
                                      make_fomc_resolution(9),
                                      horizon,
-                                     spot),
+                                     spot,
+                                     meetings),
                     std::logic_error);
 }

@@ -62,13 +62,17 @@ make_resolution(std::string convention_code,
                 std::string tenor_code,
                 std::optional<std::string> anchor_override = std::nullopt,
                 std::optional<std::string> offset_unit = std::nullopt,
-                std::optional<int> offset_multiplier = std::nullopt) {
+                std::optional<int> offset_multiplier = std::nullopt,
+                std::optional<std::string> schedule_code = std::nullopt,
+                std::optional<int> schedule_step_count = std::nullopt) {
     tenor_convention_resolution r;
     r.convention_code = std::move(convention_code);
     r.tenor_code = std::move(tenor_code);
     r.anchor_override = std::move(anchor_override);
     r.offset_unit = std::move(offset_unit);
     r.offset_multiplier = offset_multiplier;
+    r.schedule_code = std::move(schedule_code);
+    r.schedule_step_count = schedule_step_count;
     return r;
 }
 
@@ -168,16 +172,42 @@ TEST_CASE("resolve_end_date_rejects_special_tenor_missing_offset", tags) {
                     std::invalid_argument);
 }
 
-TEST_CASE("resolve_end_date_throws_not_implemented_for_imm_roll", tags) {
-    const auto oneYear = make_period_tenor("1Y", "YEAR", 1);
-    const auto cds = make_convention("CREDIT_CDS_IMM", "", "IMM_ROLL");
-    const auto resolution =
-        make_resolution("CREDIT_CDS_IMM", "1Y", std::nullopt, "ROLL_QUARTER", 4);
+TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter", tags) {
+    using namespace std::chrono;
 
-    CHECK_THROWS_AS(
-        resolve_end_date(
-            oneYear, cds, resolution, std::chrono::year_month_day{}, std::chrono::year_month_day{}),
-        std::logic_error);
+    const auto oneYear = make_period_tenor("1Y", "YEAR", 1);
+    // CREDIT_CDS_IMM migrated to (SCHEDULE_STEP, ROLL_QUARTER): measured_from
+    // stays NONE; the resolution row anchors at SPOT, the tenor's own period
+    // supplies the one-year offset, then one roll-quarter step.
+    const auto cds = make_convention("CREDIT_CDS_IMM", "NONE", "SCHEDULE_STEP");
+    const auto resolution =
+        make_resolution("CREDIT_CDS_IMM", "1Y", "SPOT", std::nullopt, std::nullopt,
+                        "ROLL_QUARTER", 1);
+
+    const year_month_day horizon{year(2026), month(1), day(1)};
+    const year_month_day spot{year(2026), month(1), day(2)};
+
+    // 2 Jan 2026 + 1Y = 2 Jan 2027; the first roll-quarter on-or-after is
+    // 22 Mar 2027 (20 Mar 2027 falls on a Saturday).
+    const auto end = resolve_end_date(oneYear, cds, resolution, horizon, spot);
+    CHECK(end == year_month_day{year(2027), month(3), day(22)});
+}
+
+TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", tags) {
+    using namespace std::chrono;
+
+    const auto rollTenor = make_special_tenor("RQ");
+    const auto convention = make_convention("RATES_SPOT_ROLL", "SPOT", "SCHEDULE_STEP");
+    const auto resolution =
+        make_resolution("RATES_SPOT_ROLL", "RQ", std::nullopt, "DAY", 0, "ROLL_QUARTER", 1);
+
+    const year_month_day horizon{year(2026), month(1), day(1)};
+    const year_month_day spot{year(2026), month(1), day(2)};
+
+    // 2 Jan 2026 precedes the March quarter: the first roll-quarter
+    // on-or-after is 20 Mar 2026 (a Friday, so the 20th itself counts).
+    const auto end = resolve_end_date(rollTenor, convention, resolution, horizon, spot);
+    CHECK(end == year_month_day{year(2026), month(3), day(20)});
 }
 
 TEST_CASE("windows_overlap_detects_overlapping_windows", tags) {

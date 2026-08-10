@@ -41,6 +41,8 @@
 \ir ./refdata_tenors_drop.sql
 \ir ./refdata_tenor_resolution_algorithms_notify_trigger_drop.sql
 \ir ./refdata_tenor_resolution_algorithms_drop.sql
+\ir ./refdata_tenor_schedules_notify_trigger_drop.sql
+\ir ./refdata_tenor_schedules_drop.sql
 \ir ./refdata_tenor_anchors_notify_trigger_drop.sql
 \ir ./refdata_tenor_anchors_drop.sql
 \ir ./refdata_tenor_units_notify_trigger_drop.sql

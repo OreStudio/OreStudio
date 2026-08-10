@@ -5,6 +5,7 @@
 #+description: Quote types for equity: spot, dividend rate, forward price.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: equity
+#+validate: delegate_function
 #+authority: equity
 #+component: ores.marketdata
 #+level: s2

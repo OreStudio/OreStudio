@@ -5,6 +5,7 @@
 #+description: oresmd quote type specification for the FX asset class: spot (FX/RATE) and forward points (FXFWD/RATE).
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: fx
+#+validate: function
 #+authority: fx
 #+component: ores.marketdata
 #+level: s2

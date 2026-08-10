@@ -5,6 +5,7 @@
 #+description: Quote types for commodity: spot, forward, CPR.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: commodity
+#+validate: inline_delegate
 #+authority: commodity
 #+component: ores.marketdata
 #+level: s2

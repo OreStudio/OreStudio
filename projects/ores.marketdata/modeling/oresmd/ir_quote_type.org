@@ -5,6 +5,7 @@
 #+description: oresmd quote type specification for the IR asset class: 12 quote types across yield, fra, basis, xccy, and vol families.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: ir
+#+validate: function
 #+authority: ir
 #+component: ores.marketdata
 #+level: s2
@@ -96,6 +97,32 @@ A logical, possibly-partial oresmd requirement for an interest-rate instrument.
 | key |
 |-----|
 | ccy |
+
+* Type-gated keys
+
+Query keys that are only meaningful when =type=quote=; the parser rejects them
+otherwise ("'<key>' is only meaningful when type=quote").
+
+| key |
+|-----|
+| metric |
+| quote |
+
+* URI order
+
+The to_uri() serialization order of the query keys. Differs from the Fields
+table order: =type= serializes after =role= (matching the hand-crafted
+branch), which no field-table ordering can express.
+
+| key |
+|-----|
+| index |
+| tenor |
+| role |
+| type |
+| metric |
+| quote |
+| point |
 
 * Notes
 

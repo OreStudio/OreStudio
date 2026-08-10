@@ -5,6 +5,7 @@
 #+description: Quote types for correlation: pairwise factor correlation.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: correlation
+#+validate: inline
 #+authority: correlation
 #+component: ores.marketdata
 #+level: s2

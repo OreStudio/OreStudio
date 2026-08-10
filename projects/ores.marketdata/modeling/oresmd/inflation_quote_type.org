@@ -5,6 +5,7 @@
 #+description: Quote types for inflation: ZC swap, YY swap, seasonality.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: inflation
+#+validate: inline
 #+authority: inflation
 #+component: ores.marketdata
 #+level: s2

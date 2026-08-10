@@ -5,6 +5,8 @@
 #+description: Quote types for credit: CDS, hazard rate, recovery rate, index/tranche base correlation.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: credit
+#+validate: inline_delegate
+#+quote_type_checked: false
 #+authority: credit
 #+component: ores.marketdata
 #+level: s2

@@ -8,7 +8,7 @@
 #+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
 #+branch: feature/remote-compute-node-join
-#+pr:
+#+pr: 1946
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1946][#1946]] | [ores.compass,ores.cli,ores.nats,ores.sql] Prove and polish the remote compute-node join |
 
 * Review
 

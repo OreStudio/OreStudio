@@ -189,6 +189,13 @@ jobs:
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 
+      - name: Setup NATS server
+        # Same setup on every CI platform: unpack the vendored nats-server
+        # release (external/nats, pinned v2.14.3) and put it on PATH, so
+        # every platform runs the same binary instead of its package
+        # manager's version -- no brew, no apt, no GitHub download.
+        run: ./build/scripts/setup_nats_server.sh
+
       - name: Start NATS server
         # env configure already generated the per-checkout TLS certs and
         # nats-<label>.conf (compass nats certs / compass nats init) --

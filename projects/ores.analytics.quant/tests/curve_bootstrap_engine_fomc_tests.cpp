@@ -191,10 +191,16 @@ TEST_CASE("the discount function is continuous across the split tenor",
         result, after, FLAT_FORWARD_THEN_LOG_LINEAR);
     CHECK(df_after == Catch::Approx(df_boundary * std::exp(-fwd * yf)).epsilon(1e-9));
 
-    // The post-split segment keeps the same continuous method: its own
-    // forward rate is constant too.
+    // The post-split segment keeps the same continuous method: with no
+    // interior pillar, the segment is one log-linear piece, and its
+    // constant forward is pinned by the boundary and split-end discount
+    // factors. An interior interpolation must reproduce exactly that rate
+    // -- not merely be internally self-consistent.
+    const auto df_end = curve_bootstrap_engine::interpolate_discount_factor(
+        result, dates[meeting_count], FLAT_FORWARD_THEN_LOG_LINEAR);
+    const double yf_total =
+        day_count_calculator::year_fraction(boundary, dates[meeting_count], A365);
+    const double fwd_loglinear = std::log(df_boundary / df_end) / yf_total;
     const auto fwd1 = implied_forward(result, after, year_month_day(sys_days(after) + days(10)));
-    const auto fwd2 = implied_forward(result, year_month_day(sys_days(after) + days(10)),
-                                      dates[meeting_count]);
-    CHECK(fwd1 == Catch::Approx(fwd2).epsilon(1e-9));
+    CHECK(fwd1 == Catch::Approx(fwd_loglinear).epsilon(1e-9));
 }

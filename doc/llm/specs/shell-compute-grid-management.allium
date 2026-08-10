@@ -4,7 +4,7 @@
 -- Scope: manage the compute grid from the ores.shell command line.
 -- Includes:
 --   - Read verbs: list apps, app versions, platforms, hosts and
---     batches
+--     batches, plus per-node grid telemetry (grid-stats)
 --   - Job lifecycle: add a batch, dispatch its jobs (one shared
 --     input bundle per batch), list workunits and results
 --   - Grid monitoring: per-node grid stats, delete a host
@@ -22,7 +22,8 @@
 --   - The desktop client and process-workflow verbs (the shell
 --     workflow menu is a separate domain)
 -- External inputs: grid state produced by the compute service and the
--- wrappers (host heartbeats, result submissions, storage bundles).
+-- wrappers (host heartbeats, result submissions, storage bundles,
+-- node samples).
 
 config {
     -- Decisions (2026-08-10):
@@ -31,14 +32,18 @@ config {
     --     batch cannot pass by luck of a single node.
     --   Offline threshold: 90s. The wrapper heartbeats every 30s;
     --     three missed beats declare a host offline.
+    --   Table support: every entity the surface exposes must have a
+    --     codegen table renderer; the shell never formats a row
+    --     itself. Platform lacks one today -- the ores.compute drift
+    --     task generates it, which is why list-platforms is blocked
+    --     (2026-08-10).
     smoke_min_jobs: Integer = 10
     smoke_max_jobs: Integer = 20
     heartbeat_timeout: Duration = 90.seconds
 }
 
--- The operator drives the grid from the shell. The operator has no
--- fields of its own: identity lives in the IAM session, which is
--- outside this spec.
+-- The operator drives the grid from the shell. Identity lives in the
+-- IAM session, outside this spec.
 entity GridOperator {
     name: String
 }
@@ -47,32 +52,150 @@ entity GridOperator {
 -- Entities
 -- ------------------------------------------------------------
 
--- The app catalogue. Registered by publish-package, outside this
--- spec's rules; the shell only lists it.
+-- The app catalogue (ores_compute_apps_tbl). Registered by
+-- publish-package, outside this spec's rules; the shell only lists
+-- it.
 entity ComputeApp {
-    code: String
+    id: String
     name: String
+    description: String
+    modified_by: String
+    recorded_at: Timestamp
 
     versions: ComputeAppVersion with app = this
 }
 
+-- Registered app versions (ores_compute_app_versions_tbl). The
+-- platform association lives on the app-version-platform junction,
+-- which the list verbs do not render.
 entity ComputeAppVersion {
+    id: String
     app: ComputeApp
-    platform: Platform
-    package_sha256: String
-    package_uri: String
+    wrapper_version: String
+    engine_version: String
+    min_ram_mb: Integer
+    modified_by: String
+    recorded_at: Timestamp
 }
 
+-- System-owned platform triplets (ores_compute_platforms_tbl): owned
+-- by the system tenant, visible read-only to all tenants.
 entity Platform {
-    code: String
+    id: String
+    code: String           -- e.g. "x64-linux"
+    display_name: String   -- e.g. "Linux x86-64"
+    description: String
+    os_family: `linux` | `macos` | `windows`
+    cpu_arch: `x86_64` | `aarch64`
+    abi: `gnu` | `musl` | `msvc` | `mingw`?
+    is_active: Boolean
+}
+
+-- A compute node of the grid (ores_compute_hosts_tbl): a wrapper
+-- registered with the serving environment, heartbeating over NATS.
+entity ComputeHost {
+    id: String
+    external_id: String        -- the node's self-chosen id, e.g. "clever-echidna"
+    display_name: String
+    location: String?
+    cpu_count: Integer
+    ram_mb: Integer
+    gpu_type: String?
+    last_rpc_time: Timestamp?
+    credit_total: Decimal
+    modified_by: String
+    recorded_at: Timestamp
+
+    -- Derived: three missed 30s heartbeats declare the host offline.
+    -- No column exists; the drain-time checks read this property.
+    online: last_rpc_time != null and last_rpc_time >= now - config.heartbeat_timeout
+}
+
+-- One per-node telemetry sample (ores_node_samples_tbl), produced by
+-- the grid monitor; grid-stats renders the per-node table from it.
+entity HostTelemetry {
+    host: ComputeHost
+    sampled_at: Timestamp
+    seconds_since_hb: Integer    -- heartbeat age in seconds
+    tasks_completed: Integer
+    tasks_failed: Integer
+    input_bytes_fetched: Integer
+    output_bytes_uploaded: Integer
+}
+
+-- A collection of jobs dispatched together from the shell
+-- (ores_compute_batches_tbl).
+entity Batch {
+    id: String
+    external_ref: String
+    -- Free-text column, default `open`. The lifecycle verbs drive it;
+    -- values outside the set below (e.g. `closed`, from earlier
+    -- flows) exist in the data and render read-only.
+    status: `open` | `dispatched` | `drained`
+    -- Shell-side marker, set by add-batch --smoke. No column; the
+    -- smoke script identifies its batch by this flag.
+    is_smoke_test: Boolean
+    -- Shell-side: the job list is session knowledge, not a column.
+    -- Dispatch reads it back to create one workunit per job.
+    jobs: List<Job>
+    -- The shared input bundle, uploaded once at dispatch; the
+    -- workunits reference its uri.
+    input_bundle: Bundle?
+
+    workunits: Workunit with batch = this
+
+    -- Every workunit has a canonical result
+    -- (ores_compute_workunits_tbl canonical_result_id); the batch can
+    -- then drain.
+    all_terminal: workunits.all(w => w.canonical_result_id != null)
+
+    transitions status {
+        `open` -> `dispatched`
+        `dispatched` -> `drained`
+        terminal: `drained`
+    }
+}
+
+-- One unit of work dispatched to the grid (ores_compute_workunits_tbl).
+-- There is no status or host column: assignment is invisible to the
+-- shell, and completion is observable only through the results a node
+-- submits (canonical_result_id).
+entity Workunit {
+    id: String
+    batch: Batch
+    app_version: ComputeAppVersion
+    input_uri: String
+    config_uri: String?
+    priority: Integer
+    target_redundancy: Integer
+    canonical_result_id: String?
+    modified_by: String
+    recorded_at: Timestamp
+}
+
+-- The outcome of one workunit, submitted by the node that ran it
+-- (ores_compute_results_tbl). The outcome column is nullable; the
+-- rules below always set it.
+entity Result {
+    id: String
+    workunit: Workunit
+    host: ComputeHost
+    server_state: Integer
+    outcome: `success` | `client_error` | `no_reply`?
+    output_uri: String?
+    error_message: String?
+    received_at: Timestamp
+    modified_by: String
+    recorded_at: Timestamp
 }
 
 -- ------------------------------------------------------------
 -- Value Types
 -- ------------------------------------------------------------
 
--- One unit of dispatchable work inside a batch. The batch carries a
--- list of jobs; each job becomes one workunit when dispatched.
+-- One unit of dispatchable work inside a batch. Each job becomes one
+-- workunit when dispatched. Shell-side: labels are session knowledge;
+-- the workunit row stores no label.
 value Job {
     label: String
 }
@@ -82,70 +205,6 @@ value Job {
 -- result.
 value Bundle {
     uri: String
-}
-
--- ------------------------------------------------------------
--- Entities
--- ------------------------------------------------------------
-
--- A compute node of the grid: a wrapper registered with the serving
--- environment, heartbeating over NATS.
-entity ComputeHost {
-    id: String
-    name: String
-    platform: Platform
-    online: Boolean
-    last_heartbeat_at: Timestamp
-    tasks_completed: Integer
-    input_bytes_fetched: Integer
-    output_bytes_uploaded: Integer
-}
-
--- A collection of jobs dispatched together from the shell.
-entity Batch {
-    id: String
-    status: created | dispatched | drained
-    is_smoke_test: Boolean
-    jobs: List<Job>
-    -- The shared input bundle, uploaded once at dispatch.
-    input_bundle: Bundle?
-
-    workunits: Workunit with batch = this
-
-    -- Every workunit reached a terminal state.
-    all_terminal: workunits.all(w => w.status = done or w.status = failed)
-
-    transitions status {
-        created -> dispatched
-        dispatched -> drained
-        terminal: drained
-    }
-}
-
--- One unit of work dispatched to the grid.
-entity Workunit {
-    id: String
-    batch: Batch
-    label: String
-    input_uri: String
-    status: pending | in_progress | done | failed
-    host: ComputeHost?
-
-    transitions status {
-        pending -> in_progress
-        in_progress -> done
-        in_progress -> failed
-        terminal: done, failed
-    }
-}
-
--- The outcome of one workunit, submitted by the node that ran it.
-entity Result {
-    id: String
-    workunit: Workunit
-    host: ComputeHost
-    outcome: success | client_error | no_reply
-    output_uri: String?
 }
 
 -- ------------------------------------------------------------
@@ -169,84 +228,71 @@ contract BundleTransfer {
 
 -- The operator creates a batch of jobs, optionally as a smoke test.
 rule AddBatch {
-    when: OperatorAddsBatch(operator, id, jobs, is_smoke_test)
+    when: OperatorAddsBatch(operator, id, external_ref, jobs, is_smoke_test)
     requires: jobs.count >= 1
+    -- The smoke size bounds apply at creation: the batch row stores no
+    -- job list, so no invariant can check the count afterwards.
+    requires: not is_smoke_test
+        or (jobs.count >= config.smoke_min_jobs and jobs.count <= config.smoke_max_jobs)
     ensures: Batch.created(
         id: id,
+        external_ref: external_ref,
         jobs: jobs,
         is_smoke_test: is_smoke_test,
-        status: created
+        status: `open`
     )
 }
 
 -- Dispatch uploads one input bundle for the whole batch, then creates
 -- one workunit per job. Every workunit shares the bundle URI.
 rule DispatchBatch {
-    when: OperatorDispatchesBatch(operator, batch, input_bundle)
-    requires: batch.status = created
-    ensures: batch.status = dispatched
+    when: OperatorDispatchesBatch(operator, batch, app_version, input_bundle)
+    requires: batch.status = `open`
+    ensures: batch.status = `dispatched`
     ensures: batch.input_bundle = input_bundle
     for job in batch.jobs:
         ensures: Workunit.created(
             batch: batch,
-            label: job.label,
+            app_version: app_version,
             input_uri: input_bundle.uri,
-            status: pending
+            priority: 1,
+            target_redundancy: 1
         )
 }
 
--- A node heartbeats; the grid records it online.
+-- A node heartbeats; the grid records it. The online property follows
+-- from last_rpc_time and the heartbeat timeout.
 rule RecordHeartbeat {
     when: HostHeartbeatReceived(host, timestamp)
-    ensures: host.last_heartbeat_at = timestamp
-    ensures: host.online = true
+    ensures: host.last_rpc_time = timestamp
 }
 
--- A node pulls an assignment: the workunit goes in progress on that
--- host.
-rule WorkunitPickedUp {
-    when: WorkunitStarted(workunit, host)
-    requires: workunit.status = pending
-    ensures: workunit.status = in_progress
-    ensures: workunit.host = host
-}
-
--- Silence beyond the threshold declares the host offline.
-rule HostGoesOffline {
-    when: host: ComputeHost.last_heartbeat_at <= now - config.heartbeat_timeout
-    requires: host.online
-    ensures: host.online = false
-}
-
--- A node reports the outcome of a workunit it ran. Success completes
--- the workunit; a client error fails it. The result row records the
--- outcome and the output bundle, if one was uploaded.
+-- A node reports the outcome of a workunit it ran. Success makes the
+-- result canonical; a client error does not terminalize the workunit,
+-- the grid may retry it (target_redundancy governs the copies).
 rule RecordResult {
     when: ResultSubmitted(workunit, host, outcome, output_uri?)
-    requires: workunit.status = in_progress
     ensures: Result.created(
         workunit: workunit,
         host: host,
         outcome: outcome,
         output_uri: output_uri
     )
-    if outcome = success:
-        ensures: workunit.status = done
-    else:
-        ensures: workunit.status = failed
+    if outcome = `success`:
+        ensures: workunit.canonical_result_id != null
 }
 
--- The batch drains when every workunit reached a terminal state. For
--- a smoke batch, draining is also the "did all engines kick in"
--- check: every host online at the drain transition must have at
--- least one result in the batch, or the batch cannot drain. A host
--- that comes back online after the run does not trip this check.
+-- The batch drains when every workunit has a canonical result. For a
+-- smoke batch, draining is also the "did all engines kick in" check:
+-- every host online at the drain transition must have at least one
+-- result in the batch, or the batch cannot drain. A host that comes
+-- back online after the run does not trip this check.
 rule BatchDrains {
     when: batch: Batch.all_terminal
-    requires: batch.status = dispatched
+    requires: batch.status = `dispatched`
     for h in ComputeHosts where batch.is_smoke_test and h.online:
         requires: (Result where workunit.batch = batch and host = h).count >= 1
-    ensures: batch.status = drained
+    ensures: batch.status = `drained`
 }
 
 -- An offline host can be removed from the grid.
@@ -282,17 +328,10 @@ rule FetchOutputBundle {
 -- Invariants
 -- ------------------------------------------------------------
 
--- A smoke batch carries between the configured bounds of jobs.
-invariant SmokeBatchSizeInRange {
-    for b in Batches where b.is_smoke_test:
-        b.jobs.count >= config.smoke_min_jobs
-        and b.jobs.count <= config.smoke_max_jobs
-}
-
 -- A drained smoke batch reports only successful outcomes.
 invariant SmokeTestAllOutcomesSuccess {
-    for b in Batches where b.is_smoke_test and b.status = drained:
-        (Result where workunit.batch = b).all(r => r.outcome = success)
+    for b in Batches where b.is_smoke_test and b.status = `drained`:
+        (Result where workunit.batch = b).all(r => r.outcome = `success`)
 }
 
 -- ------------------------------------------------------------
@@ -305,59 +344,100 @@ surface ComputeGridShell {
     contracts:
         demands BundleTransfer
 
+    -- The exposure is exactly the column set of each codegen table
+    -- renderer: what the list verbs print.
     exposes:
         for app in ComputeApps:
-            app.code
+            app.id
             app.name
+            app.description
+            app.modified_by
+            app.recorded_at
             for v in app.versions:
-                v.app.code
-                v.platform.code
-                v.package_sha256
-                v.package_uri
+                v.id
+                v.wrapper_version
+                v.engine_version
+                v.min_ram_mb
+                v.modified_by
+                v.recorded_at
         for p in Platforms:
+            p.id
             p.code
+            p.display_name
+            p.description
+            p.os_family
+            p.cpu_arch
+            p.abi
+            p.is_active
         for h in ComputeHosts:
             h.id
-            h.name
-            h.platform.code
-            h.online
-            h.last_heartbeat_at
-            h.tasks_completed
-            h.input_bytes_fetched
-            h.output_bytes_uploaded
+            h.external_id
+            h.display_name
+            h.location
+            h.cpu_count
+            h.ram_mb
+            h.gpu_type
+            h.last_rpc_time
+            h.credit_total
+            h.modified_by
+            h.recorded_at
+        for t in HostTelemetry:
+            t.host.id
+            t.seconds_since_hb
+            t.tasks_completed
+            t.tasks_failed
+            t.input_bytes_fetched
+            t.output_bytes_uploaded
         for b in Batches:
             b.id
+            b.external_ref
             b.status
-            b.is_smoke_test
-            b.jobs.count
+            b.modified_by
+            b.recorded_at
         for w in Workunits:
             w.id
             w.batch.id
-            w.label
-            w.status
+            w.app_version.id
             w.input_uri
-            w.host.id
+            w.config_uri
+            w.priority
+            w.target_redundancy
+            w.modified_by
+            w.recorded_at
         for r in Results:
             r.id
             r.workunit.id
             r.host.id
+            r.server_state
             r.outcome
             r.output_uri
+            r.error_message
+            r.received_at
+            r.modified_by
+            r.recorded_at
 
     provides:
-        OperatorAddsBatch(operator, id, jobs, is_smoke_test)
-        OperatorDispatchesBatch(operator, batch, input_bundle)
+        OperatorAddsBatch(operator, id, external_ref, jobs, is_smoke_test)
+        OperatorDispatchesBatch(operator, batch, app_version, input_bundle)
         OperatorDeletesHost(operator, host)
         OperatorDownloadsInput(operator, workunit)
         OperatorDownloadsOutput(operator, result)
+        -- Observed from the grid (external inputs), not initiated by
+        -- the shell; they ground the heartbeat and drain rules.
         ResultSubmitted(workunit, host, outcome, output_uri?)
         HostHeartbeatReceived(host, timestamp)
-        WorkunitStarted(workunit, host)
 
     @guarantee ReadVerbsAreNonDestructive
         -- The list verbs never change grid state: apps, app versions,
         -- platforms, hosts, batches, workunits and results are
         -- presented as stored.
+
+    @guarantee ReadVerbsRenderFromGeneratedTables
+        -- Every entity the surface exposes renders through its codegen
+        -- table renderer (*_table_io); the shell never formats a row
+        -- itself. A verb without table support cannot ship: the
+        -- platform renderer is generated by the ores.compute drift
+        -- task, which is why list-platforms is blocked (2026-08-10).
 
     @guarantee DispatchSharesOneInputBundle
         -- All workunits of a dispatched batch reference the same
@@ -376,5 +456,17 @@ surface ComputeGridShell {
 --     uploaded once at dispatch. Per-job inputs add no coverage value
 --     to the smoke test and multiply storage traffic.
 --   Q3 offline threshold: 90s, three missed 30s heartbeats.
---   Q4 smoke size: 10-20 jobs -- config bounds, enforced by the
---     SmokeBatchSizeInRange invariant.
+--   Q4 smoke size: 10-20 jobs -- config bounds, enforced at add-batch
+--     time: the batch row stores no job list, so a state invariant
+--     cannot check the count after creation.
+--   Q5 table support: every exposed entity must have a codegen table
+--     renderer. Platform lacks one today, so list-platforms is
+--     blocked on the ores.compute drift task; on unblock, the verb
+--     streams the generated renderer like the other four.
+--   Q6 weed round: entities reconciled with the implemented model
+--     (domain structs and SQL columns). host.online is a derived
+--     property (no column); workunit has no status or host -- completion
+--     is observed through canonical_result_id; the host telemetry
+--     fields moved to HostTelemetry (grid-stats reads node samples);
+--     enum literals are backtick-quoted, matching the FOMC spec
+--     convention.

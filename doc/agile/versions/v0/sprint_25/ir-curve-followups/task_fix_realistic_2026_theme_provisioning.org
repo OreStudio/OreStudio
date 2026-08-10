@@ -26,7 +26,7 @@ Restore end-to-end Acme provisioning: synthetic.themes.realistic_2026 publishes 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,44 @@ Restore end-to-end Acme provisioning: synthetic.themes.realistic_2026 publishes 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two distinct defects blocked the theme; both fixed.
+
+1. Cross-tenant soft-FK validation. The generated insert trigger on
+   =ores_synthetic_config_process_parameter_values_tbl= validated
+   =parameter_definition_id= under =NEW.tenant_id=, but the
+   definitions are system-tenant reference data (seeded once at
+   populate time under the system tenant with =gen_random_uuid()=
+   ids), while =ores_synthetic_publish_theme_from_dq_fn= inserts
+   tenant rows whose definition ids it resolved by name under the
+   system tenant — so every theme insert was rejected
+   (=Invalid parameter_definition_id: b3b375fc-…=). Fix:
+   =:use_system_tenant: true= on the FK in the entity model — the
+   flag's first use; the org loader and
+   =sql_schema_domain_entity_create.mustache= already supported it.
+   =config_id= keeps the default tenant-scoped resolution (a genuine
+   tenant row).
+
+2. Template gap left by PR #1926 (=5e0ebfb8f=). That commit switched
+   every generated object name to =sql_name_base= and hand-updated
+   the generated channel strings, but the notify-trigger and
+   event-registrar templates still derived the channel from
+   ={{product}}_{{component}}_{{entity_plural}}= — this entity's
+   66-char conventional name, which PostgreSQL rejects at runtime
+   (=channel name too long=; verified with a live =pg_notify()=
+   probe), and which would have regressed the short channel on any
+   regeneration. Fix: derive the channel from ={{sql_name_base}}= in
+   the =notify_trigger=, =nats-event-registrar=, and
+   =eventing-integration-test= templates; same sweep for the
+   repository templates' inline
+   ={{product}}_{{component}}_{{entity_plural}}_hierarchy_fn=
+   composition (same class; no current =has_parent_id= entity exceeds
+   63 bytes). Zero output change for every entity whose conventional
+   base fits — =sql_name_base= equals the conventional composition
+   there. =sql_naming_conventions.org= documents the channel rule.
+
+Verification: entity regeneration idempotent (=--diff= clean); DB
+recreate installs the regenerated trigger; re-provision must publish
+=synthetic.themes.realistic_2026= green in all four Acme entities.
 
 * Notes
 

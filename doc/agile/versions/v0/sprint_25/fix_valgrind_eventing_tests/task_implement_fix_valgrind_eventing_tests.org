@@ -8,7 +8,7 @@
 #+filetags: :fix_valgrind_eventing_tests:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/fix-valgrind-eventing-tests
-#+pr:
+#+pr: 1949
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1949][#1949]] | [ci] Suppress NATS library one-time init blocks in valgrind suppressions |
 
 * Review
 

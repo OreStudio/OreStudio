@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/review-acme-fit-for-purpose
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -46,11 +46,11 @@ and nothing may bake them in.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Fix implemented in codegen (model flag =:use_system_tenant:= on the FK, regenerated SQL); template drift on the notify/registrar channels fixed the same way. Verifying on a fresh DB. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fresh DB: re-provision ACME via the shell leg; verify themes publish, 58 staff photos land, office feeds start. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance

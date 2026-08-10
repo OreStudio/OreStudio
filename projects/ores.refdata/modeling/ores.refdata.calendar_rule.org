@@ -32,7 +32,16 @@ stays a timeless, indefinitely-repeating pattern.
 :product:   ores
 :component: refdata
 :profile:   self-referencing-hierarchy
+:seed_country_sentinel: true
 :END:
+
+=:seed_country_sentinel:=: the eventing integration test seeds a
+synthetic calendar (always =country_code= =ZZ=) as this entity's
+=calendar_code= parent, and the calendars insert trigger validates
+=country_code= against the countries table for the write tenant -- the
+test must seed the ZZ sentinel country before the calendar insert (see
+=refdata_calendars_create.sql='s =country_code_validation= paste
+block).
 
 * Columns
 

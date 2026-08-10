@@ -33,6 +33,13 @@
 #include "ores.refdata.api/generators/calendar_rule_generator.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
+// Country sentinel seed (Calendar Rule's insert trigger validates
+// country_code against the countries table, and the synthetic generator
+// always emits the ZZ sentinel): like the party seeds, the country
+// generator and repository are used regardless of the child's generator
+// facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -80,6 +87,7 @@ using namespace ores::refdata::generators;
 using ores::refdata::domain::calendar_rule;
 using ores::refdata::repository::calendar_rule_repository;
 using ores::refdata::repository::calendar_repository;
+using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -135,6 +143,12 @@ TEST_CASE("write_calendar_rule_publishes_nats_changed_event", tags) {
     auto v = generate_synthetic_calendar_rule(ctx);
     v.change_reason_code = "system.test";
     BOOST_LOG_SEV(lg, debug) << "Calendar Rule: " << v;
+    // Calendar Rule's insert trigger validates country_code against
+    // the countries table for the write tenant, and the synthetic
+    // generator always uses the ZZ sentinel -- seed it first (as the
+    // materialisation tests do) or the insert is rejected.
+    country_repository cty_repo;
+    cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
 
     // Seed the calendar this entity's calendar_code references, so
     // the insert-trigger existence check passes. Writes go through the

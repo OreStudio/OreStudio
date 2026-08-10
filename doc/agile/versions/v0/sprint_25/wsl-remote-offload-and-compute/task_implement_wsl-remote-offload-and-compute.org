@@ -27,9 +27,9 @@ sprint:
 - Nine tasks move via ~compass task move~: the compass remote-deploy
   tooling task (~compass env deploy~, PR #1937) from
   ~product_backlog/next/offload-services-to-wsl-host-cutover/~ and the
-  eight split-services tasks (container pilot, orchestration spec,
-  quadlet generator, controller decommission, re-scope, rollout,
-  podman-events watcher) from
+  eight split-services tasks (container pilot, IAM healthcheck,
+  orchestration spec, quadlet generator, controller decommission,
+  re-scope, rollout, podman-events watcher) from
   ~product_backlog/inbox/split-services-into-per-service-containers/~.
 - Seven of the split-services tasks (their work completed in sprint
   24, 2026-07-29..08-02) are then routed into the sprint-24 story as
@@ -89,6 +89,6 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Review round 1 (3 bot reviews, 5 findings): orphaned scenario doc + screenshot follow their task into the sprint-24 story; #+updated bumps on the two superseded backlog stories; stale Next on the split-services story; scaffold task still unfilled boilerplate; IAM healthcheck missing from the Goal's task list | scenario_verify_controller_decommission.org, both backlog story.orgs, task_scaffold_*, task_implement_* | Fixed | All five fixed in one commit; replies posted and threads resolved. |
 
 * Result

@@ -5,15 +5,15 @@
 #+description: Confirm compass services start/stop/status bring up the full fleet via systemd (not the deleted controller), and that the Qt client launches cleanly with the Service Dashboard menu item gone.
 #+type: test_scenario
 #+level: s1
-#+filetags: :split-services-into-per-service-containers:sprint_24:v0:
+#+filetags: :offload-services-to-wsl-host:sprint_24:v0:
 #+target_dialog:
 #+created: 2026-08-02
-#+updated: 2026-08-02
+#+updated: 2026-08-10
 #+environment:
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
 
-This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] in [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] in [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
 
 * Before you start
 
@@ -65,7 +65,7 @@ This page documents a test scenario verifying [[id:83B67002-6BEB-4AF8-9652-0CEEB
 | Field         | Value                                   |
 |---------------+------------------------------------------|
 | Verifies task | [[id:83B67002-6BEB-4AF8-9652-0CEEB597C7F4][Decommission ores.controller.service and process_supervisor]] |
-| Parent story  | [[id:FFC4117A-3D79-4779-A347-92532ED2A19A][Split ORE Studio services into one container per service]]   |
+| Parent story  | [[id:568238F1-AD99-49CB-817F-09D3810D5185][Containerize the ORE Studio service runtime and verify it on a remote WSL host]] |
 | Target dialog | None — this scenario verifies process/service lifecycle and the main window's menu, not a specific dialog. |
 | Clients       |                                          |
 | State         | PENDING                               |

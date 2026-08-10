@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Scaffold the sprint-25 story Remote WSL offload and compute nodes: the
+story doc with goal, acceptance, and decisions; the sprint.org row
+under Product; and the consolidation PR that carries the story and its
+task moves.
 
 * Status
 
@@ -28,14 +31,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Not yet started.                       |
+| Now          | Scaffold complete: story + sprint row raised in PR #1940. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close this task when the PR merges.    |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
 
--
+- The story doc is complete and wired into sprint 25 (sprint.org,
+  under Product, state STARTED).
+- The consolidation PR is raised and recorded on the task.
 
 * Plan
 

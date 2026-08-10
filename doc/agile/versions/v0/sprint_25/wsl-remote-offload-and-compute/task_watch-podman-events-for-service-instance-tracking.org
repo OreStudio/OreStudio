@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/watch-podman-events-for-service-instance-tracking
 #+pr:
-#+blocked_on: 34E28952-57DD-446F-91B3-1ED02E3B7F7B
-#+blocked_since: 2026-07-31
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-07-31
 #+updated: 2026-08-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ Newton).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | STARTED                              |
 | Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:34E28952-57DD-446F-91B3-1ED02E3B7F7B][Quadlet generator task]] landing -- nothing to watch until remote hosts actually run Quadlet-managed podman containers. |
-| Next         | Begin implementation once the Quadlet generator lands. |
-| Last touched | 2026-07-31                               |
+| Now          | Unblocked: the Quadlet generator task (the dependency) is DONE; beginning implementation. |
+| Waiting on   | Nothing.                               |
+| Next         | Implement the watcher: consume podman events --format json and mirror container start/stop/health transitions into service_instance/service_event. |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 

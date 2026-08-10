@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_CONFIG_HANDLER_HPP
 
 #include "curve_feed_controller.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -144,8 +145,15 @@ public:
                 return;
             }
 
+            // The definitions catalogue is system-tenant owned: the publish
+            // path resolves each value's parameter_definition_id from the
+            // system tenant, so a read scoped to the caller's tenant (the
+            // acme tenant here) returns nothing and every value row fails to
+            // join. Read with a system-tenant context instead.
             repository::yield_curve_process_parameter_definition_repository definition_repo;
-            const auto definitions = definition_repo.read_latest(req_ctx);
+            const auto sys_ctx =
+                ores::database::service::tenant_context::with_system_tenant(req_ctx);
+            const auto definitions = definition_repo.read_latest(sys_ctx);
 
             const auto convention_code = ir_curve_tenor_convention_code(ir_curve_qualifier(cfg));
             auto refctx = build_ir_curve_refdata_context(req_ctx, convention_code);

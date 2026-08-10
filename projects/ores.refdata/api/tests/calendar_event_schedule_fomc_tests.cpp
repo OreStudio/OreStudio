@@ -120,13 +120,14 @@ calendar_event make_calendar_event(std::chrono::year_month_day event_date) {
 
 // The US.FOMC calendar row, transcribed from refdata_calendars_populate.sql
 // (task D1): a central-bank-meeting calendar for the US, sourced from the
-// Fed's published calendar.
+// Fed's published calendar, seeded editable (is_editable true).
 calendar make_us_fomc_calendar() {
     calendar c;
     c.code = "US.FOMC";
     c.name = "US Federal Reserve (FOMC meeting calendar)";
     c.calendar_type = "central_bank_meeting";
     c.country_code = "US";
+    c.is_editable = true;
     c.source = "federalreserve.gov";
     return c;
 }
@@ -261,15 +262,15 @@ TEST_CASE("US.FOMC meeting events satisfy the EnterFomcMeeting rule", tags) {
 
     // rule-success.EnterFomcMeeting as a data contract: the rule's requires
     // clauses pin the US.FOMC calendar row (transcribed from
-    // refdata_calendars_populate.sql, task D1)...
+    // refdata_calendars_populate.sql, task D1), including is_editable --
+    // a generated C++ column, seeded true here (calendar.hpp), no
+    // SQL-only gap remains...
     const auto us_fomc = make_us_fomc_calendar();
     CHECK(us_fomc.code == "US.FOMC");
     CHECK(us_fomc.calendar_type == "central_bank_meeting");
     CHECK(us_fomc.country_code == "US");
+    CHECK(us_fomc.is_editable);
     CHECK(us_fomc.source == "federalreserve.gov");
-    // ...the remaining requires clause, us_fomc.is_editable, is SQL-only:
-    // the calendars table carries is_editable (boolean, seeded true) but the
-    // C++ calendar entity does not expose the column.
 
     // ...and every seeded meeting row (task D4) is a central_bank_meeting
     // event on US.FOMC carrying the rule's ensured source.

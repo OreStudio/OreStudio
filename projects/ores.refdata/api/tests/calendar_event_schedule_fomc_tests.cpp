@@ -40,16 +40,26 @@
 //     its ensured source)
 //   - derived.Tenor.is_fomc (evaluated over the seeded 1F..8F and their
 //     counter-examples)
+//   - entity-optional.Tenor.multiplier (the anchor tenors O/N and T/N seed
+//     null multipliers; see the multiplier test)
 //   - entity-fields.TenorResolution
-//   - entity-optional.TenorResolution.schedule_step_count
-//   - entity-fields.TenorConvention (mappable part; see the divergence note
-//     in the convention test)
+//   - entity-optional.TenorResolution.schedule_step_count (and
+//     entity-optional.TenorResolution.schedule: the plain rows leave
+//     schedule_code null, the FOMC rows bind it -- same test)
+//   - entity-optional.TenorResolution.anchor_override (the migrated CDS rows
+//     override the convention's NONE anchor with SPOT; see the
+//     anchor_override test)
+//   - enum-comparable.TenorAnchor (measured_from and anchor_override speak
+//     the same seeded tenor_anchor vocabulary; see the anchor_override test)
+//   - entity-fields.TenorConvention (measured_from + resolution_algorithm
+//     only; the schedule binding is per resolution row, story Decision D2)
 //
 // Seams documented, not hidden: EnterFomcMeeting's runtime machinery (event
 // creation with validation) does not exist -- events are SQL-seeded, so the
-// rule is pinned here as a data contract; and the spec's convention-level
-// schedule field diverges from the implementation's per-row schedule_code
-// (story Decision D2) -- see the convention test's comment.
+// rule is pinned here as a data contract. The convention-level schedule
+// divergence noted in earlier rounds is resolved: the tend round (2026-08-10)
+// moved the schedule binding onto TenorResolution in the spec, matching the
+// per-row schedule_code the implementation always had.
 #include "ores.refdata.api/domain/calendar.hpp"
 #include "ores.refdata.api/domain/calendar_event.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
@@ -286,6 +296,7 @@ TEST_CASE("tenor_convention_resolution exposes its declared fields", tags) {
 
     CHECK(r.convention_code == "RATES_SPOT_FOMC");
     CHECK(r.tenor_code == "2F");
+    CHECK(!r.anchor_override);
     REQUIRE(r.offset_unit);
     CHECK(*r.offset_unit == "DAY");
     REQUIRE(r.offset_multiplier);
@@ -316,17 +327,66 @@ TEST_CASE("tenor_convention_resolution schedule_step_count is optional", tags) {
     CHECK(*fomc.schedule_step_count == 2);
 }
 
+TEST_CASE("tenor_convention_resolution anchor_override is optional", tags) {
+    // entity-optional.TenorResolution.anchor_override: a per-tenor deviation
+    // from the convention's measured_from default. Plain rows leave it null
+    // -- the RATES_SPOT_FORWARD membership rows measure from the
+    // convention's SPOT anchor.
+    tenor_convention_resolution plain;
+    plain.convention_code = "RATES_SPOT_FORWARD";
+    plain.tenor_code = "12M";
+    CHECK(!plain.anchor_override);
+
+    // The migrated CDS rows override the convention's NONE anchor with SPOT
+    // (refdata_tenor_convention_resolutions_populate.sql, task D2):
+    // CREDIT_CDS_IMM keeps measured_from NONE for the family, and each
+    // resolution row re-anchors at SPOT before walking one ROLL_QUARTER
+    // step (the row's own offsets stay null; the tenor's period offset
+    // applies).
+    tenor_convention_resolution cds;
+    cds.convention_code = "CREDIT_CDS_IMM";
+    cds.tenor_code = "12M";
+    cds.anchor_override = "SPOT";
+    cds.schedule_code = "ROLL_QUARTER";
+    cds.schedule_step_count = 1;
+    REQUIRE(cds.anchor_override);
+    CHECK(*cds.anchor_override == "SPOT");
+    CHECK(!cds.offset_unit);
+    CHECK(!cds.offset_multiplier);
+    REQUIRE(cds.schedule_code);
+    CHECK(*cds.schedule_code == "ROLL_QUARTER");
+    REQUIRE(cds.schedule_step_count);
+    CHECK(*cds.schedule_step_count == 1);
+
+    // enum-comparable.TenorAnchor: anchor_override and measured_from speak
+    // the same seeded tenor_anchor vocabulary, so the effective anchor is
+    // anchor_override ?? measured_from -- here the override deviates from
+    // the family default, and equals the FOMC convention's own anchor.
+    tenor_convention cds_convention;
+    cds_convention.code = "CREDIT_CDS_IMM";
+    cds_convention.measured_from = "NONE";
+    cds_convention.resolution_algorithm = "SCHEDULE_STEP";
+    CHECK(*cds.anchor_override != cds_convention.measured_from);
+
+    tenor_convention fomc_convention;
+    fomc_convention.code = "RATES_SPOT_FOMC";
+    fomc_convention.measured_from = "SPOT";
+    fomc_convention.resolution_algorithm = "SCHEDULE_STEP";
+    CHECK(*cds.anchor_override == fomc_convention.measured_from);
+}
+
 TEST_CASE("RATES_SPOT_FOMC convention carries the SPOT/SCHEDULE_STEP binding", tags) {
-    // entity-fields.TenorConvention, mappable part: the seeded convention
-    // row (refdata_tenor_conventions_populate.sql, task D2) binds
-    // measured_from SPOT and resolution_algorithm SCHEDULE_STEP.
+    // entity-fields.TenorConvention: the seeded convention row
+    // (refdata_tenor_conventions_populate.sql, task D2) binds measured_from
+    // SPOT and resolution_algorithm SCHEDULE_STEP.
     //
-    // Divergence, documented per story Decision D2: the spec declares
-    // TenorConvention.schedule: TenorSchedule? but the implementation binds
-    // the schedule per resolution row (schedule_code), not on the
-    // convention -- one convention family can mix schedule axes
-    // (CREDIT_CDS_IMM walks ROLL_QUARTER on the same family as
-    // RATES_SPOT_FOMC), so the convention entity carries no schedule field.
+    // Reconciliation (tend round, 2026-08-10): the earlier divergence -- the
+    // spec declaring a convention-level schedule field the implementation
+    // lacked -- is resolved. The schedule binding lives on the resolution
+    // row (schedule_code), not on the convention: one convention family can
+    // mix schedule axes (CREDIT_CDS_IMM walks ROLL_QUARTER on the same
+    // family as RATES_SPOT_FOMC), so the spec's TenorConvention carries only
+    // measured_from + resolution_algorithm, per story Decision D2.
     tenor_convention c;
     c.code = "RATES_SPOT_FOMC";
     c.description = "Rates spot-starting convention resolving FOMC meetings";
@@ -388,4 +448,30 @@ TEST_CASE("tenor is FOMC when SPECIAL/NONE with multiplier at least one", tags) 
     twelve_months.unit = "MONTH";
     twelve_months.multiplier = 12;
     CHECK(!is_fomc(twelve_months));
+}
+
+TEST_CASE("tenor multiplier is optional", tags) {
+    // entity-optional.Tenor.multiplier: the anchor tenors (O/N, T/N, S/N)
+    // are SPECIAL/NONE with no count -- the null multiplier is what the
+    // is_fomc derived value leans on to keep them out of the schedule set
+    // (see the seeded rows in refdata_tenors_populate.sql, task D2).
+    tenor on;
+    on.code = "O/N";
+    on.kind = "SPECIAL";
+    on.unit = "NONE";
+    CHECK(!on.multiplier);
+
+    // The FOMC tenors carry the meeting ordinal.
+    const auto one_f = make_fomc_tenor(1);
+    REQUIRE(one_f.multiplier);
+    CHECK(*one_f.multiplier == 1);
+
+    // Period tenors carry their own unit/multiplier pair (12M is MONTH x 12).
+    tenor twelve_months;
+    twelve_months.code = "12M";
+    twelve_months.kind = "PERIOD";
+    twelve_months.unit = "MONTH";
+    twelve_months.multiplier = 12;
+    REQUIRE(twelve_months.multiplier);
+    CHECK(*twelve_months.multiplier == 12);
 }

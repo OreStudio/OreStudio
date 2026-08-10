@@ -5,6 +5,7 @@
 #+description: oresmd quote type specification for the IR asset class: 12 quote types across yield, fra, basis, xccy, and vol families.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: ir
+#+validate: function
 #+authority: ir
 #+component: ores.marketdata
 #+level: s2
@@ -36,25 +37,92 @@ The `quote` query key of an oresmd URI, IR-only and only meaningful when
 TYPE/METRIC/... quote key, independent of the METRIC column carried by the `metric`
 query key.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for an interest-rate instrument (asset_class=ir).
+
+Only `ccy` and `type` are unconditionally mandatory; every other field is optional
+because which fields are meaningful depends on `type` (a fixing/curve needs
+`index`/`tenor`/`role` but no `point`; a quote needs `point` and, for `type=quote`
+specifically, `metric`) -- see "Tenor vs. point, and the par-rate/discount-factor
+ambiguity" in the design doc.
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for an interest-rate instrument.
+
+* Index family
+
+| value |
+|-------|
+| libor |
+| euribor |
+| sofr |
+| estr |
+| sonia |
+| tona |
+| saron |
+| aonia |
+| corra |
+| honia |
+| sora |
+| swestr |
+| nowa |
+| kofr |
+| mibor |
+| zaronia |
+| destr |
+| polonia |
+| nzonia |
+| shibor |
+| tiie |
+| taibor |
+
 * Fields
 
-| name       | cpp_type                        | mandatory | query_key |
-|------------+---------------------------------+-----------+-----------|
-| ccy        | std::string                     | yes       |           |
-| type       | instrument_type                 | yes       | type      |
-| index      | std::optional<index_family>     | no        | index     |
-| tenor      | std::optional<std::string>      | no        | tenor     |
-| role       | std::optional<curve_role>       | no        | role      |
-| metric     | std::optional<metric>           | no        | metric    |
-| quote_type | std::optional<ir_quote_type>    | no        | quote     |
-| point      | std::optional<std::string>      | no        | point     |
-| vol        | std::optional<volatility_surface_point> | no  |           |
+| name       | cpp_type                        | mandatory | query_key | default                |
+|------------+---------------------------------+-----------+-----------+------------------------|
+| ccy        | std::string                     | yes       |           |                        |
+| type       | instrument_type                 | yes       | type      | instrument_type::quote |
+| index      | std::optional<index_family>     | no        | index     |                        |
+| tenor      | std::optional<std::string>      | no        | tenor     |                        |
+| role       | std::optional<curve_role>       | no        | role      |                        |
+| metric     | std::optional<domain::metric>   | no        | metric    |                        |
+| quote_type | std::optional<domain::ir_quote_type> | no    | quote     |                        |
+| point      | std::optional<std::string>      | no        | point     |                        |
+| vol        | std::optional<volatility_surface_point> | no  |           |                        |
 
 * Reject keys
 
 | key |
 |-----|
 | ccy |
+
+* Type-gated keys
+
+Query keys that are only meaningful when =type=quote=; the parser rejects them
+otherwise ("'<key>' is only meaningful when type=quote").
+
+| key |
+|-----|
+| metric |
+| quote |
+
+* URI order
+
+The to_uri() serialization order of the query keys. Differs from the Fields
+table order: =type= serializes after =role= (matching the hand-crafted
+branch), which no field-table ordering can express.
+
+| key |
+|-----|
+| index |
+| tenor |
+| role |
+| type |
+| metric |
+| quote |
+| point |
 
 * Notes
 
@@ -72,23 +140,33 @@ IR has the most complex qualifier shape variants:
 
 | uri | expected | description |
 |-----+----------+-------------|
-| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key |
-| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m | DISCOUNT/RATE/USD/USD3M/6M | discount_quote_key |
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | IR_SWAP/RATE/USD/2D/3M/5Y | ir_swap_quote_key_matches_worked_example |
+| oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=discount&metric=rate&point=6m | DISCOUNT/RATE/USD/USD3M/6M | discount_quote_key_matches_worked_example |
+| oresmd://ir/eur?type=vol&point=5y,2y,atm | SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM | swaption_vol_quote_key_matches_worked_example |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m | FRA/RATE/EUR/EURIBOR/3M/6M | ir_fra_rate_quote_key |
 | oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y | IMM_FRA/RATE/USD/LIBOR/3M/5Y | ir_imm_fra_rate_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_spread_quote_key |
-| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
 | oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y | ir_cc_basis_swap_spread_quote_key |
 | oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y | CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y | ir_cc_fix_float_swap_rate_quote_key |
+| oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y | BMA_SWAP/RATIO/USD/3M/5Y | ir_bma_swap_ratio_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y | ZERO/RATE/EUR/EURIBOR/3M/5Y | ir_zero_rate_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=yield_spread&point=5y | ZERO/YIELD_SPREAD/EUR/EURIBOR/3M/5Y | ir_zero_yield_spread_quote_key |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_price_quote_key |
 | oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme | OI_FUTURE/PRICE/USD/SOFR/3M/CME | ir_oi_future_price_quote_key |
-| oresmd://ir/eur?type=vol&point=5y,2y,atm | SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM | swaption_vol_quote_key |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_metric_defaulted |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_metric_defaulted |
-| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_metric_defaulted |
+
+** Projections (defaulted metric)
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&point=1m | MM/RATE/EUR/EURIBOR/3M/1M | ir_mm_rate_metric_defaulted_from_quote_type |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&point=5y | BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y | ir_basis_swap_metric_defaulted_to_basis_spread |
+| oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm_future&point=cme | MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME | ir_mm_future_metric_defaulted_to_price |
+
+** Projections (quote_type required)
+
+| uri | expected | description |
+|-----+----------+-------------|
 | oresmd://ir/usd?index=libor&tenor=3m&type=quote&metric=rate&point=5y | nullopt | ir_quote_key_requires_quote_type |
 
 ** Round-trip
@@ -96,6 +174,11 @@ IR has the most complex qualifier shape variants:
 | uri | description |
 |-----+-------------|
 | oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=quote&quote=ir_swap&metric=rate&point=5y | round_trip_ir_quote |
+
+** Round-trip (extended)
+
+| uri | description |
+|-----+-------------|
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m | round_trip_ir_mm_rate |
 | oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y | round_trip_ir_basis_swap_spread |
 | oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y | round_trip_ir_cc_basis_swap_no_index |
@@ -107,5 +190,5 @@ IR has the most complex qualifier shape variants:
 
 | uri | description |
 |-----+-------------|
+| oresmd://ir/usd?type=fixing&index=sofr&ccy=usd | reject_ir_uri_with_ccy_query_key_since_entity_already_is_the_currency |
 | oresmd://ir/usd?index=libor&tenor=3m&type=fixing&metric=rate | reject_ir_metric_present_when_type_is_not_quote |
-| oresmd://ir/usd?index=libor&tenor=3m&type=fixing&quote=ir_swap | reject_ir_quote_present_when_type_is_not_quote |

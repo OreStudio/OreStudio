@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class FeedBindingMdiWindow;
+class FeedBindingDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -90,6 +91,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const ores::marketdata::domain::feed_binding& feed_binding);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * FeedBindingDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(FeedBindingDetailDialog* detailDialog);
     void showHistoryWindow(const ores::marketdata::domain::feed_binding& feed_binding);
 
     /**

@@ -9,11 +9,364 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-08-09
-#+updated: 2026-08-09
+#+updated: 2026-08-10
+
+The Catch2 tests for the oresmd quote-key projections: the design doc's worked
+examples (static), then the spec tables. Projections rows become to_quote_key
+equality tests (rows whose expected key is =nullopt= become REQUIRE_FALSE tests),
+in the hand-crafted file's order -- ir's Projections table holds both the worked
+examples (first three rows, emitted after the static ir fixing tests) and the
+story's new quote types (emitted after a section comment). The per-class specials
+(commodity cpr, discount-vs-projection, the split_market_series_key tests) are
+static.
 
 * Template
 
 #+begin_src mustache :tangle oresmd_projection_tests.cpp.mustache
-{{! GENERATED FILE — tangled from ores.cpp.oresmd.projection_tests.org. }}
-// oresmd_projection_tests.cpp — generated from oresmd model specs.
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.projection_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
+#include <catch2/catch_test_macros.hpp>
+
+namespace {
+
+using ores::marketdata::core::oresmd_parser;
+using ores::marketdata::core::oresmd_projections;
+
+const std::string tags("[oresmd][projections]");
+
+ores::marketdata::domain::market_data_identifier parse(std::string_view s) {
+    return oresmd_parser::parse(ores::marketdata::domain::oresmd_uri{std::string(s)});
+}
+
+}
+
+/*
+ * One test per row of id:C3E053CA-0D4B-480B-9119-E11530160EC1's "Worked examples"
+ * section, checking the exact index name/curve key/quote key string that section
+ * documents for each oresmd URI.
+ */
+
+TEST_CASE("fx_spot_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote&quote=spot");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "FX/RATE/EUR/USD");
+    REQUIRE_FALSE(oresmd_projections::to_index_name(id).has_value());
+    REQUIRE_FALSE(oresmd_projections::to_curve_key(id).has_value());
+}
+
+{{#fx_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/fx_projections}}
+TEST_CASE("ir_usd_libor_3m_index_name_and_curve_key", tags) {
+    const auto id = parse("oresmd://ir/usd?index=libor&tenor=3m&role=projection&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "USD-LIBOR-3M");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/USD/USD3M");
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+}
+
+TEST_CASE("ir_usd_libor_6m_index_name_and_curve_key", tags) {
+    const auto id = parse("oresmd://ir/usd?index=libor&tenor=6m&role=projection&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "USD-LIBOR-6M");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/USD/USD6M");
+}
+
+TEST_CASE("ir_usd_sofr_index_name_drops_tenor_suffix_for_overnight_index", tags) {
+    const auto id = parse("oresmd://ir/usd?index=sofr&tenor=1d&role=discount&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "USD-SOFR");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/USD/USD1D");
+}
+
+TEST_CASE("ir_eur_euribor_6m_index_name_and_curve_key", tags) {
+    const auto id = parse("oresmd://ir/eur?index=euribor&tenor=6m&role=projection&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "EUR-EURIBOR-6M");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/EUR/EUR6M");
+}
+
+TEST_CASE("ir_eur_estr_index_name_drops_tenor_suffix_for_overnight_index", tags) {
+    const auto id = parse("oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "EUR-ESTR");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/EUR/EUR1D");
+}
+
+TEST_CASE("ir_chf_saron_index_name_drops_tenor_suffix_for_new_rfr_family", tags) {
+    // A family added by the SQL CHECK beyond the original 6
+    // (synthetic_ir_curve_generation_configs_create.sql): is_overnight() must classify it as
+    // overnight so the index name drops the tenor suffix, exactly as the original four overnight
+    // families do.
+    const auto id = parse("oresmd://ir/chf?index=saron&tenor=1d&role=discount&type=fixing");
+    REQUIRE(oresmd_projections::to_index_name(id) == "CHF-SARON");
+    REQUIRE(oresmd_projections::to_curve_key(id) == "Yield/CHF/CHF1D");
+}
+
+{{#ir_projections_worked_examples}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/ir_projections_worked_examples}}
+/*
+ * New IR quote types covered by id:D566131C-D08C-4AFE-950E-B3DD26EB2C24
+ * ("Extend oresmd to full ORE quote-type coverage"), one test per TYPE/METRIC pair.
+ */
+
+{{#ir_projections_new_quote_types}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/ir_projections_new_quote_types}}
+/*
+ * New-style quote= parameter with implicit metric (defaulted from the quote type).
+ */
+
+{{#ir_projections_defaulted_metric}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/ir_projections_defaulted_metric}}
+/*
+ * quote_type is required for type=quote to produce a quote key.
+ */
+
+{{#ir_projections_quote_type_required}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/ir_projections_quote_type_required}}
+/*
+ * quote= requires type=quote (not fixing, not curve).
+ */
+
+TEST_CASE("reject_ir_quote_present_when_type_is_not_quote", tags) {
+    REQUIRE_THROWS_AS(parse("oresmd://ir/usd?index=libor&tenor=3m&type=fixing&quote=ir_swap"),
+                      ores::marketdata::core::oresmd_exception);
+}
+
+/*
+ * quote= is IR-only; rejected for other asset classes.
+ */
+
+TEST_CASE("reject_fx_uri_with_ir_only_quote_field", tags) {
+    REQUIRE_THROWS_AS(parse("oresmd://fx/eurusd?type=quote&quote=mm"),
+                      ores::marketdata::core::oresmd_exception);
+}
+
+{{#equity_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/equity_projections}}
+{{#credit_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/credit_projections}}
+{{#commodity_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/commodity_projections}}
+/*
+ * Inflation asset class — new instrument family (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+{{#inflation_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/inflation_projections}}
+/*
+ * Correlation asset class (id:D566131C-D08C-4AFE-950E-B3DD26EB2C24).
+ */
+
+{{#correlation_projections}}
+TEST_CASE("{{description}}", tags) {
+{{#uri_split}}
+    const auto id = parse("{{{uri_head}}}"
+                          "{{{uri_tail}}}");
+{{/uri_split}}
+{{^uri_split}}
+    const auto id = parse("{{{uri}}}");
+{{/uri_split}}
+{{#nullopt}}
+    REQUIRE_FALSE(oresmd_projections::to_quote_key(id).has_value());
+{{/nullopt}}
+{{^nullopt}}
+    REQUIRE(oresmd_projections::to_quote_key(id) == "{{expected}}");
+{{/nullopt}}
+}
+
+{{/correlation_projections}}
+TEST_CASE("commodity_cpr_quote_key", tags) {
+    const auto id = parse("oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y");
+    REQUIRE(oresmd_projections::to_quote_key(id) == "CPR/RATE/WTI/USD/5Y");
+}
+
+TEST_CASE("discount_vs_projection_gap_resolved_structurally", tags) {
+    const auto projection =
+        parse("oresmd://ir/eur?index=euribor&tenor=6m&role=projection&type=fixing");
+    const auto discount = parse("oresmd://ir/eur?index=estr&tenor=1d&role=discount&type=fixing");
+    REQUIRE(oresmd_projections::to_curve_key(projection) !=
+            oresmd_projections::to_curve_key(discount));
+}
+
+/*
+ * split_market_series_key() is the reverse of to_quote_key()/to_curve_key(): splits an
+ * already-projected key string back into the three columns market_series stores them
+ * under. Consolidates three previously-duplicated ad-hoc parsers
+ * (ores.synthetic.service's feed_controller.hpp x2, ores.marketdata.service's
+ * feed_ingest_loop.cpp) into one shared, tested implementation.
+ */
+
+TEST_CASE("split_market_series_key_splits_a_simple_fx_key", tags) {
+    const auto key = oresmd_projections::split_market_series_key("FX/RATE/EUR/USD");
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "FX");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "EUR/USD");
+}
+
+TEST_CASE("split_market_series_key_absorbs_every_remaining_segment_into_qualifier", tags) {
+    const auto key = oresmd_projections::split_market_series_key("IR_SWAP/RATE/USD/2D/3M/PAR_RATE");
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "IR_SWAP");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "USD/2D/3M/PAR_RATE");
+}
+
+TEST_CASE("split_market_series_key_round_trips_a_real_projected_quote_key", tags) {
+    const auto id = parse("oresmd://fx/eurusd?type=quote");
+    const auto projected = oresmd_projections::to_quote_key(id);
+    REQUIRE(projected.has_value());
+    const auto key = oresmd_projections::split_market_series_key(*projected);
+    REQUIRE(key.has_value());
+    REQUIRE(key->series_type == "FX");
+    REQUIRE(key->metric == "RATE");
+    REQUIRE(key->qualifier == "EUR/USD");
+}
+
+TEST_CASE("split_market_series_key_rejects_a_key_with_fewer_than_three_segments", tags) {
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("FX/RATE").has_value());
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("FX").has_value());
+    REQUIRE_FALSE(oresmd_projections::split_market_series_key("").has_value());
+}
 #+end_src

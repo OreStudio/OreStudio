@@ -26,15 +26,25 @@
 
 namespace ores::marketdata::domain {
 
-{{#oresmd_quote_types}}
+{{#oresmd_variant_specs}}
+{{#requirement_brief}}
+{{#requirement_brief_multiline}}
+/**
+ * @brief {{{requirement_brief}}}
+ */
+{{/requirement_brief_multiline}}
+{{^requirement_brief_multiline}}
+/** @brief {{{requirement_brief}}} */
+{{/requirement_brief_multiline}}
+{{/requirement_brief}}
 struct {{asset_class}}_market_data_requirement final {
 {{#fields}}
 {{^generated}}
-    std::optional<{{{cpp_type}}}> {{name}};
+    std::optional<{{{cpp_type_inner}}}> {{name}};
 {{/generated}}
 {{/fields}}
 {{#has_quote_type}}
-    std::optional<{{asset_class}}_quote_type> quote_type;
+    std::optional<{{{quote_type_cpp_inner}}}> quote_type;
 {{/has_quote_type}}
 {{#has_point}}
     std::optional<std::string> point;
@@ -43,14 +53,18 @@ struct {{asset_class}}_market_data_requirement final {
     bool operator==(const {{asset_class}}_market_data_requirement&) const = default;
 };
 
-{{/oresmd_quote_types}}
+{{/oresmd_variant_specs}}
+/**
+ * @brief Tagged union of the seven per-asset-class requirement structs -- see
+ * market_data_identifier.hpp for the rationale against a common base class.
+ */
 using market_data_requirement = std::variant<
-{{#oresmd_quote_types}}
+{{#oresmd_variant_specs}}
     {{asset_class}}_market_data_requirement{{^last}},{{/last}}
-{{/oresmd_quote_types}}
+{{/oresmd_variant_specs}}
 >;
 
-}  // namespace ores::marketdata::domain
+}
 
 #endif
 #+end_src

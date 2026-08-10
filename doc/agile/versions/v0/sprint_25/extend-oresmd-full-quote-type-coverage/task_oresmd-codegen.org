@@ -8,11 +8,11 @@
 #+filetags: :extend-oresmd-full-quote-type-coverage:sprint_25:v0:
 #+owner: marco
 #+branch: feature/oresmd-codegen
-#+pr:
+#+pr: 1945
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-08-10
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -32,22 +32,22 @@ implementation.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
-| Now          | PR 1 (infrastructure) merged: metatype, loader, facet, 8 archetypes, enums zero-diff verified. PR 2 (adoption) pending. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise PR 2: wire the remaining 7 archetypes, loader-side guard population and spec =type= rows, zero-diff verification, =cmake-sources-drift=. |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
 
-- [ ] New org-model metatype =ores.codegen.oresmd_quote_type= with a
+- [X] New org-model metatype =ores.codegen.oresmd_quote_type= with a
   documented spec format (frontmatter + sections) covering: asset class,
   identifier/requirement struct fields, quote type table (ORE TYPE/METRIC
   pairs), query-key allow/reject lists, point semantics (scalar vs curve,
   format variants like curve_id/MULT), variant registration, and test-case
   URIs with expected projections.
-- [ ] Codegen profile that generates, per asset class:
+- [X] Codegen profile that generates, per asset class:
   - =oresmd_enums.hpp=: enum addition
   - =market_data_identifier.hpp=: struct field additions
   - =market_data_requirement.hpp=: requirement field additions
@@ -55,11 +55,11 @@ implementation.
   - =oresmd_projections.cpp=: ore_type/ore_*_metric helpers, quote_key_*
   - =oresmd_resolver.cpp=: resolve_*, dispatch branch
   - Test files: projection, round-trip, parse, rejection tests
-- [ ] Zero-diff verification: run the profile against a spec for every
+- [X] Zero-diff verification: run the profile against a spec for every
   existing asset class (ir, credit, equity, commodity, fx, inflation,
   correlation) and confirm =git diff= is empty (or only intended
   whitespace/normalisation changes that are identical across runs).
-- [ ] No hand-crafted asset class diverges from its generated counterpart
+- [X] No hand-crafted asset class diverges from its generated counterpart
   after the profile lands.
 
 * Plan
@@ -235,7 +235,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1945][#1945]] | [ores.marketdata] Adopt oresmd quote-type codegen as canonical source |
+| [[https://github.com/OreStudio/OreStudio/pull/1936][#1936]] | [codegen] Add oresmd quote-type codegen: metatype, facet, archetypes, templates |
 
 * Review
 
@@ -243,6 +244,34 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Variant loops use ={{^-last}}= sigil, which nothing ever sets; outer specs list unmarked | oresmd_identifiers.hpp.mustache, oresmd_requirements.hpp.mustache, core.py | Accepted | ={{^last}}= sigil + =_mark_last_item(specs)= on outer list; also unescaped the ={{cpp_type}}= tag to its triple-brace unescaped form (double-brace tags HTML-escaped angle brackets in Fields cells, emitting entity garbage into the generated header) |
 | 2 | oresmd_verify.py: broken template path, no context shaping, unreferenced | scripts/oresmd_verify.py | Accepted (dropped) | Removed — dead on arrival; context shaping lives in core.py |
-| 3 | identifiers/requirements archetypes would not reproduce the hand-crafted headers once wired up: 6 of 7 specs lack a =type= Fields row (the hand-crafted header declares instrument_type type = instrument_type::quote in all 7 structs), and the requirements template double-wraps the already-optional =quote_type=, =point=, =vol= rows; the =has_quote_type=, =has_point=, =has_vol=, =generated= guards are template-only, never populated by loader/core | oresmd_identifiers.hpp.mustache, oresmd_requirements.hpp.mustache, 6 asset-class specs | Accepted — deferred to PR 2 | PR 2 wires identifiers/requirements with zero-diff verification against the hand-crafted headers (task Step 8); the loader-side guard population and spec =type= rows land there |
+| 3 | identifiers/requirements archetypes would not reproduce the hand-crafted headers once wired up: 6 of 7 specs lack a =type= Fields row (the hand-crafted header declares instrument_type type = instrument_type::quote in all 7 structs), and the requirements template double-wraps the already-optional =quote_type=, =point=, =vol= rows; the =has_quote_type=, =has_point=, =has_vol=, =generated= guards are template-only, never populated by loader/core | oresmd_identifiers.hpp.mustache, oresmd_requirements.hpp.mustache, 6 asset-class specs | Resolved | PR 2 landed the fix: =type= Fields rows (with =instrument_type::quote= default) in all 7 specs, guards populated by loader/core, verbatim per-spec =cpp_type= handling, and both headers render byte-identical to the hand-crafted files (zero-diff verified) |
 
 * Result
+
+Delivered codegen for oresmd quote types as a new metatype
+(=ores.codegen.oresmd_quote_type=), meeting every Acceptance bullet:
+
+- PR 1 (#1936, merged): infrastructure — metatype registration, org
+  loader, physical-space facet + 8 archetypes, batch manifest with
+  =variant_order=/=parse_order= columns, enums template verified
+  zero-diff against the hand-crafted =oresmd_enums.hpp=.
+- PR 2 (adoption): all 8 outputs render byte-identical to the
+  hand-crafted files — headers (identifiers/requirements: =type= Fields
+  rows in all 7 specs, =has_quote_type=//=has_point=//=has_vol= and
+  =generated= guards now populated by loader/core), parser, projections,
+  resolver, and both test files (static worked examples + spec-table
+  tests).
+- The 7 spec files are the canonical source: compact org tables (Quote
+  types, Fields, Reject keys, Type-gated keys, URI order, Test cases)
+  plus per-class brief sections; extending a family or adding an asset
+  class now means one spec file + one codegen run, with zero-diff
+  enforced by CI.
+- =ores.marketdata= registered in the CI =codegen-drift= job
+  (=--components refdata,reporting,marketdata=); =refdata= and
+  =reporting= verified unaffected — per-line org-verbatim stripping is
+  scoped to the oresmd briefs, entity prose keeps its historical
+  cross-line behavior.
+- Verification: =check_component_drift.py= no drift for all three
+  components; =cmake-sources-drift= and =template-drift= (org archetype
+  ⇄ mustache tangle) clean; local build + ctest clean
+  (linux-clang-debug-make).

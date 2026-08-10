@@ -71,7 +71,6 @@ public:
     std::vector<domain::feed_binding> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all feed bindings, possibly filtered by primary key.
      */

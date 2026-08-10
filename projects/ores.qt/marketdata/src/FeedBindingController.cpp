@@ -171,15 +171,11 @@ void FeedBindingController::onShowHistory(
     showHistoryWindow(feed_binding);
 }
 
-void FeedBindingController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new feed binding";
-
-    auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+void FeedBindingController::wireDetailDialogCommon(FeedBindingDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &FeedBindingDetailDialog::statusMessage,
@@ -189,6 +185,15 @@ void FeedBindingController::showAddWindow() {
             &FeedBindingDetailDialog::errorMessage,
             this,
             &FeedBindingController::errorMessage);
+}
+
+void FeedBindingController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new feed binding";
+
+    auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &FeedBindingDetailDialog::feed_bindingSaved,
             this,
@@ -226,21 +231,10 @@ void FeedBindingController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << feed_binding.ore_key;
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setBinding(feed_binding);
 
-    connect(detailDialog,
-            &FeedBindingDetailDialog::statusMessage,
-            this,
-            &FeedBindingController::statusMessage);
-    connect(detailDialog,
-            &FeedBindingDetailDialog::errorMessage,
-            this,
-            &FeedBindingController::errorMessage);
     connect(detailDialog,
             &FeedBindingDetailDialog::feed_bindingSaved,
             this,
@@ -384,29 +378,9 @@ void FeedBindingController::onOpenVersion(
     }
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setBinding(feed_binding);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &FeedBindingDetailDialog::statusMessage,
-            this,
-            [self = QPointer<FeedBindingController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &FeedBindingDetailDialog::errorMessage,
-            this,
-            [self = QPointer<FeedBindingController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -526,24 +500,13 @@ void FeedBindingController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_feed_binding = feed_binding;
     reverted_feed_binding.version = 0;
     detailDialog->setBinding(reverted_feed_binding);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &FeedBindingDetailDialog::statusMessage,
-            this,
-            &FeedBindingController::statusMessage);
-    connect(detailDialog,
-            &FeedBindingDetailDialog::errorMessage,
-            this,
-            &FeedBindingController::errorMessage);
     connect(detailDialog,
             &FeedBindingDetailDialog::feed_bindingSaved,
             this,

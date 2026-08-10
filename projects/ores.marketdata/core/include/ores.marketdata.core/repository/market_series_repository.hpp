@@ -71,7 +71,6 @@ public:
     std::vector<domain::market_series> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all market series, possibly filtered by primary key.
      */

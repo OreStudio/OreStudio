@@ -5,6 +5,7 @@
 #+description: Quote types for commodity: spot, forward, CPR.
 #+type: ores.codegen.oresmd_quote_type
 #+asset_class: commodity
+#+validate: inline_delegate
 #+authority: commodity
 #+component: ores.marketdata
 #+level: s2
@@ -25,15 +26,24 @@
 The `quote` query key for commodity instruments — the ORE TYPE. Commodity-only;
 only meaningful when `type=quote`.
 
+* Identifier brief
+
+A fully-resolved oresmd identifier for a commodity instrument (asset_class=commodity).
+
+* Requirement brief
+
+A logical, possibly-partial oresmd requirement for a commodity instrument.
+
 * Fields
 
-| name | cpp_type | mandatory | query_key |
-|------+----------+-----------+-----------|
-| commodity_code | std::string | yes | |
-| ccy | std::string | yes | ccy |
-| quote_type | std::optional<commodity_quote_type> | no | quote |
-| point | std::optional<std::string> | no | point |
-| vol | std::optional<volatility_surface_point> | no | |
+| name | cpp_type | mandatory | query_key | default |
+|------+----------+-----------+-----------+---------|
+| commodity_code | std::string | yes | | |
+| ccy | std::string | yes | ccy | |
+| type | instrument_type | yes | type | instrument_type::quote |
+| quote_type | std::optional<commodity_quote_type> | no | quote | |
+| point | std::optional<std::string> | no | point | |
+| vol | std::optional<volatility_surface_point> | no | | |
 
 * Reject keys
 
@@ -43,3 +53,28 @@ only meaningful when `type=quote`.
 | tenor |
 | role |
 | metric |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | COMMODITY/PRICE/GOLD/USD | commodity_spot_quote_key |
+| oresmd://commodity/gold?ccy=usd&type=quote | COMMODITY/PRICE/GOLD/USD | commodity_quote_key_defaults_to_spot |
+| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | COMMODITY_FWD/PRICE/WTI/USD/6M | commodity_fwd_quote_key |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://commodity/gold?ccy=usd&type=quote&quote=spot | round_trip_commodity |
+| oresmd://commodity/wti?ccy=usd&type=quote&quote=fwd&point=6m | round_trip_commodity_fwd |
+| oresmd://commodity/wti?ccy=usd&type=quote&quote=cpr&point=5y | round_trip_commodity_cpr |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://commodity/gold?ccy=usd&type=fixing&quote=fwd | reject_commodity_quote_when_type_not_quote |
+| oresmd://commodity/gold?ccy=usd&type=quote&role=discount | reject_commodity_uri_with_ir_only_role_field |
+| oresmd://commodity/gold?type=quote | reject_commodity_uri_missing_mandatory_ccy |

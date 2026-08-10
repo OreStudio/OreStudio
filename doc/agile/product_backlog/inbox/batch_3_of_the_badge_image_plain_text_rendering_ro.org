@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: B2FDEACD-C4D5-4651-91CF-73CBE26B713A
+:END:
+#+title: Batch 3 of the badge/image/plain-text rendering rollout (tas…
+#+description: Batch 3 of the badge/image/plain-text rendering rollout (task 08547F5A, closing): the audit/classification story is closed and batches 1-2 (badge_key wiring + regenerated entities) shipped. What remains from the implementation task's acceptance is the plain-text documentation leg: for each entity the audit classified as plain-text (no badge/image wiring), record a one-line documented reason per entity, and publish the plain-text-vs-badge-vs-image policy note. Small, documentation-only, no codegen changes expected.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

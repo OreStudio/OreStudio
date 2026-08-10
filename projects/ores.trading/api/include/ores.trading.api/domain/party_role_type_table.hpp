@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_PARTY_ROLE_TYPE_TABLE_HPP
-#define ORES_TRADING_DOMAIN_PARTY_ROLE_TYPE_TABLE_HPP
+#ifndef ORES_TRADING_API_DOMAIN_PARTY_ROLE_TYPE_TABLE_HPP
+#define ORES_TRADING_API_DOMAIN_PARTY_ROLE_TYPE_TABLE_HPP
 
 #include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.api/export.hpp"

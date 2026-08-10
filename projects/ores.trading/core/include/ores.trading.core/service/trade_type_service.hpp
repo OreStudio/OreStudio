@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_TRADE_TYPE_SERVICE_HPP
-#define ORES_TRADING_SERVICE_TRADE_TYPE_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_TRADE_TYPE_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_TRADE_TYPE_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/trade_type_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing trade types.
+ *
+ * Provides a higher-level interface for trade type operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT trade_type_service {
 private:
@@ -47,23 +52,78 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a trade_type_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit trade_type_service(context ctx);
 
-    std::vector<domain::trade_type> list_types();
-
-    std::optional<domain::trade_type> find_type(const std::string& code);
-
-    void save_type(const domain::trade_type& v);
-
-    void save_types(const std::vector<domain::trade_type>& types);
-
-    void remove_type(const std::string& code);
+    /**
+     * @brief Lists trade types with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of trade types for the requested page.
+     */
+    std::vector<domain::trade_type> list_types(std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Removes multiple trade types.
+     * @brief Gets the total count of active trade types.
+     *
+     * @return Total number of active trade types.
      */
-    void remove_types(const std::vector<std::string>& codes);
+    std::uint32_t count_types();
 
+
+    /**
+     * @brief Retrieves a single trade type as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The trade type at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::trade_type> get_type_at_version(const std::string& code,
+                                                          std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single trade type by its primary key.
+     *
+     * @return The trade type if found, std::nullopt otherwise.
+     */
+    std::optional<domain::trade_type> get_type(const std::string& code);
+
+    /**
+     * @brief Saves a trade type (creates or updates).
+     *
+     * @param type The trade type to save.
+     * @throws std::exception on failure.
+     */
+    void save_type(const domain::trade_type& type);
+
+    /**
+     * @brief Saves a batch of trade types.
+     *
+     * @param types The trade types to save.
+     * @throws std::exception on failure.
+     */
+    void save_types(const std::vector<domain::trade_type>& types);
+
+    /**
+     * @brief Deletes a trade type by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_type(const std::string& code);
+
+    /**
+     * @brief Deletes trade types by their primary keys.
+     */
+    void delete_types(const std::vector<std::string>& codes);
+
+    /**
+     * @brief Retrieves all historical versions of a trade type.
+     */
     std::vector<domain::trade_type> get_type_history(const std::string& code);
 
 private:

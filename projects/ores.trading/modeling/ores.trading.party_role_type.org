@@ -24,11 +24,13 @@ Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransf
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique party role type code.
@@ -36,12 +38,8 @@ Unique party role type code.
 Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker'.
 
 #+begin_src cpp :name generator
-std::string(faker::word::noun()) + "_role_" + std::to_string(++counter)
+std::string(faker::word::noun()) + "_role"
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -90,6 +88,15 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :iterator_var: prt
 :END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| code        | Code        |
+| description | Description |
+| modified_by | Modified By |
+| version     | Version     |
 
 ** Custom repository methods
 

@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_TRADE_TYPE_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_TRADE_TYPE_ENTITY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_TYPE_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_TRADE_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
@@ -41,7 +42,7 @@ struct trade_type_entity {
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    std::string product_type;
+    ores::trading::domain::product_type product_type = ores::trading::domain::product_type::swap;
     bool has_options = false;
     bool has_extension = false;
     std::string modified_by;

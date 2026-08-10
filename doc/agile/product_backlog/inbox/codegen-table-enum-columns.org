@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C71DA1C2-1837-4B3A-8FBE-7B070318034F
+:END:
+#+title: Codegen template cpp_domain_type_table.cpp.mustache streams …
+#+description: Codegen template cpp_domain_type_table.cpp.mustache streams enum columns raw (table << iter_var.column), which cannot compile: generated enum classes have no operator<<, only to_string(). trade_type_table.cpp is the first entity table with an enum column (product_type, added in the badge batch-2 trading rollout); it was hand-rendered via to_string(). The template needs an is_enum branch like the existing is_bool/is_optional/is_uuid branches.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

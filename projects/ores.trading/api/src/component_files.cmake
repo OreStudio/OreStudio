@@ -314,7 +314,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/fx_accumulator_instrument_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/fx_forward_instrument_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/fx_vanilla_option_instrument_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/party_role_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/trade_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/trade_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/generator/lifecycle_event_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/generator/trade_identifier_generator.hpp"
@@ -351,6 +353,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/instrument_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/party_role_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_type_protocol.hpp"
 )

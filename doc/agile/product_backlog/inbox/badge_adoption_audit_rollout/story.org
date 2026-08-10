@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :qt:badges:codegen:refdata:ux:architecture:product_backlog:inbox:
 #+created: 2026-07-21
-#+updated: 2026-07-30
+#+updated: 2026-08-10
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -48,12 +48,12 @@ today.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | In progress, batch by batch. Renamed and narrowed at sprint 24 health review: the completed audit/classification is now its own closed story, [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][Audit and classify FK-like/lookup entities for badge/image/plain-text rendering]]; this story carries only the still-open implementation rollout. |
+| Now           | All tasks DONE. Batch 1 (11 refdata entities) shipped as PR #1784; batch 2's cross-component rollout decomposed, with the trading slice (=party_role_type=, =trade_type= full entity shape + regeneration) shipped after. Batch 3's plain-text documentation leg is captured, not lost. |
 | Waiting on    | Nothing.                               |
-| Next          | Continue implementing remaining batches.  |
-| Last touched  | 2026-08-03                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-10                               |
 
 * Acceptance
 
@@ -69,7 +69,7 @@ today.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Implement classified entities in batches]] | STARTED | 2026-07-30 | | Consume [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][the audit/classification]]'s batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time. |
+| [[id:08547F5A-B07C-4429-9EA5-022ACDC882C9][Implement classified entities in batches]] | DONE | 2026-07-30 | 2026-08-10 | Consume [[id:B81335B4-E897-436F-AA02-AD4A7A6F1CD3][the audit/classification]]'s batched list: annotate each entity with badge_key/image wiring as classified, author any missing badge_definition/badge_mapping or image data, and regenerate, one batch at a time. |
 
 * Decisions
 
@@ -84,6 +84,16 @@ rather than deleted, to preserve its own goal/acceptance writeup.
 The two existing tasks (audit, then implement) already had the right
 shape for this merged scope -- broadened their descriptions rather
 than re-scaffolding.
+
+** Batch 3 folded into a capture at close
+
+When batch 2's trading slice closed the implementation task, the
+only remaining acceptance item was the plain-text documentation leg
+(one-line documented reason per plain-text entity, plus the
+rendering-policy note). Filed as capture
+[[id:B2FDEACD-C4D5-4651-91CF-73CBE26B713A][Batch 3 of the badge/image/plain-text rendering rollout]] rather than
+keeping the task STARTED: it is documentation-only and small enough
+to pick up as its own piece of work.
 
 * Out of scope
 

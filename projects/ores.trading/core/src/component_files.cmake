@@ -227,7 +227,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/fx_forward_instrument_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/fx_vanilla_option_instrument_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/fx_vanilla_option_instrument_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/instrument_ref_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/party_role_type_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/party_role_type_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.core/messaging/rates_instrument_handler.hpp"

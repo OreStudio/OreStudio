@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.trading.core/messaging/party_role_type_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
@@ -46,6 +47,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(detail::register_commodity_handlers(nats, ctx, verifier));
     append(detail::register_composite_handlers(nats, ctx, verifier));
     append(detail::register_scripted_handlers(nats, ctx, verifier));
+    append(register_party_role_type_handlers(nats, ctx, verifier));
 
     return subs;
 }

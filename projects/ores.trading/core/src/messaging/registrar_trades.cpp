@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/instrument_ref_handler.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/trade_handler.hpp"
+#include "ores.trading.core/messaging/trade_type_registrar.hpp"
 
 namespace ores::trading::messaging::detail {
 
@@ -89,37 +89,13 @@ register_trade_handlers(ores::nats::service::client& nats,
         }));
 
     // Instrument reference data — floating index types and leg types moved
-    // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); only
-    // trade types remain handled here via instrument_ref_handler.
+    // to ores.refdata (see ores.refdata.core/messaging/registrar.cpp); trade
+    // types are handled by the entity-shaped trade_type handler stack.
 
     // Instrument reference data — trade types
-    subs.push_back(nats.queue_subscribe(std::string(get_trade_types_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            instrument_ref_handler h(nats, ctx, verifier);
-                                            h.list_trade_types(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(save_trade_type_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            instrument_ref_handler h(nats, ctx, verifier);
-                                            h.save_trade_type(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(delete_trade_type_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            instrument_ref_handler h(nats, ctx, verifier);
-                                            h.delete_trade_type(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(get_trade_type_history_request::nats_subject),
-                                        queue,
-                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-                                            instrument_ref_handler h(nats, ctx, verifier);
-                                            h.history_trade_type(std::move(msg));
-                                        }));
+    auto trade_type_subs = register_trade_type_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(), std::make_move_iterator(trade_type_subs.begin()),
+                std::make_move_iterator(trade_type_subs.end()));
 
     return subs;
 }

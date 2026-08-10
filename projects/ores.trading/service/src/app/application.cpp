@@ -36,6 +36,8 @@
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -134,6 +136,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto fx_vanilla_option_instrument_sub =
         ores::trading::service::messaging::register_fx_vanilla_option_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto party_role_type_sub =
+        ores::trading::service::messaging::register_party_role_type_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_type_sub =
+        ores::trading::service::messaging::register_trade_type_event_mapping(event_source,
+                                                                             event_bus,
+                                                                             nats);
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

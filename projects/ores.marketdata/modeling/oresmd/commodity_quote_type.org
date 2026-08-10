@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: C9C888AB-473D-4C91-BC30-9470E4080C5A
+:ID: 74607978-2963-409C-9731-E17F4CA98879
 :END:
 #+title: Commodity oresmd quote type family
 #+description: Quote types for commodity: spot, forward, CPR.

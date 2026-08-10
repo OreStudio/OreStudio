@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 34F2B433-39D6-40CD-AE54-EA7E969646E6
+:END:
+#+title: Task: Run the vendored nats-server binary on all CI platforms
+#+description: Initial task for: Hotfix: macOS CI fails to start NATS server, nats-server not installed
+#+type: task
+#+level: s1
+#+filetags: :fix_macos_ci_nats_server_not_found:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every CI platform must launch NATS from the same pinned nats-server binary -- the vendored v2.14.3 release under external/nats/packages -- installed by an identical Setup NATS server step before the Start NATS server step, so the macOS command-not-found failure is fixed and every platform exercises the same version.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:69D2C83C-F79B-4B52-98B9-F3A8664B0BD8][Hotfix: macOS CI fails to start NATS server, nats-server not installed]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- Every CI workflow (continuous-linux, continuous-macos, continuous-windows, nightly-linux) has a Setup NATS server step before the Start NATS server step
+- The step unpacks the vendored nats-server v2.14.3 release for the platform and puts it on PATH (setup_nats_server.sh; setup_nats_server.ps1 on Windows)
+- The platform-specific NATS installs are gone: nats-server removed from the macOS CTest step brew list, the GitHub-release download removed from Windows CI
+- The Start NATS server step resolves the binary without command not found
+
+* Plan
+
+1. Root cause: on macOS CI the nats-server binary is installed by brew only inside the Run CTest workflow step, which runs after the Start NATS server step launches it — command not found, 30s readiness poll fails. Linux CI installs apt nats-server via env install-packages; Windows CI downloads a GitHub release pinned v2.10.24 — three platforms, three sources, three versions.
+2. Add a shared setup script per platform that unpacks the vendored nats-server v2.14.3 release (external/nats/packages/) into build/nats/vendored/<pkg>/ and prepends it to PATH via GITHUB_PATH: build/scripts/setup_nats_server.sh (Linux/macOS) and the PowerShell equivalent setup_nats_server.ps1 (Windows).
+3. Give every CI workflow — continuous-linux, continuous-macos, continuous-windows, nightly-linux — an identical Setup NATS server step before Start NATS server, and drop the platform-specific NATS installs: nats-server from the macOS CTest brew list, the GitHub-release download from Windows CI.
+4. Verify: bash -n plus functional smoke tests of both scripts (unpack + PATH + version, second run idempotent), yamllint and YAML parse of all four workflows. None of the four workflows run on PRs (schedule/tags only), so the next scheduled runs are the on-runner validation.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

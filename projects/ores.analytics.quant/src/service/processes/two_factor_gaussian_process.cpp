@@ -56,13 +56,13 @@ double ou_decay(double kappa, double dt) {
 } // anonymous namespace
 
 two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
-                           double kappa_y,
-                           double sigma_x,
-                           double sigma_y,
-                           double rho,
-                           double initial_rate,
-                           std::uint32_t seed,
-                           double dt)
+                                                         double kappa_y,
+                                                         double sigma_x,
+                                                         double sigma_y,
+                                                         double rho,
+                                                         double initial_rate,
+                                                         std::uint32_t seed,
+                                                         double dt)
     : kappa_x_(kappa_x)
     , kappa_y_(kappa_y)
     , sigma_x_(sigma_x)
@@ -84,8 +84,9 @@ two_factor_gaussian_process::two_factor_gaussian_process(double kappa_x,
         throw std::invalid_argument("two_factor_gaussian_process: dt must be strictly positive");
 }
 
-two_factor_gaussian_process::two_factor_gaussian_process(
-    const two_factor_gaussian_params& params, std::uint32_t seed, double dt)
+two_factor_gaussian_process::two_factor_gaussian_process(const two_factor_gaussian_params& params,
+                                                         std::uint32_t seed,
+                                                         double dt)
     : two_factor_gaussian_process(params.kappa_x,
                                   params.kappa_y,
                                   params.sigma_x,

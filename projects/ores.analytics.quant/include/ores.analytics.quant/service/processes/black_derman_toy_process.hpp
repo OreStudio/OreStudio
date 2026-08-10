@@ -79,10 +79,8 @@ namespace ores::analytics::quant::service {
  * @return The fitted lattice, ready for the rate_tree walk and
  *         state-price propagation.
  */
-ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree
-build_black_derman_toy_tree(const std::vector<double>& discount_curve,
-                            const std::vector<double>& sigma_path,
-                            double dt);
+ORES_ANALYTICS_QUANT_EXPORT ores::analytics::quant::math::rate_tree build_black_derman_toy_tree(
+    const std::vector<double>& discount_curve, const std::vector<double>& sigma_path, double dt);
 
 /**
  * @brief Black-Derman-Toy short-rate process: a log-normal lattice
@@ -154,8 +152,8 @@ private:
     std::size_t tick_ = 0;
     ores::analytics::quant::math::tree_node node_{0, 0};
     ores::analytics::quant::math::rate_tree tree_;
-    double a_last_;  ///< Flat-extension ladder: shift of the last fitted level.
-    double b_last_;  ///< Flat-extension ladder: spacing of the last fitted level.
+    double a_last_; ///< Flat-extension ladder: shift of the last fitted level.
+    double b_last_; ///< Flat-extension ladder: spacing of the last fitted level.
     std::mt19937 rng_;
     std::uniform_real_distribution<double> uniform_{0.0, 1.0};
 };

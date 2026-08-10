@@ -66,11 +66,10 @@ public:
     ~CurveShapePreviewChart() override = default;
 
     /** @brief Update the model inputs (does not refresh immediately). */
-    void setParameters(
-        const std::string& processType,
-        const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
-        const std::string& fixedLegPaymentFrequencyCode,
-        const std::vector<TemplateRow>& entries);
+    void setParameters(const std::string& processType,
+                       const std::vector<ores::synthetic::messaging::parameter_spec>& parameters,
+                       const std::string& fixedLegPaymentFrequencyCode,
+                       const std::vector<TemplateRow>& entries);
 
     /** @brief Schedule a debounced refresh (~400 ms after the last call). */
     void scheduleRefresh();

@@ -49,9 +49,11 @@ void validate_curve_inputs(const std::vector<double>& discount_curve,
                                         std::to_string(i) + " must lie in (0, 1), got " +
                                         std::to_string(d));
         if (i > 0 && !(d < discount_curve[i - 1]))
-            throw std::invalid_argument(std::string(prefix) + ": discount curve must be strictly "
-                                        "decreasing: the factor at index " + std::to_string(i) +
-                                        " (" + std::to_string(d) + ") is not below its predecessor (" +
+            throw std::invalid_argument(std::string(prefix) +
+                                        ": discount curve must be strictly "
+                                        "decreasing: the factor at index " +
+                                        std::to_string(i) + " (" + std::to_string(d) +
+                                        ") is not below its predecessor (" +
                                         std::to_string(discount_curve[i - 1]) + ")");
     }
     if (sigma_path.empty())
@@ -119,9 +121,11 @@ double calibrate_level(const std::vector<double>& state_prices,
     const double price_sum = std::accumulate(state_prices.begin(), state_prices.end(), 0.0);
     if (!(price_sum > target))
         throw std::invalid_argument("black_derman_toy_process: cannot calibrate a tree level: the "
-                                    "level's state prices sum (" + std::to_string(price_sum) +
+                                    "level's state prices sum (" +
+                                    std::to_string(price_sum) +
                                     ") does not exceed the target discount factor (" +
-                                    std::to_string(target) + "); the input curve is not strictly "
+                                    std::to_string(target) +
+                                    "); the input curve is not strictly "
                                     "decreasing in floating point");
 
     const auto f = [&](double a) {
@@ -222,9 +226,8 @@ black_derman_toy_process::black_derman_toy_process(std::vector<double> discount_
     // taken from the path directly for a single-level tree.
     const auto& last_level = tree_.levels.back();
     a_last_ = last_level[0].log_rate;
-    b_last_ = (last_level.size() > 1)
-        ? last_level[1].log_rate - last_level[0].log_rate
-        : sigma_at(sigma_path, 0) * std::sqrt(dt_);
+    b_last_ = (last_level.size() > 1) ? last_level[1].log_rate - last_level[0].log_rate :
+                                        sigma_at(sigma_path, 0) * std::sqrt(dt_);
 }
 
 black_derman_toy_process::black_derman_toy_process(const black_derman_toy_params& params,
@@ -266,8 +269,7 @@ double black_derman_toy_process::discount_factor(std::size_t ticks_ahead) const 
     // point -- the generic rate_tree contract).
     const std::size_t last_fitted = tree_.levels.size() - 1;
     if (node_.level + ticks_ahead <= last_fitted) {
-        const auto prices =
-            math::propagate_state_prices(tree_, node_, ticks_ahead, dt_);
+        const auto prices = math::propagate_state_prices(tree_, node_, ticks_ahead, dt_);
         double price = 0.0;
         for (const double p : prices)
             price += p;
@@ -290,9 +292,9 @@ double black_derman_toy_process::discount_factor(std::size_t ticks_ahead) const 
         level.resize(k + 1);
         for (std::size_t j = 0; j <= k; ++j) {
             math::rate_tree_node& n = level[j];
-            n.log_rate = (absolute_level < last_fitted)
-                ? tree_.levels[absolute_level][node_.index + j].log_rate
-                : a_last_ + (node_.index + j) * b_last_;
+            n.log_rate = (absolute_level < last_fitted) ?
+                             tree_.levels[absolute_level][node_.index + j].log_rate :
+                             a_last_ + (node_.index + j) * b_last_;
             if (k < ticks_ahead) {
                 n.child_indices = {j, j + 1};
                 n.child_probabilities = {0.5, 0.5};

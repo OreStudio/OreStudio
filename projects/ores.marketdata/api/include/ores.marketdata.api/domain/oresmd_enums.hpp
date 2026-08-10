@@ -90,8 +90,28 @@ enum class ir_quote_type {
  * oresmd_index_family_utils's is_overnight() for the tenor rule.
  */
 enum class index_family {
-    libor, euribor, sofr, estr, sonia, tona, saron, aonia, corra, honia, sora,
-    swestr, nowa, kofr, mibor, zaronia, destr, polonia, nzonia, shibor, tiie, taibor
+    libor,
+    euribor,
+    sofr,
+    estr,
+    sonia,
+    tona,
+    saron,
+    aonia,
+    corra,
+    honia,
+    sora,
+    swestr,
+    nowa,
+    kofr,
+    mibor,
+    zaronia,
+    destr,
+    polonia,
+    nzonia,
+    shibor,
+    tiie,
+    taibor
 };
 
 /**

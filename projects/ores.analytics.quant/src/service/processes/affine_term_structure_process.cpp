@@ -56,16 +56,18 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
         throw std::invalid_argument("affine_term_structure_process: kappas must not be empty");
     if (theta.size() != num_factors || deltas.size() != num_factors ||
         initial_factors.size() != num_factors)
-        throw std::invalid_argument("affine_term_structure_process: theta, deltas and "
-                                    "initial_factors must each have one entry per factor in kappas");
+        throw std::invalid_argument(
+            "affine_term_structure_process: theta, deltas and "
+            "initial_factors must each have one entry per factor in kappas");
     if (sigma.rows() != num_factors || sigma.cols() != num_factors)
         throw std::invalid_argument("affine_term_structure_process: sigma must be square with one "
                                     "row and column per factor in kappas");
     for (std::size_t i = 0; i < num_factors; ++i) {
         if (!(kappas[i] >= 0.0))
             throw std::invalid_argument("affine_term_structure_process: kappas must be "
-                                        "non-negative, got " + std::to_string(kappas[i]) +
-                                        " at index " + std::to_string(i));
+                                        "non-negative, got " +
+                                        std::to_string(kappas[i]) + " at index " +
+                                        std::to_string(i));
     }
     // The diagonal participates in the symmetry check: a NaN diagonal
     // entry fails the self-comparison and is rejected here.
@@ -103,9 +105,9 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
     for (std::size_t i = 0; i < num_factors; ++i)
         for (std::size_t j = 0; j < num_factors; ++j) {
             const double kappa_sum = kappas[i] + kappas[j];
-            const double factor = (kappa_sum > small_kappa_threshold)
-                ? (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum
-                : dt_;
+            const double factor = (kappa_sum > small_kappa_threshold) ?
+                                      (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum :
+                                      dt_;
             sigma_dt_(i, j) = sigma(i, j) * factor;
         }
 
@@ -116,8 +118,9 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
     // semidefiniteness of the Hadamard product, so this call can only
     // reject a numerical rounding failure.
     cholesky_ = math::psd_matrix_square_root(
-        sigma_dt_, "affine_term_structure_process: sigma must be positive semidefinite: "
-                   "its per-tick covariance is not");
+        sigma_dt_,
+        "affine_term_structure_process: sigma must be positive semidefinite: "
+        "its per-tick covariance is not");
 
     // Scratch for the standard-normal shocks: allocated once per
     // construction, reused by every next() call.

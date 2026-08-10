@@ -96,8 +96,9 @@ void write_zz_country_sentinel(scoped_database_helper& h,
 // accumulates pairs written by earlier tests in this process, so each
 // test seeds its own parents -- like write_zz_country_sentinel does for
 // calendars.
-std::vector<currency_pair> write_synthetic_pairs(
-    scoped_database_helper& h, ores::utility::generation::generation_context& gctx) {
+std::vector<currency_pair>
+write_synthetic_pairs(scoped_database_helper& h,
+                      ores::utility::generation::generation_context& gctx) {
     // This process's currency counter has moved past the X-0/X-1 codes
     // the pair generator hardcodes, so stamp them explicitly.
     auto currencies = generate_synthetic_currencies(2, gctx);

@@ -40,8 +40,8 @@
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
-#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.synthetic.service/messaging/event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -174,8 +174,9 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
     // Row-based parameters: group the config's {parameter_definition_id, value} rows by config id
     // (the generated repository has no parent-scoped read -- same pattern as entries_by_config),
     // and load the system-tenant definitions catalogue once; make_ir_curve_feed joins the two.
-    std::map<boost::uuids::uuid,
-             std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
+    std::map<
+        boost::uuids::uuid,
+        std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
         values_by_config;
     for (const auto& v : values)
         values_by_config[v.config_id].push_back(v);

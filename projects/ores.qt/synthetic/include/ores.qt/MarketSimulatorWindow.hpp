@@ -343,7 +343,8 @@ private:
     // Row-based process parameters: value rows grouped by config id (child rows, keyed by parent
     // -- the codegen repository has no parent-scoped read), plus the system-tenant parameter
     // definitions catalogue the summary page joins them onto to display names/values.
-    std::map<std::string, std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>>
+    std::map<std::string,
+             std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>>
         irCurveValuesByConfig_;
     std::vector<synthetic::domain::yield_curve_process_parameter_definition> parameterDefinitions_;
     std::map<std::string, synthetic::domain::folder> folders_;

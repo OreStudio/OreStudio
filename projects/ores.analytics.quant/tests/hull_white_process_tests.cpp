@@ -286,12 +286,14 @@ TEST_CASE("hull_white_process struct constructor matches flat constructor",
     using ores::analytics::quant::service::hull_white_params;
     using ores::analytics::quant::service::hull_white_process;
 
-    const hull_white_params params{.kappa = 0.3, .theta = 0.03, .sigma = 0.01, .initial_rate = 0.03};
+    const hull_white_params params{
+        .kappa = 0.3, .theta = 0.03, .sigma = 0.01, .initial_rate = 0.03};
     const std::uint32_t seed = 5;
     const double dt = 1.0 / 12.0;
 
     hull_white_process from_struct(params, seed, dt);
-    hull_white_process from_flat(params.kappa, {params.theta}, params.sigma, params.initial_rate, seed, dt);
+    hull_white_process from_flat(
+        params.kappa, {params.theta}, params.sigma, params.initial_rate, seed, dt);
 
     for (int i = 0; i < 20; ++i) {
         CHECK(from_struct.next() == from_flat.next());

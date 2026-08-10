@@ -115,9 +115,14 @@ TEST_CASE("affine one-factor reduces to hull-white", "[affine_term_structure_pro
     for (const double dt : {1.0, 0.25}) {
         // sigma is the instantaneous covariance matrix: its diagonal is
         // the variance sigma^2, not the volatility.
-        affine_term_structure_process affine(
-            vector({kappa}), matrix({{sigma * sigma}}), vector({theta}), 0.0, vector({1.0}),
-            vector({initial_rate}), 42, dt);
+        affine_term_structure_process affine(vector({kappa}),
+                                             matrix({{sigma * sigma}}),
+                                             vector({theta}),
+                                             0.0,
+                                             vector({1.0}),
+                                             vector({initial_rate}),
+                                             42,
+                                             dt);
         hull_white_process hull_white(kappa, {theta}, sigma, initial_rate, 42, dt);
 
         const std::size_t ticks = 8;
@@ -136,9 +141,14 @@ TEST_CASE("affine one-factor reduces to vasicek", "[affine_term_structure_proces
     const double theta = 0.04;
     const double sigma = 0.2;
     const double initial_rate = 0.03;
-    affine_term_structure_process affine(
-        vector({kappa}), matrix({{sigma * sigma}}), vector({theta}), 0.0, vector({1.0}),
-        vector({initial_rate}), 7, 0.5);
+    affine_term_structure_process affine(vector({kappa}),
+                                         matrix({{sigma * sigma}}),
+                                         vector({theta}),
+                                         0.0,
+                                         vector({1.0}),
+                                         vector({initial_rate}),
+                                         7,
+                                         0.5);
     vasicek_process vasicek(kappa, theta, sigma, initial_rate, 7, 0.5);
     for (std::size_t t = 0; t < 6; ++t) {
         REQUIRE(affine.next() == Catch::Approx(vasicek.next()).epsilon(1e-12));
@@ -155,10 +165,15 @@ TEST_CASE("affine two-factor reduces to g2", "[affine_term_structure_process]") 
     const double sigma_y = 0.2;
     const double rho = 0.5;
     const double initial_rate = 0.05;
-    affine_term_structure_process affine(
-        vector({kappa, kappa}), matrix({{sigma_x * sigma_x, rho * sigma_x * sigma_y},
-                                        {rho * sigma_x * sigma_y, sigma_y * sigma_y}}),
-        vector({0.0, 0.0}), 0.0, vector({1.0, 1.0}), vector({initial_rate, 0.0}), 42, 0.25);
+    affine_term_structure_process affine(vector({kappa, kappa}),
+                                         matrix({{sigma_x * sigma_x, rho * sigma_x * sigma_y},
+                                                 {rho * sigma_x * sigma_y, sigma_y * sigma_y}}),
+                                         vector({0.0, 0.0}),
+                                         0.0,
+                                         vector({1.0, 1.0}),
+                                         vector({initial_rate, 0.0}),
+                                         42,
+                                         0.25);
     two_factor_gaussian_process g2(kappa, kappa, sigma_x, sigma_y, rho, initial_rate, 42, 0.25);
     const std::size_t ticks = 6;
     for (std::size_t t = 0; t < ticks; ++t) {
@@ -169,11 +184,15 @@ TEST_CASE("affine two-factor reduces to g2", "[affine_term_structure_process]") 
 }
 
 TEST_CASE("affine one-tick discount is exp(-r dt)", "[affine_term_structure_process]") {
-    affine_term_structure_process p(
-        vector({0.4, 0.2}), matrix({{0.09, 0.03}, {0.03, 0.04}}), vector({0.05, 0.03}),
-        0.01, vector({1.0, 0.5}), vector({0.04, 0.02}), 42, 0.5);
-    REQUIRE(p.discount_factor(1) ==
-            Catch::Approx(std::exp(-p.current() * 0.5)).epsilon(1e-15));
+    affine_term_structure_process p(vector({0.4, 0.2}),
+                                    matrix({{0.09, 0.03}, {0.03, 0.04}}),
+                                    vector({0.05, 0.03}),
+                                    0.01,
+                                    vector({1.0, 0.5}),
+                                    vector({0.04, 0.02}),
+                                    42,
+                                    0.5);
+    REQUIRE(p.discount_factor(1) == Catch::Approx(std::exp(-p.current() * 0.5)).epsilon(1e-15));
 }
 
 TEST_CASE("affine zero-sigma deterministic curve across dt", "[affine_term_structure_process]") {
@@ -185,11 +204,18 @@ TEST_CASE("affine zero-sigma deterministic curve across dt", "[affine_term_struc
     const double delta_0 = 0.02;
     const double x0 = 0.03;
     for (const double dt : {1.0, 0.5, 0.25, 0.1}) {
-        affine_term_structure_process p(
-            vector({kappa}), matrix({{0.0}}), vector({theta}), delta_0, vector({1.0}),
-            vector({x0}), 42, dt);
+        affine_term_structure_process p(vector({kappa}),
+                                        matrix({{0.0}}),
+                                        vector({theta}),
+                                        delta_0,
+                                        vector({1.0}),
+                                        vector({x0}),
+                                        42,
+                                        dt);
         const std::size_t ticks = 6;
-        const auto step = [&](double x) { return theta + std::exp(-kappa * dt) * (x - theta); };
+        const auto step = [&](double x) {
+            return theta + std::exp(-kappa * dt) * (x - theta);
+        };
 
         double expected = 1.0;
         double x = x0;
@@ -210,9 +236,14 @@ TEST_CASE("affine zero-sigma deterministic curve across dt", "[affine_term_struc
 TEST_CASE("affine zero deltas price a constant rate", "[affine_term_structure_process]") {
     // deltas = 0 makes r = delta_0 regardless of the moving factors, and
     // the discount factor telescopes to exp(-delta_0 * horizon).
-    affine_term_structure_process p(
-        vector({0.5}), matrix({{0.2}}), vector({0.03}), 0.04, vector({0.0}),
-        vector({0.02}), 42, 0.25);
+    affine_term_structure_process p(vector({0.5}),
+                                    matrix({{0.2}}),
+                                    vector({0.03}),
+                                    0.04,
+                                    vector({0.0}),
+                                    vector({0.02}),
+                                    42,
+                                    0.25);
     REQUIRE(p.current() == Catch::Approx(0.04).epsilon(1e-15));
     const std::size_t ticks = 5;
     REQUIRE(p.discount_factor(ticks) ==
@@ -237,10 +268,14 @@ TEST_CASE("affine correlated moments match the exact transition",
     running_mean_variance rate_moments;
 
     for (std::size_t i = 0; i < paths; ++i) {
-        affine_term_structure_process p(
-            vector({0.4, 0.2}), matrix({{0.09, 0.03}, {0.03, 0.04}}),
-            vector({0.05, 0.03}), 0.0, vector({1.0, 1.0}), vector({0.04, 0.02}),
-            static_cast<std::uint32_t>(42 + i), 1.0);
+        affine_term_structure_process p(vector({0.4, 0.2}),
+                                        matrix({{0.09, 0.03}, {0.03, 0.04}}),
+                                        vector({0.05, 0.03}),
+                                        0.0,
+                                        vector({1.0, 1.0}),
+                                        vector({0.04, 0.02}),
+                                        static_cast<std::uint32_t>(42 + i),
+                                        1.0);
         const double rate = p.next();
         moments.add(p.factors());
         rate_moments.add(rate);
@@ -257,17 +292,20 @@ TEST_CASE("affine correlated moments match the exact transition",
     REQUIRE(covariance(1, 0) == Catch::Approx(covariance(0, 1)).epsilon(1e-12));
 
     REQUIRE(rate_moments.mean == Catch::Approx(0.06510949200886379).margin(3e-3));
-    REQUIRE(rate_moments.sample_variance() ==
-            Catch::Approx(0.14003732332381700).epsilon(1e-2));
+    REQUIRE(rate_moments.sample_variance() == Catch::Approx(0.14003732332381700).epsilon(1e-2));
 }
 
 TEST_CASE("affine three-factor sanity", "[affine_term_structure_process]") {
     // sigma = 0 with non-negative factors: rates stay positive and the
     // discounts are strictly decreasing and finite.
-    affine_term_structure_process p(
-        vector({0.5, 0.3, 0.2}), matrix({{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}),
-        vector({0.04, 0.03, 0.02}), 0.0, vector({1.0, 1.0, 1.0}),
-        vector({0.03, 0.02, 0.01}), 42, 1.0);
+    affine_term_structure_process p(vector({0.5, 0.3, 0.2}),
+                                    matrix({{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}),
+                                    vector({0.04, 0.03, 0.02}),
+                                    0.0,
+                                    vector({1.0, 1.0, 1.0}),
+                                    vector({0.03, 0.02, 0.01}),
+                                    42,
+                                    1.0);
     REQUIRE(p.current() == Catch::Approx(0.06).epsilon(1e-12));
     double previous = 1.0;
     for (std::size_t n = 1; n <= 5; ++n) {
@@ -279,8 +317,7 @@ TEST_CASE("affine three-factor sanity", "[affine_term_structure_process]") {
     }
 }
 
-TEST_CASE("affine params struct equals scalar construction",
-          "[affine_term_structure_process]") {
+TEST_CASE("affine params struct equals scalar construction", "[affine_term_structure_process]") {
     affine_term_structure_params params;
     params.kappas = vector({0.4, 0.2});
     params.sigma = matrix({{0.09, 0.03}, {0.03, 0.04}});
@@ -290,9 +327,14 @@ TEST_CASE("affine params struct equals scalar construction",
     params.initial_factors = vector({0.04, 0.02});
 
     affine_term_structure_process from_params(params, 99, 0.25);
-    affine_term_structure_process from_scalars(
-        vector({0.4, 0.2}), matrix({{0.09, 0.03}, {0.03, 0.04}}), vector({0.05, 0.03}),
-        0.01, vector({1.0, 0.5}), vector({0.04, 0.02}), 99, 0.25);
+    affine_term_structure_process from_scalars(vector({0.4, 0.2}),
+                                               matrix({{0.09, 0.03}, {0.03, 0.04}}),
+                                               vector({0.05, 0.03}),
+                                               0.01,
+                                               vector({1.0, 0.5}),
+                                               vector({0.04, 0.02}),
+                                               99,
+                                               0.25);
     for (std::size_t t = 0; t < 6; ++t) {
         REQUIRE(from_params.next() == from_scalars.next());
         REQUIRE(from_params.discount_factor(3) == from_scalars.discount_factor(3));
@@ -301,9 +343,14 @@ TEST_CASE("affine params struct equals scalar construction",
 
 TEST_CASE("affine seeds determine the path", "[affine_term_structure_process]") {
     const auto path = [](std::uint32_t seed) {
-        affine_term_structure_process p(
-            vector({0.4, 0.2}), matrix({{0.09, 0.03}, {0.03, 0.04}}),
-            vector({0.05, 0.03}), 0.0, vector({1.0, 1.0}), vector({0.04, 0.02}), seed, 1.0);
+        affine_term_structure_process p(vector({0.4, 0.2}),
+                                        matrix({{0.09, 0.03}, {0.03, 0.04}}),
+                                        vector({0.05, 0.03}),
+                                        0.0,
+                                        vector({1.0, 1.0}),
+                                        vector({0.04, 0.02}),
+                                        seed,
+                                        1.0);
         std::vector<double> rates;
         for (std::size_t t = 0; t < 5; ++t)
             rates.push_back(p.next());
@@ -322,43 +369,69 @@ TEST_CASE("affine rejects invalid parameters", "[affine_term_structure_process]"
 
     // A valid construction, as the baseline for the single-invalid-input
     // cases below.
-    REQUIRE_NOTHROW(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
-                                                  two_deltas, two_factors, 42, 1.0));
+    REQUIRE_NOTHROW(affine_term_structure_process(
+        two_kappas, valid_sigma, two_theta, 0.0, two_deltas, two_factors, 42, 1.0));
 
-    REQUIRE_THROWS_AS(affine_term_structure_process(Eigen::VectorXd(), valid_sigma, two_theta,
-                                                    0.0, two_deltas, two_factors, 42, 1.0),
-                      std::invalid_argument); // empty kappas
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, vector({0.05}),
-                                                    0.0, two_deltas, two_factors, 42, 1.0),
-                      std::invalid_argument); // theta size mismatch
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
-                                                    vector({1.0}), two_factors, 42, 1.0),
-                      std::invalid_argument); // deltas size mismatch
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
-                                                    two_deltas, vector({0.04}), 42, 1.0),
-                      std::invalid_argument); // initial_factors size mismatch
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, matrix({{0.09, 0.03, 0.01},
-                                                                        {0.03, 0.04, 0.01}}),
-                                                    two_theta, 0.0, two_deltas, two_factors, 42,
-                                                    1.0),
-                      std::invalid_argument); // sigma not square
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, matrix({{0.09}}), two_theta, 0.0,
-                                                    two_deltas, two_factors, 42, 1.0),
-                      std::invalid_argument); // sigma wrong size
-    REQUIRE_THROWS_AS(affine_term_structure_process(vector({-0.1, 0.2}), valid_sigma, two_theta,
-                                                    0.0, two_deltas, two_factors, 42, 1.0),
-                      std::invalid_argument); // negative kappa
-    REQUIRE_THROWS_AS(affine_term_structure_process(
-                          vector({std::numeric_limits<double>::quiet_NaN(), 0.2}), valid_sigma,
-                          two_theta, 0.0, two_deltas, two_factors, 42, 1.0),
-                      std::invalid_argument); // NaN kappa
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, matrix({{0.09, 0.02},
-                                                                        {0.03, 0.04}}),
-                                                    two_theta, 0.0, two_deltas, two_factors, 42,
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            Eigen::VectorXd(), valid_sigma, two_theta, 0.0, two_deltas, two_factors, 42, 1.0),
+        std::invalid_argument); // empty kappas
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, valid_sigma, vector({0.05}), 0.0, two_deltas, two_factors, 42, 1.0),
+        std::invalid_argument); // theta size mismatch
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, valid_sigma, two_theta, 0.0, vector({1.0}), two_factors, 42, 1.0),
+        std::invalid_argument); // deltas size mismatch
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, valid_sigma, two_theta, 0.0, two_deltas, vector({0.04}), 42, 1.0),
+        std::invalid_argument); // initial_factors size mismatch
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(two_kappas,
+                                      matrix({{0.09, 0.03, 0.01}, {0.03, 0.04, 0.01}}),
+                                      two_theta,
+                                      0.0,
+                                      two_deltas,
+                                      two_factors,
+                                      42,
+                                      1.0),
+        std::invalid_argument); // sigma not square
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, matrix({{0.09}}), two_theta, 0.0, two_deltas, two_factors, 42, 1.0),
+        std::invalid_argument); // sigma wrong size
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            vector({-0.1, 0.2}), valid_sigma, two_theta, 0.0, two_deltas, two_factors, 42, 1.0),
+        std::invalid_argument); // negative kappa
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(vector({std::numeric_limits<double>::quiet_NaN(), 0.2}),
+                                      valid_sigma,
+                                      two_theta,
+                                      0.0,
+                                      two_deltas,
+                                      two_factors,
+                                      42,
+                                      1.0),
+        std::invalid_argument); // NaN kappa
+    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas,
+                                                    matrix({{0.09, 0.02}, {0.03, 0.04}}),
+                                                    two_theta,
+                                                    0.0,
+                                                    two_deltas,
+                                                    two_factors,
+                                                    42,
                                                     1.0),
                       std::invalid_argument); // asymmetric sigma
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, matrix({{1.0, 2.0}, {2.0, 1.0}}),
-                                                    two_theta, 0.0, two_deltas, two_factors, 42,
+    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas,
+                                                    matrix({{1.0, 2.0}, {2.0, 1.0}}),
+                                                    two_theta,
+                                                    0.0,
+                                                    two_deltas,
+                                                    two_factors,
+                                                    42,
                                                     1.0),
                       std::invalid_argument); // indefinite sigma
     // Indefinite sigma is rejected on the raw input even when the
@@ -369,22 +442,28 @@ TEST_CASE("affine rejects invalid parameters", "[affine_term_structure_process]"
     // definite -- the per-tick check alone would let it through.
     REQUIRE_THROWS_AS(affine_term_structure_process(vector({0.01, 10.0}),
                                                     matrix({{1.0, 2.0}, {2.0, 1.0}}),
-                                                    two_theta, 0.0, two_deltas, two_factors, 42,
+                                                    two_theta,
+                                                    0.0,
+                                                    two_deltas,
+                                                    two_factors,
+                                                    42,
                                                     1.0),
                       std::invalid_argument); // indefinite sigma, damped per-tick
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
-                                                    two_deltas, two_factors, 42, 0.0),
-                      std::invalid_argument); // zero dt
-    REQUIRE_THROWS_AS(affine_term_structure_process(two_kappas, valid_sigma, two_theta, 0.0,
-                                                    two_deltas, two_factors, 42, -1.0),
-                      std::invalid_argument); // negative dt
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, valid_sigma, two_theta, 0.0, two_deltas, two_factors, 42, 0.0),
+        std::invalid_argument); // zero dt
+    REQUIRE_THROWS_AS(
+        affine_term_structure_process(
+            two_kappas, valid_sigma, two_theta, 0.0, two_deltas, two_factors, 42, -1.0),
+        std::invalid_argument); // negative dt
 
     // The rejections carry the process name, not a bare message.
     {
         bool caught = false;
         try {
-            affine_term_structure_process p(two_kappas, valid_sigma, vector({0.05}), 0.0,
-                                            two_deltas, two_factors, 42, 1.0);
+            affine_term_structure_process p(
+                two_kappas, valid_sigma, vector({0.05}), 0.0, two_deltas, two_factors, 42, 1.0);
         } catch (const std::invalid_argument& e) {
             caught = true;
             REQUIRE(std::string(e.what()).find("affine_term_structure_process:") !=
@@ -395,8 +474,14 @@ TEST_CASE("affine rejects invalid parameters", "[affine_term_structure_process]"
     {
         bool caught = false;
         try {
-            affine_term_structure_process p(two_kappas, matrix({{1.0, 2.0}, {2.0, 1.0}}),
-                                            two_theta, 0.0, two_deltas, two_factors, 42, 1.0);
+            affine_term_structure_process p(two_kappas,
+                                            matrix({{1.0, 2.0}, {2.0, 1.0}}),
+                                            two_theta,
+                                            0.0,
+                                            two_deltas,
+                                            two_factors,
+                                            42,
+                                            1.0);
         } catch (const std::invalid_argument& e) {
             caught = true;
             REQUIRE(std::string(e.what()).find("affine_term_structure_process:") !=

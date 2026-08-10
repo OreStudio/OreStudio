@@ -75,7 +75,9 @@ struct rate_tree {
     std::vector<std::vector<rate_tree_node>> levels;
 
     /// Number of stored levels (each one simulation tick).
-    std::size_t step_count() const { return levels.size(); }
+    std::size_t step_count() const {
+        return levels.size();
+    }
 };
 
 /**
@@ -121,10 +123,7 @@ ORES_ANALYTICS_QUANT_EXPORT tree_node next_tree_node(const rate_tree& tree,
  * @return The state-price vector at level start.level + steps.
  */
 ORES_ANALYTICS_QUANT_EXPORT std::vector<double>
-propagate_state_prices(const rate_tree& tree,
-                       const tree_node& start,
-                       std::size_t steps,
-                       double dt);
+propagate_state_prices(const rate_tree& tree, const tree_node& start, std::size_t steps, double dt);
 
 } // namespace ores::analytics::quant::math
 

@@ -172,7 +172,8 @@ TEST_CASE("black_karasinski_process ln r is a Gaussian OU with the exact moments
 
     running_moments one_tick, two_ticks;
     for (std::size_t path = 0; path < paths; ++path) {
-        black_karasinski_process p(kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+        black_karasinski_process p(
+            kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
         const double x1 = std::log(p.next());
         const double x2 = std::log(p.next());
         one_tick.add(x1);
@@ -208,7 +209,8 @@ TEST_CASE("black_karasinski_process tree price agrees with Monte Carlo",
     const std::size_t paths = 100000;
     double sum = 0.0;
     for (std::size_t path = 0; path < paths; ++path) {
-        black_karasinski_process m(kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+        black_karasinski_process m(
+            kappa, theta, sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
         double product = 1.0;
         for (std::size_t i = 0; i < ticks; ++i)
             product *= std::exp(-m.next() * dt);
@@ -243,8 +245,10 @@ TEST_CASE("black_karasinski_process with kappa <= 0 degenerates to a driftless r
     const std::size_t paths = 200000;
     running_moments zero_kappa, negative_kappa;
     for (std::size_t path = 0; path < paths; ++path) {
-        black_karasinski_process a(0.0, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
-        black_karasinski_process b(-0.2, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+        black_karasinski_process a(
+            0.0, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
+        black_karasinski_process b(
+            -0.2, std::log(0.04), sigma, r0, 42 + static_cast<std::uint32_t>(path), dt);
         zero_kappa.add(std::log(a.next()));
         negative_kappa.add(std::log(b.next()));
     }
@@ -308,8 +312,7 @@ TEST_CASE("black_karasinski_process discount_factor decreases monotonically with
     }
 }
 
-TEST_CASE("black_karasinski_process rejects invalid parameters",
-          "[black_karasinski_process]") {
+TEST_CASE("black_karasinski_process rejects invalid parameters", "[black_karasinski_process]") {
     CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, -0.1, 0.05), std::invalid_argument);
     CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, 0.0), std::invalid_argument);
     CHECK_THROWS_AS(black_karasinski_process(0.3, 0.0, 0.2, -0.02), std::invalid_argument);
@@ -355,7 +358,8 @@ TEST_CASE("build_black_karasinski_tree root branches symmetrically with the exac
     // mean offset is 0, so temp = 0, e = 0 and the probabilities are the
     // classic (1/6, 2/3, 1/6).
     const double kappa = std::log(2.0), dt = 1.0;
-    const auto tree = build_black_karasinski_tree(std::log(0.05), kappa, std::log(0.04), 0.3, dt, 2);
+    const auto tree =
+        build_black_karasinski_tree(std::log(0.05), kappa, std::log(0.04), 0.3, dt, 2);
     REQUIRE(tree.levels[0][0].child_indices.size() == 3);
     CHECK(tree.levels[0][0].child_indices[0] == 0);
     CHECK(tree.levels[0][0].child_indices[1] == 1);
@@ -371,7 +375,8 @@ TEST_CASE("build_black_karasinski_tree matches mean and variance at a shifted no
     // is 0.5, lround(0.5) = 1 (half away from zero), so e = -0.5 exactly
     // and the probabilities are the closed values below.
     const double kappa = std::log(2.0), dt = 1.0;
-    const auto tree = build_black_karasinski_tree(std::log(0.05), kappa, std::log(0.04), 0.3, dt, 5);
+    const auto tree =
+        build_black_karasinski_tree(std::log(0.05), kappa, std::log(0.04), 0.3, dt, 5);
     const auto& node = tree.levels[1][2];
     REQUIRE(node.child_indices.size() == 3);
     CHECK(node.child_indices[0] == 2);
@@ -398,8 +403,8 @@ TEST_CASE("build_black_karasinski_tree is valid for any horizon", "[black_karasi
     // target inside the next level, and every probability vector summing
     // to 1, for arbitrarily deep trees and for the driftless branch.
     const std::vector<std::pair<double, double>> cases = {
-        {2.0, 0.8},  // kappa*dt = 2 -- far beyond a binomial's validity
-        {0.0, 1.0},  // driftless branch
+        {2.0, 0.8}, // kappa*dt = 2 -- far beyond a binomial's validity
+        {0.0, 1.0}, // driftless branch
     };
     for (const auto& [kappa, sigma] : cases) {
         const auto tree =
@@ -429,7 +434,8 @@ TEST_CASE("build_black_karasinski_tree is valid for any horizon", "[black_karasi
 }
 
 TEST_CASE("black_karasinski_tree walk stays on stored nodes", "[black_karasinski_process]") {
-    const auto tree = build_black_karasinski_tree(std::log(0.05), 0.6, std::log(0.04), 0.3, 0.25, 20);
+    const auto tree =
+        build_black_karasinski_tree(std::log(0.05), 0.6, std::log(0.04), 0.3, 0.25, 20);
     std::mt19937 rng(3);
     tree_node node{0, 0};
     for (int i = 0; i < 2000; ++i) {
@@ -443,8 +449,7 @@ TEST_CASE("black_karasinski_tree walk stays on stored nodes", "[black_karasinski
     }
 }
 
-TEST_CASE("build_black_karasinski_tree rejects invalid parameters",
-          "[black_karasinski_process]") {
+TEST_CASE("build_black_karasinski_tree rejects invalid parameters", "[black_karasinski_process]") {
     CHECK_THROWS_AS(build_black_karasinski_tree(std::log(0.05), 0.3, 0.0, -0.1, 1.0, 2),
                     std::invalid_argument);
     CHECK_THROWS_AS(build_black_karasinski_tree(std::log(0.05), 0.3, 0.0, 0.2, 0.0, 2),

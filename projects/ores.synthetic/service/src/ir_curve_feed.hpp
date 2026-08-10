@@ -157,18 +157,17 @@ private:
  * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
  * is found (or the config has no DEPOSIT entry to anchor on).
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::shared_ptr<ir_curve_feed>
-make_ir_curve_feed(ores::nats::service::client& nats,
-                   ores::nats::service::nats_client& auth_nats,
-                   const ores::synthetic::domain::ir_curve_generation_config& cfg,
-                   const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
-                   const std::vector<
-                       ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
-                       values,
-                   const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
-                       definitions,
-                   const ir_curve_refdata_context& refctx,
-                   const std::string& caller_bearer_token = {});
+ORES_SYNTHETIC_SERVICE_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
+    ores::nats::service::client& nats,
+    ores::nats::service::nats_client& auth_nats,
+    const ores::synthetic::domain::ir_curve_generation_config& cfg,
+    const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
+    const std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>&
+        values,
+    const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
+        definitions,
+    const ir_curve_refdata_context& refctx,
+    const std::string& caller_bearer_token = {});
 
 /**
  * @brief Picks the vintage-lookup anchor entry from a resolved Curve Template: the DEPOSIT entry

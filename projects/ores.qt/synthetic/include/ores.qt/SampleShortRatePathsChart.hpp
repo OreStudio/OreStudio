@@ -60,9 +60,8 @@ public:
     ~SampleShortRatePathsChart() override = default;
 
     /** @brief Update the model inputs (does not refresh immediately). */
-    void setParameters(
-        const std::string& processType,
-        const std::vector<ores::synthetic::messaging::parameter_spec>& parameters);
+    void setParameters(const std::string& processType,
+                       const std::vector<ores::synthetic::messaging::parameter_spec>& parameters);
 
     /** @brief Schedule a debounced refresh (~400 ms after the last call). */
     void scheduleRefresh();

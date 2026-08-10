@@ -33,12 +33,8 @@ namespace {
 const double small_kappa_threshold = std::sqrt(std::numeric_limits<double>::epsilon());
 }
 
-math::rate_tree build_black_karasinski_tree(double log_rate,
-                                      double kappa,
-                                      double theta,
-                                      double sigma,
-                                      double dt,
-                                      std::size_t steps) {
+math::rate_tree build_black_karasinski_tree(
+    double log_rate, double kappa, double theta, double sigma, double dt, std::size_t steps) {
     if (sigma < 0.0)
         throw std::invalid_argument("build_black_karasinski_tree: sigma must be non-negative");
     if (dt <= 0.0)
@@ -49,9 +45,9 @@ math::rate_tree build_black_karasinski_tree(double log_rate,
     // The level-center update below then reads theta + (center - theta) * 1,
     // i.e. the center stays put -- the same formula in both branches.
     const double decay = kappa > small_kappa_threshold ? std::exp(-kappa * dt) : 1.0;
-    const double variance = kappa > small_kappa_threshold
-        ? sigma * sigma * (1.0 - decay * decay) / (2.0 * kappa)
-        : sigma * sigma * dt;
+    const double variance = kappa > small_kappa_threshold ?
+                                sigma * sigma * (1.0 - decay * decay) / (2.0 * kappa) :
+                                sigma * sigma * dt;
     const double spacing = std::sqrt(3.0 * variance);
 
     math::rate_tree tree;
@@ -72,8 +68,7 @@ math::rate_tree build_black_karasinski_tree(double log_rate,
                 const long temp = std::lround(offset * decay);
                 const double e = offset * decay - static_cast<double>(temp);
                 const double e2 = e * e;
-                const std::size_t base =
-                    static_cast<std::size_t>(static_cast<long>(i + 1) + temp);
+                const std::size_t base = static_cast<std::size_t>(static_cast<long>(i + 1) + temp);
                 node.child_indices = {base - 1, base, base + 1};
                 node.child_probabilities = {(1.0 + 3.0 * e2 - 3.0 * e) / 6.0,
                                             (2.0 - 3.0 * e2) / 3.0,
@@ -85,12 +80,8 @@ math::rate_tree build_black_karasinski_tree(double log_rate,
     return tree;
 }
 
-black_karasinski_process::black_karasinski_process(double kappa,
-                                                   double theta,
-                                                   double sigma,
-                                                   double initial_rate,
-                                                   std::uint32_t seed,
-                                                   double dt)
+black_karasinski_process::black_karasinski_process(
+    double kappa, double theta, double sigma, double initial_rate, std::uint32_t seed, double dt)
     : kappa_(kappa)
     , theta_(theta)
     , sigma_(sigma)
@@ -110,7 +101,8 @@ black_karasinski_process::black_karasinski_process(double kappa,
 black_karasinski_process::black_karasinski_process(const black_karasinski_params& params,
                                                    std::uint32_t seed,
                                                    double dt)
-    : black_karasinski_process(params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
+    : black_karasinski_process(
+          params.kappa, params.theta, params.sigma, params.initial_rate, seed, dt) {}
 
 double black_karasinski_process::next() {
     const double z = normal_(rng_);
@@ -153,8 +145,7 @@ double black_karasinski_process::discount_factor(std::size_t ticks_ahead) const 
 
     const math::rate_tree tree =
         build_black_karasinski_tree(log_rate_, kappa_, theta_, sigma_, dt_, ticks_ahead);
-    const auto prices =
-        math::propagate_state_prices(tree, math::tree_node{0, 0}, ticks_ahead, dt_);
+    const auto prices = math::propagate_state_prices(tree, math::tree_node{0, 0}, ticks_ahead, dt_);
     double price = 0.0;
     for (const double p : prices)
         price += p;

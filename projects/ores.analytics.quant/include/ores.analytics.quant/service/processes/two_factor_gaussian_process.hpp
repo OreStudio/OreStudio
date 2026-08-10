@@ -68,13 +68,13 @@ class ORES_ANALYTICS_QUANT_EXPORT two_factor_gaussian_process final
     : public ores::analytics::quant::domain::IYieldCurveProcess {
 public:
     two_factor_gaussian_process(double kappa_x,
-                 double kappa_y,
-                 double sigma_x,
-                 double sigma_y,
-                 double rho,
-                 double initial_rate,
-                 std::uint32_t seed = 42,
-                 double dt = 1.0);
+                                double kappa_y,
+                                double sigma_x,
+                                double sigma_y,
+                                double rho,
+                                double initial_rate,
+                                std::uint32_t seed = 42,
+                                double dt = 1.0);
 
     /**
      * @brief Construct from the strongly-typed parameter struct.

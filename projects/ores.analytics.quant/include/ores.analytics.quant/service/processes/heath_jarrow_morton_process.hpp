@@ -55,8 +55,8 @@ namespace ores::analytics::quant::service {
  *        one entry fewer than volatilities.
  * @return The drift vector mu, one entry per grid point.
  */
-ORES_ANALYTICS_QUANT_EXPORT Eigen::VectorXd hjm_no_arbitrage_drift(
-    const Eigen::VectorXd& volatilities, const Eigen::VectorXd& tenor_spacings);
+ORES_ANALYTICS_QUANT_EXPORT Eigen::VectorXd
+hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities, const Eigen::VectorXd& tenor_spacings);
 
 /**
  * @brief Single-factor Heath-Jarrow-Morton forward-curve process on a

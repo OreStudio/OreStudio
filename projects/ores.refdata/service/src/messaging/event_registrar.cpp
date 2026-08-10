@@ -55,6 +55,7 @@
 #include "ores.refdata.service/messaging/currency_pair_event_registrar.hpp"
 #include "ores.refdata.service/messaging/curve_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/day_count_fraction_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/diary_entry_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/floating_index_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/instrument_code_event_registrar.hpp"
 #include "ores.refdata.service/messaging/ledger_feed_type_event_registrar.hpp"
@@ -72,6 +73,7 @@
 #include "ores.refdata.service/messaging/tenor_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_resolution_algorithm_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_schedule_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_unit_event_registrar.hpp"
 
 namespace ores::refdata::service::messaging {
@@ -108,6 +110,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_currency_pair_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_currency_pair_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_day_count_fraction_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_diary_entry_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_floating_index_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_instrument_code_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_ledger_feed_type_event_mapping(event_source, event_bus, nats));
@@ -128,6 +131,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_tenor_unit_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_tenor_resolution_algorithm_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_tenor_schedule_event_mapping(event_source, event_bus, nats));
 
     return subs;
 }

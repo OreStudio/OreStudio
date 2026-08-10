@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: AB9F96EB-69A5-4D40-9DBB-8D2B60D8039F
+:END:
+#+title: Task: Scaffold story: Manage the compute grid from the shell
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :shell-compute-grid-management:sprint_25:v0:
+#+owner: marco
+#+branch: feature/shell-compute-grid-management
+#+pr: 1947
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1947][#1947]] | [agile] Scaffold story: Manage the compute grid from the shell |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | download-output has no modeled rule; fetch_output returns InputBundle | doc/llm/specs/shell-compute-grid-management.allium | Accepted | Added FetchOutputBundle rule and OperatorDownloadsOutput trigger; renamed InputBundle to Bundle. allium check clean; plan now 59 obligations. |
+| 2 | SmokeTestExercisesEveryOnlineNode not point-in-time scoped | doc/llm/specs/shell-compute-grid-management.allium | Accepted | Moved the property into BatchDrains as a drain-time requires guard; removed the standing-state invariant. A host back online after the run no longer trips it. |
+| 3 | Read-verbs task filename breaks the sibling naming pattern | task_implement_shell-compute-grid-management.org | Accepted | Renamed to task_read-verbs.org. |
+| 4 | FOMC spec convention not visible on main | PR description | Declined | The convention lives on the unmerged branch feature/fomc-calendar-event-model; this PR mirrors it so both land consistently. |
+
+* Result
+
+The scaffold is merged. It contains:
+
+- Story scaffold: goal, acceptance and out-of-scope prose for
+  "Manage the compute grid from the shell"; the scaffolding task plus
+  the five real tasks (read verbs, job lifecycle, grid monitoring,
+  artifact downloads, smoke-test script); the sprint 25 row wired to
+  STARTED.
+- The Allium spec (doc/llm/specs/shell-compute-grid-management.allium),
+  following the FOMC convention. allium check clean; allium plan
+  derives 59 test obligations.
+- PR #1947: raised, reviewed, one review round addressed (output-
+  download rule and trigger added, smoke coverage scoped to the drain
+  transition, task file renamed to task_read-verbs.org; the FOMC
+  convention note declined as accurate), and merged.

@@ -29,14 +29,27 @@
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/currency_pair_convention_changed_event.hpp"
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
 #include "ores.refdata.api/generators/currency_pair_convention_generator.hpp"
-#include "ores.refdata.api/generators/currency_pair_generator.hpp"
-#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_currency_pairs_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/currency_pair_generator.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
+// Grand-parent seeding (ores_refdata_currencies_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too.
+#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+// Grand-parent seeding (ores_refdata_currencies_tbl): the parent's own mandatory soft FKs
+// reference rows the test seeds before the parent, so their generator
+// and repository headers are needed too.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+// Grand-parent seeding (ores_refdata_currency_pair_classifications_tbl): the parent's own mandatory
+// soft FKs reference rows the test seeds before the parent, so their generator and repository
+// headers are needed too.
+#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
+#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -83,9 +96,6 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::currency_pair_convention;
 using ores::refdata::repository::currency_pair_convention_repository;
-using ores::refdata::repository::currency_pair_repository;
-using ores::refdata::repository::currency_repository;
-using ores::refdata::repository::currency_pair_classification_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -140,48 +150,41 @@ TEST_CASE("write_currency_pair_convention_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_currency_pair_convention(ctx);
     v.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Currency Pair Convention: " << v;
-
-    // Seed the currency_pair this entity's pair_code references, so
-    // the insert-trigger existence check passes. Writes go through the
-    // parent's own repository -- the same trigger stack production uses.
-    currency_pair_repository pair_code_repo;
-    auto seeded_pair_code = generate_synthetic_currency_pair(ctx);
-    seeded_pair_code.change_reason_code = "system.test";
-    // The seeded currency_pair's base/quote currencies and its
-    // classification face the same strict DQ validation as its pair_code
-    // once the shared test tenant holds any of them; reuse an active row
-    // (any active row validates) and seed one only when none exists yet.
-    currency_repository ccy_repo;
-    auto existing_ccy = ccy_repo.read_latest(party_ctx);
-    if (existing_ccy.empty()) {
-        auto seeded_ccy = generate_synthetic_currency(ctx);
-        seeded_ccy.change_reason_code = "system.test";
-        ccy_repo.write(party_ctx, seeded_ccy);
-        seeded_pair_code.base_currency = seeded_ccy.iso_code;
-        seeded_pair_code.quote_currency = seeded_ccy.iso_code;
-    } else {
-        seeded_pair_code.base_currency = existing_ccy.front().iso_code;
-        seeded_pair_code.quote_currency = existing_ccy.front().iso_code;
-    }
-    currency_pair_classification_repository cls_repo;
-    auto existing_cls = cls_repo.read_latest(party_ctx);
-    if (existing_cls.empty()) {
-        auto seeded_cls = generate_synthetic_currency_pair_classification(ctx);
-        seeded_cls.change_reason_code = "system.test";
-        cls_repo.write(party_ctx, seeded_cls);
-        seeded_pair_code.classification = seeded_cls.code;
-    } else {
-        seeded_pair_code.classification = existing_cls.front().code;
-    }
-    v.pair_code = seeded_pair_code.pair_code;
-    pair_code_repo.write(party_ctx, seeded_pair_code);
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
+    // Seed the active currency_pair row ores_refdata_currency_pairs_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto pair_code_parent = ores::refdata::generators::generate_synthetic_currency_pair(ctx);
+    pair_code_parent.change_reason_code = "system.test";
+    // Seed the active currency row ores_refdata_currencies_tbl references:
+    // the parent's own existence check rejects a synthetic key that
+    // matches no active row, so the grandparent must be written first.
+    auto base_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    base_currency_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_repository base_currency_parent_repo;
+    base_currency_parent_repo.write(party_ctx, base_currency_parent);
+    pair_code_parent.base_currency = base_currency_parent.iso_code;
+    // Seed the active currency row ores_refdata_currencies_tbl references:
+    // the parent's own existence check rejects a synthetic key that
+    // matches no active row, so the grandparent must be written first.
+    auto quote_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    quote_currency_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_repository quote_currency_parent_repo;
+    quote_currency_parent_repo.write(party_ctx, quote_currency_parent);
+    pair_code_parent.quote_currency = quote_currency_parent.iso_code;
+    // Seed the active currency_pair_classification row
+    // ores_refdata_currency_pair_classifications_tbl references: the parent's own existence check
+    // rejects a synthetic key that matches no active row, so the grandparent must be written first.
+    auto classification_parent =
+        ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
+    classification_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_pair_classification_repository classification_parent_repo;
+    classification_parent_repo.write(party_ctx, classification_parent);
+    pair_code_parent.classification = classification_parent.code;
+    ores::refdata::repository::currency_pair_repository pair_code_repo;
+    pair_code_repo.write(party_ctx, pair_code_parent);
+    v.pair_code = pair_code_parent.pair_code;
     const auto id_str = v.pair_code;
+    BOOST_LOG_SEV(lg, debug) << "Currency Pair Convention: " << v;
 
     currency_pair_convention_repository repo;
     repo.write(party_ctx, v);

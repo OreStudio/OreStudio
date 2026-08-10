@@ -82,17 +82,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate pair_code (soft FK to ores_refdata_currency_pairs_tbl)
-    if not exists (
-        select 1 from ores_refdata_currency_pairs_tbl
-        where tenant_id = NEW.tenant_id
-          and pair_code = NEW.pair_code
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid pair_code: %. No active currency pair found with this code.', NEW.pair_code
-            using errcode = '23503';
-    end if;
-
     -- Validate pair_code
     NEW.pair_code := ores_refdata_validate_currency_pair_fn(NEW.tenant_id, NEW.pair_code);
 

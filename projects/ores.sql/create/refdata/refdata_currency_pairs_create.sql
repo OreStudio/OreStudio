@@ -78,28 +78,6 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
-    -- Validate base_currency (soft FK to ores_refdata_currencies_tbl)
-    if not exists (
-        select 1 from ores_refdata_currencies_tbl
-        where tenant_id = NEW.tenant_id
-          and iso_code = NEW.base_currency
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid base_currency: %. No active currency found with this code.', NEW.base_currency
-            using errcode = '23503';
-    end if;
-
-    -- Validate quote_currency (soft FK to ores_refdata_currencies_tbl)
-    if not exists (
-        select 1 from ores_refdata_currencies_tbl
-        where tenant_id = NEW.tenant_id
-          and iso_code = NEW.quote_currency
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid quote_currency: %. No active currency found with this code.', NEW.quote_currency
-            using errcode = '23503';
-    end if;
-
     -- Validate base_currency
     NEW.base_currency := ores_refdata_validate_currency_fn(NEW.tenant_id, NEW.base_currency);
 

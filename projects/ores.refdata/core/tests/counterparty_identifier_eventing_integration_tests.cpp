@@ -29,9 +29,11 @@
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
-#include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_counterparties_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -79,7 +81,6 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::counterparty_identifier;
 using ores::refdata::repository::counterparty_identifier_repository;
-using ores::refdata::repository::counterparty_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -134,22 +135,16 @@ TEST_CASE("write_counterparty_identifier_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_counterparty_identifier(ctx);
     v.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Counterparty Identifier: " << v;
-
-    // Seed the counterparty this entity's counterparty_id references, so
-    // the insert-trigger existence check passes. Writes go through the
-    // parent's own repository -- the same trigger stack production uses.
-    counterparty_repository counterparty_id_repo;
-    auto seeded_counterparty_id = generate_synthetic_counterparty(ctx);
-    seeded_counterparty_id.change_reason_code = "system.test";
-    v.counterparty_id = seeded_counterparty_id.id;
-    counterparty_id_repo.write(party_ctx, seeded_counterparty_id);
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
+    // Seed the active counterparty row ores_refdata_counterparties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto counterparty_id_parent = ores::refdata::generators::generate_synthetic_counterparty(ctx);
+    counterparty_id_parent.change_reason_code = "system.test";
+    ores::refdata::repository::counterparty_repository counterparty_id_repo;
+    counterparty_id_repo.write(party_ctx, counterparty_id_parent);
+    v.counterparty_id = counterparty_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
+    BOOST_LOG_SEV(lg, debug) << "Counterparty Identifier: " << v;
 
     counterparty_identifier_repository repo;
     repo.write(party_ctx, v);

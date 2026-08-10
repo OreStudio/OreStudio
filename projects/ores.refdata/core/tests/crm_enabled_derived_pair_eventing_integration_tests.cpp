@@ -30,8 +30,10 @@
 #include "ores.refdata.api/domain/crm_enabled_derived_pair_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/crm_enabled_derived_pair_changed_event.hpp"
 #include "ores.refdata.api/generators/crm_enabled_derived_pair_generator.hpp"
-#include "ores.refdata.api/generators/crm_topology_config_generator.hpp"
 #include "ores.refdata.core/repository/crm_enabled_derived_pair_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_crm_topology_configs_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/crm_topology_config_generator.hpp"
 #include "ores.refdata.core/repository/crm_topology_config_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -79,7 +81,6 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::crm_enabled_derived_pair;
 using ores::refdata::repository::crm_enabled_derived_pair_repository;
-using ores::refdata::repository::crm_topology_config_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -134,22 +135,16 @@ TEST_CASE("write_crm_enabled_derived_pair_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_crm_enabled_derived_pair(ctx);
     v.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "CRM Enabled Derived Pair: " << v;
-
-    // Seed the crm_topology_config this entity's config_id references, so
-    // the insert-trigger existence check passes. Writes go through the
-    // parent's own repository -- the same trigger stack production uses.
-    crm_topology_config_repository config_id_repo;
-    auto seeded_config_id = generate_synthetic_crm_topology_config(ctx);
-    seeded_config_id.change_reason_code = "system.test";
-    v.config_id = seeded_config_id.id;
-    config_id_repo.write(party_ctx, seeded_config_id);
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
+    // Seed the active crm_topology_config row ores_refdata_crm_topology_configs_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto config_id_parent = ores::refdata::generators::generate_synthetic_crm_topology_config(ctx);
+    config_id_parent.change_reason_code = "system.test";
+    ores::refdata::repository::crm_topology_config_repository config_id_repo;
+    config_id_repo.write(party_ctx, config_id_parent);
+    v.config_id = config_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
+    BOOST_LOG_SEV(lg, debug) << "CRM Enabled Derived Pair: " << v;
 
     crm_enabled_derived_pair_repository repo;
     repo.write(party_ctx, v);

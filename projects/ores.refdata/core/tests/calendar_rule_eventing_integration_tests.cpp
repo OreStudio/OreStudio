@@ -29,9 +29,7 @@
 #include "ores.refdata.api/domain/calendar_rule.hpp"
 #include "ores.refdata.api/domain/calendar_rule_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/calendar_rule_changed_event.hpp"
-#include "ores.refdata.api/generators/calendar_generator.hpp"
 #include "ores.refdata.api/generators/calendar_rule_generator.hpp"
-#include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
 // Country sentinel seed (Calendar Rule's insert trigger validates
 // country_code against the countries table, and the synthetic generator
@@ -40,6 +38,10 @@
 // facet, hence the fully-qualified refdata paths.
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_calendars_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/calendar_generator.hpp"
+#include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -86,7 +88,6 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::calendar_rule;
 using ores::refdata::repository::calendar_rule_repository;
-using ores::refdata::repository::calendar_repository;
 using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
@@ -142,6 +143,15 @@ TEST_CASE("write_calendar_rule_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_calendar_rule(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active calendar row ores_refdata_calendars_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto calendar_code_parent = ores::refdata::generators::generate_synthetic_calendar(ctx);
+    calendar_code_parent.change_reason_code = "system.test";
+    ores::refdata::repository::calendar_repository calendar_code_repo;
+    calendar_code_repo.write(party_ctx, calendar_code_parent);
+    v.calendar_code = calendar_code_parent.code;
+    const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Calendar Rule: " << v;
     // Calendar Rule's insert trigger validates country_code against
     // the countries table for the write tenant, and the synthetic
@@ -149,21 +159,6 @@ TEST_CASE("write_calendar_rule_publishes_nats_changed_event", tags) {
     // materialisation tests do) or the insert is rejected.
     country_repository cty_repo;
     cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
-
-    // Seed the calendar this entity's calendar_code references, so
-    // the insert-trigger existence check passes. Writes go through the
-    // parent's own repository -- the same trigger stack production uses.
-    calendar_repository calendar_code_repo;
-    auto seeded_calendar_code = generate_synthetic_calendar(ctx);
-    seeded_calendar_code.change_reason_code = "system.test";
-    v.calendar_code = seeded_calendar_code.code;
-    calendar_code_repo.write(party_ctx, seeded_calendar_code);
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
-    const auto id_str = boost::uuids::to_string(v.id);
 
     calendar_rule_repository repo;
     repo.write(party_ctx, v);

@@ -131,14 +131,8 @@ TEST_CASE("write_ledger_feed_type_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_ledger_feed_type(ctx);
     v.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Ledger Feed Type: " << v;
-
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
     const auto id_str = v.code;
+    BOOST_LOG_SEV(lg, debug) << "Ledger Feed Type: " << v;
 
     ledger_feed_type_repository repo;
     repo.write(party_ctx, v);

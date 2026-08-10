@@ -29,9 +29,13 @@
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.api/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
-#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
+// Party seeds (mandatory party_id soft FKs, direct or via a parent's own
+// mandatory party_id FK): the party generator and repository are used
+// regardless of the child's generator facet, hence the fully-qualified
+// refdata paths.
+#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -79,7 +83,6 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party_identifier;
 using ores::refdata::repository::party_identifier_repository;
-using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -134,30 +137,25 @@ TEST_CASE("write_party_identifier_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_party_identifier(ctx);
     v.change_reason_code = "system.test";
-    BOOST_LOG_SEV(lg, debug) << "Party Identifier: " << v;
-
-    // Seed the party this entity's party_id references, so
-    // the insert-trigger existence check passes. Writes go through the
-    // parent's own repository -- the same trigger stack production uses.
-    party_repository party_id_repo;
-    auto seeded_party_id = generate_synthetic_party(ctx);
-    seeded_party_id.change_reason_code = "system.test";
-    // Reuse an active party when one already exists -- some
-    // parents admit only one row per tenant (e.g. the party root), so the
-    // test must not seed a second.
-    auto existing_party_id = party_id_repo.read_latest(party_ctx);
-    if (existing_party_id.empty()) {
-        party_id_repo.write(party_ctx, seeded_party_id);
-        v.party_id = seeded_party_id.id;
-    } else {
-        v.party_id = existing_party_id.front().id;
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
     }
-
-    // Capture the identifier AFTER the seed block: a FK that doubles as
-    // the primary key (e.g. the convention's pair_code) has its value
-    // overridden above, and the notification must be matched against the
-    // identifier actually written.
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
+    BOOST_LOG_SEV(lg, debug) << "Party Identifier: " << v;
 
     party_identifier_repository repo;
     repo.write(party_ctx, v);

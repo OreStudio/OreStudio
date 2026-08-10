@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "calendar_event_schedule_fomc_tests.cpp"
     "csv_exporter_tests.cpp"
     "domain_currency_tests.cpp"
     "domain_entity_type_tests.cpp"

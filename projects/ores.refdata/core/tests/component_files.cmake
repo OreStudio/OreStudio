@@ -25,6 +25,7 @@ set(files
     "business_day_convention_type_eventing_integration_tests.cpp"
     "business_unit_eventing_integration_tests.cpp"
     "business_unit_type_eventing_integration_tests.cpp"
+    "calendar_event_eventing_integration_tests.cpp"
     "calendar_eventing_integration_tests.cpp"
     "calendar_exception_eventing_integration_tests.cpp"
     "calendar_rule_eventing_integration_tests.cpp"

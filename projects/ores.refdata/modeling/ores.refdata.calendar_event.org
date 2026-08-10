@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: B20050A5-1245-4944-A328-2A0893C92AEC
+:ores.cpp.eventing-integration-test.enabled: true
 :END:
 #+title: ores.refdata.calendar_event
 #+description: A dated diary entry on a calendar: a central-bank meeting, a scheduled data release, or an open-ended other event, carrying a name, optional description, and optional provenance.

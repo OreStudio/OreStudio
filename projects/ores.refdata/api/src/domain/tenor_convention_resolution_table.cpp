@@ -41,11 +41,12 @@ std::string convert_to_table(const std::vector<tenor_convention_resolution>& v) 
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Convention" << "Tenor" << "Anchor Override" << "Offset Unit"
-          << "Offset Multiplier" << fort::endr;
+          << "Offset Multiplier" << "Schedule" << "Schedule Step Count" << fort::endr;
 
     for (const auto& r : v) {
         table << r.convention_code << r.tenor_code << opt_str(r.anchor_override)
-              << opt_str(r.offset_unit) << opt_str(r.offset_multiplier) << fort::endr;
+              << opt_str(r.offset_unit) << opt_str(r.offset_multiplier) << opt_str(r.schedule_code)
+              << opt_str(r.schedule_step_count) << fort::endr;
     }
     return table.to_string();
 }

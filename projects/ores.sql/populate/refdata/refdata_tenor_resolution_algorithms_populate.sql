@@ -22,7 +22,9 @@
  * Tenor Resolution Algorithms Population Script
  *
  * Populates the valid tenor convention resolution algorithm values
- * (ANCHOR_OFFSET, IMM_ROLL).
+ * (ANCHOR_OFFSET, SCHEDULE_STEP). The old IMM_ROLL row is superseded: the
+ * IMM roll is now a schedule (ROLL_QUARTER) under SCHEDULE_STEP, and the
+ * IMM_ROLL *anchor* survives only as a measured_from vocabulary value.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
@@ -37,8 +39,8 @@ values
     (ores_utility_system_tenant_id_fn(), 'ANCHOR_OFFSET', 0, 'Anchor Offset',
      'Anchor date plus a fixed day/week/month/year offset.',
      1, current_user, current_user, 'system.initial_load', 'Initial population of tenor resolution algorithms'),
-    (ores_utility_system_tenant_id_fn(), 'IMM_ROLL', 0, 'IMM Roll',
-     'Steps through the IMM quarterly roll schedule instead of a calendar offset.',
+    (ores_utility_system_tenant_id_fn(), 'SCHEDULE_STEP', 0, 'Schedule Step',
+     'Anchor plus a calendar offset, then n steps along a named tenor_schedule axis (story Decision D2).',
      2, current_user, current_user, 'system.initial_load', 'Initial population of tenor resolution algorithms')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

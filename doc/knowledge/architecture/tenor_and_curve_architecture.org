@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: 0220F3F7-C674-47EE-91CE-1C04804B4558
+:END:
+#+title: Tenor and Curve Bootstrapping Architecture
+#+description: The end-to-end code model of the tenor machinery: the refdata tenor vocabulary, the calendar/event store, how a tenor label resolves to a date, and how a bootstrap config turns pillar tenor pairs into a solved curve.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:tenors:calendars:curves:bootstrapping:refdata:marketdata:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Summary
+
+A tenor label (=1M=, =1F=, =1Y 1RQ=) travels through two code domains
+before it becomes a point on a bootstrapped curve. The *vocabulary*
+lives in =ores.refdata=: label catalogs, conventions, anchors, and
+schedules are all reference-data entities. The *runtime* lives in
+=ores.refdata.api= and =ores.marketdata=: =tenor_resolution.cpp=
+resolves a tenor code to a date under a convention, and the bootstrap
+chain (=ir_curve_bootstrap_configs= → =ir_curve_bootstrap_pillars= →
+=curve_republish_resolver= → =curve_bootstrap_engine=) turns an ordered
+list of tenor pairs into a solved discount-factor curve.
+
+The unifying model, decided 2026-08-09 (FOMC analysis, story * Decisions
+D1–D4): a tenor resolves as *anchor + a calendar offset + n steps along
+a named schedule axis*. Calendar arithmetic (days, weeks, months,
+years) is one axis; a *schedule* — a set of externally-given dates such
+as IMM roll dates or FOMC meeting dates — is the other. The schedule's
+dates come either from a closed-form rule (=ROLL_QUARTER=) or from
+typed events on a calendar (=FOMC_MEETING=). FOMC tenors =1F=..=nF=
+are the concrete instance of the schedule axis; the FOMC-dated SOFR
+short end is one configuration of the existing engine, not new engine
+code.
+
+* Detail
+
+** The two code domains
+
+| Concern | Where it lives |
+|---------+----------------|
+| Tenor label catalog, conventions, anchors, schedules, calendars, event store | =ores.refdata= (codegen'd entities, bitemporal SQL) |
+| Tenor → date resolution (the resolver) | =ores.refdata/api/src/domain/tenor_resolution.cpp= |
+| Bootstrap config and pillar list | =ores.refdata= (=ir_curve_bootstrap_configs=, =ir_curve_bootstrap_pillars=) |
+| Pillar dates + observed quotes + fixed-leg schedules | =ores.marketdata/service/src/curve_republish_resolver.cpp= |
+| The numerical solve (discount factors) | =curve_bootstrap_engine= (ores.analytics.quant.service) |
+
+The boundary is clean: refdata *describes* (codes, conventions,
+schedules), marketdata *executes* (resolves, looks up quotes, solves).
+The resolver is the bridge — it is the only place a tenor code becomes
+a date.
+
+** The tenor vocabulary (ores.refdata)
+
+The domain concept is in [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]; here is the persisted shape.
+
+| Entity | Role | Key columns |
+|--------+------+-------------|
+| =tenors= | Label catalog. Identity only — no date math. | =code=, =display_name=, =kind= (PERIOD/SPECIAL), =unit= (DAY/WEEK/MONTH/YEAR/NONE), =multiplier= |
+| =tenor_kinds= | Vocabulary: =PERIOD= (calendar arithmetic), =SPECIAL= (named point) | |
+| =tenor_units= | Vocabulary: =DAY=, =WEEK=, =MONTH=, =YEAR=, =NONE= | |
+| =tenor_anchors= | Vocabulary: =SPOT=, =TODAY=, =TOMORROW=, =NEAR_LEG=, =IMM_ROLL=, =NONE= | |
+| =tenor_conventions= | Picks the *measured_from* anchor and the *resolution_algorithm* | =measured_from=, =resolution_algorithm= |
+| =tenor_convention_resolutions= | Per-tenor overrides and offsets | =convention_code=, =tenor_code=, =anchor_override=, =offset_unit=, =offset_multiplier=, =schedule_code= (new, nullable), =schedule_step_count= (new, nullable) |
+| =tenor_resolution_algorithms= | Vocabulary: =ANCHOR_OFFSET=, =SCHEDULE_STEP= (new), =IMM_ROLL= (superseded) | |
+
+Seed data (populate scripts): =O/N= (SPECIAL/NONE, no multiplier) and
+=SPOT= (PERIOD/DAY/0) are tenors; =RATES_SPOT_FORWARD= and
+=FX_SWAP_NEAR_LEG= are =ANCHOR_OFFSET= conventions; =CREDIT_CDS_IMM= is
+the IMM convention.
+
+** Resolution semantics: anchor + steps along an axis
+
+=tenor_resolution.cpp= implements
+=ores::refdata::api::domain::resolve_end_date()=: given a tenor, a
+convention, a resolution row, a horizon date and a spot date, it
+returns the maturity date. Two branches:
+
+- *ANCHOR_OFFSET* (implemented): resolved date = anchor + n × unit.
+  The anchor comes from the resolution row's =anchor_override= if set,
+  else from the convention's =measured_from=; =resolve_anchor_date()=
+  handles =SPOT=, =TODAY=, =TOMORROW= (=NEAR_LEG= and =IMM_ROLL= need
+  convention-specific handling). The offset is the resolution row's
+  =offset_unit=/=offset_multiplier= if set, else the tenor's own
+  =unit=/=multiplier= — so a bare =1M= resolves as "spot + 1 month"
+  under =RATES_SPOT_FORWARD=.
+- *SCHEDULE_STEP* (decided, to be implemented): resolved date =
+  walk(anchor + calendar offset, schedule, steps). The calendar offset
+  uses the same =offset_unit=/=offset_multiplier= columns; the
+  schedule axis is =schedule_code= + =schedule_step_count=. The
+  resolver walks the schedule's date set from (anchor + offset)
+  forward, taking the n-th date on-or-after it.
+
+Today the resolver throws for =IMM_ROLL= and for =ROLL_QUARTER= offsets
+(=std::logic_error=) — the seeded rows document the gap. Under the
+unified model, =SCHEDULE_STEP= implements both; see the schedule
+section below.
+
+** The calendar and event cluster (ores.refdata)
+
+The domain model is in [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] and
+[[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]; here is the persisted shape.
+
+| Entity | Role |
+|--------+------|
+| =calendars= | Named, code-keyed calendar: =code=, =calendar_type=, =country_code=, =source=, =is_editable=, =base_calendar_code= |
+| =calendar_types= | Vocabulary: =public_holiday=, =central_bank_meeting=, =data_release=, =financial_centre=, =other= |
+| =calendar_rules= | Holiday recurrence grammar: =kind= (fixed_date, ...), =month=, =day=, =weekday=, =occurrence=, =day_offset=, =shift= |
+| =calendar_exceptions= | Ad-hoc holiday overrides: =exception_date=, =is_business_day= |
+| =calendar_date= | The materialized business-day grid: one row per (calendar, date), =is_business_day=, =source= |
+| =currency_calendars= | Currency ↔ calendar junction (a currency can need several calendars) |
+| =calendar_event= (new, decided) | Typed event store: =id=, =calendar_code=, =event_date=, =diary_entry_type=, =name=, =description= (nullable), =source= (nullable provenance), plus the standard audit/temporal columns |
+| =diary_entry_types= (new, decided) | Vocabulary: =holiday=, =central_bank_meeting=, =data_release=, =other= — open-ended |
+
+The architectural split: holidays keep their recurrence machinery
+(=calendar_rules=, =calendar_exceptions=) and feed the
+=calendar_date= grid; =calendar_event= holds the non-holiday kinds.
+The =holiday= entry type stays in the vocabulary so the whole
+classification lives in one place. Events are diary entries with no
+downstream effect modelled — the Diary/Effects split
+([[id:27863049-4A86-4949-AFAF-8A6F4A8E7BA8][The Diary/Effects Model]])
+keeps =calendar_event= stable regardless of future effect types.
+
+Template/Instance recurrence: an event row is an *instance*; its
+template is the (calendar, diary_entry_type, name) triple. Formulaic
+recurrence (e.g. Non-Farm Payrolls) is deferred; =calendar_rules='s
+grammar can later feed a template link.
+
+** The unified schedule model
+
+=tenor_schedules= (new, decided) is the schedule-axis vocabulary:
+
+| Entity | Role | Key columns |
+|--------+------+-------------|
+| =tenor_schedules= | Named date sets a =SCHEDULE_STEP= convention walks | =code=, =name=, =description=, =display_order=, =schedule_source=, =calendar_code=, =diary_entry_type= |
+
+Two seeded schedules:
+
+- *ROLL_QUARTER* (CLOSED_FORM): the IMM rule — first business day after
+  20 Mar/Jun/Sep/Dec. Derivable by rule; the closed form stays
+  code-side in the resolver. This is the schedule the
+  =CREDIT_CDS_IMM= convention walks: offset YEAR × 1 + schedule
+  ROLL_QUARTER 1 step = "1Y 1RQ" (one year, one roll quarter).
+- *FOMC_MEETING* (EVENT_LOOKUP): the FOMC meeting dates, read from
+  =calendar_event= rows on the =US.FOMC= calendar
+  (=diary_entry_type= = central_bank_meeting). Externally announced —
+  data, not formula. This is the axis the =RATES_SPOT_FOMC=
+  convention walks.
+
+The two are the same mechanism: "the n-th date in a schedule, on or
+after the anchor". They differ only in where the dates come from. The
+old =IMM_ROLL= algorithm row and =ROLL_QUARTER= unit are superseded —
+one algorithm (=SCHEDULE_STEP=), one schedule vocabulary, no special
+cases.
+
+** The bootstrap chain
+
+The domain concepts are in [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] and
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]; here is the code path.
+
+1. *Config.* =ir_curve_bootstrap_configs= names one curve: output
+   series, party, source series, =curve_family_role= (FUNDING /
+   PROJECTION), =discount_curve_config_id=, =interpolation_method=,
+   =day_count_convention=, and =split_tenor_code= — the tenor at which
+   the short-end and long-end methods divide.
+2. *Pillars.* =ir_curve_bootstrap_pillars= holds one row per pillar:
+   =start_tenor_code=, =end_tenor_code=, =curve_role_code=
+   (DEPOSIT/FRA/SWAP), =sequence_index=. Order is the fixed-leg
+   schedule: a SWAP pillar's fixed-leg dates are the end dates of all
+   prior pillars plus its own.
+3. *Resolve + quote.* =curve_republish_resolver.cpp= sorts pillars by
+   =sequence_index= and, per pillar: resolves both tenor codes to
+   dates via the tenor resolver, and looks up the observed rate. The
+   end tenor code *is* the point id into the raw grid
+   (=market_observations=) — =bp.point_id = p.end_tenor_code= — and a
+   pillar whose end code has no quote fails loudly.
+4. *Solve.* =curve_bootstrap_engine= solves discount-factor-by-
+   discount-factor from the short end, honouring
+   =interpolation_method= and =day_count_convention=. The engine
+   already accepts =FLAT_FORWARD_THEN_LOG_LINEAR=; =CUBIC_SPLINE=
+   throws today.
+
+** Terminology
+
+| Term | Definition |
+|------+------------|
+| =1F=, =nF= | The n-th FOMC meeting date on-or-after the anchor. FOMC tenors are =SPECIAL=/=NONE= with multiplier =n=, mirroring =O/N='s shape; the meeting axis is the =FOMC_MEETING= schedule. |
+| =1Y 1RQ= | "One year, one roll quarter" — CDS disambiguation notation for a tenor measured from the IMM roll schedule, not from spot. |
+| =nIMM= | n IMM quarters forward (e.g. =IMM3= = three roll dates). |
+| measured_from | The =tenor_anchors= code a convention resolves tenors from (=SPOT= for rates, =NEAR_LEG= for FX swaps, etc.). |
+| Anchor | The base date the offset and schedule steps start from. |
+| Point id | The key a pillar's observed rate is looked up by in the raw grid; equals the pillar's =end_tenor_code=. |
+| Split tenor | The =split_tenor_code= marking where a curve changes interpolation method (short-end flat forward → long-end continuous). |
+| Pillar | A tenor pair on =ir_curve_bootstrap_pillars= that is a live input to the bootstrap — see [[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]]. |
+| Broken date | A bespoke maturity between standard tenors, interpolated normally — see [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]]. |
+| Turn point | A fixed-calendar-time discontinuity (e.g. year-end) interpolated *around* — same doc. |
+| Schedule step | One position on a named schedule axis (=ROLL_QUARTER=, =FOMC_MEETING=). |
+| Flat forward | Interpolation holding the forward rate constant within an interval — the correct method between FOMC meetings. |
+
+** Worked example: the FOMC-dated SOFR short end
+
+The decided model (story * Decisions D1–D4) in one chain:
+
+1. =US.FOMC= is a row in =calendars= (=calendar_type= central_bank_meeting,
+   =country_code= US, =source= federalreserve.gov); =currency_calendars=
+   links USD ↔ US.FOMC.
+2. The 2025–2027 FOMC meeting dates are =calendar_event= rows
+   (=diary_entry_type= central_bank_meeting) on =US.FOMC=, transcribed
+   from the Fed's published calendar.
+3. =tenor_schedules= carries =FOMC_MEETING= (EVENT_LOOKUP on that
+   calendar); =tenors= carries =1F=..=nF= (SPECIAL/NONE, multiplier n);
+   =RATES_SPOT_FOMC= convention pairs measured_from =SPOT= with
+   algorithm =SCHEDULE_STEP= and resolution rows =schedule_step_count= = n.
+4. =ir_curve_bootstrap_configs= names the curve with
+   =interpolation_method= FLAT_FORWARD_THEN_LOG_LINEAR and
+   =split_tenor_code= marking the boundary;
+   =ir_curve_bootstrap_pillars= lists SPOT→1F, 1F→2F, ..., nF→split.
+5. =curve_republish_resolver= resolves each end tenor (a lookup into
+   the FOMC event set), finds the quote at that point id, and the
+   engine solves — flat forward between meetings, continuous beyond.
+
+No engine change, no new table per calendar, no special case: the FOMC
+short end is data plus one configuration.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the tenor-cluster hub (concepts).
+- [[id:A960FE8E-56FA-4655-AA51-54C14882179B][Calendars, Holidays and Events]] — the calendar-cluster hub (concepts).
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — tenor labels and conventions by curve type.
+- [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]] — the ROLL_QUARTER schedule's rule.
+- [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] — the FOMC_MEETING schedule's calendar.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — single-curve bootstrapping mechanics.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — how the raw grid (=market_observations=) reaches consumers.

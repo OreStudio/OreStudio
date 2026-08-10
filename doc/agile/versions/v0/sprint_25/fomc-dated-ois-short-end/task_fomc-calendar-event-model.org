@@ -1,0 +1,205 @@
+:PROPERTIES:
+:ID: D547A088-310F-427B-9C32-A526110E706F
+:END:
+#+title: Task: FOMC/IMM/tenor resolution + calendar events: model analysis and decision
+#+description: Complete the analysis begun in the FOMC story: decide the calendar-event entity shape, the schedule source for roll algorithms, FOMC tenor notation, IMM_ROLL's fate, and the anchor/split-tenor semantics for the FOMC segment; land the decision in the story's * Decisions and update the domain docs.
+#+type: task
+#+level: s1
+#+filetags: :fomc:calendar:tenors:analysis:sprint_25:v0:fomc-dated-ois-short-end:
+#+owner: marco
+#+branch: feature/fomc-calendar-event-model
+#+pr: 1933
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the model decision the FOMC story is blocked on, so the
+re-scoped implementation task can start. The story's =* Analysis=
+section (written at story creation) records the current state and the
+open design points; this task completes that analysis and lands the
+decision.
+
+Decisions this task must make and document:
+
+- The calendar-event entity shape: one =calendar_event= table with a
+  =diary_entry_type= vocabulary (holiday, central_bank_meeting,
+  data_release, other), anchoring events to a calendar and the
+  currencies they touch — no table per calendar. How events sit
+  beside the existing holiday machinery (=calendar_rules=,
+  =calendar_exceptions=, =calendar_date=) and how Template/Instance
+  recurrence applies to events.
+- The schedule source for roll algorithms (FOMC_ROLL, and the seeded
+  but unimplemented IMM_ROLL): direct lookup of typed events vs. a
+  materialised schedule view.
+- Whether IMM_ROLL migrates to the same event mechanism or stays on
+  its closed-form path — the unified model decides one way.
+- FOMC tenor notation (e.g. 1F/2F) and the meeting-axis unit, so
+  =ir_curve_bootstrap_pillars= rows can express consecutive FOMC
+  pillars under the existing config schema, with =split_tenor_code=
+  marking the segment boundary.
+- Seeding a real FOMC calendar window from the Fed's published
+  schedule (federalreserve.gov).
+
+Update the domain docs (FOMC Dates, Interpolation, Tenor, IMM Dates,
+Calendar Events, Calendars/Holidays/Events) to match the decision,
+and distil the decision into the story's =* Decisions=.
+
+* Status
+
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
+| Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
+| Now          |                                                                         |
+| Waiting on   |                                                                         |
+| Next         |                                                                         |
+| Last touched | 2026-08-09                                                              |
+
+* Acceptance
+
+-
+
+* Plan
+
+** Analysis phase (done, 2026-08-09)
+
+1. Establish the current state — the bootstrap chain, tenor
+   resolution, and the calendar cluster — from the story's =* Analysis=
+   and the schema. *Done.*
+2. Decide the calendar-event entity shape: one =calendar_event= table
+   with a =diary_entry_type= vocabulary, anchored to a calendar — no
+   table per calendar or per type (user directive). *Done* — D1.
+3. Decide the unified tenor model: a =SCHEDULE_STEP= algorithm plus a
+   =tenor_schedules= vocabulary (=ROLL_QUARTER= closed-form,
+   =FOMC_MEETING= event-lookup); =IMM_ROLL= migrates onto it; FOMC
+   tenors =1F=..=nF=. *Done* — D2.
+4. Decide the FOMC segment config semantics (split tenor, point id)
+   and the Fed seeding source. *Done* — D3, D4.
+5. Land the decision in the story's =* Decisions= (D1–D4); update the
+   domain docs. *Done* — docs written, user-reviewed and committed
+   (2026-08-09).
+
+** Plan impact: what the decision changes (2026-08-09)
+
+- The backlog capture =implement-imm-roll-tenor-resolution=
+  (=doc/agile/product_backlog/next/=, ID 7746D493) is *superseded*:
+  its scope — the =IMM_ROLL= branch of =tenor_resolution.cpp= and the
+  =CREDIT_CDS_IMM= resolution rows — is now the =SCHEDULE_STEP= branch,
+  the =ROLL_QUARTER= schedule, and the =CREDIT_CDS_IMM= migration under
+  implementation step 2 below. Update the capture's =* What= or close
+  it when that step lands.
+- The codegen-DX inbox item "bring tenor-convention resolution under
+  codegen" is unaffected (orthogonal DX work), but it touches the same
+  resolver — sequence it after step 2 to avoid churn.
+- Story acceptance is unchanged; the engine needs no changes.
+
+** Implementation plan for the re-scoped story work (saved under this task)
+
+In dependency order:
+
+1. *D1 — the event store*: =calendar_event= entity + =diary_entry_types=
+   vocabulary + =US.FOMC= row in =calendars= + =currency_calendars= link
+   (schema + populate).
+2. *D2 — unified resolution*: =tenor_schedules= entity + =SCHEDULE_STEP=
+   branch in =tenor_resolution.cpp= (=ROLL_QUARTER= closed-form,
+   =FOMC_MEETING= event-lookup) + =RATES_SPOT_FOMC= convention +
+   =1F=..=nF= tenors + resolution rows; migrate =CREDIT_CDS_IMM=; drop
+   the =IMM_ROLL= algorithm row once nothing references it.
+3. *D4 — seeding*: the 2025–2027 FOMC dates from federalreserve.gov
+   (feeds step 2's event-lookup).
+4. *D3 — the FOMC segment as one config*: pillars SPOT→1F, 1F→2F, ...,
+   nF→split under =ir_curve_bootstrap_configs= with
+   =split_tenor_code= and =interpolation_method=
+   =FLAT_FORWARD_THEN_LOG_LINEAR=; raw-grid quotes at the FOMC point
+   ids (synthetic feed side) so the republish resolver's lookup
+   succeeds; verify the bootstrapped short end is flat between
+   meetings.
+
+* Notes
+
+- 2026-08-09 — Decision landed in the story's =* Decisions= (D1–D4):
+  one =calendar_event= store with =diary_entry_type=; unified
+  =SCHEDULE_STEP= resolution with a =tenor_schedules= vocabulary;
+  FOMC tenors =nF=; split-tenor config semantics; Fed seeding. Domain
+  doc updates pending.
+- 2026-08-09 — Domain docs updated to the decided model: new
+  =doc/knowledge/architecture/tenor_and_curve_architecture.org=
+  (the code model end to end) and updates to FOMC Dates, Tenor, IMM
+  Dates, Pillar, Calendar Events, Calendars/Holidays/Events, Term
+  Structures and Tenors, Interest Rate Curves, Interpolation, and the
+  knowledge index. Awaiting user review before closing.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1933][#1933]] | [agile] Abandon premature FOMC task; add FOMC calendar-event model story and analysis task |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Empty * Decisions / * Acceptance sections (informational) | story.org; task_fomc-calendar-event-model.org | Declined | Superseded: Decisions D1-D4 and the acceptance verification landed with the analysis task close (2026-08-09); refdata api suite green 85/85 |
+| 2 | Status-table cell padding uneven (cosmetic) | story.org; task_fomc-calendar-event-model.org | Applied | org-table-align pass on both * Status tables |
+| 3 | Reserved branch feature/fomc-dated-ois-short-end possibly unused | task_fomc-dated-ois-short-end.org | Declined | No such remote branch exists; the record was superseded by the re-scope and is gone from the branch |
+| 4 | Populate script ordering breaks DB seeding (blocking) | foundation_populate.sql | Applied | tenor_schedules populate moved after diary_entry_types/calendars; tenor_convention_resolutions after schedules |
+| 5 | New entities not wired into production NATS routing/eventing (blocking) | registrar.cpp; event_registrar.cpp | Applied | register_*_handlers, history providers, and event mappings wired for calendar_event, diary_entry_type, tenor_schedule |
+| 6 | tenor_schedule.hpp uses optional without #include <optional> | tenor_schedule.org; tenor_schedule.hpp | Applied | include added to org snippet + regenerated |
+| 7 | SCHEDULE_STEP logic_error guards lack tests | domain_tenor_resolution_fomc_tests.cpp | Applied | 3 guard tests added: missing schedule_code, missing schedule_step_count, missing/empty schedule_dates |
+| 8 | nth_on_or_after assumes sorted input, undocumented | tenor_resolution.cpp | Applied | requires-sorted comment added; production callers read ordered by event_date |
+| 9 | Stray = markup in tenor_convention_resolution.hpp | tenor_convention_resolution.org | Applied | prose cleaned in org + regenerated |
+| 10 | Dropped docstring in refdata_tenor_convention_resolution_create.sql | tenor_convention_resolution.org | Applied | table docstring restored via org prose + regenerated |
+| 11 | schedule_code has no soft-FK validation | sql_schema_junction_create.mustache; org_loader.py; tenor_convention_resolution.org | Applied | junction soft-FK machinery added to codegen; schedule_code FK section modelled + regenerated |
+| 12 | Republish split-tenor assertion is tautological | curve_republish_resolver_fomc_tests.cpp | Applied | split-tenor end_date pinned to explicit 2027-01-02 |
+| 13 | Bootstrap continuity assertion is tautological | curve_bootstrap_engine_fomc_tests.cpp | Applied | asserted against the log-linear constant forward pinned by boundary/end discount factors |
+| 14 | No calendar_event eventing integration test | calendar_event.org; calendar_event_eventing_integration_tests.cpp | Applied | codegen facet enabled; generated test + component_files.cmake registration |
+| 15 | TenorScheduleDetailDialog free-text fields vs validated combos in CalendarEventDetailDialog | TenorScheduleDetailDialog | Declined | Intentional: both fields nullable and only meaningful for EVENT_LOOKUP schedules; the insert trigger enforces the soft-FK on write |
+
+* Result
+
+The analysis task delivered what the story was blocked on: the model
+decision, the domain-doc exercise, and the plan impact. The decision
+lands in the story's =* Decisions= as D1–D4: one =calendar_event=
+store with a =diary_entry_types= vocabulary (D1); unified tenor
+resolution as anchor + offset + steps along a named schedule axis,
+with =SCHEDULE_STEP= and the =tenor_schedules= vocabulary
+(=ROLL_QUARTER= closed-form, =FOMC_MEETING= event-lookup), and
+=IMM_ROLL= superseded (D2); the FOMC segment as one
+=ir_curve_bootstrap_configs= configuration with =split_tenor_code=
+and =FLAT_FORWARD_THEN_LOG_LINEAR=, end-tenor codes doubling as point
+ids (D3); 2025–2027 FOMC dates seeded from federalreserve.gov (D4).
+
+The docs are updated to match: a new architecture document
+(=doc/knowledge/architecture/tenor_and_curve_architecture.org=)
+documents the code model end to end — the refdata tenor vocabulary,
+the calendar/event store, resolution semantics, the bootstrap chain,
+and a terminology table (1F, 1Y 1RQ, nIMM, measured_from, point id,
+split tenor) — and the FOMC Dates, Tenor, IMM Dates, Pillar, Calendar
+Events, Calendars/Holidays/Events, Term Structures and Tenors,
+Interest Rate Curves and Interpolation docs now reflect the decided
+model. The user reviewed the docs and approved them before close.
+
+Plan impact is assessed and saved in =* Plan= above: the backlog
+capture =implement-imm-roll-tenor-resolution= is superseded by
+SCHEDULE_STEP; the re-scoped implementation order is D1 (event
+store) → D2 (unified resolution) → D4 (seeding) → D3 (FOMC segment
+config). No engine change is required.
+

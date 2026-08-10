@@ -107,13 +107,21 @@
 \ir ../synthetic/synthetic_yield_curve_process_parameter_definitions_populate.sql
 \ir ../refdata/refdata_tenors_populate.sql
 \ir ../refdata/refdata_tenor_conventions_populate.sql
-\ir ../refdata/refdata_tenor_convention_resolutions_populate.sql
 \ir ../refdata/refdata_rounding_types_populate.sql
 \ir ../refdata/refdata_monetary_natures_populate.sql
 \ir ../refdata/refdata_currency_market_tiers_populate.sql
 \ir ../refdata/refdata_countries_populate.sql
 \ir ../refdata/refdata_calendar_types_populate.sql
+\ir ../refdata/refdata_diary_entry_types_populate.sql
 \ir ../refdata/refdata_calendars_populate.sql
+
+-- Tenor schedules (after calendars/diary_entry_types: the FOMC_MEETING row
+-- soft-FK-references US.FOMC and central_bank_meeting) and their dependent
+-- convention resolutions.
+\ir ../refdata/refdata_tenor_schedules_populate.sql
+\ir ../refdata/refdata_tenor_convention_resolutions_populate.sql
+
+\ir ../refdata/refdata_calendar_events_populate.sql
 \ir ../refdata/refdata_overnight_index_conventions_populate.sql
 \ir ../refdata/refdata_ibor_index_conventions_populate.sql
 \ir ../refdata/refdata_currency_countries_populate.sql

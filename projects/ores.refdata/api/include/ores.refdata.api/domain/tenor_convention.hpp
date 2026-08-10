@@ -38,16 +38,15 @@ namespace ores::refdata::domain {
  * convention's regular PERIOD tenors resolve from, and which *algorithm*
  * governs resolution for the convention at all: ANCHOR_OFFSET (anchor
  * date plus a fixed offset — spot/forward and FX swap conventions) or
- * IMM_ROLL (stepping through [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM
- * Dates]]' quarterly roll schedule — credit/CDS convention; the resolver
- * for this algorithm is not yet implemented, see the capture referenced in
- * [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention
- * Resolution]]). Which [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
+ * SCHEDULE_STEP (anchor plus a calendar offset, then n steps along a
+ * named [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis —
+ * credit/CDS and FOMC conventions, story Decision D2). Which
+ * [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
  * labels actually belong to a given convention, and any per-tenor anchor or
  * offset override (needed for SPECIAL tenors such as O/N, which resolve
  * differently under the spot/forward convention than under the swap
- * convention, and for every IMM_ROLL tenor, which has no intrinsic
- * duration at all), is recorded in
+ * convention, and for every SCHEDULE_STEP tenor, whose resolution row
+ * names the schedule axis and step count), is recorded in
  * [[id:E1F5A9C3-6D2B-4E8A-B7F1-3C9D5A2E6B48][Tenor Convention Resolution]],
  * not here.
  */
@@ -79,14 +78,16 @@ struct tenor_convention final {
      * tenor_anchor.code) this convention's regular PERIOD tenors resolve from. NONE whenever every
      * tenor under this convention carries its own anchor_override (as FX_SWAP_NEAR_LEG does — it
      * has no PERIOD tenors to fall back to a default for) or whenever resolution_algorithm does not
-     * use a fixed anchor at all (IMM_ROLL) — not only the latter case.
+     * use a fixed anchor at all (SCHEDULE_STEP, where the walk starts from the resolution row's own
+     * anchor_override) — not only the latter case.
      */
     std::string measured_from;
 
     /**
      * @brief Which algorithm resolves a tenor under this convention: ANCHOR_OFFSET (anchor date
-     * plus a fixed day/week/month/year offset) or IMM_ROLL (steps through the IMM quarterly roll
-     * schedule instead — see [[id:013BC5B0-9461-4AD4-A55E-374BCF34D8A4][IMM Dates]]).
+     * plus a fixed day/week/month/year offset) or SCHEDULE_STEP (anchor plus a calendar offset,
+     * then n steps along the resolution row's named schedule_code axis — see
+     * [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]]).
      */
     std::string resolution_algorithm;
 

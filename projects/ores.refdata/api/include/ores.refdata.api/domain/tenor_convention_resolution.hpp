@@ -49,13 +49,17 @@ namespace ores::refdata::domain {
  * duration is fixed by its own unit/multiplier regardless of
  * convention, so only the anchor itself (the convention's measured_from,
  * or this row's anchor_override) can vary for those rows. For a
- * convention whose resolution_algorithm is IMM_ROLL rather than
- * ANCHOR_OFFSET, offset_unit is ROLL_QUARTER and offset_multiplier
- * is the roll-quarter count (e.g. 1Y 1RQ, per
- * [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
- * convention) — the same two columns, reused rather than requiring a
- * separate schema for the different algorithm. The runtime resolver for
- * IMM_ROLL rows is not implemented yet; see the capture referenced below.
+ * convention whose resolution_algorithm is SCHEDULE_STEP rather than
+ * ANCHOR_OFFSET, the row's schedule_code names the
+ * [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis the
+ * tenor walks (ROLL_QUARTER for the IMM rule, FOMC_MEETING for the
+ * event-lookup schedule) and schedule_step_count is the number of steps
+ * to the resolution date (e.g. 1Y 1RQ for the migrated CREDIT_CDS_IMM
+ * rows: one calendar year of offset from spot, then one roll-quarter) —
+ * a tenor resolves as anchor + calendar offset + n steps along the named
+ * schedule. The offset_unit/offset_multiplier columns stay the
+ * calendar-axis offset: their ROLL_QUARTER value is gone — the roll
+ * count lives in schedule_step_count now.
  */
 struct tenor_convention_resolution final {
     /**
@@ -86,18 +90,31 @@ struct tenor_convention_resolution final {
     std::optional<std::string> anchor_override;
 
     /**
-     * @brief One of DAY, WEEK, MONTH, YEAR, or ROLL_QUARTER. Null when the referenced tenor is
-     * PERIOD (its own unit applies instead); required when the referenced tenor is SPECIAL, since a
-     * SPECIAL tenor has no duration outside a convention's say-so.
+     * @brief One of DAY, WEEK, MONTH, YEAR. Null when the referenced tenor is PERIOD (its own unit
+     * applies instead); required when the referenced tenor is SPECIAL, since a SPECIAL tenor has no
+     * duration outside a convention's say-so.
      */
     std::optional<std::string> offset_unit;
 
     /**
      * @brief The count paired with offset_unit (e.g. 1 day for O/N under spot/forward, 0 days for
-     * O/N under FX swap, 1 roll-quarter for a CDS 1Y 1RQ tenor). Same nullability rule as
-     * offset_unit.
+     * O/N under FX swap, 1 year for a CDS 1Y 1RQ tenor). Same nullability rule as offset_unit.
      */
     std::optional<int> offset_multiplier;
+
+    /**
+     * @brief The schedule axis the tenor walks, for SCHEDULE_STEP rows.
+     *
+     * References [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule.code]]. Null for
+     * ANCHOR_OFFSET rows (no schedule involved).
+     */
+    std::optional<std::string> schedule_code;
+
+    /**
+     * @brief Number of steps along schedule_code axis to the resolution date (e.g. 1 for a CDS 1Y
+     * 1RQ tenor, 8 for the eighth FOMC meeting). Same nullability rule as schedule_code.
+     */
+    std::optional<int> schedule_step_count;
 
     /**
      * @brief Username of the person who last modified this tenor convention resolution.

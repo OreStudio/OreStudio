@@ -41,6 +41,8 @@
 \ir ./refdata_tenors_drop.sql
 \ir ./refdata_tenor_resolution_algorithms_notify_trigger_drop.sql
 \ir ./refdata_tenor_resolution_algorithms_drop.sql
+\ir ./refdata_tenor_schedules_notify_trigger_drop.sql
+\ir ./refdata_tenor_schedules_drop.sql
 \ir ./refdata_tenor_anchors_notify_trigger_drop.sql
 \ir ./refdata_tenor_anchors_drop.sql
 \ir ./refdata_tenor_units_notify_trigger_drop.sql
@@ -192,6 +194,14 @@
 \ir ./refdata_calendar_exceptions_drop.sql
 \ir ./refdata_calendar_rules_notify_trigger_drop.sql
 \ir ./refdata_calendar_rules_drop.sql
+
+-- Calendar events (depend on calendars and diary_entry_types; drop before both)
+\ir ./refdata_calendar_events_notify_trigger_drop.sql
+\ir ./refdata_calendar_events_drop.sql
+
+-- Diary entry types (depend on nothing; drop after calendar events)
+\ir ./refdata_diary_entry_types_notify_trigger_drop.sql
+\ir ./refdata_diary_entry_types_drop.sql
 
 -- Calendars (depends on calendar_types and countries; drop before both)
 \ir ./refdata_calendars_notify_trigger_drop.sql

@@ -199,6 +199,13 @@ How the codebase is put together.
   instance section (NATS, HTTP) linking to the codegen archetypes.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — producers, the marketdata authority
   (subscribe → persist → remap), feed configs, and source-independent consumers.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the end-to-end code
+  model of the tenor machinery: the refdata tenor vocabulary (labels,
+  conventions, anchors, schedules), the calendar/event store
+  (=calendar_event=, =diary_entry_types=), how a tenor label resolves to
+  a date (=tenor_resolution.cpp=, =ANCHOR_OFFSET= / =SCHEDULE_STEP=), and
+  the bootstrap chain (configs → pillars → republish resolver → engine),
+  including the FOMC =1F=..=nF= worked example.
 - [[id:C9DACC7A-BF0D-47E9-A357-1B45DABFBDEE][ores.marketdata infrastructure inventory]] — inventory of the existing
   market data stack across all tiers: DB schema and entities (=market_series=,
   =market_observation=, =market_fixing=), FX spot encoding, tenant/workspace

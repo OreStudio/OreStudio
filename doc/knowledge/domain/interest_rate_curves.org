@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-05-25
-#+updated: 2026-07-12
+#+updated: 2026-08-09
 
 Interest rate curves are a core market data input in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
 For the SOFR-specific short-end construction, see [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]].
@@ -171,6 +171,14 @@ contracts referencing consecutive [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOM
 rather than generic tenor points — see that document for the resulting
 flat-forward short end and its transition to the continuous long-end
 methods described in [[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]].
+
+In this codebase the FOMC segment is one configuration, not engine
+work: =ir_curve_bootstrap_pillars= rows SPOT→1F, 1F→2F, ..., nF→split
+under =ir_curve_bootstrap_configs=, with =interpolation_method=
+=FLAT_FORWARD_THEN_LOG_LINEAR=, =split_tenor_code= at the boundary,
+and the end-tenor code doubling as the point id the resolver reads the
+quote from — see [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and
+Curve Bootstrapping Architecture]] for the full chain.
 
 * Bootstrapping: USD Curve Construction
 

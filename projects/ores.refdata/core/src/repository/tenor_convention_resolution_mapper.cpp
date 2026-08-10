@@ -38,6 +38,8 @@ tenor_convention_resolution_mapper::map(const tenor_convention_resolution_entity
     r.anchor_override = v.anchor_override;
     r.offset_unit = v.offset_unit;
     r.offset_multiplier = v.offset_multiplier;
+    r.schedule_code = v.schedule_code;
+    r.schedule_step_count = v.schedule_step_count;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -60,6 +62,8 @@ tenor_convention_resolution_mapper::map(const domain::tenor_convention_resolutio
     r.anchor_override = v.anchor_override;
     r.offset_unit = v.offset_unit;
     r.offset_multiplier = v.offset_multiplier;
+    r.schedule_code = v.schedule_code;
+    r.schedule_step_count = v.schedule_step_count;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

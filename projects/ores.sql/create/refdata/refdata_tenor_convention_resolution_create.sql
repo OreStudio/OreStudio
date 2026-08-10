@@ -42,13 +42,17 @@
  * duration is fixed by its own unit/multiplier regardless of
  * convention, so only the anchor itself (the convention's measured_from,
  * or this row's anchor_override) can vary for those rows. For a
- * convention whose resolution_algorithm is IMM_ROLL rather than
- * ANCHOR_OFFSET, offset_unit is ROLL_QUARTER and offset_multiplier
- * is the roll-quarter count (e.g. 1Y 1RQ, per
- * [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s CDS disambiguation
- * convention) — the same two columns, reused rather than requiring a
- * separate schema for the different algorithm. The runtime resolver for
- * IMM_ROLL rows is not implemented yet; see the capture referenced below.
+ * convention whose resolution_algorithm is SCHEDULE_STEP rather than
+ * ANCHOR_OFFSET, the row's schedule_code names the
+ * [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis the
+ * tenor walks (ROLL_QUARTER for the IMM rule, FOMC_MEETING for the
+ * event-lookup schedule) and schedule_step_count is the number of steps
+ * to the resolution date (e.g. 1Y 1RQ for the migrated CREDIT_CDS_IMM
+ * rows: one calendar year of offset from spot, then one roll-quarter) —
+ * a tenor resolves as anchor + calendar offset + n steps along the named
+ * schedule. The offset_unit/offset_multiplier columns stay the
+ * calendar-axis offset: their ROLL_QUARTER value is gone — the roll
+ * count lives in schedule_step_count now.
  */
 
 create table if not exists "ores_refdata_tenor_convention_resolutions_tbl" (
@@ -59,6 +63,8 @@ create table if not exists "ores_refdata_tenor_convention_resolutions_tbl" (
     "anchor_override" text null,
     "offset_unit" text null,
     "offset_multiplier" integer null,
+    "schedule_code" text null,
+    "schedule_step_count" integer null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -138,6 +144,19 @@ begin
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate schedule_code (optional soft FK to ores_refdata_tenor_schedules_tbl)
+    if new.schedule_code is not null then
+        if not exists (
+            select 1 from ores_refdata_tenor_schedules_tbl
+            where tenant_id = new.tenant_id
+              and code = new.schedule_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid schedule_code: %. No active tenor schedule found with this code.', new.schedule_code
+                using errcode = '23503';
+        end if;
+    end if;
 
     return new;
 end;

@@ -1605,6 +1605,17 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
             columns.append(_column_node_to_dict(node))
     j["columns"] = columns
 
+    # Soft-FK validations, parsed identically to a domain_entity's
+    # (see _soft_fk_validation_node_to_dict): a `* Foreign keys` section
+    # with one `** <column>` child per referenced table. Absent (the case
+    # for every other junction model today), the key is omitted and the
+    # sql_schema_junction_create template emits no validation block.
+    fk_section = _section(doc.root, "Foreign keys")
+    if fk_section and fk_section.children:
+        j["foreign_keys"] = [
+            _soft_fk_validation_node_to_dict(c) for c in fk_section.children
+        ]
+
     sql_section = _section(doc.root, "SQL")
     if sql_section:
         sql_flags = _section(sql_section, "Flags")

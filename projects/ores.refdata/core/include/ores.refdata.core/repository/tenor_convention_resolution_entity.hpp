@@ -46,6 +46,8 @@ struct tenor_convention_resolution_entity {
     std::optional<std::string> anchor_override;
     std::optional<std::string> offset_unit;
     std::optional<int> offset_multiplier;
+    std::optional<std::string> schedule_code;
+    std::optional<int> schedule_step_count;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

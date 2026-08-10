@@ -19,6 +19,7 @@
  */
 #include "ores.refdata.api/generators/tenor_convention_resolution_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::refdata::generators {
 
@@ -37,6 +38,8 @@ generate_synthetic_tenor_convention_resolution(utility::generation::generation_c
     r.anchor_override = std::nullopt;
     r.offset_unit = std::nullopt;
     r.offset_multiplier = std::nullopt;
+    r.schedule_code = std::nullopt;
+    r.schedule_step_count = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

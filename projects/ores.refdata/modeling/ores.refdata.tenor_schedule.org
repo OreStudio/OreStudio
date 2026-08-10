@@ -1,0 +1,310 @@
+:PROPERTIES:
+:ID: CD180696-6558-469E-8FE5-66BFBB6E3E00
+:END:
+#+title: ores.refdata.tenor_schedule
+#+description: A named schedule axis a tenor resolves along: ROLL_QUARTER (closed-form IMM rule) or FOMC_MEETING (event-lookup into calendar_event rows).
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: tenor_schedule
+#+entity_plural: tenor_schedules
+#+entity_title: Tenor Schedule
+#+brief: Named schedule axis for tenor resolution.
+#+created: 2026-08-10
+#+updated: 2026-08-10
+
+A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]]
+resolves along (story Decision D2: anchor + calendar offset + n
+steps). Two kinds today, distinguished by =schedule_source=:
+
+- =CLOSED_FORM=: the dates come from a closed-form rule evaluated
+  code-side. =ROLL_QUARTER= is the only instance: the first business
+  day after the 20th of March/June/September/December (the IMM
+  quarterly rule).
+- =EVENT_LOOKUP=: the dates come from
+  [[id:B20050A5-1245-4944-A328-2A0893C92AEC][calendar_event]] rows on a
+  named calendar, filtered by diary entry type. =FOMC_MEETING= is the
+  only instance: =central_bank_meeting= events on =US.FOMC=.
+
+=calendar_code= and =diary_entry_type= are null for closed-form
+schedules (no event store involved) and required for event-lookup
+ones -- but the binding is documented, not enforced in the schema.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique schedule code.
+
+Examples: 'ROLL_QUARTER', 'FOMC_MEETING'.
+
+#+begin_src cpp :name generator
+std::string("TenorSchedule")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name for the schedule.
+
+#+begin_src cpp :name generator
+std::string(faker::word::adjective()) + " Schedule"
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Detailed description of the schedule.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Order for UI display purposes.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+** schedule_source
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  CLOSED_FORM
+:END:
+
+How the schedule's dates are produced: =CLOSED_FORM= (a closed-form
+rule evaluated code-side) or =EVENT_LOOKUP= (calendar_event rows on a
+named calendar).
+
+#+begin_src cpp :name generator
+std::string("CLOSED_FORM")
+#+end_src
+
+#+begin_src sql :name schedule_source_validation :implements d4e8e136-828d-440a-ba59-82ba2b9d3e2e
+    if NEW.schedule_source not in ('CLOSED_FORM', 'EVENT_LOOKUP') then
+        raise exception 'Invalid schedule_source: %. Must be CLOSED_FORM or EVENT_LOOKUP.',
+            NEW.schedule_source;
+    end if;
+#+end_src
+
+** calendar_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar whose diary events drive this schedule (event-lookup
+schedules only).
+
+References [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][ores_refdata_calendars_tbl.code]] (soft FK).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** diary_entry_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The diary entry type whose events drive this schedule (event-lookup
+schedules only).
+
+References
+[[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][ores_refdata_diary_entry_types_tbl.code]] (soft FK).
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_schedules_tbl
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_tenor_schedule_fn;
+#+end_src
+
+* Foreign keys
+
+** calendar_code
+:PROPERTIES:
+:table:         ores_refdata_calendars_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid calendar_code: %. No active calendar found with this code.
+:list_by:       true
+:END:
+
+** diary_entry_type
+:PROPERTIES:
+:table:         ores_refdata_diary_entry_types_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid diary_entry_type: %. No active diary entry type found with this code.
+:list_by:       true
+:END:
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:     api
+:has_batch_remove: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: schedule
+:entity_plural_short:   schedules
+:entity_singular_words: tenor schedule
+:entity_plural_words:   tenor schedules
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ts
+:END:
+
+** Table display
+
+| column            | header        |
+|-------------------+---------------|
+| code              | Code          |
+| name              | Name          |
+| description       | Description   |
+| schedule_source   | Schedule Source |
+| calendar_code     | Calendar      |
+| diary_entry_type  | Diary Entry   |
+| display_order     | Order         |
+| modified_by       | Modified By   |
+| version           | Version       |
+
+** Qt
+:PROPERTIES:
+:domain_include:         ores.refdata.api/domain/tenor_schedule.hpp
+:domain_class:           refdata::domain::tenor_schedule
+:protocol_include:       ores.refdata.api/messaging/tenor_schedule_protocol.hpp
+:collection_name:        schedules
+:item_var:               schedule
+:key_field:              code
+:get_request_class:      refdata::messaging::get_tenor_schedules_request
+:get_response_class:     refdata::messaging::get_tenor_schedules_response
+:get_message_type:       get_tenor_schedules_request
+:save_request_class:     refdata::messaging::save_tenor_schedule_request
+:save_response_class:    refdata::messaging::save_tenor_schedule_response
+:save_message_type:      save_tenor_schedule_request
+:delete_request_class:   refdata::messaging::delete_tenor_schedule_request
+:delete_response_class:  refdata::messaging::delete_tenor_schedule_response
+:delete_message_type:    delete_tenor_schedule_request
+:history_request_class:  refdata::messaging::get_tenor_schedule_history_request
+:history_response_class: refdata::messaging::get_tenor_schedule_history_response
+:history_message_type:   get_tenor_schedule_history_request
+:settings_group:         TenorScheduleListWindow
+:window_title:           Tenor Schedules
+:icon:                   CalendarClock
+:has_export_macro:       true
+:END:
+
+*** Detail fields
+
+| field             | label            | widget              | type      | is_key | is_required | placeholder                          |
+|-------------------+------------------+---------------------+-----------+--------+-------------+----------------------------------------|
+| code              | Code             | codeEdit            | line_edit | true   | true        | Enter tenor schedule code            |
+| name              | Name             | nameEdit            | line_edit |        | true        | Enter name                           |
+| description       | Description      | descriptionEdit     | text_edit |        | true        | Enter a description                  |
+| schedule_source   | Schedule Source  | scheduleSourceEdit  | line_edit |        | true        | CLOSED_FORM or EVENT_LOOKUP          |
+| calendar_code     | Calendar         | calendarCodeEdit    | line_edit |        |             | Event-lookup calendar                |
+| diary_entry_type  | Diary Entry Type | diaryEntryTypeEdit  | line_edit |        |             | Event-lookup diary entry type        |
+| display_order     | Display Order    | displayOrderEdit    | spin_box  |        | true        |                                      |
+
+*** Columns (Qt model)
+
+| enum_name       | field            | header            | type      | width |
+|-----------------+------------------+-------------------+-----------+-------|
+| Code            | code             | Code              | string    | auto  |
+| Name            | name             | Name              | string    | auto  |
+| Description     | description      | Description       | string    | auto  |
+| ScheduleSource  | schedule_source  | Schedule Source   | string    | auto  |
+| CalendarCode    | calendar_code    | Calendar          | string    | 100   |
+| DiaryEntryType  | diary_entry_type | Diary Entry Type  | string    | 100   |
+| DisplayOrder    | display_order    | Display Order     | int       | 70    |
+| Version         | version          | Version           | int       | 70    |
+| ModifiedBy      | modified_by      | Modified By       | string    | auto  |
+| RecordedAt      | recorded_at      | Recorded At       | timestamp | auto  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] — the entity this schedule classifies.
+- [[id:B20050A5-1245-4944-A328-2A0893C92AEC][ores.refdata.calendar_event]] — the event store event-lookup schedules read from.
+- [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][ores.refdata.diary_entry_type]] — the vocabulary filtering event-lookup schedules.
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

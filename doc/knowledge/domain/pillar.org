@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-08-09
 
 * Summary
 
@@ -68,6 +68,26 @@ range differ by curve family — see
 [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] for the
 concrete instrument-to-pillar mapping used for interest rate curves.
 
+** Pillars in code: the bootstrap pillar list
+
+A bootstrapped curve's pillars are not free-floating tenor labels: they
+are rows of =ir_curve_bootstrap_pillars= under an
+=ir_curve_bootstrap_configs= curve config. Each row carries a
+=start_tenor_code=, an =end_tenor_code=, a =curve_role_code=
+(=DEPOSIT=/=FRA=/=SWAP=) and a =sequence_index=, and the row order *is*
+the fixed-leg schedule: a SWAP pillar's fixed-leg dates are the end
+dates of all prior pillars plus its own. Two facts make the end tenor
+code load-bearing: it doubles as the *point id* the bootstrap resolver
+looks the observed quote up by in the raw grid (=market_observations=),
+and a pillar whose end code has no quote fails loudly. A curve config
+also carries a =split_tenor_code= marking where the short-end and
+long-end interpolation methods divide. Pillars whose tenors resolve
+through a schedule axis (FOMC =1F=..=nF=, IMM roll tenors) land in the
+same rows — the FOMC segment is SPOT→1F, 1F→2F, ..., nF→split under one
+config. The full chain is documented in
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+Bootstrapping Architecture]].
+
 * See also
 
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
@@ -77,3 +97,4 @@ concrete instrument-to-pillar mapping used for interest rate curves.
 - [[id:6FFD22D7-5E83-405A-8069-52B96B9AF606][Term Structure Extent]] — the range within which a curve's pillars fall.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — the proposed per-point field that would record whether a point is a pillar or a derived value.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — the concrete instrument-to-pillar mapping for interest rate curves.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the bootstrap chain: config, pillar rows, resolver, engine.

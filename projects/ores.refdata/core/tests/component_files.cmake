@@ -25,6 +25,7 @@ set(files
     "business_day_convention_type_eventing_integration_tests.cpp"
     "business_unit_eventing_integration_tests.cpp"
     "business_unit_type_eventing_integration_tests.cpp"
+    "calendar_event_eventing_integration_tests.cpp"
     "calendar_eventing_integration_tests.cpp"
     "calendar_exception_eventing_integration_tests.cpp"
     "calendar_rule_eventing_integration_tests.cpp"
@@ -48,6 +49,7 @@ set(files
     "day_count_fraction_type_eventing_integration_tests.cpp"
     "deposit_convention_eventing_integration_tests.cpp"
     "derivation_kind_eventing_integration_tests.cpp"
+    "diary_entry_type_eventing_integration_tests.cpp"
     "floating_index_type_eventing_integration_tests.cpp"
     "fra_convention_eventing_integration_tests.cpp"
     "ibor_index_convention_eventing_integration_tests.cpp"
@@ -104,6 +106,7 @@ set(files
     "tenor_eventing_integration_tests.cpp"
     "tenor_kind_eventing_integration_tests.cpp"
     "tenor_resolution_algorithm_eventing_integration_tests.cpp"
+    "tenor_schedule_eventing_integration_tests.cpp"
     "tenor_unit_eventing_integration_tests.cpp"
     "zero_convention_eventing_integration_tests.cpp"
 )

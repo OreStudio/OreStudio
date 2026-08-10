@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_GENERATORS_TENOR_CONVENTION_RESOLUTION_GENERATOR_HPP
-#define ORES_REFDATA_GENERATORS_TENOR_CONVENTION_RESOLUTION_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_TENOR_CONVENTION_RESOLUTION_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_TENOR_CONVENTION_RESOLUTION_GENERATOR_HPP
 
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include <vector>
 
@@ -29,13 +30,13 @@ namespace ores::refdata::generators {
 /**
  * @brief Generates a synthetic tenor_convention_resolution.
  */
-domain::tenor_convention_resolution
+ORES_REFDATA_API_EXPORT domain::tenor_convention_resolution
 generate_synthetic_tenor_convention_resolution(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tenor_convention_resolutions.
  */
-std::vector<domain::tenor_convention_resolution>
+ORES_REFDATA_API_EXPORT std::vector<domain::tenor_convention_resolution>
 generate_synthetic_tenor_convention_resolutions(std::size_t n,
                                                 utility::generation::generation_context& ctx);
 

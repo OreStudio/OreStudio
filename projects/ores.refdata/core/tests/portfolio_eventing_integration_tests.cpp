@@ -37,6 +37,14 @@
 // refdata paths.
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+// Aggregation-currency seed (Portfolio's insert trigger validates
+// aggregation_ccy against the active currencies for the write tenant,
+// and the synthetic currency generator's first code -- X-0 -- is the
+// code the portfolio generator hardcodes): like the party
+// seeds, the currency generator and repository are used regardless of
+// the child's generator facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -83,6 +91,7 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::portfolio;
 using ores::refdata::repository::portfolio_repository;
+using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -156,6 +165,15 @@ TEST_CASE("write_portfolio_publishes_nats_changed_event", tags) {
     v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Portfolio: " << v;
+    // Seed the active aggregation-currency row the insert trigger
+    // references: the currency check is strict and tenant-scoped, and
+    // this process's synthetic-currency counter has moved past the
+    // X-0 code the portfolio generator hardcodes -- so stamp
+    // it explicitly, mirroring write_synthetic_pairs' pattern.
+    auto aggregation_ccy = generate_synthetic_currency(ctx);
+    aggregation_ccy.iso_code = "X-0";
+    currency_repository ccy_repo;
+    ccy_repo.write(party_ctx, {aggregation_ccy});
 
     portfolio_repository repo;
     repo.write(party_ctx, v);

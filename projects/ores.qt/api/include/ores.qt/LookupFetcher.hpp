@@ -34,6 +34,7 @@
 #include "ores.refdata.api/domain/crm_topology_config.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/domain/curve_role.hpp"
+#include "ores.refdata.api/domain/diary_entry_type.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/domain/party.hpp"
@@ -349,6 +350,17 @@ fetch_purpose_types(ClientManager* cm);
  */
 ORES_QT_API std::expected<std::vector<refdata::domain::party_type>, QString>
 fetch_party_types(ClientManager* cm);
+
+/**
+ * @brief Fetches all diary entry types from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Used by CalendarEvent's diary_entry_type combo. Returns an error
+ * message on failure, distinguishing it from a legitimately-empty
+ * result.
+ */
+ORES_QT_API std::expected<std::vector<refdata::domain::diary_entry_type>, QString>
+fetch_diary_entry_types(ClientManager* cm);
 
 /**
  * @brief Fetches all party statuses from the server.

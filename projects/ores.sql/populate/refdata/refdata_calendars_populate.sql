@@ -184,6 +184,31 @@ do update set
     change_reason_code = 'system.initial_load',
     change_commentary = 'Update during initial population';
 
+-- ORE-native calendars (not from QuantLib): calendars that carry no
+-- QuantLib Market enum but exist as first-class rows, e.g. the FOMC
+-- meeting calendar whose diary entries live in calendar_events
+-- (story: FOMC-dated OIS short end). These are deliberately NOT
+-- mirrored in generate_quantlib_calendars() -- only in this script.
+insert into ores_refdata_calendars_tbl (
+    tenant_id, code, version, name, calendar_type, country_code, source, is_editable,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    (ores_utility_system_tenant_id_fn(), 'US.FOMC', 0, 'US Federal Reserve (FOMC meeting calendar)', 'central_bank_meeting', 'US', 'federalreserve.gov', true,
+     current_user, current_user, 'system.initial_load', 'FOMC meeting calendar; meeting dates seeded as calendar_event rows (story: FOMC-dated OIS short end)')
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do update set
+    name = excluded.name,
+    calendar_type = excluded.calendar_type,
+    country_code = excluded.country_code,
+    source = excluded.source,
+    is_editable = excluded.is_editable,
+    modified_by = current_user,
+    performed_by = current_user,
+    change_reason_code = 'system.initial_load',
+    change_commentary = 'Update during initial population';
+
 -- Summary
 select 'refdata_calendars' as entity, count(*) as count
 from ores_refdata_calendars_tbl;

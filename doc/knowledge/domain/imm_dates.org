@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-08-09
 
 * Summary
 
@@ -32,6 +32,22 @@ date]] by calendar arithmetic — it is one of a fixed set of four dates per
 year, and "the next IMM date" or "IMM3 from here" is a lookup into that
 fixed set, not an arithmetic offset.
 
+** The roll schedule in the resolution model
+
+In the unified tenor model (decided 2026-08-09 — see
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "How a tenor
+resolves" section), the IMM roll dates are the =ROLL_QUARTER= schedule:
+*closed-form*, derivable by rule (20th + business-day adjustment), so
+the dates stay code-side in the resolver rather than being seeded as
+data. A CDS tenor resolves under =SCHEDULE_STEP= as "anchor + calendar
+offset, then n steps along ROLL_QUARTER": =1Y 1RQ= is one year offset
+plus one roll step. The old =IMM_ROLL= algorithm row is superseded —
+=CREDIT_CDS_IMM= migrates to =SCHEDULE_STEP=; only the =IMM_ROLL=
+*anchor* name survives, as a =measured_from= value. The code model is
+documented in
+[[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve
+Bootstrapping Architecture]].
+
 ** Uses
 
 - As an alternative bucketing scheme for position reporting, alongside
@@ -53,3 +69,4 @@ fixed set, not an arithmetic offset.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the Credit/CDS Curves convention built on IMM roll dates.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — STIR futures bootstrapping off the nearest IMM contract.
 - [[id:99044531-76EB-4F0A-980A-597C4FA84408][FOMC Dates]] — the sibling fixed-schedule concept for the central bank's own meeting calendar; not to be confused with IMM dates.
+- [[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]] — the =ROLL_QUARTER= schedule and =SCHEDULE_STEP= resolution in code.

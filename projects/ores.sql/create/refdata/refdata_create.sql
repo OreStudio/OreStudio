@@ -52,6 +52,10 @@
 \ir ./refdata_calendar_rules_notify_trigger_create.sql
 \ir ./refdata_calendar_exceptions_create.sql
 \ir ./refdata_calendar_exceptions_notify_trigger_create.sql
+\ir ./refdata_diary_entry_types_create.sql
+\ir ./refdata_diary_entry_types_notify_trigger_create.sql
+\ir ./refdata_calendar_events_create.sql
+\ir ./refdata_calendar_events_notify_trigger_create.sql
 
 -- Calendar-date materialisation (depends on calendars)
 \ir ./refdata_calendar_date_create.sql
@@ -216,6 +220,8 @@
 \ir ./refdata_tenor_anchors_notify_trigger_create.sql
 \ir ./refdata_tenor_resolution_algorithms_create.sql
 \ir ./refdata_tenor_resolution_algorithms_notify_trigger_create.sql
+\ir ./refdata_tenor_schedules_create.sql
+\ir ./refdata_tenor_schedules_notify_trigger_create.sql
 
 -- Payment frequency: ORE's canonical frequencyType codes (Annual,
 -- Semiannual, Quarterly...), reusing tenor_unit's period vocabulary.

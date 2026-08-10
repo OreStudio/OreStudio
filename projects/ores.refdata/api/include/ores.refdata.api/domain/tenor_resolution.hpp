@@ -27,6 +27,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 
@@ -52,19 +53,27 @@ struct tenor_window final {
  * @param spot The spot date (horizon + spot days), supplied by the caller since spot-day
  * resolution is currency-pair-specific and out of scope here (see doc/knowledge/domain/
  * fx_spot_date_and_settlement.org).
+ * @param schedule_dates The dates of an event-lookup schedule's set (e.g. the calendar_event
+ * rows behind FOMC_MEETING), supplied by the caller since reading the event store is out of
+ * scope here. Null (the default) for closed-form schedules like ROLL_QUARTER, whose dates are
+ * computed from the IMM rule; for event-lookup schedules, passing null is a caller error.
  *
  * @throws std::invalid_argument if the tenor does not belong to the convention's set, if a
  * SPECIAL tenor's resolution row is missing its offset, or if an anchor code is not one this
  * function resolves to a concrete date (SPOT, TODAY, TOMORROW).
- * @throws std::logic_error if convention.resolution_algorithm is IMM_ROLL — that algorithm is not
- * yet implemented (see the capture for adding it).
+ * @throws std::logic_error if a SCHEDULE_STEP resolution row is missing its schedule_code or
+ * schedule_step_count, if an event-lookup schedule has no dates supplied, or if the schedule is
+ * exhausted (fewer than schedule_step_count dates on-or-after the walk start) — all of these
+ * are configuration/data errors.
  */
 ORES_REFDATA_API_EXPORT std::chrono::year_month_day
 resolve_end_date(const tenor& t,
                  const tenor_convention& convention,
                  const std::optional<tenor_convention_resolution>& resolution,
                  std::chrono::year_month_day horizon,
-                 std::chrono::year_month_day spot);
+                 std::chrono::year_month_day spot,
+                 const std::optional<std::vector<std::chrono::year_month_day>>& schedule_dates =
+                     std::nullopt);
 
 /**
  * @brief Resolves a (horizon, tenor, convention) triple into its [start, end) date window, where

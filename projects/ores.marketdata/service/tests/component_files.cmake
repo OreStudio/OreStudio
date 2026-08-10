@@ -18,6 +18,7 @@
 #
 set(files
     "app_crm_ingest_bridge_tests.cpp"
+    "curve_republish_resolver_fomc_tests.cpp"
     "curve_republish_resolver_tests.cpp"
     "main.cpp"
 )

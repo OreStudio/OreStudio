@@ -30,6 +30,7 @@
 #include "ores.refdata.core/messaging/business_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_adjustment_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_date_registrar.hpp"
+#include "ores.refdata.core/messaging/calendar_event_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_materialisation_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_type_registrar.hpp"
@@ -50,6 +51,7 @@
 #include "ores.refdata.core/messaging/currency_registrar.hpp"
 #include "ores.refdata.core/messaging/curve_role_registrar.hpp"
 #include "ores.refdata.core/messaging/day_count_fraction_type_registrar.hpp"
+#include "ores.refdata.core/messaging/diary_entry_type_registrar.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_registrar.hpp"
 #include "ores.refdata.core/messaging/floating_index_type_registrar.hpp"
 #include "ores.refdata.core/messaging/fra_convention_registrar.hpp"
@@ -79,6 +81,7 @@
 #include "ores.refdata.core/messaging/tenor_kind_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_resolution_algorithm_registrar.hpp"
+#include "ores.refdata.core/messaging/tenor_schedule_registrar.hpp"
 #include "ores.refdata.core/messaging/tenor_unit_registrar.hpp"
 #include "ores.refdata.core/messaging/zero_convention_registrar.hpp"
 
@@ -154,6 +157,7 @@
 #include "ores.refdata.core/presentation/business_unit_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/business_unit_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/calendar_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/calendar_event_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/cds_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/contact_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/counterparty_history_field_mapper.hpp"
@@ -169,6 +173,7 @@
 #include "ores.refdata.core/presentation/currency_pair_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/curve_role_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/day_count_fraction_type_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/diary_entry_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/deposit_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/floating_index_type_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/fra_convention_history_field_mapper.hpp"
@@ -193,6 +198,7 @@
 #include "ores.refdata.core/presentation/tenor_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_kind_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_resolution_algorithm_history_field_mapper.hpp"
+#include "ores.refdata.core/presentation/tenor_schedule_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/tenor_unit_history_field_mapper.hpp"
 #include "ores.refdata.core/presentation/zero_convention_history_field_mapper.hpp"
 #include "ores.refdata.core/service/asset_class_code_service.hpp"
@@ -204,6 +210,7 @@
 #include "ores.refdata.core/service/business_unit_service.hpp"
 #include "ores.refdata.core/service/business_unit_type_service.hpp"
 #include "ores.refdata.core/service/calendar_service.hpp"
+#include "ores.refdata.core/service/calendar_event_service.hpp"
 #include "ores.refdata.core/service/cds_convention_service.hpp"
 #include "ores.refdata.core/service/contact_type_service.hpp"
 #include "ores.refdata.core/service/counterparty_service.hpp"
@@ -219,6 +226,7 @@
 #include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.refdata.core/service/curve_role_service.hpp"
 #include "ores.refdata.core/service/day_count_fraction_type_service.hpp"
+#include "ores.refdata.core/service/diary_entry_type_service.hpp"
 #include "ores.refdata.core/service/deposit_convention_service.hpp"
 #include "ores.refdata.core/service/floating_index_type_service.hpp"
 #include "ores.refdata.core/service/fra_convention_service.hpp"
@@ -242,6 +250,7 @@
 #include "ores.refdata.core/service/tenor_convention_service.hpp"
 #include "ores.refdata.core/service/tenor_kind_service.hpp"
 #include "ores.refdata.core/service/tenor_resolution_algorithm_service.hpp"
+#include "ores.refdata.core/service/tenor_schedule_service.hpp"
 #include "ores.refdata.core/service/tenor_service.hpp"
 #include "ores.refdata.core/service/tenor_unit_service.hpp"
 #include "ores.refdata.core/service/zero_convention_service.hpp"
@@ -290,6 +299,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_calendar_date_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
     append(register_calendar_adjustment_handlers(nats, ctx, verifier));
+    append(register_calendar_event_handlers(nats, ctx, verifier));
     append(register_calendar_type_handlers(nats, ctx, verifier));
     append(register_cds_convention_handlers(nats, ctx, verifier));
     append(register_contact_type_handlers(nats, ctx, verifier));
@@ -307,6 +317,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_currency_pair_convention_handlers(nats, ctx, verifier));
     append(register_currency_pair_handlers(nats, ctx, verifier));
     append(register_day_count_fraction_type_handlers(nats, ctx, verifier));
+    append(register_diary_entry_type_handlers(nats, ctx, verifier));
     append(register_instrument_code_handlers(nats, ctx, verifier));
     append(register_deposit_convention_handlers(nats, ctx, verifier));
     append(register_floating_index_type_handlers(nats, ctx, verifier));
@@ -338,6 +349,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_curve_role_handlers(nats, ctx, verifier));
     append(register_tenor_unit_handlers(nats, ctx, verifier));
     append(register_tenor_resolution_algorithm_handlers(nats, ctx, verifier));
+    append(register_tenor_schedule_handlers(nats, ctx, verifier));
     append(register_zero_convention_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
@@ -541,6 +553,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_calendar_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_calendar_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.calendar_event",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::calendar_event_service svc(scoped_ctx);
+                auto versions = svc.get_calendar_event_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_calendar_event_fields);
             });
 
         hist_registry.register_history_provider(
@@ -751,6 +772,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
             });
 
         hist_registry.register_history_provider(
+            "ores.refdata.diary_entry_type",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::diary_entry_type_service svc(scoped_ctx);
+                auto versions = svc.get_entry_type_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_diary_entry_type_fields);
+            });
+
+        hist_registry.register_history_provider(
             "ores.refdata.ledger_feed_type",
             [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
                 service::ledger_feed_type_service svc(scoped_ctx);
@@ -829,6 +859,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 auto versions = svc.get_algorithm_history(entity_id);
                 return ores::history::service::build_entity_history_versions(
                     versions, presentation::render_tenor_resolution_algorithm_fields);
+            });
+
+        hist_registry.register_history_provider(
+            "ores.refdata.tenor_schedule",
+            [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+                service::tenor_schedule_service svc(scoped_ctx);
+                auto versions = svc.get_schedule_history(entity_id);
+                return ores::history::service::build_entity_history_versions(
+                    versions, presentation::render_tenor_schedule_fields);
             });
 
         hist_registry.register_history_provider(

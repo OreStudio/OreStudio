@@ -24,7 +24,14 @@ via self-referencing parent_portfolio_id.
 :component:        refdata
 :generate_touch_function: true
 :profile:   fk-scoped-child
+:seed_currency: true
 :END:
+
+=:seed_currency:=: the eventing integration test writes a synthetic
+portfolio whose aggregation currency the generator hardcodes as the
+synthetic currency generator's first code (X-0); the portfolios insert
+trigger validates =aggregation_ccy= against the active currencies for
+the write tenant — the test must seed that currency row.
 
 * Columns
 

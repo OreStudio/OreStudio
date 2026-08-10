@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-bootstrapping-and-republish:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fomc-dated-ois-short-end
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-22
 #+updated: 2026-07-22
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -43,12 +43,12 @@ for the write-up and full attribution.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-07-22                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-09                               |
 
 * Acceptance
 
@@ -73,6 +73,12 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+- 2026-08-09 — Abandoned: implementation was premature. The
+  FOMC/IMM/tenor and calendar model needs a design decision first —
+  FOMC dates are events of a given type on a currency calendar, not a
+  new resolution algorithm or a new table. Analysis moves to the FOMC
+  story; this task is re-scoped there once the approach is decided.
 
 * Test Scenarios
 

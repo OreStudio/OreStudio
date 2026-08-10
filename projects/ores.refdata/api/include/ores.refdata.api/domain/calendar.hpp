@@ -90,11 +90,15 @@ struct calendar final {
     std::optional<boost::uuids::uuid> image_id;
 
     /**
-     * @brief Soft-enum: quantlib | user. quantlib means this template's rule set was transcribed
-     * from QuantLib's published rules and matches one of ORE's recognised built-in calendar names
-     * -- a taxonomic fact driving read-only enforcement and the ORE-export skip logic, *not* an
-     * instruction to call the QuantLib library (QuantLib is not linked at runtime; see this task's
-     * * Revision section). user means a calendar template authored in ORE Studio, fully editable.
+     * @brief Soft-enum: quantlib | user | federalreserve.gov. quantlib means this template's rule
+     * set was transcribed from QuantLib's published rules and matches one of ORE's recognised
+     * built-in calendar names -- a taxonomic fact driving read-only enforcement and the ORE-export
+     * skip logic, *not* an instruction to call the QuantLib library (QuantLib is not linked at
+     * runtime; see this task's * Revision section). user means a calendar template authored in ORE
+     * Studio, fully editable. federalreserve.gov marks the ORE-native US.FOMC calendar, whose
+     * meeting dates are transcribed from the Fed's published calendar into calendar_event rows
+     * (story: FOMC-dated OIS short end); it is editable like user rows but is not a general
+     * user-authored template.
      */
     std::string source;
 

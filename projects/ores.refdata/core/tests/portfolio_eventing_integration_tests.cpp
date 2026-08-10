@@ -30,6 +30,13 @@
 #include "ores.refdata.api/domain/portfolio_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
+// Currency seeds (mandatory aggregation-currency soft FK): the
+// portfolio generator hardcodes the synthetic currency generator's
+// first code, so the currency row must be active in the test tenant
+// before the portfolio write. Sibling tests seed their parents the
+// same way (write_synthetic_pairs stamps X-0/X-1 explicitly).
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
@@ -83,6 +90,7 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::portfolio;
 using ores::refdata::repository::portfolio_repository;
+using ores::refdata::repository::currency_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -158,6 +166,17 @@ TEST_CASE("write_portfolio_publishes_nats_changed_event", tags) {
     BOOST_LOG_SEV(lg, debug) << "Portfolio: " << v;
 
     portfolio_repository repo;
+
+    // Seed the active aggregation-currency row ores_refdata_portfolios_tbl
+    // references: the insert trigger's currency check is strict and
+    // tenant-scoped, and this process's currency counter has moved past
+    // the X-0 code the portfolio generator hardcodes -- so stamp it
+    // explicitly, mirroring write_synthetic_pairs' pattern.
+    auto aggregation_ccy = generate_synthetic_currency(ctx);
+    aggregation_ccy.iso_code = "X-0";
+    currency_repository ccy_repo;
+    ccy_repo.write(party_ctx, {aggregation_ccy});
+
     repo.write(party_ctx, v);
 
     // 4. Poll the observer's buffer for the notification. Generous

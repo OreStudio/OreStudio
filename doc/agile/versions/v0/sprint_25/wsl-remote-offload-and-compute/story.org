@@ -39,11 +39,11 @@ work:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Consolidated: the arc's closed work is recorded in the sprint-24 story; this story carries the compass remote-deploy tooling task and the remote compute-node join. The podman-events watcher was abandoned -- its premise died with the controller decommission. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Prove the remote compute-node join end-to-end. |
+| Next          | Nothing. |
 | Last touched  | 2026-08-10                               |
 
 * Acceptance
@@ -80,3 +80,30 @@ work:
 
 - Per-service container rollout via podman pods (ABANDONED — superseded by the Quadlet generator task, which was moved here).
 - The sprint-24 archived record — untouched history.
+
+* Result
+
+Arc complete on 2026-08-10. The sprint-24 history (containerize the
+service runtime, verify on Newton) stays archived in sprint 24. This
+story delivered and proved the ~compass env deploy~ command family:
+
+- ~compass env deploy <host>~ deploys the containerized service
+  runtime to a named remote WSL host (task 2F7CE8B5, DONE).
+- ~compass env deploy <host> --role compute~ deploys
+  ~ores.compute.wrapper~ as a compute node. Proved live end-to-end
+  (task 96C880AE, DONE): the Newton wrapper joined the brave_hopper
+  serving environment's compute core over NATS mTLS, registered as
+  compute host 1cefaf85-e89a-4126-b5af-3548c4e5bef9, received a
+  workunit assignment via the compute_assignments JetStream stream,
+  downloaded and verified the package, executed the engine, uploaded
+  the output, and reported the result (outcome=1). Ergonomics gaps
+  fixed during the proof: NATS cert IP SANs, compute-keys staging,
+  wrapper package download streaming, NATS error detail, CLI
+  ~--package-sha256~, seed package URI.
+- The podman-events watcher (F4BD29A9) was abandoned — its premise
+  died with the controller decommission.
+
+Known follow-ups, tracked as captures: normalise the compute
+service's assignment replies in ~report_submit_handler~ (placeholder
+platform triplet / app_version_id); include the compute image in the
+build_all set.

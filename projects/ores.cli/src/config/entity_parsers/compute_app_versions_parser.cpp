@@ -132,6 +132,16 @@ read_add_compute_app_version_options(const variables_map& vm) {
             }
             const auto code = raw.substr(0, eq);
             const auto hex = raw.substr(eq + 1);
+            // The wrapper compares its computed digest against this verbatim,
+            // and digest tools emit lowercase hex, so require exactly that
+            // shape here -- a typo surfaces at parse time, not at dispatch.
+            const auto is_lower_hex = [](const char c) {
+                return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
+            };
+            if (hex.size() != 64 || !std::ranges::all_of(hex, is_lower_hex)) {
+                BOOST_THROW_EXCEPTION(parser_exception(
+                    "--package-sha256 must be 64 lowercase hex characters: " + raw));
+            }
             auto it = std::ranges::find_if(r.platform_packages, [&](const auto& pp) {
                 return pp.platform_code == code;
             });

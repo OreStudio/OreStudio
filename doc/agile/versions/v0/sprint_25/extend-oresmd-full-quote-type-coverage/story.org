@@ -24,7 +24,8 @@ completeness is the goal; XML/conversion coverage is tracked
 separately (e.g. the [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][ORE
 curve-config/market-data XML round-trip task]] this story was split off
 from, which stays scoped to =YieldCurve= plus whatever asset classes
-oresmd already represents).
+oresmd already represents; that task has since been =ABANDONED=, its
+=* Result= recording why).
 
 * Status
 
@@ -39,20 +40,34 @@ oresmd already represents).
 
 * Acceptance
 
-- [ ] Every catalogued quote type has a corresponding, constructible
+- [X] Every catalogued quote type has a corresponding, constructible
   oresmd identifier shape (a variant member, or new fields/enum values
   on an existing one) with unit tests confirming it can be built and,
   where the catalogue gives a worked key example, projects to the
-  documented ORE key string.
-- [ ] =market_data_urn.org= (id:C3E053CA-0D4B-480B-9119-E11530160EC1)
+  documented ORE key string. -- with two documented caveats:
+  =RATING/TRANSITION_PROBABILITY= is descoped (the credit identifier
+  has no =provider=/=from_rating=/=to_rating= fields to carry it --
+  recorded in the credit task's =* Result= and the credit spec's enum
+  footer, tracked for its own task); and the shared
+  =volatility_surface_point= sub-schema lands on every identifier
+  struct, but only swaption vol projects a quote key today (see the vol
+  task's =* Result=) -- every non-swaption vol shape is constructible
+  and unit-tested, without a projection.
+- [X] =market_data_urn.org= (id:C3E053CA-0D4B-480B-9119-E11530160EC1)
   is updated per family as its task lands -- new asset classes get new
   "Worked examples" sections in the same style as the existing five;
   extended asset classes get their new fields documented in "Grammar"
-  and "Field justification" the same way existing fields are.
-- [ ] No existing asset class's current fields/behaviour regress --
+  and "Field justification" the same way existing fields are. (All
+  seven families now have worked-example sections -- inflation and
+  correlation added, the five originals extended; "Grammar"/"Field
+  justification" gained the =quote=/=model= fields; "Data model" now
+  covers all seven structs.)
+- [X] No existing asset class's current fields/behaviour regress --
   every extension is additive (new optional fields, new enum values),
   matching this story's own established "resolution is strictly
-  additive" principle.
+  additive" principle. (Verified mechanically: regeneration of every
+  generated oresmd file is byte-identical to the pre-story hand-crafted
+  originals -- the =codegen-drift= gate's zero-diff check.)
 
 * Tasks
 
@@ -100,8 +115,9 @@ oresmd already represents).
 - Full =curveconfig.xml=/=todaysmarket.xml=/market-data-quote-string
   *conversion* code for every family -- tracked, where it belongs, in
   the [[id:A202712C-9CFD-48DC-9014-40BA5A9408C6][ORE curve-config/market-data
-  XML round-trip task]] (scoped to =YieldCurve= for now) and future
-  tasks once each family's own ORES domain model exists.
+  XML round-trip task]] (scoped to =YieldCurve= for now; that task is
+  since =ABANDONED=, its =* Result= recording why) and future tasks
+  once each family's own ORES domain model exists.
 - Building the ORES domain models each new asset class's real data
   would live in (e.g. an actual inflation curve entity, a correlation
   matrix entity) -- this story only extends oresmd's *identifier*

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
-#+updated: 2026-08-09
+#+updated: 2026-08-10
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,11 +31,13 @@ Seed a real 2025-2027 window of FOMC meeting dates as calendar_event rows (diary
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-08-09                               |
+| Last touched | 2026-08-10                               |
 
 * Acceptance
 
 - The 2025, 2026 and 2027 FOMC meeting dates are entered as calendar_event rows on US.FOMC with diary_entry_type central_bank_meeting.
+- Each meeting is one calendar_event row dated the second day of the Fed's published two-day range — the statement/decision day, usually a Wednesday (settled 2026-08-10).
+- The 2027 schedule is fully published (Fed release 2025-09-05, including the first 2028 meeting); all three years seed 8 meetings each.
 - Every row carries source='federalreserve.gov'.
 - The per-year count matches the Fed's published schedule (8 regularly scheduled meetings per year); each transcription is cross-checked against federalreserve.gov/monetarypolicy/fomccalendars.htm.
 - The seeded dates drive the FOMC_MEETING schedule lookup from the unified-tenor-resolution task (2F resolves to the second meeting on-or-after spot, etc.).

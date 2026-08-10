@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.api/generator/tenor_generator.hpp"
+#include "ores.refdata.api/generators/tenor_anchor_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -25,29 +25,25 @@
 #include <string>
 #include <unordered_set>
 
-namespace ores::refdata::generator {
+namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::tenor generate_synthetic_tenor(utility::generation::generation_context& ctx) {
+domain::tenor_anchor generate_synthetic_tenor_anchor(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
-    domain::tenor r;
+    domain::tenor_anchor r;
     r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
-    r.code = std::string(faker::word::noun()) + "_tenor_" + std::to_string(++counter) + "-" +
+    r.code = std::string(faker::word::noun()) + "_anchor_" + std::to_string(++counter) + "-" +
              std::to_string(idx);
-    r.display_name = std::string(faker::lorem::word());
     r.description = std::string(faker::lorem::sentence());
-    r.sort_order = ctx.random_int(0, 1000);
-    r.kind = std::string("PERIOD");
-    r.unit = std::string("MONTH");
-    r.multiplier = ctx.random_int(1, 30);
+    r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -56,12 +52,12 @@ domain::tenor generate_synthetic_tenor(utility::generation::generation_context& 
     return r;
 }
 
-std::vector<domain::tenor> generate_synthetic_tenors(std::size_t n,
-                                                     utility::generation::generation_context& ctx) {
-    std::vector<domain::tenor> r;
+std::vector<domain::tenor_anchor>
+generate_synthetic_tenor_anchors(std::size_t n, utility::generation::generation_context& ctx) {
+    std::vector<domain::tenor_anchor> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_tenor(ctx));
+        r.push_back(generate_synthetic_tenor_anchor(ctx));
     return r;
 }
 

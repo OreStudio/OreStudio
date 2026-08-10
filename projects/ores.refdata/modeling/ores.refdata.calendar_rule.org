@@ -229,6 +229,7 @@ std::nullopt
 :PROPERTIES:
 :table:              ores_refdata_calendars_tbl
 :target_column:      code
+:parent_entity:      calendar
 :nullable:           false
 :error_message:      Invalid calendar_code: %. No active calendar found with this code.
 :list_by:            true

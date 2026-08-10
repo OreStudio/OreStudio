@@ -167,6 +167,28 @@ before it can write a convention.
 :order_by:     pair_code
 :END:
 
+* Foreign keys
+
+** pair_code
+:PROPERTIES:
+:table:         ores_refdata_currency_pairs_tbl
+:target_column: pair_code
+:parent_entity: currency_pair
+:seed_currency: true
+:skip_check:    true
+:nullable:      false
+:error_message: Invalid pair_code: %. No active currency pair found with this code.
+:END:
+
+The convention's =pair_code= doubles as its primary key, so this FK
+entry exists for eventing-test seeding only: the test must create the
+currency pair its convention references before writing (the shared
+test tenant's pair validation turns strict as soon as any pair
+exists). =skip_check= suppresses the redundant inline SQL check -- the
+trigger's DQ validation (see below) remains the production guard, and
+=seed_currency= makes the seeded pair's own =base_currency= /
+=quote_currency= insert pass by reusing or seeding a currency first.
+
 * Insert trigger
 ** Validations
 

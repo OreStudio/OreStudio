@@ -134,6 +134,7 @@ book_repository::read_at_version(context ctx, const std::string& id, std::uint32
     return entities.front();
 }
 
+
 std::vector<domain::book>
 book_repository::read_latest_by_parent_portfolio_id(context ctx,
                                                     const std::string& parent_portfolio_id,
@@ -211,7 +212,6 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
         lg(),
         "Reading books as of window by parent_portfolio_id.");
 }
-
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;

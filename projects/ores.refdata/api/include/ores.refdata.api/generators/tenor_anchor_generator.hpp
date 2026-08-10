@@ -17,27 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_GENERATOR_TENOR_GENERATOR_HPP
-#define ORES_REFDATA_API_GENERATOR_TENOR_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_TENOR_ANCHOR_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_TENOR_ANCHOR_GENERATOR_HPP
 
-#include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_anchor.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include <vector>
 
-namespace ores::refdata::generator {
+namespace ores::refdata::generators {
 
 /**
- * @brief Generates a synthetic tenor.
+ * @brief Generates a synthetic tenor_anchor.
  */
-ORES_REFDATA_API_EXPORT domain::tenor
-generate_synthetic_tenor(utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::tenor_anchor
+generate_synthetic_tenor_anchor(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic tenors.
+ * @brief Generates N synthetic tenor_anchors.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::tenor>
-generate_synthetic_tenors(std::size_t n, utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT std::vector<domain::tenor_anchor>
+generate_synthetic_tenor_anchors(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

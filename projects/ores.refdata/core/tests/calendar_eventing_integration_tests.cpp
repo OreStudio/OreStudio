@@ -139,7 +139,6 @@ TEST_CASE("write_calendar_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_calendar(ctx);
     v.change_reason_code = "system.test";
-    const auto id_str = v.code;
     BOOST_LOG_SEV(lg, debug) << "Calendar: " << v;
     // Calendar's insert trigger validates country_code against
     // the countries table for the write tenant, and the synthetic
@@ -147,6 +146,13 @@ TEST_CASE("write_calendar_publishes_nats_changed_event", tags) {
     // materialisation tests do) or the insert is rejected.
     country_repository cty_repo;
     cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
+
+
+    // Capture the identifier AFTER the seed block: a FK that doubles as
+    // the primary key (e.g. the convention's pair_code) has its value
+    // overridden above, and the notification must be matched against the
+    // identifier actually written.
+    const auto id_str = v.code;
 
     calendar_repository repo;
     repo.write(party_ctx, v);

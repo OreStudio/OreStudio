@@ -104,7 +104,6 @@ drop function if exists ores_refdata_validate_tenor_anchor_fn;
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:generator_facet_name: generator
 :END:
 
 ** Repository

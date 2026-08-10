@@ -87,6 +87,7 @@ public:
     std::optional<domain::book>
     read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
+
     /**
      * @brief Reads latest books filtered by parent_portfolio_id, with pagination.
      * @param ctx Repository context with database connection
@@ -123,7 +124,6 @@ public:
                                       const std::string& parent_portfolio_id,
                                       std::chrono::system_clock::time_point valid_from_bound,
                                       std::chrono::system_clock::time_point valid_to_bound);
-
 
     /**
      * @brief Reads latest books with pagination support.

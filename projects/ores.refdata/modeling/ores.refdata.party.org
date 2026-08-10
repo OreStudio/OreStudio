@@ -220,6 +220,8 @@ std::nullopt
 ** parent_party_id
 :PROPERTIES:
 :table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
 :nullable:      true
 :error_message: Invalid parent_party_id: %. No active party found with this id.
 :END:

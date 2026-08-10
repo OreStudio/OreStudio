@@ -77,6 +77,7 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::party;
 using ores::refdata::repository::party_repository;
+using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -130,8 +131,30 @@ TEST_CASE("write_party_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_party(ctx);
     v.change_reason_code = "system.test";
-    const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Party: " << v;
+
+    // Seed the party this entity's parent_party_id references, so
+    // the insert-trigger existence check passes. Writes go through the
+    // parent's own repository -- the same trigger stack production uses.
+    party_repository parent_party_id_repo;
+    auto seeded_parent_party_id = generate_synthetic_party(ctx);
+    seeded_parent_party_id.change_reason_code = "system.test";
+    // Reuse an active party when one already exists -- some
+    // parents admit only one row per tenant (e.g. the party root), so the
+    // test must not seed a second.
+    auto existing_parent_party_id = parent_party_id_repo.read_latest(party_ctx);
+    if (existing_parent_party_id.empty()) {
+        parent_party_id_repo.write(party_ctx, seeded_parent_party_id);
+        v.parent_party_id = seeded_parent_party_id.id;
+    } else {
+        v.parent_party_id = existing_parent_party_id.front().id;
+    }
+
+    // Capture the identifier AFTER the seed block: a FK that doubles as
+    // the primary key (e.g. the convention's pair_code) has its value
+    // overridden above, and the notification must be matched against the
+    // identifier actually written.
+    const auto id_str = boost::uuids::to_string(v.id);
 
     party_repository repo;
     repo.write(party_ctx, v);

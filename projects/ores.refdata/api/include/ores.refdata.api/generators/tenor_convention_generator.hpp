@@ -17,27 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_API_GENERATOR_LEG_TYPE_GENERATOR_HPP
-#define ORES_REFDATA_API_GENERATOR_LEG_TYPE_GENERATOR_HPP
+#ifndef ORES_REFDATA_API_GENERATORS_TENOR_CONVENTION_GENERATOR_HPP
+#define ORES_REFDATA_API_GENERATORS_TENOR_CONVENTION_GENERATOR_HPP
 
-#include "ores.refdata.api/domain/leg_type.hpp"
+#include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include <vector>
 
-namespace ores::refdata::generator {
+namespace ores::refdata::generators {
 
 /**
- * @brief Generates a synthetic leg_type.
+ * @brief Generates a synthetic tenor_convention.
  */
-ORES_REFDATA_API_EXPORT domain::leg_type
-generate_synthetic_leg_type(utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::tenor_convention
+generate_synthetic_tenor_convention(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic leg_types.
+ * @brief Generates N synthetic tenor_conventions.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::leg_type>
-generate_synthetic_leg_types(std::size_t n, utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT std::vector<domain::tenor_convention>
+generate_synthetic_tenor_conventions(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

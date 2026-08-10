@@ -29,15 +29,11 @@
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/currency_pair_changed_event.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
 #include "ores.refdata.api/generators/currency_pair_generator.hpp"
+#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent's own generator and
-// repository live in the same component as the child.
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.refdata.core/repository/currency_repository.hpp"
-// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent's own generator and
-// repository live in the same component as the child.
-#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -85,6 +81,9 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::currency_pair;
 using ores::refdata::repository::currency_pair_repository;
+using ores::refdata::repository::currency_repository;
+using ores::refdata::repository::currency_repository;
+using ores::refdata::repository::currency_pair_classification_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -139,24 +138,47 @@ TEST_CASE("write_currency_pair_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_currency_pair(ctx);
     v.change_reason_code = "system.test";
-    // Seed the active currency row ores_refdata_currencies_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto base_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    base_currency_parent.change_reason_code = "system.test";
-    ores::refdata::repository::currency_repository base_currency_repo;
-    base_currency_repo.write(party_ctx, base_currency_parent);
-    v.base_currency = base_currency_parent.iso_code;
-    // Seed the active currency row ores_refdata_currencies_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto quote_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    quote_currency_parent.change_reason_code = "system.test";
-    ores::refdata::repository::currency_repository quote_currency_repo;
-    quote_currency_repo.write(party_ctx, quote_currency_parent);
-    v.quote_currency = quote_currency_parent.iso_code;
-    const auto id_str = v.pair_code;
     BOOST_LOG_SEV(lg, debug) << "Currency Pair: " << v;
+
+    // Seed the currency this entity's base_currency references, so
+    // the insert-trigger existence check passes. Writes go through the
+    // parent's own repository -- the same trigger stack production uses.
+    currency_repository base_currency_repo;
+    auto seeded_base_currency = generate_synthetic_currency(ctx);
+    seeded_base_currency.change_reason_code = "system.test";
+    // The generator emits a fixed iso_code for base_currency; force
+    // the seeded currency's key to that exact value.
+    seeded_base_currency.iso_code = "EUR";
+    v.base_currency = "EUR";
+    base_currency_repo.write(party_ctx, seeded_base_currency);
+    // Seed the currency this entity's quote_currency references, so
+    // the insert-trigger existence check passes. Writes go through the
+    // parent's own repository -- the same trigger stack production uses.
+    currency_repository quote_currency_repo;
+    auto seeded_quote_currency = generate_synthetic_currency(ctx);
+    seeded_quote_currency.change_reason_code = "system.test";
+    // The generator emits a fixed iso_code for quote_currency; force
+    // the seeded currency's key to that exact value.
+    seeded_quote_currency.iso_code = "USD";
+    v.quote_currency = "USD";
+    quote_currency_repo.write(party_ctx, seeded_quote_currency);
+    // Seed the currency_pair_classification this entity's classification references, so
+    // the insert-trigger existence check passes. Writes go through the
+    // parent's own repository -- the same trigger stack production uses.
+    currency_pair_classification_repository classification_repo;
+    auto seeded_classification = generate_synthetic_currency_pair_classification(ctx);
+    seeded_classification.change_reason_code = "system.test";
+    // The generator emits a fixed code for classification; force
+    // the seeded currency_pair_classification's key to that exact value.
+    seeded_classification.code = "major";
+    v.classification = "major";
+    classification_repo.write(party_ctx, seeded_classification);
+
+    // Capture the identifier AFTER the seed block: a FK that doubles as
+    // the primary key (e.g. the convention's pair_code) has its value
+    // overridden above, and the notification must be matched against the
+    // identifier actually written.
+    const auto id_str = v.pair_code;
 
     currency_pair_repository repo;
     repo.write(party_ctx, v);

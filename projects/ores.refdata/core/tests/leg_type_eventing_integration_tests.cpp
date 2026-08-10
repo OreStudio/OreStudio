@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/leg_type.hpp"
 #include "ores.refdata.api/domain/leg_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/leg_type_changed_event.hpp"
-#include "ores.refdata.api/generator/leg_type_generator.hpp"
+#include "ores.refdata.api/generators/leg_type_generator.hpp"
 #include "ores.refdata.core/repository/leg_type_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -74,7 +74,7 @@ ores::nats::config::nats_options test_nats_options() {
 
 }
 
-using namespace ores::refdata::generator;
+using namespace ores::refdata::generators;
 using ores::refdata::domain::leg_type;
 using ores::refdata::repository::leg_type_repository;
 using ores::testing::scoped_database_helper;
@@ -131,8 +131,14 @@ TEST_CASE("write_leg_type_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_leg_type(ctx);
     v.change_reason_code = "system.test";
-    const auto id_str = v.code;
     BOOST_LOG_SEV(lg, debug) << "Leg Type: " << v;
+
+
+    // Capture the identifier AFTER the seed block: a FK that doubles as
+    // the primary key (e.g. the convention's pair_code) has its value
+    // overridden above, and the notification must be matched against the
+    // identifier actually written.
+    const auto id_str = v.code;
 
     leg_type_repository repo;
     repo.write(party_ctx, v);

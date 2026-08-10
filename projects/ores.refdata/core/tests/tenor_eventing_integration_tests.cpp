@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/tenor_changed_event.hpp"
-#include "ores.refdata.api/generator/tenor_generator.hpp"
+#include "ores.refdata.api/generators/tenor_generator.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -74,7 +74,7 @@ ores::nats::config::nats_options test_nats_options() {
 
 }
 
-using namespace ores::refdata::generator;
+using namespace ores::refdata::generators;
 using ores::refdata::domain::tenor;
 using ores::refdata::repository::tenor_repository;
 using ores::testing::scoped_database_helper;
@@ -130,8 +130,14 @@ TEST_CASE("write_tenor_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_tenor(ctx);
     v.change_reason_code = "system.test";
-    const auto id_str = v.code;
     BOOST_LOG_SEV(lg, debug) << "Tenor: " << v;
+
+
+    // Capture the identifier AFTER the seed block: a FK that doubles as
+    // the primary key (e.g. the convention's pair_code) has its value
+    // overridden above, and the notification must be matched against the
+    // identifier actually written.
+    const auto id_str = v.code;
 
     tenor_repository repo;
     repo.write(party_ctx, v);

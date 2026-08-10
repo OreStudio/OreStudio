@@ -29,11 +29,11 @@ out. The triage procedure is captured in a recipe.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] |
-| Now          | Suppressions written; verifying under valgrind.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, close, PR.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -96,3 +96,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All acceptance points shipped in three commits (scaffold f05a8730c,
+fix 73a1ad5b6, recipe 32caf593c):
+
+- =build/valgrind/custom.supp= gains a NATS C library section: four
+  entries (dispatcher pool, mutex, condition, thread) anchored on
+  =fun:nats_openLib= with =match-leak-kinds: reachable= and =...=
+  tolerating intermediate frames — local runs showed three stack
+  shapes: allocator direct under =nats_openLib=, allocator via
+  =nats_initDispatcherPool=, and pool growth via =_growPool=.
+- The recipe =doc/recipes/cmake/how_do_i_fix_valgrind_errors.org=
+  documents the suppression file path, the triage procedure (real
+  defects fixed in code; third-party one-time init suppressed), and
+  the local reproduction command; wired into the cmake recipe
+  inventory.
+- Verified: the three failing eventing test cases
+  (=write_fx_forward_instrument_publishes_nats_changed_event=,
+  =write_report_definition_publishes_nats_changed_event=,
+  =write_tenor_anchor_publishes_nats_changed_event=) pass under
+  valgrind with the nightly's exact options (=--leak-check=full
+  --show-reachable=yes --num-callers=50 --demangle=yes
+  --gen-suppressions=all=) and the suppression file, with zero
+  remaining records; without the suppressions the same run flags the
+  still-reachable records.

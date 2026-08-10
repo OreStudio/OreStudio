@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -69,3 +69,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolding shipped in commit f05a8730c: story.org, the scaffold
+and implement task docs, and the sprint.org wiring row. The implement
+task's fix and the valgrind recipe ride the same PR (the story's first
+PR), per the hotfix's one-line scope.

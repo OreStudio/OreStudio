@@ -24,7 +24,7 @@
  *
  * Tenor Schedule Table
  *
- * A named schedule axis a [[id:80A2D5E4-3F24-4A3F-BD3D-79E79D63F59A][tenor]]
+ * A named schedule axis a [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][tenor]]
  * resolves along (story Decision D2: anchor + calendar offset + n
  * steps). Two kinds today, distinguished by schedule_source:
  *

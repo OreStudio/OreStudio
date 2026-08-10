@@ -8,7 +8,7 @@
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
 #+branch: feature/code-review-comments
-#+pr:
+#+pr: 1951
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -65,7 +65,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1951][#1951]] | [docs] Add code-review-comments skill |
 
 * Review
 

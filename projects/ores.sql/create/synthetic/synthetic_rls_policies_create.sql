@@ -256,13 +256,18 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Note: the parent config table has its own config_id column (the
+-- market-data generation config that produced it), so the outer
+-- reference must be table-qualified -- an unqualified config_id binds
+-- to the inner table and turns the predicate into c.id = c.config_id
+-- (always false), hiding every value row under party isolation.
 create policy ir_curve_generation_config_process_parameter_values_party_isolation_policy
 on ores_synthetic_config_process_parameter_values_tbl
 as restrictive
 for all using (
     exists (
         select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
-        where c.id = config_id
+        where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()
           and c.party_id = ores_iam_current_party_id_fn()
     )
@@ -270,7 +275,7 @@ for all using (
 with check (
     exists (
         select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
-        where c.id = config_id
+        where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()
           and c.party_id = ores_iam_current_party_id_fn()
     )

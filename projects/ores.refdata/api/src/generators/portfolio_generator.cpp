@@ -50,7 +50,12 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
                       // not name an active business unit.
         std::nullopt;
     r.purpose_type = std::string("Risk");
-    r.aggregation_ccy = std::string("USD");
+    r.aggregation_ccy = // "X-0" is the first code the synthetic currency generator emits: the
+                        // aggregation-currency validation accepts only codes of active
+                        // currencies, and every test tenant inherits the system tenant's
+                        // accumulated active set, which always contains X-0 (every generator
+                        // process starts its counter at zero).
+        std::string("X-0");
     r.is_virtual = false;
     r.status = std::string("Active");
     r.modified_by = modified_by;

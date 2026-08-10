@@ -143,24 +143,6 @@ false
 drop function if exists ores_refdata_validate_currency_pair_convention_fn;
 #+end_src
 
-* Foreign keys
-
-** pair_code
-:PROPERTIES:
-:table:         ores_refdata_currency_pairs_tbl
-:target_column: pair_code
-:nullable:      false
-:error_message: Invalid pair_code: %. No active currency pair found with this code.
-:END:
-
-Soft FK to the owning pair, enforced by the insert trigger's existence
-check in addition to the =ores_refdata_validate_currency_pair_fn=
-validation below -- the same trigger-based (never hard-FK) pattern as
-=pair_code= itself has always followed, and the same dual check the
-pair's own base/quote legs carry. It also drives the generated
-eventing test's parent seeding: the test must write an active pair
-before it can write a convention.
-
 * Validation function
 :PROPERTIES:
 :tenant_scope: both

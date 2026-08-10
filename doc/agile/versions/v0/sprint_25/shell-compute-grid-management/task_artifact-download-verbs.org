@@ -7,43 +7,68 @@
 #+level: s1
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-verbs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-10
-#+environment:
+#+updated: 2026-08-11
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shell's ~compute~ menu gains two artifact download verbs:
+~download-input~ and ~download-output~. They fetch a workunit's input
+bundle and a result's output bundle from compute storage and unpack
+the tar.gz into a target directory, so a test can verify what the
+grid actually consumed and produced.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Both verbs implemented and proven live against brave_hopper: the smoke batch's input and two of its outputs round-tripped byte-for-byte. Recipes added, tangled and wired into the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-10                               |
+| Next         | Open the PR.                           |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
--
+- ~compute download-input <workunit_id> <dest_dir>~ fetches the batch
+  input bundle the workunit references from compute storage and
+  unpacks the tar.gz into the destination.
+- ~compute download-output <result_id> <dest_dir>~ fetches the output
+  bundle the node uploaded with the result and unpacks the tar.gz
+  into the destination.
+- Both verbs work against a live serving environment and report the
+  fetch and unpack result.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both verbs live in ~compute_commands.{hpp,cpp}~ and reuse
+~ores.storage.net.storage_transfer~, already linked into the shell
+via ~package_publisher~. The bundle URI comes from the workunit or
+result row (=split_storage_uri=); the verb fetches and unpacks
+(=fetch_and_unpack=) into the target directory.
 
 * Notes
+
+- Live proof (2026-08-11): scripted session against brave_hopper.
+  ~download-input 3002cb53-fc6e-4726-a14e-e851bed023e4~ (a workunit of
+  the smoke batch) round-tripped the input bundle: =input.txt=, 38
+  bytes. ~download-output 4a2ef0b0-3e39-473a-b1c5-23a30c8218d3~ and
+  ~download-output 4a8e61ec-d1d4-4753-9b59-de7f667a76ad~ (two results
+  of the smoke batch, from two different hosts) round-tripped the
+  output bundles: =result.txt=, 42 bytes each — the hello engine's
+  output format.
+- Recipes live in =doc/recipes/shell/compute/= (one per verb), tangled
+  into =projects/ores.shell/scripts/library/compute/=, indexed under
+  the =Compute= section of =doc/recipes/shell/shell.org=.
 
 * Test Scenarios
 

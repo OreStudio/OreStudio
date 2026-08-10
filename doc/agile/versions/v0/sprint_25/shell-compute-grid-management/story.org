@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :compute:shell:cli:tooling:sprint_25:v0:
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-08-11
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -38,10 +38,10 @@ grid can be driven entirely from the shell, with no UI:
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Read-verbs task STARTED with all five verbs implemented against live brave_hopper; ~list-platforms~ prints provisional raw rows (see its Notes). Reconciliation task BLOCKED on the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][ores.compute drift story]]. |
+| Now           | Read-verbs task STARTED with all five verbs against live brave_hopper (~list-platforms~ prints provisional raw rows). Lifecycle, monitoring, download and smoke-test tasks STARTED, all verbs implemented and proven live: 10-job batch created, dispatched and drained; inputs and outputs downloaded; ~grid-stats --watch --smoke~ machinery proven (correctly flags the phantom host); ~delete-host~ proven on an offline host. Reconciliation task BLOCKED on the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][ores.compute drift story]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge the read-verbs PR; then lifecycle, monitoring, download and smoke-test tasks. |
-| Last touched  | 2026-08-10                               |
+| Next          | Open the PRs for the five STARTED tasks. The smoke acceptance cannot go fully green live until the phantom host (192.168.1.22) stops heartbeating — see the monitoring task Notes. |
+| Last touched  | 2026-08-11                               |
 
 * Acceptance
 
@@ -60,10 +60,10 @@ grid can be driven entirely from the shell, with no UI:
 |------+-------+-------+-----+-------------|
 | [[id:AB9F96EB-69A5-4D40-9DBB-8D2B60D8039F][Scaffold story: Manage the compute grid from the shell]] | DONE | 2026-08-10 | 2026-08-10 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7FB32716-261C-45D9-A5C9-6A43FF2AD6F5][Add compute read verbs to the shell: list apps, app versions, platforms, hosts and batches]] | STARTED | 2026-08-10 | | Read-only verbs over the compute domain: list apps, app versions, platforms, hosts and batches, with the fields a script needs. |
-| [[id:05D09703-6899-43A1-A9F8-997AE79D6436][Add job lifecycle verbs to the shell: add-batch, dispatch-batch with a job-count loop, list-workunits and list-results]] | BACKLOG | | | Shell verbs to drive the compute job lifecycle end-to-end without a UI: create a batch, dispatch N consecutive jobs from it (pack and upload the input bundle once, then loop N saves), list the workunits of a batch, and list the results with their outcome and host. |
-| [[id:90383934-D78D-41A2-88C3-FF369CB01830][Add grid monitoring verbs to the shell: grid-stats with per-node detail and delete-host]] | BACKLOG | | | Shell verbs to observe the compute grid: grid-stats fetches the telemetry grid summary and renders a per-node table (host, heartbeat age, tasks completed, input/output bytes), so a test can verify every online node was exercised; delete-host removes a host row by id. |
-| [[id:5908A274-E089-4D2B-9982-68ED6F779B9B][Add artifact download verbs to the shell: download job inputs and outputs]] | BACKLOG | | | Shell verbs to fetch a job's input bundle and a result's output bundle from compute storage (ores.storage.net.storage_transfer is already linked into the shell via package_publisher): download-input and download-output, taking the workunit id or result id and unpacking the tar.gz into a target directory. |
-| [[id:292AB16F-3785-4D1F-AEAC-BF6B59390078][Add a compute grid smoke-test script and prove it live]] | BACKLOG | | | Library .ores script that exercises the whole grid from the shell: add a batch, dispatch 10-20 consecutive jobs, poll grid-stats until the batch drains, then assert every online node was exercised and every result has outcome Success. Prove it live against brave_hopper with the Newton node online, and record the proof in the task result. |
+| [[id:05D09703-6899-43A1-A9F8-997AE79D6436][Add job lifecycle verbs to the shell: add-batch, dispatch-batch with a job-count loop, list-workunits and list-results]] | STARTED | 2026-08-11 | | Shell verbs to drive the compute job lifecycle end-to-end without a UI: create a batch, dispatch N consecutive jobs from it (pack and upload the input bundle once, then loop N saves), list the workunits of a batch, and list the results with their outcome and host. |
+| [[id:90383934-D78D-41A2-88C3-FF369CB01830][Add grid monitoring verbs to the shell: grid-stats with per-node detail and delete-host]] | STARTED | 2026-08-11 | | Shell verbs to observe the compute grid: grid-stats fetches the telemetry grid summary and renders a per-node table (host, heartbeat age, tasks completed, input/output bytes), so a test can verify every online node was exercised; delete-host removes a host row by id. |
+| [[id:5908A274-E089-4D2B-9982-68ED6F779B9B][Add artifact download verbs to the shell: download job inputs and outputs]] | STARTED | 2026-08-11 | | Shell verbs to fetch a job's input bundle and a result's output bundle from compute storage (ores.storage.net.storage_transfer is already linked into the shell via package_publisher): download-input and download-output, taking the workunit id or result id and unpacking the tar.gz into a target directory. |
+| [[id:292AB16F-3785-4D1F-AEAC-BF6B59390078][Add a compute grid smoke-test script and prove it live]] | STARTED | 2026-08-11 | | Library .ores script that exercises the whole grid from the shell: add a batch, dispatch 10-20 consecutive jobs, poll grid-stats until the batch drains, then assert every online node was exercised and every result has outcome Success. Prove it live against brave_hopper with the Newton node online, and record the proof in the task result. |
 | [[id:36537C3D-5A34-40CF-8A74-6AB974D0B4A7][Reconcile provisional shell outputs with the codegenerated tables]] | BLOCKED | 2026-08-10 | | Swap the provisional raw-row outputs for the codegen table renderers once the ores.compute drift story lands: list-platforms streams the generated platform table (out streams the platforms vector) and grid-stats renders the node-sample tables, matching the other verbs. Blocked on [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] (platform renderer). |
 
 * Decisions

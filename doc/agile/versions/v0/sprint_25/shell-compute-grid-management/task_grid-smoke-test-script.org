@@ -7,43 +7,79 @@
 #+level: s1
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-verbs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-10
-#+environment:
+#+updated: 2026-08-11
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A single library script exercises the whole compute grid from the
+shell: it adds a batch, dispatches 10 to 20 consecutive jobs, watches
+=compute grid-stats --watch --smoke= until the batch drains, and
+asserts every online host was exercised and every result has outcome
+Success. The script is the grid's end-to-end health check.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Library script and recipe in place; proven live against brave_hopper: the batch drained with all results Success, and the smoke assert correctly FAILED on the phantom host, aborting the script as designed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-10                               |
+| Next         | Open the PR. A fully green run requires the phantom host (192.168.1.22) to stop heartbeating — see Notes. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
--
+- One library script drives the whole lifecycle: add a batch with
+  =--smoke= (count bounded to 10 to 20), dispatch the jobs to a
+  target app version, watch =grid-stats --watch --smoke= until the
+  batch drains.
+- The script fails if any result does not have outcome Success.
+- The script fails if any host online at the drain transition was not
+  exercised (has no result in the batch).
+- The script is generated from a recipe (tangle) and proven live
+  against a serving environment.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The script is generated from the recipe
+=how_do_i_smoke_test_the_compute_grid_from_the_shell= by the standard
+tangle. Its ores-shell block chains the verbs: =add-batch
+smoke-$SMOKE_REF 15 --smoke=, =dispatch-batch smoke-$SMOKE_REF 15
+$APP_VERSION_ID $INPUT_DIR=, =grid-stats --watch smoke-$SMOKE_REF
+--smoke=. The job count is 15; the =--smoke= switches bound it to the
+10 to 20 range and turn on the assert machinery. The assert lives in
+the grid-stats verb (see the monitoring task): outcome Success on
+every result, and every online host with at least one result in the
+batch.
 
 * Notes
+
+- Live proof (2026-08-11): the full sequence ran against brave_hopper
+  with hello 1.0.0. The 10-job batch drained in ~2 seconds with all
+  results Success; the smoke assert then correctly FAILED on the
+  phantom host ~clever-echidna~ (online, zero results in the batch)
+  and the script aborted as designed. This proves the assert
+  machinery end-to-end; the acceptance cannot go fully green until
+  the phantom driver is stopped or its host removed (see the
+  monitoring task notes for the diagnosis: remote driver on
+  192.168.1.22, _INBOX-only, never pulls work).
+- The environment carries a second known defect: the node telemetry
+  codec mismatch (msgpack publish vs JSON decode) leaves the
+  node_samples table empty, so the grid-stats node rows are empty —
+  the summary and smoke asserts are unaffected.
+- Recipe and script live in =doc/recipes/shell/compute/= and
+  =projects/ores.shell/scripts/library/compute/=, indexed under the
+  =Compute= section of =doc/recipes/shell/shell.org=.
 
 * Test Scenarios
 

@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: F406897B-DC1A-4D80-A269-F4EE5ABA8B28
+:END:
+#+title: Task: Consolidate the WSL offload story arc into sprint 25
+#+description: Initial task for: Remote WSL offload and compute nodes
+#+type: task
+#+level: s1
+#+filetags: :wsl-remote-offload-and-compute:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-wsl-remote-offload-and-compute
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the WSL remote-host arc's product-backlog tasks into this
+sprint-25 story, so no arc work lives outside the current sprint:
+
+- Nine tasks move via ~compass task move~: the compass remote-deploy
+  tooling task (~compass env deploy~, PR #1937) from
+  ~product_backlog/next/offload-services-to-wsl-host-cutover/~ and the
+  eight split-services tasks (container pilot, orchestration spec,
+  quadlet generator, controller decommission, re-scope, rollout,
+  podman-events watcher) from
+  ~product_backlog/inbox/split-services-into-per-service-containers/~.
+- The emptied backlog stories are closed as superseded; the sprint-24
+  story keeps its six DONE tasks as history.
+- The story is wired into sprint 25 (~sprint.org~, under Product).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:909C7B43-F15F-4481-A7A6-93730A4A70C5][Remote WSL offload and compute nodes]] |
+| Now          | Scaffolding the story and moving the nine backlog tasks. |
+| Waiting on   | Nothing.                               |
+| Next         | Move the nine tasks; close the emptied stories. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- The story's ~* Tasks~ table lists all nine moved tasks with their
+  states preserved (7 DONE, 1 ABANDONED, 1 BLOCKED).
+- ~product_backlog~ stories carry superseded notes; the sprint-24
+  story is unchanged.
+- ~sprint.org~ lists the story under Product, state STARTED.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

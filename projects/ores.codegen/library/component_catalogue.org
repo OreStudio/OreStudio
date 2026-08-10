@@ -24,7 +24,7 @@ separate per-address component entries are needed.
 | dq | projects/ores.dq/modeling | |
 | iam | projects/ores.iam/modeling | |
 | synthetic | projects/ores.synthetic/modeling | |
-| marketdata | projects/ores.marketdata/modeling | oresmd_quote_type |
+| marketdata | projects/ores.marketdata/modeling | |
 | analytics-cpp | projects/ores.analytics/modeling | |
 | compute-cpp | projects/ores.compute/modeling | |
 | controller-cpp | projects/ores.controller/modeling | |

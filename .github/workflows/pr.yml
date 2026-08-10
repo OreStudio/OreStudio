@@ -170,7 +170,7 @@ jobs:
         # brought to a verified zero-diff state.
         run: |
           script=projects/ores.codegen/scripts/check_component_drift.py
-          python3 "$script" --components refdata,reporting
+          python3 "$script" --components refdata,reporting,marketdata
 
   pr-gate:
     name: pr-gate

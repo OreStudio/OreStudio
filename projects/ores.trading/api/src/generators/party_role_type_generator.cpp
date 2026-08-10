@@ -19,8 +19,11 @@
  */
 #include "ores.trading.api/generators/party_role_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::trading::generator {
 
@@ -30,10 +33,16 @@ domain::party_role_type
 generate_synthetic_party_role_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::party_role_type r;
-    r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_role_" + std::to_string(++counter);
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "_role_" + std::to_string(++counter) + "-" +
+             std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.performed_by = modified_by;

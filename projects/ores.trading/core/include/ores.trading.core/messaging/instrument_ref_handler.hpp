@@ -73,7 +73,9 @@ private:
         Svc svc(sys_ctx);
         Resp resp;
         try {
-            resp.types = svc.list_types();
+            if (auto req = decode<Req>(msg)) {
+                resp.types = svc.list_types(req->offset, req->limit);
+            }
             resp.total_available_count = static_cast<int>(resp.types.size());
         } catch (...) {
         }
@@ -126,7 +128,7 @@ private:
         Svc svc(req_ctx);
         if (auto req = decode<Req>(msg)) {
             try {
-                svc.remove_types(req->codes);
+                svc.delete_types(req->codes);
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, Resp{.success = true});
             } catch (const std::exception& e) {
@@ -155,7 +157,7 @@ private:
             try {
                 auto hist = svc.get_type_history(req->code);
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
-                reply(nats_, msg, Resp{.success = true, .history = std::move(hist)});
+                reply(nats_, msg, Resp{.history = std::move(hist), .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();

@@ -24,11 +24,13 @@ categorise trades in the system.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** code
 :PROPERTIES:
-:column:   code
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique trade type code.
@@ -38,10 +40,6 @@ Examples: 'Swap', 'FxForward', 'CapFloor', 'Swaption'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_trade_" + std::to_string(++counter)
 #+end_src
-
-* Natural keys
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -59,8 +57,9 @@ std::string(faker::lorem::sentence())
 ** product_type
 :PROPERTIES:
 :type:     product_type_t
-:cpp_type: std::string
+:cpp_type: ores::trading::domain::product_type
 :nullable: false
+:default_value: ores::trading::domain::product_type::swap
 :END:
 
 Product type family this trade type belongs to (swap, fx, bond, credit, equity, commodity, composite, scripted).
@@ -68,7 +67,7 @@ Product type family this trade type belongs to (swap, fx, bond, credit, equity, 
 Drives instrument tab routing in the UI and the structural extension table the instrument is stored in.
 
 #+begin_src cpp :name generator
-std::string("swap")
+ores::trading::domain::product_type::swap
 #+end_src
 
 ** has_options
@@ -127,9 +126,28 @@ false
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include "ores.trading.api/domain/product_type.hpp"
 #include <chrono>
 #include <string>
 #+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include "ores.trading.api/domain/product_type.hpp"
+#include <string>
+#+end_src
+
+** Table display
+
+| column      | header        |
+|-------------+---------------|
+| code        | Code          |
+| description | Description   |
+| has_options | Has Options   |
+| has_extension | Has Extension |
+| modified_by | Modified By   |
+| version     | Version       |
 
 ** Conventions
 :PROPERTIES:

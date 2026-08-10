@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_TYPE_HPP
-#define ORES_TRADING_DOMAIN_TRADE_TYPE_HPP
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_TYPE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_TYPE_HPP
 
 #include "ores.trading.api/domain/product_type.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -57,28 +58,26 @@ struct trade_type final {
     std::string description;
 
     /**
-     * @brief Product type family this trade type belongs to.
+     * @brief Product type family this trade type belongs to (swap, fx, bond, credit, equity,
+     * commodity, composite, scripted).
      *
-     * Drives instrument tab routing in the UI and the structural extension
-     * table that the instrument is stored in.
+     * Drives instrument tab routing in the UI and the structural extension table the instrument is
+     * stored in.
      */
-    domain::product_type product_type = domain::product_type::swap;
+    ores::trading::domain::product_type product_type = ores::trading::domain::product_type::swap;
 
     /**
      * @brief True when this trade type requires the family's options sub-form.
      *
-     * Used by FX and Equity families to reveal an additional options panel
-     * (strike, payoff, exercise style, ...) on top of the core economics
-     * fields.
+     * Used by FX and Equity families to reveal an additional options panel.
      */
     bool has_options = false;
 
     /**
      * @brief True when this trade type requires the family's extension sub-form.
      *
-     * Used by Swap (rates extensions), Bond, Credit, Equity, and Commodity
-     * families to reveal additional family-specific extension fields beyond
-     * the core economics.
+     * Used by Swap, Bond, Credit, Equity, and Commodity families to reveal additional extension
+     * fields.
      */
     bool has_extension = false;
 
@@ -109,6 +108,16 @@ struct trade_type final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for trade_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const trade_type&) {
+    return "ores.trading.trade_type";
+}
 
 }
 

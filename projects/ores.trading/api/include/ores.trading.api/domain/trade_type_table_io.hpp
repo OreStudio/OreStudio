@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_TYPE_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_TRADE_TYPE_TABLE_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_TYPE_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_TYPE_TABLE_IO_HPP
 
 #include "ores.trading.api/domain/trade_type.hpp"
+#include "ores.trading.api/export.hpp"
 #include <iosfwd>
 #include <vector>
 
@@ -29,7 +30,7 @@ namespace ores::trading::domain {
 /**
  * @brief Dumps the trade_type objects to a stream in table format.
  */
-std::ostream& operator<<(std::ostream& s, const std::vector<trade_type>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<trade_type>& v);
 
 }
 

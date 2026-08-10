@@ -17,64 +17,64 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_MESSAGING_TRADE_TYPE_PROTOCOL_HPP
-#define ORES_TRADING_API_MESSAGING_TRADE_TYPE_PROTOCOL_HPP
+#ifndef ORES_TRADING_API_MESSAGING_PARTY_ROLE_TYPE_PROTOCOL_HPP
+#define ORES_TRADING_API_MESSAGING_PARTY_ROLE_TYPE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/trade_type.hpp"
+#include "ores.trading.api/domain/party_role_type.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
 
 namespace ores::trading::messaging {
 
-struct get_trade_types_request {
-    using response_type = struct get_trade_types_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trade_types.list";
+struct get_party_role_types_request {
+    using response_type = struct get_party_role_types_response;
+    static constexpr std::string_view nats_subject = "trading.v1.party_role_types.list";
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
 };
 
-struct get_trade_types_response {
-    std::vector<ores::trading::domain::trade_type> types;
+struct get_party_role_types_response {
+    std::vector<ores::trading::domain::party_role_type> role_types;
     int total_available_count = 0;
     bool success = false;
     std::string message;
 };
 
-struct save_trade_type_request {
-    using response_type = struct save_trade_type_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trade_types.save";
-    ores::trading::domain::trade_type data;
+struct save_party_role_type_request {
+    using response_type = struct save_party_role_type_response;
+    static constexpr std::string_view nats_subject = "trading.v1.party_role_types.save";
+    ores::trading::domain::party_role_type data;
 
-    static save_trade_type_request from(ores::trading::domain::trade_type v) {
+    static save_party_role_type_request from(ores::trading::domain::party_role_type v) {
         return {.data = std::move(v)};
     }
 };
 
-struct save_trade_type_response {
+struct save_party_role_type_response {
     bool success = false;
     std::string message;
 };
 
-struct delete_trade_type_request {
-    using response_type = struct delete_trade_type_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trade_types.delete";
+struct delete_party_role_type_request {
+    using response_type = struct delete_party_role_type_response;
+    static constexpr std::string_view nats_subject = "trading.v1.party_role_types.delete";
     std::vector<std::string> codes;
 };
 
-struct delete_trade_type_response {
+struct delete_party_role_type_response {
     bool success = false;
     std::string message;
 };
 
-struct get_trade_type_history_request {
-    using response_type = struct get_trade_type_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.trade_types.history";
+struct get_party_role_type_history_request {
+    using response_type = struct get_party_role_type_history_response;
+    static constexpr std::string_view nats_subject = "trading.v1.party_role_types.history";
     std::string code;
 };
 
-struct get_trade_type_history_response {
-    std::vector<ores::trading::domain::trade_type> history;
+struct get_party_role_type_history_response {
+    std::vector<ores::trading::domain::party_role_type> history;
     bool success = false;
     std::string message;
 };

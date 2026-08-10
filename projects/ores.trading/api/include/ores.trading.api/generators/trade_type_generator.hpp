@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_GENERATOR_TRADE_TYPE_GENERATOR_HPP
-#define ORES_TRADING_GENERATOR_TRADE_TYPE_GENERATOR_HPP
+#ifndef ORES_TRADING_API_GENERATOR_TRADE_TYPE_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATOR_TRADE_TYPE_GENERATOR_HPP
 
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.api/export.hpp"

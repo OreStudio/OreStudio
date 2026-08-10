@@ -18,7 +18,11 @@
  *
  */
 #include "ores.trading.core/service/party_role_type_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::trading::service {
 
@@ -27,14 +31,28 @@ using namespace ores::logging;
 party_role_type_service::party_role_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::party_role_type> party_role_type_service::list_role_types() {
+std::vector<domain::party_role_type> party_role_type_service::list_role_types(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party role types";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t party_role_type_service::count_role_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total party role types count";
+    return repo_.get_total_role_type_count(ctx_);
+}
+
+
+std::optional<domain::party_role_type>
+party_role_type_service::get_role_type_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party role type at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
 }
 
 std::optional<domain::party_role_type>
-party_role_type_service::find_role_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding party role type: " << code;
+party_role_type_service::get_role_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting party role type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -44,34 +62,39 @@ party_role_type_service::find_role_type(const std::string& code) {
 void party_role_type_service::save_role_type(const domain::party_role_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Party Role Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving party role type: " << v.code;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved party role type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving party role type. " << "code: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved party role type. " << "code: " << v.code;
 }
 
 void party_role_type_service::save_role_types(
     const std::vector<domain::party_role_type>& role_types) {
-    for (const auto& rt : role_types) {
-        if (rt.code.empty())
+    for (const auto& e : role_types) {
+        if (e.code.empty())
             throw std::invalid_argument("Party Role Type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << role_types.size() << " party role types";
-    repo_.write(ctx_, role_types);
+    auto ts = role_types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void party_role_type_service::remove_role_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party role type: " << code;
+void party_role_type_service::delete_role_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party role type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed party role type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed party role type. " << "code: " << code;
 }
 
-void party_role_type_service::remove_role_types(const std::vector<std::string>& codes) {
+void party_role_type_service::delete_role_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
 std::vector<domain::party_role_type>
 party_role_type_service::get_role_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party role type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party role type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

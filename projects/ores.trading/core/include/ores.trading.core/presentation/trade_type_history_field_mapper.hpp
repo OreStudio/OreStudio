@@ -17,19 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_TRADE_TYPE_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_TRADE_TYPE_JSON_IO_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_TRADE_TYPE_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_TRADE_TYPE_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/trade_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::presentation {
 
 /**
- * @brief Dumps the trade_type to a stream in JSON format.
+ * @brief Renders a trade_type to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const trade_type& v);
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_trade_type_fields(const domain::trade_type& v);
 
 }
 

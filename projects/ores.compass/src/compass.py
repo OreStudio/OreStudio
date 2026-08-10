@@ -4700,6 +4700,9 @@ def cmd_env(argv):
     if argv and argv[0] == "activity":
         import env_activity
         return env_activity.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "deploy":
+        import env_deploy
+        return env_deploy.run(argv[1:], PROJECT_ROOT)
     # No/unknown subcommand: render help (and error on unknown).
     ap = argparse.ArgumentParser(prog="compass env",
                                  description="Provision: checkout environment setup.")
@@ -4720,6 +4723,9 @@ def cmd_env(argv):
     sub.add_parser("activity", help="List outstanding environment activities for this "
                                     "checkout; 'activity new <title> <recipe-id>' records "
                                     "one, 'activity ack <N>' acknowledges it")
+    sub.add_parser("deploy", help="Deploy the service runtime (or a compute node) to a "
+                                  "named remote WSL host over SSH; 'deploy list' shows "
+                                  "the known host profiles (.env.<host> at the repo root)")
     ap.parse_args(argv or ["--help"])
     return 0
 
@@ -4852,15 +4858,18 @@ def cmd_review(argv):
 
 
 def cmd_nats(argv):
-    """compass nats — NATS pillar: config and certificate management."""
+    """compass nats — NATS pillar: config, certificate, and server management."""
     if argv and argv[0] == "certs":
         import nats_certs
         return nats_certs.run(argv[1:], PROJECT_ROOT)
     if argv and argv[0] == "init":
         import nats_init
         return nats_init.run(argv[1:], PROJECT_ROOT)
+    if argv and argv[0] == "ensure":
+        import nats_ensure
+        return nats_ensure.run(argv[1:], PROJECT_ROOT)
     print("Usage: compass nats <subcommand>", file=sys.stderr)
-    print("Subcommands: init, certs", file=sys.stderr)
+    print("Subcommands: init, certs, ensure", file=sys.stderr)
     return 1
 
 
@@ -6647,6 +6656,18 @@ def _read_env_map() -> dict:
     return result
 
 
+def cmd_image(argv):
+    """compass image build — Build container images (base + overlays)."""
+    import image_build
+    # argv[0] is "build" — the subcommand; pass the rest through.
+    if argv and argv[0] == "build":
+        return image_build.run(argv[1:], PROJECT_ROOT)
+    # Unknown subcommand or bare "compass image".
+    print("usage: compass image build [--base-only|--overlays-only|--nats|--compute]",
+          file=sys.stderr)
+    return 2
+
+
 def cmd_shell(argv):
     """compass shell — Shell pillar: run ores.shell with .env defaults.
 
@@ -6895,6 +6916,8 @@ def main():
         sys.exit(cmd_capture(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "journal":
         sys.exit(cmd_journal(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "image":
+        sys.exit(cmd_image(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "env":
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "nats":
@@ -6968,7 +6991,7 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "db", "sql", "services", "client", "claude", "test", "build",
+            "env", "image", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen", "branches",
             "inbox", "next", "deferred", "discarded", "backlog",

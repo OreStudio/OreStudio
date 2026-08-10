@@ -35,7 +35,15 @@ than a nullable country reference, since no single country owns them.
 :product:   ores
 :component: refdata
 :profile:   simple-lookup
+:seed_country_sentinel: true
 :END:
+
+=:seed_country_sentinel:=: the eventing integration test writes a
+synthetic calendar (always =country_code= =ZZ=), and the calendars
+insert trigger validates =country_code= against the countries table
+for the write tenant — the test must seed the ZZ sentinel country
+first (see =refdata_calendars_create.sql='s =country_code_validation=
+paste block).
 
 * Columns
 

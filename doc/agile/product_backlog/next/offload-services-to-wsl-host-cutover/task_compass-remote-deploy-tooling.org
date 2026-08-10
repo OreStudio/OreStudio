@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :offload-services-to-wsl-host-cutover:next:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-remote-deploy-tooling
+#+pr: 1937
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-29
 #+updated: 2026-07-29
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -34,11 +34,11 @@ tribal.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1BA7037B-14E9-4165-AE5E-799E2B75CA75][Offload service and DB runtime to a WSL host over SSH]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-07-29                               |
 
 * Acceptance
@@ -59,11 +59,110 @@ tribal.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Command family: ~compass env deploy~
+
+- ~compass env deploy <host>~ — runtime role, full cycle: stage →
+  build → transfer → remote up (idempotent re-run).
+- ~compass env deploy <host> --role compute~ — partial environment:
+  wrapper image + certs + serving-environment config only.
+- ~compass env deploy <host> --stop~ — tear down the remote pod
+  (role-appropriate).
+- ~compass env deploy list~ — list known host profiles.
+
+** Host registry: named env files, ~.env.<host>~ at the repo root
+
+Reuses the host-registry concept compass already has — named env
+files (the sprint-24 follow-up ~how-do-i-use-named-env-files~:
+~compass ... --env <host>~ resolves to ~.env.<host>~), rather than
+inventing a new one. If the profile is missing, deploy generates it
+from ~docker/.env~ (itself derived from ~.env~) via the session's sed
+rewrites (~_DB_PORT=5432~ → remote port, ~$PROJECT_ROOT~ paths →
+remote root), writes it for the user to inspect/tweak, then proceeds
+— the same file then serves ~compass db recreate -y -k --env <host>~
+etc. ~.env.*~ is gitignored (it carries the same secrets as ~.env~).
+Remote configuration lives in the same file, all optional:
+
+- ~ORES_REMOTE_HOST~ — ssh target (default: the profile alias itself;
+  add e.g. ~marco@192.168.1.22~ if the alias isn't resolvable).
+- ~ORES_REMOTE_ROOT~ — remote deploy root (default ~~/ores-deploy~,
+  expanded against the remote ~HOME~ and pinned back into the profile
+  on first deploy; files mirror the local layout under it:
+  ~build/keys/...~, ~build/config/...~, ~docker/.env~).
+- ~ORES_REMOTE_DB_PORT~ (default 5433), ~ORES_REMOTE_USER~/
+  ~ORES_REMOTE_GROUP~ (default: queried from the host via ~id -u~/
+  ~id -g~ — the uid that must own the staged certs).
+- Compute role: ~ORES_COMPUTE_HOST_ID~, ~ORES_COMPUTE_TENANT_ID~,
+  ~ORES_COMPUTE_NATS_URL~, ~ORES_COMPUTE_NATS_SUBJECT_PREFIX~,
+  ~ORES_COMPUTE_NATS_WIRE_FORMAT~, ~ORES_COMPUTE_NATS_TLS_CA/CERT/KEY~
+  (local paths in the serving environment's checkout — copied and
+  path-rewritten), ~ORES_COMPUTE_HTTP_BASE_URL~ (optional).
+
+** Networking model: ~--network=host~ (the Newton-proven pattern)
+
+Postgres is native on the WSL host (localhost:5433), unreachable
+through a pod's slirp4netns — so both containers run with
+~--network=host~, no pod object, no ~-p~ mappings, and the services
+container passes ~--user <uid>:<gid>~ explicitly (no pod to carry
+~--userns=keep-id~). The remote-side run/stop logic lives in new
+checked-in scripts ~docker/remote-run.sh~/~docker/remote-stop.sh~,
+env-driven off the transferred ~docker/.env~ and mirroring the
+existing ~run-pod.sh~/~stop-pod.sh~ conventions — NATS client certs
+staged into a podman-managed volume (the bind-mount TLS quirk),
+server certs/conf/store bind-mounted, JWT key passed via ~--env~ from
+the real PEM file.
+
+** Transfer mechanics
+
+- Images: ~podman save ... | gzip -1 | ssh <host> podman load~.
+- Files: fresh-rendered NATS conf + certs + IAM PEM + per-host env,
+  path-rewritten, ~scp~'d to ~$REMOTE_ROOT~ under the mirrored layout.
+- Idempotency: containers ~rm -f~'d before recreate, files
+  overwritten, volumes recreated ~|| true~.
+
+** Compute role
+
+~docker/stage-runtime.sh --service ores.compute.wrapper~ + the
+Dockerfile's existing ~SERVICE_NAME~ arg produce
+~localhost/ores-compute-wrapper:local~. The node env is an
+~ORES_COMPUTE_WRAPPER_NATS_*~ block (app-prefixed — the TLS trio is
+deliberately not in the shared-domain fallback), the required argv
+pair ~--host-id~/~--tenant-id~ comes from the profile, and client
+certs go through a volume like the runtime role. No NATS sidecar, no
+Postgres, no service set.
+
+** Recipe
+
+~doc/recipes/compass/how_do_i_deploy_the_service_runtime_to_a_remote_wsl_host.org~,
+covering both roles plus the one-time host setup (podman, linger,
+dbus.socket) as ~--setup-host~.
 
 * Notes
+
+** Design driver: two separate deployment use cases
+
+Product-owner input: the WSL boxes serve *two separate use cases*,
+both first-class — (1) running a full environment (service/DB runtime
+as this task's acceptance describes), and (2) running a *partial*
+environment with just compute nodes. The deploy tooling is role-based,
+not a single hardcoded "runtime pod" shape:
+
+- *Runtime role* (default): the full service-runtime + NATS pod as
+  this task's acceptance describes.
+- *Compute role*: a partial environment — just the
+  =ores.compute.wrapper= compute node, connecting outward to the
+  serving environment's =ores.compute.core= over NATS. The wrapper is
+  deliberately NATS/TLS-only with no DB credentials (=env_init.py='s
+  client-apps note: NATS-only clients must not get =*_DB_*= vars, or
+  the parser rejects them), so a compute node needs no Postgres, no
+  NATS server, and no service set. Its config surface is the serving
+  environment's NATS URL/subject-prefix/wire-format, its TLS client
+  cert trio (app-prefixed =ORES_COMPUTE_WRAPPER_NATS_TLS_*= — the TLS
+  trio is deliberately excluded from the shared-domain fallback, see
+  nats_wire_format.org), and the required argv pair =--host-id= (from
+  the serving environment's =compute.hosts= table) and =--tenant-id=.
+
+The role is a first-class parameter of the deploy command family, and
+the recipe documents both shapes.
 
 * Test Scenarios
 
@@ -80,12 +179,54 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1937][#1937]] | [ores.compass] Remote WSL host deploy tooling for the service runtime |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5234144357 | remote-stop.sh:35 removes never-created =ores-services-<label>=, so =--stop= leaves every per-service container running | docker/remote-stop.sh | Fixed | Label-scoped name-filter loop (=ores-.*-<label>=, matching remote-run.sh's cleanup pattern); regression test added. |
+| 5234144357 | env_deploy.py:556 unescaped backticks run =`compass env deploy <host>`= as command substitution on the remote | env_deploy.py | Fixed | Escaped (=\\`=); regression test added. |
+| 5234144676 | remote-run.sh:53 error message references =$ORES_REMOTE_HOST=, never set inside the script | remote-run.sh | Fixed | Message now prints a literal =<host>= placeholder. |
+| 5234144676 | docker/.env.* ignore pattern redundant — bare =.env.*= already matches at any depth | .gitignore | Fixed | Removed both =docker/.env= patterns (=docker/.env= is also covered by the bare =.env=, verified with =git check-ignore=); Newton-session comment preserved. |
+| 5234144357 | IAM JWT private key passed via =--env= on the =podman run= command line, visible via =/proc/<pid>/cmdline= | remote-run.sh | Declined | Single-tenant WSL host; same pattern the replaced run-pod.sh used; =--env-file=/=--secret= add complexity for no threat-model benefit. |
+| 5234144676 | nats_poller.cpp =/jsz= response reshape has no fixture test pinning the new parsing | nats_poller.cpp | Declined | Pre-existing gap (reviewer confirms not a regression); merits a fixture-test task of its own. |
+| 5234399723 | remote-run.sh:153 pre-deploy cleanup removes every label's containers on a shared host | remote-run.sh | Fixed | Label-scoped filter (=ores-.*-<label>=), same as the fixed remote-stop.sh. |
+| 5234399723 | image_build.py =--base-tag= parsed but never used; =--overlays-only= always builds FROM the auto-detected tag | image_build.py | Fixed | Threaded into =build_overlays= as the =BASE_TAG= build arg (FROM resolution), defaulting to the overlay tag. |
+| 5234399723 | nats_poller.cpp =account_details= is a required vector but nats-server omits it (=omitempty=) with no JetStream accounts, failing every parse | nats_poller.cpp | Fixed | Restored =std::optional= + =value_or=, matching the old =streams= field's tolerance. |
+| 5234399723 | library_partition.py:110 string-substring containment misclassifies sibling dirs sharing the path as a prefix (=.../lib-old=) | library_partition.py | Fixed | =Path.is_relative_to=; regression test added. |
 
 * Result
+
+Compass now has a first-class, role-based deploy family under
+~compass env deploy~: ~<host>~ (runtime role: full service set + NATS
+sidecar), ~--role compute~ (compute-node-only partial environment),
+~--stop~, ~--setup-host~, and ~list~. The host registry reuses the
+named-env-file concept (~.env.<host>~, gitignored) rather than a new
+one, so deploy, db, and build commands all agree on one per-host
+profile.
+
+The build side is per-service container images driven by the service
+registry: ~compass image build~ stages all binaries (stage-runtime +
+library partition into a shared ~ores-service-base~ and 17 thin
+per-service overlays, plus ~ores-nats~), and ~compass env deploy~
+streams base + NATS over SSH, rebuilds the overlays remotely from a
+transferred staging tree, and runs the containers via
+~docker/remote-run.sh~ — idempotent (containers rm -f'd and recreated,
+files overwritten, volumes recreated). Verified end-to-end on Newton
+twice: 17/17 containers healthy, http.server on 20400 with storage
+written to the host bind-mount, ore.service work dir mounted, telemetry
+polling the live NATS monitor.
+
+Two issues found and fixed along the way: container config is now
+supplied as env, not per-service CLI args (http.server, telemetry,
+ore.service registry "Extra args" go through the
+~ORES_<APP>_<OPTION>~ mapper in env_init.py + the newton profile), and
+the telemetry NATS poller mis-parsed nats-server v2.14's ~/jsz~
+response (~streams~ is a count; details live under
+~account_details[].stream_detail[]~) — fixed and verified: stream and
+server samples now land in the DB on a 30s cadence.
+
+Recipe documented at
+~doc/recipes/compass/how-do-i-deploy-the-service-runtime-to-a-remote-wsl-host.org~.
+All four acceptance criteria met.

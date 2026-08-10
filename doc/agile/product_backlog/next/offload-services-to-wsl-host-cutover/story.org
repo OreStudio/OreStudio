@@ -8,7 +8,7 @@
 #+filetags: :devops:environment:wsl:infrastructure:product_backlog:inbox:
 #+created: 2026-08-03
 #+updated: 2026-08-03
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -33,12 +33,12 @@ Same word ("deploy"), different problem.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Carried from  | [[id:D269862E-2035-4857-A0D0-A6E93B0E24C9][Sprint 24]] (unfinished at close) |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Add compass tooling for remote deploys.  |
-| Last touched  | 2026-08-03                               |
+| Next          | Nothing. |
+| Last touched  | 2026-08-09                               |
 
 * Acceptance
 
@@ -48,9 +48,29 @@ Same word ("deploy"), different problem.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | BACKLOG | | | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
+| [[id:2F7CE8B5-3AB7-48ED-9A5C-F457D60F446A][Add compass tooling to build, stage, transfer, and deploy service-runtime images to a remote host]] | DONE | 2026-08-08 | 2026-08-09 | Currently deploying the containerized service runtime to a remote host such as Newton is a manual sequence of shell scripts and ad-hoc SSH and podman commands: build the image, save it, transfer it to the remote host over SSH, load it there, then run the pod remotely. Wrap this into compass proper, e.g. a 'compass env deploy' style command, so it is a first-class, repeatable, documented operation instead of tribal knowledge from this task's manual session. |
 
 * Decisions
+
+- *WSL boxes are multi-role hosts, not single-purpose runtime hosts.*
+  Product-owner constraint: the WSL boxes must also run compute nodes
+  (=ores.compute.wrapper=) for other environments. Deploy tooling is
+  role-based — full service/DB runtime host, or compute-node-only
+  (wrapper + certs, connecting outward to the serving environment's
+  NATS core with its =--host-id=; NATS/TLS only, no DB access).
+
+- *Remote containers run with =--network=host*, not in a pod.  Postgres
+  is a native install on the WSL host (localhost:5433), unreachable
+  through a pod's slirp4netns; services run with =--user <uid>:<gid>=
+  and =--userns=keep-id=, and service config arrives as env
+  (=ORES_<APP>_<OPTION>= via the C++ environment mapper), not
+  per-service CLI args — the containers pass no service-specific flags.
+
+- *Writable runtime dirs are host bind-mounts, not in-image dirs.*  The
+  chainguard glibc base has no shell (no =RUN=), and buildah normalizes
+  =COPY= directory modes to 0755 root-owned, so log, storage, and the
+  ore.service work dir are host-owned dirs bind-mounted over their
+  /app placeholders by =remote-run.sh=.
 
 * Out of scope
 

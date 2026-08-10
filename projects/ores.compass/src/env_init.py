@@ -789,6 +789,16 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
     out.append("\n# ---------------------------------------------------------------------------\n")
     out.append("# NATS service DB credentials (read by C++ make_mapper)\n")
     out.append("# ---------------------------------------------------------------------------\n")
+    # Registry "Extra args" supplied as env, not container CLI args (the
+    # per-service containers pass no service-specific flags).  Keys follow
+    # the make_mapper("<UP>_SERVICE") naming: ORES_<UP>_SERVICE_<OPT>.
+    service_extra_opts = {
+        "telemetry": [("NATS_MONITOR_URL", nats_monitor_url)],
+        "ore": [
+            ("WORK_DIR", "../var/ore-service/work"),
+            ("HTTP_BASE_URL", f"http://localhost:{http_port}"),
+        ],
+    }
     for c in service_components:
         up = _upper(c)
         out.append("\n")
@@ -797,6 +807,8 @@ ORES_TEST_DB_DDL_PASSWORD={test_ddl_pw}
         out.append(f"ORES_{up}_SERVICE_DB_DATABASE={db_name}\n")
         out.append(f"ORES_{up}_SERVICE_DB_HOST={db_host}\n")
         out.append(f"ORES_{up}_SERVICE_DB_PORT={db_port_effective}\n")
+        for opt, val in service_extra_opts.get(c, []):
+            out.append(f"ORES_{up}_SERVICE_{opt}={val}\n")
     # Front-end client apps that read their config from the environment via the
     # C++ make_mapper("<APP>") convention. `uses_db` marks whether the app opens
     # a direct database connection. NATS-only clients (the shell, like the
@@ -848,8 +860,14 @@ ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation
 ORES_SHELL_LOGIN_PASSWORD=Secure-Password-123
 
 # ---------------------------------------------------------------------------
-# HTTP server JWT secret (read by C++ make_mapper("HTTP_SERVER"))
+# HTTP server config (read by C++ make_mapper("HTTP_SERVER")).  The
+# registry's "Extra args" for http.server are supplied as env here so the
+# container runs need no per-service CLI args: --port {http_port} and
+# --storage-dir ../storage (resolved against WORKDIR /app/bin; the runner
+# bind-mounts a host dir over /app/storage — see docker/remote-run.sh).
 # ---------------------------------------------------------------------------
+ORES_HTTP_SERVER_PORT={http_port}
+ORES_HTTP_SERVER_STORAGE_DIR=../storage
 ORES_HTTP_SERVER_JWT_SECRET={http_jwt_secret}
 
 # ---------------------------------------------------------------------------

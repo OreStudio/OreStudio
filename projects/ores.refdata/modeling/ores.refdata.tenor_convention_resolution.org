@@ -16,14 +16,6 @@
 #+created: 2026-07-13
 #+updated: 2026-08-10
 
-* Flags
-:PROPERTIES:
-:schema:    public
-:product:   ores
-:component: refdata
-:profile:   tenant-scoped-junction
-:END:
-
 A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
 same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
 convention]] — =O/N= resolves from horizon to tomorrow under the
@@ -53,6 +45,14 @@ a tenor resolves as anchor + calendar offset + n steps along the named
 schedule. The =offset_unit=/=offset_multiplier= columns stay the
 calendar-axis offset: their =ROLL_QUARTER= value is gone — the roll
 count lives in =schedule_step_count= now.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -111,7 +111,7 @@ std::nullopt
 :nullable: true
 :END:
 
-One of =DAY=, =WEEK=, =MONTH=, =YEAR=, or =ROLL_QUARTER=. Null when the
+One of =DAY=, =WEEK=, =MONTH=, =YEAR=. Null when the
 referenced tenor is =PERIOD= (its own =unit= applies instead); required
 when the referenced tenor is =SPECIAL=, since a =SPECIAL= tenor has no
 duration outside a convention's say-so.
@@ -142,8 +142,7 @@ std::nullopt
 :nullable: true
 :END:
 
-The schedule axis the tenor walks, for
-=resolution_algorithm = 'SCHEDULE_STEP'= rows.
+The schedule axis the tenor walks, for =SCHEDULE_STEP= rows.
 
 References [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule.code]].
 Null for =ANCHOR_OFFSET= rows (no schedule involved).
@@ -159,13 +158,23 @@ std::nullopt
 :nullable: true
 :END:
 
-Number of steps along =schedule_code='s= axis to the resolution date
+Number of steps along =schedule_code= axis to the resolution date
 (e.g. =1= for a CDS =1Y 1RQ= tenor, =8= for the eighth FOMC meeting).
 Same nullability rule as =schedule_code=.
 
 #+begin_src cpp :name generator
 std::nullopt
 #+end_src
+
+* Foreign keys
+
+** schedule_code
+:PROPERTIES:
+:table:         ores_refdata_tenor_schedules_tbl
+:target_column: code
+:nullable:      true
+:error_message: Invalid schedule_code: %. No active tenor schedule found with this code.
+:END:
 
 * SQL
 

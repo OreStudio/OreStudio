@@ -24,7 +24,35 @@
  *
  * Tenor Convention Resolution Table
  *
- * 
+ * A [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]] does not resolve the
+ * same way under every [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][tenor
+ * convention]] — O/N resolves from horizon to tomorrow under the
+ * spot/forward convention, but means "today" (zero offset) under the FX
+ * swap convention — and not every tenor belongs to every convention's set
+ * at all (the swap convention's tenor set stops at S/N; the credit/CDS
+ * convention only uses IMM-quarter labels). This junction records all of
+ * that as one row per valid (convention, tenor) pair: the row's mere
+ * presence is set membership; its optional anchor_override column carries
+ * the per-row exception to the convention's own default anchor; and its
+ * optional offset_unit/offset_multiplier columns carry the
+ * convention-specific duration for a SPECIAL tenor, which — unlike a
+ * PERIOD tenor — has no unit/multiplier of its own to fall back on
+ * (see [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][Tenor]]'s kind column).
+ * A PERIOD tenor's resolution never needs an offset override — its
+ * duration is fixed by its own unit/multiplier regardless of
+ * convention, so only the anchor itself (the convention's measured_from,
+ * or this row's anchor_override) can vary for those rows. For a
+ * convention whose resolution_algorithm is SCHEDULE_STEP rather than
+ * ANCHOR_OFFSET, the row's schedule_code names the
+ * [[id:CD180696-6558-469E-8FE5-66BFBB6E3E00][tenor_schedule]] axis the
+ * tenor walks (ROLL_QUARTER for the IMM rule, FOMC_MEETING for the
+ * event-lookup schedule) and schedule_step_count is the number of steps
+ * to the resolution date (e.g. 1Y 1RQ for the migrated CREDIT_CDS_IMM
+ * rows: one calendar year of offset from spot, then one roll-quarter) —
+ * a tenor resolves as anchor + calendar offset + n steps along the named
+ * schedule. The offset_unit/offset_multiplier columns stay the
+ * calendar-axis offset: their ROLL_QUARTER value is gone — the roll
+ * count lives in schedule_step_count now.
  */
 
 create table if not exists "ores_refdata_tenor_convention_resolutions_tbl" (
@@ -116,6 +144,19 @@ begin
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate schedule_code (optional soft FK to ores_refdata_tenor_schedules_tbl)
+    if new.schedule_code is not null then
+        if not exists (
+            select 1 from ores_refdata_tenor_schedules_tbl
+            where tenant_id = new.tenant_id
+              and code = new.schedule_code
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid schedule_code: %. No active tenor schedule found with this code.', new.schedule_code
+                using errcode = '23503';
+        end if;
+    end if;
 
     return new;
 end;

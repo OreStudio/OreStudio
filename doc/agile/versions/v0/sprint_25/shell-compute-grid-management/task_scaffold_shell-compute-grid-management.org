@@ -8,7 +8,7 @@
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
 #+branch: feature/shell-compute-grid-management
-#+pr:
+#+pr: 1947
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1947][#1947]] | [agile] Scaffold story: Manage the compute grid from the shell |
 
 * Review
 

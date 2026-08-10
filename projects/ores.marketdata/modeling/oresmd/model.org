@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: A0B1C2D3-E4F5-A6B7-C8D9-E0F1A2B3C4D5
+:END:
+#+title: oresmd quote types — all asset classes
+#+description: Batch manifest: loads every asset-class spec and generates the eight shared output files from all of them at once.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: all
+#+authority: oresmd
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:manifest:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+This manifest file acts as the single entry point for =compass codegen entity
+generate <name>= — when loaded, it scans the directory for all sibling
+=*_quote_type.org= files, merges their data, and feeds them to the
+=ores.cpp.oresmd= facet's archetypes.
+
+* Spec files
+
+| file | asset_class |
+|------+-------------|
+| ir_quote_type.org | ir |
+| credit_quote_type.org | credit |
+| equity_quote_type.org | equity |
+| commodity_quote_type.org | commodity |
+| fx_quote_type.org | fx |
+| inflation_quote_type.org | inflation |
+| correlation_quote_type.org | correlation |

@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: B87C97B8-415B-4C7D-9ACB-2B58EEFCB26E
+:END:
+#+title: Equity oresmd quote type family
+#+description: Quote types for equity: spot, dividend rate, forward price.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: equity
+#+authority: equity
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:equity:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+------------+-----------------+-----------------+-----------------------------------------------|
+| spot | EQUITY | PRICE | scalar | with_ccy | EQUITY/PRICE (spot price, the default). |
+| dividend | EQUITY_DIVIDEND | RATE | tenor | with_ccy | EQUITY_DIVIDEND/RATE (dividend yield rate). |
+| fwd | EQUITY_FWD | PRICE | tenor | with_ccy | EQUITY_FWD/PRICE (equity forward price). |
+
+* Enum brief
+
+The `quote` query key for equity instruments — the ORE TYPE. Equity-only;
+only meaningful when `type=quote`.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key |
+|------+----------+-----------+-----------|
+| ticker | std::string | yes | |
+| ccy | std::string | yes | ccy |
+| quote_type | std::optional<equity_quote_type> | no | quote |
+| point | std::optional<std::string> | no | point |
+| vol | std::optional<volatility_surface_point> | no | |
+
+* Reject keys
+
+| key |
+|-----|
+| index |
+| tenor |
+| role |
+| metric |

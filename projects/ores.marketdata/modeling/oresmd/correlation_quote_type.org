@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: A202712C-9CFD-48DC-9014-40BA5A9408C6
+:END:
+#+title: Correlation oresmd quote type family
+#+description: Quote types for correlation: pairwise factor correlation.
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: correlation
+#+authority: correlation
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:correlation:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+------------+-----------------+-----------------+-------------------------------------------------|
+| pairwise | CORRELATION | RATE | scalar | simple | CORRELATION/RATE (pairwise factor correlation). |
+
+* Enum brief
+
+The `quote` query key for correlation instruments — the ORE TYPE. Correlation-only;
+only meaningful when `type=quote`.
+
+* Fields
+
+| name | cpp_type | mandatory | query_key |
+|------+----------+-----------+-----------|
+| factor_pair | std::string | yes | |
+| quote_type | std::optional<correlation_quote_type> | no | quote |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| role |
+| metric |
+| point |

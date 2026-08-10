@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: F501A0E1-3B2C-4D5E-8F7A-9B0C1D2E3F4A
+:END:
+#+title: FX oresmd quote type family
+#+description: oresmd quote type specification for the FX asset class: spot (FX/RATE) and forward points (FXFWD/RATE).
+#+type: ores.codegen.oresmd_quote_type
+#+asset_class: fx
+#+authority: fx
+#+component: ores.marketdata
+#+level: s2
+#+filetags: :codegen:oresmd:fx:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+* Quote types
+
+| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | notes | comment |
+|-----------+----------+------------+-----------------+-----------------+-------+-------------------------------------------|
+| spot      | FX       | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2 | FX/RATE (spot rate, the default). |
+| fwd       | FXFWD    | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR | FXFWD/RATE (forward points). |
+
+* Enum brief
+
+The `quote` query key for FX instruments — the ORE TYPE. FX-only;
+only meaningful when `type=quote`.
+
+* Fields
+
+| name  | cpp_type        | mandatory | query_key |
+|-------+-----------------+-----------+-----------|
+| pair  | std::string     | yes       |           |
+| quote_type | std::optional<fx_quote_type> | no | quote |
+| point | std::optional<std::string> | no | point |
+
+* Reject keys
+
+| key |
+|-----|
+| ccy |
+| index |
+| tenor |
+| role |
+| metric |
+
+* Test cases
+** Projections
+
+| uri | expected | description |
+|-----+----------+-------------|
+| oresmd://fx/eurusd?type=quote&quote=spot | FX/RATE/EUR/USD | fx_spot_quote_key |
+| oresmd://fx/eurusd?type=quote | FX/RATE/EUR/USD | fx_quote_key_defaults_to_spot |
+| oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | FXFWD/RATE/EUR/USD/6M | fx_fwd_quote_key |
+
+** Round-trip
+
+| uri | description |
+|-----+-------------|
+| oresmd://fx/eurusd?type=quote&quote=spot | round_trip_fx |
+| oresmd://fx/eurusd?type=quote&quote=fwd&point=6m | round_trip_fx_fwd |
+
+** Rejection
+
+| uri | description |
+|-----+-------------|
+| oresmd://fx/eurusd?type=fixing&quote=spot | reject_fx_quote_when_type_not_quote |

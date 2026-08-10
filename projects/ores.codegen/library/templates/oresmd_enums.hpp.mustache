@@ -1,0 +1,83 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.oresmd.enums.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#oresmd_quote_type}}
+{{#first_asset_class}}
+#ifndef ORES_MARKETDATA_API_DOMAIN_ORESMD_ENUMS_HPP
+#define ORES_MARKETDATA_API_DOMAIN_ORESMD_ENUMS_HPP
+
+namespace ores::marketdata::domain {
+
+/**
+ * @brief The `type` query key of an oresmd URI: what kind of thing the identifier names,
+ * independent of its coordinates.
+ *
+ * See id:C3E053CA-0D4B-480B-9119-E11530160EC1 ("oresmd: ORE Studio Market Data URI"),
+ * "Grammar" section.
+ */
+enum class instrument_type {
+    fixing, ///< A rate fixing/index (projects to ORE's index name).
+    curve,  ///< A whole curve (projects to ORE's Yield/<CCY>/<CURVE_ID> curve key).
+    quote,  ///< A single published quote (projects to an ORE quote key).
+    vol     ///< A volatility surface point (projects to an ORE quote key).
+};
+
+/**
+ * @brief The `role` query key of an oresmd URI, IR-only: whether a curve discounts or
+ * projects, closing the gap-analysis's discount-vs-projection ambiguity.
+ */
+enum class curve_role {
+    discount,        ///< This curve discounts cashflows.
+    projection,      ///< This curve projects a floating index's forward rate.
+    self_discounting ///< Degenerate case: one curve does both (current synthetic data's shape).
+};
+
+/**
+ * @brief The `metric` query key of an oresmd URI, only meaningful when `type=quote`:
+ * the ORE METRIC column. Defaults from the `quote` type when absent (e.g. quote=mm
+ * implies metric=rate, quote=mm_future implies metric=price).
+ */
+enum class metric {
+    rate,         ///< A rate quote (e.g. MM/RATE, FRA/RATE, IR_SWAP/RATE, ZERO/RATE).
+    price,        ///< A price quote (e.g. MM_FUTURE/PRICE, OI_FUTURE/PRICE).
+    basis_spread, ///< A basis spread quote (e.g. BASIS_SWAP/BASIS_SPREAD).
+    ratio,        ///< A ratio quote (e.g. BMA_SWAP/RATIO).
+    yield_spread  ///< A yield spread quote (e.g. ZERO/YIELD_SPREAD).
+};
+{{/first_asset_class}}
+{{/oresmd_quote_type}}
+{{#oresmd_quote_types}}
+
+/**
+ * @brief {{{enum_brief}}}
+ */
+enum class {{asset_class}}_quote_type {
+{{#quote_types}}
+    {{enum_name}}{{^last}},{{/last}} ///< {{{comment}}}
+{{/quote_types}}{{#enum_footer}}{{{enum_footer}}}
+{{/enum_footer}}};
+{{#first_asset_class}}
+
+/**
+ * @brief The `index` query key of an oresmd URI, IR-only: a fixed benchmark-family token,
+ * not free text -- closes the gap-analysis's "index_name is free text" finding.
+ */
+enum class index_family { libor, euribor, sofr, estr, sonia, tona };
+{{/first_asset_class}}
+{{/oresmd_quote_types}}
+
+/**
+ * @brief Volatility model subtype — the third segment of ORE's vol quote key
+ * (e.g. RATE_LNVOL in SWAPTION/RATE_LNVOL/EUR/5Y/2Y/ATM). Shared across all
+ * volatility sub-families per the vol sub-schema design.
+ */
+enum class volatility_model_subtype {
+    rate_lnvol,  ///< RATE_LNVOL (log-normal volatility, the default).
+    rate_nvol,   ///< RATE_NVOL (normal volatility).
+    rate_slnvol, ///< RATE_SLNVOL (shifted log-normal volatility).
+    shift,       ///< SHIFT (shift surface).
+    price        ///< PRICE (price surface).
+};
+
+}
+
+#endif

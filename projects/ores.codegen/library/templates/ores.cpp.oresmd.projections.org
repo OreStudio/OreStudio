@@ -1,0 +1,19 @@
+:PROPERTIES:
+:ID: C5E6F7A8-B9C0-D1E2-F3A4-B5C6D7E8F9A0
+:END:
+#+title: ores.cpp.oresmd.projections
+#+description: ore_type, ore_*_metric, quote_key_* functions.
+#+type: archetype
+#+output: projects/ores.marketdata/core/src/oresmd/oresmd_projections.cpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Template
+
+#+begin_src mustache :tangle oresmd_projections.cpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.projections.org. }}
+// oresmd_projections.cpp — generated from oresmd model specs.
+#+end_src

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: A3C4D5E6-F7A8-B9C0-D1E2-F3A4B5C6D7E8
+:END:
+#+title: ores.cpp.oresmd.requirements
+#+description: Requirement structs with quote_type field.
+#+type: archetype
+#+output: projects/ores.marketdata/api/include/ores.marketdata.api/domain/market_data_requirement.hpp
+#+facet: ores.cpp.oresmd
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+* Template
+
+#+begin_src mustache :tangle oresmd_requirements.hpp.mustache
+{{! GENERATED FILE — tangled from ores.cpp.oresmd.requirements.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_REQUIREMENT_HPP
+#define ORES_MARKETDATA_API_DOMAIN_MARKET_DATA_REQUIREMENT_HPP
+
+#include "ores.marketdata.api/domain/oresmd_enums.hpp"
+#include <optional>
+#include <string>
+#include <variant>
+
+namespace ores::marketdata::domain {
+
+{{#oresmd_quote_types}}
+struct {{asset_class}}_market_data_requirement final {
+{{#fields}}
+{{^generated}}
+    std::optional<{{{cpp_type}}}> {{name}};
+{{/generated}}
+{{/fields}}
+{{#has_quote_type}}
+    std::optional<{{asset_class}}_quote_type> quote_type;
+{{/has_quote_type}}
+{{#has_point}}
+    std::optional<std::string> point;
+{{/has_point}}
+
+    bool operator==(const {{asset_class}}_market_data_requirement&) const = default;
+};
+
+{{/oresmd_quote_types}}
+using market_data_requirement = std::variant<
+{{#oresmd_quote_types}}
+    {{asset_class}}_market_data_requirement{{^last}},{{/last}}
+{{/oresmd_quote_types}}
+>;
+
+}  // namespace ores::marketdata::domain
+
+#endif
+#+end_src

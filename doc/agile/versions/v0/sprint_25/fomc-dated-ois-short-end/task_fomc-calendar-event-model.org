@@ -53,14 +53,14 @@ and distil the decision into the story's =* Decisions=.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | DONE                                 |
+| Field        | Value                                                                   |
+|--------------+-------------------------------------------------------------------------|
+| State        | DONE                                                                    |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          |                                       |
-| Waiting on   |                                       |
-| Next         |                                       |
-| Last touched | 2026-08-09                               |
+| Now          |                                                                         |
+| Waiting on   |                                                                         |
+| Next         |                                                                         |
+| Last touched | 2026-08-09                                                              |
 
 * Acceptance
 
@@ -157,7 +157,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty * Decisions / * Acceptance sections (informational) | story.org; task_fomc-calendar-event-model.org | Declined | Superseded: Decisions D1-D4 and the acceptance verification landed with the analysis task close (2026-08-09); refdata api suite green 85/85 |
+| 2 | Status-table cell padding uneven (cosmetic) | story.org; task_fomc-calendar-event-model.org | Applied | org-table-align pass on both * Status tables |
+| 3 | Reserved branch feature/fomc-dated-ois-short-end possibly unused | task_fomc-dated-ois-short-end.org | Declined | No such remote branch exists; the record was superseded by the re-scope and is gone from the branch |
 
 * Result
 

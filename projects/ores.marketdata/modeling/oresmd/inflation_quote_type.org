@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: B91F6F7D-5C8A-4DB0-A5C6-827EEC43BE41
+:ID: BDE124FE-F386-4F3F-BBD0-A370FAEE2906
 :END:
 #+title: Inflation oresmd quote type family
 #+description: Quote types for inflation: ZC swap, YY swap, seasonality.

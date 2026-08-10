@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 8ECE84FD-D5F6-41B2-AAEB-F63BB1E9D09C
+:END:
+#+title: Task: Close out oresmd story loose ends
+#+description: Story D566131C is DONE but two loose ends remained: its acceptance checkboxes unticked with market_data_urn.org never updated per family, and a story link resolving to the wrong document via an org-ID collision. Close both.
+#+type: task
+#+level: s1
+#+filetags: :market-data:identifiers:oresmd:oresmd-full-quote-type-coverage:sprint_25:v0:
+#+owner: marco
+#+branch: feature/oresmd-bookkeeping-loose-ends
+#+pr: 1948
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Story [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full
+ORE quote-type coverage]] is =DONE= (all nine tasks merged), but two
+loose ends were left:
+
+- The story's acceptance bullets were unticked, and its
+  =market_data_urn.org= (id:C3E053CA-0D4B-480B-9119-E11530160EC1)
+  contract had not been updated per family -- last touched 2026-07-27,
+  before any of the story's August tasks landed, so it still said five
+  asset classes and had no worked examples for inflation or
+  correlation.
+- The story's out-of-scope link to the abandoned ORE
+  curve-config/market-data XML round-trip task (id:A202712C-9CFD-48DC-9014-40BA5A9408C6)
+  resolved to the wrong document -- the correlation quote-type spec
+  carried that task's =:ID:=, since the specs were templated from task
+  docs and inherited their IDs.
+
+Close both: bring the design doc up to date per family, reconcile the
+acceptance checkboxes with delivered scope honestly, and fix the
+colliding spec IDs so the story's links resolve to the abandoned task
+doc again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE quote-type coverage]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- [X] The five colliding =*_quote_type.org= spec =:ID:=s (correlation,
+  equity, inflation, commodity, credit) replaced with fresh UUIDs;
+  nothing references the specs by ID (the batch manifest keys them by
+  filename), verified codegen-neutral via the =codegen-drift= gate's
+  zero-diff regeneration.
+- [X] =market_data_urn.org= updated per family: new "Worked examples"
+  sections for inflation and correlation in the same style as the
+  existing five; extended families documented with their new =quote=/
+  =model= fields in "Grammar" and "Field justification"; "Data model"
+  covers all seven identifier structs plus the shared
+  =volatility_surface_point= sub-schema; =#+updated:= bumped.
+- [X] Story's acceptance bullets ticked with honest caveats:
+  =RATING/TRANSITION_PROBABILITY= descoped (credit task Result + spec
+  enum footer), and only swaption vol projects a quote key today (vol
+  task Result); no regression claimed without the drift gate's evidence.
+- [X] Story's references to the split-off XML round-trip task resolve
+  to it again and flag its =ABANDONED= state.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+- Fix the spec ID collisions first: regenerate and diff to prove the
+  :ID: changes are codegen-neutral.
+- Re-read each spec's Test cases and the projections implementation,
+  then update =market_data_urn.org= per family -- new sections where
+  the story's acceptance demands them, extensions to the existing
+  Grammar/Field justification rows.
+- Reconcile the story's acceptance bullets against delivered scope,
+  ticking only what is true as written or with an explicit honest
+  note.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1948][#1948]] | [agile,ores.marketdata] Close out oresmd story loose ends |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Closed both loose ends on story
+[[id:D566131C-D08C-4AFE-950E-B3DD26EB2C24][Extend oresmd to full ORE
+quote-type coverage]]:
+
+- *Spec ID collisions fixed*: five of the seven =*_quote_type.org=
+  specs (correlation, equity, inflation, commodity, credit) carried
+  task-doc =:ID:=s inherited from templating. Each got a fresh UUID.
+  Verified codegen-neutral: regenerating every oresmd output file in
+  place produced no diff beyond the :ID: edits themselves, and the
+  =codegen-drift= gate reports "No drift: regenerated output matches
+  the checked-in tree".
+- *=market_data_urn.org= brought up to date*: new "Worked examples"
+  sections for inflation (zc/yy swap, seasonality -- the one 5-segment
+  shape with a literal =MULT=) and correlation (factor-pair entity);
+  the existing five families extended with =quote=/=model= worked rows;
+  "Grammar" documents =quote= and =model=; "Field justification" gains
+  rows for both; "Data model" now covers all seven identifier structs
+  and the shared =volatility_surface_point= sub-schema; =#+updated:=
+  bumped to 2026-08-10.
+- *Acceptance reconciled honestly*: all three bullets ticked -- bullet
+  1 with two explicit caveats (=RATING/TRANSITION_PROBABILITY=
+  descoped, needs provider/from_rating/to_rating the credit identifier
+  has no equivalent for; only swaption vol projects a quote key today),
+  bullet 3 with the drift gate's zero-diff evidence. The story's
+  references to the split-off XML round-trip task now resolve to the
+  abandoned task doc (id:A202712C-9CFD-48DC-9014-40BA5A9408C6) and flag
+  its =ABANDONED= state.

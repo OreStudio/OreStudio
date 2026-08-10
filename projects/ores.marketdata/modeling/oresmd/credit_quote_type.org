@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: D7FC7525-5532-4498-8B7B-5F14215C99FD
+:ID: B56A4477-1768-4B03-A2DD-0244AF8FC4FF
 :END:
 #+title: Credit oresmd quote type family
 #+description: Quote types for credit: CDS, hazard rate, recovery rate, index/tranche base correlation.

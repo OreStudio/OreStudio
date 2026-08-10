@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: A202712C-9CFD-48DC-9014-40BA5A9408C6
+:ID: F0031CB8-3B4E-4FD7-AC40-0F62C51FB332
 :END:
 #+title: Correlation oresmd quote type family
 #+description: Quote types for correlation: pairwise factor correlation.

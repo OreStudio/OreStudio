@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: B87C97B8-415B-4C7D-9ACB-2B58EEFCB26E
+:ID: 1C692310-8CB2-4C93-AF67-F3642066D5D3
 :END:
 #+title: Equity oresmd quote type family
 #+description: Quote types for equity: spot, dividend rate, forward price.

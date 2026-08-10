@@ -33,6 +33,12 @@ given {
     us_fomc: Calendar
 }
 
+-- The reference points a resolution measures from: the seeded
+-- tenor_anchor vocabulary. A convention declares its default
+-- (measured_from); a resolution row may override it per tenor
+-- (anchor_override).
+enum TenorAnchor { `SPOT` | `TODAY` | `TOMORROW` | `NEAR_LEG` | `IMM_ROLL` | `NONE` }
+
 entity Calendar {
     code: String
     calendar_type: public_holiday | central_bank_meeting | data_release | financial_centre | other
@@ -59,32 +65,33 @@ entity CalendarEvent {
 
 entity Tenor {
     code: String
-    kind: period | special
-    unit: day | week | month | year | none
-    multiplier: Integer
+    kind: `PERIOD` | `SPECIAL`
+    unit: `DAY` | `WEEK` | `MONTH` | `YEAR` | `NONE`
+    multiplier: Integer?
 
-    is_fomc: kind = special and unit = none and multiplier >= 1
+    is_fomc: kind = `SPECIAL` and unit = `NONE` and (multiplier ?? 0) >= 1
 }
 
 entity TenorSchedule {
-    code: roll_quarter | fomc_meeting
-    schedule_source: closed_form | event_lookup
+    code: `ROLL_QUARTER` | `FOMC_MEETING`
+    schedule_source: `CLOSED_FORM` | `EVENT_LOOKUP`
     calendar: Calendar?
     diary_entry_type: holiday | central_bank_meeting | data_release | other?
 }
 
 entity TenorConvention {
     code: String
-    measured_from: spot | today | tomorrow | near_leg | imm_roll | none
-    algorithm: anchor_offset | schedule_step
-    schedule: TenorSchedule?
+    measured_from: TenorAnchor
+    algorithm: `ANCHOR_OFFSET` | `SCHEDULE_STEP`
 }
 
 entity TenorResolution {
     tenor: Tenor
     convention: TenorConvention
-    offset_unit: day | week | month | year | none
+    anchor_override: TenorAnchor?
+    offset_unit: `DAY` | `WEEK` | `MONTH` | `YEAR` | `NONE`
     offset_multiplier: Integer
+    schedule: TenorSchedule?
     schedule_step_count: Integer?
 }
 
@@ -147,7 +154,7 @@ rule EnterFomcMeeting {
 
 rule ResolveAnchorOffset {
     when: TenorResolutionRequested(resolution, anchor_date)
-    requires: resolution.convention.algorithm = anchor_offset
+    requires: resolution.convention.algorithm = `ANCHOR_OFFSET`
     ensures: TenorResolved(
         resolution: resolution,
         anchor_date: anchor_date,
@@ -157,7 +164,7 @@ rule ResolveAnchorOffset {
 
 rule ResolveScheduleStep {
     when: TenorResolutionRequested(resolution, anchor_date)
-    requires: resolution.convention.algorithm = schedule_step
+    requires: resolution.convention.algorithm = `SCHEDULE_STEP`
     ensures: TenorResolved(
         resolution: resolution,
         anchor_date: anchor_date,
@@ -167,9 +174,9 @@ rule ResolveScheduleStep {
 
 rule ResolutionRejectedWhenScheduleExhausted {
     when: TenorResolutionRequested(resolution, anchor_date)
-    requires: resolution.convention.algorithm = schedule_step
-        and resolution.convention.schedule.schedule_source = event_lookup
-        and (resolution.convention.schedule.calendar.meeting_events
+    requires: resolution.convention.algorithm = `SCHEDULE_STEP`
+        and resolution.schedule.schedule_source = `EVENT_LOOKUP`
+        and (resolution.schedule.calendar.meeting_events
             where event_date >= anchor_date).count < resolution.schedule_step_count
     ensures: ResolutionRejected(resolution: resolution, anchor_date: anchor_date)
 }
@@ -210,8 +217,8 @@ invariant PillarDatesFollowSequence {
 }
 
 invariant FomcSchedulePointsAtMeetingEvents {
-    for s in TenorSchedule where s.code = fomc_meeting:
-        s.schedule_source = event_lookup
+    for s in TenorSchedule where s.code = `FOMC_MEETING`:
+        s.schedule_source = `EVENT_LOOKUP`
         and s.calendar = us_fomc
         and s.diary_entry_type = central_bank_meeting
 }

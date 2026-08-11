@@ -30,9 +30,9 @@ The objective is higher velocity without losing quality. More analysis is needed
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Analysis task DONE; implementation tasks follow. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Add the implementation tasks from the analysis.   |
 | Last touched  | 2026-08-11                               |
 
 * Acceptance

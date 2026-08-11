@@ -83,6 +83,14 @@ keeps no dependency on the refdata repositories.
 
 * Notes
 
+- The canonical form always carries an explicit metric: =from_ore_key=
+  sets =id.metric= explicitly, and =to_uri= always serializes it. The
+  invariant =from_ore_key(to_quote_key(id)) == id= therefore holds for
+  identifiers whose metric is already explicit (=to_quote_key= emits
+  one, so the round trip is closed); an identifier with =metric=
+  left =std::nullopt= (relying on =default_metric()=) is not
+  canonical-form and is not reconstructed equal.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -104,7 +112,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =to_uri(identifier, canonical_values)= is never exercised against an IR vol identifier | oresmd_oresmd_parser_tests.cpp | Fixed | The container must hold the composite "5y,2y,atm" as one point literal; accept/reject tests added |
+| 2 | =from_fx_spot= calls =check()= before upper-casing the key segments, so a lower-case pair skips the correction | oresmd_projections.cpp | Fixed | Segments are upper-cased before the check; regression test added |
+| 3 | =from_fx_spot= / =from_fx_fwd= concatenate currency segments of any length into =pair= | oresmd_projections.cpp | Fixed | =is_currency_code= (exactly 3 alphabetic chars) rejects malformed keys; 4 tests added |
+| 4 | =from_ore_key= always emits an explicit metric; the round-trip invariant is scoped to explicit-metric identifiers | oresmd_projections.cpp | Noted | Invariant scope documented in =* Notes= |
 
 * Result
 

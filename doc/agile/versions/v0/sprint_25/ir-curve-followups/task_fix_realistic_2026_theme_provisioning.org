@@ -26,12 +26,12 @@ Restore end-to-end Acme provisioning: synthetic.themes.realistic_2026 publishes 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
@@ -106,3 +106,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both defects fixed and verified end to end:
+
+1. Cross-tenant soft-FK validation. The entity model now declares
+   =:use_system_tenant: true= on =parameter_definition_id= (the flag's
+   first use); the regenerated insert trigger resolves the definition
+   under =ores_utility_system_tenant_id_fn()=, matching the
+   =process_type= validation trigger on the same table.
+   =config_id= keeps the default tenant-scoped resolution.
+
+2. Codegen template gap (PR #1926 regression). The notify-trigger,
+   nats-event-registrar, eventing-integration-test, and repository
+   templates now derive pg_notify channel and hierarchy-fn names from
+   =sql_name_base= instead of
+   ={{product}}_{{component}}_{{entity_plural}}= (this entity's 66-char
+   conventional name exceeds PostgreSQL's 63-byte channel limit; the
+   generated short channel had only been hand-patched). Zero output
+   change for every entity whose conventional base fits.
+
+Verification: entity regeneration idempotent (=--diff= clean); build
+clean (linux-clang-debug-make); DB recreated; full Acme re-provision
+run — =synthetic.themes.realistic_2026= completed in all four entities
+(acme_group/acme_uk/acme_us/acme_hk), as did
+=synthetic.themes.ore_samples_2016=. Acceptance met.
+
+PR #1952 raised; CI green (9/9 checks); two automated reviews — no
+issues found.
+
+Known follow-up (separate defect, not part of this task): the
+provisioning =synthetic_feeds= step fails for acme_uk/acme_us/acme_hk
+with "IR curve config has no parameter value rows" despite all data
+being present (no race, no churn, no exception). The feed-starting
+code is slated for a rewrite, where this will be tested properly.

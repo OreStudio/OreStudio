@@ -54,7 +54,7 @@ Establish the current contract of the refdata synthetic generators (version, cha
 - The generators emit =version = 0= / ="system.test"= (=party_identifier_generator.cpp=, =counterparty_identifier_generator.cpp=). This is the codegen-standard boilerplate every refdata generator got in PR #1698; the domain default is =int version = 0= (never-persisted instance).
 - The fix for exactly this capture's issue landed on main one day after the capture was filed: commit =90ad8693be= (2026-07-17, "[dq,refdata,history,iam] Fix build and test breakage on main") rewrote the party_status, party_id_scheme, party_identifier and counterparty_identifier expectations. =c113b851e= (2026-07-28) fixed the =party_generator_produces_valid_instance= case the same way; =123ca2bfa= / =d0458e500= fixed the contact_information pair (the capture's own reference).
 - Version semantics: =ores.dq.domain.change_reason_constants= defines =synthetic_new="system.new"= (fresh synthetic fixture) and =synthetic_test_data="system.test"= (general test-only fixture); both are legitimate codes. The codegen standard chose ="system.test"=, so version==1 / "system.new" were pre-standardization leftovers in the hand-written generators' tests.
-- Repo-wide sweep: no stale generator assertions remain. The =version == 1= hits in ores.compute/ores.dq domain tests assign the field explicitly and assert their own value — a distinct, legitimate pattern, not generator output.
+- Repo-wide sweep: no stale generator assertions remain. =version == 1= hits in ores.iam/ores.trading/ores.synthetic generator tests match generators that explicitly set =version = 1= (=tenant_generator.cpp:34=, =activity_type_generator.cpp:35=, etc.) — consistent per-component contracts, not stale expectations. The hits in ores.compute/ores.dq domain tests assign the field explicitly and assert their own value — a distinct, legitimate pattern, not generator output.
 - The capture's title/body overstates the live risk: at capture time the two tests failed loudly (assertion mismatch), so the drift was caught, not hidden.
 - Related systemic capture: =refdata_generated_code_stale_vs_templates.org= (47134F35-6BC0-4FC6-993A-AAA45F0E2D8E) tracks checked-in generated code drifting from codegen templates — the broader pattern this capture is one instance of.
 
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Notes undersell sweep scope: version==1 also appears in ores.iam/ores.trading/ores.synthetic generator tests, but those generators set version=1 explicitly — not stale. | task_investigate_generator_version_contract.org | Accepted | Addendum added to * Notes; conclusion unchanged. |
 
 * Result
 

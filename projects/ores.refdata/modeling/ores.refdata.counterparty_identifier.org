@@ -122,6 +122,7 @@ std::string("Test identifier")
 ** counterparty_id
 :PROPERTIES:
 :table:         ores_refdata_counterparties_tbl
+:parent_entity: counterparty
 :nullable:      false
 :error_message: Invalid counterparty_id: %. No active counterparty found with this id.
 :list_by:       true

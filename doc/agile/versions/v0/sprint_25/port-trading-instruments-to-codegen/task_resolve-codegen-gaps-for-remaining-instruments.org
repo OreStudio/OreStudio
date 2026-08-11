@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 2548EE95-7C62-4C48-BA11-2146604B2082
+:END:
+#+title: Task: Resolve codegen feature gaps blocking the remaining trading instrument conversions
+#+description: Close the codegen feature gaps that block the deferred trading instrument conversions (bond, commodity, credit, scripted, composite, fra, swap legs) and convert them all per the established pattern.
+#+type: task
+#+level: s1
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Convert the 7 remaining hand-crafted trading instrument sub-types
+(bond, commodity, credit, scripted, composite, fra, swap legs) to
+codegen by first closing the three codegen feature gaps that block
+them, each discovered and documented in the [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][conversion task]]'s notes:
+
+(a) *Nested domain groups*: the domain template supports only the
+fixed =instrument_identity= + =audit_record= groups and flat columns,
+so the C1202-nested domains of =bond_instrument=
+(=bond_terms=/=bond_features=/=bond_option=, several members
+non-persisted) and the similarly-nested =commodity_instrument=/
+=credit_instrument= cannot regenerate zero-diff -- a generated flat
+domain would break every consumer of the nested sub-structs
+(persistence, ores.ore XML round-trip mappers, Qt forms).
+
+(b) *Column-name-to-group-field mapping*: the mapper template emits
+=r.identity.{{column_name}}= keyed on the model column name while the
+=ores.trading.instrument_identity= field-group hardcodes the
+=instrument_id= field name, so =scripted_instrument='s PK column =id=
+cannot map into the group (its hand-crafted mapper bridges by hand:
+=r.identity.instrument_id = v.id=). The alternatives -- renaming the
+DB column or dropping the identity group -- both break zero-diff.
+
+(c) *Service paste-block/custom methods*: the service template has no
+paste-block/custom-method extension mechanism, so
+=composite_instrument=/=fra_instrument= and the swap-leg entities'
+custom transactional service logic (=save_*_instrument(data, legs)=,
+=remove_*_instrument=, =get_legs=/=get_legs_batch=) cannot be
+reproduced by generation.
+
+Then convert each entity following the proven pattern: modern-format
+model bound to the trading-instrument variability profile, zero-diff
+regeneration across all facets (verified with a second pass), NATS
+eventing-integration-test facet enabled, messaging path reconciled,
+CMake synced, build + tests green.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Codegen feature work (see Goal).       |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- The codegen domain template supports arbitrary nested domain groups
+  beyond the fixed identity/audit groups, including non-persisted
+  members, so =bond_instrument=/=commodity_instrument/=
+  =credit_instrument= regenerate zero-diff.
+- The codegen mapper supports mapping a model column name to a
+  different identity-group field name, so =scripted_instrument='s =id=
+  PK column regenerates zero-diff.
+- The codegen service template supports paste-block/custom-method
+  extension points reproducing the composite/fra/swap-leg
+  transactional service logic.
+- All 7 entities (bond, commodity, credit, scripted, composite, fra,
+  swap legs) converted per the established pattern: profile-bound
+  model, eventing facet enabled, messaging reconciled, second-pass
+  zero-diff verified.
+- Build green and =ores.trading.{api,core,service}.tests= plus
+  consumer libs green after each batch.
+
+* Notes
+
+Deferred from the [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][conversion
+task]] on 2026-08-09: all four remaining flat-or-nested candidates
+(bond, commodity, credit, scripted) are feature-gated, not
+effort-gated; composite/fra/swap-legs were already deferred there for
+the same class of reason. The task is the follow-up those deferral
+notes point at.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+
+* Result

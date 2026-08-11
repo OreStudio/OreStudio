@@ -1,0 +1,191 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.database/domain/context.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/eventing/fx_asian_forward_instrument_changed_event.hpp"
+#include "ores.trading.api/generators/fx_asian_forward_instrument_generator.hpp"
+#include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
+#include <thread>
+
+// Proves the "write an entity, observe its NATS entity-changed
+// notification" pattern end to end for fx_asian_forward_instrument -- the
+// production DB-write -> pg_notify -> postgres_event_source ->
+// event_bus -> NATS publish chain, assembled directly here the same
+// way the production event-registrar wires it.
+
+namespace {
+
+const std::string_view test_suite("trading.tests");
+const std::string tags("[eventing][integration]");
+
+// FX Asian Forward Instrument writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
+
+// Reads NATS connection settings the same way every service resolves
+// them at startup -- CMake bakes every .env variable into the ctest
+// process environment, so these are populated identically for both
+// `compass build` local runs and CI.
+ores::nats::config::nats_options test_nats_options() {
+    auto env = [](const char* name) -> std::string {
+        const char* v = std::getenv(name);
+        return v ? std::string(v) : std::string();
+    };
+
+    ores::nats::config::nats_options opts;
+    opts.url = env("ORES_NATS_URL");
+    if (opts.url.empty())
+        opts.url = "nats://localhost:4222";
+    opts.subject_prefix = env("ORES_NATS_SUBJECT_PREFIX");
+    opts.tls_ca_cert = env("ORES_NATS_TLS_CA");
+    opts.tls_client_cert = env("ORES_NATS_TLS_CERT");
+    opts.tls_client_key = env("ORES_NATS_TLS_KEY");
+    return opts;
+}
+
+}
+
+using namespace ores::trading::generators;
+using ores::trading::domain::fx_asian_forward_instrument;
+using ores::trading::repository::fx_asian_forward_instrument_repository;
+using ores::testing::scoped_database_helper;
+using namespace ores::logging;
+
+TEST_CASE("write_fx_asian_forward_instrument_publishes_nats_changed_event", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+
+    // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
+    // production event-registrar wires in the live service, assembled
+    // directly in the test instead of via a running process.
+    namespace ev = ores::eventing;
+    ev::service::event_bus bus;
+    ev::service::postgres_event_source event_source(party_ctx, bus);
+
+    ores::nats::service::client nats(test_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    auto sub = bus.subscribe<ores::trading::eventing::fx_asian_forward_instrument_changed_event>(
+        [&nats](const ores::trading::eventing::fx_asian_forward_instrument_changed_event& e) {
+            ev::service::publish_entity_event(
+                nats,
+                std::string(
+                    ev::domain::event_traits<
+                        ores::trading::eventing::fx_asian_forward_instrument_changed_event>::name),
+                ev::domain::entity_change_event{.entity =
+                                                    "ores.trading.fx_asian_forward_instrument",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.fx_asian_forward_instrument_ids,
+                                                .tenant_id = e.tenant_id});
+        });
+
+    event_source
+        .register_mapping<ores::trading::eventing::fx_asian_forward_instrument_changed_event>(
+            "ores.trading.fx_asian_forward_instrument",
+            "ores_trading_fx_asian_forward_instruments");
+
+    // 2. Subscribe as an external observer would, on the relative subject --
+    // client::subscribe() prepends the subject_prefix itself.
+    auto observer = nats.subscribe_buffered(
+        std::string(ev::domain::event_traits<
+                    ores::trading::eventing::fx_asian_forward_instrument_changed_event>::name),
+        10);
+
+    // The listener thread issues LISTEN asynchronously on its own
+    // dedicated connection. Block until it has actually done so before
+    // writing -- Postgres does not queue NOTIFYs sent before a matching
+    // LISTEN is registered.
+    event_source.start();
+    REQUIRE(event_source.wait_until_ready());
+
+    // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
+    // the chain wired above -> NATS.
+    auto v = generate_synthetic_fx_asian_forward_instrument(ctx);
+    v.audit.change_reason_code = "system.test";
+    v.identity.party_id = *party_ctx.party_id();
+    const auto id_str = boost::uuids::to_string(v.identity.instrument_id);
+    BOOST_LOG_SEV(lg, debug) << "FX Asian Forward Instrument: " << v;
+
+    fx_asian_forward_instrument_repository repo;
+    repo.write(party_ctx, v);
+
+    // 4. Poll the observer's buffer for the notification. Generous
+    // timeout: trigger -> pg_notify -> 100ms listener poll -> event_bus
+    // -> NATS round trip, all real, no mocks.
+    std::vector<ores::nats::message> received;
+    for (int i = 0; i < 50 && received.empty(); ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        auto snap = observer.snapshot();
+        for (const auto& msg : snap) {
+            auto decoded =
+                ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(msg.data);
+            if (decoded && decoded->entity == "ores.trading.fx_asian_forward_instrument") {
+                for (const auto& changed_id : decoded->entity_ids) {
+                    if (changed_id == id_str)
+                        received.push_back(msg);
+                }
+            }
+        }
+    }
+
+    event_source.stop();
+
+    REQUIRE_FALSE(received.empty());
+    BOOST_LOG_SEV(lg, info) << "Received " << received.size()
+                            << " matching NATS notification(s) for fx_asian_forward_instrument "
+                            << id_str;
+}

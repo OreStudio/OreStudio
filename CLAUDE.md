@@ -9,6 +9,12 @@ word, active voice, simple tense, one instruction per sentence, short
 sentences. Do not apply STE100 rewriting to structured output — JSON,
 diffs, code, commit messages, or command output.
 
+**Code comments:** the `code-review-comments` skill sets the rules for
+every comment in code we create or edit: use comments sparingly, remove
+commented-out code, never narrate edit history, never use end-of-line
+comments, place comments above the code. Apply these rules as you
+write; invoke the skill for a cleanup pass.
+
 **Never pipe or redirect a `compass` command.** Run it bare — no `|`,
 no `2>&1`, no `>`. Every `compass build`/`deploy`/`site` command that
 produces meaningful output prints its own well-known log file path

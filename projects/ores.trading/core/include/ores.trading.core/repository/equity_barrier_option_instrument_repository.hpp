@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_EQUITY_BARRIER_OPTION_INSTRUMENT_REPOSITORY_HPP
-#define ORES_TRADING_REPOSITORY_EQUITY_BARRIER_OPTION_INSTRUMENT_REPOSITORY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_BARRIER_OPTION_INSTRUMENT_REPOSITORY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_EQUITY_BARRIER_OPTION_INSTRUMENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -31,7 +34,7 @@
 namespace ores::trading::repository {
 
 /**
- * @brief Reads and writes equity barrier option instruments to data storage.
+ * @brief Reads and writes Equity Barrier Option instruments to data storage.
  */
 class ORES_TRADING_CORE_EXPORT equity_barrier_option_instrument_repository {
 private:
@@ -47,21 +50,73 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes Equity Barrier Option instruments to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::equity_barrier_option_instrument& v);
     void write(context ctx, const std::vector<domain::equity_barrier_option_instrument>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest Equity Barrier Option instruments, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::equity_barrier_option_instrument> read_latest(context ctx);
     std::vector<domain::equity_barrier_option_instrument>
     read_latest(context ctx, const std::string& instrument_id);
     std::vector<domain::equity_barrier_option_instrument>
+    read_latest(context ctx, const std::vector<std::string>& instrument_ids);
+    /**@}*/
+
+    /**
+     * @brief Reads all Equity Barrier Option instruments, possibly filtered by primary key.
+     */
+    std::vector<domain::equity_barrier_option_instrument>
     read_all(context ctx, const std::string& instrument_id);
 
-    std::vector<domain::equity_barrier_option_instrument>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    /**
+     * @brief Reads a single Equity Barrier Option instrument as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::equity_barrier_option_instrument>
+    read_at_version(context ctx, const std::string& instrument_id, std::uint32_t version);
 
+    /**
+     * @brief Reads latest Equity Barrier Option instruments with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::equity_barrier_option_instrument>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active Equity Barrier Option instruments.
+     * @param ctx Repository context with database connection
+     * @return Total number of active Equity Barrier Option instruments
+     */
+    std::uint32_t get_total_equity_barrier_option_instrument_count(context ctx);
+
+    /**
+     * @brief Deletes a Equity Barrier Option instrument by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& instrument_id);
+
+    /**
+     * @brief Deletes Equity Barrier Option instruments by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& instrument_ids);
 };
 
 }

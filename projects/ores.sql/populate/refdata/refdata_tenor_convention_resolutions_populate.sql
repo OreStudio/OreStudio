@@ -45,8 +45,10 @@
  *
  * RATES_SPOT_FOMC seeds 1F..8F (SPECIAL, so the row carries the zero
  * calendar-axis offset) with schedule_code FOMC_MEETING and
- * schedule_step_count = n: the n-th meeting on-or-after spot, per story
- * Decision D2.
+ * schedule_step_count = n: the n-th meeting on-or-after spot. It also
+ * seeds the 1Y split tenor as a membership-only row: a PERIOD tenor with
+ * no schedule fields, so it resolves on the calendar axis -- spot + its
+ * own year period -- via the axis fallback in tenor_resolution.cpp.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE.
  */
@@ -171,6 +173,11 @@ values
     (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FOMC', '7F', 0, null, 'DAY', 0, 'FOMC_MEETING', 7,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor convention resolutions'),
     (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FOMC', '8F', 0, null, 'DAY', 0, 'FOMC_MEETING', 8,
+     current_user, current_user, 'system.initial_load', 'Initial population of tenor convention resolutions'),
+    -- RATES_SPOT_FOMC: the 1Y split tenor, a membership-only row -- no
+    -- schedule fields, so it resolves on the calendar axis (spot + YEAR x 1)
+    -- via the axis fallback.
+    (ores_utility_system_tenant_id_fn(), 'RATES_SPOT_FOMC', '1Y', 0, null, null, null, null, null,
      current_user, current_user, 'system.initial_load', 'Initial population of tenor convention resolutions')
 on conflict (tenant_id, convention_code, tenor_code)
 where valid_to = ores_utility_infinity_timestamp_fn()

@@ -43,22 +43,9 @@ generate_synthetic_currency_pair(utility::generation::generation_context& ctx) {
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.pair_code = std::string(faker::finance::currencyCode()) + "/" +
                   std::string(faker::finance::currencyCode()) + "-" + std::to_string(idx);
-    r.base_currency = // "X-0" is the first code the synthetic currency generator emits: the
-                      // base-leg validation accepts only codes of active currencies, and
-                      // every test tenant inherits the system tenant's accumulated active
-                      // set, which always contains X-0 (every generator process starts its
-                      // counter at zero).
-        std::string("X-0");
-    r.quote_currency = // "X-1" is the second code the synthetic currency generator emits,
-                       // present in the inherited active set for the same reason as "X-0".
-        std::string("X-1");
-    r.classification = // "CD-0" is the first code the synthetic classification generator
-                       // emits (the code column has no model generator, so codegen's default
-                       // text-PK generator produces "CD-<n>"): the classification validation
-                       // accepts only codes of active classifications, and every test tenant
-                       // inherits the system tenant's accumulated active set, which always
-                       // contains CD-0 (every generator process starts its counter at zero).
-        std::string("CD-0");
+    r.base_currency = std::string("EUR");
+    r.quote_currency = std::string("USD");
+    r.classification = std::string("major");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

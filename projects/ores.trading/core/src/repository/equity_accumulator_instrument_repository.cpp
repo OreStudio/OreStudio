@@ -38,30 +38,48 @@ std::string equity_accumulator_instrument_repository::sql() {
 
 void equity_accumulator_instrument_repository::write(
     context ctx, const domain::equity_accumulator_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity accumulator instrument: "
-                               << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing Equity Accumulator instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_accumulator_instrument_mapper::map(v),
                         lg(),
-                        "Writing equity accumulator instrument to database.");
+                        "Writing Equity Accumulator instrument to database.");
 }
 
 void equity_accumulator_instrument_repository::write(
     context ctx, const std::vector<domain::equity_accumulator_instrument>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity accumulator instruments. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing Equity Accumulator instruments. Count: " << v.size();
     execute_write_query(ctx,
                         equity_accumulator_instrument_mapper::map(v),
                         lg(),
-                        "Writing equity accumulator instruments to database.");
+                        "Writing Equity Accumulator instruments to database.");
 }
 
 std::vector<domain::equity_accumulator_instrument>
 equity_accumulator_instrument_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("instrument_id"_c);
+        return execute_read_query<equity_accumulator_instrument_entity,
+                                  domain::equity_accumulator_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) {
+                return equity_accumulator_instrument_mapper::map(entities);
+            },
+            lg(),
+            "Reading latest Equity Accumulator instruments (workspace resolution chain).");
+    }
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c);
 
     return execute_read_query<equity_accumulator_instrument_entity,
                               domain::equity_accumulator_instrument>(
@@ -69,19 +87,20 @@ equity_accumulator_instrument_repository::read_latest(context ctx) {
         query,
         [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest equity accumulator instruments");
+        "Reading latest Equity Accumulator instruments");
 }
 
 std::vector<domain::equity_accumulator_instrument>
 equity_accumulator_instrument_repository::read_latest(context ctx,
                                                       const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity accumulator instrument. instrument_id: "
-                               << instrument_id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest Equity Accumulator instrument. "
+                               << "instrument_id: " << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<equity_accumulator_instrument_entity,
                               domain::equity_accumulator_instrument>(
@@ -89,17 +108,20 @@ equity_accumulator_instrument_repository::read_latest(context ctx,
         query,
         [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest equity accumulator instrument by instrument_id.");
+        "Reading latest Equity Accumulator instrument by instrument_id.");
 }
+
 
 std::vector<domain::equity_accumulator_instrument>
 equity_accumulator_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading all equity accumulator instrument versions. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all Equity Accumulator instrument versions. "
+                               << "instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
-                       order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<equity_accumulator_instrument_entity,
                               domain::equity_accumulator_instrument>(
@@ -107,39 +129,128 @@ equity_accumulator_instrument_repository::read_all(context ctx, const std::strin
         query,
         [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading all equity accumulator instrument versions by instrument_id.");
+        "Reading all Equity Accumulator instrument versions by instrument_id.");
+}
+
+std::optional<domain::equity_accumulator_instrument>
+equity_accumulator_instrument_repository::read_at_version(context ctx,
+                                                          const std::string& instrument_id,
+                                                          std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading Equity Accumulator instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<equity_accumulator_instrument_entity,
+                                             domain::equity_accumulator_instrument>(
+        ctx,
+        query,
+        [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
+        lg(),
+        "Reading Equity Accumulator instrument at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
 }
 
 void equity_accumulator_instrument_repository::remove(context ctx,
                                                       const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing equity accumulator instrument: " << instrument_id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing Equity Accumulator instrument. "
+                               << "instrument_id: " << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<equity_accumulator_instrument_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(), "Removing equity accumulator instrument from database.");
+    execute_delete_query(ctx, query, lg(), "Removing Equity Accumulator instrument from database.");
 }
-
 
 std::vector<domain::equity_accumulator_instrument>
 equity_accumulator_instrument_repository::read_latest(context ctx,
-                                                      const std::vector<std::string>& ids) {
-    if (ids.empty())
-        return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+                                                      std::uint32_t offset,
+                                                      std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest Equity Accumulator instruments with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids) && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
     return execute_read_query<equity_accumulator_instrument_entity,
                               domain::equity_accumulator_instrument>(
         ctx,
         query,
         [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest equity_accumulator_instruments by ids.");
+        "Reading latest Equity Accumulator instruments with pagination.");
 }
+
+std::uint32_t
+equity_accumulator_instrument_repository::get_total_equity_accumulator_instrument_count(
+    context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active Equity Accumulator instrument count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<equity_accumulator_instrument_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active Equity Accumulator instrument count: " << count;
+    return count;
+}
+
+std::vector<domain::equity_accumulator_instrument>
+equity_accumulator_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<equity_accumulator_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    auto result = execute_read_query<equity_accumulator_instrument_entity,
+                                     domain::equity_accumulator_instrument>(
+        ctx,
+        query,
+        [](const auto& entities) { return equity_accumulator_instrument_mapper::map(entities); },
+        lg(),
+        "Reading latest Equity Accumulator instruments by ids.");
+    return result;
+}
+
+void equity_accumulator_instrument_repository::remove(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<equity_accumulator_instrument_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing Equity Accumulator instruments.");
+}
+
 
 }

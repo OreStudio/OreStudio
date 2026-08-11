@@ -247,21 +247,36 @@ std::string("WRLD")
 
 * Foreign keys
 
-** parent_portfolio_id
+** functional_currency
 :PROPERTIES:
-:table:         ores_refdata_portfolios_tbl
-:nullable:      false
-:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
-:list_by:       true
-:bump_parent_version: true
-:list_by_as_of: true
+:table:           ores_refdata_currencies_tbl
+:target_column:   iso_code
+:parent_entity:   currency
+:seed_value:      USD
+:skip_check:      true
+:nullable:        false
+:error_message:   Invalid functional_currency: %. No active currency found with this iso code.
 :END:
 
 ** party_id
 :PROPERTIES:
 :table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
 :nullable:      false
 :error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** parent_portfolio_id
+:PROPERTIES:
+:table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:seed_parent_party_id: true
+:nullable:      false
+:error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
+:list_by:       true
+:bump_parent_version: true
+:list_by_as_of: true
 :END:
 
 ** owner_unit_id

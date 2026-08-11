@@ -157,7 +157,6 @@ ctx.random_int(1, 30)
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:generator_facet_name: generator
 :END:
 
 ** Repository

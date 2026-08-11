@@ -1,0 +1,743 @@
+:PROPERTIES:
+:ID: F560ADDF-260A-4ECC-81EB-1C83A32CD5AA
+:END:
+#+title: Task: Convert remaining ~19 hand-crafted trading instrument sub-types to codegen models
+#+description: Bring the remaining ~19 hand-crafted trading instrument sub-types (bond, most equity_*/fx_* variants, commodity, composite + composite_legs, credit, scripted, swap_legs) under codegen, following the equity_position_instrument pilot's proven pattern. Most of these use the legacy Primary key heading format and need task 836BB4CE resolved or worked around per-entity first.
+#+type: task
+#+level: s1
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
+#+owner: marco
+#+branch: feature/convert-remaining-trading-instrument-subtypes
+#+pr: 1925
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-05
+#+updated: 2026-08-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring the remaining ~19 hand-crafted trading instrument sub-types
+under codegen, matching what the
+[[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][equity_position_instrument
+pilot]] already proved: author a modern-format model for each,
+regenerate every facet (SQL/domain/entity/mapper/repository/service/
+generator) zero-diff against the hand-crafted original, and land the
+=has_workspace_id= inheritance query (already fixed generically in
+PR #1846) for every one of them. Most of these entities carry the
+legacy top-level =* Primary key= heading, so task 836BB4CE (or a
+per-entity rewrite into the modern column-property format, as the
+pilot did) is a prerequisite for each one individually.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-09                               |
+
+* Acceptance
+
+- Every remaining hand-crafted trading instrument sub-type (bond,
+  remaining equity_*/fx_* variants, commodity, composite +
+  composite_legs, credit, scripted, swap_legs) has a codegen model
+  authored in the modern format.
+- Each regenerates zero-diff against its hand-crafted original
+  (beyond genuine, systemic template improvements already proven safe
+  by the pilot).
+- Full project build green and full test suite passing after each
+  batch of conversions (not just at the very end).
+- Workspace inheritance (PR #1846) verified working for every
+  converted entity.
+- Add a repository test proving batch remove() doesn't cross
+  workspace boundaries (flagged during PR #1857 review as missing --
+  the fix itself was verified correct by inspection across 11
+  entities, but no test exercises it).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+Converting entities one at a time (or in small batches), each fully
+verified (build + tests + zero-diff on a second regen pass) before
+moving to the next, following the equity_position_instrument pilot's
+approach exactly. Picking flat, leg-free instruments first (simplest,
+matches the pilot's shape 1:1); composite_instrument/composite_leg
+and any swap-leg-bearing entities (which carry genuine custom
+transactional service logic beyond plain CRUD) are deferred until the
+codegen service template gains proper support for hand-written
+extension points -- see Notes.
+
+* Notes
+
+** Follow-up: entire equity_* instrument family missing from drop_trading.sql
+
+Flagged during PR #1874 review: =projects/ores.sql/drop/trading/drop_trading.sql=
+has zero =\ir= references to any =trading_equity_*_instruments_drop.sql=
+file -- not =equity_position= (the PR #1857 pilot), nor
+=equity_forward=/=equity_variance_swap= (this task's entities 3-4), nor
+any of the still-hand-crafted equity variants. These =_drop.sql= files
+exist on disk but are unreachable dead code: a full =drop.sql= run
+leaves every equity instrument table, trigger, and function fully
+intact. Pre-existing (predates the pilot), not something to patch
+piecemeal per converted entity -- needs a dedicated small cleanup task
+wiring up the whole equity_* family in =drop_trading.sql= at once,
+mirroring the FX/rates/bond blocks' pattern.
+
+** Composite/leg-bearing entities need a template feature, not just a model
+
+Attempted =composite_instrument= first (after the pilot) since it's
+the smallest remaining domain struct (49 lines). Regeneration failed
+to build: the hand-crafted =composite_instrument_handler.hpp=
+messaging dispatcher calls custom service methods
+(=save_composite_instrument(data, legs)=,
+=remove_composite_instrument=, =get_legs=/=get_legs_batch=) that
+manage the parent + =composite_leg= child relationship
+transactionally -- genuine custom logic no codegen service template
+currently reproduces. The =Custom repository methods= org heading
+exists in the model schema but isn't actually consumed by any
+template today (confirmed by grep), so this isn't a quick fix.
+
+=fra_instrument= has the identical pattern with =swap_leg= (custom
+=get_swap_legs=/=get_swap_legs_batch=/save-with-legs methods hand-
+patched onto its "generated" service file) -- and because
+=fra_instrument.org= is permanently blocked from regeneration by task
+836BB4CE, this drift has never actually been caught or verified. Any
+entity with a *_leg child table (composite_instrument, and
+presumably every swap-leg-bearing swap/swaption entity) shares this
+gap.
+
+Decision: defer composite_instrument/composite_leg and any other
+leg-bearing entities to a follow-up once the service template gains
+a genuine paste-block/custom-method extension mechanism (or the
+custom methods are otherwise formalised) -- don't force a hand-patch
+that would just recreate the same silent-drift problem fra_instrument
+already has. Picking flat, single-table instruments first instead.
+
+Also discovered along the way: the shared
+=ores.trading.instrument_identity= field-group struct hardcodes the
+=instrument_id= field name, so it only fits entities whose primary key
+column is literally named =instrument_id= (as in the pilot). Entities
+like =composite_instrument= whose PK column is =id= don't fit that
+group and would need either a rename (bigger blast radius, changes
+the DB column) or to stay flat with no identity grouping (fine --
+small entities don't need the C1202 nesting anyway).
+
+** bond/commodity/credit/scripted: blocked by codegen domain-template gaps (2026-08-09)
+
+The Next candidate =bond_instrument= turns out to be anything but flat
+-- it is the *most* nested entity in the family. Its hand-crafted
+domain decomposes into =instrument_identity= + =bond_terms=
+(=security_id=, issuer, currency, face_value, coupon_rate,
+=coupon_frequency_code=, =day_count_code=, issue_date, maturity_date)
++ =bond_features= (settlement_days, call_date, conversion_ratio,
+=security_id=/=future_expiry_date/=trs_return_type/=trs_funding_leg_code=
+-- several *non-persisted* members with no SQL column) + =bond_option=
+(option_type, option_expiry_date, option_strike, ascot_option_type --
+all non-persisted) + description + audit, per the MSVC C1202
+rfl-complexity decomposition (PRs #1047/#1071/#1075/#1083/#1085).
+=commodity_instrument= (commodity_terms/commodity_option/
+commodity_pricing/commodity_exotic) and =credit_instrument=
+(credit_terms/credit_schedule/credit_index/credit_option/credit_tranche)
+share the shape; all three also have PK column =id=, not
+=instrument_id=.
+
+The codegen domain template supports exactly one shape: the fixed
+=instrument_identity= group + flat columns + the fixed audit group. It
+has no mechanism for arbitrary nested sub-structs, nor for
+non-persisted members, so zero-diff regeneration of the domain class is
+impossible for any of the three -- and the alternative (a generated
+flat domain) would break every consumer of =bond_terms=/
+=bond_features=/=bond_option= (and their commodity/credit equivalents):
+persistence tests, the ores.ore XML round-trip mappers, and the Qt
+forms. =scripted_instrument= is flat but its PK column is =id=: the
+mapper template emits =r.identity.{{column_name}}= keyed on the model
+column name while the =instrument_identity= field-group hardcodes the
+=instrument_id= field name, so an =id=-named column cannot map into the
+group (the hand-crafted mapper bridges the gap by hand:
+=r.identity.instrument_id = v.id=). The two options the instrument_
+identity note lists are both non-zero-diff here: renaming the DB column
+changes =create.sql=, and dropping the identity group changes the
+domain shape and its consumers.
+
+Decision: defer all four to the follow-up task
+[[id:2548EE95-7C62-4C48-BA11-2146604B2082][Resolve codegen feature gaps
+blocking the remaining trading instrument conversions]] once the
+codegen domain template gains nested-group support (beyond the fixed
+identity/audit groups) and a column-name-to-group-field mapping -- the
+same class of deferral as composite/fra/swap-legs above, and the same
+reasoning: don't force a hand-patch or a shape change that would
+recreate the silent-drift problem this task exists to eliminate. The
+task is complete at 15/19; the remaining four are feature-gated, not
+effort-gated.
+
+** equity_variance_swap_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children, matches the pilot's shape exactly
+(instrument_identity + audit_record groups, has_batch_read,
+has_workspace_id). Two =date=-typed columns (=start_date=/
+=maturity_date=) modelled as =std::string= with =:cpp_type: std::string=,
+following the precedent already used by =cap_floor_instrument.org=
+and others (ISO 8601 date strings, not =std::chrono::year_month_day=).
+
+Zero-diff regeneration across all facets (SQL, domain, entity,
+mapper, repository, service, generator) beyond the same systemic
+template improvements already proven safe by the pilot and the
+follow-up workspace_id/batch-remove fixes (PR #1857). Verified with a
+second regeneration pass producing byte-identical output. Full
+project build green; =ores.trading.*= tests pass; full repo =ctest=
+71/71 test binaries pass (the one pre-existing, unrelated
+=ores.marketdata.core.tests= failure from live DB schema drift
+persists, unrelated to this work -- confirmed zero diff in any
+marketdata file).
+
+** fx_forward_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children, matches the pilot's shape exactly.
+Same zero-diff outcome, verified with a second regeneration pass
+(byte-identical output) and =ores.trading.*= tests green.
+
+** equity_forward_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children. Same zero-diff outcome, verified
+with a second regeneration pass (byte-identical output) and
+=ores.trading.*= tests green.
+
+** fx_accumulator_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children. Its =trade_type_code= check is a
+single-value equality (== 'FxAccumulator'=), not an =in (...)= list --
+modelled accordingly in =* SQL / ** Checks=. Same zero-diff outcome,
+verified with a second regeneration pass (byte-identical output) and
+=ores.trading.*= tests green.
+
+** fx_vanilla_option_instrument (converted 2026-08-05)
+
+Flat instrument, no leg children. Same zero-diff outcome, verified
+with a second regeneration pass (byte-identical output) and
+=ores.trading.*= tests green.
+
+** fx_variance_swap_instrument (converted 2026-08-06)
+
+Flat instrument, no leg children. Has a cross-column check
+(=end_date > start_date=) -- modelled directly in =* SQL / ** Checks=
+and preserved verbatim by regeneration. Every generated file diffed
+by hand before building (per explicit review requirement): all
+changes additive/cosmetic or the same systemic template improvements
+already proven across the prior 5 entities: SQL header/hardening,
+domain doc-comments + =entity_type_of()=, entity field reorder +
+=db_timestamp= alias, mapper field reorder, repository
+workspace-scoping (including the batch-remove =workspace_id= fix)
+plus =read_at_version=/pagination/count, service list/count/batch-
+save/delete/delete-batch/history, generator field values matching
+the model exactly. No renamed/orphaned files -- every file with a
+hand-crafted predecessor was modified in place at its original path.
+Zero further drift confirmed via a second regeneration pass;
+=ores.trading.*= tests green.
+
+** equity_swap_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children. Carries the
+=:ores.cpp.eventing-integration-test.enabled: true= property (per
+explicit direction: every entity converted going forward gets the
+eventing facet), so this conversion additionally generates the
+changed-event, messaging protocol/handler/registrar, presentation
+history_field_mapper, service event registrar, and the eventing
+integration test -- the full per-entity eventing stack.
+
+Two generator-value subtleties surfaced during verification (both
+caught by the eventing integration test hitting the live DB):
+- =payment_frequency= generated ="3M"=, which
+  =ores_refdata_validate_payment_frequency_fn= rejects (only Once,
+  Annual, Semiannual, Quarterly, Bimonthly, Monthly, Lunarmonth,
+  Weekly, Daily). Changed the generator block to ="Quarterly"=
+  (semantically 3M).
+- =basket_json= generated ="[]"=, which maps to a non-NULL DB value
+  and violates the XOR check
+  (=EquitySwap= requires basket_json NULL). The mapper maps empty
+  strings to SQL NULL, so the generator block now emits
+  =std::string("")=, keeping basket_json NULL for the default
+  EquitySwap row.
+
+Also carries the hand-crafted trade_type index (the only equity
+variant with one; fx_variance_swap never had one) -- preserved
+verbatim in the model. XOR check, workspace validation, and the
+batch-remove workspace fix all verified present after regeneration.
+Zero further drift via a second regeneration pass; build green;
+=ores.trading.{api,core,service}.tests= all pass via the
+=test_ores.trading.*.tests= targets (core: 69 cases incl. the eventing
+integration test).
+
+** fx_variance_swap_instrument: eventing facet added (2026-08-08)
+
+Per the same direction, the already-converted
+=fx_variance_swap_instrument= gained the
+=:ores.cpp.eventing-integration-test.enabled: true= property and was
+regenerated. Purely additive: 10 new files (changed-event,
+protocol/handler/registrar, history_field_mapper, event registrar,
+eventing integration test), zero modifications to any existing
+generated file, zero further drift on a second pass. Build green;
+=ores.trading.core.tests= passes 70 cases incl. the new
+=write_fx_variance_swap_instrument_publishes_nats_changed_event=.
+
+** fx_variance_swap_instrument: messaging path reconciled (2026-08-08)
+
+Caught while converting fx_barrier_option_instrument: the variance-swap
+conversion (which landed after the eventing task closed) never adopted
+the generated messaging path. Its hand-crafted
+=save_fx_variance_swap_instrument_request/=_response= struct still
+lived in =instrument_protocol.hpp=, its =save_variance_swap()= branch
+still served the save subject from =typed_fx_instrument_handler.hpp=,
+and its generated registrar was never wired -- a latent duplicate-
+struct-definition collision with the generated
+=fx_variance_swap_instrument_protocol.hpp= (same names, same
+namespace), plus a dead generated registrar. Applied the standard
+reconciliation: deleted the hand-crafted struct from
+=instrument_protocol.hpp= (and its now-unused domain include), deleted
+=save_variance_swap()= and its service include from the typed handler,
+removed the typed subscription from =registrar_fx.cpp= and wired
+=register_fx_variance_swap_instrument_handlers= in its place. Its four
+consumers (=ore_import_execute_handler=, =OreImporter=,
+=ImportTradeDialog=, =FxVarianceSwapInstrumentForm=) now include the
+generated protocol; the generated struct is shape-identical (same
+=data= member, same =nats_subject=), so no call-site changes were
+needed. Subject unchanged -- subscribers are unaware.
+
+** fx_digital_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Richest
+optional-numeric column set in the family: =strike=,
+=lower_barrier=, =upper_barrier= all =std::optional<double>=. =strike=
+is the first optional-double in the converted family to carry a
+generator block -- emitted verbatim as =r.strike = 1.1;=, which
+compiles because =std::optional<double>= is implicitly constructible
+from =double=. The two barrier levels have no generator blocks
+(default =std::nullopt=), matching the plain-FxDigitalOption test data
+(barrier fields absent). =option_type= (Call), =barrier_type=,
+=description= nullable with empty-string defaults per the empty-to-NULL
+mapper convention. =long_short= carries the in-check ('Long',
+'Short'); the =trade_type_code= check is the 4-value in-list of the
+digital/touch family.
+
+As with fx_barrier: the notify-trigger drop file did not exist before
+this conversion, so the missing =\\ir= line was added to
+=drop_trading.sql=. Also wired the *pre-existing but unwired*
+=trading_fx_variance_swap_instruments_notify_trigger_drop.sql= into
+=drop_trading.sql= -- the variance-swap conversion regenerated its
+drop.sql without the inline notify drops but never added the =\\ir=
+line, leaving its notify trigger/function un-droppable via a full
+=drop.sql= run since the conversion.
+
+Messaging path reconciled in the same commit (hand-crafted save struct
+deleted from =instrument_protocol.hpp=, =save_digital_option()= removed
+from =typed_fx_instrument_handler.hpp=, typed subscription replaced
+with =register_fx_digital_option_instrument_handlers= in
+=registrar_fx.cpp=; consumers migrated to the generated protocol).
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+72 cases incl. the new
+=write_fx_digital_option_instrument_publishes_nats_changed_event=;
+service: 10 cases).
+
+** fx_barrier_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled per standing
+direction. Carries the only =trade_type_code= check in the family that
+is an =in (...)= list of 5 barrier product types; modelled verbatim.
+=upper_barrier= is the first =std::optional<double>= column in the
+converted family: nullable numeric(28,10) with =cpp_type:
+std::optional<double>=, no generator block, so the default synthetic
+row leaves it =std::nullopt= (mapper pass-through to NULL) -- matching
+the single-barrier test data. =settlement=,
+=underlying_code=, =description= are nullable with no generator blocks
+(empty string, mapped to SQL NULL per the empty-to-NULL convention).
+
+All existing files modified in place at their original paths; new
+files are the standard generated stack (table/table_io, generator,
+changed-event, protocol/handler/registrar, history_field_mapper, event
+registrar, eventing integration test). The
+=trading_fx_barrier_option_instruments_notify_trigger_drop.sql= file
+did *not* exist before this conversion -- the hand-crafted
+=trading_fx_barrier_option_instruments_drop.sql= carried the notify
+trigger/function drops inline. The regenerated pair split them, so the
+missing =\\ir= line was added to =drop_trading.sql= (same fix the PR
+#1874 review applied to fx_accumulator/fx_vanilla_option/fx_forward).
+
+Messaging path reconciled in the same commit: hand-crafted
+=save_fx_barrier_option_instrument_request/=_response= deleted from
+=instrument_protocol.hpp=, =save_barrier_option()= deleted from
+=typed_fx_instrument_handler.hpp=, typed subscription removed from
+=registrar_fx.cpp= and replaced with
+=register_fx_barrier_option_instrument_handlers=; the four consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=,
+=FxBarrierOptionInstrumentForm=) include the generated protocol.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+71 cases incl. the new
+=write_fx_barrier_option_instrument_publishes_nats_changed_event=;
+service: 10 cases).
+
+** All converted instruments bound to the trading-instrument variability profile (2026-08-08)
+
+Per review direction, every converted instrument model must follow the
+standard model shape and bind to a variability profile instead of
+carrying scope knobs inline. Created
+=projects/modeling/variability_trading_instrument.org= (scaffolded via
+=compass add profile=) assigning =has_tenant_id=, =has_workspace_id=
+and =party_id_from_session=, and bound all 10 converted instrument
+models to it: root Flags now carry only
+=schema/product/component/:profile:=, and the SQL Flags drawer carries
+only the =tablename=. All 10 verified zero-diff after the retrofit
+(via =compass codegen entity generate <entity> --diff=).
+
+** fx_asian_forward_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (FxAverageForward, FxTaRF) -- the =trade_type_code=
+check is the 2-value in-list =('FxAverageForward', 'FxTaRF')=.
+=reference_currency/reference_notional/settlement_currency/
+settlement_notional/payment_date/long_short= are
+FxAverageForward-specific; =currency/fixing_amount/target_amount/
+strike= are FxTaRF-specific (nullable with no generator blocks, left
+empty). Carries the hand-crafted unique index on =trade_id= (with
+=where_extra: trade_id is not null=) -- preserved verbatim in the
+model. =payment_date= is a =date=-typed column modelled as
+=std::string= (ISO 8601), per family precedent.
+
+Messaging path reconciled in the same commit -- and this time the
+typed-FX pattern is *gone outright*: deleting the asian_forward save
+struct left =instrument_protocol.hpp= with no typed section at all and
+=typed_fx_instrument_handler.hpp= with no methods left, so the whole
+file was deleted (=git rm=). The typed subscription in
+=registrar_fx.cpp= is replaced with
+=register_fx_asian_forward_instrument_handlers=; the four consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=,
+=FxAsianForwardInstrumentForm=) include the generated
+=fx_asian_forward_instrument_protocol.hpp=; the generated struct is
+shape-identical (same =data= member, same
+=trading.v1.fx_asian_forward_instruments.save= subject), so no call-site
+changes were needed.
+
+The =trading_fx_asian_forward_instruments_notify_trigger_drop.sql= file
+did not exist before this conversion (the hand-crafted drop.sql carried
+the notify drops inline), so the missing =\\ir= line was added to
+=drop_trading.sql=, per the established pattern.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+73 cases incl. the new
+=write_fx_asian_forward_instrument_publishes_nats_changed_event=;
+service: 10 cases).
+
+** equity_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (EquityOption, EquityCliquetOption) -- the
+=trade_type_code= check is the 2-value in-list =('EquityOption',
+'EquityCliquetOption')= plus an XOR cross-column check tying
+=cliquet_frequency= non-null to EquityCliquetOption (null for a plain
+EquityOption). =expiry_date= is a =date=-typed column modelled as
+=std::string= (ISO 8601), per family precedent. =notional= and
+=strike= carry =:default_value: 0.0= so the generated domain keeps the
+hand-crafted initializers (the missing-default-value trap found via
+the equity_swap conversion).
+
+Messaging path reconciled in the same commit:
+=save_equity_option_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_option()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 4 methods -- digital, barrier, asian, accumulator -- until
+the last equity entities convert). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_option_instrument_handlers=; the four consumers
+(=EquityInstrumentForm=, =ore_import_execute_handler=, =OreImporter=,
+=ImportTradeDialog=) include the generated
+=equity_option_instrument_protocol.hpp=; the generated struct is
+shape-identical (same =data= member, same
+=trading.v1.equity_option_instruments.save= subject), so no call-site
+changes were needed.
+
+Also folded in the *equity_swap leftover*: equity_swap converted in an
+earlier commit without its messaging path, so the hand-crafted
+=save_equity_swap_instrument_request=, the typed =save_swap()=
+subscription, and the =equity_swap_instrument.hpp= domain include all
+still lingered -- and the generated equity_swap registrar would have
+double-subscribed the same subject had it been wired alongside them.
+Reconciled here mirroring the fx_barrier/fx_variance_swap precedent:
+struct and method deleted, =register_equity_swap_instrument_handlers=
+wired in =registrar_equity.cpp=, the three swap consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=)
+migrated to the generated protocol include.
+
+=drop_trading.sql= not touched for equity_option: the entire
+equity_*_instruments family (including the new
+=trading_equity_option_instruments_notify_trigger_drop.sql= extracted
+file) remains absent from it, per the follow-up note above -- a
+dedicated cleanup task wires the whole family up at once.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+74 cases incl. the new
+=write_equity_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_barrier_option_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes three
+ORE product types (EquityBarrierOption, EquityDoubleBarrierOption,
+EquityEuropeanBarrierOption) -- the =trade_type_code= check is the
+3-value in-list. Single-barrier shape: =lower_barrier= (non-null,
+=:default_value: 0.0=) plus =lower_barrier_type= (UpIn/UpOut/DownIn/
+DownOut); double-barrier-only =upper_barrier= is a nullable
+=std::optional<double>= with no generator block and
+=upper_barrier_type= is nullable text left empty (mapped to SQL NULL),
+matching the hand-crafted defaults; =rebate= is likewise nullable.
+=expiry_date= is a =date=-typed column modelled as =std::string=
+(ISO 8601), per family precedent. All hand-crafted
+=double ... = 0.0= initializers preserved via =:default_value: 0.0=.
+
+Messaging path reconciled in the same commit:
+=save_equity_barrier_option_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_barrier_option()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 3 methods -- digital, asian, accumulator). The typed
+subscription in =registrar_equity.cpp= is replaced with
+=register_equity_barrier_option_instrument_handlers=; the three
+consumers (=ore_import_execute_handler=, =OreImporter=,
+=ImportTradeDialog=) include the generated
+=equity_barrier_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_barrier_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_barrier_option, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+75 cases incl. the new
+=write_equity_barrier_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_accumulator_instrument (converted 2026-08-08)
+
+Flat instrument, no leg children, eventing facet enabled. Routes two
+ORE product types (EquityAccumulator, EquityTaRF) -- the
+=trade_type_code= check is the 2-value in-list plus an XOR
+cross-column check tying =target_amount/=target_type= non-null to
+EquityTaRF (both must be null for a plain EquityAccumulator). The
+XOR is satisfied by the default row via the empty-to-NULL mapper
+convention: =target_amount= is a =std::optional<double>= with no
+generator block (=std::nullopt=) and =target_type= is nullable text
+with no block (empty string, mapped to SQL NULL). =knock_out_level=
+is likewise a nullable =std::optional<double>= with no block.
+=payoff_type= (Accumulator/Decumulator/TaRF) carries the generator
+block, =std::string("Decumulator")=; =start_date/=expiry_date= are
+=date=-typed columns modelled as =std::string= (ISO 8601), per family
+precedent. All =double ... = 0.0= initializers preserved via
+=:default_value: 0.0=.
+
+Carries the hand-crafted =trade_type= index (only the third equity
+variant to have one, after equity_swap and equity_barrier_option) --
+preserved verbatim in the model. This one actually bit on the first
+diff pass: the model's Indexes table defaulted the row name to =type=
+(emitting =equity_accumulator_instruments_type_idx=) until renamed to
+=trade_type=, matching the hand-crafted
+=equity_accumulator_instruments_trade_type_idx=.
+
+Messaging path reconciled in the same commit:
+=save_equity_accumulator_instrument_request= deleted from
+=instrument_protocol.hpp= and =save_accumulator()= from
+=typed_equity_instrument_handler.hpp= (the typed-equity file stays
+alive with 2 methods -- digital, asian). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_accumulator_instrument_handlers=; the three consumers
+(=ore_import_execute_handler=, =OreImporter=, =ImportTradeDialog=)
+include the generated =equity_accumulator_instrument_protocol.hpp=;
+the generated struct is shape-identical (same =data= member, same
+=trading.v1.equity_accumulator_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_accumulator, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+76 cases incl. the new
+=write_equity_accumulator_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_asian_option_instrument (converted 2026-08-09)
+
+Flat instrument, no leg children, eventing facet enabled, bound to the
+trading-instrument variability profile. Routes the single ORE product
+type EquityAsianOption; the =trade_type_code= check is the 1-value
+in-list. All ten flat columns carried over with hand-crafted
+initializers preserved (=notional= 0.0, =strike= 0.0 via
+=:default_value: 0.0=); =expiry_date= and the averaging dates are
+=date=-typed columns modelled as =std::string= (ISO 8601), per family
+precedent. =underlying_name= carries the ORE equity Name identifier
+(gen "RIC:.SPX").
+
+First equity variant to land the PR #1846 inheritance query: the
+hand-crafted =read_latest(ctx)= lacked it, so the first-pass diff
+showed the workspace resolution chain
+(=ctx.workspace_resolution()= if non-empty else =ctx.workspace_id()=)
+appearing in the generated repository -- a systemic template
+improvement, matching the story acceptance "land the has_workspace_id
+inheritance query for every one of them".
+
+Org-emphasis pitfall hit on the first diff pass: an unbalanced
+==averaging_start_date/=averaging_end_date== pair in the model intro
+leaked a stray trailing == into the generated domain doc-comments and
+the create.sql AUTO-GENERATED header. Rewrote the intro with balanced
+emphasis pairs; re-diff clean.
+
+Messaging path reconciled in the same commit:
+=save_equity_asian_option_instrument_request= deleted from
+=instrument_protocol.hpp= (the typed-equity section now holds only
+digital) and =save_asian_option()= from
+=typed_equity_instrument_handler.hpp= (leaving only
+=save_digital_option()=). The typed subscription in
+=registrar_equity.cpp= is replaced with
+=register_equity_asian_option_instrument_handlers=; the three
+consumers include the generated
+=equity_asian_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_asian_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_asian_option, per the
+equity-family follow-up note above.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+77 cases incl. the new
+=write_equity_asian_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+** equity_digital_option_instrument (converted 2026-08-09)
+
+Flat instrument, no leg children, eventing facet enabled, bound to the
+trading-instrument variability profile. Routes TWO ORE product types
+(EquityDigitalOption, EquityTouchOption) -- the =trade_type_code= check
+is the 2-value in-list plus an XOR cross-column check tying
+=option_type/=strike= non-null to EquityDigitalOption and
+=barrier_level/=barrier_type= non-null to EquityTouchOption (each
+family must have its fields, and only its fields). The XOR is satisfied
+by the default row: =option_type= carries the generator block
+(=std::string("Call")=, so it maps to SQL 'Call' not NULL) and =strike=
+carries =std::make_optional(3300.0)= (the first family model with a
+generator block on an optional member; the block is emitted verbatim as
+the RHS, per the generator template), while =barrier_level= and
+=barrier_type= have no blocks (=std::nullopt= and "" mapped to SQL
+NULL). =payout_amount= is likewise =std::optional<double>= with no
+block. =notional= preserves the hand-crafted 0.0 initializer via
+=:default_value: 0.0=; =expiry_date= is a =date=-typed column modelled
+as =std::string= (ISO 8601), per family precedent.
+
+THE LAST typed-equity entity: the "Typed equity instrument protocol"
+section of =instrument_protocol.hpp= is deleted outright (the file
+survives -- bond/credit/commodity/composite/scripted/fra/swap-family
+typed protocols remain), and =typed_equity_instrument_handler.hpp= is
+deleted as a file, having held only =save_digital_option()=. The typed
+subscription in =registrar_equity.cpp= is replaced with
+=register_equity_digital_option_instrument_handlers= (alphabetical
+between barrier and forward); the three consumers include the generated
+=equity_digital_option_instrument_protocol.hpp=; the generated struct
+is shape-identical (same =data= member, same
+=trading.v1.equity_digital_option_instruments.save= subject), so no
+call-site changes were needed.
+
+=drop_trading.sql= not touched for equity_digital_option, per the
+equity-family follow-up note above. The generated event registrar is
+exercised by the eventing integration test; per the accumulator/asian
+precedent, =application.cpp= is not wired with the new event mapping in
+this commit.
+
+Zero-diff verified via a second regeneration pass. Build green;
+=ores.trading.{api,core,service}.tests= all pass (api: 98 cases; core:
+78 cases incl. the new
+=write_equity_digital_option_instrument_publishes_nats_changed_event=;
+service: 10 cases); consumer libs =ores.ore.service.lib= and
+=ores.qt.trading.lib= green.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1925][#1925]] | [codegen,trading] Convert remaining 10 trading instrument sub-types to codegen |
+| [[https://github.com/OreStudio/OreStudio/pull/1874][#1874]] | [codegen,trading] Convert 5 flat trading instrument sub-types to codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | drop_trading.sql not updated with \ir lines for the 3 new fx_*_instruments_notify_trigger_drop.sql files this PR extracted (flagged independently by 2 of 3 reviewers) | drop_trading.sql | Fixed | Added the 3 missing \ir lines (fx_accumulator, fx_vanilla_option, fx_forward). Verified for real: ran the actual modular drop.sql against the live dev DB -- it walked through the entire trading section (including the newly-fixed lines) with zero errors before failing much later on an unrelated, pre-existing controller-component dependency issue. Recreated the DB afterward and re-ran ores.trading.* tests, all green. |
+| 2 | Entire equity_* instrument family (equity_position, equity_forward, equity_variance_swap, equity_option, equity_swap, equity_accumulator, ...) is absent from drop_trading.sql -- a pre-existing gap this PR's 2 new equity entities fall into | drop_trading.sql | Declined (this PR) | Confirmed pre-existing (predates PR #1857's pilot too), and larger than this PR's scope per the reviewer's own suggestion to flag rather than block. Filed as a follow-up note below; a dedicated cleanup task should wire up the whole equity_* family at once rather than patching it piecemeal per PR. |
+| 3 | read_at_version() doesn't filter by workspace_id, unlike read_latest/remove | *_repository.cpp (all 5 new entities) | Declined (this PR) | Inherited unchanged from the pilot (PR #1857) -- not a regression introduced here. Whether version history should be workspace-scoped is a design question for the workspace story, not something to silently change per-entity as it gets copied forward. |
+| 4 | Trailing double blank line in regenerated repository .cpp files | *_repository.cpp (all 5 new entities) | Declined | Cosmetic template artifact, not worth a template change for. |
+| 5 | read_at_version() filters only tenant_id/instrument_id/version — missing workspace_id (cross-workspace isolation bypass) | cpp_domain_type_repository.cpp.mustache + all 28 *_repository.cpp | Fixed | Accepted: reviewer endorsed the template-level fix (the previous round declined per-entity as not-a-regression). Added the {{#has_workspace_id}}/{{^has_workspace_id}} branch to the read_at_version query block in the template (org source ores.cpp.repository.repository_impl.org, re-tangled), matching read_latest/read_all/remove; regenerated all affected repositories: 16 trading (10 new + 6 pre-existing), 10 refdata, 2 reporting — every diff is exactly the 5-line workspace predicate. Verified locally: ores.trading.{api,core,service}.tests all green (761 assertions in 186 test cases); consumer libs ores.ore.service.lib + ores.qt.trading.lib build clean. |
+| 6 | Generated event-mapping registrations for the 10 newly-converted instrument types never called in application.cpp — the pg_notify → NATS pipeline is dead for those entities in the running service | application.cpp | Fixed | Added the 10 missing register_*_instrument_event_mapping calls after the fx_vanilla_option one, plus their registrar includes, matching the existing pattern exactly; each registrar returns a =[[nodiscard]]= subscription kept alive for the service's lifetime. Commit 1ac829bf8. Verified: ores.trading.{api,core,service}.tests all green. |
+| 7 | New equity notify-trigger drops (equity_swap etc.) not wired into drop_trading.sql — the new equity_*_instruments_notify_trigger_drop.sql files are orphaned | drop_trading.sql | Declined (this PR) | Same pre-existing gap already recorded in row 2: the whole equity_* family is absent from drop_trading.sql and predates this PR. Folded into the same follow-up cleanup task; equity_* family left untouched per the recorded decision. |
+| 8 | read_at_version workspace-scoping fix is one-sided: the {{^read_tenant_filtered}} branch still lacks the has_workspace_id split | cpp_domain_type_repository.cpp.mustache | Fixed | Extended row 5's fix to the negated branch, matching read_latest/read_all/remove. Dormant today (no entity combines shared read scope with workspace_id); verified inert — regenerating refdata and reporting produces no output change from this edit. Commit d328b2671. |
+| 9 | Nit: the 4-way tenant/workspace read-scope filter matrix repeats in every read function | cpp_domain_type_repository.cpp.mustache | Declined (this PR) | Reviewer marked it explicitly not required; noted as a follow-up if the template grows further. |
+
+* Result
+
+15 of ~19 hand-crafted trading instrument sub-types converted to
+codegen models, in three PRs: the equity_position_instrument pilot
+(PR #1857), 5 flat types (PR #1874), and 10 more in PR #1925
+(equity_accumulator, equity_asian_option, equity_barrier_option,
+equity_digital_option, equity_option, equity_swap, fx_asian_forward,
+fx_barrier_option, fx_digital_option, fx_variance_swap). Each
+converted type regenerated zero-diff against its hand-crafted
+original, apart from one systemic template improvement: read_at_version
+is now workspace-scoped for every generated repository (28 total),
+fixed once at the template level rather than per entity.
+
+The remaining 4 (bond, commodity, credit, scripted) plus the
+leg-bearing entities (composite_instrument/composite_leg, swap-leg
+swaps) are deferred to the backlog follow-up
+[[id:2548EE95-7C62-4C48-BA11-2146604B2082][resolve-codegen-gaps-for-remaining-instruments]]:
+bond is the most nested entity in the family (MSVC C1202
+rfl-complexity decomposition), and the leg-bearing entities need a
+service-template extension mechanism the generator does not have yet.
+PR #1925 review endorsed the boundary as a reasonable scope cut.
+
+Verified per acceptance: full build green; ores.trading.{api,core,
+service}.tests green (761 assertions in 186 test cases); NATS
+eventing wired into the running service (round-3 fix, commit
+1ac829bf8); read_at_version workspace isolation fixed at the template
+level (commits 89edb26cc, d328b2671).
+
+One acceptance item remains open: the repository test proving batch
+remove() does not cross workspace boundaries (flagged in PR #1857
+review) was not added -- no test exercises batch remove across
+workspaces today. Tracked with the remaining codegen follow-ups.

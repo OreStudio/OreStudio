@@ -130,7 +130,6 @@ std::string("ANCHOR_OFFSET")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:generator_facet_name: generator
 :END:
 
 ** Repository

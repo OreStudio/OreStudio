@@ -17,88 +17,104 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Asian Forward instrument.
  *
- * Routes: FxAverageForward, FxTaRF (Target Accrual Redemption Forward).
- *
- * Complex observation schedules and range bounds are a Phase 2 coverage gap.
- * fx_index captures Underlying.Name for the FX fixing source.
+ * Routes ORE product types: FxAverageForward, FxTaRF. fx_index
+ * captures Underlying.Name for the fixing source. The
+ * reference_currency/reference_notional/settlement_currency/
+ * settlement_notional/payment_date/long_short fields are
+ * FxAverageForward-specific; currency/fixing_amount/target_amount/
+ * strike are FxTaRF-specific (empty/absent for FxAverageForward).
+ * Complex observation schedules and range bounds are not modelled in
+ * Phase 2.
  */
 struct fx_asian_forward_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief FX index / underlying name (e.g. FX-TR20H-EUR-USD).
+     * @brief Fixing source index (Underlying.Name from ORE XML).
      */
     std::string fx_index;
 
-    // FxAverageForward-specific fields
     /**
-     * @brief Reference (fixing) currency for FxAverageForward.
+     * @brief Currency the average is computed on (FxAverageForward).
      */
     std::string reference_currency;
 
     /**
-     * @brief Reference notional amount for FxAverageForward.
+     * @brief Notional in reference_currency (FxAverageForward).
      */
     std::optional<double> reference_notional;
 
     /**
-     * @brief Settlement currency for FxAverageForward.
+     * @brief Currency of the settlement payment (FxAverageForward).
      */
     std::string settlement_currency;
 
     /**
-     * @brief Settlement notional amount for FxAverageForward.
+     * @brief Notional in settlement_currency (FxAverageForward).
      */
     std::optional<double> settlement_notional;
 
     /**
-     * @brief Payment date for FxAverageForward (ISO 8601 date string).
+     * @brief Settlement payment date (ISO 8601 date string).
      */
     std::string payment_date;
 
     /**
-     * @brief Position direction for FxAverageForward: Long or Short.
+     * @brief Position direction: Long or Short. Hardcoded to Long by the mapper.
      */
     std::string long_short;
 
-    // FxTaRF-specific fields
     /**
-     * @brief Settlement currency for FxTaRF.
+     * @brief Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
      */
     std::string currency;
 
     /**
-     * @brief Per-fixing notional amount for FxTaRF.
+     * @brief Per-fixing target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
     std::optional<double> fixing_amount;
 
     /**
-     * @brief Profit cap (target amount) for FxTaRF.
+     * @brief Total target amount (FxTaRF-specific). Absent for FxAverageForward.
      */
     std::optional<double> target_amount;
 
     /**
-     * @brief Fixed strike rate for FxTaRF.
+     * @brief Target strike level (FxTaRF-specific). Absent for FxAverageForward.
      */
     std::optional<double> strike;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_asian_forward_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_asian_forward_instrument&) {
+    return "ores.trading.fx_asian_forward_instrument";
+}
 
 }
 

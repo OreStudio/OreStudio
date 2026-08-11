@@ -68,7 +68,8 @@ std::chrono::year_month_day resolve_tenor_date(const curve_republish_refdata_con
                             ctx.convention,
                             find_resolution(ctx, code),
                             ctx.horizon,
-                            ctx.horizon);
+                            ctx.horizon,
+                            ctx.schedule_dates);
 }
 
 std::vector<bootstrap_pillar> resolve_bootstrap_pillars(

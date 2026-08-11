@@ -37,6 +37,8 @@ For the codegen scripts that generate /code/ (not docs) see the
 - [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual chapter?]] — turns a
   chapter's placeholders into real, cropped, correctly-named images
   via the QA Validation Runner.
+- [[id:DE7C2BC5-3C21-4A8F-8C2A-7A8800F1FCF2][How do I clean code comments?]] — the cleanup pass of the
+  code-review-comments skill: scope, rules, preserve, report.
 
 * Maintenance
 

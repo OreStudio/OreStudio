@@ -22,8 +22,7 @@ amounts; there is no separate strike field in ORE's FxOptionData.
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:   trading-instrument
 :END:
 
 * Natural keys
@@ -200,7 +199,6 @@ Optional free-text description.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_fx_vanilla_option_instruments_tbl
-:party_id_from_session: true
 :END:
 
 ** Checks

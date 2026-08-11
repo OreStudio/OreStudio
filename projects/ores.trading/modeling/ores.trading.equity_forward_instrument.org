@@ -21,8 +21,7 @@ Represents EquityForward trades.
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:   trading-instrument
 :END:
 
 * Natural keys
@@ -180,7 +179,6 @@ Optional free-text description.
 ** Flags
 :PROPERTIES:
 :tablename: ores_trading_equity_forward_instruments_tbl
-:party_id_from_session: true
 :END:
 
 ** Checks

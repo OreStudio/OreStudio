@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE
+:END:
+#+title: Profile: Trading instrument
+#+description: Flat ORE trading instrument sub-types: identity + audit field groups, tenant+workspace scope, party_id from session, no Qt surface.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Models a flat ORE trading instrument sub-type: a single-row instrument
+record with an identity group (=instrument_id=, =trade_type_code=,
+=party_id=, =trade_id=), an audit group, and the instrument's own flat
+payoff/term fields, scoped to both tenant and workspace (instruments
+are curated per trading desk/workspace). Party is stamped from the
+session GUC; the trade type is validated at insert time against the
+trade-types lookup. No Qt surface — the per-instrument forms are
+hand-crafted in =ores.qt= and consume the generated messaging
+protocol. Discovered as a genuine recurring combination across the
+=port-trading-instruments-to-codegen= conversion work: 11 converted
+instruments (=equity_position=, =fx_forward=, =equity_forward=,
+=fx_accumulator=, =fx_vanilla_option=, =fx_variance_swap=,
+=equity_swap=, =equity_variance_swap=, =fx_barrier_option=,
+=fx_digital_option=, =fx_asian_forward=) share this exact
+configuration, which is the bar this catalogue sets for naming a
+profile rather than leaving it as unremarked repetition.
+
+* Reference entity
+
+[[id:E295362C-9B49-4637-9F2C-23EBC6C1C98F][equity_position_instrument]] — the pilot conversion (PR #1857) that
+established the instrument model shape: identity group, audit group,
+batch read, generator facet, and the per-entity NATS eventing facet.
+
+* Assignments
+
+One row per feature this profile fixes a value for — any feature not listed
+here is left to the model's own choice. Feature names are literal —
+exactly what [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] documents them as, so this
+table can be read directly by whatever eventually resolves
+=:profile:= bindings, with no translation layer:
+
+| Feature | Value |
+|------+-------|
+| [[id:A7223BE6-4D0F-47CE-8E31-9D896D970CB3][has_tenant_id]] | true |
+| [[id:D749CDC3-A26E-44EF-BD68-178CE0F909EB][has_workspace_id]] | true |
+| [[id:DDB365AA-E27A-42EA-84E2-1B316106363E][party_id_from_session]] | true |
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.

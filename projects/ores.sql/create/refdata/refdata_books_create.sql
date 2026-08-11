@@ -95,17 +95,6 @@ begin
     -- Validate workspace_id
     NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
 
-    -- Validate parent_portfolio_id (soft FK to ores_refdata_portfolios_tbl)
-    if not exists (
-        select 1 from ores_refdata_portfolios_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.parent_portfolio_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.', NEW.parent_portfolio_id
-            using errcode = '23503';
-    end if;
-
     -- Validate party_id (soft FK to ores_refdata_parties_tbl)
     if not exists (
         select 1 from ores_refdata_parties_tbl
@@ -114,6 +103,17 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate parent_portfolio_id (soft FK to ores_refdata_portfolios_tbl)
+    if not exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.parent_portfolio_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid parent_portfolio_id: %. No active portfolio found with this id.', NEW.parent_portfolio_id
             using errcode = '23503';
     end if;
 

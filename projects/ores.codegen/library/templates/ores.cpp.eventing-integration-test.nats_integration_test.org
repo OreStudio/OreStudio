@@ -63,6 +63,17 @@ The full template source. Edit here and re-tangle with
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
 {{/seed_country_sentinel}}
+{{#seed_parent_country_sentinel}}
+// FK-parent sentinel seed: a seeded calendar parent's insert trigger
+// validates country_code against the countries table for the write
+// tenant, and the synthetic calendar generator always emits the ZZ
+// sentinel -- seed it before the parent write or the parent insert is
+// rejected. Like the entity-level sentinel seed, the country generator
+// and repository are used regardless of the child's generator facet,
+// hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
+{{/seed_parent_country_sentinel}}
 {{#seed_currency}}
 // Aggregation-currency seed ({{entity_title}}'s insert trigger validates
 // aggregation_ccy against the active currencies for the write tenant,
@@ -162,6 +173,9 @@ using ores::{{component}}::repository::{{entity_singular}}_repository;
 {{#seed_country_sentinel}}
 using ores::refdata::repository::country_repository;
 {{/seed_country_sentinel}}
+{{#seed_parent_country_sentinel}}
+using ores::refdata::repository::country_repository;
+{{/seed_parent_country_sentinel}}
 {{#seed_currency}}
 using ores::refdata::repository::currency_repository;
 {{/seed_currency}}
@@ -209,7 +223,7 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         });
 
     event_source.register_mapping<ores::{{component}}::eventing::{{entity_singular}}_changed_event>(
-        "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+        "ores.{{component}}.{{entity_singular}}", "{{sql_name_base}}");
 
     // 2. Subscribe as an external observer would, on the relative subject --
     // client::subscribe() prepends the subject_prefix itself.
@@ -298,6 +312,17 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     {{var}}_repo.write(party_ctx, {{var}});
     {{parent_var}}.{{column}} = {{var}}.{{target_column}};
 {{/parent_required_fks}}
+{{#parent_seed_country_sentinel}}
+    // The parent calendar's insert trigger validates country_code
+    // against the countries table for the write tenant, and the
+    // synthetic calendar generator always emits the ZZ sentinel --
+    // seed it before the parent write or the parent insert is
+    // rejected. Distinct name from the entity-level sentinel seed
+    // block: both are in scope when the entity also carries the
+    // seed_country_sentinel flag.
+    country_repository parent_cty_repo;
+    parent_cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
+{{/parent_seed_country_sentinel}}
     ores::{{component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
     {{column}}_repo.write(party_ctx, {{column}}_parent);
     v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{column}}_parent.{{target_column}};

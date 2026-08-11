@@ -23,10 +23,11 @@ Implements =register_<entity>_event_mapping()=: registers the entity's
 Postgres NOTIFY channel with the =postgres_event_source=, then subscribes
 the resulting in-process =event_bus= event and republishes it to NATS via
 the shared =ores.eventing.core= =publish_entity_event= helper. The channel
-name (=product_component_entity_plural=, e.g. =ores_refdata_purpose_types=)
-matches exactly what the =notify_trigger= SQL archetype emits in its
-=pg_notify()= call — both derive from the same three model fields, so
-they can never drift apart.
+name (=sql_name_base=, e.g. =ores_refdata_purpose_types=) matches
+exactly what the =notify_trigger= SQL archetype emits in its
+=pg_notify()= call — both derive from the same =sql_name_base=, the
+=:tablename:=-derived base that keeps every object name within
+PostgreSQL's 63-byte identifier limit, so they can never drift apart.
 
 * The ores.cpp.nats-event-registrar.nats_event_registrar_implementation archetype
 
@@ -51,7 +52,7 @@ register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& e
                                            ev::service::event_bus& event_bus,
                                            ores::nats::service::client& nats) {
     ev::service::registrar::register_mapping<{{component}}::eventing::{{entity_singular}}_changed_event>(
-        event_source, "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+        event_source, "ores.{{component}}.{{entity_singular}}", "{{sql_name_base}}");
 
     return event_bus.subscribe<{{component}}::eventing::{{entity_singular}}_changed_event>(
         [&nats](const {{component}}::eventing::{{entity_singular}}_changed_event& e) {

@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/leg_type.hpp"
 #include "ores.refdata.api/domain/leg_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/leg_type_changed_event.hpp"
-#include "ores.refdata.api/generator/leg_type_generator.hpp"
+#include "ores.refdata.api/generators/leg_type_generator.hpp"
 #include "ores.refdata.core/repository/leg_type_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -74,7 +74,7 @@ ores::nats::config::nats_options test_nats_options() {
 
 }
 
-using namespace ores::refdata::generator;
+using namespace ores::refdata::generators;
 using ores::refdata::domain::leg_type;
 using ores::refdata::repository::leg_type_repository;
 using ores::testing::scoped_database_helper;

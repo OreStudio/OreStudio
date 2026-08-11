@@ -46,10 +46,8 @@ domain::portfolio generate_synthetic_portfolio(utility::generation::generation_c
     r.name = std::string(faker::company::companyName()) + " Portfolio" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = std::nullopt;
-    r.owner_unit_id = // nullopt, not a random UUID: the insert trigger's soft-FK existence
-                      // check would reject any id that isn't an active business unit (and no
-                      // synthetic business unit exists), so a generated portfolio must carry
-                      // no owner rather than a fabricated one.
+    r.owner_unit_id = // Left null: optional FK, and the insert trigger rejects ids that do
+                      // not name an active business unit.
         std::nullopt;
     r.purpose_type = std::string("Risk");
     r.aggregation_ccy = // "X-0" is the first code the synthetic currency generator emits: the

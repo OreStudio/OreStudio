@@ -116,8 +116,10 @@ book_repository::read_at_version(context ctx, const std::string& id, std::uint32
     BOOST_LOG_SEV(lg(), debug) << "Reading book at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<book_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<book_entity, domain::book>(
@@ -131,6 +133,7 @@ book_repository::read_at_version(context ctx, const std::string& id, std::uint32
         return std::nullopt;
     return entities.front();
 }
+
 
 std::vector<domain::book>
 book_repository::read_latest_by_parent_portfolio_id(context ctx,
@@ -209,7 +212,6 @@ std::vector<domain::book> book_repository::read_by_parent_portfolio_id_as_of(
         lg(),
         "Reading books as of window by parent_portfolio_id.");
 }
-
 
 void book_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book. " << "id: " << id;

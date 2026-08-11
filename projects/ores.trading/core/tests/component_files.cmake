@@ -17,12 +17,22 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "equity_accumulator_instrument_eventing_integration_tests.cpp"
+    "equity_asian_option_instrument_eventing_integration_tests.cpp"
+    "equity_barrier_option_instrument_eventing_integration_tests.cpp"
+    "equity_digital_option_instrument_eventing_integration_tests.cpp"
     "equity_forward_instrument_eventing_integration_tests.cpp"
+    "equity_option_instrument_eventing_integration_tests.cpp"
     "equity_position_instrument_eventing_integration_tests.cpp"
+    "equity_swap_instrument_eventing_integration_tests.cpp"
     "equity_variance_swap_instrument_eventing_integration_tests.cpp"
     "fx_accumulator_instrument_eventing_integration_tests.cpp"
+    "fx_asian_forward_instrument_eventing_integration_tests.cpp"
+    "fx_barrier_option_instrument_eventing_integration_tests.cpp"
+    "fx_digital_option_instrument_eventing_integration_tests.cpp"
     "fx_forward_instrument_eventing_integration_tests.cpp"
     "fx_vanilla_option_instrument_eventing_integration_tests.cpp"
+    "fx_variance_swap_instrument_eventing_integration_tests.cpp"
     "main.cpp"
     "repository_activity_type_repository_tests.cpp"
     "repository_equity_accumulator_instrument_repository_tests.cpp"

@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98
+:END:
+#+title: Story: Feed lifecycle harmonization: asset-class-agnostic feed control-plane
+#+description: The folder-scoped and per-config feed control-plane (start/stop/list, folder cascade, auto-start) is implemented per asset class: FX (fx_spot_generation_config, feed_controller, market_feed_config_handler, feed_ingest_loop) and IR curves (ir_curve_generation_config, curve_feed_controller, ir_curve_feed_config_handler, curve_feed_ingest_loop) duplicate the same lifecycle machinery, the folder cascade resolves only FX rows, ores.shell has no IR curve commands, and Qt/tenant_handler re-implement the tree-walk-and-fan-out client-side. All control-plane verbs must work for any asset class; a new asset class must plug in via one factory registration (the feed-manager pattern from the original FX PoC architecture doc, open design question 8) without touching lifecycle code again.
+#+type: story
+#+level: s2
+#+filetags: :synthetic:marketdata:feeds:shell:refactor:sprint_25:v0:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The feed control-plane is asset-class-agnostic. One folder-scoped
+start/stop request walks the folder subtree once, server-side, and
+starts every feed under it regardless of asset class; one per-config
+start/stop/list is keyed by config_id and resolved server-side; one
+lifecycle controller, one auto-start, and one ingest loop serve every
+feed kind. ores.shell has feed verbs for every asset class (including
+the currently missing IR curve commands). The seam is one common feed
+interface plus a per-kind factory: a new asset class plugs in with a
+config table, a producer behind the common interface, and one factory
+registration — the lifecycle machinery is not touched again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Tasks decomposed (8); the seam task is the entry point. |
+| Waiting on    | Nothing.                               |
+| Next          | Start task: feed producer seam.         |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- Folder-scoped start/stop walks the folder subtree once, server-side, and starts
+  every feed under it — FX and IR alike. A folder containing both kinds starts both.
+- No client-side enumeration remains: the Qt MarketSimulatorWindow folder branch and
+  per-config IR loop, and the tenant_handler two-path provisioning, are deleted; the
+  clients send the folder/config request and the server does the rest.
+- Per-config start/stop/list works for every asset class, keyed by config_id, resolved
+  server-side with permission checks (the IR curve pattern). The FX
+  market_feed_config_handler client-supplied-params path is deleted.
+- ores.shell has feed verbs for every asset class: folder start/stop and per-config
+  start/stop/list, including the IR curve commands that are missing today. No shell
+  command enumerates asset classes.
+- One lifecycle controller, one auto-start with uniform startability (enabled +
+  auto_start + enabled container; auto_start is added to the FX config for uniform
+  semantics), and one ingest loop over a unified subject scheme (kind in the subject,
+  one JetStream stream).
+- The seam is a factory: a new asset class is a config table, a producer implementing
+  the common feed interface, and one factory registration. Lifecycle, control-plane,
+  auto-start, ingest, shell, and client code do not change for a new asset class.
+
+* Analysis
+
+The folder-cascade defect is a symptom of lifecycle machinery built per asset class.
+The original FX PoC architecture doc (fx_spot_synthetic_poc_architecture.org) specified
+one market_feed_config with a feed_type discriminator and a feed manager acquiring
+producers via a registered factory (open design question 8). The PoC resolution —
+synthetic service calls start/stop directly — was adopted as permanent, and every
+subsequent piece was re-implemented per kind instead of behind that seam.
+
+The config tables are already ~80% common (id, tenant_id, party_id, config_id to the
+market_data_generation_config container, source_name, process_type, ticks_per_hour,
+price_source, vintage_source/date, enabled, folder_id, audit) plus per-kind children
+(gmm_component vs ir_curve_template_entry + parameter values) and per-kind series
+identity (ore_key vs qualifier+role). The duplication lives in the machinery:
+
+- feed_controller vs curve_feed_controller (identical running map, thread-per-feed,
+  start/stop/list/join; IR adds qualifier+role conflict, FX adds binding auto-creation,
+  sandbox subject, status loop).
+- auto_start_enabled_feeds vs auto_start_enabled_ir_curve_feeds (identical walk,
+  different filter semantics — auto_start exists on IR only).
+- market_feed_config_handler vs ir_curve_feed_config_handler — opposite designs: FX
+  is a stateless pass-through with no auth ("no JWT auth or DB context is required");
+  IR resolves everything server-side from config_id. The IR pattern is the correct one.
+- The folder cascade resolves fx_spot_generation_config rows only; the IR pass would
+  have been a third copy of the build sequence.
+- feed_ingest_loop vs curve_feed_ingest_loop (different subjects, different streams,
+  FX republishes and IR does not).
+- Vintage availability, permission gating, and the subject/stream scheme are likewise
+  duplicated per kind.
+- The producer seam exists half-built: IFxSpotFeed is implemented by FX only; IR has
+  no interface and no factory exists.
+
+Target: one feed description at three levels — identity/lifecycle common data (per-kind
+tables, kept; optionally a UNION view for a single-query cascade), asset-class data
+per-kind children, producer math per-kind code behind the common interface. The factory
+is the clear setup the codebase never had: config table + producer + one registration.
+
+* Decisions
+
+- Code-first: config tables stay per-kind. The common feed description lives in the
+  interface and factory, not in a shared table. A UNION view over the config tables is
+  acceptable if a single-query cascade is wanted later. No schema migration.
+- Scope: the seam and the harmonized lifecycle. Order: seam (interface + factory) and
+  folder cascade first — that fixes the reported defect; then controller, auto-start,
+  and per-config control-plane collapse; then ores.shell verbs; then client-side
+  enumeration removal; ingest unification last.
+- All control-plane verbs (start/stop/list, folder, auto-start) are asset-class
+  agnostic by construction. A new asset class plugs in via the factory.
+
+* References
+
+- [[id:E5553757-7D88-4B58-8057-C4A3230EE1AA][ores.shell folder feeds: start/stop folder must cover IR curve configs too]]
+  (backlog capture folded into this story)
+- [[file:../../../../../knowledge/domain/fx_spot_synthetic_poc_architecture.org][FX spot synthetic PoC architecture]] — the feed manager / design question 8 this story finally builds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:050DF944-CCB1-4171-B51D-013D798DCF89][The feed seam: common producer interface + per-kind factory]] | BACKLOG | | | Build the seam the original FX PoC architecture doc specified (design question 8, never implemented): generalize IFxSpotFeed into a common feed interface (source_name, qualifier, role, start, stop) implemented by both fx_spot_feed and ir_curve_feed, plus a factory mapping kind to producer builder, registered per asset class. |
+| [[id:9E2344CF-9A66-4742-9DE6-6E2AFBF8B3B1][Folder cascade covers every asset class via the factory]] | BACKLOG | | | The start/stop feeds under folder request walks the folder subtree once and starts every feed under it, dispatching through the factory to the per-kind producer. No client-side enumeration. Fixes the reported defect: today the cascade resolves only fx_spot_generation_config rows; the IR pass would have been a third copy of the build sequence. |
+| [[id:1D756D47-9473-4A99-8A47-E3E4906DA4C3][One lifecycle controller for all feed kinds]] | BACKLOG | | | Collapse feed_controller and curve_feed_controller into one controller: running map keyed by source_name, thread-per-feed, start/stop/list/join. Conflict semantics (IR qualifier plus role) expressed through the feed's own conflict key on the common interface, not a second class. FX extras (feed-binding auto-creation, sandbox subject, status loop) become uniform behaviour. |
+| [[id:E1F81BE2-3D7D-4CF3-963F-3DD51D980458][One auto-start with uniform startability semantics]] | BACKLOG | | | Collapse auto_start_enabled_feeds and auto_start_enabled_ir_curve_feeds into one boot-time walk with uniform startability: enabled, auto_start (added to the FX config for uniform semantics) and an enabled container. Skip-with-warn and running-count reporting become common code. |
+| [[id:FD3C0B97-3965-48D6-972E-7D8C497519E2][One per-config control-plane keyed by config_id, server-side resolution]] | BACKLOG | | | One start/stop/list handler for all kinds, following the IR pattern: the client sends config_id, the server resolves config plus children plus refdata context, checks permissions, and starts the producer via the factory. Delete the FX market_feed_config_handler client-supplied-params path (the no-auth anti-pattern). |
+| [[id:26D67D72-1136-4100-BFED-C081246B5ADB][ores.shell: feed verbs for every asset class]] | BACKLOG | | | ores.shell gains the missing IR curve feed commands and every control-plane verb works regardless of asset class: folder start/stop (one request, server-side cascade) and per-config start/stop/list keyed by config_id. No shell command enumerates asset classes; new asset classes plug in via the factory. |
+| [[id:60AA1609-3956-41AB-A5B8-0A530F031EF4][Delete client-side feed enumeration]] | BACKLOG | | | Remove the tree-walk-and-fan-out re-implementations in clients now that the server cascades folders itself: the Qt MarketSimulatorWindow folder branch plus per-config IR loop (and its auto_start client-side filter) and the start_synthetic_theme_feeds two-path provisioning in tenant_handler. Clients send the folder/config request; the server does the rest. |
+| [[id:F550327A-001F-460F-A490-4EBF94642F31][One feed ingest loop over a unified subject scheme]] | BACKLOG | | | Collapse feed_ingest_loop and curve_feed_ingest_loop into one persistence path: the kind is part of the tick subject instead of a second subject family and a second JetStream stream. Uniform republish and observation handling. |
+
+* Out of scope
+
+- Schema unification (a shared synthetic_feed base table with a kind discriminator).
+  Decided against: per-kind tables remain; the common shape lives in the seam.
+- The per-kind producer math itself (process classes, tick derivation, series-identity
+  mapping) stays per-kind code behind the common interface — that is the accepted cost.
+- The FOMC bootstrap segment (task [[id:3E8D81D7-35D1-420F-9A0C-CE45D51C5C0E][FOMC bootstrap segment]])
+  is blocked on this story's folder-cascade and control-plane tasks, but its content is
+  not part of this story.

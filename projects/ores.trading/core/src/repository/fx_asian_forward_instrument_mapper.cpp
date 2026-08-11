@@ -37,11 +37,11 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
     r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.identity.trade_id = v.trade_id.has_value() ?
                               std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
                               std::nullopt;
-    r.identity.trade_type_code = v.trade_type_code;
     r.fx_index = v.fx_index;
     r.reference_currency = v.reference_currency.value_or("");
     r.reference_notional = v.reference_notional;
@@ -73,11 +73,11 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
     r.tenant_id = v.identity.tenant_id.to_string();
     r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
     r.version = v.identity.version;
+    r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
     r.trade_id = v.identity.trade_id.has_value() ?
                      std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
                      std::nullopt;
-    r.trade_type_code = v.identity.trade_type_code;
     r.fx_index = v.fx_index;
     r.reference_currency =
         v.reference_currency.empty() ? std::nullopt : std::optional(v.reference_currency);

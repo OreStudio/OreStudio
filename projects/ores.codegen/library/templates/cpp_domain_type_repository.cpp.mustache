@@ -334,14 +334,30 @@ std::optional<domain::{{entity_singular}}>
                                << " version: " << version;
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && {{{primary_key.where_and}}} && "version"_c == version) |
+        sqlgen::limit(1);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("tenant_id"_c == tid && {{{primary_key.where_and}}} && "version"_c == version) |
         sqlgen::limit(1);
+{{/has_workspace_id}}
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
+{{#has_workspace_id}}
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("workspace_id"_c == wid && {{{primary_key.where_and}}} && "version"_c == version) |
+        sqlgen::limit(1);
+{{/has_workspace_id}}
+{{^has_workspace_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{primary_key.where_and}}} && "version"_c == version) |
         sqlgen::limit(1);
+{{/has_workspace_id}}
 {{/read_tenant_filtered}}
 
     const auto entities = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
@@ -701,7 +717,7 @@ std::vector<ores::utility::domain::hierarchy_flat_row>
 
     const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
     const auto root_str = boost::uuids::to_string(root_id);
-    const std::string sql = "SELECT * FROM {{product}}_{{component}}_{{entity_plural}}_hierarchy_fn('" +
+    const std::string sql = "SELECT * FROM {{sql_name_base}}_hierarchy_fn('" +
                             tenant_str + "'::uuid, '" + root_str + "'::uuid, " +
                             (from_root ? "true" : "false") + ")";
 

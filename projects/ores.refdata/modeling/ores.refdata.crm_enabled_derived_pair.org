@@ -126,6 +126,7 @@ faker::datatype::boolean()
 ** config_id
 :PROPERTIES:
 :table:         ores_refdata_crm_topology_configs_tbl
+:parent_entity: crm_topology_config
 :error_message: Invalid config_id: %. No active crm_topology_config found with this id.
 :nullable:      false
 :END:

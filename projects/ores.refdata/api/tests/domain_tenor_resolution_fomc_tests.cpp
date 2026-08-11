@@ -28,6 +28,8 @@
 // Obligations covered here:
 //   - contract-signature.ScheduleWalk.nth       (the walk, made executable)
 //   - rule-success.ResolveScheduleStep          (1F, 8F resolve on-or-after spot)
+//   - rule-success.ResolveScheduleStep.CalendarAxisFallback (the 1Y split tenor:
+//     a row with no schedule fields resolves on the calendar axis)
 //   - rule-success.ResolutionRejectedWhenScheduleExhausted (9F > 8 meetings)
 //   - rule-failure.ResolveScheduleStep.* (the three resolution-row/data
 //     guards: missing schedule_code, missing schedule_step_count, and
@@ -173,6 +175,31 @@ TEST_CASE("SCHEDULE_STEP rejects resolution when the schedule is exhausted", tag
                     std::logic_error);
 }
 
+TEST_CASE("SCHEDULE_STEP resolves the 1Y split tenor on the calendar axis", tags) {
+    using namespace std::chrono;
+
+    const auto horizon = year(2026) / month(1) / day(1);
+    const auto spot = year(2026) / month(1) / day(2);
+
+    // The 1Y split pillar: a plain PERIOD tenor whose resolution row
+    // declares no schedule fields, so it resolves on the calendar axis --
+    // 1F..8F walk the FOMC_MEETING schedule, 1Y is spot + its own year
+    // period. The schedule_dates are neither needed nor consulted for it.
+    tenor t;
+    t.code = "1Y";
+    t.kind = "PERIOD";
+    t.unit = "YEAR";
+    t.multiplier = 1;
+
+    tenor_convention_resolution r;
+    r.convention_code = "RATES_SPOT_FOMC";
+    r.tenor_code = "1Y";
+
+    const auto end = resolve_end_date(t, make_fomc_convention(), r, horizon, spot);
+
+    CHECK(end == year(2027) / month(1) / day(2));
+}
+
 TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row", tags) {
     using namespace std::chrono;
 
@@ -180,8 +207,9 @@ TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_code in the row", t
     const auto spot = year(2026) / month(1) / day(2);
 
     // A resolution row that names the walk but not the schedule axis it
-    // walks: the step count alone cannot drive a walk, so the resolution
-    // rejects -- a configuration error, reported as std::logic_error.
+    // walks: with the step count still set, the row declares exactly one of
+    // the two schedule fields -- an inconsistent configuration, so the
+    // resolution rejects as std::logic_error.
     auto resolution = make_fomc_resolution(1);
     resolution.schedule_code = std::nullopt;
 
@@ -201,8 +229,9 @@ TEST_CASE("SCHEDULE_STEP rejects resolution with no schedule_step_count in the r
     const auto spot = year(2026) / month(1) / day(2);
 
     // A resolution row that names the schedule axis but not how many steps
-    // to take along it: the walk has no length, so the resolution rejects
-    // -- a configuration error, reported as std::logic_error.
+    // to take along it: with the schedule code still set, the row declares
+    // exactly one of the two schedule fields -- an inconsistent
+    // configuration, so the resolution rejects as std::logic_error.
     auto resolution = make_fomc_resolution(1);
     resolution.schedule_step_count = std::nullopt;
 

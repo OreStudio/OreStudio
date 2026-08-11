@@ -87,10 +87,10 @@ workspace activation in the Qt client.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Trading instrument codegen pilot landed (equity_position_instrument). |
-| Waiting on    | Nothing directly; most of the remaining ~19 entities depend on a separate pre-existing task (836BB4CE). |
-| Next          | Pick up converting the remaining ~19 trading instrument sub-types. |
-| Last touched  | 2026-08-05                               |
+| Now           | Trading instrument codegen pilot landed (equity_position_instrument); the three instrument-port tasks have been re-parented to the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story in Sprint 25 (see Decisions). |
+| Waiting on    | Nothing directly.                       |
+| Next          | Continue workspace-specific follow-ups (audit-driven items); instrument conversions now track in their own story. |
+| Last touched  | 2026-08-08                               |
 
 * Acceptance
 
@@ -119,9 +119,6 @@ workspace activation in the Qt client.
 |------+-------+-------+-----+-------------|
 | [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | DONE | 2026-08-04 | 2026-08-04 | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
 | [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | DONE | 2026-08-04 | 2026-08-05 | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
-| [[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][Decide fate of ~20 hand-crafted trading instrument sub-types missing codegen models]] | DONE | 2026-08-05 | 2026-08-05 | ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) carry workspace_id in SQL but have no codegen model at all. Decide whether they get codegen models or stay permanently hand-crafted, and verify their hand-written code filters by workspace_id correctly. (book/portfolio, originally scoped here, turned out to already be correctly covered via the fk-scoped-child profile and were regenerated/verified in PR #1846.) |
-| [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][Convert remaining ~19 hand-crafted trading instrument sub-types to codegen models]] | STARTED | 2026-08-05 | | Bring the remaining ~19 hand-crafted trading instrument sub-types (bond, most equity_*/fx_* variants, commodity, composite + composite_legs, credit, scripted, swap_legs) under codegen, following the equity_position_instrument pilot's proven pattern. Most of these use the legacy Primary key heading format and need task 836BB4CE resolved or worked around per-entity first. |
-| [[id:02BC190D-6B74-4058-9418-E898CBB07216][Wire NATS eventing templates into codegen and generate DB-write-to-NATS integration tests]] | DONE | 2026-08-06 | 2026-08-07 | Wire the existing but unused nats-changed-event/nats-event-registrar templates into the generator behind a per-entity opt-in, then add a new test facet that generates the write-entity-observe-NATS-notification integration test proven by hand against business_unit. |
 
 * Decisions
 
@@ -207,6 +204,22 @@ workspace activation in the Qt client.
   task filed to convert the remaining ~19 entities, most of which
   additionally need task 836BB4CE (legacy Primary key heading) landed
   or worked around per-entity first.
+
+- *Instrument-port tasks re-parented* (2026-08-08): the three
+  instrument-codegen tasks this story carried -- the decision/pilot
+  ([[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][Decide fate of ~20
+  hand-crafted trading instrument sub-types missing codegen models]]),
+  the conversions ([[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][Convert
+  remaining ~19 hand-crafted trading instrument sub-types to codegen
+  models]]), and the NATS eventing facet work
+  ([[id:02BC190D-6B74-4058-9418-E898CBB07216][Wire NATS eventing
+  templates into codegen and generate DB-write-to-NATS integration
+  tests]]) -- moved UUID-intact via =compass task move= into the new
+  [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments
+  to codegen]] story in Sprint 25, where the bulk of the work now
+  tracks. This story keeps its workspace-specific tasks (audit,
+  inheritance query). The decision record itself stays here as
+  history.
 
 * Out of scope
 

@@ -177,7 +177,7 @@ public:
                 static_cast<std::size_t>(preview_ir_curve_shape_request::max_entries))
                 throw std::invalid_argument("too many Curve Template entries");
 
-            auto refctx = build_ir_curve_refdata_context(ctx);
+            auto refctx = build_ir_curve_refdata_context(ctx, "RATES_SPOT_FORWARD");
             if (!refctx)
                 throw std::runtime_error("RATES_SPOT_FORWARD tenor convention not found");
 

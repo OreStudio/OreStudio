@@ -17,21 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_BARRIER_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Equity Barrier Option instrument.
  *
- * Represents EquityBarrierOption, EquityDoubleBarrierOption, and
- * EquityEuropeanBarrierOption trades.
+ * Routes ORE product types: EquityBarrierOption,
+ * EquityDoubleBarrierOption, EquityEuropeanBarrierOption.
+ * underlying_name captures the ORE equity Name identifier.
+ * lower_barrier/lower_barrier_type hold the single barrier level and
+ * its UpIn/UpOut/DownIn/DownOut direction; upper_barrier and
+ * upper_barrier_type are double-barrier-only (null/empty for a single
+ * barrier); rebate is optional. expiry_date is an ISO 8601 date
+ * string.
  */
 struct equity_barrier_option_instrument final {
     instrument_identity identity;
@@ -62,7 +69,7 @@ struct equity_barrier_option_instrument final {
     double strike = 0.0;
 
     /**
-     * @brief ISO 8601 date string.
+     * @brief Expiry date (ISO 8601 date string).
      */
     std::string expiry_date;
 
@@ -72,7 +79,7 @@ struct equity_barrier_option_instrument final {
     std::string exercise_type;
 
     /**
-     * @brief Long or Short.
+     * @brief Position direction: Long or Short.
      */
     std::string long_short;
 
@@ -87,7 +94,7 @@ struct equity_barrier_option_instrument final {
     std::string lower_barrier_type;
 
     /**
-     * @brief Double-barrier only.
+     * @brief Double-barrier only: upper barrier level.
      */
     std::optional<double> upper_barrier;
 
@@ -96,12 +103,28 @@ struct equity_barrier_option_instrument final {
      */
     std::string upper_barrier_type;
 
+    /**
+     * @brief Optional rebate paid when the barrier is breached.
+     */
     std::optional<double> rebate;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for equity_barrier_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const equity_barrier_option_instrument&) {
+    return "ores.trading.equity_barrier_option_instrument";
+}
 
 }
 

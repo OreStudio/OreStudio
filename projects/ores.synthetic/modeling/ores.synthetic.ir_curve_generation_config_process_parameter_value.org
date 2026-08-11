@@ -135,10 +135,21 @@ conventions doc for the codegen-side rule.
 
 ** parameter_definition_id
 :PROPERTIES:
-:table:         ores_synthetic_yield_curve_process_parameter_definitions_tbl
-:error_message: Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id.
-:nullable:      false
+:table:             ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:error_message:     Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id.
+:nullable:          false
+:use_system_tenant: true
 :END:
+
+The definitions are system-tenant reference data: the populate script
+seeds them once under the system tenant, and the publish function
+(=ores_synthetic_publish_theme_from_dq_fn=) resolves them by name when
+inserting tenant rows. The default tenant-scoped check
+(=NEW.tenant_id=) would therefore reject every theme insert;
+=:use_system_tenant:= resolves against
+=ores_utility_system_tenant_id_fn()= instead, matching the
+=process_type= validation trigger on the same table. =config_id= above
+keeps the default resolution: the config row is a genuine tenant row.
 
 * Insert trigger
 ** Validations

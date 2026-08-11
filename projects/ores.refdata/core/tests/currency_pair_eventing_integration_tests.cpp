@@ -39,6 +39,10 @@
 // repository live in the same component as the child.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_currency_pair_classifications_tbl): the parent's own
+// generator and repository live in the same component as the child.
+#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
+#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -155,6 +159,16 @@ TEST_CASE("write_currency_pair_publishes_nats_changed_event", tags) {
     ores::refdata::repository::currency_repository quote_currency_repo;
     quote_currency_repo.write(party_ctx, quote_currency_parent);
     v.quote_currency = quote_currency_parent.iso_code;
+    // Seed the active currency_pair_classification row
+    // ores_refdata_currency_pair_classifications_tbl references: the insert trigger's existence
+    // check rejects a synthetic key that matches no active row, so the parent must be written
+    // first.
+    auto classification_parent =
+        ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
+    classification_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_pair_classification_repository classification_repo;
+    classification_repo.write(party_ctx, classification_parent);
+    v.classification = classification_parent.code;
     const auto id_str = v.pair_code;
     BOOST_LOG_SEV(lg, debug) << "Currency Pair: " << v;
 

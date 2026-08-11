@@ -1421,6 +1421,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'generator_facet_name': de.get('generator_facet_name'),
         'has_audit_group': bool(de.get('domain_audit_group')),
         'has_identity_group': bool(de.get('domain_identity_group')),
+        'seed_country_sentinel': bool(de.get('seed_country_sentinel')),
         'component': de.get('component'),
         'mandatory_fks': [
             f for f in de.get('foreign_keys') or [] if not f.get('nullable', False)
@@ -2480,6 +2481,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk['parent_is_party'] = parent['entity_singular'] == 'party'
                 fk['parent_has_audit_group'] = parent['has_audit_group']
                 fk['parent_has_identity_group'] = parent['has_identity_group']
+                fk['parent_seed_country_sentinel'] = parent['seed_country_sentinel']
                 # The parent may itself have a mandatory party_id FK (e.g.
                 # portfolio -- session-set in production): the template then
                 # seeds a party too, so the parent's own insert passes its
@@ -2532,6 +2534,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             domain_entity['seed_party'] = any(
                 fk.get('parent_is_party') or fk.get('parent_requires_party')
                 for fk in fks)
+            domain_entity['seed_parent_country_sentinel'] = any(
+                fk.get('parent_seed_country_sentinel') for fk in fks)
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         domain_entity['index_name_prefix'] = sql_section.get(

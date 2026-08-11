@@ -166,14 +166,24 @@ resolve_end_date(const tenor& t,
     const auto anchor_date = resolve_anchor_date(anchor_code, horizon, spot);
 
     if (convention.resolution_algorithm == "SCHEDULE_STEP") {
-        if (!resolution->schedule_code)
+        // A row either declares the schedule axis (schedule_code +
+        // schedule_step_count both set) or it does not. Declaring exactly one
+        // of the two is an inconsistent configuration, and rejects. Declaring
+        // neither is the axis fallback: the row resolves on the calendar axis
+        // -- anchor + offset, exactly as ANCHOR_OFFSET resolves it. That is
+        // how the FOMC segment's split tenor works: 1F..8F walk the
+        // FOMC_MEETING schedule, while the 1Y split pillar is a plain
+        // PERIOD tenor with a membership-only row.
+        const bool has_schedule_code = resolution->schedule_code.has_value();
+        const bool has_step_count = resolution->schedule_step_count.has_value();
+        if (has_schedule_code != has_step_count)
             throw std::logic_error("SCHEDULE_STEP resolution for tenor '" + t.code +
                                    "' under convention '" + convention.code +
-                                   "' has no schedule_code in its resolution row");
-        if (!resolution->schedule_step_count)
-            throw std::logic_error("SCHEDULE_STEP resolution for tenor '" + t.code +
-                                   "' under convention '" + convention.code +
-                                   "' has no schedule_step_count in its resolution row");
+                                   "' declares exactly one of schedule_code / "
+                                   "schedule_step_count; either both or neither must be set");
+
+        if (!has_schedule_code)
+            return resolve_offset_date(t, resolution, convention, anchor_date);
 
         // Anchor + calendar offset, resolved exactly as ANCHOR_OFFSET resolves
         // them; then the walk starts from that date.

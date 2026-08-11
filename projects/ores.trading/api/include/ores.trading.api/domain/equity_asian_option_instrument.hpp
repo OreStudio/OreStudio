@@ -17,19 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
- * @brief Equity Asian Option instrument.
+ * @brief Asian option on an equity underlying.
  *
- * Represents EquityAsianOption trades.
+ * Routes the ORE product type EquityAsianOption.
+ * underlying_name captures the ORE equity Name identifier;
+ * option_type is Call or Put; exercise_type is European or
+ * American; average_type is Arithmetic or Geometric.
+ * averaging_start_date and averaging_end_date delimit the averaging
+ * period; expiry_date is an ISO 8601 date string.
  */
 struct equity_asian_option_instrument final {
     instrument_identity identity;
@@ -45,7 +52,7 @@ struct equity_asian_option_instrument final {
     std::string currency;
 
     /**
-     * @brief Contract quantity / notional. Must be positive.
+     * @brief Notional amount. Must be positive.
      */
     double notional = 0.0;
 
@@ -55,22 +62,22 @@ struct equity_asian_option_instrument final {
     std::string option_type;
 
     /**
-     * @brief Strike price. Non-negative.
+     * @brief Strike price. Must be non-negative.
      */
     double strike = 0.0;
 
     /**
-     * @brief ISO 8601 date string.
+     * @brief Expiry date (ISO 8601 date string).
      */
     std::string expiry_date;
 
     /**
-     * @brief European, American, or Bermudan.
+     * @brief European or American.
      */
     std::string exercise_type;
 
     /**
-     * @brief Long or Short.
+     * @brief Position direction: Long or Short.
      */
     std::string long_short;
 
@@ -80,19 +87,32 @@ struct equity_asian_option_instrument final {
     std::string average_type;
 
     /**
-     * @brief ISO 8601 date.
+     * @brief Averaging period start (ISO 8601 date string).
      */
     std::string averaging_start_date;
 
     /**
-     * @brief ISO 8601 date.
+     * @brief Averaging period end (ISO 8601 date string).
      */
     std::string averaging_end_date;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for equity_asian_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const equity_asian_option_instrument&) {
+    return "ores.trading.equity_asian_option_instrument";
+}
 
 }
 

@@ -45,6 +45,11 @@
 // and repository headers are needed too.
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+// Grand-parent seeding (ores_refdata_currency_pair_classifications_tbl): the parent's own mandatory
+// soft FKs reference rows the test seeds before the parent, so their generator and repository
+// headers are needed too.
+#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
+#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -166,6 +171,15 @@ TEST_CASE("write_currency_pair_convention_publishes_nats_changed_event", tags) {
     ores::refdata::repository::currency_repository quote_currency_parent_repo;
     quote_currency_parent_repo.write(party_ctx, quote_currency_parent);
     pair_code_parent.quote_currency = quote_currency_parent.iso_code;
+    // Seed the active currency_pair_classification row
+    // ores_refdata_currency_pair_classifications_tbl references: the parent's own existence check
+    // rejects a synthetic key that matches no active row, so the grandparent must be written first.
+    auto classification_parent =
+        ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
+    classification_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_pair_classification_repository classification_parent_repo;
+    classification_parent_repo.write(party_ctx, classification_parent);
+    pair_code_parent.classification = classification_parent.code;
     ores::refdata::repository::currency_pair_repository pair_code_repo;
     pair_code_repo.write(party_ctx, pair_code_parent);
     v.pair_code = pair_code_parent.pair_code;

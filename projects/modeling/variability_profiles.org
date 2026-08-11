@@ -36,6 +36,7 @@ abstract.
 | [[id:9618DCF1-2FE8-4AE2-A841-F671A97E764E][Tenant-scoped junction]] | =currency_calendar= | Plain many-to-many association, tenant-scoped, no Qt surface. The one profile anchored to the =junction= metatype rather than =domain_entity=. |
 | [[id:D8B2F4A6-1C3E-4D5F-9A7B-6E2C8D4F1A3B][UUID-identified lookup]] | =pricing_model_config= | UUID surrogate key, tenant scope, standard Qt tier, no parent or workspace. The UUID-keyed counterpart of =simple-lookup=. |
 | [[id:5D3A6D13-73E0-41A5-9E08-0C8C11BD609E][Artefact staging only]] | =lei_entity= | Enablement-only: no main table, only the artefact/staging table. Carries no feature Assignments -- bind it *alongside* a shape profile (=:profile: simple-lookup, artefact-staging-only=), not in place of one. |
+| [[id:FF6073E5-876C-4ABF-BE80-4C0F3FA2B5FE][Trading instrument]] | =equity_position_instrument= | Flat ORE instrument sub-type: identity + audit field groups, tenant+workspace scope, =party_id= from session, no Qt surface. |
 
 * See also
 

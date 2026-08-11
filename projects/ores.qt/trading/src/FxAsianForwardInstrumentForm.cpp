@@ -22,6 +22,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/InstrumentFormUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
+#include "ores.trading.api/messaging/fx_asian_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ui_FxAsianForwardInstrumentForm.h"
 #include <QComboBox>

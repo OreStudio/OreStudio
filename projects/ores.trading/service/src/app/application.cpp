@@ -30,12 +30,22 @@
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
+#include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_forward_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_barrier_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_digital_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -135,6 +145,36 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto fx_vanilla_option_instrument_sub =
         ores::trading::service::messaging::register_fx_vanilla_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_accumulator_instrument_sub =
+        ores::trading::service::messaging::register_equity_accumulator_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_asian_option_instrument_sub =
+        ores::trading::service::messaging::register_equity_asian_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_barrier_option_instrument_sub =
+        ores::trading::service::messaging::register_equity_barrier_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_digital_option_instrument_sub =
+        ores::trading::service::messaging::register_equity_digital_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_option_instrument_sub =
+        ores::trading::service::messaging::register_equity_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto equity_swap_instrument_sub =
+        ores::trading::service::messaging::register_equity_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_asian_forward_instrument_sub =
+        ores::trading::service::messaging::register_fx_asian_forward_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_barrier_option_instrument_sub =
+        ores::trading::service::messaging::register_fx_barrier_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_digital_option_instrument_sub =
+        ores::trading::service::messaging::register_fx_digital_option_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fx_variance_swap_instrument_sub =
+        ores::trading::service::messaging::register_fx_variance_swap_instrument_event_mapping(
             event_source, event_bus, nats);
     auto party_role_type_sub =
         ores::trading::service::messaging::register_party_role_type_event_mapping(

@@ -17,31 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- FX Asian Forward Instruments Table
---
--- Routes ORE product types: FxAverageForward, FxTaRF.
--- Complex schedules and range bounds are not modelled in Phase 2.
--- fx_index captures Underlying.Name for the fixing source.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * FX Asian Forward Instrument Table
+ *
+ * Routes ORE product types: FxAverageForward, FxTaRF. fx_index
+ * captures Underlying.Name for the fixing source. The
+ * reference_currency/reference_notional/settlement_currency/
+ * settlement_notional/payment_date/long_short fields are
+ * FxAverageForward-specific; currency/fixing_amount/target_amount/
+ * strike are FxTaRF-specific (empty/absent for FxAverageForward).
+ * Complex observation schedules and range bounds are not modelled in
+ * Phase 2.
+ */
 
 create table if not exists "ores_trading_fx_asian_forward_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "fx_index" text not null,
-    -- FxAverageForward-specific
     "reference_currency" text null,
     "reference_notional" numeric(28, 10) null,
     "settlement_currency" text null,
     "settlement_notional" numeric(28, 10) null,
     "payment_date" date null,
     "long_short" text null,
-    -- FxTaRF-specific
     "currency" text null,
     "fixing_amount" numeric(28, 10) null,
     "target_amount" numeric(28, 10) null,
@@ -71,22 +77,18 @@ create unique index if not exists fx_asian_forward_instruments_version_uniq_idx
 on "ores_trading_fx_asian_forward_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists fx_asian_forward_instruments_id_uniq_idx
 on "ores_trading_fx_asian_forward_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists fx_asian_forward_instruments_tenant_idx
 on "ores_trading_fx_asian_forward_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists fx_asian_forward_instruments_party_idx
 on "ores_trading_fx_asian_forward_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade
 create unique index if not exists fx_asian_forward_instruments_trade_id_idx
 on "ores_trading_fx_asian_forward_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -101,11 +103,22 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
+    -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
+
+    -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
+
+    -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_trading_fx_asian_forward_instruments_tbl"
     where tenant_id = NEW.tenant_id
@@ -120,34 +133,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_fx_asian_forward_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_fx_asian_forward_instruments_insert_trg
 before insert on "ores_trading_fx_asian_forward_instruments_tbl"
 for each row execute function ores_trading_fx_asian_forward_instruments_insert_fn();
 
 create or replace rule ores_trading_fx_asian_forward_instruments_delete_rule as
-on delete to "ores_trading_fx_asian_forward_instruments_tbl" do instead
+on delete to "ores_trading_fx_asian_forward_instruments_tbl" do instead (
     update "ores_trading_fx_asian_forward_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

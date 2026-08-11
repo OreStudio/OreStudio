@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/repository/equity_accumulator_instrument_entity.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 66B52357-6C5C-4648-922B-8D93701B0B37
+:END:
+#+title: Compass has no way to create a story or task without creatin…
+#+description: Compass has no way to create a story or task without creating a branch. 'compass story new' unconditionally runs 'git switch -c branch base' (see _scaffold_and_branch in compass.py) with no opt-out flag; 'compass task new' creates the branch object without switching (worktree stays put -- the start vs add distinction), but still creates a branch; only 'compass task start' switches. There is no branch-free scaffold path at all. Triggered while doing pure paperwork: creating an umbrella story under sprint 25 to group all trading-instrument-to-codegen port tasks, and re-parenting the existing port tasks (pilot equity_position_instrument, task 91ED2388 via PR 1857; the 5-entity batch plus remaining conversions, task F560ADDF via PR 1874; eventing facet work) into it -- 'compass task move' already supports relocating tasks between stories UUID-intact, but creating the target story forces a branch switch, which is hazardous on shared mid-flight feature branches with unmerged commits (here: feature/codegen-nats-eventing-and-integration-tests). The manual workaround is to hand-author story.org plus sprint-table row plus task orgs plus regenerate indexes, all of which the scaffold does by itself. Desired: a --no-branch flag (or a story add / task add subcommand) that scaffolds the org files and sprint row without touching git, mirroring how 'task new' already avoids the switch.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:tech-debt:paperwork:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

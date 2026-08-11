@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 02BC190D-6B74-4058-9418-E898CBB07216
+:END:
+#+title: Task: Wire NATS eventing templates into codegen and generate DB-write-to-NATS integration tests
+#+description: Wire the existing but unused nats-changed-event/nats-event-registrar templates into the generator behind a per-entity opt-in, then add a new test facet that generates the write-entity-observe-NATS-notification integration test proven by hand against business_unit.
+#+type: task
+#+level: s1
+#+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
+#+owner: marco
+#+branch: feature/codegen-nats-eventing-and-integration-tests
+#+pr: 1896
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-06
+#+updated: 2026-08-06
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Originally scoped as "wire the NATS eventing templates into codegen"
+— investigation found that facet (=ores.cpp.nats-eventing= /
+=ores.cpp.nats-event-registrar=) already exists, is already wired
+into the physical-space graph's default "supported set", and is
+already proven live (=purpose_type=, PR #1451/#1459; every other
+refdata entity too). The real gap: the 6 already-converted trading
+instrument entities were never generated through the graph's true
+default set (whatever command was actually used for their
+conversion, it wasn't the documented =--address ores.cpp=/no-address
+form), so they're silently missing eventing, request/response
+messaging, and presentation-history facets the resolver says they're
+entitled to. Revised goal, three parts, in order:
+
+1. Regenerate the 6 already-converted trading instrument entities
+   through the true default "supported set" (no =--address=
+   restriction), closing the gap. Eventing and presentation are
+   clean additive gaps; request/response messaging collides with a
+   pre-existing hand-crafted =save_*= path per entity (same struct,
+   same subject, same service call) — delete the hand-crafted
+   duplicate and adopt the generated registrar instead.
+2. Fix the =ores.cpp.presentation.history_field_mapper= template,
+   the one facet that never learned the =has_identity_group=/
+   =has_audit_group= nested-struct branching every other facet
+   (domain, mapper, repository, service) already has — bring it to
+   parity rather than special-case trading.
+3. Add a new test facet that generates the "write entity, observe
+   its NATS entity-changed notification" integration test proven by
+   hand in =business_unit_eventing_integration_tests.cpp=, so every
+   eventing-enabled entity gets this regression coverage for free.
+
+Explicitly out of scope for this task (filed separately once this is
+proven): migrating refdata and any other flat-generated component to
+the nested =identity=/=audit= shape, so the flat branches in every
+facet template can eventually be deleted and the whole codebase
+converges on one entity shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-06                               |
+
+* Acceptance
+
+- All 6 already-converted trading instrument entities
+  (=equity_position_instrument=, =equity_variance_swap_instrument=,
+  =fx_forward_instrument=, =equity_forward_instrument=,
+  =fx_accumulator_instrument=, =fx_vanilla_option_instrument=)
+  regenerated through the true default supported set; every changed
+  file diffed per standing policy, no orphaned hand-crafted files
+  left behind.
+- Each entity's hand-crafted =save_<entity>_instrument_request/
+  response= struct pair + handler method + queue-subscribe line
+  deleted and replaced by the generated per-entity registrar
+  (list/save/history/remove).
+- =ores.trading.core='s =CMakeLists.txt= gains the =ores.diff.lib=
+  dependency the presentation facet needs (mirroring refdata).
+- =ores.cpp.presentation.history_field_mapper= template fixed to
+  branch on =has_identity_group=/=has_audit_group= exactly like the
+  mapper/repository/service templates already do — no more
+  conditional deletion of generated output to work around it.
+- Each entity's generated eventing registrar wired into
+  =ores.trading.service='s =application.cpp= eventing pipeline; each
+  entity's generated request/response registrar wired into the
+  relevant =registrar_<asset-class>.cpp=.
+- Second regen pass on every touched entity produces zero further
+  diff (standard codegen drift check).
+- Full build + affected ctest suites (trading.*, ore.service,
+  refdata.* untouched) green before PR.
+- New integration-test facet generates a Catch2 test matching the
+  shape of =business_unit_eventing_integration_tests.cpp=,
+  parameterised per entity, wired into the component's tests
+  =component_files.cmake=.
+- A follow-up task filed (not implemented here) to migrate refdata
+  and any other flat-generated component to the nested
+  =identity=/=audit= shape.
+
+* Plan
+
+1. Fix =ores.cpp.presentation.history_field_mapper_impl.org= (tangles
+   to =cpp_history_field_mapper.cpp.mustache=): branch primary-key,
+   per-column, and audit-block emission on =has_identity_group=/
+   =has_audit_group= — same mechanism =cpp_domain_type_mapper.cpp.mustache=
+   already uses (=v.identity.xxx=/=v.audit.xxx= vs flat). Retangle via
+   =compass build --direct tangle_codegen_templates=, diff the tangled
+   =.mustache= output.
+2. Prove it on =equity_position_instrument=: restore the presentation
+   facet output (regenerate =--address ores.cpp.presentation=), confirm
+   it now compiles against the nested domain shape.
+3. Finish =equity_position_instrument= end to end: delete its
+   hand-crafted =save_equity_position_instrument_request/response=
+   (in =instrument_protocol.hpp=), delete
+   =typed_equity_instrument_handler::save_position= + its
+   queue-subscribe line in =registrar_equity.cpp=, wire the generated
+   registrar in instead; wire the generated event registrar into
+   =application.cpp=; fix any other hand-crafted consumer of the
+   deleted struct (found: =ores.ore/service/.../ore_import_execute_handler.cpp=,
+   needs the generated protocol header included instead); add
+   =ores.diff.lib= to =ores.trading.core='s =CMakeLists.txt=; regenerate
+   CMake component file lists; build + test; diff every changed file;
+   commit.
+4. Repeat step 3 for the other 5 entities, one at a time (mechanical
+   once the template fix and pattern are proven), each its own commit.
+5. Design and add the eventing-integration-test facet (parameterise
+   the proven =business_unit_eventing_integration_tests.cpp= pattern),
+   generate it for at least one trading entity now that trading has
+   real eventing wired, wire into =component_files.cmake=.
+6. File the refdata-migration follow-up task; do not implement it here.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1896][#1896]] | [codegen,trading,ci] Close the eventing/messaging/presentation gap and add the eventing integration-test facet |
+
+* Review
+
+| # | Comment summary                                                  | File                                       | Decision | Notes                                                       |
+|---+-------------------------------------------------------------------+---------------------------------------------+----------+--------------------------------------------------------------|
+| 1 | CI NATS readiness poll doesn't fail fast if nats-server never starts | .github/workflows/continuous-*.yml, nightly-linux.yml | Accepted | Added explicit exit 1 with a clear error after the poll loop, all 4 files |
+| 2 | postgres_event_source::start() appends to registered_entities_ without clearing first | projects/ores.eventing/core/src/service/postgres_event_source.cpp | Accepted | Added registered_entities_.clear() at the top of start() |
+| 3 | Include ordering not alphabetical in several touched files (paper cut, would be auto-fixed by nightly-format) | 6 files across ores.trading/ores.qt/ores.ore | Accepted | Ran clang-format on all 6 rather than waiting for nightly-format |
+
+* Result
+
+Delivered all three revised-goal parts, plus two discoveries fixed
+along the way:
+
+- Regenerated all 6 already-converted trading instrument entities
+  (=equity_position_instrument=, =equity_variance_swap_instrument=,
+  =fx_forward_instrument=, =equity_forward_instrument=,
+  =fx_accumulator_instrument=, =fx_vanilla_option_instrument=)
+  through the true default codegen supported set, closing the
+  eventing/messaging/presentation gap; each entity's hand-crafted
+  duplicate =save_*= struct/handler/subscription deleted in favour
+  of the generated registrar. Every file diffed, zero drift on
+  second regen, one commit per entity.
+- Fixed =ores.cpp.presentation.history_field_mapper= to branch on
+  =has_identity_group=/=has_audit_group= like every other C1202-aware
+  facet — it was the one holdout still assuming a flat entity shape.
+- Added the new =ores.cpp.eventing-integration-test= facet
+  (opt-in): generates a per-entity Catch2 test proving the DB-write
+  -> pg_notify -> postgres_event_source -> event_bus -> NATS-publish
+  chain end to end, no mocks. Enabled and proven (standalone run
+  against live Postgres + NATS, 3/3 assertions each) on all 6
+  trading instrument entities.
+- Discovered and fixed: none of the three CI platforms
+  (continuous-linux/macos/windows, plus nightly-linux) actually
+  started a NATS server — only installed/downloaded the binary. Was
+  latent until this task's tests needed a live NATS; fixed by
+  starting =nats-server= with the config =compass env configure=
+  already generates, on all four affected workflows.
+- Filed a follow-up task
+  ([[id:953CA4B7-9914-4E80-BAA7-8FB70028DA28][Migrate all codegen entities to the nested identity/audit struct
+  shape]]) to eventually converge every entity (refdata included) on
+  the C1202 shape and drop the flat branches everywhere.
+
+Full build + full ctest suite (71/71) green before raising the PR.

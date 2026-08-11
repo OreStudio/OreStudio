@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: 605D4280-E1CC-431C-94BB-867B94C1B77C
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.trading.equity_digital_option_instrument
+#+description: Codegen entity model for the trading =equity_digital_option_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: equity_digital_option_instrument
+#+entity_plural: equity_digital_option_instruments
+#+entity_title: Equity Digital Option Instrument
+#+brief: Equity Digital Option instrument.
+#+created: 2026-08-09
+#+updated: 2026-08-09
+
+Represents EquityDigitalOption and EquityTouchOption trades.
+=underlying_name= captures the ORE equity Name identifier;
+=option_type= is Call or Put (digital only); =strike= is digital
+only; =barrier_level= and =barrier_type= are touch only; the two
+product families are mutually exclusive, enforced by a cross-column
+check. =expiry_date= is an ISO 8601 date string.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: trading
+:profile:   trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this equity digital option instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product types: EquityDigitalOption, EquityTouchOption.
+
+#+begin_src cpp :name generator
+std::string("EquityDigitalOption")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ORE equity Name identifier.
+
+#+begin_src cpp :name generator
+std::string("RIC:.SPX")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Payoff notional / contract size. Must be positive.
+
+#+begin_src cpp :name generator
+1000.0
+#+end_src
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Call or Put; empty for touch options.
+
+#+begin_src cpp :name generator
+std::string("Call")
+#+end_src
+
+** strike
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Digital only; absent for touch.
+
+#+begin_src cpp :name generator
+std::make_optional(3300.0)
+#+end_src
+
+** barrier_level
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Touch only; absent for digital.
+
+** barrier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+e.g. UpIn, DownOut; empty for digital.
+
+** expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 8601 date string.
+
+#+begin_src cpp :name generator
+std::string("2026-07-17")
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Long or Short.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** payout_amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Digital payout; absent when not specified.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_digital_option_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "notional" > 0 |
+| "underlying_name" <> '' |
+| "currency" <> '' |
+| "trade_type_code" in ('EquityDigitalOption', 'EquityTouchOption') |
+| ("trade_type_code" = 'EquityDigitalOption' and "option_type" is not null and "strike" is not null and "barrier_level" is null and "barrier_type" is null) or ("trade_type_code" = 'EquityTouchOption' and "barrier_level" is not null and "barrier_type" is not null and "option_type" is null and "strike" is null) |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_digital_option_instrument
+:entity_plural_short:   equity_digital_option_instruments
+:entity_singular_words: Equity Digital Option instrument
+:entity_plural_words:   Equity Digital Option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: edoi
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

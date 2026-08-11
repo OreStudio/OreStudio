@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/eventing/tenor_convention_changed_event.hpp"
-#include "ores.refdata.api/generator/tenor_convention_generator.hpp"
+#include "ores.refdata.api/generators/tenor_convention_generator.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -74,7 +74,7 @@ ores::nats::config::nats_options test_nats_options() {
 
 }
 
-using namespace ores::refdata::generator;
+using namespace ores::refdata::generators;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::repository::tenor_convention_repository;
 using ores::testing::scoped_database_helper;

@@ -38,30 +38,46 @@ std::string fx_asian_forward_instrument_repository::sql() {
 
 void fx_asian_forward_instrument_repository::write(context ctx,
                                                    const domain::fx_asian_forward_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX asian forward instrument: "
-                               << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX Asian Forward instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         fx_asian_forward_instrument_mapper::map(v),
                         lg(),
-                        "Writing FX asian forward instrument to database.");
+                        "Writing FX Asian Forward instrument to database.");
 }
 
 void fx_asian_forward_instrument_repository::write(
     context ctx, const std::vector<domain::fx_asian_forward_instrument>& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FX asian forward instruments. Count: " << v.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing FX Asian Forward instruments. Count: " << v.size();
     execute_write_query(ctx,
                         fx_asian_forward_instrument_mapper::map(v),
                         lg(),
-                        "Writing FX asian forward instruments to database.");
+                        "Writing FX Asian Forward instruments to database.");
 }
 
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("instrument_id"_c);
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("instrument_id"_c);
+        return execute_read_query<fx_asian_forward_instrument_entity,
+                                  domain::fx_asian_forward_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
+            lg(),
+            "Reading latest FX Asian Forward instruments (workspace resolution chain).");
+    }
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c);
 
     return execute_read_query<fx_asian_forward_instrument_entity,
                               domain::fx_asian_forward_instrument>(
@@ -69,18 +85,19 @@ fx_asian_forward_instrument_repository::read_latest(context ctx) {
         query,
         [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest FX asian forward instruments");
+        "Reading latest FX Asian Forward instruments");
 }
 
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_repository::read_latest(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX asian forward instrument. instrument_id: "
-                               << instrument_id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX Asian Forward instrument. "
+                               << "instrument_id: " << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
     return execute_read_query<fx_asian_forward_instrument_entity,
                               domain::fx_asian_forward_instrument>(
@@ -88,17 +105,20 @@ fx_asian_forward_instrument_repository::read_latest(context ctx, const std::stri
         query,
         [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest FX asian forward instrument by instrument_id.");
+        "Reading latest FX Asian Forward instrument by instrument_id.");
 }
+
 
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_repository::read_all(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading all FX asian forward instrument versions. instrument_id: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all FX Asian Forward instrument versions. "
+                               << "instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
-                       order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<fx_asian_forward_instrument_entity,
                               domain::fx_asian_forward_instrument>(
@@ -106,38 +126,126 @@ fx_asian_forward_instrument_repository::read_all(context ctx, const std::string&
         query,
         [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
         lg(),
-        "Reading all FX asian forward instrument versions by instrument_id.");
+        "Reading all FX Asian Forward instrument versions by instrument_id.");
+}
+
+std::optional<domain::fx_asian_forward_instrument>
+fx_asian_forward_instrument_repository::read_at_version(context ctx,
+                                                        const std::string& instrument_id,
+                                                        std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading FX Asian Forward instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities =
+        execute_read_query<fx_asian_forward_instrument_entity, domain::fx_asian_forward_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
+            lg(),
+            "Reading FX Asian Forward instrument at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
 }
 
 void fx_asian_forward_instrument_repository::remove(context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing FX asian forward instrument: " << instrument_id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing FX Asian Forward instrument. "
+                               << "instrument_id: " << instrument_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<fx_asian_forward_instrument_entity> |
-                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
-                             "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(), "Removing FX asian forward instrument from database.");
+    execute_delete_query(ctx, query, lg(), "Removing FX Asian Forward instrument from database.");
 }
-
 
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_repository::read_latest(context ctx,
-                                                    const std::vector<std::string>& ids) {
-    if (ids.empty())
-        return {};
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+                                                    std::uint32_t offset,
+                                                    std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest FX Asian Forward instruments with offset: "
+                               << offset << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids) && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("instrument_id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
     return execute_read_query<fx_asian_forward_instrument_entity,
                               domain::fx_asian_forward_instrument>(
         ctx,
         query,
         [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
         lg(),
-        "Reading latest fx_asian_forward_instruments by ids.");
+        "Reading latest FX Asian Forward instruments with pagination.");
 }
+
+std::uint32_t
+fx_asian_forward_instrument_repository::get_total_fx_asian_forward_instrument_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX Asian Forward instrument count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<fx_asian_forward_instrument_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active FX Asian Forward instrument count: " << count;
+    return count;
+}
+
+std::vector<domain::fx_asian_forward_instrument>
+fx_asian_forward_instrument_repository::read_latest(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<fx_asian_forward_instrument_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    auto result =
+        execute_read_query<fx_asian_forward_instrument_entity, domain::fx_asian_forward_instrument>(
+            ctx,
+            query,
+            [](const auto& entities) { return fx_asian_forward_instrument_mapper::map(entities); },
+            lg(),
+            "Reading latest FX Asian Forward instruments by ids.");
+    return result;
+}
+
+void fx_asian_forward_instrument_repository::remove(
+    context ctx, const std::vector<std::string>& instrument_ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::delete_from<fx_asian_forward_instrument_entity> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid &&
+                             "instrument_id"_c.in(instrument_ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing FX Asian Forward instruments.");
+}
+
 
 }

@@ -116,10 +116,8 @@ Business unit responsible for management.
 References the business_units table.
 
 #+begin_src cpp :name generator
-// nullopt, not a random UUID: the insert trigger's soft-FK existence
-// check would reject any id that isn't an active business unit (and no
-// synthetic business unit exists), so a generated portfolio must carry
-// no owner rather than a fabricated one.
+// Left null: optional FK, and the insert trigger rejects ids that do
+// not name an active business unit.
 std::nullopt
 #+end_src
 
@@ -205,9 +203,31 @@ std::string("Active")
 
 * Foreign keys
 
+** aggregation_ccy
+:PROPERTIES:
+:table:           ores_refdata_currencies_tbl
+:target_column:   iso_code
+:parent_entity:   currency
+:seed_value:      USD
+:skip_check:      true
+:nullable:        true
+:error_message:   Invalid aggregation_ccy: %. No active currency found with this iso code.
+:END:
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
 ** parent_portfolio_id
 :PROPERTIES:
 :table:         ores_refdata_portfolios_tbl
+:parent_entity: portfolio
+:seed_parent_party_id: true
 :nullable:      true
 :error_message: Invalid parent_portfolio_id: %. No active portfolio found with this id.
 :bump_parent_version: true
@@ -222,13 +242,6 @@ not just its immediate children. NULL (root node) safely no-ops: the
 touch function's row lookup finds nothing for a NULL id and returns
 without effect, terminating the recursion. See the "Temporal composite
 entity versioning" architecture doc, "Multi-level composition".
-
-** party_id
-:PROPERTIES:
-:table:         ores_refdata_parties_tbl
-:nullable:      false
-:error_message: Invalid party_id: %. No active party found with this id.
-:END:
 
 ** owner_unit_id
 :PROPERTIES:

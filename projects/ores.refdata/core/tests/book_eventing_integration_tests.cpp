@@ -37,6 +37,10 @@
 // refdata paths.
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+// Soft-FK parent seeding (ores_refdata_currencies_tbl): the parent's own generator and
+// repository live in the same component as the child.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 // Soft-FK parent seeding (ores_refdata_portfolios_tbl): the parent's own generator and
 // repository live in the same component as the child.
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
@@ -140,6 +144,31 @@ TEST_CASE("write_book_publishes_nats_changed_event", tags) {
     // the chain wired above -> NATS.
     auto v = generate_synthetic_book(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active currency row ores_refdata_currencies_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto functional_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    functional_currency_parent.change_reason_code = "system.test";
+    ores::refdata::repository::currency_repository functional_currency_repo;
+    functional_currency_repo.write(party_ctx, functional_currency_parent);
+    v.functional_currency = functional_currency_parent.iso_code;
+    // Seed the active party row ores_refdata_parties_tbl references:
+    // the insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first.
+    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.change_reason_code = "system.test";
+    // Only one root party (parent_party_id null) is allowed per tenant:
+    // attach to the existing root party instead of creating a second one.
+    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
+    for (const auto& e : party_id_existing) {
+        if (e.tenant_id == party_id_parent.tenant_id) {
+            party_id_parent.parent_party_id = e.id;
+            break;
+        }
+    }
+    ores::refdata::repository::party_repository party_id_repo;
+    party_id_repo.write(party_ctx, party_id_parent);
+    v.party_id = party_id_parent.id;
     // Seed the active portfolio row ores_refdata_portfolios_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
@@ -164,23 +193,6 @@ TEST_CASE("write_book_publishes_nats_changed_event", tags) {
     ores::refdata::repository::portfolio_repository parent_portfolio_id_repo;
     parent_portfolio_id_repo.write(party_ctx, parent_portfolio_id_parent);
     v.parent_portfolio_id = parent_portfolio_id_parent.id;
-    // Seed the active party row ores_refdata_parties_tbl references:
-    // the insert trigger's existence check rejects a synthetic key that
-    // matches no active row, so the parent must be written first.
-    auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
-    party_id_parent.change_reason_code = "system.test";
-    // Only one root party (parent_party_id null) is allowed per tenant:
-    // attach to the existing root party instead of creating a second one.
-    auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
-    for (const auto& e : party_id_existing) {
-        if (e.tenant_id == party_id_parent.tenant_id) {
-            party_id_parent.parent_party_id = e.id;
-            break;
-        }
-    }
-    ores::refdata::repository::party_repository party_id_repo;
-    party_id_repo.write(party_ctx, party_id_parent);
-    v.party_id = party_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Book: " << v;
 

@@ -1,0 +1,298 @@
+:PROPERTIES:
+:ID: 5DD8CE29-130E-4E4A-93C5-EF6E2800062A
+:ores.cpp.eventing-integration-test.enabled: true
+:END:
+#+title: ores.trading.equity_swap_instrument
+#+description: Codegen entity model for the trading =equity_swap_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: equity_swap_instrument
+#+entity_plural: equity_swap_instruments
+#+entity_title: Equity Swap Instrument
+#+brief: Equity Swap instrument.
+#+created: 2026-08-08
+#+updated: 2026-08-08
+
+Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
+basket swaps, underlying_name is NULL and basket_json holds the basket
+definition; for single-name swaps, basket_json is NULL.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:   trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+UUID uniquely identifying this equity swap instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap.
+
+#+begin_src cpp :name generator
+std::string("EquitySwap")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Single underlying; empty for basket swaps.
+
+#+begin_src cpp :name generator
+std::string("ACME Corp")
+#+end_src
+
+** basket_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+JSON array of underlyings for EquityWorstOfBasketSwap; empty for single-underlying.
+
+Empty generator value: the mapper maps empty strings to SQL NULL
+(see equity_swap_instrument_mapper.cpp), so the generated instrument
+keeps basket_json NULL and satisfies the SQL XOR check with
+trade_type_code = 'EquitySwap'.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Must be positive.
+
+#+begin_src cpp :name generator
+1000000.0
+#+end_src
+
+** return_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+TotalReturn or PriceReturn.
+
+#+begin_src cpp :name generator
+std::string("TotalReturn")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 8601 date.
+
+#+begin_src cpp :name generator
+std::string("2024-01-15")
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 8601 date.
+
+#+begin_src cpp :name generator
+std::string("2026-01-15")
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Long or Short.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** payment_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+e.g. 3M, 6M, 1Y.
+
+#+begin_src cpp :name generator
+std::string("Quarterly")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_swap_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|---|
+| ("trade_type_code" = 'EquityWorstOfBasketSwap' and "basket_json" is not null and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null and "basket_json" is null) |
+| "notional" > 0 |
+| "currency" <> '' |
+| "trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap') |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| party | tenant_id, party_id | false | true | |
+| trade_id | tenant_id, trade_id | true | true | trade_id is not null |
+| trade_type | tenant_id, trade_type_code | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+| payment_frequency | ores_refdata_validate_payment_frequency_fn |
+
+* C++
+
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= above fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected -- only the domain class and the mapper's domain-side accesses
+nest. The entity templates consume these annotations; domain and
+repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:       true
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_swap_instrument
+:entity_plural_short:   equity_swap_instruments
+:entity_singular_words: equity swap instrument
+:entity_plural_words:   equity swap instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: eqsi
+:END:
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] -- component group overview.

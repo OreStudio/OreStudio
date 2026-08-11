@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
 
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/export.hpp"

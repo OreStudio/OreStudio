@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: FBBC0235-C506-440B-A849-4DC96B5921C4
+:END:
+#+title: Story: Port trading instruments to codegen
+#+description: Bring the ~19 hand-crafted trading instrument sub-types under codegen models, following the equity_position_instrument pilot's proven pattern (PR #1857), and retrofit the per-entity NATS eventing stack onto converted instruments (PR #1896). Umbrella for the decision/pilot task, the conversion task, and the eventing facet task.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-08
+#+updated: 2026-08-08
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring the ~20 hand-crafted trading instrument sub-types under codegen:
+author a modern-format model for each, regenerate every facet
+(SQL/domain/entity/mapper/repository/service/generator) zero-diff
+against the hand-crafted original, and land the =has_workspace_id=
+inheritance query for every one of them. Every entity converted goes
+forward with the per-entity NATS eventing-integration-test facet
+enabled, so each conversion also generates the changed-event,
+messaging protocol/handler/registrar, presentation history mapper,
+event registrar, and the eventing integration test.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | 15/19 converted: equity_variance_swap_instrument, fx_forward_instrument, equity_forward_instrument, fx_accumulator_instrument, fx_vanilla_option_instrument, fx_variance_swap_instrument, equity_swap_instrument, fx_barrier_option_instrument, fx_digital_option_instrument, fx_asian_forward_instrument, equity_option_instrument, equity_barrier_option_instrument, equity_accumulator_instrument, equity_asian_option_instrument, equity_digital_option_instrument. Remaining 4 (bond, commodity, credit, scripted) deferred -- feature-gated, see task notes. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing -- all remaining instruments (bond, commodity, credit, scripted) blocked by codegen domain-template gaps; see task notes. |
+| Last touched  | 2026-08-09                               |
+
+* Acceptance
+
+- Every remaining hand-crafted trading instrument sub-type (bond,
+  remaining equity_*/fx_* variants, commodity, composite +
+  composite_legs, credit, scripted, swap_legs) has a codegen model
+  authored in the modern format.
+- Each regenerates zero-diff against its hand-crafted original
+  (beyond genuine, systemic template improvements already proven safe
+  by the pilot).
+- Every converted entity carries the
+  =:ores.cpp.eventing-integration-test.enabled: true= property and the
+  eventing integration test passes against the live DB.
+- Full project build green and full test suite passing after each
+  batch of conversions (not just at the very end).
+- Workspace inheritance (PR #1846) verified working for every
+  converted entity.
+- Add a repository test proving batch remove() doesn't cross
+  workspace boundaries (flagged during PR #1857 review as missing --
+  the fix itself was verified correct by inspection across 11
+  entities, but no test exercises it).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:91ED2388-6CC8-433B-95E5-795C8D0D6346][Decide fate of ~20 hand-crafted trading instrument sub-types missing codegen models]] | DONE | 2026-08-05 | 2026-08-05 | ~20 hand-crafted trading instrument sub-types (bond, equity_*, fx_*, commodity, composite, credit, scripted, swap_legs) carry workspace_id in SQL but have no codegen model at all. Decide whether they get codegen models or stay permanently hand-crafted, and verify their hand-written code filters by workspace_id correctly. (book/portfolio, originally scoped here, turned out to already be correctly covered via the fk-scoped-child profile and were regenerated/verified in PR #1846.) |
+| [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][Convert remaining ~19 hand-crafted trading instrument sub-types to codegen models]] | DONE | 2026-08-05 | 2026-08-10 | Bring the remaining ~19 hand-crafted trading instrument sub-types (bond, most equity_*/fx_* variants, commodity, composite + composite_legs, credit, scripted, swap_legs) under codegen, following the equity_position_instrument pilot's proven pattern. Most of these use the legacy Primary key heading format and need task 836BB4CE resolved or worked around per-entity first. |
+| [[id:02BC190D-6B74-4058-9418-E898CBB07216][Wire NATS eventing templates into codegen and generate DB-write-to-NATS integration tests]] | DONE | 2026-08-06 | 2026-08-07 | Wire the existing but unused nats-changed-event/nats-event-registrar templates into the generator behind a per-entity opt-in, then add a new test facet that generates the write-entity-observe-NATS-notification integration test proven by hand against business_unit. |
+| [[id:2548EE95-7C62-4C48-BA11-2146604B2082][Resolve codegen feature gaps blocking the remaining trading instrument conversions]] | BACKLOG | | | Close the three codegen feature gaps (nested domain groups, column-name-to-group-field mapping, service paste-block/custom methods) and convert the 7 remaining hand-crafted instruments (bond, commodity, credit, scripted, composite, fra, swap legs) per the established pattern. Deferred from the conversion task on 2026-08-09. |
+
+* Decisions
+
+- *Umbrella story* (2026-08-08): created as the sprint-25 home for
+  all trading-instrument-to-codegen port work, re-parenting the three
+  tasks done so far out of the inbox's
+  [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the
+  feature]] story (which keeps its workspace-specific tasks). The
+  decision and pilot (PR #1857), the remaining conversions (PR #1874
+  and ongoing), and the NATS eventing facet work (PR #1896) were all
+  instrument-codegen work that had been living under a workspace
+  story; they now track under their own story in the present sprint.
+  Hand-scaffolded because compass has no branch-free story-create
+  path (see
+  [[id:66B52357-6C5C-4648-922B-8D93701B0B37][Compass has no way to
+  create a story or task without creating a branch]]).
+- *Conversion scope boundary* (2026-08-10): converted the 15 flat,
+  single-table instrument sub-types; deferred the leg-bearing entities
+  (composite_instrument/composite_leg and every swap-leg-bearing
+  swap/swaption entity) until the codegen service template gains a
+  genuine paste-block/custom-method extension mechanism -- the
+  hand-crafted transactional leg logic (save-with-legs, remove,
+  get_legs) is not reproducible by any current template, and
+  hand-patching regenerated files would recreate fra_instrument's
+  silent drift. Also deferred bond/commodity/credit/scripted: bond is
+  the most nested entity in the family (MSVC C1202 rfl-complexity
+  decomposition) and the rest need domain-template gaps closed.
+  Follow-up tracked in
+  [[id:2548EE95-7C62-4C48-BA11-2146604B2082][resolve-codegen-gaps-for-remaining-instruments]].
+
+* Out of scope
+
+- The workspace feature itself (Live workspace setup, stand-alone
+  workspaces) -- tracked in the
+  [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the
+  feature]] story.
+- The generic codegen bug task 836BB4CE (legacy =* Primary key=
+  heading format blocking regen on 70+ models) -- a repo-wide
+  prerequisite this story's conversions depend on but don't own.

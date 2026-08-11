@@ -18,8 +18,6 @@
  *
  */
 
-drop trigger if exists ores_trading_equity_digital_option_instruments_notify_trg on "ores_trading_equity_digital_option_instruments_tbl";
-drop function if exists ores_trading_equity_digital_option_instruments_notify_fn;
 drop rule if exists ores_trading_equity_digital_option_instruments_delete_rule on "ores_trading_equity_digital_option_instruments_tbl";
 drop trigger if exists ores_trading_equity_digital_option_instruments_insert_trg on "ores_trading_equity_digital_option_instruments_tbl";
 drop function if exists ores_trading_equity_digital_option_instruments_insert_fn;

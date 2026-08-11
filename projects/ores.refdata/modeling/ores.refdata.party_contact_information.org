@@ -244,6 +244,8 @@ std::string("https://example.com")
 ** party_id
 :PROPERTIES:
 :table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
 :nullable:      false
 :error_message: Invalid party_id: %. No active party found with this id.
 :list_by:       true

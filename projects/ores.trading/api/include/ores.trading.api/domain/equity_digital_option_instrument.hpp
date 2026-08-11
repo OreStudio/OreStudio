@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -31,6 +32,11 @@ namespace ores::trading::domain {
  * @brief Equity Digital Option instrument.
  *
  * Represents EquityDigitalOption and EquityTouchOption trades.
+ * underlying_name captures the ORE equity Name identifier;
+ * option_type is Call or Put (digital only); strike is digital
+ * only; barrier_level and barrier_type are touch only; the two
+ * product families are mutually exclusive, enforced by a cross-column
+ * check. expiry_date is an ISO 8601 date string.
  */
 struct equity_digital_option_instrument final {
     instrument_identity identity;
@@ -80,12 +86,28 @@ struct equity_digital_option_instrument final {
      */
     std::string long_short;
 
+    /**
+     * @brief Digital payout; absent when not specified.
+     */
     std::optional<double> payout_amount;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for equity_digital_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const equity_digital_option_instrument&) {
+    return "ores.trading.equity_digital_option_instrument";
+}
 
 }
 

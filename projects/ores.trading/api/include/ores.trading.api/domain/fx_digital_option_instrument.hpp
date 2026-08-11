@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_HPP
+#define ORES_TRADING_API_DOMAIN_FX_DIGITAL_OPTION_INSTRUMENT_HPP
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
 /**
  * @brief FX Digital Option instrument.
  *
- * Routes: FxDigitalOption, FxDigitalBarrierOption, FxTouchOption
- * (OneTouch / NoTouch), FxDoubleTouchOption.
- *
- * Uses ForeignCurrency / DomesticCurrency naming to match ORE XML semantics.
- * option_type is absent for touch products (no Call/Put distinction).
- * strike is absent for touch products.
- * lower_barrier / upper_barrier capture single or double barrier levels.
+ * Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
+ * FxTouchOption (OneTouch/NoTouch), FxDoubleTouchOption. Uses
+ * ForeignCurrency/DomesticCurrency naming to match ORE XML semantics.
+ * option_type is absent for touch products (no Call/Put distinction);
+ * strike is absent for touch products; lower_barrier/upper_barrier
+ * capture single or double barrier levels.
  */
 struct fx_digital_option_instrument final {
     instrument_identity identity;
@@ -82,8 +82,8 @@ struct fx_digital_option_instrument final {
     std::optional<double> strike;
 
     /**
-     * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut).
-     * Absent for plain digital options.
+     * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent for plain digital
+     * options.
      */
     std::string barrier_type;
 
@@ -97,10 +97,23 @@ struct fx_digital_option_instrument final {
      */
     std::optional<double> upper_barrier;
 
+    /**
+     * @brief Optional free-text description.
+     */
     std::string description;
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for fx_digital_option_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const fx_digital_option_instrument&) {
+    return "ores.trading.fx_digital_option_instrument";
+}
 
 }
 

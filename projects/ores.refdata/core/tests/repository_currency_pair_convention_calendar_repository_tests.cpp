@@ -23,10 +23,12 @@
 #include "ores.refdata.api/generators/calendar_generator.hpp"
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/currency_pair_classification_generator.hpp"
 #include "ores.refdata.api/generators/currency_pair_convention_generator.hpp"
 #include "ores.refdata.api/generators/currency_pair_generator.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_classification_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_repository.hpp"
@@ -41,14 +43,14 @@
 using namespace ores::logging;
 using namespace ores::refdata::generators;
 
-using ores::refdata::domain::currency_pair;
 using ores::refdata::domain::currency_pair_convention_calendar;
-using ores::refdata::repository::calendar_repository;
-using ores::refdata::repository::country_repository;
 using ores::refdata::repository::currency_pair_convention_calendar_repository;
+using ores::refdata::repository::currency_pair_classification_repository;
 using ores::refdata::repository::currency_pair_convention_repository;
 using ores::refdata::repository::currency_pair_repository;
 using ores::refdata::repository::currency_repository;
+using ores::refdata::repository::calendar_repository;
+using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 
 namespace {
@@ -86,31 +88,56 @@ void write_zz_country_sentinel(scoped_database_helper& h,
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }
 
-// Writes the parent rows this test's convention writes will reference.
-// Every synthetic pair references the currency generator's first two
-// codes (X-0, X-1) as its base/quote legs, and the pair insert trigger's
-// base/quote existence checks are strict and tenant-scoped -- so seed
-// those two codes, plus the pairs themselves, into the test tenant. The
-// convention insert trigger's pair_code check (existence + validation)
-// needs active pairs the same way, and the shared test tenant
-// accumulates pairs written by earlier tests in this process, so each
-// test seeds its own parents -- like write_zz_country_sentinel does for
-// calendars.
-std::vector<currency_pair>
-write_synthetic_pairs(scoped_database_helper& h,
-                      ores::utility::generation::generation_context& gctx) {
-    // This process's currency counter has moved past the X-0/X-1 codes
-    // the pair generator hardcodes, so stamp them explicitly.
-    auto currencies = generate_synthetic_currencies(2, gctx);
-    currencies[0].iso_code = "X-0";
-    currencies[1].iso_code = "X-1";
-    currency_repository ccy_repo;
-    ccy_repo.write(h.context(), currencies);
-
-    auto pairs = generate_synthetic_currency_pairs(total_slots, gctx);
+// The conventions table's insert trigger validates pair_code against the
+// currency_pairs table (ores_refdata_validate_currency_pair_fn), which
+// turns strict as soon as the shared test tenant holds any pair -- so
+// every test must ensure the pair its convention references actually
+// exists before writing. The pair's own base/quote currencies and its
+// classification face the same strictness (ores_refdata_validate_currency_fn
+// and ores_refdata_validate_currency_pair_classification_fn), so reuse a
+// currency/classification the tenant already has (any active row
+// validates) and seed one only when none exists yet. Writes go through
+// the pair's own repository -- the same trigger stack production uses.
+// No-op when the pair already exists (e.g. the pair written by the
+// currency_pair eventing test in the same tenant).
+void write_synthetic_pair(scoped_database_helper& h,
+                          ores::utility::generation::generation_context& gctx,
+                          const std::string& pair_code) {
     currency_pair_repository pair_repo;
-    pair_repo.write(h.context(), pairs);
-    return pairs;
+    auto existing_pair = pair_repo.read_latest(h.context(), pair_code);
+    if (!existing_pair.empty())
+        return;
+
+    currency_repository ccy_repo;
+    auto existing_ccy = ccy_repo.read_latest(h.context());
+    std::string ccy_code;
+    if (existing_ccy.empty()) {
+        auto ccy = generate_synthetic_currency(gctx);
+        ccy.change_reason_code = "system.test";
+        ccy_repo.write(h.context(), {ccy});
+        ccy_code = ccy.iso_code;
+    } else {
+        ccy_code = existing_ccy.front().iso_code;
+    }
+
+    currency_pair_classification_repository cls_repo;
+    auto existing_cls = cls_repo.read_latest(h.context());
+    std::string cls_code;
+    if (existing_cls.empty()) {
+        auto cls = generate_synthetic_currency_pair_classification(gctx);
+        cls.change_reason_code = "system.test";
+        cls_repo.write(h.context(), {cls});
+        cls_code = cls.code;
+    } else {
+        cls_code = existing_cls.front().code;
+    }
+
+    auto pair = generate_synthetic_currency_pair(gctx);
+    pair.pair_code = pair_code;
+    pair.base_currency = ccy_code;
+    pair.quote_currency = ccy_code;
+    pair.classification = cls_code;
+    pair_repo.write(h.context(), pair);
 }
 
 }
@@ -126,13 +153,9 @@ TEST_CASE("write_single_currency_pair_convention_calendar", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[0].pair_code);
     conv_repo.write(h.context(), {conventions[0]});
     cal_repo.write(h.context(), {calendars[0]});
 
@@ -152,13 +175,9 @@ TEST_CASE("write_multiple_currency_pair_convention_calendars", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[1].pair_code);
     conv_repo.write(h.context(), {conventions[1]});
     std::vector<ores::refdata::domain::calendar> test_calendars = {calendars[1], calendars[2]};
     cal_repo.write(h.context(), test_calendars);
@@ -183,13 +202,9 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_pair", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[3].pair_code);
     conv_repo.write(h.context(), {conventions[3]});
     cal_repo.write(h.context(), {calendars[3]});
 
@@ -226,13 +241,9 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_returns_full_set_for_p
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[7].pair_code);
     conv_repo.write(h.context(), {conventions[7]});
     std::vector<ores::refdata::domain::calendar> test_calendars = {calendars[7], calendars[8]};
     cal_repo.write(h.context(), test_calendars);
@@ -268,13 +279,9 @@ TEST_CASE("read_latest_currency_pair_convention_calendars_by_calendar", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[4].pair_code);
     conv_repo.write(h.context(), {conventions[4]});
     cal_repo.write(h.context(), {calendars[4]});
 
@@ -299,13 +306,9 @@ TEST_CASE("remove_currency_pair_convention_calendar", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[5].pair_code);
     conv_repo.write(h.context(), {conventions[5]});
     cal_repo.write(h.context(), {calendars[5]});
 
@@ -329,13 +332,9 @@ TEST_CASE("remove_by_pair_currency_pair_convention_calendar", tags) {
 
     auto gctx = ores::testing::make_generation_context(h);
     write_zz_country_sentinel(h, gctx);
-    // Conventions are keyed by pair_code: bind each one to the pair this
-    // test just seeded, so the insert trigger's pair_code checks pass.
-    auto pairs = write_synthetic_pairs(h, gctx);
     auto conventions = generate_synthetic_currency_pair_conventions(total_slots, gctx);
-    for (std::size_t i = 0; i < conventions.size(); ++i)
-        conventions[i].pair_code = pairs[i].pair_code;
     auto calendars = generate_synthetic_calendars(total_slots, gctx);
+    write_synthetic_pair(h, gctx, conventions[6].pair_code);
     conv_repo.write(h.context(), {conventions[6]});
     cal_repo.write(h.context(), {calendars[6]});
 

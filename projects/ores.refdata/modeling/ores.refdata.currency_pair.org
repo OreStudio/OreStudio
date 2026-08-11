@@ -13,7 +13,7 @@
 #+coding_scheme: none
 #+image_id: false
 #+created: 2026-07-06
-#+updated: 2026-08-09
+#+updated: 2026-07-06
 
 Currency pair identity: base/quote legs, deliverability, classification,
 and fixing source. Conventions (pip factor, tick size, calendars,
@@ -58,12 +58,7 @@ std::string(faker::finance::currencyCode()) + "/" + std::string(faker::finance::
 Base (first) leg of the pair. Soft FK to =currency.iso_code=.
 
 #+begin_src cpp :name generator
-// "X-0" is the first code the synthetic currency generator emits: the
-// base-leg validation accepts only codes of active currencies, and
-// every test tenant inherits the system tenant's accumulated active
-// set, which always contains X-0 (every generator process starts its
-// counter at zero).
-std::string("X-0")
+std::string("EUR")
 #+end_src
 
 ** quote_currency
@@ -76,9 +71,7 @@ std::string("X-0")
 Quote (second) leg of the pair. Soft FK to =currency.iso_code=.
 
 #+begin_src cpp :name generator
-// "X-1" is the second code the synthetic currency generator emits,
-// present in the inherited active set for the same reason as "X-0".
-std::string("X-1")
+std::string("USD")
 #+end_src
 
 ** classification
@@ -95,13 +88,7 @@ aux-type reference data (tracked separately; out of scope for this
 entity — see [[id:04A121FA-00D6-43EB-9B21-04EDC1FA493D][Currency pair support in reference data]]).
 
 #+begin_src cpp :name generator
-// "CD-0" is the first code the synthetic classification generator
-// emits (the code column has no model generator, so codegen's default
-// text-PK generator produces "CD-<n>"): the classification validation
-// accepts only codes of active classifications, and every test tenant
-// inherits the system tenant's accumulated active set, which always
-// contains CD-0 (every generator process starts its counter at zero).
-std::string("CD-0")
+std::string("major")
 #+end_src
 
 * SQL
@@ -121,18 +108,35 @@ drop function if exists ores_refdata_validate_currency_pair_fn;
 
 ** base_currency
 :PROPERTIES:
-:table:         ores_refdata_currencies_tbl
-:target_column: iso_code
-:nullable:      false
-:error_message: Invalid base_currency: %. No active currency found with this code.
+:table:           ores_refdata_currencies_tbl
+:target_column:   iso_code
+:parent_entity:   currency
+:seed_value:      EUR
+:skip_check:      true
+:nullable:        false
+:error_message:   Invalid base_currency: %. No active currency found with this iso code.
 :END:
 
 ** quote_currency
 :PROPERTIES:
-:table:         ores_refdata_currencies_tbl
-:target_column: iso_code
-:nullable:      false
-:error_message: Invalid quote_currency: %. No active currency found with this code.
+:table:           ores_refdata_currencies_tbl
+:target_column:   iso_code
+:parent_entity:   currency
+:seed_value:      USD
+:skip_check:      true
+:nullable:        false
+:error_message:   Invalid quote_currency: %. No active currency found with this iso code.
+:END:
+
+** classification
+:PROPERTIES:
+:table:           ores_refdata_currency_pair_classifications_tbl
+:target_column:   code
+:parent_entity:   currency_pair_classification
+:seed_value:      major
+:skip_check:      true
+:nullable:        false
+:error_message:   Invalid classification: %. No active currency pair classification found with this code.
 :END:
 
 * Validation function

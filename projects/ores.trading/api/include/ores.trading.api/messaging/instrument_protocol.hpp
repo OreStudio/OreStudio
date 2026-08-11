@@ -28,23 +28,13 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_forward_instrument.hpp"
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/product_type.hpp"
@@ -58,54 +48,6 @@
 #include <vector>
 
 namespace ores::trading::messaging {
-
-// ---- Typed FX instrument protocol ----
-
-struct save_fx_barrier_option_instrument_request {
-    using response_type = struct save_fx_barrier_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_barrier_option_instruments.save";
-    ores::trading::domain::fx_barrier_option_instrument data;
-};
-
-struct save_fx_barrier_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_digital_option_instrument_request {
-    using response_type = struct save_fx_digital_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_digital_option_instruments.save";
-    ores::trading::domain::fx_digital_option_instrument data;
-};
-
-struct save_fx_digital_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_asian_forward_instrument_request {
-    using response_type = struct save_fx_asian_forward_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_asian_forward_instruments.save";
-    ores::trading::domain::fx_asian_forward_instrument data;
-};
-
-struct save_fx_asian_forward_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_fx_variance_swap_instrument_request {
-    using response_type = struct save_fx_variance_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.fx_variance_swap_instruments.save";
-    ores::trading::domain::fx_variance_swap_instrument data;
-};
-
-struct save_fx_variance_swap_instrument_response {
-    bool success = false;
-    std::string message;
-};
 
 // ---- Bond instrument protocol ----
 
@@ -207,78 +149,6 @@ struct get_credit_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::credit_instrument> history;
-};
-
-// ---- Typed equity instrument protocol ----
-
-struct save_equity_option_instrument_request {
-    using response_type = struct save_equity_option_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.equity_option_instruments.save";
-    ores::trading::domain::equity_option_instrument data;
-};
-
-struct save_equity_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_digital_option_instrument_request {
-    using response_type = struct save_equity_digital_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_digital_option_instruments.save";
-    ores::trading::domain::equity_digital_option_instrument data;
-};
-
-struct save_equity_digital_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_barrier_option_instrument_request {
-    using response_type = struct save_equity_barrier_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_barrier_option_instruments.save";
-    ores::trading::domain::equity_barrier_option_instrument data;
-};
-
-struct save_equity_barrier_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_asian_option_instrument_request {
-    using response_type = struct save_equity_asian_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_asian_option_instruments.save";
-    ores::trading::domain::equity_asian_option_instrument data;
-};
-
-struct save_equity_asian_option_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_swap_instrument_request {
-    using response_type = struct save_equity_swap_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.equity_swap_instruments.save";
-    ores::trading::domain::equity_swap_instrument data;
-};
-
-struct save_equity_swap_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct save_equity_accumulator_instrument_request {
-    using response_type = struct save_equity_accumulator_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_accumulator_instruments.save";
-    ores::trading::domain::equity_accumulator_instrument data;
-};
-
-struct save_equity_accumulator_instrument_response {
-    bool success = false;
-    std::string message;
 };
 
 // ---- Commodity instrument protocol ----

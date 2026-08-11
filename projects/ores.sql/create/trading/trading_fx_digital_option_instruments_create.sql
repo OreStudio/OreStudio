@@ -17,23 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- FX Digital Option Instruments Table
---
--- Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
--- FxTouchOption (OneTouch/NoTouch), FxDoubleTouchOption.
--- Uses ForeignCurrency/DomesticCurrency naming to match ORE XML semantics.
--- lower_barrier / upper_barrier capture single or double barrier levels.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * FX Digital Option Instrument Table
+ *
+ * Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
+ * FxTouchOption (OneTouch/NoTouch), FxDoubleTouchOption. Uses
+ * ForeignCurrency/DomesticCurrency naming to match ORE XML semantics.
+ * option_type is absent for touch products (no Call/Put distinction);
+ * strike is absent for touch products; lower_barrier/upper_barrier
+ * capture single or double barrier levels.
+ */
 
 create table if not exists "ores_trading_fx_digital_option_instruments_tbl" (
     "instrument_id" uuid not null,
     "tenant_id" uuid not null,
-    "party_id" uuid not null,
     "version" integer not null,
-    "trade_id" uuid null,
     "trade_type_code" text not null,
+    "party_id" uuid not null,
+    "trade_id" uuid null,
     "foreign_currency" text not null,
     "domestic_currency" text not null,
     "payoff_currency" text not null,
@@ -66,9 +71,7 @@ create table if not exists "ores_trading_fx_digital_option_instruments_tbl" (
     check ("domestic_currency" <> ''),
     check ("payoff_currency" <> ''),
     check ("long_short" in ('Long', 'Short')),
-    check ("trade_type_code" in (
-        'FxDigitalOption', 'FxDigitalBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption'
-    ))
+    check ("trade_type_code" in ('FxDigitalOption', 'FxDigitalBarrierOption', 'FxTouchOption', 'FxDoubleTouchOption'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -76,22 +79,18 @@ create unique index if not exists fx_digital_option_instruments_version_uniq_idx
 on "ores_trading_fx_digital_option_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists fx_digital_option_instruments_id_uniq_idx
 on "ores_trading_fx_digital_option_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists fx_digital_option_instruments_tenant_idx
 on "ores_trading_fx_digital_option_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for RLS
 create index if not exists fx_digital_option_instruments_party_idx
 on "ores_trading_fx_digital_option_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade
 create unique index if not exists fx_digital_option_instruments_trade_id_idx
 on "ores_trading_fx_digital_option_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -106,11 +105,22 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
+    -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
+
+    -- Validate trade_type_code
     NEW.trade_type_code := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type_code);
+
+    -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
+    -- Version management
     select version into current_version
     from "ores_trading_fx_digital_option_instruments_tbl"
     where tenant_id = NEW.tenant_id
@@ -125,34 +135,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_fx_digital_option_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_fx_digital_option_instruments_insert_trg
 before insert on "ores_trading_fx_digital_option_instruments_tbl"
 for each row execute function ores_trading_fx_digital_option_instruments_insert_fn();
 
 create or replace rule ores_trading_fx_digital_option_instruments_delete_rule as
-on delete to "ores_trading_fx_digital_option_instruments_tbl" do instead
+on delete to "ores_trading_fx_digital_option_instruments_tbl" do instead (
     update "ores_trading_fx_digital_option_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

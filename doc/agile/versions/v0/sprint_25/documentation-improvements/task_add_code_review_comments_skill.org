@@ -26,11 +26,11 @@ Give the repo one consistent rule set for code comments: sparse, durable, above-
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
-| Now          | PR #1951 open; review round in progress. |
-| Waiting on   | Review of PR #1951.                     |
-| Next         | Merge PR #1951 once review is green.    |
+| Now          | Merged via PR #1951.                     |
+| Waiting on   | Nothing.                               |
+| Next         | None — task complete.                   |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -102,3 +102,16 @@ via its "Verifies task" field.
 | 10 | Task dates ahead of "today" | task doc | Declined | Scaffolded 2026-08-11 00:17 local after the date rolled over; dates accurate |
 
 * Result
+
+PR [#1951](https://github.com/OreStudio/OreStudio/pull/1951) — merged.
+
+Branch =feature/code-review-comments= commits:
+
+- =8ecd0199e= [docs] Add code-review-comments skill
+- =8bf47b67e= [agile] Add task for code-review-comments skill to Documentation improvements
+- =bb22c5f67= [agile] Record PR #1951 on task
+- =96e699430= [docs] Fix code-review-comments skill review findings
+- =9a736eae0= [docs] Add how_do_i_clean_code_comments recipe
+- =80eb28ecc= [docs] Regenerate skills catalogue
+- =3756c4f01= [agile] Record PR #1951 review round on task and story
+- =5eb71cf47= [docs] Fix recipe filetags for site validation

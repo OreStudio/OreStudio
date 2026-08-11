@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "../src/ir_curve_template_resolver.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
@@ -32,8 +32,8 @@ using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::domain::tenor_convention_resolution;
 using ores::synthetic::domain::ir_curve_template_entry;
-using ores::synthetic::service::ir_curve_refdata_context;
-using ores::synthetic::service::resolve;
+using ores::synthetic::feed::ir_curve_refdata_context;
+using ores::synthetic::feed::resolve;
 
 tenor make_tenor(const std::string& code, const std::string& unit, int multiplier) {
     tenor t;

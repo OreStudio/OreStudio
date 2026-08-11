@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_PREVIEW_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_PREVIEW_HANDLER_HPP
 
-#include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -41,6 +41,8 @@
 #include <vector>
 
 namespace ores::synthetic::service {
+
+using ores::synthetic::feed::ir_curve_feed_dt;
 
 namespace {
 inline auto& ir_curve_preview_handler_lg() {
@@ -85,6 +87,9 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::reply;
 using namespace ores::logging;
+using ores::synthetic::feed::build_ir_curve_refdata_context;
+using ores::synthetic::feed::price_ir_curve_entry;
+using ores::synthetic::feed::resolve;
 
 /**
  * @brief Stateless preview requests for an IR curve editor: sample short-rate paths (the process

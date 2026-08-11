@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/feed-producer-seam
+#+pr: 1955
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -30,11 +30,11 @@ auto-start, ingest) dispatches through it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -51,9 +51,45 @@ auto-start, ingest) dispatches through it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The seam is built in one pass over the producers, then wired through the factory:
+
+1. *Interface*: =IFeed= replaces =IFxSpotFeed= in ores.marketdata.api
+   (=include/ores.marketdata.api/domain/i_feed.hpp=). It exposes the shape both
+   producers already have — =source_name()=, =qualifier()=, =role()=, =start()=,
+   =stop()=, =publish_count()= — plus a =conflict_key()= that joins (qualifier,
+   role) with a unit separator (the IR qualifier+role conflict semantics,
+   expressed by the feed itself). =start()= drops the on_tick handler: the only
+   caller passes a no-op, and both feeds publish to NATS themselves. =ore_key()=
+   stays a concrete accessor on =fx_spot_feed= (FX-specific, no IR analog).
+
+2. *Producers move into ores.synthetic.api* (=include/ores.synthetic.api/feeds/=
+   + =src/feeds/=, namespace =ores::synthetic::feed=, =ORES_SYNTHETIC_API_EXPORT=):
+   =fx_spot_feed=, =ir_curve_feed=, =ir_curve_template_resolver=, and the
+   =make_*_feed= builders. =fx_spot_feed= gains a =source_name= constructor
+   parameter and derives its qualifier from its ore_key via
+   =split_market_series_key= at construction; =ir_curve_feed= gains
+   =: public IFeed= and =conflict_key()=. =synthetic_producer_subject= moves with
+   the FX producer so the factory builds subjects the same way the controller
+   does.
+
+3. *Factory*: =feed_factory= in the api maps a kind string to a producer builder
+   (=feed_build_context= with the nats client pair + caller bearer token, and
+   per-kind build inputs in a variant). =make_default_feed_factory()= registers
+   both kinds — the registration point for future asset classes.
+   =make_fx_spot_feed= builds from the persisted =fx_spot_generation_config= +
+   =gmm_component= rows (mirroring the auto-start path; the FX vintage
+   resolution stays in =feed_controller::start= until the client-supplied-params
+   path is deleted by the control-plane task).
+
+4. *Service wiring*: both auto-start walks dispatch through the factory. The FX
+   controller gains =add()= (mirroring =curve_feed_controller::add=); both
+   controllers accept =IFeed=. The ad-hoc =start()= path keeps its inline
+   construction until the per-config control-plane task deletes it.
+
+5. The api CMakeLists gains the producer deps (nats, marketdata.api,
+   marketdata.client/core, database, refdata.core); =component_files.cmake= is
+   regenerated; a factory test in the api tests covers both kinds, kind
+   enumeration, and wrong-input rejection.
 
 * Notes
 
@@ -72,12 +108,46 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1955][#1955]] | [marketdata,synthetic] Feed producer seam: common IFeed interface + per-kind factory |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | FX auto-start walk has no per-row try/catch, unlike the IR walk | projects/ores.synthetic/service/src/app/application.cpp | Declined | Pre-existing on main, deliberately preserved by the seam design. The claimed failure modes are unreachable: the walk hardcodes =fx_spot_feed_kind=, registered by the same =make_default_feed_factory()= call, and constructs the exact build-input variant the builder expects; empty components are already skip-with-warn. The uniform-auto-start task (E1F81BE2) merges the walks and makes skip-with-warn common code. |
+| 2 | FX tick publish not guarded; an uncaught throw would =std::terminate()= the service | projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp | Accepted | Publish wrapped in try/catch, logging "SYNTHETIC PUBLISH FAILED" and skipping the tick, mirroring =ir_curve_feed::start()=. Fixed in fde4bc008. |
+| 3 | Doc overstates =make_fx_spot_feed='s error behaviour | projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_spot_feed.hpp | Accepted | =@throws= corrected: throws only on empty components and non-positive =ticks_per_hour=; an unknown =process_type= falls back to the geometric engine, not an exception. Fixed in 252fa53cc. |
 
 * Result
+
+The seam is built and wired end to end:
+
+- =IFeed= replaces =IFxSpotFeed= in ores.marketdata.api (=domain/i_feed.hpp=):
+  =source_name()=, =qualifier()=, =role()=, =conflict_key()=, =start()=, =stop()=,
+  =publish_count()=. =start()= takes no handler; both producers publish to NATS
+  themselves. =ore_key()= remains a concrete accessor on =fx_spot_feed=.
+- Both producers implement it. =fx_spot_feed=, =ir_curve_feed= and
+  =ir_curve_template_resolver= moved to ores.synthetic.api (=feeds/=, namespace
+  =ores::synthetic::feed=, =ORES_SYNTHETIC_API_EXPORT=); =synthetic_producer_subject=
+  moved with the FX producer. =make_fx_spot_feed= builds an FX feed from its
+  persisted config plus =gmm_component= rows (the factory path leaves the FX vintage
+  lookup in =feed_controller::start= until the control-plane task deletes it);
+  =make_ir_curve_feed= builds the IR feed, vintage resolution included.
+- =feed_factory= maps a kind string to a producer builder: =feed_build_context=
+  (nats client pair + caller bearer token) and per-kind build inputs in a variant;
+  =make_default_feed_factory()= registers =fx_spot= and =ir_curve= — the
+  registration point for future asset classes.
+- Service wiring: both auto-start walks dispatch through the factory; both
+  controllers accept =IFeed=; =feed_controller::add()= downcasts internally for
+  status logging.
+- The api CMakeLists gained the producer deps; =component_files.cmake= regenerated;
+  =feed_factory_tests.cpp= covers both kinds, kind enumeration, unknown-kind and
+  wrong-input rejection, and replacement registration.
+
+Acceptance: the interface exists and generalizes =IFxSpotFeed=; both producers
+implement it (=ir_curve_feed= gained the interface it lacked); the factory
+constructs both kinds; the interface lives in ores.marketdata.api and the
+producers register in ores.synthetic.api. All met.
+
+Verification: full build green; =compass build rat= green (60 suites); the new
+factory test 6/6 passing; the synthetic service restarted on the new build.

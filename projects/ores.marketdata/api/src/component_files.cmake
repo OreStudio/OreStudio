@@ -50,7 +50,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/feed_binding_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/fx_spot_tick.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/fx_spot_tick_json_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/i_fx_spot_feed.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/i_feed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/ir_curve_tick.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/ir_curve_tick_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/market_data_identifier.hpp"

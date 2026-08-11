@@ -17,16 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_HPP
-#define ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_HPP
+#ifndef ORES_SYNTHETIC_API_FEEDS_IR_CURVE_FEED_HPP
+#define ORES_SYNTHETIC_API_FEEDS_IR_CURVE_FEED_HPP
 
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
+#include "ores.synthetic.api/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <atomic>
@@ -36,7 +38,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::synthetic::service {
+namespace ores::synthetic::feed {
 
 /**
  * @brief Thrown by make_ir_curve_feed() when cfg.price_source is "vintage" and no matching
@@ -45,7 +47,7 @@ namespace ores::synthetic::service {
  * FX, but as an exception rather than a result enum since make_ir_curve_feed already throws
  * std::invalid_argument for other construction failures (process_type/curve_role/tenor data).
  */
-class vintage_data_missing_error final : public std::runtime_error {
+class ORES_SYNTHETIC_API_EXPORT vintage_data_missing_error final : public std::runtime_error {
 public:
     explicit vintage_data_missing_error(const std::string& detail)
         : std::runtime_error(detail) {}
@@ -54,9 +56,10 @@ public:
 /**
  * @brief Concrete IR curve family feed: one short-rate process step fans out to N tenor ticks.
  *
- * Mirrors fx_spot_feed's fixed-mode tick clock, but where fx_spot_feed publishes one scalar per
- * step, ir_curve_feed publishes N (one per ir_curve_template_entry) — the "one process step -> N
- * tenor ticks" shape a curve needs (see the tick-batch-publishing task). Each generation step:
+ * Implements IFeed. Mirrors fx_spot_feed's fixed-mode tick clock, but where fx_spot_feed
+ * publishes one scalar per step, ir_curve_feed publishes N (one per ir_curve_template_entry) —
+ * the "one process step -> N tenor ticks" shape a curve needs (see the tick-batch-publishing
+ * task). Each generation step:
  *   1. Advances the short-rate process to get a new state.
  *   2. Derives every template entry's rate from that one state's discount_factor()s, via
  *      curve_instrument_pricer (deposit/FRA/par-rate solve, dispatched by curve_role) — so the
@@ -69,7 +72,7 @@ public:
  * the family wildcard and writes one market_observation row per tick. The synthetic service has
  * no marketdata writes.
  */
-class ir_curve_feed final {
+class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::IFeed {
 public:
     ir_curve_feed(ores::nats::service::client& nats,
                   ores::utility::uuid::tenant_id tenant_id,
@@ -84,32 +87,36 @@ public:
                   double ticks_per_hour,
                   std::vector<ir_curve_resolved_entry> entries);
 
-    void start();
-    void stop();
-    std::uint64_t publish_count() const {
+    void start() override;
+    void stop() override;
+    std::uint64_t publish_count() const override {
         return publish_count_.load(std::memory_order_relaxed);
     }
-    const std::string& source_name() const {
+    const std::string& source_name() const override {
         return source_name_;
     }
     /**
      * @brief The published market-data key (series_type/metric implied, ir_curve_qualifier(cfg))
-     * -- the value curve_feed_controller checks for cross-config collisions (together with
-     * role()), since it is what every consumer actually looks up by, unlike source_name (unique
-     * per config, not per market-data identity).
+     * -- the value controllers check for cross-config collisions (together with role()), since
+     * it is what every consumer actually looks up by, unlike source_name (unique per config, not
+     * per market-data identity).
      */
-    const std::string& qualifier() const {
+    const std::string& qualifier() const override {
         return qualifier_;
     }
 
     /**
      * @brief Whether this curve discounts, projects, or both (oresmd's curve_role) --
-     * curve_feed_controller only treats two feeds as conflicting when both qualifier() AND
-     * role() match, so a discount curve and a projection curve for the same
-     * (currency_code, index_family, tenor) can run side by side.
+     * controllers only treat two feeds as conflicting when both qualifier() AND role() match, so
+     * a discount curve and a projection curve for the same (currency_code, index_family, tenor)
+     * can run side by side.
      */
-    const std::string& role() const {
+    const std::string& role() const override {
         return role_;
+    }
+
+    std::string conflict_key() const override {
+        return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
     }
 
 private:
@@ -157,7 +164,7 @@ private:
  * @throws vintage_data_missing_error if cfg.price_source is "vintage" and no matching observation
  * is found (or the config has no DEPOSIT entry to anchor on).
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     ores::nats::service::client& nats,
     ores::nats::service::nats_client& auth_nats,
     const ores::synthetic::domain::ir_curve_generation_config& cfg,
@@ -176,9 +183,8 @@ ORES_SYNTHETIC_SERVICE_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
  * resolved has no DEPOSIT entry. Exposed separately from make_ir_curve_feed's vintage resolution
  * so the pure selection logic is unit-testable without a live market_data_client.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT const ir_curve_resolved_entry*
+ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
 select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved);
 
 }
-
 #endif

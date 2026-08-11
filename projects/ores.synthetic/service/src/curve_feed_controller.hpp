@@ -20,7 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_CURVE_FEED_CONTROLLER_HPP
 #define ORES_SYNTHETIC_SERVICE_CURVE_FEED_CONTROLLER_HPP
 
-#include "ir_curve_feed.hpp"
+#include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <map>
 #include <memory>
 #include <mutex>
@@ -80,7 +81,7 @@ public:
      * @return false if skipped due to a qualifier conflict (with @p out_conflicting_source_name
      * set to the running feed's source_name), true if started.
      */
-    bool add(std::shared_ptr<ir_curve_feed> feed,
+    bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
              std::string* out_conflicting_source_name = nullptr) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
@@ -105,7 +106,7 @@ public:
      * *different* feed already holds its qualifier. Use running_source_name_for_qualifier() to
      * build an actionable message when this returns qualifier_conflict.
      */
-    start_result start(std::shared_ptr<ir_curve_feed> feed) {
+    start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
         if (feeds_.contains(source_name))
@@ -182,7 +183,7 @@ public:
 
 private:
     struct running_feed {
-        std::shared_ptr<ir_curve_feed> feed;
+        std::shared_ptr<ores::marketdata::domain::IFeed> feed;
         std::string qualifier;
         std::string role;
         std::thread thread;

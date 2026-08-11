@@ -44,8 +44,14 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.eventing.api.lib
         ores.platform.lib
+        ores.nats.lib
+        ores.marketdata.api.lib
+        ores.database.lib
     PRIVATE
         ores.utility.lib
+        ores.marketdata.client.lib
+        ores.marketdata.core.lib
+        ores.refdata.core.lib
         faker-cxx::faker-cxx
         libfort::fort)
 

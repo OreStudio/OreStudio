@@ -21,8 +21,6 @@
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_CONFIG_HANDLER_HPP
 
 #include "curve_feed_controller.hpp"
-#include "ir_curve_feed.hpp"
-#include "ir_curve_template_resolver.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -53,6 +51,11 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::reply;
 using namespace ores::logging;
+using ores::synthetic::feed::build_ir_curve_refdata_context;
+using ores::synthetic::feed::ir_curve_qualifier;
+using ores::synthetic::feed::ir_curve_tenor_convention_code;
+using ores::synthetic::feed::make_ir_curve_feed;
+using ores::synthetic::feed::vintage_data_missing_error;
 
 /**
  * @brief NATS handler for IR curve feed start/stop/list control messages -- the on-demand

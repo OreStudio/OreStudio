@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
-#define ORES_SYNTHETIC_SERVICE_IR_CURVE_TEMPLATE_RESOLVER_HPP
+#ifndef ORES_SYNTHETIC_API_FEEDS_IR_CURVE_TEMPLATE_RESOLVER_HPP
+#define ORES_SYNTHETIC_API_FEEDS_IR_CURVE_TEMPLATE_RESOLVER_HPP
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.database/domain/context.hpp"
@@ -29,7 +29,7 @@
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
-#include "ores.synthetic.service/export.hpp"
+#include "ores.synthetic.api/export.hpp"
 #include <chrono>
 #include <cstddef>
 #include <map>
@@ -37,7 +37,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::synthetic::service {
+namespace ores::synthetic::feed {
 
 /**
  * @brief Year-fraction one IR curve feed tick represents, matching the "1 tick == 1 calendar
@@ -102,7 +102,7 @@ struct ir_curve_refdata_context final {
  * Shared by feed construction (ir_curve_feed.cpp) and by convention selection in the
  * config-start paths, so the two can never disagree on a config's series identity.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::string
+ORES_SYNTHETIC_API_EXPORT std::string
 ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cfg);
 
 /**
@@ -110,7 +110,7 @@ ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cf
  * qualifier: the FOMC raw grid (qualifier "...-FOMC") resolves under RATES_SPOT_FOMC;
  * everything else under RATES_SPOT_FORWARD.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::string
+ORES_SYNTHETIC_API_EXPORT std::string
 ir_curve_tenor_convention_code(const std::string& qualifier);
 
 /**
@@ -138,7 +138,7 @@ ir_curve_tenor_convention_code(const std::string& qualifier);
  *   comment calls for), clamping the final step to the entry's own resolved maturity date so an
  *   irregular final stub is folded into the last accrual period rather than silently dropped.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::vector<ir_curve_resolved_entry>
+ORES_SYNTHETIC_API_EXPORT std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
         const ir_curve_refdata_context& ctx,
         const std::string& fixed_leg_payment_frequency_code);
@@ -156,9 +156,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
  * @return An empty optional if the convention is not found (a misconfigured environment, not a
  * per-request error) -- callers should treat that as fatal to the feed being started.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx,
-                               const std::string& tenor_convention_code);
+ORES_SYNTHETIC_API_EXPORT std::optional<ir_curve_refdata_context>
+build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code);
 
 /**
  * @brief Derives one resolved entry's published rate from a short-rate process's
@@ -169,7 +168,7 @@ build_ir_curve_refdata_context(ores::database::context ctx,
  * (ir_curve_preview_handler) -- both need "one process state -> one entry's rate", so this is
  * factored out rather than duplicated between them.
  */
-ORES_SYNTHETIC_SERVICE_EXPORT double
+ORES_SYNTHETIC_API_EXPORT double
 price_ir_curve_entry(const ores::analytics::quant::domain::IYieldCurveProcess& process,
                      const ir_curve_resolved_entry& entry);
 

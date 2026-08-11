@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
-#include "fx_spot_feed.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -42,39 +42,15 @@
 #include <mutex>
 #include <random>
 #include <rfl/enums.hpp>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
 
 namespace ores::synthetic::service {
 
-/**
- * @brief Build the producer subject from source_name and binding_mode. '.'
- * is kept (it is the NATS hierarchy separator and source names are dotted),
- * but any character that is not a safe subject token — whitespace, wildcards
- * ('*', '>'), or non-alphanumerics other than '.', '_', '-' — is replaced
- * with '_' so a stray value cannot produce surprise routing or a publish
- * error.
- *
- * sandboxed feeds publish under a distinct "synthetic.v1.sandbox.tick."
- * prefix rather than "synthetic.v1.tick." -- the marketdata ingest loop's
- * subscription subject is always derived from a feed_binding's source_name
- * as "synthetic.v1.tick." + source_name (see feed_ingest_loop.cpp), so a
- * sandboxed feed's ticks are structurally unreachable from the bound-feed
- * resolution path regardless of whether a feed_binding for this source_name
- * exists.
- */
-inline std::string synthetic_producer_subject(const std::string& source_name,
-                                              ores::synthetic::domain::binding_mode binding_mode) {
-    std::string token;
-    token.reserve(source_name.size());
-    for (unsigned char c : source_name) {
-        const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
-        token += safe ? static_cast<char>(c) : '_';
-    }
-    const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ? "synthetic.v1.sandbox.tick." + token : "synthetic.v1.tick." + token;
-}
+using ores::synthetic::feed::fx_spot_feed;
+using ores::synthetic::feed::synthetic_producer_subject;
 
 /**
  * @brief Whether start() should auto-create a marketdata feed_binding for
@@ -239,13 +215,14 @@ public:
                 auto feed =
                     std::make_shared<fx_spot_feed>(nats_,
                                                    ore_key,
+                                                   key,
                                                    synthetic_producer_subject(key, binding_mode),
                                                    std::move(process),
                                                    ticks_per_hour);
                 running_feed rf;
                 rf.feed = feed;
                 rf.binding_mode = binding_mode;
-                rf.thread = std::thread([feed]() { feed->start([](const auto& /*tick*/) {}); });
+                rf.thread = std::thread([feed]() { feed->start(); });
                 feeds_.emplace(key, std::move(rf));
                 BOOST_LOG_SEV(lg(), ores::logging::info)
                     << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key
@@ -269,6 +246,40 @@ public:
         if (should_ensure_feed_binding(already_running, binding_mode, stored_binding_mode))
             ensure_feed_binding(ore_key, key, caller_bearer_token);
         return already_running ? start_result::already_running : start_result::started;
+    }
+
+    /**
+     * @brief Config-driven start path: registers an already-constructed feed as running and
+     * spawns its tick thread, mirroring curve_feed_controller::add(). Unlike start(), it does
+     * no vintage check, binding auto-creation, or process construction -- the caller (auto-start)
+     * built the feed from persisted config via the factory, including any vintage resolution the
+     * builder performed. Returns false without starting when a feed with the same source_name is
+     * already running.
+     */
+    bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+             ores::synthetic::domain::binding_mode binding_mode) {
+        auto fx = std::dynamic_pointer_cast<fx_spot_feed>(std::move(feed));
+        if (!fx)
+            throw std::invalid_argument("feed_controller::add: feed is not an fx_spot_feed");
+        const std::string key = fx->source_name();
+        {
+            std::lock_guard lock(mu_);
+            if (feeds_.contains(key))
+                return false;
+            running_feed rf;
+            rf.feed = fx;
+            rf.binding_mode = binding_mode;
+            rf.thread = std::thread([fx]() { fx->start(); });
+            feeds_.emplace(key, std::move(rf));
+            BOOST_LOG_SEV(lg(), ores::logging::info)
+                << "SYNTHETIC START: source='" << key << "' ore_key='" << fx->ore_key()
+                << "' subject='" << synthetic_producer_subject(key, binding_mode)
+                << "' binding_mode='" << rfl::enum_to_string(binding_mode) << "' — now "
+                << feeds_.size() << " feed(s) running";
+            if (!status_thread_.joinable())
+                status_thread_ = std::thread(&feed_controller::status_loop, this);
+        }
+        return true;
     }
 
     /**

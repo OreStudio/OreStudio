@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
@@ -32,14 +32,14 @@
 #include <stdexcept>
 #include <thread>
 
-namespace ores::synthetic::service {
+namespace ores::synthetic::feed {
 
 using namespace ores::logging;
 
 namespace {
 
 auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.synthetic.service.ir_curve_feed");
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.ir_curve_feed");
     return instance;
 }
 
@@ -152,7 +152,7 @@ void ir_curve_feed::stop() {
     stop_flag_.store(true, std::memory_order_relaxed);
 }
 
-ORES_SYNTHETIC_SERVICE_EXPORT const ir_curve_resolved_entry*
+ORES_SYNTHETIC_API_EXPORT const ir_curve_resolved_entry*
 select_vintage_anchor_entry(const std::vector<ir_curve_resolved_entry>& resolved) {
     const ir_curve_resolved_entry* anchor = nullptr;
     for (const auto& e : resolved) {

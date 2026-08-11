@@ -25,8 +25,8 @@ namespace {
 const std::string tags("[feed_controller]");
 
 using ores::synthetic::domain::binding_mode;
+using ores::synthetic::feed::synthetic_producer_subject;
 using ores::synthetic::service::should_ensure_feed_binding;
-using ores::synthetic::service::synthetic_producer_subject;
 
 }
 

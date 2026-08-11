@@ -93,10 +93,10 @@ public:
         return source_name_;
     }
     /**
-     * @brief The published market-data key (series_type/metric implied, currency_code +
-     * index_display_suffix(cfg)) -- the value curve_feed_controller checks for cross-config
-     * collisions (together with role()), since it is what every consumer actually looks up by,
-     * unlike source_name (unique per config, not per market-data identity).
+     * @brief The published market-data key (series_type/metric implied, ir_curve_qualifier(cfg))
+     * -- the value curve_feed_controller checks for cross-config collisions (together with
+     * role()), since it is what every consumer actually looks up by, unlike source_name (unique
+     * per config, not per market-data identity).
      */
     const std::string& qualifier() const {
         return qualifier_;

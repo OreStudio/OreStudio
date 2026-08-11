@@ -172,19 +172,6 @@ std::string lowercase(std::string s) {
     return s;
 }
 
-// Display/subject suffix for a curve's index (e.g. "SOFR" or "LIBOR-3M"), built from
-// index_family/tenor -- mirrors ores.qt.synthetic's own ir_index_display_suffix() (same shape,
-// separate component with no natural common header for a one-line helper).
-std::string index_display_suffix(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
-    auto family = cfg.index_family;
-    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
-        return static_cast<char>(std::toupper(c));
-    });
-    if (cfg.tenor.empty())
-        return family;
-    return family + "-" + cfg.tenor;
-}
-
 // ISO date part of an observation_datetime -- see feed_controller::date_part()'s own copy of this
 // (duplicated rather than shared: the two live in different components with no natural common
 // header for a one-line helper).
@@ -216,7 +203,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                ", date=" + cfg.vintage_date + ", point_id=" + anchor->point_id + ".";
     };
 
-    const auto qualifier = cfg.currency_code + "/" + index_display_suffix(cfg);
+    const auto qualifier = ir_curve_qualifier(cfg);
 
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
@@ -308,7 +295,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            "synthetic.v1.curve_family." + cfg.source_name,
                                            "RATES",
                                            "YIELD",
-                                           cfg.currency_code + "/" + index_display_suffix(cfg),
+                                           ir_curve_qualifier(cfg),
                                            cfg.role,
                                            std::move(process),
                                            static_cast<double>(cfg.ticks_per_hour),

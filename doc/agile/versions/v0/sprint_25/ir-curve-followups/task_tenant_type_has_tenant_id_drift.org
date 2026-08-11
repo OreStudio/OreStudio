@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/tenant-type-has-tenant-id-drift
-#+pr:
+#+pr: 1961
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -129,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1961][#1961]] | [ores.iam] Reconcile IAM lookup models with domain_entity format |
 
 * Review
 

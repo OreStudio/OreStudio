@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 368E2B3E-CD2C-4FD5-90DD-D0E935810F4D
+:END:
+#+title: Story: Absorb PR checks locally: targeted checks, local review, CDash submissions
+#+description: We spend too long waiting for GitHub PR checks. Absorb their cost locally: classify each change, run only the checks it needs, review code locally as a skill, and submit builds to CDash as experimental. GitHub keeps the continuous builds and nightlies. Objective: higher velocity without losing quality.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+We spend a lot of time waiting for GitHub PR checks. The site checks and drift checks add little signal at PR time, yet they gate every merge. Absorb their cost locally instead:
+
+- Submit-PR skills classify the change and run only the checks it needs. A doc-only change runs the site build. A C++ change runs the full build and tests.
+- Code review runs locally as a skill. Findings are registered against the task and addressed before the PR goes up.
+- ctest runs locally. Builds submit to CDash as experimental for visibility.
+- GitHub CI keeps the continuous builds and nightlies.
+
+The objective is higher velocity without losing quality. More analysis is needed on every CI workflow and on how it maps to a local equivalent.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- Site checks and drift checks are removed from the PR gate.
+- Submit-PR skills classify the change type and run the matching local checks.
+- A doc-only change does not trigger a full build.
+- A C++ change runs the full build and ctest locally.
+- Code review runs locally as a skill and registers findings against the task.
+- Local builds submit to CDash as experimental builds.
+- GitHub CI keeps the continuous builds and nightlies.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] | BACKLOG | | | Inventory every GitHub Actions workflow and check that gates PRs today (site checks, drift checks, build, ctest, code review, pr-gate, ...). For each, decide its fate: run locally before submit, stay on GitHub, or retire. Produce the change-classification rules the submit-PR skills will use. |
+| [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | STARTED | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | BACKLOG | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+
+* Decisions
+
+* Out of scope
+
+- Changing what GitHub CI runs: the continuous builds and nightlies stay in place.
+- Retiring CDash: it stays, with local builds submitting as experimental.
+- Tooling beyond the submit-PR and review skills, and beyond the check mappings the analysis task produces.

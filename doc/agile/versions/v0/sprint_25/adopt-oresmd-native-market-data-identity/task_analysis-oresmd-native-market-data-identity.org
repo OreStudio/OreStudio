@@ -322,6 +322,30 @@ queries that exist today match the whole identity, not one component.
 The =series_type= filter in the Qt models is a coarse prefix; with a
 URI it becomes a prefix match on the scheme path (=oresmd://fx/...=).
 
+*** 4.4 Canonical form
+
+Equality lookup needs a canonical form: one string per identifier.
+=oresmd_parser::to_uri= already provides one
+(=oresmd_parser.cpp:356-416=):
+
+- Parameter order is fixed per asset class. =to_uri= appends the
+  parameters in a hardcoded order.
+- Asset class, pair, ccy, ticker, and codes are lowercased.
+- Absent fields are skipped. "Not set" has one spelling.
+
+The plan pins down the rest in step 0:
+
+- Value spelling: =tenor= and =point= pass through verbatim. The
+  canonical spelling must come from the caller; refdata tenors
+  provide it. A typed "6m" and a program-built "6M" are two
+  strings. The canonical form is the refdata spelling.
+- Round-trip tests: =parse(to_uri(id)) == id= and
+  =to_uri(parse(uri)) == uri= for canonical input, plus equality of
+  semantically-equal identifiers. These tests make the canonical
+  form a contract, not an accident.
+- Percent-encoding: boost::urls encodes and decodes. The stored
+  string is the encoded canonical form. Matching uses the same form.
+
 ** 5. The projection boundary
 
 - Forward projections (=to_quote_key=, =to_curve_key=,
@@ -381,7 +405,9 @@ The cutover touches, with no backwards compatibility:
 
 - Step 0, prerequisite: the inverse projection (ORE key to oresmd
   identifier) in =ores.marketdata.core/oresmd=, tested against the
-  registry's table.
+  registry's table. Pin the canonical form: round-trip tests
+  (=parse(to_uri(id)) == id=, =to_uri(parse(uri)) == uri=) and
+  value-spelling rules (tenor and point via refdata).
 - Step 1: identity core. =market_series= and =feed_binding= gain
   =oresmd_uri=; backfill; legacy columns dropped; repositories,
   registrars, and ingest loops read URIs; auto-create uses

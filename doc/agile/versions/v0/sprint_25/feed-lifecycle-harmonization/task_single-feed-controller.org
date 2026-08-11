@@ -29,11 +29,11 @@ qualifier+role semantics) or become uniform behaviour — not a second class.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -116,3 +116,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented per the Plan, with one deviation noted below.
+
+One =feed_controller= now owns every feed kind; =curve_feed_controller=
+and its test file are deleted. The shared shape (running map keyed by
+source_name, thread-per-feed, start/stop/list/running_count/join) is
+unchanged; the IR qualifier+role conflict semantics flow through the
+feed's own =IFeed::conflict_key()= on all three registration paths
+(=add()=, =start(IFeed)=, and the FX client-supplied-params =start()=),
+reported with the holding source_name via
+=running_source_name_for_conflict_key()=. =ir_curve_feeds_conflict=
+became the uniform =feeds_conflict= helper with the empty-qualifier
+guard; it now also rejects two FX feeds on the same pair. The FX extras
+stayed FX-shaped: binding auto-creation and vintage availability only in
+the ad-hoc =start()= overload, and a uniform status loop logging
+source_name + publish_count. Dead code dropped: =resolve_series()= and
+its members (=md_client_=, =tenant_id_=, =uuid_gen_=); the ctor now
+takes (nats, auth_nats) only.
+
+Callers collapsed to one =ctrl=: registrar and application pass a single
+controller (auto-start walk now runs both kinds through it); the folder
+handler's two loops share one =add()= pattern with the
+conflicting-source-name out param (the IR pre-check is gone — =add()='s
+out param distinguishes the same cases); the IR on-demand handler uses
+=start()= plus =running_source_name_for_conflict_key()=; the FX ad-hoc
+handler's start gained the qualifier_conflict case with the same out
+param. Stale comments naming the deleted class were updated.
+
+Deviation from the Plan: =add()= keeps the =binding_mode= parameter (as
+two overloads) instead of dropping it. The Plan's "drops binding_mode"
+reading would have stored the bound default for every config-driven
+feed, changing the ad-hoc =start()='s =should_ensure_feed_binding= gate
+for sandboxed feeds (a later ad-hoc restart would create a feed_binding
+for a sandboxed feed) — a behaviour change, violating the acceptance
+criterion "behaviour is unchanged for existing callers". The parameter
+is stored purely as that restart gate.
+
+Verification: full build green; DB recreated (schema 0.0.25); rat green
+on the fresh DB. Component tests: 195 assertions in 39 test cases,
+including the conflict tests moved from the deleted test file.

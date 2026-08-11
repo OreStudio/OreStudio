@@ -213,11 +213,9 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
         }));
     }
 
-    // The values insert trigger (security definer) resolves
-    // parameter_definition_id against the system tenant, while the handler
-    // reads definitions in the caller's tenant context. Seed test-tenant
-    // copies of the system VASICEK definitions with the same ids so both
-    // sides agree on the rows.
+    // The values insert trigger (security definer) and the handler both
+    // resolve parameter_definition_id against the system tenant, so the
+    // values below reference the system catalogue's ids directly.
     std::vector<dom::yield_curve_process_parameter_definition> definitions;
     {
         repo::yield_curve_process_parameter_definition_repository definition_repo;
@@ -231,12 +229,6 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
         for (const auto& d : definitions)
             names.insert(d.parameter_name);
         REQUIRE(names == std::set<std::string>({"initial_rate", "kappa", "sigma", "theta"}));
-    }
-    for (const auto& d : definitions) {
-        auto copy = d;
-        copy.tenant_id = h.tenant_id();
-        copy.version = 0;
-        repo::yield_curve_process_parameter_definition_repository().write(party_ctx, copy);
     }
 
     dom::folder root;

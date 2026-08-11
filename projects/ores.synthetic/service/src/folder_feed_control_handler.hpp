@@ -22,6 +22,7 @@
 
 #include "curve_feed_controller.hpp"
 #include "feed_controller.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -141,7 +142,12 @@ public:
         const auto ir_configs = ir_repo.read_latest(ctx);
         const auto entries = entry_repo.read_latest(ctx);
         const auto values = value_repo.read_latest(ctx);
-        const auto definitions = definition_repo.read_latest(ctx);
+        // The definitions catalogue is system-tenant owned: the publish path
+        // resolves each value's parameter_definition_id from the system
+        // tenant, so a read scoped to the caller's tenant returns nothing
+        // for any real tenant. Read with a system-tenant context instead.
+        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
+        const auto definitions = definition_repo.read_latest(sys_ctx);
         // Keyed by container id, not just checked for enabled/existence, so
         // each feed's binding_mode (bound/sandboxed) can be forwarded and
         // the container's enabled state checked — mirrors application.cpp's

@@ -243,6 +243,43 @@ void append_enum_if(boost::urls::url& u, std::string_view key, const std::option
 
 namespace ores::marketdata::core {
 
+namespace {
+
+// Which identifier fields the canonical container governs, per asset class: the
+// ir identifier carries tenor and point; fx, equity, credit, commodity, and
+// inflation carry point; correlation carries neither.
+void validate_canonical(const domain::market_data_identifier& identifier,
+                        const canonical_values& canonical) {
+    const auto check_tenor = [&canonical](const std::optional<std::string>& v) {
+        if (v && !canonical.tenor.contains(*v))
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "Unknown tenor spelling '{}': not in the supplied canonical values.", *v)));
+    };
+    const auto check_point = [&canonical](const std::optional<std::string>& v) {
+        if (v && !canonical.point.contains(*v))
+            BOOST_THROW_EXCEPTION(oresmd_exception(std::format(
+                "Unknown point spelling '{}': not in the supplied canonical values.", *v)));
+    };
+
+    std::visit(
+        [&](const auto& id) {
+            using T = std::decay_t<decltype(id)>;
+            if constexpr (std::is_same_v<T, ir_market_data_identifier>) {
+                check_tenor(id.tenor);
+                check_point(id.point);
+            } else if constexpr (std::is_same_v<T, fx_market_data_identifier> ||
+                                 std::is_same_v<T, equity_market_data_identifier> ||
+                                 std::is_same_v<T, credit_market_data_identifier> ||
+                                 std::is_same_v<T, commodity_market_data_identifier> ||
+                                 std::is_same_v<T, inflation_market_data_identifier>) {
+                check_point(id.point);
+            }
+        },
+        identifier);
+}
+
+}
+
 market_data_identifier oresmd_parser::parse(const domain::oresmd_uri& uri) {
     const auto r = boost::urls::parse_uri(uri.value);
     if (r.has_error())
@@ -297,6 +334,12 @@ domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& i
         identifier);
 
     return domain::oresmd_uri{u.buffer()};
+}
+
+domain::oresmd_uri oresmd_parser::to_uri(const domain::market_data_identifier& identifier,
+                                         const canonical_values& canonical) {
+    validate_canonical(identifier, canonical);
+    return to_uri(identifier);
 }
 
 }

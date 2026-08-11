@@ -564,8 +564,7 @@ TEST_CASE("canonical_string_round_trip_equity", tags) {
 }
 
 TEST_CASE("canonical_string_round_trip_credit", tags) {
-    const auto s =
-        uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
+    const auto s = uri("oresmd://credit/itraxx-europe?ccy=eur&type=quote&quote=cds&point=sr,5y");
     REQUIRE(oresmd_parser::to_uri(oresmd_parser::parse(s)).value == s.value);
 }
 
@@ -611,12 +610,13 @@ TEST_CASE("to_uri_with_canonical_values_accepts_known_spellings", tags) {
     canonical_values cv;
     cv.tenor = {"3m", "1d"};
     cv.point = {"5y"};
-    const auto id = oresmd_parser::parse(
-        uri("oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=rate&quote=ir_swap&point=5y"));
-    REQUIRE(oresmd_parser::to_uri(id, cv).value ==
-            "oresmd://ir/"
-            "usd?index=libor&tenor=3m&role=projection&type=quote&metric=rate&quote=ir_swap&point=5y");
+    const auto id = oresmd_parser::parse(uri(
+        "oresmd://ir/"
+        "usd?index=libor&tenor=3m&role=projection&type=quote&metric=rate&quote=ir_swap&point=5y"));
+    REQUIRE(
+        oresmd_parser::to_uri(id, cv).value ==
+        "oresmd://ir/"
+        "usd?index=libor&tenor=3m&role=projection&type=quote&metric=rate&quote=ir_swap&point=5y");
 }
 
 TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_tenor_spelling", tags) {
@@ -640,8 +640,29 @@ TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_point_spelling", tags
 TEST_CASE("to_uri_with_canonical_values_rejects_an_unknown_credit_point_spelling", tags) {
     canonical_values cv;
     cv.point = {"sr,5y"};
-    const auto id = oresmd_parser::parse(
-        uri("oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,10y"));
+    const auto id =
+        oresmd_parser::parse(uri("oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,10y"));
+    REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);
+}
+
+TEST_CASE("to_uri_with_canonical_values_accepts_a_vol_composite_point", tags) {
+    // A type=vol identifier stores the whole composite "5y,2y,atm" as its point, so
+    // the container matches the composite, not its parts; the parser also lifts the
+    // composite's middle part into the identifier's tenor, and the canonical URI
+    // serializes it (parse normalises the tenor-less input spelling).
+    canonical_values cv;
+    cv.tenor = {"2y"};
+    cv.point = {"5y,2y,atm"};
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
+    REQUIRE(oresmd_parser::to_uri(id, cv).value ==
+            "oresmd://ir/eur?tenor=2y&type=vol&point=5y,2y,atm");
+}
+
+TEST_CASE("to_uri_with_canonical_values_rejects_a_vol_point_that_is_not_the_composite", tags) {
+    canonical_values cv;
+    cv.tenor = {"2y"};
+    cv.point = {"5y", "2y", "atm"}; // the identifier's composite "5y,2y,atm" is not canonical
+    const auto id = oresmd_parser::parse(uri("oresmd://ir/eur?type=vol&point=5y,2y,atm"));
     REQUIRE_THROWS_AS(oresmd_parser::to_uri(id, cv), oresmd_exception);
 }
 
@@ -650,7 +671,8 @@ TEST_CASE("to_uri_with_empty_canonical_values_passes_scalar_identifiers", tags) 
     const canonical_values cv;
     const auto fx = oresmd_parser::parse(uri("oresmd://fx/eurusd?type=quote&quote=spot"));
     REQUIRE(oresmd_parser::to_uri(fx, cv).value == "oresmd://fx/eurusd?type=quote&quote=spot");
-    const auto cr = oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
+    const auto cr =
+        oresmd_parser::parse(uri("oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise"));
     REQUIRE(oresmd_parser::to_uri(cr, cv).value ==
             "oresmd://correlation/ccy-eur-usd?type=quote&quote=pairwise");
 }

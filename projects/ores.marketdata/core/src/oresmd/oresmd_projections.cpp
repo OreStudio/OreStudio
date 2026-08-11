@@ -20,6 +20,8 @@
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/oresmd/detail/oresmd_index_family_utils.hpp"
 #include "ores.marketdata.core/oresmd/detail/oresmd_string_utils.hpp"
+#include <algorithm>
+#include <cctype>
 #include <format>
 #include <magic_enum/magic_enum.hpp>
 #include <sstream>
@@ -70,7 +72,7 @@ constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
 constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
 constexpr std::string_view seasonality{"SEASONALITY"};
 constexpr std::string_view correlation{"CORRELATION"};
-}  // namespace ore_type_spec
+} // namespace ore_type_spec
 
 namespace ore_metric_spec {
 constexpr std::string_view rate{"RATE"};
@@ -80,7 +82,7 @@ constexpr std::string_view ratio{"RATIO"};
 constexpr std::string_view yield_spread{"YIELD_SPREAD"};
 constexpr std::string_view credit_spread{"CREDIT_SPREAD"};
 constexpr std::string_view base_correlation{"BASE_CORRELATION"};
-}  // namespace ore_metric_spec
+} // namespace ore_metric_spec
 
 namespace ore_vol_spec {
 constexpr std::string_view rate_lnvol{"RATE_LNVOL"};
@@ -88,7 +90,7 @@ constexpr std::string_view rate_nvol{"RATE_NVOL"};
 constexpr std::string_view rate_slnvol{"RATE_SLNVOL"};
 constexpr std::string_view shift{"SHIFT"};
 constexpr std::string_view price{"PRICE"};
-}  // namespace ore_vol_spec
+} // namespace ore_vol_spec
 
 std::vector<std::string> split_point(const std::string& point) {
     std::vector<std::string> parts;
@@ -513,6 +515,7 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
                        to_upper(*id.point));
 }
 
+
 /*
  * ─── Inverse projection: ORE quote key string → oresmd identifier ─────────────
  *
@@ -562,21 +565,30 @@ bool metric_is(std::string_view metric_segment, std::string_view expected) {
     return to_upper(metric_segment) == expected;
 }
 
+// The forward projections emit exactly three alphabetic characters per
+// currency segment; a key with anything else could not have come from a
+// forward projection.
+bool is_currency_code(const std::string& x) {
+    return x.size() == 3 && std::ranges::all_of(x, [](unsigned char c) { return std::isalpha(c); });
+}
+
 std::optional<market_data_identifier>
 from_fx_spot(const std::vector<std::string>& parts,
              const ores::ore::market::fx_quote_convention_checker* checker) {
     // FX/RATE/CCY1/CCY2 — scalar, no point.
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::rate))
         return std::nullopt;
-    auto base = parts[2];
-    auto quote = parts[3];
+    if (!is_currency_code(parts[2]) || !is_currency_code(parts[3]))
+        return std::nullopt;
+    auto base = to_upper(parts[2]);
+    auto quote = to_upper(parts[3]);
     if (checker) {
         const auto result = checker->check(base, quote);
         base = result.base_currency;
         quote = result.quote_currency;
     }
     fx_market_data_identifier id;
-    id.pair = to_upper(base) + to_upper(quote);
+    id.pair = base + quote;
     id.type = instrument_type::quote;
     id.quote_type = fx_quote_type::spot;
     return id;
@@ -585,6 +597,8 @@ from_fx_spot(const std::vector<std::string>& parts,
 std::optional<market_data_identifier> from_fx_fwd(const std::vector<std::string>& parts) {
     // FXFWD/RATE/CCY1/CCY2/TENOR.
     if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    if (!is_currency_code(parts[2]) || !is_currency_code(parts[3]))
         return std::nullopt;
     fx_market_data_identifier id;
     id.pair = to_upper(parts[2]) + to_upper(parts[3]);
@@ -634,8 +648,8 @@ std::optional<market_data_identifier> from_ir_discount(const std::vector<std::st
     return id;
 }
 
-std::optional<market_data_identifier>
-from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_ir_indexed(ir_quote_type qt,
+                                                      const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/INDEX/TENOR/POINT — the families whose qualifier includes
     // the index (MM, FRA, IMM_FRA, BASIS_SWAP, ZERO, MM_FUTURE, OI_FUTURE).
     if (parts.size() != 6)
@@ -655,8 +669,8 @@ from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
     return id;
 }
 
-std::optional<market_data_identifier>
-from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_ir_no_index(ir_quote_type qt,
+                                                       const std::vector<std::string>& parts) {
     // TYPE/METRIC/CCY/TENOR/POINT — the xccy/BMA families whose qualifier is just
     // ccy/tenor (CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP).
     if (parts.size() != 5)
@@ -709,8 +723,8 @@ std::optional<market_data_identifier> from_equity_spot(const std::vector<std::st
     return id;
 }
 
-std::optional<market_data_identifier>
-from_equity_curve(equity_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_equity_curve(equity_quote_type qt,
+                                                        const std::vector<std::string>& parts) {
     // EQUITY_FWD/PRICE/TICKER/CCY/TENOR, EQUITY_DIVIDEND/RATE/TICKER/CCY/TENOR.
     const auto expected =
         (qt == equity_quote_type::dividend) ? ore_metric_spec::rate : ore_metric_spec::price;
@@ -737,8 +751,8 @@ std::optional<market_data_identifier> from_commodity_spot(const std::vector<std:
     return id;
 }
 
-std::optional<market_data_identifier>
-from_commodity_curve(commodity_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_commodity_curve(commodity_quote_type qt,
+                                                           const std::vector<std::string>& parts) {
     // COMMODITY_FWD/PRICE/CODE/CCY/TENOR, CPR/RATE/CODE/CCY/TENOR.
     const auto expected =
         (qt == commodity_quote_type::cpr) ? ore_metric_spec::rate : ore_metric_spec::price;
@@ -753,12 +767,12 @@ from_commodity_curve(commodity_quote_type qt, const std::vector<std::string>& pa
     return id;
 }
 
-std::optional<market_data_identifier>
-from_credit_curve(credit_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_credit_curve(credit_quote_type qt,
+                                                        const std::vector<std::string>& parts) {
     // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR,
     // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — point = seniority,tenor.
-    const auto expected = (qt == credit_quote_type::cds) ? ore_metric_spec::credit_spread
-                                                         : ore_metric_spec::rate;
+    const auto expected =
+        (qt == credit_quote_type::cds) ? ore_metric_spec::credit_spread : ore_metric_spec::rate;
     if (parts.size() != 6 || !metric_is(parts[1], expected))
         return std::nullopt;
     credit_market_data_identifier id;
@@ -783,8 +797,8 @@ std::optional<market_data_identifier> from_credit_recovery(const std::vector<std
     return id;
 }
 
-std::optional<market_data_identifier>
-from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_credit_index(credit_quote_type qt,
+                                                        const std::vector<std::string>& parts) {
     // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT,
     // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES_TENOR/DETACHMENT — no ccy
     // dimension; point = tenor,detachment.
@@ -798,8 +812,8 @@ from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
     return id;
 }
 
-std::optional<market_data_identifier>
-from_inflation_swap(inflation_quote_type qt, const std::vector<std::string>& parts) {
+std::optional<market_data_identifier> from_inflation_swap(inflation_quote_type qt,
+                                                          const std::vector<std::string>& parts) {
     // ZC_INFLATIONSWAP/RATE/INDEX/POINT, YY_INFLATIONSWAP/RATE/INDEX/POINT.
     if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::rate))
         return std::nullopt;
@@ -811,7 +825,8 @@ from_inflation_swap(inflation_quote_type qt, const std::vector<std::string>& par
     return id;
 }
 
-std::optional<market_data_identifier> from_inflation_seasonality(const std::vector<std::string>& parts) {
+std::optional<market_data_identifier>
+from_inflation_seasonality(const std::vector<std::string>& parts) {
     // SEASONALITY/RATE/MULT/INDEX/POINT — the forward emits the literal MULT in the
     // third segment; it is accepted verbatim and dropped.
     if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
@@ -849,10 +864,9 @@ inverse_projection(const std::vector<std::string>& parts,
         return from_ir_discount(parts);
     if (type == ore_type_spec::swaption)
         return from_ir_swaption(parts);
-    if (type == ore_type_spec::mm || type == ore_type_spec::fra ||
-        type == ore_type_spec::imm_fra || type == ore_type_spec::basis_swap ||
-        type == ore_type_spec::zero || type == ore_type_spec::mm_future ||
-        type == ore_type_spec::oi_future) {
+    if (type == ore_type_spec::mm || type == ore_type_spec::fra || type == ore_type_spec::imm_fra ||
+        type == ore_type_spec::basis_swap || type == ore_type_spec::zero ||
+        type == ore_type_spec::mm_future || type == ore_type_spec::oi_future) {
         const auto qt = parse_enum_lower<ir_quote_type>(type);
         return qt ? from_ir_indexed(*qt, parts) : std::nullopt;
     }
@@ -968,8 +982,9 @@ oresmd_projections::from_ore_key(const std::string& key) {
     return inverse_projection(*parts, nullptr);
 }
 
-std::optional<domain::market_data_identifier> oresmd_projections::from_ore_key(
-    const std::string& key, const ores::ore::market::fx_quote_convention_checker& checker) {
+std::optional<domain::market_data_identifier>
+oresmd_projections::from_ore_key(const std::string& key,
+                                 const ores::ore::market::fx_quote_convention_checker& checker) {
     const auto parts = split_key(key);
     if (!parts)
         return std::nullopt;

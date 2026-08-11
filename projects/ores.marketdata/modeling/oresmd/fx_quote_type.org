@@ -15,10 +15,10 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | notes | comment |
-|-----------+----------+------------+-----------------+-----------------+-------+-------------------------------------------|
-| spot      | FX       | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2 | FX/RATE (spot rate, the default). |
-| fwd       | FXFWD    | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR | FXFWD/RATE (forward points). |
+| enum_name | ore_type | ore_constant | ore_metric | point_semantics | qualifier_shape | notes | comment |
+|-----------+----------+--------------+------------+-----------------+-----------------+-------+-------------------------------------------|
+| spot      | FX       | fx           | RATE       | scalar          | pair_substr     | 4-segment: FX/RATE/CCY1/CCY2 | FX/RATE (spot rate, the default). |
+| fwd       | FXFWD    | fxfwd        | RATE       | tenor           | pair_substr     | 5-segment: FXFWD/RATE/CCY1/CCY2/TENOR | FXFWD/RATE (forward points). |
 
 * Enum brief
 

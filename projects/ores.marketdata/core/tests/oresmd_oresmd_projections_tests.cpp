@@ -440,29 +440,39 @@ TEST_CASE("from_ore_key_ir_discount_rejects_a_curve_id_without_the_ccy_prefix", 
 }
 
 TEST_CASE("from_ore_key_ir_indexed_families", tags) {
-    REQUIRE(oresmd_projections::from_ore_key("MM/RATE/EUR/EURIBOR/3M/1M") ==
-            parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
-    REQUIRE(oresmd_projections::from_ore_key("FRA/RATE/EUR/EURIBOR/3M/6M") ==
-            parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m"));
-    REQUIRE(oresmd_projections::from_ore_key("IMM_FRA/RATE/USD/LIBOR/3M/5Y") ==
-            parse("oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y"));
-    REQUIRE(oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y") ==
-            parse("oresmd://ir/"
-                  "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
-    REQUIRE(oresmd_projections::from_ore_key("ZERO/RATE/EUR/EURIBOR/3M/5Y") ==
-            parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("MM/RATE/EUR/EURIBOR/3M/1M") ==
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=mm&metric=rate&point=1m"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("FRA/RATE/EUR/EURIBOR/3M/6M") ==
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=fra&metric=rate&point=6m"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("IMM_FRA/RATE/USD/LIBOR/3M/5Y") ==
+        parse(
+            "oresmd://ir/usd?index=libor&tenor=3m&type=quote&quote=imm_fra&metric=rate&point=5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("BASIS_SWAP/BASIS_SPREAD/EUR/EURIBOR/3M/5Y") ==
+        parse(
+            "oresmd://ir/"
+            "eur?index=euribor&tenor=3m&type=quote&quote=basis_swap&metric=basis_spread&point=5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("ZERO/RATE/EUR/EURIBOR/3M/5Y") ==
+        parse("oresmd://ir/eur?index=euribor&tenor=3m&type=quote&quote=zero&metric=rate&point=5y"));
     REQUIRE(oresmd_projections::from_ore_key("MM_FUTURE/PRICE/EUR/EURIBOR/3M/CME") ==
             parse("oresmd://ir/"
                   "eur?index=euribor&tenor=3m&type=quote&quote=mm_future&metric=price&point=cme"));
     REQUIRE(oresmd_projections::from_ore_key("OI_FUTURE/PRICE/USD/SOFR/3M/CME") ==
-            parse("oresmd://ir/usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
+            parse("oresmd://ir/"
+                  "usd?index=sofr&tenor=3m&type=quote&quote=oi_future&metric=price&point=cme"));
 }
 
 TEST_CASE("from_ore_key_ir_no_index_families", tags) {
     REQUIRE(oresmd_projections::from_ore_key("CC_BASIS_SWAP/BASIS_SPREAD/EUR/3M/5Y") ==
-            parse("oresmd://ir/eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
-    REQUIRE(oresmd_projections::from_ore_key("CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y") ==
-            parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
+            parse("oresmd://ir/"
+                  "eur?tenor=3m&type=quote&quote=cc_basis_swap&metric=basis_spread&point=5y"));
+    REQUIRE(
+        oresmd_projections::from_ore_key("CC_FIX_FLOAT_SWAP/RATE/USD/3M/5Y") ==
+        parse("oresmd://ir/usd?tenor=3m&type=quote&quote=cc_fix_float_swap&metric=rate&point=5y"));
     REQUIRE(oresmd_projections::from_ore_key("BMA_SWAP/RATIO/USD/3M/5Y") ==
             parse("oresmd://ir/usd?tenor=3m&type=quote&quote=bma_swap&metric=ratio&point=5y"));
 }
@@ -511,8 +521,9 @@ TEST_CASE("from_ore_key_credit", tags) {
     tranche_id.type = instrument_type::quote;
     tranche_id.quote_type = credit_quote_type::index_cds_tranche;
     tranche_id.point = "5y,0.07";
-    REQUIRE(oresmd_projections::from_ore_key("INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07") ==
-            market_data_identifier(tranche_id));
+    REQUIRE(
+        oresmd_projections::from_ore_key("INDEX_CDS_TRANCHE/BASE_CORRELATION/2I65BYEG6/5Y/0.07") ==
+        market_data_identifier(tranche_id));
 }
 
 TEST_CASE("from_ore_key_inflation", tags) {
@@ -547,16 +558,21 @@ TEST_CASE("from_ore_key_pins_the_canonical_uri_of_the_import_boundary", tags) {
             "oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M/5Y"))
                 .value == "oresmd://ir/usd?tenor=3m&type=quote&metric=rate&quote=ir_swap&point=5y");
-    REQUIRE(oresmd_parser::to_uri(*oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y"))
-                .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,5y");
+    REQUIRE(
+        oresmd_parser::to_uri(*oresmd_projections::from_ore_key("CDS/CREDIT_SPREAD/VOD/SR/EUR/5Y"))
+            .value == "oresmd://credit/vod?ccy=eur&type=quote&quote=cds&point=sr,5y");
 }
 
 TEST_CASE("from_ore_key_fx_spot_convention_correction_swaps_the_pair", tags) {
     // The FX/RATE correction survives the cutover: same fx_quote_convention_checker,
     // new target — the identifier's pair is swapped at parse time.
-    const ores::ore::market::fx_quote_convention_checker checker({{"EUR", "USD"}});
-    const auto swapped =
-        oresmd_projections::from_ore_key("FX/RATE/USD/EUR", checker);
+    // "{{" would be parsed as a mustache tag, so the pair set cannot be spelled
+    // as a braced init-list literal; build it in a statement instead.
+    const std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> pairs = {
+        {"EUR", "USD"},
+    };
+    const ores::ore::market::fx_quote_convention_checker checker(pairs);
+    const auto swapped = oresmd_projections::from_ore_key("FX/RATE/USD/EUR", checker);
     REQUIRE(swapped.has_value());
     REQUIRE(std::get<fx_market_data_identifier>(*swapped).pair == "EURUSD");
     // Without the checker the pair stays in key order.
@@ -566,14 +582,38 @@ TEST_CASE("from_ore_key_fx_spot_convention_correction_swaps_the_pair", tags) {
 }
 
 TEST_CASE("from_ore_key_fx_spot_convention_correction_leaves_an_unknown_pair_alone", tags) {
-    const ores::ore::market::fx_quote_convention_checker checker({{"EUR", "USD"}});
+    // "{{" would be parsed as a mustache tag, so the pair set cannot be spelled
+    // as a braced init-list literal; build it in a statement instead.
+    const std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> pairs = {
+        {"EUR", "USD"},
+    };
+    const ores::ore::market::fx_quote_convention_checker checker(pairs);
     const auto id = oresmd_projections::from_ore_key("FX/RATE/GBP/JPY", checker);
     REQUIRE(id.has_value());
     REQUIRE(std::get<fx_market_data_identifier>(*id).pair == "GBPJPY");
 }
 
+TEST_CASE("from_ore_key_fx_spot_convention_correction_normalises_case_before_checking", tags) {
+    // The checker's pair set is case-sensitive, so the inverse upper-cases the key's
+    // segments before checking — a lowercase reversed pair still swaps.
+    // "{{" would be parsed as a mustache tag, so the pair set cannot be spelled
+    // as a braced init-list literal; build it in a statement instead.
+    const std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> pairs = {
+        {"EUR", "USD"},
+    };
+    const ores::ore::market::fx_quote_convention_checker checker(pairs);
+    const auto id = oresmd_projections::from_ore_key("FX/RATE/usd/eur", checker);
+    REQUIRE(id.has_value());
+    REQUIRE(std::get<fx_market_data_identifier>(*id).pair == "EURUSD");
+}
+
 TEST_CASE("from_ore_key_convention_correction_only_touches_fx_spot", tags) {
-    const ores::ore::market::fx_quote_convention_checker checker({{"EUR", "USD"}});
+    // "{{" would be parsed as a mustache tag, so the pair set cannot be spelled
+    // as a braced init-list literal; build it in a statement instead.
+    const std::set<ores::ore::market::fx_quote_convention_checker::currency_pair> pairs = {
+        {"EUR", "USD"},
+    };
+    const ores::ore::market::fx_quote_convention_checker checker(pairs);
     // A fwd key with a reversed pair is not corrected — the boundary only ever
     // checked FX/RATE spot keys, and the inverse preserves that behaviour.
     const auto id = oresmd_projections::from_ore_key("FXFWD/RATE/USD/EUR/6M", checker);
@@ -591,8 +631,10 @@ TEST_CASE("from_ore_key_rejects_registry_types_without_an_oresmd_mapping", tags)
     REQUIRE_FALSE(oresmd_projections::from_ore_key("FX_OPTION/RATE/EUR/USD/1Y/25D").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("CAPFLOOR/RATE/USD/5Y/3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("INDEX_CDS_OPTION/RATE/CDX/5Y/1Y").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("EQUITY_OPTION/PRICE/AAPL/USD/1Y/100").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("COMMODITY_OPTION/PRICE/WTI/USD/1Y/100").has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::from_ore_key("EQUITY_OPTION/PRICE/AAPL/USD/1Y/100").has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::from_ore_key("COMMODITY_OPTION/PRICE/WTI/USD/1Y/100").has_value());
     REQUIRE_FALSE(
         oresmd_projections::from_ore_key("ZC_INFLATIONCAPFLOOR/RATE/UKRPI/5Y").has_value());
     REQUIRE_FALSE(
@@ -616,11 +658,18 @@ TEST_CASE("from_ore_key_rejects_malformed_keys", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("FX/RATE/EUR/USD/EXTRA").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("IR_SWAP/RATE/USD/2D/3M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("SWAPTION/RATE_LNVOL/EUR/5Y/2Y").has_value());
+    // Currency segments must be exactly three alphabetic characters (the same
+    // constraint parse_fx applies to the pair).
+    REQUIRE_FALSE(oresmd_projections::from_ore_key("FX/RATE/EU/USD").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_ore_key("FX/RATE/EURO/USD").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_ore_key("FXFWD/RATE/EU/USD/6M").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_ore_key("FXFWD/RATE/EURO/USD/6M").has_value());
     // Empty segments.
     REQUIRE_FALSE(oresmd_projections::from_ore_key("FX/RATE//USD").has_value());
     // A metric the forward never emits for the type.
     REQUIRE_FALSE(oresmd_projections::from_ore_key("FX/PRICE/EUR/USD").has_value());
-    REQUIRE_FALSE(oresmd_projections::from_ore_key("EQUITY_DIVIDEND/PRICE/AAPL/USD/1Y").has_value());
+    REQUIRE_FALSE(
+        oresmd_projections::from_ore_key("EQUITY_DIVIDEND/PRICE/AAPL/USD/1Y").has_value());
     // An unrecognised index family, metric, or vol model.
     REQUIRE_FALSE(oresmd_projections::from_ore_key("MM/RATE/EUR/BOGUS/3M/1M").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("IR_SWAP/BOGUS/USD/2D/3M/5Y").has_value());

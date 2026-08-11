@@ -16,13 +16,13 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+------------+-----------------+-----------------+--------------------------------------------------------------|
-| cds | CDS | CREDIT_SPREAD | composite | with_ccy | CDS/CREDIT_SPREAD (single-name CDS spread). |
-| hazard_rate | HAZARD_RATE | RATE | composite | with_ccy | HAZARD_RATE/RATE (bootstrapped hazard rate). |
-| recovery_rate | RECOVERY_RATE | RATE | single | with_ccy | RECOVERY_RATE/RATE (recovery rate assumption). |
-| cds_index | CDS_INDEX | BASE_CORRELATION | composite | no_ccy | CDS_INDEX/BASE_CORRELATION (index base correlation). |
-| index_cds_tranche | INDEX_CDS_TRANCHE | BASE_CORRELATION | composite | no_ccy | INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation). |
+| enum_name | ore_type | ore_constant       | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+--------------------+------------+-----------------+-----------------+--------------------------------------------------------------|
+| cds | CDS | cds | CREDIT_SPREAD | composite | with_ccy | CDS/CREDIT_SPREAD (single-name CDS spread). |
+| hazard_rate | HAZARD_RATE | hazard_rate | RATE | composite | with_ccy | HAZARD_RATE/RATE (bootstrapped hazard rate). |
+| recovery_rate | RECOVERY_RATE | recovery_rate | RATE | single | with_ccy | RECOVERY_RATE/RATE (recovery rate assumption). |
+| cds_index | CDS_INDEX | cds_index | BASE_CORRELATION | composite | no_ccy | CDS_INDEX/BASE_CORRELATION (index base correlation). |
+| index_cds_tranche | INDEX_CDS_TRANCHE | index_cds_tranche | BASE_CORRELATION | composite | no_ccy | INDEX_CDS_TRANCHE/BASE_CORRELATION (tranche base correlation). |
 
 * Enum brief
 

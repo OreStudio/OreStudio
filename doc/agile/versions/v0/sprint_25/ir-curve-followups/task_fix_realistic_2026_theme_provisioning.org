@@ -8,7 +8,7 @@
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-realistic-2026-theme-provisioning
-#+pr:
+#+pr: 1952
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1952][#1952]] | [ores.synthetic] Fix realistic_2026 theme provisioning via system-tenant FK resolution |
 
 * Review
 

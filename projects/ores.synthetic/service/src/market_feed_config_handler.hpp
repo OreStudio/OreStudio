@@ -80,6 +80,7 @@ public:
 
         start_market_feed_config_response resp;
         std::string error_detail;
+        std::string conflicting_source_name;
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const auto result = ctrl_->start(req->ore_key,
                                          req->source_name,
@@ -92,7 +93,9 @@ public:
                                          req->vintage_source,
                                          req->vintage_date,
                                          &error_detail,
-                                         bearer);
+                                         bearer,
+                                         ores::synthetic::domain::binding_mode::bound,
+                                         &conflicting_source_name);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         using sr = feed_controller::start_result;
@@ -109,6 +112,13 @@ public:
                 resp.message = "Feed already running: " + id;
                 BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                     << msg.subject << " — feed already running: " << id;
+                break;
+            case sr::qualifier_conflict:
+                resp.success = false;
+                resp.message = "Already running as '" + conflicting_source_name +
+                               "' — stop it first before starting '" + id + "'.";
+                BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
+                    << msg.subject << " — feed " << id << " rejected: " << resp.message;
                 break;
             case sr::vintage_data_missing:
                 resp.success = false;

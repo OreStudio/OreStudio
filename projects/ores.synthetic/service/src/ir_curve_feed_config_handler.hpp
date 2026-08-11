@@ -20,7 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_CONFIG_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_FEED_CONFIG_HANDLER_HPP
 
-#include "curve_feed_controller.hpp"
+#include "feed_controller.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -70,7 +70,7 @@ class ir_curve_feed_config_handler {
 public:
     ir_curve_feed_config_handler(ores::nats::service::client& nats,
                                  ores::nats::service::nats_client& auth_nats,
-                                 std::shared_ptr<curve_feed_controller> ctrl,
+                                 std::shared_ptr<feed_controller> ctrl,
                                  ores::database::context ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
@@ -167,27 +167,33 @@ public:
             auto feed = make_ir_curve_feed(
                 nats_, auth_nats_, cfg, entries, values, definitions, *refctx, bearer);
             const auto source_name = feed->source_name();
-            const auto qualifier = feed->qualifier();
-            const auto role = feed->role();
+            const auto conflict_key = feed->conflict_key();
             const auto result = ctrl_->start(std::move(feed));
 
             switch (result) {
-                case curve_feed_controller::start_result::started:
+                case feed_controller::start_result::started:
                     resp.success = true;
                     resp.message = "Feed started: " + source_name;
                     break;
-                case curve_feed_controller::start_result::already_running:
+                case feed_controller::start_result::already_running:
                     resp.success = true;
                     resp.message = "Feed already running: " + source_name;
                     break;
-                case curve_feed_controller::start_result::qualifier_conflict: {
+                case feed_controller::start_result::qualifier_conflict: {
                     const auto conflicting =
-                        ctrl_->running_source_name_for_qualifier(qualifier, role);
+                        ctrl_->running_source_name_for_conflict_key(conflict_key);
                     resp.success = false;
                     resp.message = "Already running as '" + conflicting.value_or("<unknown>") +
                                    "' — stop it first before starting '" + source_name + "'.";
                     break;
                 }
+                case feed_controller::start_result::vintage_data_missing:
+                    // The IR builder resolves vintage at construction and throws
+                    // vintage_data_missing_error; the on-demand start() itself
+                    // never returns this result.
+                    resp.success = false;
+                    resp.message = "Vintage data missing for: " + source_name;
+                    break;
             }
             BOOST_LOG_SEV(ir_curve_feed_config_handler_lg(), info)
                 << msg.subject << " — " << resp.message;
@@ -264,7 +270,7 @@ public:
 private:
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
-    std::shared_ptr<curve_feed_controller> ctrl_;
+    std::shared_ptr<feed_controller> ctrl_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };

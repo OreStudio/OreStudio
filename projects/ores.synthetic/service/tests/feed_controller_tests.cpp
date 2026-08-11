@@ -26,6 +26,7 @@ const std::string tags("[feed_controller]");
 
 using ores::synthetic::domain::binding_mode;
 using ores::synthetic::feed::synthetic_producer_subject;
+using ores::synthetic::service::feeds_conflict;
 using ores::synthetic::service::should_ensure_feed_binding;
 
 }
@@ -87,4 +88,37 @@ TEST_CASE("should_ensure_feed_binding: an already-running bound feed still gets 
           tags) {
     CHECK(should_ensure_feed_binding(true, binding_mode::bound, binding_mode::bound));
     CHECK(should_ensure_feed_binding(true, binding_mode::sandboxed, binding_mode::bound));
+}
+
+TEST_CASE("feeds_conflict: same qualifier and same role is a conflict — a second feed "
+          "would publish into the same observation series",
+          tags) {
+    CHECK(feeds_conflict("USD-SOFR", "self_discounting", "USD-SOFR", "self_discounting"));
+}
+
+TEST_CASE("feeds_conflict: same qualifier with a different role is not a conflict — a "
+          "discount feed and a projection feed for the same qualifier coexist",
+          tags) {
+    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "USD-SOFR", "projection"));
+}
+
+TEST_CASE("feeds_conflict: different qualifiers never conflict, regardless of role", tags) {
+    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "EUR-EURIBOR", "self_discounting"));
+    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "EUR-EURIBOR", "projection"));
+}
+
+TEST_CASE("feeds_conflict: an empty qualifier (an unparseable ORE key) has no published key "
+          "to protect and conflicts with nothing",
+          tags) {
+    CHECK_FALSE(feeds_conflict("", "self_discounting", "", "self_discounting"));
+    CHECK_FALSE(feeds_conflict("", "", "", ""));
+    CHECK_FALSE(feeds_conflict("USD-SOFR", "self_discounting", "", "self_discounting"));
+    CHECK_FALSE(feeds_conflict("", "self_discounting", "USD-SOFR", "self_discounting"));
+}
+
+TEST_CASE("feeds_conflict: FX feeds carry an empty role, making the comparison "
+          "qualifier-only — two FX feeds on the same pair conflict",
+          tags) {
+    CHECK(feeds_conflict("FX/RATE/EUR/USD", "", "FX/RATE/EUR/USD", ""));
+    CHECK_FALSE(feeds_conflict("FX/RATE/EUR/USD", "", "FX/RATE/GBP/USD", ""));
 }

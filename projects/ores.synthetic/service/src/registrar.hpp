@@ -20,7 +20,6 @@
 #ifndef ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 #define ORES_SYNTHETIC_SERVICE_REGISTRAR_HPP
 
-#include "curve_feed_controller.hpp"
 #include "feed_controller.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
@@ -52,7 +51,6 @@ public:
     register_handlers(ores::nats::service::client& nats,
                       ores::nats::service::nats_client& auth_nats,
                       std::shared_ptr<feed_controller> ctrl,
-                      std::shared_ptr<curve_feed_controller> curve_ctrl,
                       ores::database::context ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
 };

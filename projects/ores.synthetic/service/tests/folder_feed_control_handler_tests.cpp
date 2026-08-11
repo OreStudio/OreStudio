@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "../src/curve_feed_controller.hpp"
 #include "../src/feed_controller.hpp"
 #include "../src/folder_feed_control_handler.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -400,7 +399,6 @@ struct cascade_fixture {
     ores::nats::service::client nats;
     ores::nats::service::nats_client auth_nats;
     std::shared_ptr<ores::synthetic::service::feed_controller> ctrl;
-    std::shared_ptr<ores::synthetic::service::curve_feed_controller> curve_ctrl;
     std::optional<ores::security::jwt::jwt_authenticator> verifier;
     std::optional<ores::nats::service::subscription> start_sub;
     std::optional<ores::nats::service::subscription> stop_sub;
@@ -411,9 +409,7 @@ struct cascade_fixture {
         nats.connect();
         REQUIRE(nats.is_connected());
 
-        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(
-            nats, auth_nats, db.tenant_id());
-        curve_ctrl = std::make_shared<ores::synthetic::service::curve_feed_controller>();
+        ctrl = std::make_shared<ores::synthetic::service::feed_controller>(nats, auth_nats);
         verifier = ores::security::jwt::jwt_authenticator::create_hs256(
             test_secret, test_issuer, test_audience);
 
@@ -424,7 +420,7 @@ struct cascade_fixture {
             "ores.synthetic.service",
             [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, ctrl, curve_ctrl, auth_nats, db.context(), verifier);
+                    nats, ctrl, auth_nats, db.context(), verifier);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
@@ -432,7 +428,7 @@ struct cascade_fixture {
             "ores.synthetic.service",
             [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, ctrl, curve_ctrl, auth_nats, db.context(), verifier);
+                    nats, ctrl, auth_nats, db.context(), verifier);
                 h.stop(std::move(msg));
             });
     }
@@ -471,8 +467,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     CHECK(start1.by_kind.at(ir_kind).started == 1);
     CHECK(start1.by_kind.at(ir_kind).already_running == 0);
     CHECK(start1.by_kind.at(ir_kind).skipped == 0);
-    CHECK(f.ctrl->running_count() == 1);
-    CHECK(f.curve_ctrl->running_count() == 1);
+    CHECK(f.ctrl->running_count() == 2);
 
     // Repeat: both are already running; the disabled row is still skipped.
     const auto start2 =
@@ -500,7 +495,6 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     CHECK(stop.stopped_by_kind.at(fx_kind) == 1);
     CHECK(stop.stopped_by_kind.at(ir_kind) == 1);
     CHECK(f.ctrl->running_count() == 0);
-    CHECK(f.curve_ctrl->running_count() == 0);
 }
 
 TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", tags) {
@@ -521,7 +515,6 @@ TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", tags) {
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     CHECK(f.ctrl->running_count() == 0);
-    CHECK(f.curve_ctrl->running_count() == 0);
 }
 
 TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {

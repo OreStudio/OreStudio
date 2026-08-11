@@ -113,10 +113,10 @@ void ir_curve_feed::start() {
         process_->next();
         const auto now = system_clock::now();
 
-        // A tick-loop thread has no caller to propagate an exception to (see
-        // curve_feed_controller::add()) -- an uncaught throw here would std::terminate() the
-        // whole service process, taking down every other feed and NATS handler with it. Log and
-        // skip this batch instead; the next tick tries again.
+        // A tick-loop thread has no caller to propagate an exception to --
+        // an uncaught throw here would std::terminate() the whole service
+        // process, taking down every other feed and NATS handler with it.
+        // Log and skip this batch instead; the next tick tries again.
         try {
             for (const auto& e : entries_) {
                 ores::marketdata::domain::ir_curve_tick tick;

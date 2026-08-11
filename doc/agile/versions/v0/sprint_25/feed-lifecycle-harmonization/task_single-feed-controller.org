@@ -49,9 +49,46 @@ qualifier+role semantics) or become uniform behaviour — not a second class.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One controller: =feed_controller= absorbs =curve_feed_controller=
+(deleted). The running map stays keyed by source_name, one thread per
+feed, start/stop/list/running_count/join — the shared shape. The two
+per-kind differences are resolved as follows.
+
+1. *Conflict semantics*: both =add()= and =start()= reject a feed whose
+   conflict key — the feed's own =IFeed::conflict_key()=
+   (=feed_conflict_key(qualifier, role)=; empty role for FX, so the key
+   is qualifier-only) — is already held by a different running feed,
+   reporting the holder's source name. The pure =ir_curve_feeds_conflict=
+   helper becomes =feeds_conflict= and now covers FX too: two FX feeds
+   on the same pair cannot both run, because publishing into the same
+   observation series is the same hazard the IR rule guards against
+   (the old controller's permissiveness was the pre-seam behaviour; the
+   IFeed contract from the seam task already declares the uniform rule).
+   A feed with an empty qualifier (an unparseable ORE key) has no
+   published key to protect and conflicts with nothing. The conflict is
+   reported with the running source name, via
+   =running_source_name_for_conflict_key()=.
+
+2. *FX extras*:
+   - Feed-binding auto-creation and vintage availability stay only in
+     the client-supplied-params =start()= overload — the FX-only ad-hoc
+     surface that the per-config control-plane task deletes. The
+     config-driven =add()= path never auto-created bindings and keeps
+     that behaviour.
+   - The status loop becomes uniform: it logs source_name and
+     publish_count per feed (the ore_key/subject columns were
+     FX-shaped; the publish subject is per-kind and lives in the feed).
+   - Dead code dropped: =resolve_series()= and its members
+     (=md_client_=, =tenant_id_=, =uuid_gen_=) are never called.
+
+3. *Callers collapse to one =ctrl=*: registrar/application pass one
+   controller; the folder handler's two loops keep their per-kind build
+   inputs (the accepted cost) but share one =add()= pattern with the
+   conflicting-source-name out param — the IR pre-check
+   (=running_source_name_for_qualifier=) is dropped because =add()='s
+   out param distinguishes the same cases; the IR on-demand handler
+   uses =start()= plus =running_source_name_for_conflict_key()= for the
+   "stop it first" message.
 
 * Notes
 

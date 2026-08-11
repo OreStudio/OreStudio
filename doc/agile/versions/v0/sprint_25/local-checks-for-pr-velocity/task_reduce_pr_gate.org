@@ -26,11 +26,11 @@ The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -82,3 +82,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=pr.yml= now runs exactly two jobs: =classify= (records the change's
+bucket) and =pr-gate= (the sole required check, aggregating only
+classify). The =site=, =roundtrip=, =cmake-sources-drift=, and
+=codegen-drift= jobs were deleted; nothing else references them
+(=ore_coverage.yml= has its own unrelated =roundtrip= job; =site-cdash.yml=
+stays for main-push deploys). Branch protection already required only
+=pr-gate=, so nothing changed there. The knowledge doc's gate table,
+fate table, and summary now match the reduced gate.
+
+Verification (ci + docs classes): roundtrip clean; cmake-sources drift
+clean; codegen drift clean (no in-tree changes); local site build
+clean. Deleting whole workflows is sequenced with the local-review
+task (auto review and misspell retire when the local review skill
+lands), recorded in Plan.

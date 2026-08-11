@@ -13,17 +13,21 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Single entry point for pull request CI. A classifier buckets the
-# changed paths and only the jobs the change warrants run: doc-only
-# PRs build the site, code PRs run the domain roundtrip, CI-config PRs
-# run everything. The pr-gate job always reports and is the
-# repository's sole required check — path-filtered standalone
-# workflows would hang as "expected" instead.
+# Single entry point for pull request CI. The gate is minimal by
+# design: classify records the change's bucket (docs / code / ci) and
+# pr-gate is the repository's sole required check — it passes whenever
+# classify succeeds. A path-filtered standalone workflow would hang as
+# "expected" instead, which is why the gate is a single required check.
 #
-# There is no full C++ build/test job here (the old "canary" job was
-# removed — it took too long and slowed down development). Building
-# and running tests locally before raising or merging a PR is now a
-# required manual step — see the pr-raise/pr-merge skills.
+# Every functional check (site build, roundtrip, drift checks, full
+# C++ build and tests) moved local: the submit-PR skills classify the
+# diff with the same rules and run only the matching checks before the
+# PR is raised — see the pr-raise skill and the "CI workflows and
+# local checks" knowledge doc. There is no full C++ build/test job here
+# (the old "canary" job was removed — it took too long and slowed down
+# development); building and running tests locally before raising or
+# merging a PR is a required manual step — see the pr-raise/pr-merge
+# skills.
 ---
 name: PR
 
@@ -87,115 +91,16 @@ jobs:
           echo "ci=$ci" >> "$GITHUB_OUTPUT"
           echo "classes: docs=$docs code=$code ci=$ci"
 
-  site:
-    name: site
-    needs: classify
-    # yamllint disable-line rule:line-length
-    if: needs.classify.outputs.docs == 'true' || needs.classify.outputs.ci == 'true'
-    # Builds the site via CTestSite.cmake and submits it to CDash as the Site
-    # group (link check; no Doxygen on PRs). Fails the gate on broken links.
-    uses: ./.github/workflows/site-cdash.yml
-    with:
-      with_doxygen: false
-
-  roundtrip:
-    name: roundtrip
-    needs: classify
-    # yamllint disable-line rule:line-length
-    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Run ORE domain roundtrip check
-        run: python3 scripts/ore_domain_roundtrip_check.py
-
-  cmake-sources-drift:
-    name: cmake-sources-drift
-    needs: classify
-    # yamllint disable-line rule:line-length
-    if: needs.classify.outputs.code == 'true' || needs.classify.outputs.ci == 'true'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Install codegen dependencies
-        run: pip install -r projects/ores.codegen/requirements.txt
-      - name: Check every component_files.cmake is up to date
-        # Every component's CMakeLists.txt include()s a generated
-        # component_files.cmake instead of using file(GLOB_RECURSE ...)
-        # (see the "Replace GLOB_RECURSE with explicit source lists"
-        # story) -- a source file added without regenerating it never
-        # gets compiled, with no compiler/linker signal if nothing else
-        # references it yet. This is the CI gate that catches that.
-        run: |
-          script=projects/ores.codegen/scripts/regenerate_cmake_component_files.py
-          python3 "$script" --all --check
-
-  codegen-drift:
-    name: codegen-drift
-    needs: classify
-    # Runs unconditionally (not gated on classify's code/docs/ci buckets):
-    # a model-only edit under projects/ores.refdata/modeling classifies as
-    # "docs", and a template-only edit under projects/ores.codegen
-    # classifies as "docs" too, so gating this the same way as
-    # cmake-sources-drift would silently skip the exact changes this check
-    # exists to catch. Cheap enough (pure Python, no DB, no C++ build) to
-    # just always run.
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Install clang-format
-        run: sudo apt-get update && sudo apt-get install -y clang-format
-      - name: Install codegen dependencies
-        run: pip install -r projects/ores.codegen/requirements.txt
-      - name: Check codegen components have not drifted from their templates
-        # Regenerates every registered component model and fails if that
-        # produces a diff -- i.e. a generated file was hand-edited, or a
-        # .org model changed without running `compass codegen regenerate`
-        # afterwards. Extend --components as each further component is
-        # brought to a verified zero-diff state.
-        run: |
-          script=projects/ores.codegen/scripts/check_component_drift.py
-          python3 "$script" --components refdata,reporting,marketdata
-
   pr-gate:
     name: pr-gate
-    # yamllint disable-line rule:line-length
-    needs: [classify, site, roundtrip, cmake-sources-drift, codegen-drift]
+    needs: classify
     if: always()
     runs-on: ubuntu-24.04
     steps:
       - name: Check job results
         env:
           CLASSIFY: ${{ needs.classify.result }}
-          SITE: ${{ needs.site.result }}
-          ROUNDTRIP: ${{ needs.roundtrip.result }}
-          CMAKE_SOURCES_DRIFT: ${{ needs.cmake-sources-drift.result }}
-          CODEGEN_DRIFT: ${{ needs.codegen-drift.result }}
         run: |
-          echo "classify=$CLASSIFY site=$SITE"
-          echo "roundtrip=$ROUNDTRIP cmake-sources-drift=$CMAKE_SOURCES_DRIFT"
-          echo "codegen-drift=$CODEGEN_DRIFT"
+          echo "classify=$CLASSIFY"
           [ "$CLASSIFY" = "success" ] || { echo "classifier failed"; exit 1; }
-          checks="$SITE $ROUNDTRIP $CMAKE_SOURCES_DRIFT $CODEGEN_DRIFT"
-          for r in $checks; do
-            case "$r" in
-              success|skipped) ;;
-              *) echo "a required job failed: $r"; exit 1 ;;
-            esac
-          done
           echo "gate open"

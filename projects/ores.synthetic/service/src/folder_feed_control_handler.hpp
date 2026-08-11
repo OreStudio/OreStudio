@@ -148,7 +148,7 @@ public:
         // Keyed by container id, not just checked for enabled/existence, so
         // each feed's binding_mode (bound/sandboxed) can be forwarded and
         // the container's enabled state checked — mirrors application.cpp's
-        // auto_start_enabled_feeds.
+        // auto_start_feeds walk.
         std::map<boost::uuids::uuid, ores::synthetic::domain::market_data_generation_config>
             containers;
         for (const auto& f : feed_repo.read_latest(ctx))

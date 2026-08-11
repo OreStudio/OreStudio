@@ -89,8 +89,8 @@ jobs:
             uses. Review and merge to keep the tree clean.
 
             Fixes to generated files should go into their codegen templates
-            instead — the `codegen-drift` check rejects hand-edited generated
-            output. Reproduce locally:
+            instead — hand-edited generated output would fail the local
+            component drift check (check_component_drift.py). Reproduce locally:
 
             ```sh
             cmake --preset linux-clang-debug-ninja

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch: feature/expand-stochastic-ir-process-types
-#+pr: 1932
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07

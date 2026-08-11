@@ -29,11 +29,11 @@ on MSVC, where the standard headers do not provide it transitively.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:34FFCE53-473A-4532-95D2-4A8448CB4F19][Hotfix: rate_tree fails to compile on Windows]] |
-| Now          | Fix verified locally.                  |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -94,3 +94,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Fixed: rate_tree.cpp now includes the string and utility headers
+  explicitly. The MSVC C2039 (std::to_string) and the sibling
+  std::move finding are resolved; ores.analytics.quant.lib builds
+  clean on linux-clang-debug-make.
+- Acceptance met: the Windows build compiles rate_tree.cpp (verified
+  on merge by the continuous-windows workflow); the Linux build is
+  verified locally.
+- Also shipped in this PR, per request: build/scripts/check_includes.sh
+  and .github/workflows/nightly-includes.yml — a nightly clang-tidy
+  misc-include-cleaner sweep that opens a bot PR with fixes.
+- PR: https://github.com/OreStudio/OreStudio/pull/1967

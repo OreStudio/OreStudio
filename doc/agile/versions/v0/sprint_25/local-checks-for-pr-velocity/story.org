@@ -50,8 +50,7 @@ The objective is higher velocity without losing quality. More analysis is needed
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] | BACKLOG | | | Inventory every GitHub Actions workflow and check that gates PRs today (site checks, drift checks, build, ctest, code review, pr-gate, ...). For each, decide its fate: run locally before submit, stay on GitHub, or retire. Produce the change-classification rules the submit-PR skills will use. |
-| [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | STARTED | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | BACKLOG | | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | DONE | | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 
 * Decisions
 

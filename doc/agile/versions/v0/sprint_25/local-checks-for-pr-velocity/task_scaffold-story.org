@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Scaffold the "Absorb PR checks locally" story into sprint 25: story doc with goa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -72,3 +72,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story scaffolded into sprint 25 via PR #1954:
+
+- Story doc with goal, acceptance, and out-of-scope (ID 368E2B3E-CD2C-4FD5-90DD-D0E935810F4D).
+- Initial analysis task: "Analyse all CI workflows and map each check to its local equivalent" (ID 1F491E74-E4C3-4F07-9E44-4E7667A613AD), BACKLOG.
+- Sprint 25 Product table row wired.
+- Verification for the doc-only change: local site build clean (compass build --direct site).

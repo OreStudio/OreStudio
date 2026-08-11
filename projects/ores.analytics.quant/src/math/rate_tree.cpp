@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/math/rate_tree.hpp"
 #include <cmath>
 #include <stdexcept>
+#include <string>
 
 namespace ores::analytics::quant::math {
 

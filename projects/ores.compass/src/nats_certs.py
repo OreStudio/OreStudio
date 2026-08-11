@@ -71,9 +71,9 @@ def _local_ipv4_addresses() -> list[str]:
     try:
         proc = subprocess.run(["ip", "-4", "-o", "addr", "show"],
                               capture_output=True, text=True, check=False)
-    except FileNotFoundError:
-        # No `ip` on this platform (macOS, Windows) — fall through to the
-        # gethostname resolution below.
+    except OSError:
+        # No usable `ip` on this platform (macOS, Windows, restricted
+        # sandbox) — fall through to the gethostname resolution below.
         proc = None
     if proc is not None and proc.returncode == 0:
         for line in proc.stdout.splitlines():

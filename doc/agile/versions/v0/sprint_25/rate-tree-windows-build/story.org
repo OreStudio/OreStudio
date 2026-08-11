@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 34FFCE53-473A-4532-95D2-4A8448CB4F19
+:END:
+#+title: Story: Hotfix: rate_tree fails to compile on Windows
+#+description: rate_tree.cpp calls std::to_string without including the string header, breaking the MSVC build.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.analytics.quant:sprint_25:v0:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Windows (MSVC) CI build fails on
+projects/ores.analytics.quant/src/math/rate_tree.cpp:70 with error
+C2039 — 'to_string' is not a member of 'std'. The file calls
+std::to_string but does not include the string header; GCC/Clang
+happen to pull it in transitively, MSVC does not. The fix restores a
+green Windows build by making the include explicit.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Fix applied and verified locally.       |
+| Waiting on    | Nothing.                               |
+| Next          | PR.                                    |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- The Windows (MSVC) build compiles rate_tree.cpp.
+- The Linux build still compiles rate_tree.cpp.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9343D731-D0B0-4656-998D-8B6C5D64B9FA][Scaffold story: Hotfix: rate_tree fails to compile on Windows]] | STARTED | 2026-08-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5F6EF4CE-1644-4460-96BC-F993CB5C62C9][Implement Hotfix: rate_tree fails to compile on Windows]] | STARTED | 2026-08-11 | | Initial task for: Hotfix: rate_tree fails to compile on Windows |
+
+* Decisions
+
+* Out of scope
+
+-

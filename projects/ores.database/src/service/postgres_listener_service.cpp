@@ -40,6 +40,20 @@ postgres_listener_service::~postgres_listener_service() {
     BOOST_LOG_SEV(lg(), debug) << "Listener service destroyed.";
 }
 
+sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
+postgres_listener_service::connect_utc(const sqlgen::postgres::Credentials& credentials) {
+    auto conn_result = sqlgen::postgres::connect(credentials);
+    if (!conn_result)
+        return conn_result;
+
+    auto tz_result = (*conn_result)->execute("SELECT set_config('TimeZone', 'UTC', false)");
+    if (!tz_result) {
+        return sqlgen::error("Failed to set session timezone to UTC: " +
+                             std::string(tz_result.error().what()));
+    }
+    return conn_result;
+}
+
 bool postgres_listener_service::open_connection() {
     std::lock_guard lock(mutex_);
 
@@ -50,7 +64,7 @@ bool postgres_listener_service::open_connection() {
 
     BOOST_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
-    auto result = sqlgen::postgres::connect(ctx_.credentials());
+    auto result = connect_utc(ctx_.credentials());
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << result.error().what();
         return false;
@@ -222,7 +236,7 @@ void postgres_listener_service::listen_loop() {
                 break;
 
             std::lock_guard lock(mutex_);
-            auto result = sqlgen::postgres::connect(ctx_.credentials());
+            auto result = connect_utc(ctx_.credentials());
             if (!result) {
                 BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << result.error().what();
                 continue; // will retry after next backoff

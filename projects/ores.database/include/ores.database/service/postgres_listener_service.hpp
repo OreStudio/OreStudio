@@ -53,6 +53,18 @@ private:
         return instance;
     }
 
+    /**
+     * @brief Connects with a UTC-forced session.
+     *
+     * sqlgen::Credentials::to_str() carries no session options, so a raw
+     * connect inherits the server default TimeZone. Every session must be
+     * UTC -- the bitemporal sentinel folds per session TimeZone (task
+     * 3828BF82); the pool forces it at acquisition, this dedicated
+     * connection must do the same.
+     */
+    [[nodiscard]] static sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
+    connect_utc(const sqlgen::postgres::Credentials& credentials);
+
 public:
     /**
      * @brief Type alias for the notification callback function.

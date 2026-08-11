@@ -40,7 +40,7 @@ TEST_CASE("account_party_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated account_party";
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(sut.tenant_id == "system");
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.party_id.is_nil());

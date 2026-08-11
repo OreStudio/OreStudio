@@ -49,7 +49,7 @@ TEST_CASE("tenant_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated tenant: " << sut.name;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.code.empty());
     CHECK(!sut.name.empty());
@@ -82,7 +82,7 @@ TEST_CASE("tenant_status_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_tenant_status(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.status.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -112,7 +112,7 @@ TEST_CASE("tenant_type_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_tenant_type(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.type.empty());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());
@@ -142,7 +142,7 @@ TEST_CASE("role_generator_produces_valid_instance", tags) {
     generation_context ctx;
     auto sut = generate_synthetic_role(ctx);
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.name.empty());
     CHECK(!sut.description.empty());

@@ -31,7 +31,7 @@ domain::tenant generate_synthetic_tenant(utility::generation::generation_context
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::tenant r;
-    r.version = 1;
+    r.version = 0;
     r.id = ctx.generate_uuid();
     r.code = "tenant_" + ctx.alphanumeric(8) + "_" + std::to_string(idx);
     r.name = "Test Tenant " + std::to_string(idx);

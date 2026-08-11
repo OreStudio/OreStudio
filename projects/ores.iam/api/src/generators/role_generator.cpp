@@ -33,7 +33,7 @@ domain::role generate_synthetic_role(utility::generation::generation_context& ct
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
     domain::role r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
     r.id = ctx.generate_uuid();
     r.name = "Role_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);

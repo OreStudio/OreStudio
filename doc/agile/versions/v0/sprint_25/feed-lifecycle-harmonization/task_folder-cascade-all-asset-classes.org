@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 9E2344CF-9A66-4742-9DE6-6E2AFBF8B3B1
+:END:
+#+title: Task: Folder cascade covers every asset class via the factory
+#+description: The start/stop feeds under folder request walks the folder subtree once and starts every feed under it, dispatching through the factory to the per-kind producer. No client-side enumeration. Fixes the reported defect: today the cascade resolves only fx_spot_generation_config rows; the IR pass would have been a third copy of the build sequence.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The reported defect is fixed: a folder-scoped start/stop request is a message to the
+server carrying the folder; the server walks the folder subtree once and starts every
+feed under it — every asset class — dispatching through the factory. No client-side
+enumeration of config kinds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- The start/stop feeds under folder request starts (and stops) every feed kind under
+  the subtree: a folder containing both FX and IR configs starts both kinds.
+- The walk is server-side and single-pass: one subtree query, per-row dispatch through
+  the factory. The IR pass is not a third copy of the build sequence.
+- The cascade honors the same startability semantics as the rest of the control-plane
+  (enabled; container state) and reports per-kind started/already-running/skipped
+  counts.
+- Permission checking is uniform across kinds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

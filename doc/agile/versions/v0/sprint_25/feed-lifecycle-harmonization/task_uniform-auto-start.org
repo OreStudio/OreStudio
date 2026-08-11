@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: E1F81BE2-3D7D-4CF3-963F-3DD51D980458
+:END:
+#+title: Task: One auto-start with uniform startability semantics
+#+description: Collapse auto_start_enabled_feeds and auto_start_enabled_ir_curve_feeds into one boot-time walk with uniform startability: enabled, auto_start (added to the FX config for uniform semantics) and an enabled container. Skip-with-warn and running-count reporting become common code.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One boot-time auto-start walk replaces auto_start_enabled_feeds and
+auto_start_enabled_ir_curve_feeds, with uniform startability semantics across kinds:
+enabled + auto_start + enabled container. auto_start becomes a common lifecycle column
+(the FX config gains it), and the startability gate is common code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- auto_start exists on the FX config (codegen model + DQ artefact + seeds) so both
+  kinds share the lifecycle column.
+- One auto-start walk reads every config kind once, applies the same startability gate,
+  skips-with-warn the same way, and reports the same running-count summary.
+- Boot behaviour for existing FX and IR configs is preserved (IR configs keep their
+  current auto_start values; FX gains the column with the container-enabled semantics
+  it already had).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

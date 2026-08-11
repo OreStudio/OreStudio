@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: FD3C0B97-3965-48D6-972E-7D8C497519E2
+:END:
+#+title: Task: One per-config control-plane keyed by config_id, server-side resolution
+#+description: One start/stop/list handler for all kinds, following the IR pattern: the client sends config_id, the server resolves config plus children plus refdata context, checks permissions, and starts the producer via the factory. Delete the FX market_feed_config_handler client-supplied-params path (the no-auth anti-pattern).
+#+type: task
+#+level: s1
+#+filetags: :synthetic:marketdata:feeds:security:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One per-config start/stop/list control-plane for every asset class, keyed by
+config_id: the client sends the config_id, the server resolves the config, its
+children, and the refdata context, checks permissions, and starts the producer via the
+factory. The FX client-supplied-params pass-through (the no-auth anti-pattern) is
+deleted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- One start/stop/list handler serves both kinds, keyed by config_id, resolved
+  server-side with permission checks — the IR curve pattern applied uniformly.
+- market_feed_config_handler (client-supplied params, no auth) is deleted; its
+  consumers use the config_id path.
+- The NATS protocol carries one request/response shape per verb, kind-agnostic.
+- Missing config, disabled config, and vintage-data-missing are reported the same way
+  for both kinds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

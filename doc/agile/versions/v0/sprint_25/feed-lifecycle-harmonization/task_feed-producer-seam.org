@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 050DF944-CCB1-4171-B51D-013D798DCF89
+:END:
+#+title: Task: The feed seam: common producer interface + per-kind factory
+#+description: Build the seam the original FX PoC architecture doc specified (design question 8, never implemented): generalize IFxSpotFeed into a common feed interface (source_name, qualifier, role, start, stop) implemented by both fx_spot_feed and ir_curve_feed, plus a factory mapping kind to producer builder, registered per asset class.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The seam the original FX PoC architecture doc specified (design question 8, feed
+manager) finally exists: one common feed interface every producer implements, and a
+factory mapping asset class to producer builder. FX and IR curve producers are both
+behind it; every control-plane piece (folder cascade, per-config handler, controller,
+auto-start, ingest) dispatches through it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- A common feed interface exists (generalizing IFxSpotFeed) exposing the shape both
+  producers already have: source_name, qualifier, role, start, stop, and a conflict
+  key for qualifier+role semantics.
+- fx_spot_feed and ir_curve_feed both implement it; ir_curve_feed gains the interface
+  it currently lacks.
+- A factory maps asset class to producer builder; both kinds are constructible through
+  it. The factory is the registration point for future asset classes.
+- The factory lives where the doc specified: ores.marketdata.api hosts the interface;
+  ores.synthetic.api registers the producers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

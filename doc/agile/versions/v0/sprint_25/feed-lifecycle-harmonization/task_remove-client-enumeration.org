@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 60AA1609-3956-41AB-A5B8-0A530F031EF4
+:END:
+#+title: Task: Delete client-side feed enumeration
+#+description: Remove the tree-walk-and-fan-out re-implementations in clients now that the server cascades folders itself: the Qt MarketSimulatorWindow folder branch plus per-config IR loop (and its auto_start client-side filter) and the start_synthetic_theme_feeds two-path provisioning in tenant_handler. Clients send the folder/config request; the server does the rest.
+#+type: task
+#+level: s1
+#+filetags: :qt:synthetic:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clients stop re-implementing the tree-walk-and-fan-out. The Qt MarketSimulatorWindow
+folder branch and its per-config IR loop (with the client-side auto_start filter), and
+the start_synthetic_theme_feeds two-path provisioning in tenant_handler, are deleted —
+clients send the folder/config request and the server cascades.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- MarketSimulatorWindow: starting feeds under a folder issues the folder request only;
+  the per-config IR loop and its auto_start filter are gone. Stopping is the
+  folder-stop request.
+- tenant_handler start_synthetic_theme_feeds issues the folder request (or per-config
+  requests) only; the subtree walk and per-kind fan-out are gone.
+- Behaviour parity: what the two-path loops started before is started by the server
+  cascade (verified via the QA scenarios).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

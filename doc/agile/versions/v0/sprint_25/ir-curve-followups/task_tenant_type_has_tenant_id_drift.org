@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-10
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -43,10 +43,10 @@ vice versa).
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Models reconciled and regenerated.     |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Build and DB recreate (deferred).      |
-| Last touched | 2026-08-10                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
@@ -150,6 +150,26 @@ models are deleted, and the full supported set regenerates idempotently
 Deferred (per user instruction "don't build"): project build, DB
 recreate, and provisioning — required before the regenerated SQL and
 C++ can be exercised.
+
+Verification (2026-08-11): full build clean; the three IAM suites green
+(=test_ores.iam.api.tests= 107 cases, =ores.iam.core.tests= 94,
+=ores.iam.service.tests= 13) including the three new NATS eventing
+integration tests.
+
+Fixing the regenerated generators exposed a version-semantics defect:
+the codegen template was fixed (3f456e359) to emit =version = 0=
+(the DB insert trigger treats 0 as "skip the check, assign next
+version"), but the ores.iam tests still asserted the buggy
+=version == 1= and the four hand-written generators (tenant, role,
+account, account_party) still hardcoded 1 — commit 447b257e6 aligns
+them; the remaining stale files across other components stay tracked
+by backlog capture 32B11CDE.
+
+Local DB: the three branch-new notify triggers were applied directly
+(create or replace, idempotent) so the eventing tests can run. The full
+DB recreate remains deferred — the remaining SQL delta (name unique
+index, =clock_timestamp()= insert function, trigger style) is exercised
+by CI on a fresh database.
 
 * Promoted from capture
 

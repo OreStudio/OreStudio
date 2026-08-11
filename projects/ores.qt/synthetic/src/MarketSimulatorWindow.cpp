@@ -34,10 +34,10 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ProcessTypeLabel.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
+#include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_process_parameter_value_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
@@ -672,17 +672,12 @@ void MarketSimulatorWindow::reload() {
         r.currencyNames = fetch_currency_names(cm);
 
         // Query which feeds the synthetic service currently has running so the
-        // UI shows correct Running/Stopped status even after a restart.
-        auto listResp = cm->process_authenticated_request(
-            ores::marketdata::messaging::list_market_feed_configs_request{});
+        // UI shows correct Running/Stopped status even after a restart. One
+        // request covers every kind.
+        auto listResp =
+            cm->process_authenticated_request(m::list_feeds_request{});
         if (listResp && listResp->success)
             r.runningSourceNames = std::move(listResp->running_source_names);
-
-        auto irListResp =
-            cm->process_authenticated_request(m::list_ir_curve_feed_configs_request{});
-        if (irListResp && irListResp->success)
-            for (auto& name : irListResp->running_source_names)
-                r.runningSourceNames.push_back(std::move(name));
 
         // Vintage-availability status, computed live server-side at every
         // reload (best-effort; an empty map just shows no vintage badge).
@@ -2108,46 +2103,15 @@ void MarketSimulatorWindow::startPairsAsync(
     if (pairs.empty())
         return;
 
-    // Build a start request for each selected FX pair (skip any without components).
-    using Req = ores::marketdata::messaging::start_market_feed_config_request;
-    std::vector<Req> reqs;
-    for (const auto& fx : pairs) {
-        const auto fxId = boost::uuids::to_string(fx.id);
-        std::vector<const synthetic::domain::gmm_component*> comps;
-        for (const auto& [compId, comp] : components_) {
-            if (boost::uuids::to_string(comp.fx_spot_config_id) == fxId)
-                comps.push_back(&comp);
-        }
-        if (comps.empty()) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Skipping " << fx.ore_key << " — no price model components.";
-            continue;
-        }
-        std::sort(comps.begin(), comps.end(), [](const auto* a, const auto* b) {
-            return a->component_index < b->component_index;
-        });
-        Req req;
-        req.ore_key = fx.ore_key;
-        req.source_name = fx.source_name;
-        for (const auto* c : comps) {
-            req.gmm_means.push_back(c->mean);
-            req.gmm_stdevs.push_back(c->stdev);
-            req.gmm_weights.push_back(c->weight);
-        }
-        req.gmm_initial_price = fx.gmm_initial_price;
-        req.ticks_per_hour = static_cast<double>(fx.ticks_per_hour);
-        req.process_type = fx.process_type;
-        req.vintage_source = fx.vintage_source;
-        req.vintage_date = fx.vintage_date;
-        reqs.push_back(std::move(req));
-    }
-
-    if (reqs.empty()) {
-        QMessageBox::warning(this,
-                             tr("No price model"),
-                             tr("Add at least one price-behaviour component before starting."));
-        return;
-    }
+    // One kind-agnostic start request per selected pair, keyed by config_id;
+    // the server resolves the config, its children, and the refdata context.
+    struct StartRequest {
+        std::string config_id;
+        std::string source_name; // for reporting; the request itself carries only the id
+    };
+    std::vector<StartRequest> reqs;
+    for (const auto& fx : pairs)
+        reqs.push_back({boost::uuids::to_string(fx.id), fx.source_name});
 
     BOOST_LOG_SEV(lg(), info) << "Starting " << reqs.size() << " feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
@@ -2155,11 +2119,9 @@ void MarketSimulatorWindow::startPairsAsync(
     using Results = std::vector<std::pair<std::string, QString>>; // source_name -> error (empty=ok)
     auto task = [cm, reqs]() -> Results {
         Results results;
-        // Starting a feed also auto-creates its marketdata feed_binding
-        // server-side (feed_controller::start) -- Qt only asks for the feed
-        // to start and reports the per-pair result.
         for (const auto& req : reqs) {
-            auto resp = cm->process_authenticated_request(req);
+            synthetic::messaging::start_feed_request wire_req{.config_id = req.config_id};
+            auto resp = cm->process_authenticated_request(wire_req);
             if (!resp) {
                 results.push_back({req.source_name, QString::fromStdString(resp.error())});
                 continue;
@@ -2255,11 +2217,11 @@ void MarketSimulatorWindow::stopPairsAsync(
     if (pairs.empty())
         return;
 
-    using Req = ores::marketdata::messaging::stop_market_feed_config_request;
+    using Req = synthetic::messaging::stop_feed_request;
     std::vector<Req> reqs;
     for (const auto& fx : pairs) {
         Req req;
-        req.source_name = fx.source_name;
+        req.config_id = boost::uuids::to_string(fx.id);
         reqs.push_back(std::move(req));
     }
 
@@ -2319,9 +2281,8 @@ void MarketSimulatorWindow::startIrCurvesAsync(
     if (curves.empty())
         return;
 
-    // Simpler than startPairsAsync(): the server resolves everything (Curve Template entries,
-    // refdata catalog) from config_id alone -- no GMM-component lookup or feed_binding step to
-    // replicate client-side.
+    // The server resolves everything (Curve Template entries, refdata
+    // catalog) from config_id alone -- no client-side lookup to replicate.
     BOOST_LOG_SEV(lg(), info) << "Starting " << curves.size() << " IR curve feed(s).";
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
@@ -2330,7 +2291,7 @@ void MarketSimulatorWindow::startIrCurvesAsync(
     auto task = [cm, curves]() -> Results {
         Results results;
         for (const auto& ir : curves) {
-            synthetic::messaging::start_ir_curve_feed_request req;
+            synthetic::messaging::start_feed_request req;
             req.config_id = boost::uuids::to_string(ir.id);
             const auto sourceName = irCurveSourceName(ir);
             auto resp = cm->process_authenticated_request(req);
@@ -2391,7 +2352,7 @@ void MarketSimulatorWindow::stopIrCurvesAsync(
     auto task = [cm, curves]() -> Results {
         Results results;
         for (const auto& ir : curves) {
-            synthetic::messaging::stop_ir_curve_feed_request req;
+            synthetic::messaging::stop_feed_request req;
             req.config_id = boost::uuids::to_string(ir.id);
             const auto sourceName = irCurveSourceName(ir);
             auto resp = cm->process_authenticated_request(req);
@@ -2510,32 +2471,39 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
     QPointer<MarketSimulatorWindow> self = this;
     auto* cm = clientManager_;
     auto task = [cm, all]() -> Results {
-        Results results;
-        for (const auto& fx : all) {
-            const std::string label = fx.source_name.empty() ? fx.ore_key : fx.source_name;
+        // One server-side pass over every FX config: the vintage-validity
+        // handler computes availability per config and reports it in the
+        // same entries the reload uses for the vintage badges.
+        std::map<std::string, std::string> label_by_id;
+        for (const auto& fx : all)
+            label_by_id[boost::uuids::to_string(fx.id)] =
+                fx.source_name.empty() ? fx.ore_key : fx.source_name;
 
+        Results results;
+        auto resp = cm->process_authenticated_request(
+            ores::marketdata::messaging::get_vintage_validity_request{});
+        if (!resp) {
+            results.push_back({"", false, QString::fromStdString(resp.error())});
+            return results;
+        }
+        if (!resp->success) {
+            results.push_back({"", false, QString::fromStdString(resp->message)});
+            return results;
+        }
+        for (const auto& e : resp->entries) {
+            const auto label = label_by_id.contains(e.fx_spot_generation_config_id) ?
+                                   label_by_id.at(e.fx_spot_generation_config_id) :
+                                   e.fx_spot_generation_config_id;
             // price_source "fixed" has no vintage to check — not a failure,
             // just not applicable.
-            if (fx.price_source != "vintage") {
-                results.push_back({label, true, QLatin1String("fixed spot — no vintage to check")});
+            if (!e.applicable) {
+                results.push_back(
+                    {label, true, QLatin1String("fixed spot — no vintage to check")});
                 continue;
             }
-
-            ores::marketdata::messaging::validate_market_feed_config_request req;
-            req.ore_key = fx.ore_key;
-            req.source_name = fx.source_name;
-            req.vintage_source = fx.vintage_source;
-            req.vintage_date = fx.vintage_date;
-            auto resp = cm->process_authenticated_request(req);
-            if (!resp) {
-                results.push_back({label, false, QString::fromStdString(resp.error())});
-                continue;
-            }
-            if (!resp->success) {
-                results.push_back({label, false, QString::fromStdString(resp->message)});
-                continue;
-            }
-            results.push_back({label, resp->available, QString::fromStdString(resp->message)});
+            results.push_back({label, e.valid,
+                               e.valid ? QLatin1String("vintage data available") :
+                                         QLatin1String("vintage data unavailable")});
         }
         return results;
     };

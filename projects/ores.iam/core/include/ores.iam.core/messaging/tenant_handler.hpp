@@ -44,8 +44,8 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
@@ -881,7 +881,7 @@ private:
                     continue;
                 if (!subtree_folder_ids.contains(boost::uuids::to_string(*ir.folder_id)))
                     continue;
-                synthetic::messaging::start_ir_curve_feed_request start_req;
+                synthetic::messaging::start_feed_request start_req;
                 start_req.config_id = boost::uuids::to_string(ir.id);
                 auto start_resp = client.request(start_req);
                 if (!start_resp.success) {

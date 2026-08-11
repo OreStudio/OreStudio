@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/analyse-stochastic-process-landscape
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,7 +31,7 @@ and vol-surface models stay out of scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

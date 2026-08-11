@@ -29,11 +29,11 @@ new asset classes are covered automatically via the factory.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -107,3 +107,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The shell's feed verbs now cover every asset class. Folder start/stop
+already cascaded both kinds server-side (task 9E2344CF) and needed no
+change. Per-config verbs gained a kind-agnostic token resolution:
+=resolve_feed= probes the FX config family first, then the IR curve
+family — the server's own kind resolution in =feed_config_handler=
+probes the repositories in the same order — and returns a
+=resolved_feed{config_id, source_name, optional ore_key}=; the shell
+never knows the kind. =start feed= and =stop feed= send the resolved
+=config_id=; =validate-vintage= keeps its FX shape (entries are keyed
+by fx config id, IR curves report no entry, the ore key renders only
+when present). The new =synthetic list feeds= verb sends
+=list_feeds_request{}= and prints every running feed's source_name
+plus the running count — the IR curve start/stop/list verbs that were
+previously unreachable from the shell. Help text and completion were
+already kind-agnostic and remain so; the =list feeds= entry says "of
+every asset class".
+
+Verification: full build green; no SQL change, so no DB recreate;
+=compass build rat= green (all suites pass, including the synthetic
+service feed_config_* cases).

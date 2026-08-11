@@ -81,21 +81,25 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.simulate(std::move(msg));
         }));
 
-    subs.push_back(nats.queue_subscribe(std::string(start_feeds_under_folder_request::nats_subject),
-                                        queue,
-                                        [&nats, ctrl, ctx, verifier](ores::nats::message msg) {
-                                            folder_feed_control_handler h(
-                                                nats, ctrl, ctx, verifier);
-                                            h.start(std::move(msg));
-                                        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(start_feeds_under_folder_request::nats_subject),
+                             queue,
+                             [&nats, &auth_nats, ctrl, curve_ctrl, ctx,
+                              verifier](ores::nats::message msg) {
+                                 folder_feed_control_handler h(
+                                     nats, ctrl, curve_ctrl, auth_nats, ctx, verifier);
+                                 h.start(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(std::string(stop_feeds_under_folder_request::nats_subject),
-                                        queue,
-                                        [&nats, ctrl, ctx, verifier](ores::nats::message msg) {
-                                            folder_feed_control_handler h(
-                                                nats, ctrl, ctx, verifier);
-                                            h.stop(std::move(msg));
-                                        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(stop_feeds_under_folder_request::nats_subject),
+                             queue,
+                             [&nats, &auth_nats, ctrl, curve_ctrl, ctx,
+                              verifier](ores::nats::message msg) {
+                                 folder_feed_control_handler h(
+                                     nats, ctrl, curve_ctrl, auth_nats, ctx, verifier);
+                                 h.stop(std::move(msg));
+                             }));
 
     subs.push_back(nats.queue_subscribe(std::string(get_vintage_validity_request::nats_subject),
                                         queue,

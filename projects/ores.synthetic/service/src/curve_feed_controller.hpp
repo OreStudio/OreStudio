@@ -78,13 +78,22 @@ public:
      * dropped without starting (auto-start must not crash the service over a seed-data
      * misconfiguration -- the caller logs the skip).
      *
-     * @return false if skipped due to a qualifier conflict (with @p out_conflicting_source_name
-     * set to the running feed's source_name), true if started.
+     * @return false if skipped because the source_name is already running, or due to a qualifier
+     * conflict (with @p out_conflicting_source_name set to the running feed's source_name), true
+     * if started.
      */
     bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
              std::string* out_conflicting_source_name = nullptr) {
         std::lock_guard lock(mu_);
         const auto source_name = feed->source_name();
+        // The caller's own source_name is excluded from conflict detection,
+        // so a duplicate add for it would pass the qualifier check and then
+        // emplace-collide: the discarded node would destroy a joinable
+        // thread (std::terminate). Concurrent request paths (folder cascade)
+        // can race past a caller's pre-checks, so guard the same way start()
+        // does.
+        if (feeds_.contains(source_name))
+            return false;
         if (const auto conflict =
                 find_qualifier_conflict(feed->qualifier(), feed->role(), source_name)) {
             if (out_conflicting_source_name)

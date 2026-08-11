@@ -71,6 +71,7 @@ via its "Verifies task" field.
 | 3 | Analysis task file misnamed task_implement_* | task_implement_add_new_stochastic_processes.org | Accepted | Renamed to task_analyse_stochastic_process_landscape.org. |
 | 4 | Out of scope section left empty in the new story | add_new_stochastic_processes/story.org | Accepted | Populated: SABR and any volatility-surface model. |
 | 5 | Heartbeat rule: #+updated/Last touched stale in three files | sprint.org, ir-curve-followups/story.org, task_expand_stochastic_ir_process_types.org | Accepted | Bumped all to 2026-08-11. |
+| 6 | Six reopened tasks share #+branch:/#+pr: with the merged engine PR; compass branch lookups assume uniqueness | six task_implement_*.org files | Accepted | Blanked #+branch: and #+pr:, matching the not-yet-started convention. |
 
 * Result
 
@@ -79,9 +80,10 @@ scaffold and analysis task docs, sprint 25 wiring, and the six engine
 tasks moved from IR curve follow-ups with Goal and Acceptance rescoped
 to system wiring (engines merged via PR #1932, wiring remaining).
 
-PR #1965 carried the scaffold through four review rounds; every
+PR #1965 carried the scaffold through five review rounds; every
 finding was accepted and fixed: story row moved to the Product table,
 six tasks rescoped to wiring goals, analysis task renamed to
 =task_analyse_stochastic_process_landscape.org=, out-of-scope
-populated, heartbeat timestamps bumped. Reviewer: no new issues, PR
+populated, heartbeat timestamps bumped, and stale =#+branch:=/=#+pr:=
+blanked on the six reopened tasks. Final review: no new issues, PR
 ready.

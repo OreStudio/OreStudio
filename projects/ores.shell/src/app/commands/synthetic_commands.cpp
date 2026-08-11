@@ -328,16 +328,63 @@ struct resolved_feed {
     std::optional<std::string> ore_key;
 };
 
+// The result of probing one feed family for an exact name match: a
+// single resolved feed, or several matching configs. Several matches
+// are ambiguous -- already reported to the user -- and the probe stops
+// there.
+struct exact_match_result {
+    std::optional<resolved_feed> feed;
+    bool ambiguous = false;
+};
+
+// Resolve an exact name match within one feed family. A single match
+// yields the feed identity; several matches are reported ambiguous,
+// listing each matching feed's source_name, and yield nothing.
+template <typename Config, typename NameMatch, typename OreKeyOf>
+exact_match_result
+exact_feed_match(std::ostream& out, const std::vector<Config>& configs,
+                 const std::string& token, NameMatch is_name_match, OreKeyOf ore_key_of) {
+    std::vector<Config> exact;
+    for (const auto& c : configs)
+        if (is_name_match(c))
+            exact.push_back(c);
+    if (exact.size() == 1)
+        return exact_match_result{resolved_feed{boost::uuids::to_string(exact.front().id),
+                                                exact.front().source_name,
+                                                ore_key_of(exact.front())}};
+    if (exact.size() > 1) {
+        std::vector<std::string> labels;
+        for (const auto& c : exact)
+            labels.push_back(c.source_name);
+        report_ambiguous(out, "feed", token, labels);
+        return exact_match_result{std::nullopt, true};
+    }
+    return exact_match_result{};
+}
+
+// Find the config whose id matches the needle within one feed family.
+template <typename Config, typename OreKeyOf>
+std::optional<resolved_feed>
+feed_by_id(const std::vector<Config>& configs, const std::string& needle, OreKeyOf ore_key_of) {
+    for (const auto& c : configs)
+        if (boost::uuids::to_string(c.id) == needle)
+            return resolved_feed{needle, c.source_name, ore_key_of(c)};
+    return std::nullopt;
+}
+
 // Resolve a feed token -- UUID, exact ore key or exact source_name --
 // to its config identity, of any asset class. The shell probes the FX
 // config family first, then the IR curve family -- the server's own
 // kind resolution probes the repositories in the same order, so a
-// token matching both families resolves to the feed the server would
-// start. A token shared by several visible feeds (e.g. the same ore
-// key under different collections) is reported as ambiguous, listing
-// each feed's source_name.
+// token matching both families, config ids and source_names alike,
+// resolves to the feed the server would start. A token shared by
+// several visible feeds (e.g. the same ore key under different
+// collections) is reported as ambiguous, listing each feed's
+// source_name.
 std::optional<resolved_feed>
 resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
+    const auto id = try_uuid(token);
+
     synthetic::messaging::get_fx_spot_generation_configs_request fx_req{.offset = 0,
                                                                         .limit = 1000};
     auto fx_result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
@@ -349,27 +396,18 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
         return std::nullopt;
     }
 
-    if (const auto id = try_uuid(token)) {
-        const auto needle = boost::uuids::to_string(*id);
-        for (const auto& c : fx_result->fx_spot_generation_configs)
-            if (boost::uuids::to_string(c.id) == needle)
-                return resolved_feed{needle, c.source_name, c.ore_key};
+    if (id) {
+        if (const auto found = feed_by_id(fx_result->fx_spot_generation_configs,
+                                          boost::uuids::to_string(*id),
+                                          [](const auto& c) { return c.ore_key; }))
+            return found;
     } else {
-        std::vector<synthetic::domain::fx_spot_generation_config> exact;
-        for (const auto& c : fx_result->fx_spot_generation_configs)
-            if (c.ore_key == token || c.source_name == token)
-                exact.push_back(c);
-        if (exact.size() == 1)
-            return resolved_feed{boost::uuids::to_string(exact.front().id),
-                                 exact.front().source_name,
-                                 exact.front().ore_key};
-        if (exact.size() > 1) {
-            std::vector<std::string> labels;
-            for (const auto& c : exact)
-                labels.push_back(c.source_name);
-            report_ambiguous(out, "feed", token, labels);
-            return std::nullopt;
-        }
+        const auto matched = exact_feed_match(
+            out, fx_result->fx_spot_generation_configs, token,
+            [&token](const auto& c) { return c.ore_key == token || c.source_name == token; },
+            [](const auto& c) { return c.ore_key; });
+        if (matched.feed || matched.ambiguous)
+            return matched.feed;
     }
 
     synthetic::messaging::get_ir_curve_generation_configs_request ir_req{.offset = 0,
@@ -383,30 +421,21 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
         return std::nullopt;
     }
 
-    if (const auto id = try_uuid(token)) {
-        const auto needle = boost::uuids::to_string(*id);
-        for (const auto& c : ir_result->ir_curve_generation_configs)
-            if (boost::uuids::to_string(c.id) == needle)
-                return resolved_feed{needle, c.source_name, std::nullopt};
+    if (id) {
+        if (const auto found = feed_by_id(ir_result->ir_curve_generation_configs,
+                                          boost::uuids::to_string(*id),
+                                          [](const auto&) { return std::nullopt; }))
+            return found;
         fail(out) << "Feed not found: " << token << std::endl;
         return std::nullopt;
     }
 
-    std::vector<synthetic::domain::ir_curve_generation_config> exact;
-    for (const auto& c : ir_result->ir_curve_generation_configs)
-        if (c.source_name == token)
-            exact.push_back(c);
-    if (exact.size() == 1)
-        return resolved_feed{boost::uuids::to_string(exact.front().id),
-                             exact.front().source_name,
-                             std::nullopt};
-    if (exact.size() > 1) {
-        std::vector<std::string> labels;
-        for (const auto& c : exact)
-            labels.push_back(c.source_name);
-        report_ambiguous(out, "feed", token, labels);
-        return std::nullopt;
-    }
+    const auto matched = exact_feed_match(
+        out, ir_result->ir_curve_generation_configs, token,
+        [&token](const auto& c) { return c.source_name == token; },
+        [](const auto&) { return std::nullopt; });
+    if (matched.feed || matched.ambiguous)
+        return matched.feed;
     fail(out) << "No feed matching '" << token << "'." << std::endl;
     return std::nullopt;
 }

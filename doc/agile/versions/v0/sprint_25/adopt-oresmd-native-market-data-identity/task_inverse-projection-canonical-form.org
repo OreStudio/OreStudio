@@ -30,11 +30,11 @@ keeps no dependency on the refdata repositories.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -55,9 +55,31 @@ keeps no dependency on the refdata repositories.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =oresmd_projections::from_ore_key= (new): ORE key string to
+  =market_data_identifier=. Follows the forward quote-key
+  projections in reverse. Seeded by the =series_key_registry=
+  decomposition table: every type in that table is either mapped or
+  explicitly rejected (=std::nullopt=). The mapping covers the
+  forward-emittable types (FX, FXFWD, the 13 IR families incl.
+  SWAPTION vol, EQUITY x3, COMMODITY x3 incl. CPR, CREDIT x5,
+  INFLATION x3, CORRELATION); BOND and the option/capfloor
+  families have no oresmd mapping and are rejected, as are unknown
+  types and malformed keys.
+- The FX/RATE convention correction survives: an overload takes the
+  =fx_quote_convention_checker= and applies the pair swap at parse
+  time. Same =check()= function, new target -- the identifier's
+  pair instead of the qualifier string. The checker header moves
+  from PRIVATE to PUBLIC on the core library.
+- Fixing keys are out of scope here: fixings import as
+  =FIXING/RATE/<index-name>=, an index-name key space the registry
+  table does not seed. The reverse of =to_index_name= lands with the
+  identity-core task, which wires the fixing boundary.
+- Canonical form contract, pinned by tests: string-level round trip
+  =to_uri(parse(uri)) == uri=; inverse/forward equality
+  =from_ore_key(to_quote_key(id)) == id=; a =canonical_values=
+  container the URI builder matches tenor/point against, rejecting
+  unknown spellings; the stored string is the encoded form
+  =to_uri= produces, and matching uses the same form.
 
 * Notes
 
@@ -85,3 +107,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=oresmd_projections::from_ore_key= (new) maps ORE quote-key
+strings to =market_data_identifier=, following the forward
+=quote_key_*= projections in reverse and seeded by the
+=series_key_registry= decomposition table. Every registry type is
+either mapped (FX, FXFWD, IR_SWAP, DISCOUNT, the 10 indexed and
+no-index IR families, SWAPTION vol, EQUITY x3, COMMODITY x3 incl.
+CPR, CREDIT x5, INFLATION x3, CORRELATION) or rejected
+(=std::nullopt=: BOND, the option and capfloor families, unknown
+types, malformed keys). The ORE spellings it dispatches on are
+constexpr constants shared with the forward =ore_type()= /
+=ore_metric()= / =ore_vol_model()= tables, so a rename stays in sync
+in both directions.
+
+The FX/RATE convention correction survives as an overload that
+applies the =fx_quote_convention_checker= to the identifier's pair at
+parse time (same =check()=, new target); the checker header moved
+PUBLIC on ores.marketdata.core.
+
+=oresmd_parser::to_uri(identifier, canonical_values)= (new) matches
+the identifier's tenor and point against the supplied refdata
+container and rejects unknown spellings with =oresmd_exception=;
+identifiers without tenor/point are unaffected.
+
+Acceptance met: inverse projection seeded by the registry and
+following the forward projections in reverse; BOND et al rejected;
+convention correction survives; round trips pinned
+(=parse(to_uri(id)) == id=, =to_uri(parse(uri)) == uri=, semantic
+equality); builder takes canonical values from a supplied container
+and rejects unknown spellings; stored string is the canonical
+encoded form =to_uri= emits, and matching uses the same form.
+Fixing keys (an index-name key space the registry does not seed)
+stay out of scope, per the plan.

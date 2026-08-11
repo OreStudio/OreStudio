@@ -22,6 +22,7 @@
 
 #include "ores.marketdata.api/domain/market_data_identifier.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.ore.core/market/fx_quote_convention_checker.hpp"
 #include <optional>
 #include <string>
 
@@ -78,6 +79,36 @@ public:
      */
     [[nodiscard]] static std::optional<market_series_key>
     split_market_series_key(const std::string& key);
+
+    /**
+     * @brief The inverse projection: an ORE quote key string (e.g. "FX/RATE/EUR/USD")
+     * becomes the oresmd identifier the forward projection would have emitted it from,
+     * per id:C3E053CA-0D4B-480B-9119-E11530160EC1's "Projection rules" section, followed
+     * in reverse.
+     *
+     * Seeded by the series_key_registry's decomposition table: every series type that
+     * table knows is either mapped here or has no oresmd identifier at all (BOND, the
+     * option and capfloor families) and yields std::nullopt. Unknown types and malformed
+     * keys (wrong segment count for the type, unrecognised metric/index/model) also
+     * yield std::nullopt -- the caller decides whether to reject or drop the row. The
+     * qualifier/point boundaries mirror the registry's per-type rows; the segment-to-field
+     * mapping follows what to_quote_key() emits, exactly.
+     */
+    [[nodiscard]] static std::optional<domain::market_data_identifier>
+    from_ore_key(const std::string& key);
+
+    /**
+     * @brief from_ore_key() with the FX/RATE convention correction applied at parse time.
+     *
+     * For an FX spot key the two currency segments are checked against the supplied
+     * checker's known canonical pairs; a reversed pair is swapped in the identifier's
+     * =pair= field before it is built -- the same fx_quote_convention_checker the
+     * import boundary uses today, now targeting the identifier instead of the qualifier
+     * string. Every other key is unaffected.
+     */
+    [[nodiscard]] static std::optional<domain::market_data_identifier>
+    from_ore_key(const std::string& key,
+                 const ores::ore::market::fx_quote_convention_checker& checker);
 };
 
 }

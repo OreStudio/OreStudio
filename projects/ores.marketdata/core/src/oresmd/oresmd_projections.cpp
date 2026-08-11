@@ -29,7 +29,66 @@ namespace {
 
 using namespace ores::marketdata::domain;
 using ores::marketdata::core::detail::is_overnight;
+using ores::marketdata::core::detail::to_lower;
 using ores::marketdata::core::detail::to_upper;
+
+/*
+ * ORE spelling tables. The first segment of a quote key is the ORE series type, the
+ * second is the metric; the swaption family also carries a volatility model. These
+ * constants are the single source of truth for those spellings: the forward
+ * ore_type()/ore_metric()/ore_vol_model() tables and the inverse dispatcher below both
+ * reference them, so a rename stays in sync in both directions.
+ */
+namespace ore_type_spec {
+constexpr std::string_view fx{"FX"};
+constexpr std::string_view fxfwd{"FXFWD"};
+constexpr std::string_view ir_swap{"IR_SWAP"};
+constexpr std::string_view discount{"DISCOUNT"};
+constexpr std::string_view mm{"MM"};
+constexpr std::string_view fra{"FRA"};
+constexpr std::string_view imm_fra{"IMM_FRA"};
+constexpr std::string_view basis_swap{"BASIS_SWAP"};
+constexpr std::string_view bma_swap{"BMA_SWAP"};
+constexpr std::string_view cc_basis_swap{"CC_BASIS_SWAP"};
+constexpr std::string_view cc_fix_float_swap{"CC_FIX_FLOAT_SWAP"};
+constexpr std::string_view zero{"ZERO"};
+constexpr std::string_view mm_future{"MM_FUTURE"};
+constexpr std::string_view oi_future{"OI_FUTURE"};
+constexpr std::string_view swaption{"SWAPTION"};
+constexpr std::string_view equity{"EQUITY"};
+constexpr std::string_view equity_fwd{"EQUITY_FWD"};
+constexpr std::string_view equity_dividend{"EQUITY_DIVIDEND"};
+constexpr std::string_view commodity{"COMMODITY"};
+constexpr std::string_view commodity_fwd{"COMMODITY_FWD"};
+constexpr std::string_view cpr{"CPR"};
+constexpr std::string_view cds{"CDS"};
+constexpr std::string_view hazard_rate{"HAZARD_RATE"};
+constexpr std::string_view recovery_rate{"RECOVERY_RATE"};
+constexpr std::string_view cds_index{"CDS_INDEX"};
+constexpr std::string_view index_cds_tranche{"INDEX_CDS_TRANCHE"};
+constexpr std::string_view zc_inflation_swap{"ZC_INFLATIONSWAP"};
+constexpr std::string_view yy_inflation_swap{"YY_INFLATIONSWAP"};
+constexpr std::string_view seasonality{"SEASONALITY"};
+constexpr std::string_view correlation{"CORRELATION"};
+}  // namespace ore_type_spec
+
+namespace ore_metric_spec {
+constexpr std::string_view rate{"RATE"};
+constexpr std::string_view price{"PRICE"};
+constexpr std::string_view basis_spread{"BASIS_SPREAD"};
+constexpr std::string_view ratio{"RATIO"};
+constexpr std::string_view yield_spread{"YIELD_SPREAD"};
+constexpr std::string_view credit_spread{"CREDIT_SPREAD"};
+constexpr std::string_view base_correlation{"BASE_CORRELATION"};
+}  // namespace ore_metric_spec
+
+namespace ore_vol_spec {
+constexpr std::string_view rate_lnvol{"RATE_LNVOL"};
+constexpr std::string_view rate_nvol{"RATE_NVOL"};
+constexpr std::string_view rate_slnvol{"RATE_SLNVOL"};
+constexpr std::string_view shift{"SHIFT"};
+constexpr std::string_view price{"PRICE"};
+}  // namespace ore_vol_spec
 
 std::vector<std::string> split_point(const std::string& point) {
     std::vector<std::string> parts;
@@ -94,48 +153,48 @@ metric default_metric(ir_quote_type qt) {
 std::string_view ore_type(ir_quote_type qt) {
     switch (qt) {
         case ir_quote_type::ir_swap:
-            return "IR_SWAP";
+            return ore_type_spec::ir_swap;
         case ir_quote_type::discount:
-            return "DISCOUNT";
+            return ore_type_spec::discount;
         case ir_quote_type::mm:
-            return "MM";
+            return ore_type_spec::mm;
         case ir_quote_type::fra:
-            return "FRA";
+            return ore_type_spec::fra;
         case ir_quote_type::imm_fra:
-            return "IMM_FRA";
+            return ore_type_spec::imm_fra;
         case ir_quote_type::basis_swap:
-            return "BASIS_SWAP";
+            return ore_type_spec::basis_swap;
         case ir_quote_type::bma_swap:
-            return "BMA_SWAP";
+            return ore_type_spec::bma_swap;
         case ir_quote_type::cc_basis_swap:
-            return "CC_BASIS_SWAP";
+            return ore_type_spec::cc_basis_swap;
         case ir_quote_type::cc_fix_float_swap:
-            return "CC_FIX_FLOAT_SWAP";
+            return ore_type_spec::cc_fix_float_swap;
         case ir_quote_type::zero:
-            return "ZERO";
+            return ore_type_spec::zero;
         case ir_quote_type::mm_future:
-            return "MM_FUTURE";
+            return ore_type_spec::mm_future;
         case ir_quote_type::oi_future:
-            return "OI_FUTURE";
+            return ore_type_spec::oi_future;
     }
-    return "IR_SWAP";
+    return ore_type_spec::ir_swap;
 }
 
 // ORE METRIC string for each metric.
 std::string_view ore_metric(metric m) {
     switch (m) {
         case metric::rate:
-            return "RATE";
+            return ore_metric_spec::rate;
         case metric::price:
-            return "PRICE";
+            return ore_metric_spec::price;
         case metric::basis_spread:
-            return "BASIS_SPREAD";
+            return ore_metric_spec::basis_spread;
         case metric::ratio:
-            return "RATIO";
+            return ore_metric_spec::ratio;
         case metric::yield_spread:
-            return "YIELD_SPREAD";
+            return ore_metric_spec::yield_spread;
     }
-    return "RATE";
+    return ore_metric_spec::rate;
 }
 
 // Whether this ir_quote_type includes the index in the qualifier (as opposed to just
@@ -154,17 +213,17 @@ bool qualifier_includes_index(ir_quote_type qt) {
 std::string_view ore_vol_model(volatility_model_subtype m) {
     switch (m) {
         case volatility_model_subtype::rate_lnvol:
-            return "RATE_LNVOL";
+            return ore_vol_spec::rate_lnvol;
         case volatility_model_subtype::rate_nvol:
-            return "RATE_NVOL";
+            return ore_vol_spec::rate_nvol;
         case volatility_model_subtype::rate_slnvol:
-            return "RATE_SLNVOL";
+            return ore_vol_spec::rate_slnvol;
         case volatility_model_subtype::shift:
-            return "SHIFT";
+            return ore_vol_spec::shift;
         case volatility_model_subtype::price:
-            return "PRICE";
+            return ore_vol_spec::price;
     }
-    return "RATE_LNVOL";
+    return ore_vol_spec::rate_lnvol;
 }
 
 std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
@@ -217,20 +276,20 @@ std::optional<std::string> quote_key_ir(const ir_market_data_identifier& id) {
 std::string_view ore_type(fx_quote_type qt) {
     switch (qt) {
         case fx_quote_type::spot:
-            return "FX";
+            return ore_type_spec::fx;
         case fx_quote_type::fwd:
-            return "FXFWD";
+            return ore_type_spec::fxfwd;
     }
-    return "FX";
+    return ore_type_spec::fx;
 }
 
 std::string_view ore_fx_metric(fx_quote_type qt) {
     switch (qt) {
         case fx_quote_type::spot:
         case fx_quote_type::fwd:
-            return "RATE";
+            return ore_metric_spec::rate;
     }
-    return "RATE";
+    return ore_metric_spec::rate;
 }
 
 std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
@@ -258,24 +317,24 @@ std::optional<std::string> quote_key_fx(const fx_market_data_identifier& id) {
 std::string_view ore_type(equity_quote_type qt) {
     switch (qt) {
         case equity_quote_type::spot:
-            return "EQUITY";
+            return ore_type_spec::equity;
         case equity_quote_type::dividend:
-            return "EQUITY_DIVIDEND";
+            return ore_type_spec::equity_dividend;
         case equity_quote_type::fwd:
-            return "EQUITY_FWD";
+            return ore_type_spec::equity_fwd;
     }
-    return "EQUITY";
+    return ore_type_spec::equity;
 }
 
 std::string_view ore_equity_metric(equity_quote_type qt) {
     switch (qt) {
         case equity_quote_type::spot:
         case equity_quote_type::fwd:
-            return "PRICE";
+            return ore_metric_spec::price;
         case equity_quote_type::dividend:
-            return "RATE";
+            return ore_metric_spec::rate;
     }
-    return "PRICE";
+    return ore_metric_spec::price;
 }
 
 std::optional<std::string> quote_key_equity(const equity_market_data_identifier& id) {
@@ -299,31 +358,31 @@ std::optional<std::string> quote_key_equity(const equity_market_data_identifier&
 std::string_view ore_type(credit_quote_type qt) {
     switch (qt) {
         case credit_quote_type::cds:
-            return "CDS";
+            return ore_type_spec::cds;
         case credit_quote_type::hazard_rate:
-            return "HAZARD_RATE";
+            return ore_type_spec::hazard_rate;
         case credit_quote_type::recovery_rate:
-            return "RECOVERY_RATE";
+            return ore_type_spec::recovery_rate;
         case credit_quote_type::cds_index:
-            return "CDS_INDEX";
+            return ore_type_spec::cds_index;
         case credit_quote_type::index_cds_tranche:
-            return "INDEX_CDS_TRANCHE";
+            return ore_type_spec::index_cds_tranche;
     }
-    return "CDS";
+    return ore_type_spec::cds;
 }
 
 std::string_view ore_credit_metric(credit_quote_type qt) {
     switch (qt) {
         case credit_quote_type::cds:
-            return "CREDIT_SPREAD";
+            return ore_metric_spec::credit_spread;
         case credit_quote_type::hazard_rate:
         case credit_quote_type::recovery_rate:
-            return "RATE";
+            return ore_metric_spec::rate;
         case credit_quote_type::cds_index:
         case credit_quote_type::index_cds_tranche:
-            return "BASE_CORRELATION";
+            return ore_metric_spec::base_correlation;
     }
-    return "CREDIT_SPREAD";
+    return ore_metric_spec::credit_spread;
 }
 
 std::optional<std::string> quote_key_credit(const credit_market_data_identifier& id) {
@@ -366,9 +425,9 @@ std::optional<std::string> quote_key_credit(const credit_market_data_identifier&
 std::string_view ore_type(commodity_quote_type qt) {
     switch (qt) {
         case commodity_quote_type::spot:
-            return "COMMODITY";
+            return ore_type_spec::commodity;
         case commodity_quote_type::fwd:
-            return "COMMODITY_FWD";
+            return ore_type_spec::commodity_fwd;
         // NOTE: Real ORE CPR/RATE quotes are security-level, keyed by ISIN
         // (e.g. CPR/RATE/ISIN:XS0983610930, a scalar inside <Security> blocks in
         // curveconfig.xml), not commodity/ccy/tenor. Modelling CPR under
@@ -376,32 +435,32 @@ std::string_view ore_type(commodity_quote_type qt) {
         // ORE Studio has no security-level identifier yet; the key emitted here
         // (CPR/RATE/CODE/CCY/TENOR) is ORE-Studio-internal shaped, not ORE-native.
         case commodity_quote_type::cpr:
-            return "CPR";
+            return ore_type_spec::cpr;
     }
-    return "COMMODITY";
+    return ore_type_spec::commodity;
 }
 
 std::string_view ore_commodity_metric(commodity_quote_type qt) {
     switch (qt) {
         case commodity_quote_type::spot:
         case commodity_quote_type::fwd:
-            return "PRICE";
+            return ore_metric_spec::price;
         case commodity_quote_type::cpr:
-            return "RATE";
+            return ore_metric_spec::rate;
     }
-    return "PRICE";
+    return ore_metric_spec::price;
 }
 
 std::string_view ore_type(inflation_quote_type qt) {
     switch (qt) {
         case inflation_quote_type::zc_swap:
-            return "ZC_INFLATIONSWAP";
+            return ore_type_spec::zc_inflation_swap;
         case inflation_quote_type::yy_swap:
-            return "YY_INFLATIONSWAP";
+            return ore_type_spec::yy_inflation_swap;
         case inflation_quote_type::seasonality:
-            return "SEASONALITY";
+            return ore_type_spec::seasonality;
     }
-    return "ZC_INFLATIONSWAP";
+    return ore_type_spec::zc_inflation_swap;
 }
 
 std::string_view ore_inflation_metric(inflation_quote_type qt) {
@@ -409,9 +468,9 @@ std::string_view ore_inflation_metric(inflation_quote_type qt) {
         case inflation_quote_type::zc_swap:
         case inflation_quote_type::yy_swap:
         case inflation_quote_type::seasonality:
-            return "RATE";
+            return ore_metric_spec::rate;
     }
-    return "RATE";
+    return ore_metric_spec::rate;
 }
 
 std::optional<std::string> quote_key_inflation(const inflation_market_data_identifier& id) {
@@ -452,6 +511,393 @@ std::optional<std::string> quote_key_commodity(const commodity_market_data_ident
                        id.commodity_code,
                        id.ccy,
                        to_upper(*id.point));
+}
+
+/*
+ * ─── Inverse projection: ORE quote key string → oresmd identifier ─────────────
+ *
+ * Follows the quote-key forward projections above in reverse. Seeded by the
+ * series_key_registry's decomposition table: the segment boundaries mirror that
+ * table's per-type rows (qualifier vs point), and every type the table knows is
+ * either mapped here or has no oresmd identifier at all (BOND, the option and
+ * capfloor families) — those, plus unknown types and malformed keys, yield
+ * nullopt. Segment spelling normalisation mirrors the parser: codes/ccy upper,
+ * tenor/point/index lower.
+ */
+
+std::optional<std::vector<std::string>> split_key(const std::string& key) {
+    std::vector<std::string> parts;
+    std::stringstream ss(key);
+    std::string tok;
+    while (std::getline(ss, tok, '/'))
+        parts.push_back(tok);
+    if (parts.size() < 3)
+        return std::nullopt;
+    if (std::ranges::any_of(parts, [](const std::string& p) { return p.empty(); }))
+        return std::nullopt;
+    return parts;
+}
+
+template <typename Enum>
+std::optional<Enum> parse_enum_lower(std::string_view value) {
+    return magic_enum::enum_cast<Enum>(to_lower(value));
+}
+
+std::optional<metric> parse_metric(std::string_view value) {
+    return parse_enum_lower<metric>(value);
+}
+
+std::optional<index_family> parse_index(std::string_view value) {
+    return parse_enum_lower<index_family>(value);
+}
+
+std::optional<volatility_model_subtype> parse_vol_model(std::string_view value) {
+    return parse_enum_lower<volatility_model_subtype>(value);
+}
+
+// The forward projections emit one fixed METRIC segment per type for every
+// non-IR asset class; a key whose metric differs could not have come from a
+// forward projection and is rejected.
+bool metric_is(std::string_view metric_segment, std::string_view expected) {
+    return to_upper(metric_segment) == expected;
+}
+
+std::optional<market_data_identifier>
+from_fx_spot(const std::vector<std::string>& parts,
+             const ores::ore::market::fx_quote_convention_checker* checker) {
+    // FX/RATE/CCY1/CCY2 — scalar, no point.
+    if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    auto base = parts[2];
+    auto quote = parts[3];
+    if (checker) {
+        const auto result = checker->check(base, quote);
+        base = result.base_currency;
+        quote = result.quote_currency;
+    }
+    fx_market_data_identifier id;
+    id.pair = to_upper(base) + to_upper(quote);
+    id.type = instrument_type::quote;
+    id.quote_type = fx_quote_type::spot;
+    return id;
+}
+
+std::optional<market_data_identifier> from_fx_fwd(const std::vector<std::string>& parts) {
+    // FXFWD/RATE/CCY1/CCY2/TENOR.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    fx_market_data_identifier id;
+    id.pair = to_upper(parts[2]) + to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = fx_quote_type::fwd;
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_ir_swap(const std::vector<std::string>& parts) {
+    // IR_SWAP/METRIC/CCY/SETTLE/TENOR/POINT. The forward hardcodes the settlement
+    // ("2D") into the fourth segment; the identifier has no settle field, so the
+    // segment is accepted verbatim and dropped.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = ir_quote_type::ir_swap;
+    id.metric = *m;
+    id.tenor = to_lower(parts[4]);
+    id.point = to_lower(parts[5]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_ir_discount(const std::vector<std::string>& parts) {
+    // DISCOUNT/METRIC/CCY/CURVE_ID/POINT, where CURVE_ID = CCY + TENOR.
+    if (parts.size() != 5)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    const auto ccy = to_upper(parts[2]);
+    const auto curve_id = to_upper(parts[3]);
+    if (curve_id.size() <= ccy.size() || curve_id.substr(0, ccy.size()) != ccy)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = ccy;
+    id.type = instrument_type::quote;
+    id.quote_type = ir_quote_type::discount;
+    id.metric = *m;
+    id.tenor = to_lower(curve_id.substr(ccy.size()));
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_ir_indexed(ir_quote_type qt, const std::vector<std::string>& parts) {
+    // TYPE/METRIC/CCY/INDEX/TENOR/POINT — the families whose qualifier includes
+    // the index (MM, FRA, IMM_FRA, BASIS_SWAP, ZERO, MM_FUTURE, OI_FUTURE).
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    const auto idx = parse_index(parts[3]);
+    if (!m || !idx)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.metric = *m;
+    id.index = *idx;
+    id.tenor = to_lower(parts[4]);
+    id.point = to_lower(parts[5]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_ir_no_index(ir_quote_type qt, const std::vector<std::string>& parts) {
+    // TYPE/METRIC/CCY/TENOR/POINT — the xccy/BMA families whose qualifier is just
+    // ccy/tenor (CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP, BMA_SWAP).
+    if (parts.size() != 5)
+        return std::nullopt;
+    const auto m = parse_metric(parts[1]);
+    if (!m)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.metric = *m;
+    id.tenor = to_lower(parts[3]);
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_ir_swaption(const std::vector<std::string>& parts) {
+    // SWAPTION/MODEL/CCY/EXPIRY/TENOR/STRIKE. The forward emits either branch (typed
+    // vol struct or point composite) in this same six-segment shape; both collapse
+    // into the vol struct plus the serialised point, matching what the parser builds
+    // for a type=vol URI.
+    if (parts.size() != 6)
+        return std::nullopt;
+    const auto model = parse_vol_model(parts[1]);
+    if (!model)
+        return std::nullopt;
+    ir_market_data_identifier id;
+    id.ccy = to_upper(parts[2]);
+    id.type = instrument_type::vol;
+    id.tenor = to_lower(parts[4]);
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]) + "," + to_lower(parts[5]);
+    volatility_surface_point v;
+    v.expiry = to_upper(parts[3]);
+    v.strike = to_upper(parts[5]);
+    v.model_subtype = *model;
+    id.vol = std::move(v);
+    return id;
+}
+
+std::optional<market_data_identifier> from_equity_spot(const std::vector<std::string>& parts) {
+    // EQUITY/PRICE/TICKER/CCY — scalar, no point.
+    if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::price))
+        return std::nullopt;
+    equity_market_data_identifier id;
+    id.ticker = to_upper(parts[2]);
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = equity_quote_type::spot;
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_equity_curve(equity_quote_type qt, const std::vector<std::string>& parts) {
+    // EQUITY_FWD/PRICE/TICKER/CCY/TENOR, EQUITY_DIVIDEND/RATE/TICKER/CCY/TENOR.
+    const auto expected =
+        (qt == equity_quote_type::dividend) ? ore_metric_spec::rate : ore_metric_spec::price;
+    if (parts.size() != 5 || !metric_is(parts[1], expected))
+        return std::nullopt;
+    equity_market_data_identifier id;
+    id.ticker = to_upper(parts[2]);
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_commodity_spot(const std::vector<std::string>& parts) {
+    // COMMODITY/PRICE/CODE/CCY — scalar, no point.
+    if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::price))
+        return std::nullopt;
+    commodity_market_data_identifier id;
+    id.commodity_code = to_upper(parts[2]);
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = commodity_quote_type::spot;
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_commodity_curve(commodity_quote_type qt, const std::vector<std::string>& parts) {
+    // COMMODITY_FWD/PRICE/CODE/CCY/TENOR, CPR/RATE/CODE/CCY/TENOR.
+    const auto expected =
+        (qt == commodity_quote_type::cpr) ? ore_metric_spec::rate : ore_metric_spec::price;
+    if (parts.size() != 5 || !metric_is(parts[1], expected))
+        return std::nullopt;
+    commodity_market_data_identifier id;
+    id.commodity_code = to_upper(parts[2]);
+    id.ccy = to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_credit_curve(credit_quote_type qt, const std::vector<std::string>& parts) {
+    // CDS/CREDIT_SPREAD/ENTITY/SENIORITY/CCY/TENOR,
+    // HAZARD_RATE/RATE/ENTITY/SENIORITY/CCY/TENOR — point = seniority,tenor.
+    const auto expected = (qt == credit_quote_type::cds) ? ore_metric_spec::credit_spread
+                                                         : ore_metric_spec::rate;
+    if (parts.size() != 6 || !metric_is(parts[1], expected))
+        return std::nullopt;
+    credit_market_data_identifier id;
+    id.reference_entity = to_upper(parts[2]);
+    id.ccy = to_upper(parts[4]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[5]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_credit_recovery(const std::vector<std::string>& parts) {
+    // RECOVERY_RATE/RATE/ENTITY/SENIORITY/CCY — scalar; point is just the seniority.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    credit_market_data_identifier id;
+    id.reference_entity = to_upper(parts[2]);
+    id.ccy = to_upper(parts[4]);
+    id.type = instrument_type::quote;
+    id.quote_type = credit_quote_type::recovery_rate;
+    id.point = to_lower(parts[3]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_credit_index(credit_quote_type qt, const std::vector<std::string>& parts) {
+    // CDS_INDEX/BASE_CORRELATION/INDEX/TENOR/DETACHMENT,
+    // INDEX_CDS_TRANCHE/BASE_CORRELATION/INDEX/SERIES_TENOR/DETACHMENT — no ccy
+    // dimension; point = tenor,detachment.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::base_correlation))
+        return std::nullopt;
+    credit_market_data_identifier id;
+    id.reference_entity = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.point = to_lower(parts[3]) + "," + to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier>
+from_inflation_swap(inflation_quote_type qt, const std::vector<std::string>& parts) {
+    // ZC_INFLATIONSWAP/RATE/INDEX/POINT, YY_INFLATIONSWAP/RATE/INDEX/POINT.
+    if (parts.size() != 4 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    inflation_market_data_identifier id;
+    id.index_code = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = qt;
+    id.point = to_lower(parts[3]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_inflation_seasonality(const std::vector<std::string>& parts) {
+    // SEASONALITY/RATE/MULT/INDEX/POINT — the forward emits the literal MULT in the
+    // third segment; it is accepted verbatim and dropped.
+    if (parts.size() != 5 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    inflation_market_data_identifier id;
+    id.index_code = to_upper(parts[3]);
+    id.type = instrument_type::quote;
+    id.quote_type = inflation_quote_type::seasonality;
+    id.point = to_lower(parts[4]);
+    return id;
+}
+
+std::optional<market_data_identifier> from_correlation(const std::vector<std::string>& parts) {
+    // CORRELATION/RATE/FACTOR_PAIR — scalar, no point.
+    if (parts.size() != 3 || !metric_is(parts[1], ore_metric_spec::rate))
+        return std::nullopt;
+    correlation_market_data_identifier id;
+    id.factor_pair = to_upper(parts[2]);
+    id.type = instrument_type::quote;
+    id.quote_type = correlation_quote_type::pairwise;
+    return id;
+}
+
+std::optional<market_data_identifier>
+inverse_projection(const std::vector<std::string>& parts,
+                   const ores::ore::market::fx_quote_convention_checker* checker) {
+    const auto type = to_upper(parts[0]);
+    if (type == ore_type_spec::fx)
+        return from_fx_spot(parts, checker);
+    if (type == ore_type_spec::fxfwd)
+        return from_fx_fwd(parts);
+    if (type == ore_type_spec::ir_swap)
+        return from_ir_swap(parts);
+    if (type == ore_type_spec::discount)
+        return from_ir_discount(parts);
+    if (type == ore_type_spec::swaption)
+        return from_ir_swaption(parts);
+    if (type == ore_type_spec::mm || type == ore_type_spec::fra ||
+        type == ore_type_spec::imm_fra || type == ore_type_spec::basis_swap ||
+        type == ore_type_spec::zero || type == ore_type_spec::mm_future ||
+        type == ore_type_spec::oi_future) {
+        const auto qt = parse_enum_lower<ir_quote_type>(type);
+        return qt ? from_ir_indexed(*qt, parts) : std::nullopt;
+    }
+    if (type == ore_type_spec::cc_basis_swap || type == ore_type_spec::cc_fix_float_swap ||
+        type == ore_type_spec::bma_swap) {
+        const auto qt = parse_enum_lower<ir_quote_type>(type);
+        return qt ? from_ir_no_index(*qt, parts) : std::nullopt;
+    }
+    if (type == ore_type_spec::equity)
+        return from_equity_spot(parts);
+    // The ORE spellings differ from the enum names for these types ("EQUITY_FWD" vs
+    // the enumerator "fwd"), so they are dispatched explicitly rather than by
+    // magic_enum name lookup -- mirroring the forward ore_type(quote_type) tables.
+    if (type == ore_type_spec::equity_fwd)
+        return from_equity_curve(equity_quote_type::fwd, parts);
+    if (type == ore_type_spec::equity_dividend)
+        return from_equity_curve(equity_quote_type::dividend, parts);
+    if (type == ore_type_spec::commodity)
+        return from_commodity_spot(parts);
+    if (type == ore_type_spec::commodity_fwd)
+        return from_commodity_curve(commodity_quote_type::fwd, parts);
+    if (type == ore_type_spec::cpr)
+        return from_commodity_curve(commodity_quote_type::cpr, parts);
+    if (type == ore_type_spec::cds || type == ore_type_spec::hazard_rate) {
+        const auto qt = parse_enum_lower<credit_quote_type>(type);
+        return qt ? from_credit_curve(*qt, parts) : std::nullopt;
+    }
+    if (type == ore_type_spec::recovery_rate)
+        return from_credit_recovery(parts);
+    if (type == ore_type_spec::cds_index || type == ore_type_spec::index_cds_tranche) {
+        const auto qt = parse_enum_lower<credit_quote_type>(type);
+        return qt ? from_credit_index(*qt, parts) : std::nullopt;
+    }
+    if (type == ore_type_spec::zc_inflation_swap)
+        return from_inflation_swap(inflation_quote_type::zc_swap, parts);
+    if (type == ore_type_spec::yy_inflation_swap)
+        return from_inflation_swap(inflation_quote_type::yy_swap, parts);
+    if (type == ore_type_spec::seasonality)
+        return from_inflation_seasonality(parts);
+    if (type == ore_type_spec::correlation)
+        return from_correlation(parts);
+    // No oresmd mapping: BOND, FX_OPTION, CAPFLOOR, INDEX_CDS_OPTION,
+    // EQUITY_OPTION, COMMODITY_OPTION, ZC_INFLATIONCAPFLOOR, YY_INFLATIONCAPFLOOR,
+    // and any type the registry does not know.
+    return std::nullopt;
 }
 
 }
@@ -512,6 +958,22 @@ oresmd_projections::split_market_series_key(const std::string& key) {
     for (std::size_t i = 3; i < parts.size(); ++i)
         result.qualifier += "/" + parts[i];
     return result;
+}
+
+std::optional<domain::market_data_identifier>
+oresmd_projections::from_ore_key(const std::string& key) {
+    const auto parts = split_key(key);
+    if (!parts)
+        return std::nullopt;
+    return inverse_projection(*parts, nullptr);
+}
+
+std::optional<domain::market_data_identifier> oresmd_projections::from_ore_key(
+    const std::string& key, const ores::ore::market::fx_quote_convention_checker& checker) {
+    const auto parts = split_key(key);
+    if (!parts)
+        return std::nullopt;
+    return inverse_projection(*parts, &checker);
 }
 
 }

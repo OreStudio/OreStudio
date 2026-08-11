@@ -67,7 +67,7 @@ identity drift.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on oresmd — inventory, consumers, fields-vs-URI target state]] | DONE | 2026-08-11 | 2026-08-11 | Inventory every market-data-bearing entity and how it connects to oresmd today; enumerate consumers across the market simulator, all Qt UIs, and ores.shell; answer the key question per entity -- component fields vs a single URI string (the hybrid of both must be explicitly ruled on); produce a sequenced target state. Analysis only, no schema or code change. |
-| [[id:022F15FD-0BC3-4F07-BA1F-916AB65EFD39][Inverse projection: ORE key to oresmd identifier, canonical form contract]] | STARTED | 2026-08-11 | | Build the inverse projection (ORE key to oresmd identifier) in ores.marketdata.core/oresmd, seeded by the series_key_registry decomposition table; reject series types without an oresmd mapping. Pin the canonical URI form: round-trip tests and value-spelling rules (tenor and point via a supplied refdata container). |
+| [[id:022F15FD-0BC3-4F07-BA1F-916AB65EFD39][Inverse projection: ORE key to oresmd identifier, canonical form contract]] | DONE | 2026-08-11 | 2026-08-11 | Build the inverse projection (ORE key to oresmd identifier) in ores.marketdata.core/oresmd, seeded by the series_key_registry decomposition table; reject series types without an oresmd mapping. Pin the canonical URI form: round-trip tests and value-spelling rules (tenor and point via a supplied refdata container). |
 | [[id:9B56689B-6EB0-448D-A5FA-8C029803B9F5][Identity core: market_series and feed_binding store oresmd URIs]] | BACKLOG | | | market_series and feed_binding gain oresmd_uri columns; backfill existing rows through the inverse projection; drop series_type/metric/qualifier and ore_key; repositories, registrars, and ingest loops read URIs; auto-create uses identifiers. |
 | [[id:413E0BB1-5156-4442-A582-9AD403AFA905][Observation identity: point_id carries the oresmd point]] | BACKLOG | | | market_observation.point_id carries the serialised oresmd point; scalar series have a null point (the SPOT sentinel dies); fixings and observation_lineages follow; the DQ artefact mirrors observation identity. |
 | [[id:EC35D956-8E23-4455-830F-F7D2BCBB0A4A][Generation configs move to oresmd URIs]] | BACKLOG | | | fx_spot_generation_config and ir_curve_generation_config switch to one oresmd_uri each; the component columns drop; validation moves from SQL constraints to the oresmd layer; the Qt editors round-trip URIs. |
@@ -105,6 +105,13 @@ Decided by the analysis task (see its =* Plan=):
   container of canonical values (tenor, point). The builder matches
   against it and rejects unknown spellings; no direct repository
   dependency.
+- The inverse projection reuses the =fx_quote_convention_checker=:
+  the pair swap applies to the identifier at parse time (same
+  =check()=, new target). The checker header moves PUBLIC on
+  ores.marketdata.core.
+- Fixing keys (=FIXING/RATE/<index-name>=) are an index-name key
+  space the registry table does not seed. Their inverse lands with
+  the identity-core task, which wires the fixing boundary.
 
 * Out of scope
 

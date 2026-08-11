@@ -8,7 +8,7 @@
 #+filetags: :synthetic:marketdata:feeds:security:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
 #+branch: feature/config-id-control-plane
-#+pr:
+#+pr: 1972
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -126,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1972][#1972]] | [synthetic,marketdata,api] Per-config feed control plane keyed by config_id |
 
 * Review
 

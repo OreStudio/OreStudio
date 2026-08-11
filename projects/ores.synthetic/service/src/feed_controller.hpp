@@ -97,11 +97,12 @@ inline bool feeds_conflict(const std::string& qualifier_a,
  *
  * Serves every asset class from one class: the map of running feeds is
  * keyed by source_name (a producer's unique identity), so several
- * producers — several for the same pair from different configs included —
- * run concurrently and publish on distinct subjects. Every feed enters
- * the map through the common IFeed interface: the per-kind producers
- * (fx_spot_feed, ir_curve_feed) differ only in what they publish, not in
- * how they are owned.
+ * producers run concurrently and publish on distinct subjects — but at
+ * most one per (qualifier, role) pair (see feeds_conflict), so two feeds
+ * on the same pair — two FX feeds included — never both run. Every feed
+ * enters the map through the common IFeed interface: the per-kind
+ * producers (fx_spot_feed, ir_curve_feed) differ only in what they
+ * publish, not in how they are owned.
  *
  * Three paths register a feed:
  *   - add() — the config-driven path (auto-start at boot, the folder
@@ -117,14 +118,16 @@ inline bool feeds_conflict(const std::string& qualifier_a,
  *     performs the vintage-availability check and feed-binding
  *     auto-creation; the config-driven path does neither.
  *
- * At most one feed per conflict key — the feed's own
- * IFeed::conflict_key(), qualifier plus role (see feeds_conflict) — runs
- * at a time: an add()/start() whose conflict key is already held by a
- * *different* running feed is rejected, never silently, and never by
- * stopping the existing one. Switching requires an explicit stop() first.
- * The conflict is reported with the running feed's source_name, via the
- * conflicting-source-name out parameter or
- * running_source_name_for_conflict_key().
+ * At most one feed per (qualifier, role) pair — the pair the feed's own
+ * IFeed::conflict_key() encodes (see feeds_conflict) — runs at a time:
+ * an add()/start() whose pair is already held by a *different* running
+ * feed is rejected, never silently, and never by stopping the existing
+ * one. Switching requires an explicit stop() first. The check compares
+ * the pair via feeds_conflict() rather than the key string, because an
+ * empty qualifier (an unparseable ORE key) must conflict with nothing
+ * even though its key string is non-empty. The conflict is reported with
+ * the running feed's source_name, via the conflicting-source-name out
+ * parameter or running_source_name_for_conflict_key().
  *
  * Threading: start() and stop() are called from NATS I/O callbacks and
  * the startup path; both are protected by a mutex. shutdown() is called
@@ -354,12 +357,19 @@ public:
      * @brief The source_name of the running feed currently holding @p
      * conflict_key, if any — for building the "already running as X — stop
      * it first" message after a qualifier_conflict result.
+     *
+     * Feeds with an empty qualifier never hold a conflict key (see
+     * feeds_conflict) and are skipped, so the lookup cannot false-positive
+     * on one of them.
      */
     std::optional<std::string> running_source_name_for_conflict_key(const std::string& conflict_key) const {
         std::lock_guard lock(mu_);
-        for (const auto& [name, rf] : feeds_)
+        for (const auto& [name, rf] : feeds_) {
+            if (rf.feed->qualifier().empty())
+                continue;
             if (rf.feed->conflict_key() == conflict_key)
                 return name;
+        }
         return std::nullopt;
     }
 
@@ -402,13 +412,21 @@ public:
         return feeds_.size();
     }
 
-    /** @brief Snapshot of source_names for all currently running feeds. */
-    std::vector<std::string> list() const {
+    /**
+     * @brief Snapshot of source_names for all currently running feeds,
+     * optionally scoped to one feed kind (IFeed::kind()) — the per-kind
+     * control-plane handlers list only their own kind, so a collapsed
+     * controller still answers each handler's list as before.
+     */
+    std::vector<std::string> list(const std::string& kind = {}) const {
         std::lock_guard lock(mu_);
         std::vector<std::string> names;
         names.reserve(feeds_.size());
-        for (const auto& [key, _] : feeds_)
+        for (const auto& [key, rf] : feeds_) {
+            if (!kind.empty() && rf.feed->kind() != kind)
+                continue;
             names.push_back(key);
+        }
         return names;
     }
 

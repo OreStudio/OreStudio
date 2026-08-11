@@ -36,9 +36,19 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::feed {
+
+/**
+ * @brief The kind string this producer registers under in
+ * make_default_feed_factory() — the asset-class discriminator of the factory
+ * seam, exposed as IFeed::kind(). The control-plane passes it to
+ * factory::make() to select this producer's builder and scopes running-feed
+ * listings by it.
+ */
+inline constexpr std::string_view ir_curve_feed_kind = "ir_curve";
 
 /**
  * @brief Thrown by make_ir_curve_feed() when cfg.price_source is "vintage" and no matching
@@ -91,6 +101,9 @@ public:
     void stop() override;
     std::uint64_t publish_count() const override {
         return publish_count_.load(std::memory_order_relaxed);
+    }
+    std::string_view kind() const override {
+        return ir_curve_feed_kind;
     }
     const std::string& source_name() const override {
         return source_name_;

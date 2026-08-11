@@ -23,6 +23,7 @@
 #include "feed_controller.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -193,7 +194,9 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
         list_market_feed_configs_response resp;
-        resp.running_source_names = ctrl_->list();
+        // The collapsed controller owns every feed kind; this handler lists
+        // only its own (FX spot), as the per-kind controller it replaced did.
+        resp.running_source_names = ctrl_->list(std::string(ores::synthetic::feed::fx_spot_feed_kind));
         resp.success = true;
         BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
             << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";

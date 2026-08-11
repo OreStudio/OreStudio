@@ -24,6 +24,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace ores::marketdata::domain {
 
@@ -81,6 +82,14 @@ public:
      * empty for feeds without roles (FX spot).
      */
     virtual const std::string& role() const = 0;
+
+    /**
+     * @brief The factory kind string this producer registers under (the
+     * asset-class discriminator of the factory seam, e.g. "fx_spot",
+     * "ir_curve"). Control-plane code scopes running-feed listings by kind;
+     * a producer's kind is fixed for its lifetime.
+     */
+    virtual std::string_view kind() const = 0;
 
     /**
      * @brief The identity two feeds must not share while both run (see

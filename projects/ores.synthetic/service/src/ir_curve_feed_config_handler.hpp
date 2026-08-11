@@ -29,6 +29,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
@@ -262,7 +263,10 @@ public:
         using namespace ores::synthetic::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(ir_curve_feed_config_handler_lg(), msg);
         list_ir_curve_feed_configs_response resp;
-        resp.running_source_names = ctrl_->list();
+        // The collapsed controller owns every feed kind; this handler lists
+        // only its own (IR curves), as the per-kind controller it replaced did.
+        resp.running_source_names =
+            ctrl_->list(std::string(ores::synthetic::feed::ir_curve_feed_kind));
         resp.success = true;
         reply(nats_, msg, resp);
     }

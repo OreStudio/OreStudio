@@ -36,13 +36,10 @@
 
 namespace ores::synthetic::feed {
 
-/**
- * @brief Kind strings registered by make_default_feed_factory(). A producer's kind is the
- * asset-class discriminator of the factory seam: the control-plane passes it (or derives it
- * from the config table) to select the builder.
- */
-inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
-inline constexpr std::string_view ir_curve_feed_kind = "ir_curve";
+// Kind strings (fx_spot_feed_kind, ir_curve_feed_kind) live in their producer headers and are
+// registered by make_default_feed_factory(). A producer's kind is the asset-class discriminator
+// of the factory seam: the control-plane passes it (or derives it from the config table) to
+// select the builder, and IFeed::kind() exposes it.
 
 /**
  * @brief Shared inputs every producer builder needs, gathered once by the caller (application

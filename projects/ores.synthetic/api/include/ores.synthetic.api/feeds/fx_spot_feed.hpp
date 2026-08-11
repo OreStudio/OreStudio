@@ -31,9 +31,19 @@
 #include <cctype>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::synthetic::feed {
+
+/**
+ * @brief The kind string this producer registers under in
+ * make_default_feed_factory() — the asset-class discriminator of the factory
+ * seam, exposed as IFeed::kind(). The control-plane passes it to
+ * factory::make() to select this producer's builder and scopes running-feed
+ * listings by it.
+ */
+inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
 
 /**
  * @brief Build the producer subject from source_name and binding_mode. '.'
@@ -105,6 +115,9 @@ public:
     const std::string& source_name() const override;
     const std::string& qualifier() const override;
     const std::string& role() const override;
+    std::string_view kind() const override {
+        return fx_spot_feed_kind;
+    }
     std::string conflict_key() const override;
     void start() override;
     void stop() override;

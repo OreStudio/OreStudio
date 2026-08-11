@@ -195,6 +195,9 @@ public:
     const std::string& role() const override {
         return role_;
     }
+    std::string_view kind() const override {
+        return "stub";
+    }
     std::string conflict_key() const override {
         return ores::marketdata::domain::feed_conflict_key(qualifier_, role_);
     }

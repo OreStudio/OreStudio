@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: EA29CB29-75DA-4AC1-8314-79FD1B402859
+:END:
+#+title: Task: Fix synthetic config process parameter values tenant scoping
+#+description: The ores_synthetic_config_process_parameter_values_insert_fn trigger validates the parameter_definition_id soft FK scoped to NEW.tenant_id, but the publish path resolves definition ids from the system tenant. On a fresh DB every synthetic.themes publish fails with 'Invalid parameter_definition_id'. Scope the soft-FK check to the system tenant, matching ores_synthetic_validate_yield_curve_process_parameter_definition_fn.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/review-acme-fit-for-purpose
+#+pr: 1958
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic theme publish (=synthetic.themes.realistic_2026=) fails on
+a fresh database with "Invalid parameter_definition_id: %. No active
+yield_curve_process_parameter_definition found with this id." The
+values-table insert trigger
+(=ores_synthetic_config_process_parameter_values_insert_fn=) validates
+the parameter_definition_id soft FK scoped to =NEW.tenant_id=, but the
+publish path resolves each definition id from the *system-tenant*
+catalogue (=synthetic_publish_from_dq_create.sql:690= joins on
+=ores_utility_system_tenant_id_fn()=). The trigger's check must align
+with the system-tenant scoping, matching the sibling validate function
+=ores_synthetic_validate_yield_curve_process_parameter_definition_fn=
+(=synthetic_yield_curve_process_parameter_definitions_create.sql:170=).
+
+The generated file is produced by the
+=sql_schema_domain_entity_create.mustache= template, so the fix is made
+in the template and the file regenerated, never edited by hand.
+
+Stable identifiers: the fix must keep resolving definition ids by the
+enforced composite natural key =(process_type_code, parameter_name)=
+from the system tenant -- raw UUIDs are unstable across reprovisionings
+and nothing may bake them in.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Fix implemented in codegen (model flag =:use_system_tenant:= on the FK, regenerated SQL); template drift on the notify/registrar channels fixed the same way. Fully verified on a fresh DB (shell leg): =synthetic.themes.realistic_2026= publishes for all 4 parties, 58 staff photos land, all 3 offices' =synthetic_feeds= steps complete and the IR/FX feeds tick (3933 observations persisted). The feeds step exposed two further masked bugs, fixed and verified as part of this task's cascade: F13 (RLS party-isolation shadowing on the values table, 6ef39a7f2) and F14 (feed start read the parameter-definitions catalogue with the caller's tenant instead of the system tenant, 716efb0d0) -- see the review task's findings table. |
+| Waiting on   | Nothing.                               |
+| Next         | Wizard leg on a second fresh DB (scenario B296624F): reproduce the same result through the wizard path. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- The =ores_synthetic_config_process_parameter_values_insert_fn=
+  trigger's parameter_definition_id soft-FK check is scoped to the
+  system tenant, matching the publish path's resolution.
+- The fix is made in the codegen template that generates the file, and
+  the generated file regenerated -- no hand edits.
+- On a fresh database, =synthetic.themes.realistic_2026= publishes
+  successfully for every Acme party (holding + UK/US/HK) and the
+  office staff-photo attach and synthetic feeds that its failure was
+  skipping (review finding F12 cascade) land.
+  *Verified 2026-08-10 (fresh DB, shell leg): themes publish for all 4
+  parties; 59 accounts with 58 distinct photos; all 3 offices'
+  =synthetic_feeds= steps complete; IR curves (20 per office, 7 points
+  per publish) and FX feeds (13 per office, 59 ticks) tick with 3933
+  observations persisted; zero F12/F13/F14 errors in the IAM and
+  synthetic service logs.*
+- Definition ids still resolve through the stable natural key
+  =(process_type_code, parameter_name)=; no raw UUIDs are referenced.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1958][#1958]] | [agile] ACME fit-for-purpose review: fixes F10/F11/F13/F14, verification F1-F16 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The fix was verified end-to-end on a fresh database through the shell
+provisioning leg (2026-08-10):
+
+- =synthetic.themes.realistic_2026= and =ore_samples_2016= publish for
+  all four Acme parties (holding + UK/US/HK) -- no "Invalid
+  parameter_definition_id" anywhere.
+- Staff photo attach lands for all four parties: 59 accounts, 58 with
+  distinct =image_id=s.
+- All three offices' =synthetic_feeds= steps complete; the IR curve
+  and FX feeds tick (20 IR curves per office, 7 points per publish;
+  13 FX feeds per office, 59 ticks; 3933 market observations
+  persisted) with zero feed-related errors in the IAM or synthetic
+  service logs.
+
+Two further masked bugs surfaced once the feeds ran for the first
+time and were fixed within this cascade (both recorded in the review
+task's findings table): F13 -- the values table's RLS party-isolation
+policy shadowed =config_id= with the inner IR-config table's own
+column (=synthetic_rls_policies_create.sql=, fixed 6ef39a7f2); F14 --
+the feed start read the parameter-definitions catalogue with the
+caller's tenant instead of the system tenant
+(=ir_curve_feed_config_handler.hpp=, fixed 716efb0d0).
+
+Open design question (F15, recorded in the review task): the feed
+controller keys feeds by =source_name= service-wide, so only the
+first office's feeds actually tick; the US/HK starts report
+"already running" and their per-party series receive no observations.

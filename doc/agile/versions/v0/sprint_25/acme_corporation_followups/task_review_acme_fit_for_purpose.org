@@ -1,0 +1,277 @@
+:PROPERTIES:
+:ID: 771C9D24-54BC-478A-A580-C65C1E2901EC
+:END:
+#+title: Task: Review ACME infrastructure for fit for purpose
+#+description: Walk every artefact ACME creates -- the holding-group companies, staff accounts, and simulated market data -- and verify the whole holds together as one coherent reference entity.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/review-acme-fit-for-purpose
+#+pr: 1958
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-09
+#+updated: 2026-08-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reviewed, verified ACME: every piece of ACME infrastructure (companies, staff, simulated market data, synthetic configs) works end-to-end and holds together as a coherent whole; gaps found are fixed or recorded.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Both legs green. Shell leg: F12/F13/F14 fixed and verified on a fresh DB; all 3 offices' =synthetic_feeds= complete, IR curves and FX feeds tick, 3933 observations, zero service-log errors. Wizard leg: scenario B296624F all 15 steps PASS (2026-08-11T01:48:01Z) on a second fresh DB; server-side checks mirror the shell leg -- 60 accounts / 58 photos, 6 active parties, 44 DQ themes, 96 IR + 104 FX configs, feeds ticking, synthetic log clean; F15 confirmed on the wizard leg (only ACCOUK ticks). F16 recorded: the bitemporal sentinel is TimeZone-dependent (IMMUTABLE function folding a naive literal) -- tenant_admin's logout failed ("Account does not exist") in a non-UTC session, leaving the online flag stale; wrong-result demonstrated live in a NY session; fix proposed (explicit UTC offset in the function + audit UTC forcing on all connection sites), scope to decide. F11 fixed: =provision_acme='s abort paths (Steps 2/3) now reply =success = false= with the failed step and the DQ error surfaced in =message=, so a failed provisioning no longer looks successful. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. Review closed 2026-08-11; F11 fix built (25ca3b764) and the combined PR for feature/review-acme-fit-for-purpose raised. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Provision ACME end-to-end via ores.shell on a fresh database (--source acme) and verify the holding group, companies, staff, and synthetic configs land correctly.
+- Provision ACME end-to-end via the Qt wizard path (Acme one-click onboarding) on a fresh database and verify the same result.
+- Staff artefacts hold together: locale-matched names, per-country email domains, profile photos, and the org chart.
+- Simulated market data holds together: synthetic themes generate and publish FX ticks, IR curves, and CRM cross-rates; the Market Simulator shows the consolidated tenant-level configs; bound-feed resolution excludes sandboxed output.
+- Holding-company visibility holds: the holding party sees subsidiary FX/CRM data and the Group Treasury book.
+- ACME setup creates no other demo entities: after provisioning, the only tenant is Acme Corporation and the only parties are its four holding-group companies -- Barclays, Lloyds, NatWest, etc. exist neither as tenants nor as parties.
+- GLEIF counterparty import lands only as counterparty reference data: real-world names (including banks) appear as counterparties, never as tenants or parties.
+- Every issue found during the review is recorded in the task notes with its fix.
+
+* Plan
+
+** Settled design approach
+
+Agreed with the user on 2026-08-09. Three design questions were
+settled before any provisioning ran:
+
+1. Step 6 vs step 7: the two-step recipe is forced by the bundle
+   layout. =risk_management= carries report definitions as a
+   non-optional member of a demo-org bundle, so the holding company
+   (whose book/portfolio tree is hand-seeded) can receive reports only
+   through a root-party republish of the whole bundle, relying on the
+   publish functions' per-party idempotency guards.
+2. Why not one publish for everything: a bundle publish copies dataset
+   rows; it cannot create the tenant, the parties, or the IAM user
+   accounts. Those are security principals instantiated by the
+   provisioning workflow. The tenant must exist before any data can
+   land, so "one publish" is structurally impossible; "one command" is
+   the ceiling.
+3. Fixture-as-data: the employees ARE data already -- per-party
+   accounts datasets (=acme.<party>.accounts=) with =username= and
+   =photo_key= rows; the workflow reads them and instantiates the IAM
+   accounts, attaching photos by key. This principle is the
+   architecture and stays.
+
+Target shape (the review's fixes):
+
+- One provisioning command covering the system and tenant phases,
+  impersonating internally -- no relogin, no user-visible loops. The
+  per-office loop already runs server-side inside =provision_acme=.
+- Report definitions move to their own bundle, published for the
+  holding party inside the workflow. This removes recipe step 7 and
+  the two-step dance.
+- Keep the per-party bundle plan, the idempotency guards, and GLEIF as
+  counterparty reference data.
+
+** Findings to verify and record
+
+| # | Finding | Status |
+|---+---------+--------|
+| F1 | Recipe step 7's purpose (root-party reports) is undocumented | to verify |
+| F2 | =report_definitions= rides in the demo-org =risk_management= bundle; all members non-optional, so reports cannot publish alone -- forces the step 6/7 split | confirmed by code |
+| F3 | Recipe has a relogin and two provisioning commands; a single command is achievable via the existing impersonation machinery | confirmed by code |
+| F4 | Tier default =common,regulatory,strategic,trading= publishes Strategic (holding-only) reports to every party | confirmed by code |
+| F5 | FX vintage: the plan includes =marketdata.reference_vintage_2026_05_05=; open task 094075A2 claims only =2016_02_05= is published. Hotfix #1929 shows the old first-available heuristic picked the 2026 vintage for tenant provisioning and it failed (party-scoped, no party_id). Whether the 2026 vintage lands per-party now is a live check | partially verified live: =marketdata.fx_driver_rates_2026= configs land per party (4x); themes/vintages (and the Market Simulator's consolidated configs) still blocked on F12 |
+| F6 | Step 7 root-party publish may insert demo-org business units/portfolios/books into the holding party unless the publish guards skip them | blocked on F10 (step 7 no-op'd: no root party existed) |
+| F7 | Wizard scenario B296624F is titled "Acme Bank wizard path" though the tenant is Acme Corporation | confirmed by code (title drift) |
+| F8 | No-other-entities invariant: after provisioning, exactly one tenant and four parties; GLEIF names appear only as counterparties | partially verified: no extra entities (nothing provisioned at all); recheck after F10 fix |
+| F9 | Stale second provisioning path: =acme_system_provision.org= provisions tenant "Acme Corp" (=--source synthetic --seed 42=, random UK firms) and explicitly creates a "Lloyds Wealth Management Ltd" party -- the exact other-entity anti-pattern. Fix tracked as BACKLOG task CA9CB414 in this story | confirmed by code |
+| F10 | Fresh-DB base bundle ordering breaks: =refdata.*= datasets declare no dataset dependencies (only iso and lei have dependency populate files), so =resolve_publication_order='s topological sort is unconstrained and emitted =refdata.currency_pairs= as workflow step 0, before =iso.currencies=; the insert trigger (=refdata_currency_pairs_create.sql:88=, "Invalid base_currency: EUR. No active currency found") aborted the base workflow (0/38 members). Cascade: =acme_lei_import= then failed ("Invalid business_centre: GBLO. Must be one of: WRLD" -- only the system WRLD centre exists; the rest arrive via the =fpml.business_center= publish, which never ran). Result: only the System party, 0 currencies, 0 parties/staff/reports. Previously masked: provisioning was only tested against restored DBs with pre-existing reference data | confirmed live -- fixed (see * Notes) |
+| F11 | Provisioning reports success despite internal failure: =tenant_handler.hpp:295-296= sets =resp.success = true= up front and the abort paths (lines 396, 438) reply with it, so the shell printed "✓ Acme Corporation holding group provisioned" after both steps failed. Same family: =bundles publish risk_management --wait= reported "✓ All 4 step(s) completed" while inserting 0 rows (no root party exists to publish for) | confirmed live -- fixed (25ca3b764: abort paths reply =success = false= with the failed step and DQ error surfaced; compiled, not live-repro'd -- both legs green, so no natural failure path) |
+| F12 | =synthetic.themes.realistic_2026= fails for every party (holding group + UK/US/HK): =marketdata.fx_driver_rates_2026= completes, then the theme publish hard-raises "Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id." Root cause (traced with the IR Rates story owner): tenant-scoping bug in =ores_synthetic_config_process_parameter_values_insert_fn= -- the publish path resolves each config parameter's definition id from the *system-tenant* catalogue (=synthetic_publish_from_dq_create.sql:690= joins on =ores_utility_system_tenant_id_fn()=), but the values-table trigger validates the soft FK scoped to =NEW.tenant_id= (the acme tenant, which has no definitions), while the sibling validate function =ores_synthetic_validate_yield_curve_process_parameter_definition_fn= (=synthetic_yield_curve_process_parameter_definitions_create.sql:170=) correctly uses the system tenant. Deterministic on fresh DBs in all four groups; masked before this review only because the base publish aborted before theme steps ever ran. Fix (SQL-only, aligned with the dependency-edge PR's shape): scope the trigger's soft-FK check to the system tenant -- captured as task EA29CB29 under this story (fix itself made in the =sql_schema_domain_entity_create.mustache= codegen template, =:use_system_tenant:= on the FK, file regenerated). Stable identifiers: definition ids are =gen_random_uuid()= (unstable across reprovisionings), but nothing references them raw -- the publish resolves by the enforced composite natural key =(process_type_code, parameter_name)= from the system tenant, and the fix must keep that shape (the ids differ between runs for the same parameter precisely because each DB regenerates them; the trigger bug is the only consumer-facing break). Cascade (verified live): the office loop runs the market plan before =attach_staff_photos= (=tenant_handler.hpp:559-604=); the theme failure makes the workflow wait fail and the loop =continue=s, so the office photo attach and =start_synthetic_theme_feeds= never run. Only the holding photo landed, because the group attach (lines 442-445) runs before the group's market plan. All 58 staff rows carry =photo_key=; only adrian.vance has an =image_id=. Fixing F12 makes all 58 photos and the office feeds land | confirmed live (4x) -- fixed on main (=9a4c8a462=, PR #1952, landed independently) and verified on a fresh DB: themes publish for all 4 parties; the photo attach then ran and exposed F13 in the feeds step |
+| F13 | =start_synthetic_theme_feeds= fails for all 3 offices (UK/US/HK): every IR curve config in the office loop's subtree fails with "IR curve config has no parameter value rows" (=ir_curve_feed_config_handler.hpp:138-142=, 20 warnings per office in =ores.iam.service.0.log=, one per IR config). Root cause: the RLS party-isolation policy on =ores_synthetic_config_process_parameter_values_tbl= (=synthetic_rls_policies_create.sql=) references =config_id= *unqualified* inside an EXISTS subquery against =ores_synthetic_ir_curve_generation_configs_tbl c= -- but that table has its own =config_id= column (the market-data generation config that produced it, added 2026-07-14 =1effe42d0=), so the reference binds to the inner table and the predicate becomes =c.id = c.config_id= (always false). Every value row is invisible under party isolation, so the office feed start reads 0 values. The policy is broken since its creation (=d8e79a5f2= 2026-08-06; the config_id column predates it). Previously masked: the feeds step never ran while F12 aborted the office loop. Fix (SQL-only, hand-written file -- not generated): qualify the outer reference =c.id = ores_synthetic_config_process_parameter_values_tbl.config_id= in both =using= and =with check= | confirmed live (3x offices) -- fixed (6ef39a7f2); full shell-leg re-run on a fresh DB green: values read through RLS, feed start reached the mapping layer, no errors in IAM or synthetic service logs |
+| F14 | With F13 fixed, =start_ir_curve_feed= still fails for every IR config of every office: "Failed to start IR curve feed: map_parameters_to_yield_curve_process: parameter value references unknown parameter_definition_id <uuid>". Root cause: the handler reads the parameter-definitions catalogue with the caller's request context (=ir_curve_feed_config_handler.hpp=, =definition_repo.read_latest(req_ctx)=), so the query filters =tenant_id = <caller tenant>= -- but the catalogue is *system-tenant owned* (the publish path resolves each value's =parameter_definition_id= from the system tenant, F12), so a non-system tenant read returns nothing and every value row's definition id fails to join. Same tenant-scoping family as F12, on the read side. Masked until F13: the feed start aborted before reaching the mapping. Fix: read with =tenant_context::with_system_tenant(req_ctx)=, matching the F12 trigger fix's system-tenant scoping | confirmed live (3x offices, 20 configs each) -- fixed (716efb0d0); full shell-leg re-run on a fresh DB green: all 3 offices' =synthetic_feeds= steps complete, IR curves and FX feeds tick, 3933 observations persisted, no errors in IAM or synthetic service logs |
+| F15 | Only the first office's synthetic feeds actually tick: the feed controller keys feeds by =source_name= service-wide (=curve_feed_controller.hpp=), and every office's feeds share the theme's source names (e.g. =synthetic.2026realistic.audusd=). UK starts first ("13 started, 0 already running"); the US/HK folder starts report "0 started, 13 already running" and all 40 IR starts report "Feed already running" -- success, so their =synthetic_feeds= steps complete. The feed object writes observations under its config's =party_id=, so only UK's party has tick data (2986 observations / 60 sources); US/HK/holding have per-party series (14 each) but zero observations, and the party-scoped CRM reads (=crm_client.rates(party_id, ...)=) and series resolution would show empty matrices for US/HK users. Not a regression of F12-F14 -- feeds ran for the first time only after those landed, exposing the dedup. Whether per-office ticking is required (party-qualified source names, or a controller keyed by =(source_name, party_id)=) is a design decision, not fixed in this review | observed live (fresh DB) -- design question, open |
+| F16 | The bitemporal sentinel is TimeZone-dependent and the SQL function wrapping it is misdeclared IMMUTABLE: =ores_utility_infinity_timestamp_fn()= (=utility_functions_create.sql:36-39=) returns ='9999-12-31 23:59:59'::timestamptz= -- a naive literal that folds per session TimeZone (UTC/London-December session → 9999-12-31 23:59:59 UTC; America/New_York → 10000-01-01 04:59:59 UTC). Declared IMMUTABLE, the planner folds it at plan time and proves the partial unique indexes' predicates (=valid_to = ores_utility_infinity_timestamp_fn()=, e.g. =accounts_version_uniq_idx=) equivalent to the app's =valid_to = '9999-12-31 23:59:59'= condition. Demonstrated live: in an America/New_York session the repository's exact query returns the tenant_admin row with =sel_match = f= -- a row violating its own WHERE clause (the planner dropped the filter; count vs detail disagree, so the drop is plan-dependent). The app forces UTC on pooled sessions (=tenant_aware_pool.hpp:155= set_config + =options=-c\\ timezone=UTC= in =build_connection_string=), which normally keeps naive literals consistent -- but the wizard leg showed one escape: at 02:47:17/02:48:14 =account_service::logout= warned "Attempted to logout non-existent account: 019fee78-…" for tenant_admin -- =read_latest(id)= (id + sentinel predicates) returned empty, while =read_latest_by_username= matched 6 s later (login at 02:47:23) with the same sentinel predicate. Data integrity, sentinel equality (London session), JWT subject, and query text all verified correct; the TZ-shifted sentinel comparison is the only surviving explanation. Damage: =ores_iam_login_info_tbl.online = 1= for tenant_admin is stale (never cleared; every other account is 0). Fix proposed (not implemented): (A) return ='9999-12-31 23:59:59+00'::timestamptz= from the function -- one line, makes the fold TZ-independent; (B) enforce UTC on every DB session -- audit DQ engine / workflow / pgmq connection sites for the missing forcing (the naive app literal stays, so UTC sessions are required for correct app reads); (C) verify in NY/Tokyo sessions and clear the stale online flag | observed live (wizard leg) -- recorded, fix proposed, scope to decide |
+
+** Execution legs
+
+1. Shell leg: fresh database; rebuild binaries (current binaries
+   predate hotfix #1929); bootstrap the database; start services; run
+   the current recipe as-is (=provision system=, =provision tenant
+   --source acme=, =bundles publish risk_management --wait=); verify
+   every acceptance criterion.
+2. Wizard leg: second fresh database; Acme one-click onboarding via
+   the Qt wizard; verify the same result.
+3. Record every finding with its fix in * Notes; close the task; raise
+   the combined PR.
+
+* Notes
+
+** Shell leg on a fresh DB: provisioning fails (F10, F11)
+
+Ran the current recipe as-is on a fresh database. The base bundle
+workflow aborted at step 0 and =acme_lei_import= failed too, yet the
+shell printed "✓ Acme Corporation holding group provisioned" and the
+=risk_management= publish printed "✓ All 4 step(s) completed". The
+tenant holds only its System party: 0 parties, 0 staff, 0 currencies,
+0 business units/portfolios/books, 0 report definitions, 1 account
+(=tenant_admin=).
+
+- F10 (root cause, fixed): =refdata.*= datasets declare no dataset
+  dependencies, so the publication-service topological sort is
+  unconstrained and ran =refdata.currency_pairs= before
+  =iso.currencies=; the insert trigger on =ores_refdata_currency_pairs_tbl=
+  rejected EUR and aborted the whole base workflow. Main independently
+  fixed the core edges in PR #1935 (declared inline in each seed
+  script, merged 2026-08-09); this review adds the complementary
+  edges PR #1935 does not cover -- =refdata.calendars -> calendar_types,
+  iso.countries, iso.coding_schemes= (its insert validates country and
+  coding-scheme codes against published iso tables),
+  =refdata.currency_pair_conventions -> iso.currencies=, and
+  =refdata.currency_pair_convention_calendars -> currency_calendars=
+  (the seed doc's stated dependency, where #1935 declares
+  =-> refdata.calendars= instead) -- in a new
+  =refdata_dataset_dependency_populate.sql= wired into
+  =refdata_populate.sql=. Verified live on a fresh DB: all 38 base
+  members completed in dependency order, LEI import, holding group,
+  offices, and step-7 publish all landed.
+- F11 (fixed): =provision_acme_tenant_response= is
+  built with =success = true= up front; both abort paths replied with
+  it, so a failed provisioning looked successful to the caller. Fix:
+  the abort paths now reply with =success = false= and a message naming
+  the failed step, carrying the DQ-side error detail that
+  =publish_bundle= already recorded in the trailing
+  =<bundle>.failed= step (publication_handler's =error_message=, or
+  "workflow did not complete") into =resp.message= -- e.g. "Step 2
+  failed: acme_lei_import -- <error>". Same family, left as recorded: a
+  bundle publish whose steps insert 0 rows (no root party to publish
+  for) reports "All N step(s) completed" with no warning -- the publish
+  functions no-op silently when party resolution finds nothing.
+- F6 note: the step-7 no-op does not answer F6's question -- it
+  proves nothing lands when there is no party, not whether the guards
+  skip demo-org data for a real root party. Recheck after F10 fix.
+- Masked historically: provisioning was only ever exercised against
+  restored databases whose reference data pre-existed, so the
+  ordering bug never surfaced; pre-#1929 the first-available-heuristic
+  failure masked it differently.
+
+** Shell leg re-run on a fresh DB (post-rebase): verification results
+
+Ran the current recipe on a fresh database with main's fixes (PR #1935
+dependency edges + PR #1932 IR processes). Base bundle 38/38 members in
+dependency order (F10 fix verified a second time); LEI import, holding
+group, all three offices, staff accounts, step-7 cross-entity access,
+and the =risk_management= publish all landed. The synthetic theme
+publish failed 4x (F12, recorded above). Verified:
+
+- F8 fully green: exactly 4 ACME parties + 2 System parties, 2
+  tenants; Barclays/Lloyds/NatWest/HSBC exist only as counterparties
+  (12,959 GLEIF counterparty rows total).
+- F6 green: the step-7 =risk_management= publish landed only
+  =ore.report_definitions= (31 rows, all on Acme Corporation Plc); the
+  =testdata.*= members no-op'd through the per-party idempotency
+  guards -- no demo-org business units/portfolios/books on the holding.
+- Staff: 59 acme-tenant accounts = 58 staff + =tenant_admin=, all
+  linked via =ores_iam_account_parties_tbl= (=default_party_id= is
+  NULL for every staff account -- the party link table is the real
+  membership). 26 accounts per subsidiary (25 staff +
+  =tenant_admin='s cross-entity membership); the holding carries
+  =adrian.vance= (the one group-level staff row) + =tenant_admin=.
+  Emails locale-matched per the story's fix: 20x =acmecorp.com= (US),
+  19x =acmecorp.co.uk= (UK), 19x =acmecorp.hk= (HK); =
+  super_admin= is =@localhost.com=, =tenant_admin= is
+  =admin@acme_corporation.com=.
+- Org chart: every office staff member has a manager (75
+  =reports_to_account_id= links, 0 dangling); =adrian.vance= is the
+  holding's top of tree (no manager).
+- Cross-entity (step 7, "follow the sun"): 9 executives (Desk Heads
+  on IR Swaps and FX Rates + Market Risk staff, per
+  =doc/knowledge/domains/acme_corporation_setup.org=) hold memberships
+  in all three subsidiaries; =tenant_admin= sees all 4 parties plus
+  the System party. Credit Trading and Middle Office are local-only,
+  as designed.
+- Photos (F12 cascade, recorded in the F12 row): all 58 staff rows in
+  the accounts datasets carry =photo_key=; only =adrian.vance= has an
+  =image_id=. Deterministic: fix F12 and all 58 photos plus the
+  office synthetic feeds land.
+- F5 live check: =marketdata.fx_driver_rates_2026= configs landed per
+  party (4x); themes/vintages and the Market Simulator's consolidated
+  configs remain blocked on F12.
+
+** Wizard leg on a fresh DB: scenario all green, F15 and F16 confirmed
+
+Ran scenario B296624F (Acme Bank wizard path) on a second fresh
+database, provisioned purely through the Qt wizards. All 15 steps
+PASS; overall PASSED at 2026-08-11T01:48:01Z (branch
+feature/review-acme-fit-for-purpose, commit 6e75ba495, worktree
+prime_origin). Server-side verification mirrors the shell leg:
+
+- Accounts: 60 = super_admin + tenant_admin + 58 staff; 58 staff
+  carry =image_id= (photo attach green through the wizard path too,
+  matching the shell leg after F12).
+- Parties and tenants: 2 tenants; all 6 parties (System x2 + the four
+  ACME companies) Active.
+- Synthetic infrastructure: 44 IR-curve DQ artefacts in the SYSTEM
+  tenant (20x 2026 Realistic, 20x Uniform Demo, 3x 2016 ORE Samples,
+  1x Vintage) -- themes publish system-wide once, feeds bind per
+  party; IR generation configs 96 (24/party x 4), FX spot configs
+  104 (26/party x 4), 13 feed bindings, all on ACCOUK.
+- F15 confirmed on the wizard leg: only ACCOUK's synthetic feeds tick
+  (IR 7 points x ~70 dates, FX 1 point x ~301 dates, e.g. =eurestr= /
+  =eurusd=; the counts were still growing while verifying);
+  ACMCOR/ACCOUS/ACCOHK carry only the static =fed.h10.2016-*= backfill
+  (26 sources x 26 dates) + 1 =ore.samples= row. Design question,
+  carried unchanged.
+- Email auto-fill drift: the wizard pre-filled the tenant admin email
+  as =admin@acme_corporation.com= (derived from the tenant code);
+  scenario step 7 expects =tenant_admin@acme_corporation.com=. The
+  step-10 login (=tenant_admin@acme_corporation=, username-based)
+  works regardless. Cosmetic scenario-vs-wizard drift.
+- System-party onboarding prompt: after the first tenant_admin login
+  the client surfaced a party-onboarding dialog for the System party
+  (=e8fec243=) with "Party is inactive" wording -- the System party is
+  the provisioning scaffold, not a party a tenant admin should
+  onboard into. Cosmetic UX wording issue.
+- Service logs: =ores.synthetic.service.0.log= clean (0 error/warn
+  matches). =ores.iam.service.0.log= warns analyzed: the known
+  startup party-cache race (22:58:12, refdata service not yet
+  listening -- benign), the "Poll N failed: Workflow instance not
+  found" bursts (benign -- the workflow completes milliseconds later),
+  and the F16 logout failures (2x, full analysis in the F16 row).
+- F16 (new finding, above): logout "Account does not exist" failure
+  for an existing account in a non-UTC session; root cause the
+  TZ-dependent IMMUTABLE sentinel function; wrong-result demonstrated
+  live; fix proposed but not implemented -- scope to decide.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1958][#1958]] | [agile] ACME fit-for-purpose review: fixes F10/F11/F13/F14, verification F1-F16 |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

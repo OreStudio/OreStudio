@@ -111,9 +111,17 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1 (2026-08-11): three Claude review passes, no line comments.
+All six findings accepted; no correctness bug found by any reviewer.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | list() no longer scoped by feed kind — a shared controller leaks both kinds into each handler's list | feed_controller.hpp | Accepted | =IFeed= gains =kind()= (the factory kind string, defined in each producer header); =list(kind)= filters; both handlers pass their own kind, restoring the per-kind list behaviour |
+| 2 | FX auto-start silently drops a conflict (no conflicting-source-name capture, no log) | application.cpp | Accepted | Mirrors the IR walk's error log; an already-running same-source row stays silent as before |
+| 3 | Class doc still says several feeds on the same pair run concurrently, contradicting =feeds_conflict= | feed_controller.hpp | Accepted | Reworded: at most one per (qualifier, role) pair — two FX feeds included |
+| 4 | Doc says conflicts flow through =conflict_key()=; =find_conflict()= compares the pair via =feeds_conflict= | feed_controller.hpp | Accepted | Clarified: the pair is compared, not the key string, because the empty-qualifier carve-out is key-string-blind |
+| 5 | =running_source_name_for_conflict_key()= has no empty-qualifier carve-out (string equality can false-positive) | feed_controller.hpp | Accepted | Skips empty-qualifier feeds; unreachable today, guard makes the lookup agree with =feeds_conflict= |
+| 6 | No end-to-end test drives the =qualifier_conflict= rejection | folder_feed_control_handler_tests.cpp | Accepted | Cascade test seeds a second enabled config on the same EUR/USD pair (own container — the schema forbids two on the same pair per container); only one starts, the other is skipped |
 
 * Result
 
@@ -154,5 +162,6 @@ criterion "behaviour is unchanged for existing callers". The parameter
 is stored purely as that restart gate.
 
 Verification: full build green; DB recreated (schema 0.0.25); rat green
-on the fresh DB. Component tests: 195 assertions in 39 test cases,
-including the conflict tests moved from the deleted test file.
+on the fresh DB. Component tests: 198 assertions in 39 test cases,
+including the conflict tests moved from the deleted test file and the
+review-round conflict-rejection coverage added to the folder cascade.

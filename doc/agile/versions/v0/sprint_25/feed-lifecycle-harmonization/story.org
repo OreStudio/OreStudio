@@ -140,6 +140,12 @@ is the clear setup the codebase never had: config table + producer + one registr
   =add()= keeps the parameter (two overloads) — dropping it would let a
   later ad-hoc restart create a bound feed_binding for a sandboxed feed.
   The status loop is uniform: source_name + publish_count per feed.
+- Per-kind list scoping (task 1D756D47, review round): =IFeed= exposes
+  =kind()= — the factory kind string, defined in each producer header
+  (=fx_spot_feed_kind=, =ir_curve_feed_kind=) — and
+  =feed_controller::list(kind)= scopes the running snapshot by it. The
+  per-kind control-plane handlers list only their own kind, preserving
+  the pre-collapse list behaviour.
 
 * References
 

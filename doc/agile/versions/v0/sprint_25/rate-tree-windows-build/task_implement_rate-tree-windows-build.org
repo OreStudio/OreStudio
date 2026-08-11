@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 5F6EF4CE-1644-4460-96BC-F993CB5C62C9
+:END:
+#+title: Task: Implement Hotfix: rate_tree fails to compile on Windows
+#+description: Initial task for: Hotfix: rate_tree fails to compile on Windows
+#+type: task
+#+level: s1
+#+filetags: :rate-tree-windows-build:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-rate-tree-windows-build
+#+pr: 1967
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34FFCE53-473A-4532-95D2-4A8448CB4F19][Hotfix: rate_tree fails to compile on Windows]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add the missing string include to
+projects/ores.analytics.quant/src/math/rate_tree.cpp so that
+std::to_string (used in validate_branching's error message) compiles
+on MSVC, where the standard headers do not provide it transitively.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:34FFCE53-473A-4532-95D2-4A8448CB4F19][Hotfix: rate_tree fails to compile on Windows]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- rate_tree.cpp compiles on Windows (MSVC) CI.
+- rate_tree.cpp still compiles on the Linux build.
+
+* Plan
+
+Diagnosis: rate_tree.cpp includes only its own header, cmath and
+stdexcept. Line 70 calls std::to_string, which is declared in the
+string header. GCC/Clang's libstdc++/libc++ pull string in
+transitively through stdexcept; MSVC's header set does not, so the
+compiler errors with C2039 at the first use.
+
+Fix: add the string include to rate_tree.cpp. One-line, minimal,
+root-cause change — no other file uses std::to_string without the
+include (verify with a repo-wide grep for std::to_string callers).
+
+* Notes
+
+Root cause: rate_tree.cpp calls std::to_string in
+validate_branching's error message (line 70) but does not include the
+string header. GCC/Clang pull string in transitively; MSVC does not,
+so the Windows CI build fails with C2039 ('to_string' is not a member
+of 'std').
+
+Fix: add the string include to rate_tree.cpp, in alphabetical order
+with the other standard headers. Verified locally: ores.analytics.quant.lib
+builds clean on linux-clang-debug-make.
+
+Related: a repo-wide grep found 16 other hand-written .cpp files that
+call std::to_string without the string include — same latent MSVC
+risk. Left in place; out of scope for this hotfix. Candidate for an
+include-hygiene CI check (see follow-up discussion).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1967][#1967]] | [ores.analytics.quant] Fix rate_tree.cpp missing string include |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- Fixed: rate_tree.cpp now includes the string and utility headers
+  explicitly. The MSVC C2039 (std::to_string) and the sibling
+  std::move finding are resolved; ores.analytics.quant.lib builds
+  clean on linux-clang-debug-make.
+- Acceptance met: the Windows build compiles rate_tree.cpp (verified
+  on merge by the continuous-windows workflow); the Linux build is
+  verified locally.
+- Also shipped in this PR, per request: build/scripts/check_includes.sh
+  and .github/workflows/nightly-includes.yml — a nightly clang-tidy
+  misc-include-cleaner sweep that opens a bot PR with fixes.
+- PR: https://github.com/OreStudio/OreStudio/pull/1967

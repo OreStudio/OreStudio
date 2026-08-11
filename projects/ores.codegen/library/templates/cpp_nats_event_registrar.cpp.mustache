@@ -18,7 +18,7 @@ register_{{entity_singular}}_event_mapping(ev::service::postgres_event_source& e
                                            ev::service::event_bus& event_bus,
                                            ores::nats::service::client& nats) {
     ev::service::registrar::register_mapping<{{component}}::eventing::{{entity_singular}}_changed_event>(
-        event_source, "ores.{{component}}.{{entity_singular}}", "{{product}}_{{component}}_{{entity_plural}}");
+        event_source, "ores.{{component}}.{{entity_singular}}", "{{sql_name_base}}");
 
     return event_bus.subscribe<{{component}}::eventing::{{entity_singular}}_changed_event>(
         [&nats](const {{component}}::eventing::{{entity_singular}}_changed_event& e) {

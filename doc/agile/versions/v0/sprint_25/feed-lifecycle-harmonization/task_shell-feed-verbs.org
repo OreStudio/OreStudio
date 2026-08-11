@@ -51,6 +51,36 @@ new asset classes are covered automatically via the factory.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+The folder cascade (task 9E2344CF) already covers both asset classes
+server-side; the shell's folder verbs need no change. The per-config
+verbs need a kind-agnostic token resolution and a list verb.
+
+- =resolve_feed= (synthetic_commands.cpp) becomes kind-agnostic: it
+  probes the FX config family first, then the IR curve family —
+  mirroring the server's own kind resolution in
+  =feed_config_handler=, which probes the per-kind repositories by
+  =config_id= with FX first. It returns a
+  =resolved_feed{config_id, source_name, optional ore_key}=; the
+  shell never knows the kind. UUID tokens match config ids across
+  both families ("Feed not found" after both probes); name tokens
+  match FX ore_key/source_name then IR source_name, with
+  =report_ambiguous= per family and "No feed matching" after both.
+- =start feed= and =stop feed= send the resolved =config_id= in
+  =start_feed_request/stop_feed_request= as before — the requests
+  were already kind-agnostic. Only the token resolution changed.
+- New =synthetic list feeds= verb:
+  =process_list_feeds=/=list_feeds= send =list_feeds_request{}= and
+  print each running feed's =source_name= plus the running count. The
+  response carries no message field, so failure prints a generic
+  message.
+- =validate-vintage= stays FX-shaped: =get_vintage_validity= entries
+  are keyed by fx config id, so only FX feeds can match one; IR
+  curves report no entry. The ore key renders only when present.
+- Help and completion were already kind-agnostic: the start/stop
+  usage string is "folder <folder-token> | feed <feed-token>" and
+  cli::Menu completion completes command names only. The =list feeds=
+  help text says "of every asset class".
+
 * Notes
 
 * Test Scenarios

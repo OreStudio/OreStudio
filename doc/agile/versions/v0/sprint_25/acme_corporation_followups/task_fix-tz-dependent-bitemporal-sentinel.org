@@ -92,8 +92,8 @@ it a large, independent change.
    fixed: =postgres_listener_service='s dedicated LISTEN session now
    forces UTC via =connect_utc()= at both connect sites (mirrors the
    pool's =set_config('TimeZone','UTC',false)= at acquisition).
-3. (C) Verify on a fresh DB in New York/Tokyo sessions and clear the
-   stale =online= flag for account =019fee78-…=. PENDING.
+3. (C) Verify in New York/Tokyo sessions and clear the stale =online=
+   flag for account =019fee78-…=. DONE — see =* Result=.
 
 * Notes
 

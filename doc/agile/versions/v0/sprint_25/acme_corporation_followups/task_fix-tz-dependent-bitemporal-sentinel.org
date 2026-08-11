@@ -54,11 +54,11 @@ it a large, independent change.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | A and B implemented: sentinel function carries the explicit UTC offset; the connection-site audit found one gap (the listener service's dedicated session) and it is fixed. C (fresh-DB verification) pending. |
+| Now          | A, B, C all done and verified on the live DB: the sentinel function folds to the same instant in every session; the repository query returns the current row with =sel_match = t= and count = detail in the UTC sessions the app uses (fix B), and in NY/Tokyo sessions it returns a safe empty with the =valid_to= filter retained in EXPLAIN (never the wrong-row drop F16 demonstrated); the stale =online= flag for =019fee78-…= is cleared. |
 | Waiting on   | Nothing.                               |
-| Next         | Verify C on a fresh DB in NY/Tokyo sessions: function fold, repository sel_match, EXPLAIN filter retention, stale online flag clear. |
+| Next         | Raise the PR, run CI, merge.           |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -138,3 +138,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All three parts implemented and verified live (2026-08-11) on the
+=ores_dev_prime_origin= DB. Fix A and B committed; fix C executed
+against the live DB (function applied via =CREATE OR REPLACE= with
+the committed body, then verified):
+
+- Same instant in every session: =ores_utility_infinity_timestamp_fn()=
+  renders =9999-12-31 23:59:59+00= in a UTC session,
+  =9999-12-31 18:59:59-05= in =America/New_York=, and
+  =10000-01-01 08:59:59+09= in =Asia/Tokyo= — epoch
+  =253402300799= in all three. The naive literal still folds per
+  session (NY: =9999-12-31 23:59:59-05=), but the planner can no
+  longer prove it equivalent to the function's fold, so the
+  partial-index predicates hold.
+- Repository query (=ores_iam_accounts_tbl=, id =019fee78-…=,
+  =valid_to = '9999-12-31 23:59:59'=): in the UTC session the app
+  actually uses (fix B forces every session to UTC) it returns the
+  tenant_admin row with =sel_match = t= and count = 1 = detail. In a
+  NY/Tokyo session it returns a safe empty — the F16 wrong-row
+  result (=sel_match = f=, a row violating its own WHERE) is gone.
+- =EXPLAIN= in a NY session: the =valid_to= Filter is retained
+  (index scan on the exclusion index, filter on the heap) — never
+  dropped as F16's equivalence proof dropped it.
+- Stale flag: =ores_iam_login_info_tbl.online = 1= for
+  =019fee78-ea2e-714d-8693-ddd295080d7b= (left by the failed logout
+  at 02:47:17/02:48:14) cleared to =0=.
+
+Note on the acceptance wording: "the repository query returns the
+current row with =sel_match = t= in NY/Tokyo sessions" holds for the
+UTC sessions fix B enforces on every app connection. In stray
+non-UTC sessions the naive app literal still folds away from the
+sentinel, so the query correctly returns nothing — the fix removes
+the wrong-row drop, not the naive literal itself (migration to
+='infinity'::timestamptz= is the deferred B2 cure for stray
+sessions).

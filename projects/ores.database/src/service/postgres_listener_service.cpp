@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/domain/session_utilities.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include <algorithm>
 #include <chrono>
@@ -41,12 +42,12 @@ postgres_listener_service::~postgres_listener_service() {
 }
 
 sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-postgres_listener_service::connect_utc(const sqlgen::postgres::Credentials& credentials) {
+connect_utc(const sqlgen::postgres::Credentials& credentials) {
     auto conn_result = sqlgen::postgres::connect(credentials);
     if (!conn_result)
         return conn_result;
 
-    auto tz_result = (*conn_result)->execute("SELECT set_config('TimeZone', 'UTC', false)");
+    auto tz_result = domain::force_session_utc(**conn_result);
     if (!tz_result) {
         return sqlgen::error("Failed to set session timezone to UTC: " +
                              std::string(tz_result.error().what()));

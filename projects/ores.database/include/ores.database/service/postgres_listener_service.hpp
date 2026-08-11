@@ -45,6 +45,21 @@ namespace ores::database::service {
  * The service maintains its own dedicated connection separate from any
  * connection pool, as LISTEN/NOTIFY requires a persistent connection.
  */
+
+/**
+ * @brief Connects with a UTC-forced session.
+ *
+ * sqlgen::Credentials::to_str() carries no session options, so a raw
+ * connect inherits the server default TimeZone. Every session must be
+ * UTC -- the bitemporal sentinel folds per session TimeZone (task
+ * 3828BF82); the pool forces it at acquisition, this dedicated
+ * connection must do the same.
+ *
+ * Exposed as a free function so tests can assert the session is UTC.
+ */
+[[nodiscard]] ORES_DATABASE_EXPORT sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
+connect_utc(const sqlgen::postgres::Credentials& credentials);
+
 class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:
     [[nodiscard]] static auto& lg() {
@@ -52,18 +67,6 @@ private:
         static auto instance = make_logger("ores.database.service.postgres_listener_service");
         return instance;
     }
-
-    /**
-     * @brief Connects with a UTC-forced session.
-     *
-     * sqlgen::Credentials::to_str() carries no session options, so a raw
-     * connect inherits the server default TimeZone. Every session must be
-     * UTC -- the bitemporal sentinel folds per session TimeZone (task
-     * 3828BF82); the pool forces it at acquisition, this dedicated
-     * connection must do the same.
-     */
-    [[nodiscard]] static sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-    connect_utc(const sqlgen::postgres::Credentials& credentials);
 
 public:
     /**

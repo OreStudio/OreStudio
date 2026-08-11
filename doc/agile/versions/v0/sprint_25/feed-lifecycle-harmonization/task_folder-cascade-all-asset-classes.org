@@ -29,11 +29,11 @@ enumeration of config kinds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -138,3 +138,30 @@ via its "Verifies task" field.
 | 7 | Folder-cascade walk duplicates the auto-start walk in application.cpp | folder_feed_control_handler.hpp | Declined | Story task 4 (uniform-auto-start) plans the unification of both walks |
 
 * Result
+
+=done= on 2026-08-11. The folder start/stop request is now a single
+server-side walk over the folder subtree: one subtree query, both
+config families read, every row dispatched through
+=make_default_feed_factory()= to the per-kind controller. A folder
+containing both FX and IR configs starts both kinds, honoring the
+same startability gate (=enabled= plus an enabled container) and
+reporting per-kind started/already-running/skipped counts (start) and
+stopped counts (stop) in the response protocol. Permission checking is
+uniform: both =synthetic::fx_spot_generation_configs:read= and
+=synthetic::ir_curve_generation_configs:read= are required. The IR
+pass is a per-row dispatch, not a third copy of the build sequence.
+
+Verified: full build green, database recreated (schema 0.0.25), rat
+green — including the new integration tests
+(=folder_feed_control_handler_tests.cpp=: both kinds start/stop with
+per-kind counts, permission denial without the IR permission,
+malformed folder id). Review round 1 addressed: four findings fixed
+(controller re-entrancy guard, FX try/catch, IR add() counting,
+comment placement) and three declined by design (vintage-check drop,
+uniform permission gate, walk duplication) — see the =Review= table.
+
+One review-round verification finding fixed on this branch: the IR
+cascade read the yield-curve parameter-definitions catalogue with the
+caller's tenant context, so real tenants resolved no definitions
+(commit a0f28bfd94 — the catalogue is system-tenant owned, mirroring
+the sibling fix on main).

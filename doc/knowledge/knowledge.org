@@ -232,6 +232,9 @@ How the codebase is put together.
   feed config parameters.
 - [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset menu, output directory layout, the
   conventions every component build follows.
+- [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] — every PR-gating check, its fate
+  (local / GitHub / retired), and the change-classification rules the
+  submit-PR skills use.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, and service
   conventions for creating a full-stack entity.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — =ores.qt.api= contract, IPlugin

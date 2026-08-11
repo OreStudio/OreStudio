@@ -135,7 +135,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | No automated regression test for the TZ-dependent fold (R1#1) | ores.sql/test/ | Accepted | pgTAP test =utility_infinity_timestamp_fn_test.sql= (6 assertions): same instant in UTC/NY/Tokyo sessions; naive literal equals sentinel in UTC and folds away in NY; explicit =+00= literal equals sentinel in any session. Passes 6/6 against the live DB. |
+| 2 | PR description "Changes" section still "(Fill in.)" (R1#2) | PR description | Accepted | Filled in via =gh pr edit=. |
+| 3 | UTC-forcing logic duplicated a third time; centralize (R2#1) | postgres_listener_service.{hpp,cpp} | Accepted | =domain::force_session_utc()= template in new =session_utilities.hpp=; used by =tenant_aware_pool::acquire()= and =connect_utc()=, now a free exported function. |
+| 4 | Add one-shot migration for indexes baked with the stale fold (R2#2) | utility_functions_create.sql | Declined | Empirically refuted on the live DB: the planner folds IMMUTABLE functions at plan time against the current definition; nothing is baked into =pg_index.indpred=. The live indexes were created under the OLD function, and after =CREATE OR REPLACE= a NY-session EXPLAIN retains the =valid_to= filter and the F16 wrong-row query returns 0 rows. All index creation runs in UTC sessions anyway; the B2 ='infinity'= migration is already deferred deliberately. |
+| 5 | No test asserts the listener connection is forced to UTC (R2#3) | postgres_listener_service_tests.cpp | Accepted | TEST_CASE =postgres_listener_service_connect_forces_utc_session=: DO/RAISE behavioral assertion (passes in UTC, would fail on the Europe/London server default). |
+| 6 | Connect-failure log message now also covers the TimeZone SET (R2#4) | postgres_listener_service.cpp | Declined | The wrapped message carries the cause ("Failed to set session timezone to UTC: …"); splitting it adds noise for a theoretical misdiagnosis. |
+| 7 | Reconnect path holds =mutex_= across an extra round-trip (R3#1) | postgres_listener_service.cpp | Declined | Pre-existing pattern: the connect already ran under =mutex_= before this PR; =set_config= adds one lightweight round-trip. The hazard class is documented in the callback comment. Moving the connect out of the mutex would race with =connection_=, =stop()= and =subscribe()=. |
+| 8 | =connect_utc()= duplicates the UTC-forcing SQL and error string (R3#2) | postgres_listener_service.cpp | Accepted | Same fix as row 3 (shared helper). |
+| 9 | Third distinct UTC-forcing mechanism (R3#3) | postgres_listener_service.cpp | Accepted | Same fix as row 3; bitemporal's connection-string option stays by design (no post-connect session in scope there). |
+| 10 | No =SHOW TimeZone= assertion after =connect_utc()= (R3#4) | postgres_listener_service_tests.cpp | Accepted | Same fix as row 5. |
 
 * Result
 

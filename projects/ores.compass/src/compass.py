@@ -5979,6 +5979,7 @@ BUILD_TARGET_ALIASES = {
     "settings": "deploy_settings",
     "skills": "deploy_skills",
     "help": "deploy_help",
+    "codegen_templates": "tangle_codegen_templates",
 }
 
 # Emacs scripts for --direct builds: cmake target name → .el file name.

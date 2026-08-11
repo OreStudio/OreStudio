@@ -90,7 +90,13 @@ def _local_ipv4_addresses() -> list[str]:
                 addrs.add(res[4][0])
         except OSError:
             pass
-        addrs.discard("127.0.0.1")
+        # Same filtering as the `ip` path above: /etc/hosts may map the
+        # hostname to a loopback address (e.g. Debian's 127.0.1.1).
+        addrs = {
+            addr for addr in addrs
+            if not ipaddress.ip_address(addr).is_loopback
+            and not ipaddress.ip_address(addr).is_link_local
+        }
     return sorted(addrs)
 
 

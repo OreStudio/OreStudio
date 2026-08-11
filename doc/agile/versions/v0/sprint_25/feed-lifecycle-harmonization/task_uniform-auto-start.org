@@ -8,7 +8,7 @@
 #+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
 #+branch: feature/uniform-auto-start
-#+pr:
+#+pr: 1971
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1971][#1971]] | [synthetic,sql] One auto-start with uniform startability |
 
 * Review
 

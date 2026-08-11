@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_FEED_CONFIG_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_FEED_CONFIG_PROTOCOL_HPP
 
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -119,14 +120,27 @@ struct list_market_feed_configs_response {
 };
 
 /**
+ * @brief Per-kind outcome counts of one folder start/stop request, keyed
+ * by the producer kind string (e.g. "fx_spot", "ir_curve") — see
+ * ores.synthetic.api's feed_factory kind constants. The protocol names no
+ * asset class: a new producer kind appears as a new map key.
+ */
+struct feed_kind_counts final {
+    int started = 0;
+    int already_running = 0;
+    int skipped = 0;
+};
+
+/**
  * @brief Request to start every feed under a synthetic folder subtree.
  *
  * folder_id may name a Root, Collection, asset-class, or instrument-type
  * folder — the service resolves the whole subtree server-side (via
- * ores.synthetic.folder's hierarchy_fn) and starts every fx_spot_generation_config
- * row whose folder_id falls anywhere in it. One request expresses what used
- * to require client-side enumeration of every pair; works identically from
- * Qt, ores.shell, or a wt workflow step.
+ * ores.synthetic.folder's hierarchy_fn) and starts every feed row whose
+ * folder_id falls anywhere in it, of every asset class, dispatching through
+ * the producer factory. One request expresses what used to require
+ * client-side enumeration of every pair; works identically from Qt,
+ * ores.shell, or a wt workflow step.
  */
 struct start_feeds_under_folder_request {
     using response_type = struct start_feeds_under_folder_response;
@@ -139,9 +153,12 @@ struct start_feeds_under_folder_request {
 struct start_feeds_under_folder_response {
     bool success = false;
     std::string message;
+    // Aggregates across every kind — the summary clients print. The
+    // per-kind breakdown follows; both are always populated.
     int started = 0;
     int already_running = 0;
-    int skipped = 0; // e.g. no GMM components, or vintage data missing
+    int skipped = 0; // e.g. no children rows, or disabled
+    std::map<std::string, feed_kind_counts> by_kind;
 };
 
 /**
@@ -160,6 +177,7 @@ struct stop_feeds_under_folder_response {
     bool success = false;
     std::string message;
     int stopped = 0;
+    std::map<std::string, int> stopped_by_kind;
 };
 
 /**

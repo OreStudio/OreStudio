@@ -9,7 +9,7 @@
 #+created: 2026-08-03
 #+start_date: 2026-08-03
 #+end_date: 2026-08-10
-#+updated: 2026-08-04
+#+updated: 2026-08-11
 #+todo: STARTED | DONE
 
 This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 25*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
@@ -77,6 +77,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] | BACKLOG | | | Fix four codegen template bugs: history mapper provenance fields, compound-key is_uuid gating, pagination footgun, junction template follow-ups. |
 | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] | BACKLOG | | | Close two systemic codegen gaps: RLS policy facet (no template emits RLS policies) and history provider registrar codegen (918-line hand-maintained file). |
 | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] | BACKLOG | | | Three IR curve follow-ups: expand stochastic process types, fix seed data/combo gaps, investigate tenant_type drift. |
+| [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] | BACKLOG | | | Add new stochastic process types for FX and IR: finish the unwired IR engines (Black-Karasinski, BDT, affine, HJM, LMM, QG) by wiring them into the system, add further IR models (two-factor Hull-White, shifted log-normal, normal/Bachelier), and add an FX jump/Poisson process engine. SABR and vol-surface models are out of scope. |
 | [[id:71A11111-D7E6-481F-9A17-C4E7039EE62A][Investigate hand-added cross-service grants in generated iam_service_db_grants_create.sql]] | DONE | 2026-08-06 | 2026-08-06 | Found while removing controller from the db recreate pipeline (PR #1867): regenerating iam_service_db_grants_create.sql drops hand-added cross-service grants the generator does not emit. Investigate whether the registry model/template should express per-service cross-domain grants so generation is lossless, and close the drift so regeneration never silently drops grants. |
 | [[id:5E934799-3E38-4C36-8BE6-7CDCC64DD958][Normalise NATS protocol message shapes and inventory hand-written drift]] | DONE | 2026-08-07 | 2026-08-07 | Audit request/response structs for consistent shape (success/message fields per codegen convention) and inventory protocol messages hand-written instead of generated via ores.codegen's cpp_protocol template. |
 | [[id:CA11A754-C153-42A7-AF8B-FA8447CE50B1][Migrate to oresmd, delete market_series qualifier and ore_key]] | DONE | 2026-07-28 | 2026-08-07 | Carried from sprint 24: migrate ir_curve_generation_config, market_series, and fx_spot_generation_config onto oresmd, then delete the legacy free-text qualifier/ore_key fields — single scheme, no permanent coexistence. XML round-trip descoped to Extend oresmd story. |
@@ -100,7 +101,6 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] | STARTED | | | Comprehensive ores.shell compute verbs so compute-grid tests run without a UI: add and list apps, app versions, platforms, hosts and batches; add batches and dispatch jobs; download job inputs and outputs; monitor grid health per node; plus a smoke-test script that dispatches 10-20 consecutive jobs and asserts every online node was exercised. |
 | [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] | DONE | 2026-08-10 | 2026-08-10 | CDash dynamic analysis flags 21 still-reachable leak records on three components (ores.trading.core.tests, ores.reporting.core.tests, ores.refdata.core.tests), all from the NATS C library one-time global init (nats_openLib) reached via the eventing client connect. Add narrow suppressions to build/valgrind/custom.supp and create a valgrind recipe. |
 | [[id:74A90E3D-32BC-4174-8926-C2F4D06D171B][Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | DONE | 2026-08-11 | 2026-08-11 | NATS certificate generation fails on macOS and Windows because `_local_ipv4_addresses` shells out to the Linux-only `ip` binary and never reaches its gethostname fallback. |
-| [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] | BACKLOG | | | Add new stochastic process types for FX and IR: finish the unwired IR engines (Black-Karasinski, BDT, affine, HJM, LMM, QG) by wiring them into the system, add further IR models (two-factor Hull-White, shifted log-normal, normal/Bachelier), and add an FX jump/Poisson process engine. SABR and vol-surface models are out of scope. |
 
 * Achievements
 

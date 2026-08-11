@@ -26,11 +26,11 @@ The pr-raise skill now mandates the full build and ctest for every PR, even doc-
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -43,9 +43,16 @@ The pr-raise skill now mandates the full build and ctest for every PR, even doc-
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The classification rule table lives in =pr-raise= (one place both
+  submit-PR skills read); =pr-address-review= links to it.
+- =ctest= goes via =compass=, never raw: the new =compass test run=
+  acquires the host-wide build lock and runs ctest; =--cdash GROUP=
+  runs the CTest.cmake script form (the same shape CI uses) for CDash
+  submissions.
+- The knowledge doc's local-flow step 3 records the refined CDash
+  invocation; the shared-rules open question resolves to "the skill
+  owns the rules" until the gate-reduction task decides whether
+  =pr.yml= needs its own copy.
 
 * Notes
 
@@ -73,3 +80,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=pr-raise= now classifies the diff (docs / code (C++) / ci / python
+tooling; mixed = union) and runs only the matching checks. The rule
+table lives in =pr-raise= alone; =pr-address-review= links to it.
+=ctest= goes via the new =compass test run= (host-wide build lock;
+=--cdash GROUP= for the CTest.cmake script form), never raw.
+
+Verification for this change (python tooling + docs classes): compass
+suite 114 passed / 1 skipped; regenerate + codegen drift clean (no
+in-tree changes); local site build clean. All acceptance bullets met.
+The story stays STARTED: the gate-reduction task (=pr.yml=) and the
+local-review task follow.

@@ -51,7 +51,7 @@ The objective is higher velocity without losing quality. More analysis is needed
 |------+-------+-------+-----+-------------|
 | [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] | DONE | 2026-08-11 | 2026-08-11 | Inventory every GitHub Actions workflow and check that gates PRs today (site checks, drift checks, build, ctest, code review, pr-gate, ...). For each, decide its fate: run locally before submit, stay on GitHub, or retire. Produce the change-classification rules the submit-PR skills will use. |
 | [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | DONE | | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:000AD939-CEDD-487E-A23F-EAD86B3F1CE7][Classify changes and run targeted local checks in the submit-PR skills]] | STARTED | 2026-08-11 | | Replace the unconditional build and ctest in pr-raise with change classification: read the changed files, bucket them per the rule table in the CI workflows and local checks knowledge doc (docs / code / ci / python tooling), and run only the matching checks. Record the class and the verification in the PR description. pr-address-review reuses the classification for its per-round verification. |
+| [[id:000AD939-CEDD-487E-A23F-EAD86B3F1CE7][Classify changes and run targeted local checks in the submit-PR skills]] | DONE | 2026-08-11 | 2026-08-11 | Replace the unconditional build and ctest in pr-raise with change classification: read the changed files, bucket them per the rule table in the CI workflows and local checks knowledge doc (docs / code / ci / python tooling), and run only the matching checks. Record the class and the verification in the PR description. pr-address-review reuses the classification for its per-round verification. |
 
 * Decisions
 
@@ -61,6 +61,12 @@ The objective is higher velocity without losing quality. More analysis is needed
   stays as the minimal required check (classify only).
 - GitHub CI keeps the continuous builds, nightlies, site deploy, and
   coverage jobs.
+- The classification rule table lives in the =pr-raise= skill — one
+  place both submit-PR skills read; =pr-address-review= links to it.
+- =ctest= runs via =compass test run= (host-wide build lock); local
+  CDash submissions use =--cdash Experimental=.
+- The PR gate (=pr.yml=) is untouched by the classification task; its
+  reduction is a follow-up task.
 
 * Out of scope
 
